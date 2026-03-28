@@ -137,7 +137,7 @@ export default defineComponent({
         while (currentEl) {
           if (isEndFragment(currentEl)) {
             if (startEl !== currentEl.previousSibling) {
-              runtimeErrorUtils.warn(`Server component "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`, { code: E4005, fix: 'Wrap the server component\'s template in a single root element (e.g., a `<div>`).' })
+              runtimeErrorUtils.warn({ message: `Server component "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`, code: E4005, fix: 'Wrap the server component\'s template in a single root element (e.g., a `<div>`).' })
             }
             break
           } else if (!isStartFragment(currentEl) && isFirstElement) {
@@ -220,7 +220,7 @@ export default defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          runtimeErrorUtils.throw(`Failed to parse island response for \`${props.name}\` (HTTP ${r.status}): ${e.message}`, { code: E4012, fix: 'Check that the server component endpoint is returning valid HTML. The server may have returned an error page.' })
+          runtimeErrorUtils.throw({ message: `Failed to parse island response for \`${props.name}\` (HTTP ${r.status}): ${e.message}`, code: E4012, fix: 'Check that the server component endpoint is returning valid HTML. The server may have returned an error page.' })
         }
         throw e
       }

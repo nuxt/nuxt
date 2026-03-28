@@ -48,7 +48,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
             const nuxt = useNuxt()
             const original = resolveToAlias(dir.path, nuxt)
             const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
-            buildErrorUtils.warn(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`, { code: ErrorCodes.B3008, fix: `Rename the directory from \`${basename(corrected)}\` to \`${basename(original)}\` to match the expected casing.`, context: { scannedPath: corrected, expectedPath: original } })
+            buildErrorUtils.warn({ message: `Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`, code: ErrorCodes.B3008, fix: `Rename the directory from \`${basename(corrected)}\` to \`${basename(original)}\` to match the expected casing.`, context: { scannedPath: corrected, expectedPath: original } })
             break
           }
         }
@@ -100,7 +100,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const pascalName = pascalCase(componentNameSegments)
 
       if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
-        buildErrorUtils.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`, { code: ErrorCodes.B3009, fix: 'Rename the component to avoid the `Lazy` prefix.', context: { component: pascalName, filePath } })
+        buildErrorUtils.warn({ message: `The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`, code: ErrorCodes.B3009, fix: 'Rename the component to avoid the `Lazy` prefix.', context: { component: pascalName, filePath } })
       }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
@@ -140,7 +140,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        buildErrorUtils.warn(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`, { code: ErrorCodes.B3010, fix: 'Rename the component file to something other than `index` (e.g., `MyComponent.vue`).', context: { filePath } })
+        buildErrorUtils.warn({ message: `Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`, code: ErrorCodes.B3010, fix: 'Rename the component file to something other than `index` (e.g., `MyComponent.vue`).', context: { filePath } })
         continue
       }
 
@@ -172,9 +172,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  buildErrorUtils.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
+  buildErrorUtils.warn({ message: `Two component files resolving to the same name \`${componentName}\`:\n` +
     `\n - ${filePath}` +
-    `\n - ${duplicatePath}`, {
+    `\n - ${duplicatePath}`,
     code: ErrorCodes.B3011,
     fix: 'Rename one of the files or adjust the `components.dirs` prefix settings in your `nuxt.config`.',
   })

@@ -61,7 +61,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       }
 
       if (typeof pluginFn !== 'function') {
-        buildErrorUtils.warn(`Could not import PostCSS plugin \`${pluginName}\`. Please report this as a bug.`, { code: ErrorCodes.B7011, fix: `Run \`npm install -D ${pluginName}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.` })
+        buildErrorUtils.warn({ message: `Could not import PostCSS plugin \`${pluginName}\`. Please report this as a bug.`, code: ErrorCodes.B7011, fix: `Run \`npm install -D ${pluginName}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.` })
       }
     }
 

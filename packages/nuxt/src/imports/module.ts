@@ -164,7 +164,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
               const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
-              buildErrorUtils.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues.`, {
+              buildErrorUtils.error({ message: `\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues.`,
                 code: ErrorCodes.B6002,
                 fix: `Rename \`${value}\` in \`${relativePath}\` to avoid conflicting with the built-in Nuxt auto-import.`,
                 context: {

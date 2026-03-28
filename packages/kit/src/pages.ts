@@ -54,7 +54,7 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
         if (options.override === true) {
           app.middleware[find] = { ...middleware }
         } else {
-          buildErrorUtils.warn(`'${middleware.name}' middleware already exists at '${foundPath}'. You can set \`override: true\` to replace it.`, { code: ErrorCodes.B4013, fix: 'Set `override: true` to replace it.' })
+          buildErrorUtils.warn({ message: `'${middleware.name}' middleware already exists at '${foundPath}'. You can set \`override: true\` to replace it.`, code: ErrorCodes.B4013, fix: 'Set `override: true` to replace it.' })
         }
       } else if (options.prepend === true) {
         app.middleware.unshift({ ...middleware })

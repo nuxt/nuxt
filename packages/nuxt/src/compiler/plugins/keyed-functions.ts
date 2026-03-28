@@ -62,7 +62,7 @@ function buildKeyedFunctionsState (keyedFunctions: KeyedFunction[]) {
       const sourcesToFunctionMeta = namesToSourcesToFunctionMeta.get(functionName)
       const existingEntry = sourcesToFunctionMeta?.get(fnSource)
       if (existingEntry?.source && existingEntry.source === fnSource) {
-        buildErrorUtils.warn(`Duplicate keyed function name \`${functionName}\`${functionName !== f.name ? ` defined as \`${f.name}\`` : ''} with ${f.source ? `the same source \`${f.source}\`` : 'no source'} found. Overwriting the existing entry.`, { code: ErrorCodes.B1009, fix: 'Ensure each keyed function has a unique name, or use a different source to distinguish them.', context: { functionName, source: f.source } })
+        buildErrorUtils.warn({ message: `Duplicate keyed function name \`${functionName}\`${functionName !== f.name ? ` defined as \`${f.name}\`` : ''} with ${f.source ? `the same source \`${f.source}\`` : 'no source'} found. Overwriting the existing entry.`, code: ErrorCodes.B1009, fix: 'Ensure each keyed function has a unique name, or use a different source to distinguish them.', context: { functionName, source: f.source } })
       }
     }
 

@@ -21,7 +21,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })) {
-    buildErrorUtils.warn('Skipping bundle analysis.', { code: ErrorCodes.B7001, fix: 'Run `npm install -D rollup-plugin-visualizer` to enable bundle analysis.' })
+    buildErrorUtils.warn({ message: 'Skipping bundle analysis.', code: ErrorCodes.B7001, fix: 'Run `npm install -D rollup-plugin-visualizer` to enable bundle analysis.' })
     return
   }
 

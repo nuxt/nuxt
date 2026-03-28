@@ -66,7 +66,7 @@ export default defineComponent({
       let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          runtimeErrorUtils.warn(`Invalid layout \`${layout}\` selected. Available layouts: ${Object.keys(layouts).join(', ') || 'none'}.`, {
+          runtimeErrorUtils.warn({ message: `Invalid layout \`${layout}\` selected. Available layouts: ${Object.keys(layouts).join(', ') || 'none'}.`,
             code: E4001,
             fix: `Create a \`layouts/${layout}.vue\` file, or use one of the available layouts.`,
           })
@@ -210,12 +210,12 @@ const LayoutProvider = defineComponent({
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
-              runtimeErrorUtils.warn(`\`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`, {
+              runtimeErrorUtils.warn({ message: `\`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`,
                 code: E4002,
                 fix: 'Wrap the layout\'s template in a single root element (e.g., a `<div>`).',
               })
             } else {
-              runtimeErrorUtils.warn('`<NuxtLayout>` needs to be passed a single root node in its default slot.', {
+              runtimeErrorUtils.warn({ message: '`<NuxtLayout>` needs to be passed a single root node in its default slot.',
                 code: E4003,
                 fix: 'Wrap the content inside `<NuxtLayout>` in a single root element.',
               })

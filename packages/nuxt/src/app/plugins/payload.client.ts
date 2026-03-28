@@ -39,7 +39,7 @@ export default defineNuxtPlugin({
         const { hostname } = new URL(url, window.location.href)
         if (hostname === window.location.hostname) {
           // TODO: use preloadPayload instead once we can support preloading islands too
-          await loadPayload(url).catch(() => { runtimeErrorUtils.warn('Error preloading payload for ' + url, { code: E7003, fix: 'This is usually a transient network error. The payload will be fetched on navigation instead.' }) })
+          await loadPayload(url).catch(() => { runtimeErrorUtils.warn({ message: 'Error preloading payload for ' + url, code: E7003, fix: 'This is usually a transient network error. The payload will be fetched on navigation instead.' }) })
         }
       })
       if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {

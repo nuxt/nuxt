@@ -26,7 +26,7 @@ const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
 type Trace = { source: string, line?: number, column?: number }
 
 export const runtimeErrorUtils = /* @__PURE__ */ createErrorUtils({
-  module: 'NUXT',
+  prefix: 'NUXT',
   docsBase: DOCS_BASE,
   // TODO: implement the formatter and logger to forward them to the server side
 })

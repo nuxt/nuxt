@@ -106,7 +106,7 @@ export interface Resolver {
  */
 export function createResolver (base: string | URL): Resolver {
   if (!base) {
-    buildErrorUtils.throw('`base` argument is missing for createResolver(base)!', { code: ErrorCodes.B8002, fix: 'Pass `import.meta.url` or a directory path as the `base` argument to `createResolver()`.' })
+    buildErrorUtils.throw({ message: '`base` argument is missing for createResolver(base)!', code: ErrorCodes.B8002, fix: 'Pass `import.meta.url` or a directory path as the `base` argument to `createResolver()`.' })
   }
 
   base = base.toString()

@@ -42,7 +42,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
 
     if (!result) {
       installFailed = true
-      buildErrorUtils.warn('Install `@vitejs/plugin-vue-jsx` to enable JSX support.', { code: ErrorCodes.B7008, fix: 'Run `npm install -D @vitejs/plugin-vue-jsx` to install it.' })
+      buildErrorUtils.warn({ message: 'Install `@vitejs/plugin-vue-jsx` to enable JSX support.', code: ErrorCodes.B7008, fix: 'Run `npm install -D @vitejs/plugin-vue-jsx` to install it.' })
       return undefined
     }
 

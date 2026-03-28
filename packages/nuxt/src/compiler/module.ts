@@ -128,11 +128,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              buildErrorUtils.error(`Plugin \`${plugin.name}\` failed to scan file \`${filePath}\`.`, { code: ErrorCodes.B1005, fix: 'Check the file for syntax errors, or report this issue to the plugin author.', context: { plugin: plugin.name, file: filePath }, cause: e })
+              buildErrorUtils.error({ message: `Plugin \`${plugin.name}\` failed to scan file \`${filePath}\`.`, code: ErrorCodes.B1005, fix: 'Check the file for syntax errors, or report this issue to the plugin author.', context: { plugin: plugin.name, file: filePath }, cause: e })
             }
           }))
         } catch (e) {
-          buildErrorUtils.error(`Cannot read file \`${filePath}\`.`, { code: ErrorCodes.B1006, fix: 'Check that the file exists and has correct permissions.', context: { file: filePath }, cause: e })
+          buildErrorUtils.error({ message: `Cannot read file \`${filePath}\`.`, code: ErrorCodes.B1006, fix: 'Check that the file exists and has correct permissions.', context: { file: filePath }, cause: e })
         }
       }
 
@@ -141,7 +141,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         try {
           await plugin.afterScan(nuxt)
         } catch (e) {
-          buildErrorUtils.error(`Error in \`afterScan\` hook of plugin \`${plugin.name}\`.`, { code: ErrorCodes.B1007, fix: 'Check the plugin implementation or report this issue to the plugin author.', context: { plugin: plugin.name }, cause: e })
+          buildErrorUtils.error({ message: `Error in \`afterScan\` hook of plugin \`${plugin.name}\`.`, code: ErrorCodes.B1007, fix: 'Check the plugin implementation or report this issue to the plugin author.', context: { plugin: plugin.name }, cause: e })
         }
       }))
     }

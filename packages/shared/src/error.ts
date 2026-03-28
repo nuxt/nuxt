@@ -73,15 +73,27 @@ export function renderFrame (lines: string[], connectors?: FrameConnectors): str
 
 // --- createErrorUtils ---
 
-export interface ErrorOptions {
+export interface ErrorInfo {
+  /** The error tag prefix */
+  codePrefix?: string
   /** Error code (e.g., 'B1001'). Combined with the module prefix to form the error tag. */
   code: string
+  /** The error message */
+  message: string
   /** Why the error occurred — the underlying reason, shown on its own line below the message */
   why?: string
   /** A concrete suggestion for how to fix the issue */
   fix?: string
+  /** A hint to the user about the error */
+  hint?: string
   /** A documentation URL (overrides code-derived URL) */
   docs?: string
+  /** The location of source file that caused the error */
+  source?: {
+    file: string
+    line?: number
+    column?: number
+  }
   /** The underlying error that caused this one */
   cause?: unknown
   /** Extra context to include (only shown when the formatError implementation handles it) */
@@ -94,64 +106,85 @@ export interface ErrorUtilsOptions {
    *
    * The value is uppercased automatically.
    *
-   * @example 'pinia'  // → [PINIA_001]
+   * @example 'PINIA'  // → [PINIA_001]
    * @example 'NUXT'   // → [NUXT_B1001]
    */
-  module: string
+  prefix: string
   /**
    * Base URL for auto-generating docs links from error codes.
    *
    * When set, the docs URL for a given code defaults to `${docsBase}/${code}`.
    * When omitted, no docs link is shown unless `opts.docs` is provided per-call.
    */
-  docsBase?: string
+  docsBase?: string | ((code?: string) => string | undefined)
   /**
    * Custom error formatting function. Receives the resolved prefix, docs URL,
-   * and all error options. Controls the entire rendering of the formatted message.
+   * and all error info. Controls the entire rendering of the formatted message.
    *
    * Default: plain Unicode frame with `wrapLine` / `renderFrame`.
    */
-  formatError?: (message: string, opts: ErrorOptions & { prefix: string, docsUrl?: string }) => string
+  formatError?: (item: ErrorInfo, options: ErrorUtilsOptions) => string
   /** Logger for warn/error methods. Default: console. */
-  logger?: { error: (...args: any[]) => void, warn: (...args: any[]) => void }
+  logger?: {
+    error: (...args: any[]) => void
+    warn: (...args: any[]) => void
+  }
 }
 
 export interface ErrorUtils {
   /** Format an error/warning message with error code, fix, docs link, and optional diagnostic context. */
-  format: (message: string, opts: ErrorOptions) => string
+  format: (item: ErrorInfo) => string
   /** Throw an error with an error code, fix, and context. Sets structured fields on the Error object. */
-  throw: (message: string, opts: ErrorOptions) => never
+  throw: (item: ErrorInfo) => never
   /** Log a warning with error code, fix, and context. */
-  warn: (message: string, opts: ErrorOptions) => void
+  warn: (item: ErrorInfo) => void
   /** Log an error with error code, fix, and context (without throwing). */
-  error: (message: string, opts: ErrorOptions) => void
+  error: (item: ErrorInfo) => void
 }
 
 /**
  * Default plain-text error formatter using Unicode box-drawing frames.
  */
-function defaultFormatError (message: string, opts: ErrorOptions & { prefix: string, docsUrl?: string }): string {
+function defaultFormatError (item: ErrorInfo, options: ErrorUtilsOptions): string {
   const lines: string[] = []
 
-  if (opts.why) {
-    lines.push(wrapLine(opts.why))
+  if (item.why) {
+    lines.push(wrapLine(`why: ${item.why}`))
   }
 
-  if (opts.docsUrl) {
-    lines.push(wrapLine(`see: ${opts.docsUrl}`))
+  const docs = resolveDocsUrl(item.code, options.docsBase)
+  if (docs) {
+    lines.push(wrapLine(`see: ${docs}`))
+  }
+  if (item.fix) {
+    lines.push(wrapLine(`fix: ${item.fix}`))
+  }
+  if (item.hint) {
+    lines.push(wrapLine(`hint: ${item.hint}`))
+  }
+  if (item.source) {
+    lines.push(wrapLine(`source: ${item.source.file}:${item.source.line}:${item.source.column}`))
   }
 
-  if (opts.fix) {
-    lines.push(wrapLine(`fix: ${opts.fix}`))
-  }
-
-  let result = `[${opts.prefix}_${opts.code}] ${message}`
+  let result = `[${resolveCode(item.code, item.codePrefix)}] ${item.message}`
 
   if (lines.length > 0) {
     result += '\n' + renderFrame(lines)
   }
 
   return result
+}
+
+function resolveDocsUrl (code: string, docsBase: ErrorUtilsOptions['docsBase']): string | undefined {
+  return typeof docsBase === 'function'
+    ? docsBase(code)
+    : docsBase
+      ? `${docsBase}/${code}`
+      : undefined
+}
+
+function resolveCode (code: string, codePrefix: string | undefined): string {
+  return codePrefix ? `${codePrefix}_${code}` : code
 }
 
 /**
@@ -163,57 +196,54 @@ function defaultFormatError (message: string, opts: ErrorOptions & { prefix: str
  * @example
  * ```ts
  * const errorUtils = createErrorUtils({
- *   module: 'pinia',
+ *   prefix: 'pinia',
  *   docsBase: 'https://pinia.vuejs.org/errors',
  * })
  *
- * errorUtils.warn('Store not found.', { code: '001', fix: 'Call defineStore() first.' })
+ * errorUtils.warn({ message: 'Store not found.', code: '001', fix: 'Call defineStore() first.' })
  * // Output: [PINIA_001] Store not found.
  * //         ├▶ see: https://pinia.vuejs.org/errors/001
  * //         ╰▶ fix: Call defineStore() first.
  * ```
  */
 export function createErrorUtils (options: ErrorUtilsOptions): ErrorUtils {
-  const prefix = options.module.toUpperCase()
   const _formatError = options.formatError ?? defaultFormatError
   const _logger = options.logger ?? console
 
-  function resolveDocsUrl (code: string, docs?: string): string | undefined {
-    return docs || (options.docsBase ? `${options.docsBase}/${code}` : undefined)
+  function format (item: ErrorInfo): string {
+    return _formatError(item, options)
   }
 
-  function format (message: string, opts: ErrorOptions): string {
-    return _formatError(message, { ...opts, prefix, docsUrl: resolveDocsUrl(opts.code, opts.docs) })
-  }
-
-  function throwError (message: string, opts: ErrorOptions): never {
-    const err = new Error(`[${prefix}_${opts.code}] ${message}`, { cause: opts.cause })
-    ;(err as any).code = `${prefix}_${opts.code}`
+  function throwError (item: ErrorInfo): never {
+    const err = new Error(`[${resolveCode(item.code, item.codePrefix)}] ${item.message}`, { cause: item.cause })
+    ;(err as any).code = resolveCode(item.code, item.codePrefix)
 
     // Structured fields for HTML error page rendering
-    if (opts.fix) { (err as any).fix = opts.fix }
-    if (opts.why) { (err as any).why = opts.why }
-    const docsURL = resolveDocsUrl(opts.code, opts.docs)
-    if (docsURL) { (err as any).docsUrl = docsURL }
+    if (item.fix) { (err as any).fix = item.fix }
+    if (item.why) { (err as any).why = item.why }
+    if (item.hint) { (err as any).hint = item.hint }
+    if (item.source) { (err as any).source = item.source }
+    const docsURL = resolveDocsUrl(item.code, item.docs)
+    if (docsURL) { (err as any).docs = docsURL }
 
-    error(message, opts)
+    error(item)
 
     throw err
   }
 
-  function warn (message: string, opts: ErrorOptions): void {
-    if (opts.cause) {
-      _logger.warn(format(message, opts), opts.cause)
+  function warn (item: ErrorInfo): void {
+    if (item.cause) {
+      _logger.warn(format(item), item.cause)
     } else {
-      _logger.warn(format(message, opts))
+      _logger.warn(format(item))
     }
   }
 
-  function error (message: string, opts: ErrorOptions): void {
-    if (opts.cause) {
-      _logger.error(format(message, opts), opts.cause)
+  function error (item: ErrorInfo): void {
+    if (item.cause) {
+      _logger.error(format(item), item.cause)
     } else {
-      _logger.error(format(message, opts))
+      _logger.error(format(item))
     }
   }
 

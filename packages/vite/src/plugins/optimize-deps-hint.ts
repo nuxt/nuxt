@@ -132,7 +132,7 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
           `Update your \`nuxt.config.ts\`:\n\n` +
           configBlock(getSnippetDeps()),
         )
-        buildErrorUtils.warn(parts.join('\n\n'), { code: ErrorCodes.B7002, fix: 'Update the `vite.optimizeDeps.include` array in your `nuxt.config.ts` with the values shown above.' })
+        buildErrorUtils.warn({ message: parts.join('\n\n'), code: ErrorCodes.B7002, fix: 'Update the `vite.optimizeDeps.include` array in your `nuxt.config.ts` with the values shown above.' })
       }
     }, 3000)
   }

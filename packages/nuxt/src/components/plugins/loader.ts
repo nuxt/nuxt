@@ -66,7 +66,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           const internalInstall = ((component as any)._internal_install) as string
           if (internalInstall && nuxt?.options.test === false) {
             if (!nuxt.options.dev) {
-              buildErrorUtils.throw(`\`${resolveToAlias(id, nuxt)}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\`.`, {
+              buildErrorUtils.throw({ message: `\`${resolveToAlias(id, nuxt)}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\`.`,
                 code: ErrorCodes.B3004,
                 fix: `Run \`npx nuxt add ${internalInstall}\` to install it.`,
                 context: { file: id, component: component.pascalName, requiredModule: internalInstall },
@@ -83,7 +83,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
             if (!options.experimentalComponentIslands) {
-              buildErrorUtils.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`, { code: ErrorCodes.B3003, fix: 'Set `experimental.componentIslands` to `true` in your `nuxt.config`.', context: { component: name } })
+              buildErrorUtils.warn({ message: `Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`, code: ErrorCodes.B3003, fix: 'Set `experimental.componentIslands` to `true` in your `nuxt.config`.', context: { component: name } })
             }
             return identifier
           }

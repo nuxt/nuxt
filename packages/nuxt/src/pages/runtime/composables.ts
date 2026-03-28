@@ -68,7 +68,7 @@ declare module 'vue-router' {
 }
 
 const warnRuntimeUsage = (method: string) => {
-  runtimeErrorUtils.warn(`${method}() is a compiler-hint helper that is only usable inside the script block of a single file component which is also a page. Its arguments should be compiled away and passing it at runtime has no effect.`, { code: E1007, fix: `Move the \`${method}()\` call into the \`<script setup>\` block of a page component in the \`pages/\` directory.` })
+  runtimeErrorUtils.warn({ message: `${method}() is a compiler-hint helper that is only usable inside the script block of a single file component which is also a page. Its arguments should be compiled away and passing it at runtime has no effect.`, code: E1007, fix: `Move the \`${method}()\` call into the \`<script setup>\` block of a page component in the \`pages/\` directory.` })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

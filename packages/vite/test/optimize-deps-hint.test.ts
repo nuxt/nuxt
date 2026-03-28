@@ -22,11 +22,11 @@ vi.mock('@nuxt/kit', async (importOriginal) => {
       const utils = mod.createErrorUtils(options)
       return {
         ...utils,
-        warn: (message: string, opts: any) => {
-          mockLogger.warn(utils.format(message, opts))
+        warn: (item: any) => {
+          mockLogger.warn(utils.format(item))
         },
-        error: (message: string, opts: any) => {
-          mockLogger.error(utils.format(message, opts))
+        error: (item: any) => {
+          mockLogger.error(utils.format(item))
         },
       }
     },

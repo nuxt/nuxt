@@ -221,10 +221,10 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       // Validate arguments
       const key = computed(() => toValue(_key))
       if (!key.value || typeof key.value !== 'string') {
-        runtimeErrorUtils.throw('[useAsyncData] key must be a non-empty string.', { code: E7011, fix: 'Pass a non-empty string as the first argument to `useAsyncData()`.' })
+        runtimeErrorUtils.throw({ message: '[useAsyncData] key must be a non-empty string.', code: E7011, fix: 'Pass a non-empty string as the first argument to `useAsyncData()`.' })
       }
       if (typeof _handler !== 'function') {
-        runtimeErrorUtils.throw('[useAsyncData] handler must be a function.', { code: E7012, fix: 'Pass a function as the handler argument, e.g. `useAsyncData(\'key\', () => $fetch(\'/api/data\'))`.' })
+        runtimeErrorUtils.throw({ message: '[useAsyncData] handler must be a function.', code: E7012, fix: 'Pass a function as the handler argument, e.g. `useAsyncData(\'key\', () => $fetch(\'/api/data\'))`.' })
       }
 
       const shouldFactoryOptionsOverride = typeof options === 'function'
@@ -286,7 +286,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
           warnings.push(`mismatching \`deep\` option`)
         }
         if (warnings.length) {
-          runtimeErrorUtils.warn(`[${functionName}] Incompatible options detected for "${key.value}":\n${warnings.map(w => `- ${w}`).join('\n')}`, {
+          runtimeErrorUtils.warn({ message: `[${functionName}] Incompatible options detected for "${key.value}":\n${warnings.map(w => `- ${w}`).join('\n')}`,
             code: E3004,
             fix: 'You can use a different key or move the call to a composable to ensure the options are shared across calls.',
           })
@@ -331,7 +331,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
           instance.sp = []
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
-          runtimeErrorUtils.warn(`[${functionName}] Component is already mounted.`, { code: E3003, fix: 'Use `$fetch()` for requests triggered after mount (e.g., in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.' })
+          runtimeErrorUtils.warn({ message: `[${functionName}] Component is already mounted.`, code: E3003, fix: 'Use `$fetch()` for requests triggered after mount (e.g., in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.' })
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
           instance._nuxtOnBeforeMountCbs = []
@@ -667,7 +667,7 @@ function buildAsyncData<
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
       if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
         // @ts-expect-error private property
-        runtimeErrorUtils.warn(`[${options._functionName}] \`execute\` was passed directly to \`watch\`, which causes unintended behavior.`, { code: E3005, fix: 'Wrap the call: `watch(source, () => execute())` instead of `watch(source, execute)`.' })
+        runtimeErrorUtils.warn({ message: `[${options._functionName}] \`execute\` was passed directly to \`watch\`, which causes unintended behavior.`, code: E3005, fix: 'Wrap the call: `watch(source, () => execute())` instead of `watch(source, execute)`.' })
       }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
@@ -732,7 +732,7 @@ function buildAsyncData<
             const caller = getUserCaller()
             const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
             // @ts-expect-error private property
-            runtimeErrorUtils.warn(`\`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`, { code: E3006, fix: 'Return a value from the handler function (e.g., `return null` instead of returning nothing).' })
+            runtimeErrorUtils.warn({ message: `\`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`, code: E3006, fix: 'Return a value from the handler function (e.g., `return null` instead of returning nothing).' })
           }
 
           nuxtApp.payload.data[key] = result

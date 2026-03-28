@@ -24,7 +24,7 @@ export default (url: string) => defineComponent({
     }
     const path = resolve(query.path as string)
     if (!path.startsWith(devRootDir)) {
-      runtimeErrorUtils.throw(`Cannot access path outside of project root directory: \`${path}\`.`, { code: E4008, fix: 'Use a path within the project root directory for the test component wrapper.' })
+      runtimeErrorUtils.throw({ message: `Cannot access path outside of project root directory: \`${path}\`.`, code: E4008, fix: 'Use a path within the project root directory for the test component wrapper.' })
     }
     const comp = await import(/* @vite-ignore */ path as string).then(r => r.default)
     return () => [

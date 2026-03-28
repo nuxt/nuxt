@@ -70,7 +70,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
     const promise = Promise.resolve((component as () => unknown)())
       .catch((err) => {
         if (import.meta.dev) {
-          runtimeErrorUtils.warn(`Failed to preload route component for \`${path}\`:`, { code: E2011, fix: 'Check that the page component exists and can be imported. This may be a network issue or a missing chunk.', cause: err })
+          runtimeErrorUtils.warn({ message: `Failed to preload route component for \`${path}\`:`, code: E2011, fix: 'Check that the page component exists and can be imported. This may be a network issue or a missing chunk.', cause: err })
         }
       })
       .finally(() => promises.splice(promises.indexOf(promise), 1))

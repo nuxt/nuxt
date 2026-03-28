@@ -81,7 +81,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
 export async function assertNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<true> {
   const issues = await checkNuxtCompatibility(constraints, nuxt)
   if (issues.length) {
-    buildErrorUtils.throw('Nuxt compatibility issues found:\n' + issues.toString(), { code: ErrorCodes.B8004, fix: 'Update the module to support the current Nuxt version, or check if a newer version of the module is available.' })
+    buildErrorUtils.throw({ message: 'Nuxt compatibility issues found:\n' + issues.toString(), code: ErrorCodes.B8004, fix: 'Update the module to support the current Nuxt version, or check if a newer version of the module is available.' })
   }
   return true
 }
@@ -126,7 +126,7 @@ const NUXT_VERSION_RE = /^v/g
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */): string {
   const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
   if (typeof rawVersion !== 'string') {
-    buildErrorUtils.throw('Cannot determine nuxt version! Is current instance passed?', { code: ErrorCodes.B8005, fix: 'Pass a valid Nuxt instance to `getNuxtVersion()`, or ensure `useNuxt()` is available in the current context.' })
+    buildErrorUtils.throw({ message: 'Cannot determine nuxt version! Is current instance passed?', code: ErrorCodes.B8005, fix: 'Pass a valid Nuxt instance to `getNuxtVersion()`, or ensure `useNuxt()` is available in the current context.' })
   }
   return rawVersion.replace(NUXT_VERSION_RE, '')
 }
