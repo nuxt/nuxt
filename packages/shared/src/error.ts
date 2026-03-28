@@ -190,7 +190,7 @@ function resolveDocsUrl (code: string, docsBase: ErrorUtilsOptions['docsBase']):
   return typeof docsBase === 'function'
     ? docsBase(code)
     : docsBase
-      ? `${docsBase}/${code}`
+      ? `${docsBase}/${code.toLowerCase()}`
       : undefined
 }
 
