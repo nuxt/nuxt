@@ -46,7 +46,7 @@ export default class VueSSRServerPlugin {
 
         const [entry] = entryAssets
         if (!entry || typeof entry.name !== 'string') {
-          return buildErrorUtils.throw({ message: `Entry "${entryName}" not found. Did you specify the correct entry option?`, code: ErrorCodes.B7004, fix: `Check that the \`entry\` option in your webpack configuration points to an existing file. Expected entry name: \`${entryName}\`.` })
+          buildErrorUtils.throw({ message: `Entry "${entryName}" not found. Did you specify the correct entry option?`, code: ErrorCodes.B7004, fix: `Check that the \`entry\` option in your webpack configuration points to an existing file. Expected entry name: \`${entryName}\`.` })
         }
 
         const bundle = {

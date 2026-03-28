@@ -267,7 +267,7 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   try {
     return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
   } catch (err) {
-    return buildErrorUtils.throw({ message: `Loading \`${builder}\` builder failed.`,
+    buildErrorUtils.throw({ message: `Loading \`${builder}\` builder failed.`,
       code: ErrorCodes.B1017,
       fix: `Run \`npm install ${builder}\` to install it.`,
       docs: 'https://nuxt.com/docs/4.x/api/nuxt-config#builder',

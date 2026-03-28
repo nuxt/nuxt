@@ -33,7 +33,7 @@ export function useNuxt (): Nuxt {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const instance = asyncNuxtStorage.tryUse() || nuxtCtx.tryUse()
   if (!instance) {
-    return buildErrorUtils.throw({ message: 'Nuxt instance is unavailable!', code: ErrorCodes.B8001, fix: 'Ensure this is called within a Nuxt module `setup()` function, or inside a `nuxt.hook()` callback.' })
+    buildErrorUtils.throw({ message: 'Nuxt instance is unavailable!', code: ErrorCodes.B8001, fix: 'Ensure this is called within a Nuxt module `setup()` function, or inside a `nuxt.hook()` callback.' })
   }
   return instance
 }

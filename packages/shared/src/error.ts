@@ -168,7 +168,7 @@ function defaultFormatError (item: ErrorInfo, options: ErrorUtilsOptions): strin
     lines.push(wrapLine(`source: ${item.source.file}:${item.source.line}:${item.source.column}`))
   }
 
-  let result = `[${resolveCode(item.code, item.codePrefix)}] ${item.message}`
+  let result = `[${resolveCode(item.code, item.codePrefix ?? options.prefix)}] ${item.message}`
 
   if (lines.length > 0) {
     result += '\n' + renderFrame(lines)
@@ -225,15 +225,16 @@ export function createErrorUtils (options: ErrorUtilsOptions): ErrorUtils {
   }
 
   function throwError (item: ErrorInfo): never {
-    const err = new Error(`[${resolveCode(item.code, item.codePrefix)}] ${item.message}`, { cause: item.cause })
-    ;(err as any).code = resolveCode(item.code, item.codePrefix)
+    const code = resolveCode(item.code, item.codePrefix ?? options.prefix)
+    const err = new Error(`[${code}] ${item.message}`, { cause: item.cause })
+    ;(err as any).code = code
 
     // Structured fields for HTML error page rendering
     if (item.fix) { (err as any).fix = item.fix }
     if (item.why) { (err as any).why = item.why }
     if (item.hint) { (err as any).hint = item.hint }
     if (item.source) { (err as any).source = item.source }
-    const docsURL = resolveDocsUrl(item.code, item.docs)
+    const docsURL = item.docs || resolveDocsUrl(item.code, options.docsBase)
     if (docsURL) { (err as any).docs = docsURL }
 
     error(item)

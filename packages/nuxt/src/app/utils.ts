@@ -1,6 +1,5 @@
 import { captureStackTrace } from 'errx'
-import { createErrorUtils } from '../../../shared/src/error.ts'
-import type { ErrorInfo } from '../../../shared/src/error.ts'
+import { type ErrorUtils, createErrorUtils } from '../../../shared/src/error.ts'
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
@@ -26,7 +25,7 @@ const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
 
 type Trace = { source: string, line?: number, column?: number }
 
-export const runtimeErrorUtils = /* @__PURE__ */ createErrorUtils({
+export const runtimeErrorUtils: ErrorUtils = /* @__PURE__ */ createErrorUtils({
   prefix: 'NUXT',
   docsBase: DOCS_BASE,
   reporter: import.meta.dev && import.meta.client
@@ -53,7 +52,9 @@ export const runtimeErrorUtils = /* @__PURE__ */ createErrorUtils({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           }).catch(() => {})
-        } catch {}
+        } catch {
+          // ignore
+        }
       }
     : undefined,
 })
