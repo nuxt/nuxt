@@ -370,25 +370,45 @@ test.describe('vite-only HMR tests', () => {
   })
 
   test('vite-node transform errors show actual error message (#34593)', async ({ page }) => {
+    const fixtureIndexPath = join(fixtureDir, 'app/pages/index.vue')
     const indexContent = readFileSync(join(sourceDir, 'app/pages/index.vue'), 'utf8')
 
-    // Write a file with a deliberate syntax error
+    // Write a file with a deliberate syntax error to trigger a vite-node transform error
     writeFileSync(
-      join(fixtureDir, 'app/pages/index.vue'),
+      fixtureIndexPath,
       `<script setup>\nconst x = }\n</script>\n<template><div>test</div></template>`,
     )
 
     try {
-      // Make a raw request so we see the error page (no retry-on-500)
-      const response = await page.request.get('/')
-      const html = await response.text()
+      // Poll until we get the actual parse error in the 500 response.
+      // A transient "IPC connection closed" error can occur briefly right after the
+      // file changes, while the dev server reconnects its internal socket.
+      let html = ''
+      await expect.poll(
+        async () => {
+          const response = await page.request.get('/')
+          if (response.status() !== 500) { return false }
+          html = await response.text()
+          return !html.includes('IPC connection')
+        },
+        { timeout: 15000, intervals: [300, 500, 500, 1000, 1000, 2000, 2000] },
+      ).toBe(true)
 
-      // The error page should contain the actual error text, not generic "undefined" values
+      // The error page should not show the old broken 'undefined:undefined' location format
       expect(html).not.toMatch(/undefined:undefined/)
-      expect(html).toMatch(/vite-node|SyntaxError|Parse error|Unexpected token/i)
+
+      // In dev mode the error details are base64-encoded inside the overlay iframe src.
+      // Decode it and verify the [vite-node]-prefixed error message is present —
+      // this prefix is added by the fix in vite-node-runner.ts.
+      const base64Match = html.match(/iframe\.src = 'data:text\/html;base64,([^']+)'/)
+      expect(base64Match, 'Expected dev error overlay to be present in 500 error page').not.toBeNull()
+      if (base64Match) {
+        const overlayHtml = Buffer.from(base64Match[1]!, 'base64').toString('utf-8')
+        expect(overlayHtml).toMatch(/\[vite-node\]/)
+      }
     } finally {
       // Always restore the original file
-      writeFileSync(join(fixtureDir, 'app/pages/index.vue'), indexContent)
+      writeFileSync(fixtureIndexPath, indexContent)
     }
   })
 })
