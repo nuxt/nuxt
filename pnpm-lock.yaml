@@ -140,8 +140,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.1-rc.17
-        version: 2.0.1-rc.17(crossws@0.4.4(srvx@0.11.13))
+        specifier: 2.0.1-rc.20
+        version: 2.0.1-rc.20(crossws@0.4.4(srvx@0.11.13))
       happy-dom:
         specifier: 20.8.9
         version: 20.8.9
@@ -806,8 +806,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.17
-        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.13))
+        specifier: npm:h3@2.0.1-rc.20
+        version: h3@2.0.1-rc.20(crossws@0.4.4(srvx@0.11.13))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(chokidar@5.0.0)(dotenv@17.3.1)(giget@3.1.2)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1)(picomatch@4.0.4)(rollup@4.59.0)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
@@ -891,8 +891,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.105.4(esbuild@0.27.4))
       h3:
-        specifier: 2.0.1-rc.17
-        version: 2.0.1-rc.17(crossws@0.4.4(srvx@0.11.13))
+        specifier: 2.0.1-rc.20
+        version: 2.0.1-rc.20(crossws@0.4.4(srvx@0.11.13))
       hookable:
         specifier: 6.1.0
         version: 6.1.0
@@ -1102,8 +1102,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.17
-        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.13))
+        specifier: npm:h3@2.0.1-rc.20
+        version: h3@2.0.1-rc.20(crossws@0.4.4(srvx@0.11.13))
       nitropack:
         specifier: 2.13.1
         version: 2.13.1(rolldown@1.0.0-rc.9)
@@ -1277,8 +1277,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.17
-        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.13))
+        specifier: npm:h3@2.0.1-rc.20
+        version: h3@2.0.1-rc.20(crossws@0.4.4(srvx@0.11.13))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(chokidar@5.0.0)(dotenv@17.3.1)(giget@3.1.2)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1)(picomatch@4.0.4)(rollup@4.59.0)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
@@ -5979,8 +5979,8 @@ packages:
       crossws:
         optional: true
 
-  h3@2.0.1-rc.17:
-    resolution: {integrity: sha512-9rPJs68qMj7HJH78z7uSIAw6rl3EElLdVSirTeAf6B5ogwiFVIr9AKMMS4u00Gp8DYIPnnjtw3ZWN7EkYcPBrQ==}
+  h3@2.0.1-rc.20:
+    resolution: {integrity: sha512-28ljodXuUp0fZovdiSRq4G9OgrxCztrJe5VdYzXAB7ueRvI7pIUqLU14Xi3XqdYJ/khXjfpUOOD2EQa6CmBgsg==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -14111,7 +14111,7 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.4(srvx@0.11.13)
 
-  h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.13)):
+  h3@2.0.1-rc.20(crossws@0.4.4(srvx@0.11.13)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.13
@@ -15526,7 +15526,7 @@ snapshots:
       crossws: 0.4.4(srvx@0.11.13)
       db0: 0.3.4
       env-runner: 0.1.6
-      h3: 2.0.1-rc.17(crossws@0.4.4(srvx@0.11.13))
+      h3: 2.0.1-rc.20(crossws@0.4.4(srvx@0.11.13))
       hookable: 6.1.0
       nf3: 0.3.11
       ocache: 0.1.2

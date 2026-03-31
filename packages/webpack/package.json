@@ -79,7 +79,7 @@
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
     "h3": "1.15.6",
-    "h3-next": "npm:h3@2.0.1-rc.17",
+    "h3-next": "npm:h3@2.0.1-rc.20",
     "obuild": "0.4.32",
     "rollup": "4.59.0",
     "vue": "3.5.30"
