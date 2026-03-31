@@ -49,8 +49,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   )
 
   // Discover `layers/*` from every layer in the chain (extended configs, nested layers, etc.)
-  const autoDiscoveredLayers = new Set(localLayers.map(l => resolve(cwd, withoutTrailingSlash(l))))
-  const scannedDirs = new Set<string>([cwd])
+  const autoDiscoveredLayers = new Set(localLayers.map(l => resolve(cwd!, withoutTrailingSlash(l))))
+  const scannedDirs = new Set([cwd!])
 
   for (let i = 0; i < layers.length; i++) {
     const layerCwd = layers[i]!.cwd
@@ -62,6 +62,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       autoDiscoveredLayers.add(nestedCwd)
 
       const resolved = await withDefineNuxtConfig(
+        // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
         () => loadConfig<NuxtConfig>({ name: 'nuxt', configFile: 'nuxt.config', cwd: nestedCwd, merger }),
       )
       if (!resolved.configFile) { continue }
