@@ -7,7 +7,7 @@ import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { basename, join, relative } from 'pathe'
+import { basename, join, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
@@ -48,6 +48,32 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     }),
   )
 
+  // Discover `layers/*` from every layer in the chain (extended configs, nested layers, etc.)
+  const autoDiscoveredLayers = new Set(localLayers.map(l => resolve(cwd, withoutTrailingSlash(l))))
+  const scannedDirs = new Set<string>([cwd])
+
+  for (let i = 0; i < layers.length; i++) {
+    const layerCwd = layers[i]!.cwd
+    if (!layerCwd || scannedDirs.has(layerCwd)) { continue }
+    scannedDirs.add(layerCwd)
+
+    for (const relPath of await discoverNestedLayers(layerCwd)) {
+      const nestedCwd = resolve(layerCwd, relPath)
+      autoDiscoveredLayers.add(nestedCwd)
+
+      const resolved = await withDefineNuxtConfig(
+        () => loadConfig<NuxtConfig>({ name: 'nuxt', configFile: 'nuxt.config', cwd: nestedCwd, merger }),
+      )
+      if (!resolved.configFile) { continue }
+
+      layers.splice(i + 1, 0, {
+        config: resolved.config || {},
+        cwd: resolved.cwd || nestedCwd,
+        configFile: resolved.configFile,
+      })
+    }
+  }
+
   // Fill config
   nuxtConfig.rootDir ||= cwd
   nuxtConfig._nuxtConfigFile = configFile
@@ -77,7 +103,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
   const processedLayers = new Set<string>()
-  const localRelativePaths = new Set(localLayers.map(layer => withoutTrailingSlash(layer)))
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     // Create a shallow copy to avoid mutating the cached ESM config object
@@ -97,8 +122,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // Filter layers
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
-    // Add layer name for local layers
-    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
+    // Add layer name for auto-discovered layers from any `layers/` directory in the chain
+    if (layer.cwd && autoDiscoveredLayers.has(layer.cwd)) {
       layer.meta ||= {}
       layer.meta.name ||= basename(layer.cwd)
     }
@@ -126,6 +151,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+}
+
+function discoverNestedLayers (cwd: string) {
+  return glob('layers/*', { onlyDirectories: true, cwd }).then(dirs => dirs.sort((a, b) => b.localeCompare(a)))
 }
 
 function loadNuxtSchema (cwd: string) {
