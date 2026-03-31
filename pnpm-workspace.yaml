@@ -15,6 +15,7 @@ ignoredBuiltDependencies:
 
 patchedDependencies:
   changelogen: patches/changelogen.patch
+  cookie-es@3.0.1: patches/cookie-es@3.0.1.patch
 
 publicHoistPattern:
   - '*-loader'
@@ -23,4 +24,3 @@ publicHoistPattern:
 shellEmulator: true
 
 verifyDepsBeforeRun: install
-
