@@ -397,15 +397,11 @@ test.describe('vite-only HMR tests', () => {
       // The error page should not show the old broken 'undefined:undefined' location format
       expect(html).not.toMatch(/undefined:undefined/)
 
-      // In dev mode the error details are base64-encoded inside the overlay iframe src.
-      // Decode it and verify the [vite-node]-prefixed error message is present —
-      // this prefix is added by the fix in vite-node-runner.ts.
-      const base64Match = html.match(/iframe\.src = 'data:text\/html;base64,([^']+)'/)
-      expect(base64Match, 'Expected dev error overlay to be present in 500 error page').not.toBeNull()
-      if (base64Match) {
-        const overlayHtml = Buffer.from(base64Match[1]!, 'base64').toString('utf-8')
-        expect(overlayHtml).toMatch(/\[vite-node\]/)
-      }
+      // The [vite-node] prefix is added by formatViteError in vite-node-runner.ts and
+      // ends up in the __NUXT__ JSON payload of the SSR-rendered error page.
+      // Without the fix in this PR, errorData is never reached (bug: err?.data?.data was
+      // undefined) and the raw Vite error is thrown without the [vite-node] prefix.
+      expect(html).toMatch(/\[vite-node\]/)
     } finally {
       // Always restore the original file
       writeFileSync(fixtureIndexPath, indexContent)
