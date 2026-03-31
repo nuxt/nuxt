@@ -9,7 +9,7 @@ import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
 import { klona } from 'klona'
 import microdiff from 'microdiff'
-import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
+import { basename, dirname, join, normalize, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm.ts'
@@ -442,6 +442,44 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // would follow into infinite recursion.
   const nuxtConfig = klona(resolved.config)
 
+  // Discover `layers/*` from every layer in the chain; the root's own `layers/` is already
+  // injected via `_extends`, so it is pre-seeded and skipped below
+  const autoDiscoveredLayers = new Set(localLayerDirs)
+  const canonicalDirs = new Map<string, string | undefined>()
+  const scannedDirs = new Set([canonicalLayerDirIfExists(rootCwd, canonicalDirs)])
+
+  for (let i = 0; i < layers.length; i++) {
+    const layerDir = canonicalLayerDirIfExists(layers[i]!.cwd, canonicalDirs)
+    if (!layerDir || scannedDirs.has(layerDir)) { continue }
+    scannedDirs.add(layerDir)
+
+    const nested = await Promise.all((await discoverNestedLayers(layerDir)).map(async (relPath) => {
+      const nestedDir = canonicalLayerDir(resolve(layerDir, relPath))
+      autoDiscoveredLayers.add(nestedDir)
+      // c12 already merged it if the layer is also reachable through `extends`
+      if (seenLayerDirs.has(nestedDir)) { return }
+      seenLayerDirs.add(nestedDir)
+
+      const resolved = await withDefineNuxtConfig(
+        () => loadConfig<NuxtConfig>({
+          name: 'nuxt',
+          configFile: configFileName,
+          cwd: nestedDir,
+          extend: { extendKey: ['theme', '_extends', 'extends'] },
+          merger: merger as (...sources: Array<NuxtConfig | null | undefined>) => NuxtConfig,
+          import: opts.import ?? importConfigFile,
+        }),
+      )
+      return resolved.configFile
+        ? { config: resolved.config || {}, cwd: resolved.cwd || nestedDir, configFile: resolved.configFile }
+        : undefined
+    }))
+
+    for (const layer of nested) {
+      if (layer) { layers.splice(i + 1, 0, layer) }
+    }
+  }
+
   // Merge of the layers c12 produced, minus the synthetic layer it creates for `overrides`, so
   // caller-supplied `overrides`/`defaults` never appear as user configuration. Taken before the
   // layer directories below are normalised, so schema defaults stay out of the snapshot.
@@ -494,7 +532,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const _layers: LoadedConfigLayer[] = []
   const processedLayers = new Set<string>()
-  const localRelativePaths = new Set(localLayers.map(layer => layer.replace(/\/$/, '')))
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     // Create a shallow copy to avoid mutating the cached ESM config object
@@ -514,10 +551,11 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // Filter layers
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
-    // Add layer name for local layers
-    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
+    // Name auto-discovered layers so they get a `#layers/<name>` alias
+    const layerDir = canonicalLayerDirIfExists(layer.cwd, canonicalDirs)
+    if (layerDir && autoDiscoveredLayers.has(layerDir)) {
       layer.meta ||= {}
-      layer.meta.name ||= basename(layer.cwd)
+      layer.meta.name ||= basename(layerDir)
     }
 
     // Add layer alias
@@ -645,6 +683,23 @@ function reorderLocalLayersByExtends (
   localSlots.forEach((slot, index) => {
     layers[slot] = orderedLocalLayers[index]!
   })
+}
+
+// {@link canonicalLayerDir} that tolerates missing paths (returns `undefined` instead of
+// throwing) and memoises, since every layer is canonicalised more than once
+function canonicalLayerDirIfExists (path: string | undefined, cache: Map<string, string | undefined>): string | undefined {
+  if (!path) { return }
+  if (cache.has(path)) { return cache.get(path) }
+  const dir = existsSync(path) ? canonicalLayerDir(path) : undefined
+  cache.set(path, dir)
+  return dir
+}
+
+async function discoverNestedLayers (cwd: string) {
+  // A stat is far cheaper than a glob, and most layers have no `layers/` of their own
+  if (!existsSync(join(cwd, 'layers'))) { return [] }
+  const dirs = await glob('layers/*', { onlyDirectories: true, cwd })
+  return dirs.sort((a, b) => b.localeCompare(a))
 }
 
 function loadNuxtSchema (cwd: string) {
