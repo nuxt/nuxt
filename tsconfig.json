@@ -40,7 +40,6 @@
     }
   },
   "exclude": [
-    "flow-demo/**",
     "**/dist/**",
     "**/.nuxt/**",
     "packages/nuxt/src/app/types/**",
