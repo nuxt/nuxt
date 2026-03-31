@@ -102,13 +102,14 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   if (isRenderingPayload) {
     const parsed = new URL(ssrContext.url, 'http://localhost')
     const url = parsed.pathname.substring(0, parsed.pathname.lastIndexOf('/')) || '/'
-
+    
+    // Remove the build hash from query params, keep original route query params
     parsed.searchParams.delete('_b')
     const search = parsed.searchParams.toString()
-    const fullUrl = search ? url + '?' + search : url
-    ssrContext.url = fullUrl
+    const routeUrl = search ? url + '?' + search : url
+    ssrContext.url = routeUrl
 
-    event._path = event.node.req.url = fullUrl
+    event._path = event.node.req.url = routeUrl
 
     if (import.meta.prerender && await payloadCache!.hasItem(url)) {
       return returnResponse(event, await payloadCache!.getItem(url) as Partial<RenderResponse>)

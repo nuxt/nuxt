@@ -122,6 +122,7 @@ async function _isPrerenderedInManifest (url: string) {
  * @internal
  */
 export async function shouldLoadPayload (url = useRoute().path) {
+  // Skip payload loading for absolute URLs (e.g. cross-origin links)
   if (hasProtocol(url, { acceptRelative: false })) {
     return false
   }
