@@ -60,7 +60,7 @@ describe('scrollBehavior of router options with global transition', () => {
     await navigateTo('/')
     await flushPromises()
     vi.clearAllMocks()
-    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
   })
 
   afterAll(() => {
@@ -222,7 +222,7 @@ describe('scrollBehavior with cross-layout transitions (#34196)', () => {
     await navigateTo('/')
     await flushPromises()
     vi.clearAllMocks()
-    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
   })
 
   afterAll(() => {
@@ -299,9 +299,9 @@ describe('scrollBehavior with scrollToTop and fixed page key', () => {
     await flushPromises()
   })
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks()
-    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
   })
 
   afterAll(() => {
