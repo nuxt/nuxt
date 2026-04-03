@@ -322,8 +322,8 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                   id: request.payload.moduleId,
                   stack: err.stack || '',
                   message: err.message || '',
+                  ...err,
                 }
-                if (err.frame) { errorData.frame = err.frame }
 
                 if (!errorData.frame && err.code === 'PARSE_ERROR') {
                   try {

@@ -368,4 +368,43 @@ test.describe('vite-only HMR tests', () => {
     )
     expect(errors).toStrictEqual([])
   })
+
+  test('vite-node transform errors show actual error message (#34593)', async ({ page }) => {
+    const fixtureIndexPath = join(fixtureDir, 'app/pages/index.vue')
+    const indexContent = readFileSync(join(sourceDir, 'app/pages/index.vue'), 'utf8')
+
+    // Write a file with a deliberate syntax error to trigger a vite-node transform error
+    writeFileSync(
+      fixtureIndexPath,
+      `<script setup>\nconst x = }\n</script>\n<template><div>test</div></template>`,
+    )
+
+    try {
+      // Poll until we get the actual parse error in the 500 response.
+      // A transient "IPC connection closed" error can occur briefly right after the
+      // file changes, while the dev server reconnects its internal socket.
+      let html = ''
+      await expect.poll(
+        async () => {
+          const response = await page.request.get('/')
+          if (response.status() !== 500) { return false }
+          html = await response.text()
+          return !html.includes('IPC connection')
+        },
+        { timeout: 15000, intervals: [300, 500, 500, 1000, 1000, 2000, 2000] },
+      ).toBe(true)
+
+      // The error page should not show the old broken 'undefined:undefined' location format
+      expect(html).not.toMatch(/undefined:undefined/)
+
+      // The [vite-node] prefix is added by formatViteError in vite-node-runner.ts and
+      // ends up in the __NUXT__ JSON payload of the SSR-rendered error page.
+      // Without the fix in this PR, errorData is never reached (bug: err?.data?.data was
+      // undefined) and the raw Vite error is thrown without the [vite-node] prefix.
+      expect(html).toMatch(/\[vite-node\]/)
+    } finally {
+      // Always restore the original file
+      writeFileSync(fixtureIndexPath, indexContent)
+    }
+  })
 })
