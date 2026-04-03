@@ -40,6 +40,24 @@
         "nuxt3",
         "@nuxt/kit"
       ]
+    },
+    {
+      "matchBaseBranches": [
+        "4.x",
+        "3.x"
+      ],
+      "groupName": "all dependencies",
+      "groupSlug": "all",
+      "matchPackageNames": [
+        "*"
+      ]
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "postUpdateOptions": [
+      "pnpmDedupe"
+    ],
+    "groupName": "all dependencies",
+    "groupSlug": "all"
+  }
 }

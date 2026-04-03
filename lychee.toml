@@ -26,6 +26,9 @@ user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
 timeout = 20
 retry_wait_time = 2
 max_retries = 6
+# Throttle per host to reduce rate limits / connection failures from external docs in CI
+host_request_interval = "50ms"
+host_concurrency = 5
 
 # Explicitly exclude some URLs
 exclude = [

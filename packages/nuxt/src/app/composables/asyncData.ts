@@ -214,15 +214,15 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
       // eslint-disable-next-line prefer-const
-      let [_key, _handler, opts = {}] = args as [string, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+      let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
       let keyChanging = false
       /** True if key is a Ref or getter; false for static string. When false, key watcher is skipped. */
       const isKeyReactive = isRef(_key) || typeof _key === 'function'
 
       // Validate arguments
       const key = (isKeyReactive ? computed(() => toValue(_key)!) : { value: _key as string }) as { readonly value: string }
-      if (typeof key.value !== 'string') {
-        throw new TypeError('[nuxt] [useAsyncData] key must be a string.')
+      if (!key.value || typeof key.value !== 'string') {
+        throw new TypeError('[nuxt] [useAsyncData] key must be a non-empty string.')
       }
       if (typeof _handler !== 'function') {
         throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')

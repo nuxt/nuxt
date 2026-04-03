@@ -77,6 +77,10 @@ describe('useAsyncData', () => {
     expect(res.data.value).toBe('test')
   })
 
+  it('should throw TypeError when key is empty', () => {
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[TypeError: [nuxt] [useAsyncData] key must be a non-empty string.]')
+  })
+
   it('should keep promise methods after destructuring', async () => {
     const asyncData = useAsyncData(() => Promise.resolve('test'))
     const destructured = { ...asyncData, foo: 'foo' }
@@ -1079,7 +1083,7 @@ describe('useAsyncData', () => {
     // Manual implementation of Promise.withResolvers for compatibility
     let resolve: (value: boolean) => void
     const promise = new Promise<boolean>((res) => { resolve = res })
-    const { clear } = useAsyncData('', () => promise)
+    const { clear } = useAsyncData('clear', () => promise)
     expect(aborted).toBe(false)
     clear()
     resolve!(true)

@@ -8,7 +8,7 @@ permissions:
   issues: write
 
 jobs:
-  stale:
+  stale-reproduction:
     runs-on: ubuntu-slim
     if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
     steps:
@@ -21,5 +21,21 @@ jobs:
           ignore-updates: true
           remove-stale-when-updated: false
           close-issue-message: This issue was closed because it was open for 7 days without a reproduction.
+          close-issue-label: closed-by-bot
+          operations-per-run: 300 #default 30
+
+  stale-bot:
+    runs-on: ubuntu-slim
+    if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
+    steps:
+      - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10.2.0
+        with:
+          days-before-stale: -1 # Issues and PR will never be flagged stale automatically.
+          stale-issue-label: 'possible bot' # Label that flags an issue as stale.
+          only-labels: 'possible bot' # Only process these issues
+          days-before-issue-close: 7
+          ignore-updates: true
+          remove-stale-when-updated: false
+          close-issue-message: This issue was closed because there was no human behind it.
           close-issue-label: closed-by-bot
           operations-per-run: 300 #default 30

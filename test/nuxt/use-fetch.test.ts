@@ -181,6 +181,44 @@ describe('useFetch', () => {
     }
   })
 
+  it('should produce different keys for FormData with duplicate keys or different files', async () => {
+    registerEndpoint('/api/formdata-keys', defineEventHandler(() => ({ ok: true })))
+
+    const nuxtApp = useNuxtApp()
+    const getAsyncDataKeys = () => Object.keys(nuxtApp._asyncData).length
+    const baseCount = getAsyncDataKeys()
+
+    // FormData with multiple entries under the same key
+    const fd1 = new FormData()
+    fd1.append('files', new File([new Uint8Array(10)], 'a.txt'))
+    fd1.append('files', new File([new Uint8Array(20)], 'b.txt'))
+
+    // FormData with a single entry
+    const fd2 = new FormData()
+    fd2.append('files', new File([new Uint8Array(10)], 'a.txt'))
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd1, method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd2, method: 'POST' }, '')
+    // Different number of entries should produce different keys
+    expect.soft(getAsyncDataKeys()).toBe(baseCount + 2)
+
+    // Same filename but different file sizes
+    const fd3 = new FormData()
+    fd3.append('file', new File([new Uint8Array(100)], 'doc.pdf'))
+
+    const fd4 = new FormData()
+    fd4.append('file', new File([new Uint8Array(200)], 'doc.pdf'))
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd3, method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd4, method: 'POST' }, '')
+    // Different file sizes should produce different keys
+    expect.soft(getAsyncDataKeys()).toBe(baseCount + 4)
+  })
+
   it('should timeout', async () => {
     vi.useFakeTimers()
 
