@@ -109,6 +109,11 @@ describe('route rules', () => {
     expect(html).toContain('Custom Layout')
   })
 
+  it('should populate route.meta.layout from appLayout route rule', async () => {
+    const html = await $fetch<string>('/route-rules/layout')
+    expect(html).toContain('data-testid="route-meta-layout">custom<')
+  })
+
   it('should not generate payload route rules for non-wildcard ssr: false routes', () => {
     // @ts-expect-error untyped internal property
     const routeRules = useTestContext().nuxt._nitro.options.routeRules
