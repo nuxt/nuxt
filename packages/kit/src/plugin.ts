@@ -5,6 +5,8 @@ import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { MODE_RE, filterInPlace } from './utils.ts'
 import { tryUseNuxt, useNuxt } from './context.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
+import * as ErrorCodes from './error-codes.ts'
 import { addTemplate } from './template.ts'
 import { resolveAlias } from './resolve.ts'
 
@@ -25,7 +27,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   }
 
   if (!plugin.src) {
-    throw new Error('Invalid plugin. src option is required: ' + JSON.stringify(plugin))
+    buildErrorUtils.throw({ message: 'Invalid plugin. src option is required: ' + JSON.stringify(plugin), code: ErrorCodes.B2011, fix: 'Pass a string path or an object with a `src` property to `addPlugin()`.' })
   }
 
   // Normalize full path to plugin

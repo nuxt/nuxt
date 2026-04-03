@@ -2,5 +2,10 @@
   "status": 500,
   "statusText": "Internal server error",
   "description": "This page is temporarily unavailable.",
-  "refresh": "Refresh this page"
+  "refresh": "Refresh this page",
+  "fix": "",
+  "why": "",
+  "hint": "",
+  "docsUrl": "",
+  "errorCode": ""
 }

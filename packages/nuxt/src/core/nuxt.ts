@@ -8,12 +8,11 @@ import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './utils/error-format.ts'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
-import { consola } from 'consola'
 import onChange from 'on-change'
-import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
@@ -21,7 +20,7 @@ import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import { defu } from 'defu'
 import { coerce, satisfies } from 'semver'
-import { hasTTY, isCI } from 'std-env'
+import { hasTTY, isAgent, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
@@ -184,9 +183,14 @@ async function initNuxt (nuxt: Nuxt) {
   if (!nuxt.options.compatibilityDate.default) {
     nuxt.options.compatibilityDate.default = fallbackCompatibilityDate
 
-    if (nuxt.options.dev && hasTTY && !isCI && !nuxt.options.test && !warnedAboutCompatDate) {
+    if (nuxt.options.dev && hasTTY && !isCI && !isAgent && !nuxt.options.test && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      consola.warn(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback. More info at: ${colors.underline('https://nitro.build/deploy#compatibility-date')}`)
+      buildErrorUtils.warn({ message: `No \`compatibilityDate\` is set in \`nuxt.config\`. Using \`${fallbackCompatibilityDate}\` as fallback.`, code: ErrorCodes.B5001, fix: `Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`.`, docs: 'https://nitro.build/deploy#compatibility-date' })
+    }
+
+    if (nuxt.options.dev && isAgent && !warnedAboutCompatDate) {
+      warnedAboutCompatDate = true
+      buildErrorUtils.warn({ message: `No \`compatibilityDate\` is set in \`nuxt.config\`. Using \`${fallbackCompatibilityDate}\` as fallback.`, code: ErrorCodes.B5001, fix: `Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`.`, docs: 'https://nitro.build/deploy#compatibility-date' })
     }
   }
 
@@ -843,8 +847,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     if (!await ensureDependencyInstalled('@nuxt/webpack-builder', {
       rootDir: options.rootDir,
       searchPaths: options.modulesDir,
+      from: import.meta.url,
     })) {
-      logger.warn('Failed to install `@nuxt/webpack-builder`, please install it manually, or change the `builder` option to vite in `nuxt.config`')
+      buildErrorUtils.warn({ message: `Failed to install \`@nuxt/webpack-builder\` in \`${options.rootDir}\`.`, code: ErrorCodes.B5002, fix: 'Install it manually with `npm install -D @nuxt/webpack-builder`, or change the `builder` option to `vite` in `nuxt.config`.' })
     }
   }
 
@@ -882,7 +887,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId'])
   for (const key in options.runtimeConfig.app) {
     if (!allowedKeys.has(key)) {
-      logger.warn(`The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`)
+      buildErrorUtils.warn({ message: `The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`, code: ErrorCodes.B5003, fix: 'Move the key to `runtimeConfig.public` or a custom namespace.' })
       delete options.runtimeConfig.app[key]
     }
   }

@@ -1,3 +1,6 @@
+import { runtimeErrorUtils } from '../../app/utils'
+import { E1007 } from '../../app/error-codes'
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export interface ObjectFactory<T extends Function> {
   /**
@@ -16,13 +19,7 @@ export interface ObjectFactory<T extends Function> {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function defineKeyedFunctionFactory<T extends Function> (factory: ObjectFactory<T>): T {
   const placeholder = function () {
-    if (import.meta.dev) {
-      throw new Error(
-        `[nuxt:compiler] \`${factory.name}\` is a compiler macro that is only usable inside ` +
-        'the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: `https://nuxt.com/docs/guide/going-further/compiler`',
-      )
-    }
-    throw new Error(`[nuxt] \`${factory.name}\` is a compiler macro and cannot be called at runtime.`)
+    runtimeErrorUtils.throw({ message: `\`${factory.name}\` is a compiler macro and cannot be called at runtime.`, code: E1007, fix: 'It is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically.' })
   }
 
   return Object.defineProperty(placeholder, '__nuxt_factory', {

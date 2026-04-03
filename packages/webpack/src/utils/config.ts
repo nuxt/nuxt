@@ -1,6 +1,6 @@
 import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import { logger } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 import { toArray } from './index.ts'
 
 export interface WebpackConfigContext {
@@ -56,7 +56,7 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
   if (typeof fileName === 'string' && ctx.options.dev) {
     const hash = /\[(chunkhash|contenthash|hash)(?::\d+)?\]/.exec(fileName)
     if (hash) {
-      logger.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
+      buildErrorUtils.warn({ message: `Do not use \`${hash[1]}\` in dev mode to prevent a memory leak.`, code: ErrorCodes.B5006, fix: 'Remove the hash option from your webpack config to prevent a memory leak.' })
     }
   }
 

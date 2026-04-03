@@ -3,6 +3,8 @@ import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 
 import { injectHead } from '../composables/head'
 import { createError } from '../composables/error'
+import { runtimeErrorUtils } from '../utils'
+import { E4012 } from '../error-codes'
 
 // @ts-expect-error virtual file
 import { islandComponents } from '#build/components.islands.mjs'
@@ -30,7 +32,7 @@ export default defineComponent({
     }
 
     onErrorCaptured((e) => {
-      console.log(e)
+      runtimeErrorUtils.warn({ message: 'Error in island component.', code: E4012, fix: 'Check the server component for runtime errors in its `setup()` or template.', cause: e })
     })
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })

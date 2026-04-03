@@ -49,6 +49,9 @@ describe('template', () => {
       'doctype-style': 'off',
       // Unreasonable rule
       'no-inline-style': 'off',
+      // Error context sections render with empty defaults in the static template;
+      // conditional rendering only applies in the Vue component (v-if)
+      'wcag/h30': 'off',
     },
   })
 
@@ -56,7 +59,7 @@ describe('template', () => {
     const contents = readFileSync(`${distDir}/${file}.vue`, 'utf-8')
 
     const scopedStyle = contents.match(/<style scoped>([\s\S]*)<\/style>/)
-    const globalStyle = contents.match(/style: \[[\s\S]*innerHTML: `([\s\S]*)`/)
+    const globalStyle = contents.match(/style: \[[\s\S]*?innerHTML: `([\s\S]*?)`/)
 
     expect(await formatCss(scopedStyle?.[1] || '')).toMatchSnapshot()
     expect(await formatCss(globalStyle?.[1] || '')).toMatchSnapshot()

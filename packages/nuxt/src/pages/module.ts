@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, useNitro } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../core/utils/error-format.ts'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -169,7 +170,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:templates', (app) => {
       if (!nuxt.options.ssr && app.pages?.some(p => p.mode === 'server')) {
-        logger.warn('Using server pages with `ssr: false` is not supported with auto-detected component islands. Set `experimental.componentIslands` to `true`.')
+        buildErrorUtils.warn({ message: 'Using server pages with `ssr: false` is not supported with auto-detected component islands. Set `experimental.componentIslands` to `true`.', code: ErrorCodes.B4008, fix: 'Set `experimental.componentIslands` to `true`.' })
       }
     })
 
@@ -394,7 +395,7 @@ export default defineNuxtModule({
           nuxt.apps.default!.pages = await augmentAndResolvePages(pages, pagesCtx.trackedFiles, nuxt)
         } catch (err) {
           // Fallback: full rebuild on unexpected tree error
-          logger.warn('Incremental route update failed, performing full rebuild', err)
+          buildErrorUtils.warn({ message: `Incremental route update failed for \`${event}\` on \`${path}\`, performing full rebuild.`, code: ErrorCodes.B4012, fix: 'This is usually harmless — the full rebuild will recover. If it happens repeatedly, check for unusual file naming in `pages/`.', cause: err })
           nuxt.apps.default!.pages = await resolvePagesRoutes(options.pattern, nuxt)
         }
       } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {

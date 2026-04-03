@@ -3,10 +3,11 @@ import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
 
 import { tryUseNuxt } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils/index.ts'
-import { logger, resolveToAlias } from '../../utils.ts'
+import { resolveToAlias } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -93,7 +94,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               const prop = camelCase(isDynamic ? attr.slice(1) : attr)
               if (prop in hydrationStrategyMap) {
                 if (strategy) {
-                  logger.warn(`Multiple hydration strategies are not supported in the same component`)
+                  buildErrorUtils.warn({ message: `Multiple hydration strategies are not supported in the same component \`<${node.name}>\` in \`${id}\`.`, code: ErrorCodes.B3005, fix: 'Use only one hydration strategy attribute (e.g., `hydrate-on-visible` or `hydrate-on-idle`) per component.', context: { component: node.name, file: id } })
                 } else {
                   strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
                 }
@@ -103,8 +104,8 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             if (strategy && !/^(?:Lazy|lazy-)/.test(node.name)) {
               if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
                 const relativePath = resolveToAlias(id, nuxt)
-                logger.warn(`Component \`<${node.name}>\` (used in \`${relativePath}\`) has lazy-hydration props but is not declared as a lazy component.\n` +
-                  `Rename it to \`<Lazy${pascalCase(node.name)} />\` or remove the lazy-hydration props to avoid unexpected behavior.`)
+                buildErrorUtils.warn({ message: `Component \`<${node.name}>\` (used in \`${relativePath}\`) has lazy-hydration props but is not declared as a lazy component.\n` +
+                  `Rename it to \`<Lazy${pascalCase(node.name)} />\` or remove the lazy-hydration props to avoid unexpected behavior.`, code: ErrorCodes.B3006, fix: `Rename it to \`<Lazy${pascalCase(node.name)} />\` or remove the lazy-hydration props.` })
               }
               return
             }

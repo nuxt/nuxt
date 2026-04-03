@@ -11,6 +11,8 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
+import { runtimeErrorUtils } from '../utils'
+import { E4005, E4012 } from '../error-codes'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 
 // @ts-expect-error virtual file
@@ -135,7 +137,7 @@ export default defineComponent({
         while (currentEl) {
           if (isEndFragment(currentEl)) {
             if (startEl !== currentEl.previousSibling) {
-              console.warn(`[\`Server components(and islands)\`] "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`)
+              runtimeErrorUtils.warn({ message: `Server component "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`, code: E4005, fix: 'Wrap the server component\'s template in a single root element (e.g., a `<div>`).' })
             }
             break
           } else if (!isStartFragment(currentEl) && isFirstElement) {
@@ -203,7 +205,7 @@ export default defineComponent({
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
       if (!r.ok) {
-        throw createError({ status: r.status, statusText: r.statusText })
+        throw createError({ status: r.status, statusText: r.statusText, message: `Failed to fetch island component \`${props.name}\`: ${r.status} ${r.statusText}` })
       }
       try {
         const result = await r.json()
@@ -218,7 +220,7 @@ export default defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          runtimeErrorUtils.throw({ message: `Failed to parse island response for \`${props.name}\` (HTTP ${r.status}): ${e.message}`, code: E4012, fix: 'Check that the server component endpoint is returning valid HTML. The server may have returned an error page.' })
         }
         throw e
       }

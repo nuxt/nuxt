@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { isAbsolute, join, normalize } from 'pathe'
 import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -367,7 +368,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
       const requiredSize = writeOffset + additionalBytes
 
       if (requiredSize > MAX_BUFFER_SIZE) {
-        throw new Error(`Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`)
+        buildErrorUtils.throw({ message: `Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`, code: ErrorCodes.B7012, fix: 'This is an internal limit. If you are sending large payloads through the ViteNode socket, consider reducing the payload size.' })
       }
 
       if (requiredSize > buffer.length) {
@@ -439,7 +440,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
   const currentSocketPath = config.socketPath
   if (!currentSocketPath) {
-    throw new Error('Socket path not configured for ViteNodeSocketServer.')
+    buildErrorUtils.throw({ message: 'Socket path not configured for ViteNodeSocketServer.', code: ErrorCodes.B7013, fix: 'This is likely an internal Nuxt bug. Please report it at https://github.com/nuxt/nuxt/issues.' })
   }
 
   // Clean up existing socket file (Unix only)

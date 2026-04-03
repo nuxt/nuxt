@@ -11,10 +11,12 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
+import type { ErrorInfo } from '@nuxt/kit'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './nuxt-errors.ts'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
+import { defineEventHandler, dynamicEventHandler, handleCors, readBody } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
@@ -548,7 +550,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
 
     if (result !== true) {
-      logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+      buildErrorUtils.warn({ message: `Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`, code: ErrorCodes.B7010, fix: `Run \`npm install -D ${result.join(' ')}\` to install the required Babel decorator dependencies.` })
     }
 
     if (result === true) {
@@ -711,7 +713,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // For full-static output, ensure payload extraction is not disabled
   if (nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
-    logger.warn('Payload extraction is recommended for full-static output. You can enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.')
+    buildErrorUtils.warn({ message: 'Payload extraction is recommended for full-static output.', code: ErrorCodes.B7015, fix: 'Enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.' })
   }
 
   // Trigger Nitro reload when SPA loading template changes
@@ -866,6 +868,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     route: '/__nuxt_error',
     lazy: true,
     handler: resolve(distDir, 'runtime/handlers/renderer'),
+  })
+
+  // Forward structured ErrorInfo from client to server terminal
+  nitro.options.devHandlers.push({
+    route: '/__nuxt_error_info',
+    handler: defineEventHandler(async (event) => {
+      const body = await readBody<ErrorInfo & { level: string }>(event)
+      if (!body?.code || !body?.message) { return null }
+      const { level, ...info } = body
+      if (level === 'error') {
+        buildErrorUtils.error(info)
+      } else {
+        buildErrorUtils.warn(info)
+      }
+      return null
+    }),
   })
 
   // TODO: refactor into a module when this is more full-featured
@@ -1059,7 +1077,7 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   if (nuxt.options.spaLoadingTemplate) {
-    logger.warn(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
+    buildErrorUtils.warn({ message: `Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`, code: ErrorCodes.B7016, fix: 'Check that the `spaLoadingTemplate` path in `nuxt.config` points to an existing HTML file, or set it to `true` to use the default template.' })
   }
 
   return ''

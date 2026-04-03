@@ -5,6 +5,8 @@ import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
 import { isPlainObject } from '@vue/shared'
+import { runtimeErrorUtils } from '../utils'
+import { E3001, E3002 } from '../error-codes'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
@@ -77,7 +79,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       try {
         segments.push(hash(value))
       } catch {
-        console.warn('[useFetch] Failed to hash body', value)
+        runtimeErrorUtils.warn({ message: '[useFetch] Failed to hash body.', code: E3002, fix: 'Pass a serializable value (plain object, string, FormData) as the request body, or provide an explicit `key` to `useFetch`.', cause: value })
       }
     }
   }
@@ -180,7 +182,10 @@ export const createUseFetch = defineKeyedFunctionFactory({
       const key = computed(() => toValue(fetchOptions.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
-        throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
+        runtimeErrorUtils.throw({ message: `[useFetch] The request URL must not start with "//" (received \`${_request.value}\`).`,
+          code: E3001,
+          fix: 'Use an absolute URL with a protocol or a relative path instead.',
+        })
       }
 
       const _fetchOptions = reactive<typeof fetchOptions>({

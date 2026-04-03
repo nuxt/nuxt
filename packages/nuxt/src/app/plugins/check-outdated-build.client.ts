@@ -33,8 +33,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         nuxtApp.hooks.callHook('app:manifest:update', meta)
         if (timeout) { clearTimeout(timeout) }
       }
-    } catch {
-      // fail gracefully on network issue
+    } catch (err) {
+      if (import.meta.dev) {
+        console.debug('[nuxt] Failed to check for outdated build:', err)
+      }
     }
   }
 

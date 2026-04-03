@@ -1,17 +1,64 @@
 import { captureStackTrace } from 'errx'
+import { type ErrorUtils, createErrorUtils } from '../../../shared/src/error.ts'
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
 
+export interface RuntimeErrorOptions {
+  /** Error code (e.g., 'E1001'). Derives docs URL and is always shown, even in production. Displayed with NUXT_ prefix. */
+  code: string
+  /** Why the error occurred — the underlying reason, shown on its own line below the message (dev only) */
+  why?: string
+  /** A concrete suggestion for how to fix the issue (dev only) */
+  fix?: string
+  /** The underlying error that caused this one */
+  cause?: unknown
+  /** Extra context to include (only shown in dev when an AI agent is detected) */
+  context?: Record<string, unknown>
+}
+
+const DOCS_BASE = 'https://nuxt-cp7c9vdke-nuxt-js.vercel.app/docs/4.x/errors'
+
 const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
+
 type Trace = { source: string, line?: number, column?: number }
 
+export const runtimeErrorUtils: ErrorUtils = /* @__PURE__ */ createErrorUtils({
+  prefix: 'NUXT',
+  docsBase: DOCS_BASE,
+  reporter: import.meta.dev && import.meta.client
+    ? (item, level, formatted) => {
+        console[level](formatted)
+        try {
+          const payload: Record<string, unknown> = {
+            level,
+            code: item.code,
+            codePrefix: item.codePrefix,
+            message: item.message,
+            why: item.why,
+            fix: item.fix,
+            hint: item.hint,
+            docs: item.docs,
+            sources: item.sources,
+            context: item.context,
+          }
+          if (item.cause instanceof Error) {
+            payload.cause = { message: item.cause.message, stack: item.cause.stack }
+          }
+          fetch('/__nuxt_error_info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }).catch(() => {})
+        } catch {}
+      }
+    : undefined,
+})
+
 export function getUserTrace (): Trace[] {
-  if (!import.meta.dev) {
-    return []
-  }
+  if (!import.meta.dev) { return [] }
 
   const trace = captureStackTrace()
   const start = trace.findIndex(entry => !entry.source.startsWith(distURL))
@@ -26,19 +73,9 @@ export function getUserTrace (): Trace[] {
 }
 
 export function getUserCaller (): Trace | null {
-  if (!import.meta.dev) {
-    return null
-  }
+  if (!import.meta.dev) { return null }
 
   const { source, line, column } = captureStackTrace().find(entry => !entry.source.startsWith(distURL)) ?? {}
-
-  if (!source) {
-    return null
-  }
-
-  return {
-    source: source.replace(/^file:\/\//, ''),
-    line,
-    column,
-  }
+  if (!source) { return null }
+  return { source: source.replace(/^file:\/\//, ''), line, column }
 }

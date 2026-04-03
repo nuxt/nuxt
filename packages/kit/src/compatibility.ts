@@ -2,6 +2,8 @@ import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
 import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
+import * as ErrorCodes from './error-codes.ts'
 
 const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
 export function normalizeSemanticVersion (version: string): string {
@@ -79,7 +81,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
 export async function assertNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<true> {
   const issues = await checkNuxtCompatibility(constraints, nuxt)
   if (issues.length) {
-    throw new Error('Nuxt compatibility issues found:\n' + issues.toString())
+    buildErrorUtils.throw({ message: 'Nuxt compatibility issues found:\n' + issues.toString(), code: ErrorCodes.B8004, fix: 'Update the module to support the current Nuxt version, or check if a newer version of the module is available.' })
   }
   return true
 }
@@ -124,7 +126,7 @@ const NUXT_VERSION_RE = /^v/g
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */): string {
   const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
   if (typeof rawVersion !== 'string') {
-    throw new TypeError('Cannot determine nuxt version! Is current instance passed?')
+    buildErrorUtils.throw({ message: 'Cannot determine nuxt version! Is current instance passed?', code: ErrorCodes.B8005, fix: 'Pass a valid Nuxt instance to `getNuxtVersion()`, or ensure `useNuxt()` is available in the current context.' })
   }
   return rawVersion.replace(NUXT_VERSION_RE, '')
 }

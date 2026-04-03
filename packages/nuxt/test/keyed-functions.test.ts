@@ -1,7 +1,6 @@
 import type { KeyedFunction } from '@nuxt/schema'
 import { describe, expect, it, vi } from 'vitest'
 import { KeyedFunctionsPlugin } from '../src/compiler/plugins/keyed-functions'
-import { logger } from '../src/utils'
 import type { Import } from 'unimport'
 
 describe('keyed functions plugin - reactive getter (dev mode)', () => {
@@ -240,12 +239,12 @@ useRenamedDefault()`
   it('should warn if there are duplicate entries in keyed functions', () => {
     vi.stubGlobal('__TEST_DEV__', true)
 
-    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt:compiler\] \[keyed-functions\] Duplicate function name `useKeyTwo` with the same source `#app` found. Overwriting the existing entry./,
+      /Duplicate keyed function name `useKeyTwo` with the same source `#app` found. Overwriting the existing entry./,
     ))
     warn.mockRestore()
     vi.unstubAllGlobals()

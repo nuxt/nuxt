@@ -1,5 +1,6 @@
 import { isObject } from '@vue/shared'
 import { isIgnored } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
@@ -113,7 +114,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else {
-            throw new Error(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`)
+            buildErrorUtils.throw({ message: `Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`, code: ErrorCodes.B1019, fix: 'If you are a module author, ensure the component `mode` is set to `client`, `server`, or `all`. Otherwise, please report this issue.' })
           }
         },
       },
