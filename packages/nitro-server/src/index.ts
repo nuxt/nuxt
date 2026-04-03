@@ -780,7 +780,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     configEnvironment (name, config) {
       if (name === 'ssr') {
         config.resolve ||= {}
-        config.resolve.conditions = [...nitro.options.exportConditions || [], 'import']
+        config.resolve.conditions = [...nitro.options.exportConditions || []]
+        // TODO: remove in v5
+        config.resolve.conditions = config.resolve.conditions.filter(c => c !== 'import')
       }
     },
   })
