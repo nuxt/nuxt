@@ -323,6 +323,26 @@ describe('useFetch', () => {
     clear()
     expect(aborted).toBe(true)
   })
+
+  it('should throw on error when throwOnError option is set', async () => {
+    registerEndpoint('/api/throw-test', defineEventHandler(() => {
+      throw new Error('fetch error')
+    }))
+
+    await expect(
+      useFetch('/api/throw-test', { throwOnError: true }),
+    ).rejects.toThrow()
+  })
+
+  it('should not throw when throwOnError is false (default)', async () => {
+    registerEndpoint('/api/throw-test-default', defineEventHandler(() => {
+      throw new Error('fetch error')
+    }))
+
+    await expect(
+      useFetch('/api/throw-test-default'),
+    ).resolves.toBeDefined()
+  })
 })
 
 describe('createUseFetch', () => {
