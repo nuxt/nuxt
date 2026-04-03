@@ -1,6 +1,7 @@
 ---
 title: "usePreviewMode"
 description: "Use usePreviewMode to check and control preview mode in Nuxt"
+minimalVersion: "3.11"
 links:
   - label: Source
     icon: i-simple-icons-github

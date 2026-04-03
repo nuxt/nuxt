@@ -1,6 +1,7 @@
 ---
 title: 'useNuxtData'
 description: 'Access the current cached value of data fetching composables.'
+minimalVersion: "3.1"
 links:
   - label: Source
     icon: i-simple-icons-github
