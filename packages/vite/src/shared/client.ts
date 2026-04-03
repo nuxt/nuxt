@@ -1,12 +1,38 @@
 import type { Nuxt } from 'nuxt/schema'
-import { resolve } from 'pathe'
+import { join, resolve } from 'pathe'
+
+import { getLayerDirectories } from '@nuxt/kit'
 
 import { getTranspileStrings } from '../utils/transpile.ts'
+
+/**
+ * Collect optimizeDeps entry paths so that dependencies imported from layers
+ * (e.g. CJS packages like slugify used in app.vue from a layer) are discovered
+ * and pre-bundled. Without this, only the main app entry is scanned and
+ * layer-only imports can fail in dev with "does not provide an export named 'default'".
+ * @see https://github.com/nuxt/nuxt/issues/28631
+ */
+export function getOptimizeDepsEntries (nuxt: Nuxt, mainEntry: string): string[] {
+  const entries: string[] = [mainEntry]
+  const rootDirWithSlash = nuxt.options.rootDir + (nuxt.options.rootDir.endsWith('/') ? '' : '/')
+  const srcDir = nuxt.options.srcDir
+
+  for (const dirs of getLayerDirectories(nuxt)) {
+    if (dirs.app === srcDir || dirs.app.startsWith(rootDirWithSlash)) {
+      continue
+    }
+    entries.push(
+      join(dirs.app, '**/*.{vue,ts,tsx,js,jsx,mjs}'),
+    )
+  }
+
+  return entries
+}
 
 export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
   return {
     optimizeDeps: {
-      entries: [entry],
+      entries: getOptimizeDepsEntries(nuxt, entry),
       include: [],
       // We exclude Vue and Nuxt common dependencies from optimization
       // as they already ship ESM.

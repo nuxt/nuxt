@@ -8,12 +8,13 @@ export function LayerDepOptimizePlugin (nuxt: Nuxt): Plugin | undefined {
     return
   }
 
-  // TODO: this may no longer be needed with most recent vite version
+  // Secondary fix: resolveId triggers optimization when a dep is first imported from a layer.
+  // Primary fix is adding layer app dirs to optimizeDeps.entries in client.ts (see #28631).
   // Identify which layers will need to have an extra resolve step.
   const layerDirs: string[] = []
-  const delimitedRootDir = nuxt.options.rootDir + '/'
+  const rootDirWithSlash = nuxt.options.rootDir + (nuxt.options.rootDir.endsWith('/') ? '' : '/')
   for (const dirs of getLayerDirectories(nuxt)) {
-    if (dirs.app !== nuxt.options.srcDir && !dirs.app.startsWith(delimitedRootDir)) {
+    if (dirs.app !== nuxt.options.srcDir && !dirs.app.startsWith(rootDirWithSlash)) {
       layerDirs.push(dirs.app)
     }
   }
