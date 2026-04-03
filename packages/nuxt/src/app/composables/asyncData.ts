@@ -1,5 +1,5 @@
-import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
-import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
@@ -216,9 +216,11 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       // eslint-disable-next-line prefer-const
       let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
       let keyChanging = false
+      /** True if key is a Ref or getter; false for static string. When false, key watcher is skipped. */
+      const isKeyReactive = isRef(_key) || typeof _key === 'function'
 
       // Validate arguments
-      const key = computed(() => toValue(_key))
+      const key = (isKeyReactive ? computed(() => toValue(_key)!) : { value: _key as string }) as { readonly value: string }
       if (!key.value || typeof key.value !== 'string') {
         throw new TypeError('[nuxt] [useAsyncData] key must be a non-empty string.')
       }
@@ -371,48 +373,52 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
 
         // setup watchers/instance
         const hasScope = getCurrentScope()
+        const noop = () => {}
         // Key watcher: react immediately to key changes to remount/migrate the async data container deterministically.
-        const unsubKeyWatcher = watch(key, (newKey, oldKey) => {
-          if ((newKey || oldKey) && newKey !== oldKey) {
-            keyChanging = true
+        // Skip watch when key is a plain string (not reactive).
+        const unsubKeyWatcher = isKeyReactive
+          ? watch(key as ComputedRef<string>, (newKey, oldKey) => {
+              if ((newKey || oldKey) && newKey !== oldKey) {
+                keyChanging = true
 
-            const hadData = nuxtApp._asyncData[oldKey]?.data.value !== undefined
-            const wasRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
+                const hadData = nuxtApp._asyncData[oldKey]?.data.value !== undefined
+                const wasRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
 
-            const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
+                const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
 
-            // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
-            if (!nuxtApp._asyncData[newKey]?._init) {
-              let initialValue: NoInfer<DataT> | undefined
+                // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
+                if (!nuxtApp._asyncData[newKey]?._init) {
+                  let initialValue: NoInfer<DataT> | undefined
 
-              if (oldKey && hadData) {
-                initialValue = nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
-              } else {
-                initialValue = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-                initialFetchOptions.cachedData = initialValue
+                  if (oldKey && hadData) {
+                    initialValue = nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
+                  } else {
+                    initialValue = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+                    initialFetchOptions.cachedData = initialValue
+                  }
+
+                  nuxtApp._asyncData[newKey] = buildAsyncData(nuxtApp, newKey, _handler, opts, initialValue)
+                }
+
+                nuxtApp._asyncData[newKey]._deps++
+
+                // Now it's safe to drop the old container.
+                if (oldKey) {
+                  unregister(oldKey)
+                }
+
+                // Trigger the fetch for the new key if needed.
+                if (opts.immediate || hadData || wasRunning) {
+                  nuxtApp._asyncData[newKey].execute(initialFetchOptions)
+                }
+
+                // Release the guard after the current flush to avoid overlapping executes.
+                queuePostFlushCb(() => {
+                  keyChanging = false
+                })
               }
-
-              nuxtApp._asyncData[newKey] = buildAsyncData(nuxtApp, newKey, _handler, opts, initialValue)
-            }
-
-            nuxtApp._asyncData[newKey]._deps++
-
-            // Now it's safe to drop the old container.
-            if (oldKey) {
-              unregister(oldKey)
-            }
-
-            // Trigger the fetch for the new key if needed.
-            if (opts.immediate || hadData || wasRunning) {
-              nuxtApp._asyncData[newKey].execute(initialFetchOptions)
-            }
-
-            // Release the guard after the current flush to avoid overlapping executes.
-            queuePostFlushCb(() => {
-              keyChanging = false
-            })
-          }
-        }, { flush: 'sync' })
+            }, { flush: 'sync' })
+          : noop
 
         // Params/deps watcher: keep default (pre) flush to batch multiple mutations into a single execute.
         // This preserves the "non synchronous" behavior covered by tests.
@@ -427,7 +433,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
               }
               nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: opts.dedupe })
             })
-          : () => {}
+          : noop
 
         if (hasScope) {
           onScopeDispose(() => {
