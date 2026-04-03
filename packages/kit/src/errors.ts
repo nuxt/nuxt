@@ -51,11 +51,13 @@ export function createErrorUtils (options: ErrorUtilsOptions): ErrorUtils {
         lines.push(wrapLine(`${colors.bold('hint:')} ${item.hint}`, wrapOpts))
       }
 
-      if (item.source) {
-        const loc = item.source.line != null
-          ? `${item.source.file}:${item.source.line}${item.source.column != null ? `:${item.source.column}` : ''}`
-          : item.source.file
-        lines.push(wrapLine(`${colors.bold('source:')} ${loc}`, wrapOpts))
+      if (item.sources) {
+        for (const source of item.sources) {
+          const loc = source.line != null
+            ? `${source.file}:${source.line}${source.column != null ? `:${source.column}` : ''}`
+            : source.file
+          lines.push(wrapLine(`${colors.bold('source:')} ${loc}`, wrapOpts))
+        }
       }
 
       const code = resolveCode(item.code, item.codePrefix || opts.prefix)
