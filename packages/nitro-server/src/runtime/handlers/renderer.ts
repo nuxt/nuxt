@@ -30,6 +30,8 @@ import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
+import lazyPluginEntries from '#internal/nuxt/lazy-plugin-entries.mjs'
+// @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import type { AppConfig } from '@nuxt/schema'
 
@@ -251,6 +253,17 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     ssrContext.head.push({
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
     }, headEntryOptions)
+    // Low-priority modulepreload for lazy plugin chunks
+    if ((lazyPluginEntries as string[]).length) {
+      ssrContext.head.push({
+        link: (lazyPluginEntries as string[]).map(file => (<Link> {
+          rel: 'modulepreload',
+          href: renderer.rendererContext.buildAssetsURL(file),
+          crossorigin: '',
+          fetchpriority: 'low',
+        })),
+      }, headEntryOptions)
+    }
     // 5. Payloads
     ssrContext.head.push({
       script: _PAYLOAD_INLINE

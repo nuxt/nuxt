@@ -74,6 +74,16 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
  *   filename: 'foo.server.js' // [optional] only include in server bundle
  * })
  * ```
+ *
+ * Use `lazy: true` to code-split the plugin and defer execution until after hydration.
+ * Requires `experimental.lazyPlugins: true` in your Nuxt config.
+ * Lazy plugins cannot use `provide`, `dependsOn`, `order`, or `enforce`.
+ * ```js
+ * addPlugin({
+ *   src: resolver.resolve('templates/analytics.client.js'),
+ *   lazy: true
+ * })
+ * ```
  */
 export interface AddPluginOptions { append?: boolean }
 export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}): NuxtPlugin {

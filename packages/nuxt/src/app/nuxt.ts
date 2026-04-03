@@ -235,6 +235,11 @@ export interface PluginMeta {
    * It overrides the value of `enforce` and is used to sort plugins.
    */
   order?: number
+  /**
+   * When true, the plugin is code-split and executed after hydration.
+   * Automatically set when using `defineLazyNuxtPlugin`.
+   */
+  lazy?: boolean
 }
 
 export interface PluginEnvContext {
@@ -436,6 +441,36 @@ export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPl
   }
 }
 
+/**
+ * Creates a lazy plugin wrapper that dynamically imports the plugin module
+ * only when executed, keeping it out of the critical entry bundle.
+ * @internal
+ */
+export function _createLazyPlugin (loader: () => Promise<{ default: Plugin | ObjectPlugin<any> }>, name?: string): Plugin & ObjectPlugin<any> {
+  const wrapper = ((nuxtApp: NuxtApp) => {
+    // Fire-and-forget: load and execute after hydration, don't block plugin pipeline
+    nuxtApp.hooks.hookOnce('app:suspense:resolve', () => {
+      loader().then((mod) => {
+        const plugin = mod.default
+        registerPluginHooks(nuxtApp, plugin as Plugin & ObjectPlugin<any>)
+        if (typeof plugin === 'function') {
+          return nuxtApp.runWithContext(() => plugin(nuxtApp))
+        }
+        if ('setup' in plugin && plugin.setup) {
+          return nuxtApp.runWithContext(() => plugin.setup!(nuxtApp))
+        }
+      }).catch((err) => {
+        console.error(`[nuxt] Error loading lazy plugin${name ? ` "${name}"` : ''}:`, err)
+        return nuxtApp.callHook('app:error', err)
+      })
+    })
+  }) as Plugin & ObjectPlugin<any>
+  wrapper[NuxtPluginIndicator] = true
+  wrapper._name = 'lazy:' + (name || 'unknown')
+  wrapper.parallel = true
+  return wrapper
+}
+
 /** @since 3.0.0 */
 export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>): Promise<void> {
   if (typeof plugin === 'function') {
@@ -518,6 +553,27 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
   const _name = plugin._name || plugin.name
   delete plugin.name
   return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
+}
+
+export interface LazyPluginOptions {
+  name?: string
+  /**
+   * You can directly register Nuxt app runtime hooks here.
+   */
+  hooks?: Partial<RuntimeNuxtHooks>
+  setup: (nuxtApp: NuxtApp) => void | Promise<void>
+  env?: PluginEnvContext
+}
+
+/**
+ * Define a lazy plugin that is code-split and executed after hydration.
+ * Lazy plugins cannot use `provide`, `dependsOn`, `order`, or `enforce`
+ * since they run after the app is mounted outside the plugin pipeline.
+ * @since 3.17.0
+ */
+/* @__NO_SIDE_EFFECTS__ */
+export function defineLazyNuxtPlugin (plugin: ((nuxtApp: NuxtApp) => void | Promise<void>) | LazyPluginOptions): Plugin & ObjectPlugin {
+  return defineNuxtPlugin(typeof plugin === 'function' ? plugin as Plugin : plugin as ObjectPlugin)
 }
 
 /* @__NO_SIDE_EFFECTS__ */

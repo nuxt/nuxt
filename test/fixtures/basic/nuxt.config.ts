@@ -164,6 +164,7 @@ export default withMatrix({
       selectiveClient: 'deep',
     },
     inlineRouteRules: true,
+    lazyPlugins: true,
   },
   nitro: {
     publicAssets: [
