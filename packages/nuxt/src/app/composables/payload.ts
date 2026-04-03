@@ -75,7 +75,11 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
   const cdnURL = config.app.cdnURL
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
-  return joinURL(baseOrCdnURL, u.pathname, filename + (hash ? `?${hash}` : ''))
+  const base = joinURL(baseOrCdnURL, u.pathname, filename)
+
+  if (hash) { u.searchParams.set('_b', String(hash)) }
+  const search = u.searchParams.toString()
+  return base + (search ? `?${search}` : '')
 }
 
 async function _importPayload (payloadURL: string) {
@@ -118,6 +122,11 @@ async function _isPrerenderedInManifest (url: string) {
  * @internal
  */
 export async function shouldLoadPayload (url = useRoute().path) {
+  // Skip payload loading for absolute URLs (e.g. cross-origin links)
+  if (hasProtocol(url, { acceptRelative: false })) {
+    return false
+  }
+
   const rules = getRouteRules({ path: url })
   if (rules.ssr === false) {
     return false

@@ -100,8 +100,14 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 
   const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
-    const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
-    ssrContext.url = url
+    const parsed = new URL(ssrContext.url, 'http://localhost')
+    const url = parsed.pathname.substring(0, parsed.pathname.lastIndexOf('/')) || '/'
+
+    // Remove the build hash from query params, keep original route query params
+    parsed.searchParams.delete('_b')
+    const search = parsed.searchParams.toString()
+    const routeUrl = search ? url + '?' + search : url
+    ssrContext.url = routeUrl
 
     if (import.meta.prerender && await payloadCache!.hasItem(url)) {
       return returnResponse(event, await payloadCache!.getItem(url) as Partial<RenderResponse>)
@@ -112,7 +118,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     ssrContext.noSSR = true
   }
 
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? _buildPayloadURL(ssrContext) : undefined
 
   // Render app
   const renderer = await getRenderer(ssrContext)
@@ -306,6 +312,14 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 })
 
 export default handler
+
+function _buildPayloadURL (ssrContext: NuxtSSRContext): string {
+  const parsed = new URL(ssrContext.url, 'http://localhost')
+  const base = joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, parsed.pathname, PAYLOAD_FILENAME)
+  // Use a named `_b` param for the build hash so it can be cleanly separated from route query params
+  parsed.searchParams.set('_b', ssrContext.runtimeConfig.app.buildId)
+  return base + '?' + parsed.searchParams.toString()
+}
 
 function normalizeChunks (chunks: (string | undefined)[]) {
   const result: string[] = []
