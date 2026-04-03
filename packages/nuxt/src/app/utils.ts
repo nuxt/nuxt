@@ -52,7 +52,9 @@ export const runtimeErrorUtils: ErrorUtils = /* @__PURE__ */ createErrorUtils({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           }).catch(() => {})
-        } catch {}
+        } catch {
+          // ignore serialization/fetch errors
+        }
       }
     : undefined,
 })
