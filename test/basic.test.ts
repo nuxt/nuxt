@@ -1637,6 +1637,13 @@ describe('extends support', () => {
     })
   })
 
+  describe('server middleware order (issue #26012)', () => {
+    it('runs configured serverHandlers before scanned server/middleware when serverMiddlewareOrder is configuredFirst', async () => {
+      const { headers } = await fetch('/')
+      expect(headers.get('x-server-middleware-order')).toEqual('configured-first')
+    })
+  })
+
   describe('app', () => {
     it('extends foo/app/router.options & bar/app/router.options', async () => {
       const html: string = await $fetch<string>('/')

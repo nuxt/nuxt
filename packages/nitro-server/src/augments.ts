@@ -117,6 +117,13 @@ declare module '@nuxt/schema' {
     serverHandlers: NitroEventHandler[]
 
     /**
+     * Order of server middleware execution. When `configuredFirst` (default), handlers added via
+     * `serverHandlers` / `addServerHandler` run before auto-scanned handlers from `server/middleware/`.
+     * Use `scannedFirst` to restore the previous behavior (scanned handlers run first).
+     */
+    serverMiddlewareOrder: 'configuredFirst' | 'scannedFirst'
+
+    /**
      * Nitro development-only server handlers.
      *
      * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
@@ -222,6 +229,13 @@ declare module 'nuxt/schema' {
      * ```
      */
     serverHandlers: NitroEventHandler[]
+
+    /**
+     * Order of server middleware execution. When `configuredFirst` (default), handlers added via
+     * `serverHandlers` / `addServerHandler` run before auto-scanned handlers from `server/middleware/`.
+     * Use `scannedFirst` to restore the previous behavior (scanned handlers run first).
+     */
+    serverMiddlewareOrder: 'configuredFirst' | 'scannedFirst'
 
     /**
      * Nitro development-only server handlers.
