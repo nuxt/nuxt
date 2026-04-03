@@ -1,5 +1,5 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
-import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
@@ -220,7 +220,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       const isKeyReactive = isRef(_key) || typeof _key === 'function'
 
       // Validate arguments
-      const key = computed(() => toValue(_key)!)
+      const key = (isKeyReactive ? computed(() => toValue(_key)!) : { value: _key as string }) as { readonly value: string }
       if (typeof key.value !== 'string') {
         throw new TypeError('[nuxt] [useAsyncData] key must be a string.')
       }
@@ -377,7 +377,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
         // Key watcher: react immediately to key changes to remount/migrate the async data container deterministically.
         // Skip watch when key is a plain string (not reactive).
         const unsubKeyWatcher = isKeyReactive
-          ? watch(key, (newKey, oldKey) => {
+          ? watch(key as ComputedRef<string>, (newKey, oldKey) => {
               if ((newKey || oldKey) && newKey !== oldKey) {
                 keyChanging = true
 
