@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata.ts'
 import { checkForCircularDependencies } from '../src/core/app.ts'
-import { logger } from '@nuxt/kit'
 
 describe('plugin-metadata', () => {
   const properties = Object.entries({
@@ -61,7 +60,7 @@ describe('plugin-metadata', () => {
 
 describe('plugin sanity checking', () => {
   it('non-existent depends are warned', () => {
-    vi.spyOn(logger, 'error')
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
     checkForCircularDependencies([
       {
         name: 'A',
@@ -77,12 +76,12 @@ describe('plugin sanity checking', () => {
         src: '',
       },
     ])
-    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Plugin `B` depends on `D` but they are not registered.'))
-    vi.restoreAllMocks()
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('Plugin `B` depends on `D` but they are not registered.'))
+    spy.mockRestore()
   })
 
   it('circular dependencies are warned', () => {
-    vi.spyOn(logger, 'error')
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
     checkForCircularDependencies([
       {
         name: 'A',
@@ -100,9 +99,9 @@ describe('plugin sanity checking', () => {
         src: '',
       },
     ])
-    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: A -> B -> C -> A'))
-    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: B -> C -> A -> B'))
-    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: C -> A -> B -> C'))
-    vi.restoreAllMocks()
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: A -> B -> C -> A'))
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: B -> C -> A -> B'))
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: C -> A -> B -> C'))
+    spy.mockRestore()
   })
 })

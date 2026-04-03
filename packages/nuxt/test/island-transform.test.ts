@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Component } from '@nuxt/schema'
 import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
 import { normalizeLineEndings } from './utils.ts'
-import { logger } from '@nuxt/kit'
 
 const getComponents = () => [{
   filePath: '/root/hello.server.vue',
@@ -412,7 +411,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
 
     describe('webpack', () => {
       it('test transform with webpack', async () => {
-        const spyOnWarn = vi.spyOn(logger, 'warn')
+        const spyOnWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const result = await webpackTransform(`<template>
         <div>
           <!-- should not be wrapped by NuxtTeleportIslandComponent -->

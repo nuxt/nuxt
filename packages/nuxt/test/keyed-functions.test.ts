@@ -1,7 +1,6 @@
 import type { KeyedFunction } from '@nuxt/schema'
 import { describe, expect, it, vi } from 'vitest'
 import { KeyedFunctionsPlugin } from '../src/compiler/plugins/keyed-functions'
-import { logger } from '@nuxt/kit'
 import type { Import } from 'unimport'
 
 describe('keyed functions plugin - reactive getter (dev mode)', () => {
@@ -240,7 +239,7 @@ useRenamedDefault()`
   it('should warn if there are duplicate entries in keyed functions', () => {
     vi.stubGlobal('__TEST_DEV__', true)
 
-    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any)
 
