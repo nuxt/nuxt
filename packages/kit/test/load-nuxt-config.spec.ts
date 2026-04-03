@@ -44,4 +44,27 @@ describe('loadNuxtConfig', () => {
       ]
     `)
   })
+
+  it('should discover layers from an extended config', async () => {
+    const baseCwd = fileURLToPath(new URL('./layer-extends-fixture', import.meta.url)).replace(/\\/g, '/')
+    const cwd = fileURLToPath(new URL('./layer-extends-fixture/app', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd })
+
+    const layerNames = config._layers.map(l => basename(l.cwd))
+    expect(layerNames).toContain('test-layer')
+
+    expect(config.alias['#layers/test-layer']).toBe(baseCwd + '/layers/test-layer/')
+  })
+
+  it('should discover nested layers inside a layer', async () => {
+    const cwd = fileURLToPath(new URL('./layer-nested-fixture', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd })
+
+    const layerNames = config._layers.map(l => basename(l.cwd))
+    expect(layerNames).toContain('a')
+    expect(layerNames).toContain('b')
+
+    expect(config.alias['#layers/a']).toBe(cwd + '/layers/a/')
+    expect(config.alias['#layers/b']).toBe(cwd + '/layers/a/layers/b/')
+  })
 })
