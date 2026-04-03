@@ -2776,6 +2776,13 @@ describe.skipIf(isWindows)('payload rendering', () => {
     expect(data.data['swr-data']).toBeDefined()
     expect(Array.isArray(data.data['swr-data'])).toBe(true)
   })
+
+  it('should render payload for SWR routes with dynamic segments', async () => {
+    const payload = await $fetch('/swr-dynamic/test/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['swr-dynamic-test']).toBeDefined()
+  })
 })
 
 describe.skipIf(!asyncContext)('Async context', () => {
