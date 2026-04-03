@@ -68,7 +68,7 @@
     "chokidar": "^5.0.0",
     "compatx": "^0.2.0",
     "consola": "^3.4.2",
-    "cookie-es": "^2.0.0",
+    "cookie-es": "^3.1.1",
     "defu": "^6.1.4",
     "devalue": "^5.6.4",
     "errx": "^0.1.0",
