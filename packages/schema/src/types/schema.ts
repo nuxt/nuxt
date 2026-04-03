@@ -645,6 +645,11 @@ export interface ConfigSchema {
   buildDir: string
 
   /**
+   * The directory in which Nuxt-generated types and `tsconfig.json` files are located.
+   */
+  typesDir: string
+
+  /**
    * For multi-app projects, the unique id of the Nuxt application.
    *
    * Defaults to `nuxt-app`.
