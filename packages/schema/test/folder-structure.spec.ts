@@ -7,7 +7,7 @@ import { NuxtConfigSchema } from '../src/index.ts'
 import type { NuxtOptions } from '../src/index.ts'
 
 vi.mock('node:fs', () => ({
-  existsSync: (id: string) => id.endsWith('app'),
+  existsSync: (id: string) => id.endsWith('app') || id.includes('node_modules'),
 }))
 
 describe('nuxt folder structure', () => {
@@ -94,6 +94,27 @@ describe('nuxt folder structure', () => {
         "workspaceDir": "<cwd>",
       }
     `)
+  })
+
+  it('should include ancestor node_modules in modulesDir when rootDir is inside node_modules', async () => {
+    const rootDir = '/repo/node_modules/fake-app'
+    const result = await applyDefaults(NuxtConfigSchema, { rootDir }) as unknown as NuxtOptions
+    expect(result.modulesDir).toBeDefined()
+    expect(result.modulesDir).toContain(`${rootDir}/node_modules`)
+    expect(result.modulesDir).toContain('/repo/node_modules')
+  })
+
+  it('should list modulesDir in order: root node_modules first, then ancestors closest to farthest (two levels)', async () => {
+    const rootDir = '/repo/node_modules/level1/node_modules/fake-app'
+    const result = await applyDefaults(NuxtConfigSchema, { rootDir }) as unknown as NuxtOptions
+    expect(result.modulesDir).toBeDefined()
+    expect(result.modulesDir).toContain(`${rootDir}/node_modules`)
+    expect(result.modulesDir).toContain('/repo/node_modules/level1/node_modules')
+    expect(result.modulesDir).toContain('/repo/node_modules')
+    const idx = (arr: string[], el: string) => arr.indexOf(el)
+    const mod = result.modulesDir!
+    expect(idx(mod, `${rootDir}/node_modules`)).toBeLessThan(idx(mod, '/repo/node_modules/level1/node_modules'))
+    expect(idx(mod, '/repo/node_modules/level1/node_modules')).toBeLessThan(idx(mod, '/repo/node_modules'))
   })
 })
 
