@@ -275,6 +275,17 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   }
 }
 
+function pickSerializableLoc (loc: { file?: string, id?: string, url?: string, line?: number | string, column?: number | string } | null | undefined) {
+  if (!loc || typeof loc !== 'object') { return undefined }
+  const out: Record<string, string | number | undefined> = {}
+  if (loc.file != null) { out.file = String(loc.file) }
+  if (loc.id != null) { out.id = String(loc.id) }
+  if (loc.url != null) { out.url = String(loc.url) }
+  if (loc.line != null) { out.line = typeof loc.line === 'number' ? loc.line : String(loc.line) }
+  if (loc.column != null) { out.column = typeof loc.column === 'number' ? loc.column : String(loc.column) }
+  return Object.keys(out).length ? out : undefined
+}
+
 function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {
   const server = net.createServer((socket) => {
     const INITIAL_BUFFER_SIZE = 64 * 1024 // 64kB
@@ -324,6 +335,12 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                   message: err.message || '',
                 }
                 if (err.frame) { errorData.frame = err.frame }
+                if (err.plugin) { errorData.plugin = err.plugin }
+                if (err.reason) { errorData.reason = err.reason }
+                // Normalize loc/location to serializable fields only (file, id, url, line, column)
+                // to avoid IPC issues with non-JSON-serializable AST or other objects
+                if (err.loc) { errorData.loc = pickSerializableLoc(err.loc) }
+                if (err.location) { errorData.location = pickSerializableLoc(err.location) }
 
                 if (!errorData.frame && err.code === 'PARSE_ERROR') {
                   try {
