@@ -19,7 +19,7 @@ export function defineKeyedFunctionFactory<T extends Function> (factory: ObjectF
     if (import.meta.dev) {
       throw new Error(
         `[nuxt:compiler] \`${factory.name}\` is a compiler macro that is only usable inside ` +
-        'the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: `https://nuxt.com/docs/guide/going-further/compiler`',
+        'the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: `https://nuxt.com/docs/api/composables/create-use-fetch`',
       )
     }
     throw new Error(`[nuxt] \`${factory.name}\` is a compiler macro and cannot be called at runtime.`)
