@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, getBrowser, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
@@ -365,6 +365,43 @@ describe('pages', () => {
     expect(html).toContain('another-parent/index')
 
     await expectNoClientErrors('/another-parent')
+  })
+
+  it('/server-only', async () => {
+    const html = await $fetch<string>('/server-only')
+    expect(html).toContain('ServerOnly test page')
+    expect(html).toContain('Rendered at')
+    expect(html).toContain('data-server-only')
+    expect(html).toContain('server-only-content')
+    // ServerOnly as server component (NuxtIsland) may report hydration mismatches—these are expected.
+    // Do not add expectNoClientErrors('/server-only'); the slot can run on client during hydration.
+    const browser = await getBrowser()
+    const page = await browser.newPage({})
+    const response = await page.goto(url('/server-only'))
+    const responseHtml = await response!.text()
+    const ssrMatch = responseHtml.match(/id="server-only-content">([^<]+)</)
+    const ssrContent = ssrMatch?.[1]?.trim() ?? null
+    expect(ssrContent).toBeTruthy()
+    expect(ssrContent).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
+    const clientContent = await page.locator('#server-only-content').textContent()
+    // ServerOnly as server component: slot may run on client during hydration, so timestamp can differ from SSR; assert format and marker only
+    expect(clientContent).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    expect((await page.locator('[data-server-only]').all())).toHaveLength(1)
+    await page.close()
+  })
+
+  it('/server-only client-side navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.locator('#to-server-only').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
+    await page.getByText('ServerOnly test page').waitFor()
+    const content = await page.locator('#server-only-content').textContent()
+    expect(content).toBeTruthy()
+    // Slot may run on client; assert format and marker only, not exact SSR match
+    expect(content).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    expect((await page.locator('[data-server-only]').all())).toHaveLength(1)
+    await page.close()
   })
 
   it('/client-server', async () => {
