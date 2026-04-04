@@ -30,11 +30,11 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
         // Only run on files that may contain decorator syntax
         // (JS/TS/Vue files) and that include "@" as a quick check
         code: '@',
-      
+
         id: {
           // Restrict transform to JavaScript/TypeScript and Vue files only
-          include: [/\.(ts|js|tsx|jsx|vue)$/],
-      
+          include: [/\.(ts|js|tsx|jsx)$/],
+
           // Explicitly exclude non-JS assets and Vue sub-blocks
           // (e.g. <style> or <template> in SFCs)
           exclude: [
@@ -43,7 +43,6 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
             /\.sass$/,
             /\.less$/,
             /\.styl$/,
-            /\.vue\?.*\btype=(?:style|template)\b/,
           ],
         },
       },
