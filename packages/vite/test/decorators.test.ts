@@ -31,12 +31,13 @@ function matchesFilter (
 describe('DecoratorsPlugin transform filter', () => {
   const nuxt = {
     options: {
-      experimental: { decorators: true },
+      experimental: { decorators: true } as Nuxt['options']['experimental'],
       rootDir: '/tmp',
       modulesDir: [],
     },
   }
 
+  // @ts-expect-error - we only need nuxt.options.experimental.decorators, rootDir, and modulesDir for this test
   const plugin = DecoratorsPlugin(nuxt as Nuxt)
 
   if (typeof plugin.transform !== 'object' || !plugin.transform?.filter) {
