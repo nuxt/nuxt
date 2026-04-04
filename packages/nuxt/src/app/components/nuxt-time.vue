@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, useAttrs } from 'vue'
 import { onPrehydrate } from '../composables/ssr'
 import { useNuxtApp } from '../nuxt'
 
@@ -39,17 +39,14 @@ const props = withDefaults(defineProps<NuxtTimeProps>(), {
   hour12: undefined,
 })
 
-const el = getCurrentInstance()?.vnode.el
-const renderedDate = el?.getAttribute('datetime')
-const _locale = el?.getAttribute('data-locale')
+const attrs = useAttrs()
+const _locale = attrs['data-locale'] as string | undefined
 
 const nuxtApp = useNuxtApp()
 
 const date = computed(() => {
-  const date = props.datetime
-  if (renderedDate && nuxtApp.isHydrating) { return new Date(renderedDate) }
   if (!props.datetime) { return new Date() }
-  return new Date(date)
+  return new Date(props.datetime)
 })
 
 const now = ref(import.meta.client && nuxtApp.isHydrating && window._nuxtTimeNow ? new Date(window._nuxtTimeNow) : new Date())
