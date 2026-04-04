@@ -33,7 +33,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
 
         id: {
           // Restrict transform to JavaScript/TypeScript and Vue files only
-          include: [/\.(ts|js|tsx|jsx)$/],
+          include: [/\.(ts|js|tsx|jsx|vue)$/],
 
           // Explicitly exclude non-JS assets and Vue sub-blocks
           // (e.g. <style> or <template> in SFCs)
@@ -43,6 +43,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
             /\.sass$/,
             /\.less$/,
             /\.styl$/,
+            /\.vue\?.*\btype=(?:style|template)\b/,
           ],
         },
       },
