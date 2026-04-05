@@ -19,6 +19,7 @@ import { resolveModulePath } from 'exsolve'
 
 import { isCSS } from '../utils/index.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
+import { serializeIPCError } from '../ipc-error.ts'
 import type { ErrorPartial } from '../types.ts'
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
@@ -493,13 +494,7 @@ function sendError (socket: net.Socket, id: number, error: any) {
   const errorResponse = {
     id,
     type: 'error',
-    error: {
-      message: error.message,
-      stack: error.stack,
-      status: error.status,
-      statusText: error.statusText,
-      data: error.data,
-    },
+    error: serializeIPCError(error),
   }
   const responseJSON = JSON.stringify(errorResponse)
   const messageBuffer = Buffer.from(responseJSON, 'utf-8')
