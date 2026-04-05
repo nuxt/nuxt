@@ -36,7 +36,7 @@ function createRunner () {
           throw {
             statusText: 'Vite Error',
             message,
-            stack: `${message}\nat ${id}\n` + (errorData?.stack || ''),
+            stack: `${message}\nat ${id}\n` + (errorData?.stack || err?.stack || ''),
           } satisfies ErrorPartial
         }
         throw _err

@@ -4,6 +4,14 @@ import net from 'node:net'
 import { Buffer } from 'node:buffer'
 import { isTest } from 'std-env'
 import type { ViteNodeFetch, ViteNodeRequestMap, ViteNodeServerOptions } from './plugins/vite-node.ts'
+import { deserializeIPCError } from './ipc-error.ts'
+
+type PendingRequest = {
+  type: keyof ViteNodeRequestMap
+  payload: ViteNodeRequestMap[keyof ViteNodeRequestMap]['request']
+  resolve: (value: any) => void
+  reject: (reason?: any) => void
+}
 
 function getViteNodeOptionsEnvVar () {
   const envVar = process.env.NUXT_VITE_NODE_OPTIONS
@@ -17,10 +25,12 @@ function getViteNodeOptionsEnvVar () {
 
 export const viteNodeOptions: ViteNodeServerOptions = getViteNodeOptionsEnvVar()
 
-const pendingRequests = new Map<number, { resolve: (value: any) => void, reject: (reason?: any) => void }>()
+const pendingRequests = new Map<number, PendingRequest>()
 let requestIdCounter = 0
 let clientSocket: Socket | undefined
 let currentConnectPromise: Promise<Socket> | undefined
+let lastSocketError: Error | undefined
+let lastIPCResponseError: Error | undefined
 const MAX_RETRY_ATTEMPTS = viteNodeOptions.maxRetryAttempts ?? 5
 const BASE_RETRY_DELAY_MS = viteNodeOptions.baseRetryDelay ?? 100
 const MAX_RETRY_DELAY_MS = viteNodeOptions.maxRetryDelay ?? 2000
@@ -35,6 +45,29 @@ function calculateRetryDelay (attempt: number): number {
   const exponentialDelay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt)
   const jitter = Math.random() * 0.1 * exponentialDelay // Add 10% jitter
   return Math.min(exponentialDelay + jitter, MAX_RETRY_DELAY_MS)
+}
+
+function getRequestContextHint (requestType: keyof ViteNodeRequestMap, payload: PendingRequest['payload']) {
+  if (requestType === 'module' && payload && typeof payload === 'object' && 'moduleId' in payload) {
+    return ` (moduleId: ${String(payload.moduleId)})`
+  }
+
+  if (requestType === 'resolve' && payload && typeof payload === 'object' && 'id' in payload) {
+    const importer = 'importer' in payload && payload.importer ? `, importer: ${String(payload.importer)}` : ''
+    return ` (id: ${String(payload.id)}${importer})`
+  }
+
+  return ''
+}
+
+function createIPCClosedError (request: PendingRequest): Error {
+  const contextHint = getRequestContextHint(request.type, request.payload)
+  const baseMessage = `IPC connection closed while handling "${request.type}" request${contextHint}`
+  const cause = lastIPCResponseError || lastSocketError
+  const hint = cause?.message ? ` (last error: ${cause.message})` : ''
+  return new Error(baseMessage + hint, {
+    cause,
+  })
 }
 
 /**
@@ -118,6 +151,8 @@ function connectSocket (): Promise<Socket> {
       }
 
       const onConnect = () => {
+        lastSocketError = undefined
+        lastIPCResponseError = undefined
         clientSocket = socket
         resolve(socket)
       }
@@ -144,10 +179,8 @@ function connectSocket (): Promise<Socket> {
               if (requestHandlers) {
                 const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
                 if (response.type === 'error') {
-                  const err: Error & { stack?: string, data?: unknown, status?: number, statusCode?: number } = new Error(response.error.message)
-                  err.stack = response.error.stack
-                  err.data = response.error.data
-                  err.statusCode = err.status = response.error.status || response.error.statusCode
+                  const err = deserializeIPCError(response.error)
+                  lastIPCResponseError = err
                   rejectRequest(err)
                 } else {
                   resolveRequest(response.data)
@@ -172,6 +205,7 @@ function connectSocket (): Promise<Socket> {
       const onError = (err: Error) => {
         cleanup()
         resetBuffer()
+        lastSocketError = err
 
         if (attempt < MAX_RETRY_ATTEMPTS) {
           const delay = calculateRetryDelay(attempt)
@@ -192,8 +226,8 @@ function connectSocket (): Promise<Socket> {
       const onClose = () => {
         cleanup()
         resetBuffer()
-        for (const { reject: rejectRequest } of pendingRequests.values()) {
-          rejectRequest(new Error('IPC connection closed'))
+        for (const request of pendingRequests.values()) {
+          request.reject(createIPCClosedError(request))
         }
         pendingRequests.clear()
         if (clientSocket === socket) { clientSocket = undefined }
@@ -232,6 +266,8 @@ async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload
         }, REQUEST_TIMEOUT_MS)
 
         pendingRequests.set(requestId, {
+          type,
+          payload,
           resolve: (value) => {
             clearTimeout(timeoutId)
             resolve(value)
