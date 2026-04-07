@@ -1,0 +1,214 @@
+# https://github.com/apps/settings
+# https://github.com/repository-settings/app
+# NOTE: Color values are quoted to avoid YAML misinterpreting hex as numbers
+
+repository:
+  name: nuxt
+  description: The Full-Stack Vue Framework.
+  homepage: https://nuxt.com
+  topics: "static-site-generator, node, framework, vue, universal, ssr, nuxt, full-stack, server-rendering, csr, hybrid, hacktoberfest, ssg"
+
+labels:
+  - name: ⚠️ breaking change
+    color: "d746a6"
+
+  - name: ⛔️ can be closed
+    color: "484893"
+
+  - name: ✨ good reproduction
+    color: "fbca04"
+
+  - name: 🍰 p2-nice-to-have
+    color: "0e8a16"
+
+  - name: 🔥 p5-urgent
+    color: "b60205"
+
+  - name: 🔨 p3-minor
+    color: "fbca04"
+
+  - name: 🧷 edge release
+    color: "bfdadc"
+    description: This PR will be released via the edge channel.
+
+  - name: 🧹 p1-chore
+    color: "fef2c0"
+
+  - name: ❌ won't do
+    color: "705b27"
+
+  - name: ❗ p4-important
+    color: "d93f0b"
+
+  - name: 2.x
+    color: "d4c5f9"
+
+  - name: 3.x
+    color: "29bc7f"
+
+  - name: 4.x
+    color: "3b01a5"
+
+  - name: 5.x
+    color: "006b75"
+
+  - name: a11y
+    color: "872ba1"
+
+  - name: agentscan:automated-account
+    color: "ededed"
+
+  - name: agentscan:mixed-signals
+    color: "ededed"
+
+  - name: app
+    color: "17512d"
+
+  - name: available soon
+    color: "6de8b0"
+
+  - name: bug
+    color: "d73a4a"
+
+  - name: bun
+    color: "312773"
+
+  - name: chore
+    color: "d0f1a9"
+
+  - name: cli
+    color: "09f665"
+
+  - name: closed-by-bot
+    color: "ededed"
+
+  - name: components
+    color: "05b979"
+
+  - name: dependencies
+    color: "0366d6"
+    description: Pull requests that update a dependency file
+
+  - name: discussion
+    color: "538de2"
+
+  - name: documentation
+    color: "5319e7"
+
+  - name: dx
+    color: "c39d69"
+
+  - name: enhancement
+    color: "8def37"
+
+  - name: example
+    color: "fbca04"
+
+  - name: experiment
+    color: "8cd9cd"
+
+  - name: external
+    color: "861ade"
+
+  - name: good first issue
+    color: "fbca04"
+
+  - name: hacktoberfest-accepted
+    color: "c9f53d"
+
+  - name: inline styles
+    color: "68af97"
+
+  - name: javascript
+    color: "168700"
+    description: Pull requests that update javascript code
+
+  - name: jsx
+    color: "6d36c6"
+
+  - name: kit
+    color: "60e14c"
+
+  - name: layers
+    color: "006b75"
+
+  - name: needs details
+    color: "493824"
+
+  - name: needs reproduction
+    color: "fbca04"
+
+  - name: nitro
+    color: "bfd4f2"
+
+  - name: pages
+    color: "00dfb5"
+
+  - name: pending triage
+    color: "e99695"
+
+  - name: performance
+    color: "e84b77"
+
+  - name: possible bot
+    color: "342f98"
+
+  - name: possible regression
+    color: "b90a42"
+
+  - name: postcss
+    color: "c7650e"
+
+  - name: question
+    color: "cc317c"
+
+  - name: refactor
+    color: "173a12"
+
+  - name: rolldown-vite
+    color: "aaaaaa"
+
+  - name: rspack
+    color: "aaaaaa"
+
+  - name: schema
+    color: "1d76db"
+
+  - name: server components
+    color: "839413"
+
+  - name: spam
+    color: "aaaaaa"
+
+  - name: stale
+    color: "ffffff"
+
+  - name: suspense
+    color: "c70109"
+
+  - name: test
+    color: "1db6e0"
+
+  - name: types
+    color: "2875c3"
+
+  - name: ui-templates
+    color: "bfd4f2"
+
+  - name: upstream
+    color: "e8a36d"
+
+  - name: upstream-bug
+    color: "b60205"
+
+  - name: vite
+    color: "3574d1"
+
+  - name: webpack
+    color: "650c6f"
+
+  - name: windows
+    color: "c681fd"
+
+  - name: workaround available
+    color: "11376d"
