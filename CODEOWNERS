@@ -1,1 +1,4 @@
 * @danielroe
+
+# Repo settings can escalate to admin — restrict reviewers
+.github/settings.yml @danielroe @posva @antfu @atinux
