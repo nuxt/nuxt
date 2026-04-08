@@ -175,8 +175,8 @@ function warnAboutDuplicateComponent (componentName: string, filePath: string, d
   buildErrorUtils.warn({ message: `Two component files resolving to the same name \`${componentName}\`:\n` +
     `\n - ${filePath}` +
     `\n - ${duplicatePath}`,
-    code: ErrorCodes.B3011,
-    fix: 'Rename one of the files or adjust the `components.dirs` prefix settings in your `nuxt.config`.',
+  code: ErrorCodes.B3011,
+  fix: 'Rename one of the files or adjust the `components.dirs` prefix settings in your `nuxt.config`.',
   })
 }
 
