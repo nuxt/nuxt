@@ -104,6 +104,16 @@ export interface AsyncDataOptions<
    * A timeout in milliseconds after which the request will be aborted if it has not resolved yet.
    */
   timeout?: number
+  /**
+   * When `true`, the promise returned by `useAsyncData` / `execute` / `refresh` will reject
+   * when the handler throws, instead of silently capturing the error in the `error` ref.
+   *
+   * The `error` ref, `data` ref and `status` ref are still updated before the error is
+   * re-thrown, so reactive state remains consistent.
+   *
+   * @default false
+   */
+  throwOnError?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -112,16 +122,25 @@ export interface AsyncDataExecuteOptions {
    * not be cancelled, but their result will not affect the data/pending state - and any
    * previously awaited promises will not resolve until this new request resolves.
    */
-  dedupe?: 'cancel' | 'defer'
+  'dedupe'?: 'cancel' | 'defer'
 
-  cause?: AsyncDataRefreshCause
+  'cause'?: AsyncDataRefreshCause
+
+  'signal'?: AbortSignal
+
+  'timeout'?: number
+
+  /**
+   * When `true`, the promise returned by `execute` / `refresh` will reject
+   * when the handler throws, overriding the composable-level `throwOnError` option.
+   */
+  'throwOnError'?: boolean
 
   /** @internal */
-  cachedData?: any
+  '~cachedData'?: any
 
-  signal?: AbortSignal
-
-  timeout?: number
+  /** @internal */
+  '~rethrow'?: boolean
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -251,6 +270,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       opts.immediate ??= true
       opts.deep ??= asyncDataDefaults.deep
       opts.dedupe ??= 'cancel'
+      opts.throwOnError ??= asyncDataDefaults.throwOnError ?? false
 
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
@@ -295,8 +315,8 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       function createInitialFetch () {
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
         if (!nuxtApp._asyncData[key.value]?._init) {
-          initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-          nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
+          initialFetchOptions['~cachedData'] = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+          nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions['~cachedData'])
         }
         return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
       }
@@ -352,10 +372,10 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
         } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || opts.lazy) && opts.immediate) {
           // 2. Initial load (server: false): fetch on mounted
           // 3. Initial load or navigation (lazy: true): fetch on mounted
-          instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          instance._nuxtOnBeforeMountCbs.push(() => { initialFetch().catch(() => {}) })
         } else if (opts.immediate && asyncData.status.value !== 'success') {
           // 4. Navigation (lazy: false) - or plugin usage: await fetch
-          initialFetch()
+          initialFetch().catch(() => {})
         }
 
         function unregister (key: string) {
@@ -379,7 +399,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
             const hadData = nuxtApp._asyncData[oldKey]?.data.value !== undefined
             const wasRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
 
-            const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
+            const initialFetchOptions: AsyncDataExecuteOptions = { 'cause': 'initial', 'dedupe': opts.dedupe, '~rethrow': false }
 
             // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
             if (!nuxtApp._asyncData[newKey]?._init) {
@@ -389,7 +409,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
                 initialValue = nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
               } else {
                 initialValue = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-                initialFetchOptions.cachedData = initialValue
+                initialFetchOptions['~cachedData'] = initialValue
               }
 
               nuxtApp._asyncData[newKey] = buildAsyncData(nuxtApp, newKey, _handler, opts, initialValue)
@@ -425,7 +445,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
                   nuxtApp._asyncData[key.value]?._execute.flush()
                 })
               }
-              nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: opts.dedupe })
+              nuxtApp._asyncData[key.value]?._execute({ 'cause': 'watch', 'dedupe': opts.dedupe, '~rethrow': false })
             })
           : () => {}
 
@@ -652,7 +672,7 @@ function buildAsyncData<
   const hasCachedData = initialCachedData !== undefined
   const unsubRefreshAsyncData = nuxtApp.hook('app:data:refresh', async (keys) => {
     if (!keys || keys.includes(key)) {
-      await asyncData.execute({ cause: 'refresh:hook' })
+      await asyncData.execute({ 'cause': 'refresh:hook', '~rethrow': false })
     }
   })
   const asyncData: CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> = {
@@ -675,7 +695,7 @@ function buildAsyncData<
       }
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
-        const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
+        const cachedData = '~cachedData' in opts ? opts['~cachedData'] : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (cachedData !== undefined) {
           nuxtApp.payload.data[key] = asyncData.data.value = cachedData as DataT
           asyncData.error.value = undefined
@@ -759,6 +779,10 @@ function buildAsyncData<
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
+
+          if ((opts.throwOnError ?? options.throwOnError) && opts['~rethrow'] !== false) {
+            throw asyncData.error.value
+          }
         })
         .finally(() => {
           cleanupController.abort()
