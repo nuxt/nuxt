@@ -147,6 +147,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
     augmentedPages?.clear()
   }
 
+    warnAboutDuplicatePageRoutes(pages)
   await nuxt.callHook('pages:resolved', pages)
 
   return pages
