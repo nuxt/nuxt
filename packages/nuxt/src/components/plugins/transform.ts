@@ -3,8 +3,7 @@ import { isIgnored } from '@nuxt/kit'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
-import { parseURL } from 'ufo'
-import { parseQuery } from 'vue-router'
+import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isAbsolute, normalize } from 'pathe'
 import { type PackageJson, readPackage } from 'pkg-types'
 import { genImport } from 'knitwork'
@@ -72,11 +71,11 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
         },
         handler (_code, id) {
           // Virtual component wrapper
-          const { search } = parseURL(id)
-          const query = parseQuery(search)
-          const mode = query.nuxt_component
+          const { search } = parseModuleId(id)
+          const params = new URLSearchParams(search)
+          const mode = params.get('nuxt_component')
           const bare = id.replace(/\?.*/, '')
-          const componentExport = query.nuxt_component_export as string || 'default'
+          const componentExport = params.get('nuxt_component_export') || 'default'
           const exportWording = componentExport === 'default' ? 'export default' : `export const ${componentExport} =`
           if (mode === 'async') {
             return {
@@ -105,7 +104,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else if (mode === 'server' || mode === 'server,async') {
-            const name = query.nuxt_component_name
+            const name = params.get('nuxt_component_name')
             return {
               code: [
                 `import { createServerComponent } from ${JSON.stringify(options.serverComponentRuntime)}`,

@@ -1,7 +1,8 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { NitroRouteRules } from 'nitropack/types'
+import type { NitroRouteRules } from 'nitro/types'
+
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
@@ -63,7 +64,7 @@ export default defineComponent({
       let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          console.warn(`Invalid layout \`${layout}\` selected.`)
+          console.warn(`[nuxt] Invalid layout \`${layout}\` selected.`)
         }
         if (props.fallback) {
           layout = unref(props.fallback)
@@ -78,7 +79,10 @@ export default defineComponent({
     const done = nuxtApp.deferHydration()
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      useRouter().beforeEach(removeErrorHook)
+      const removeGuard = useRouter().beforeEach(() => {
+        removeErrorHook()
+        removeGuard()
+      })
     }
 
     if (import.meta.dev) {

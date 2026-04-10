@@ -122,16 +122,23 @@ function _defineNuxtModule<
     }
 
     // Call setup
+    const moduleName = uniqueKey || module.meta.name || '<no name>'
+    nuxt._perf?.startPhase(`module:${moduleName}`)
     const start = performance.now()
-    const res = await module.setup?.call(null as any, _options, nuxt) ?? {}
+    let res = {} as ModuleSetupReturn
+    try {
+      res = await module.setup?.call(null as any, _options, nuxt) ?? {}
+    } finally {
+      nuxt._perf?.endPhase(`module:${moduleName}`)
+    }
     const perf = performance.now() - start
     const setupTime = Math.round((perf * 100)) / 100
 
     // Measure setup time
     if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
-      logger.warn(`Slow module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
+      logger.warn(`Slow module \`${moduleName}\` took \`${setupTime}ms\` to setup.`)
     } else if (nuxt.options.debug && nuxt.options.debug.modules) {
-      logger.info(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
+      logger.info(`Module \`${moduleName}\` took \`${setupTime}ms\` to setup.`)
     }
 
     // Check if module is ignored

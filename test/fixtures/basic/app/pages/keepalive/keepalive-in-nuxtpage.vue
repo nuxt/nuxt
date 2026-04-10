@@ -1,5 +1,9 @@
 <script setup lang="ts">
 useLifecycleLogs('keepalive-in-nuxtpage')
+
+definePageMeta({
+  name: 'keepalive-in-nuxtpage',
+})
 </script>
 
 <template>

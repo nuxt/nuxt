@@ -1,4 +1,4 @@
-import type { Import, InlinePreset } from 'unimport'
+import type { Import, Preset } from 'unimport'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
 
@@ -15,8 +15,8 @@ export function addImportsDir (dirs: string | string[], opts: { prepend?: boolea
     }
   })
 }
-export function addImportsSources (presets: InlinePreset | InlinePreset[]): void {
-  useNuxt().hook('imports:sources', (_presets: InlinePreset[]) => {
+export function addImportsSources (presets: Preset | Preset[]): void {
+  useNuxt().hook('imports:sources', (_presets: Preset[]) => {
     for (const preset of toArray(presets)) {
       _presets.push(preset)
     }

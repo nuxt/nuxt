@@ -248,8 +248,10 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
 
     // retry if file has changed during read
     if ((await fd.stat()).mtime.getTime() !== mtime) {
+      await fd.close()
+      fd = undefined
       if (count < 5) {
-        return readFileWithMeta(dir, fileName, count + 1)
+        return await readFileWithMeta(dir, fileName, count + 1)
       }
       console.warn(`Failed to read file \`${fileName}\` as it changed during read.`)
       return
@@ -290,16 +292,18 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
       await mkdir(dirname(filePath), { recursive: true })
 
-      fd = await open(filePath, 'w')
-
-      const stats = await fd.stat().catch(() => null)
-      if (stats?.isFile() && stats.size) {
+      // Stat before open('w') since it truncates the file
+      const existingStats = await stat(filePath).catch(() => null)
+      const cachedSize = file.data?.byteLength ?? 0
+      if (existingStats?.isFile() && existingStats.size === cachedSize) {
         const lastModified = Number.parseInt(file.attrs?.mtime?.toString().padEnd(13, '0') || '0')
-        if (stats.mtime.getTime() >= lastModified) {
+        if (existingStats.mtime.getTime() >= lastModified) {
           consola.debug(`Skipping \`${file.name}\` (up to date or newer than cache)`)
           continue
         }
       }
+
+      fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
       console.error(err)

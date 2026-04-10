@@ -141,13 +141,14 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     const unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
       finish()
     })
-    const unsubError = nuxtApp.hook('vue:error', () => finish())
+    const unsubError = nuxtApp.hook('vue:error', () => finish({ error: true }))
 
     _cleanup = () => {
       unsubError()
       unsubLoadingStartHook()
       unsubLoadingFinishHook()
       clear()
+      _clearTimeouts()
     }
   }
 

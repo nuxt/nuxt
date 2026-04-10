@@ -123,7 +123,7 @@ exports[`template > produces correct output for error-404 template 1`] = `
     color: rgb(255 255 255 / var(--un-text-opacity));
   }
 }
-@media (min-width: 640px) {
+@media (width>=640px) {
   .sm\\:text-\\[110px\\] {
     font-size: 110px;
   }
@@ -149,8 +149,11 @@ exports[`template > produces correct output for error-404 template 2`] = `
   --un-content: "";
 }
 html {
-  line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -159,11 +162,7 @@ html {
     Segoe UI Emoji,
     Segoe UI Symbol,
     Noto Color Emoji;
-  font-feature-settings: normal;
-  font-variation-settings: normal;
-  -moz-tab-size: 4;
-  tab-size: 4;
-  -webkit-tap-highlight-color: transparent;
+  line-height: 1.5;
 }
 body {
   line-height: inherit;
@@ -176,6 +175,7 @@ h2 {
 }
 a {
   color: inherit;
+  -webkit-text-decoration: inherit;
   text-decoration: inherit;
 }
 h1,
@@ -209,15 +209,15 @@ p {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 transparent;
-  --un-ring-shadow: 0 0 transparent;
+  --un-ring-offset-shadow: 0 0 #0000;
+  --un-ring-shadow: 0 0 #0000;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 transparent;
+  --un-shadow: 0 0 #0000;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgba(147, 197, 253, 0.5);
+  --un-ring-color: #93c5fd80;
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -334,7 +334,7 @@ exports[`template > produces correct output for error-500 template 1`] = `
     color: rgb(255 255 255 / var(--un-text-opacity));
   }
 }
-@media (min-width: 640px) {
+@media (width>=640px) {
   .sm\\:text-\\[110px\\] {
     font-size: 110px;
   }
@@ -360,8 +360,11 @@ exports[`template > produces correct output for error-500 template 2`] = `
   --un-content: "";
 }
 html {
-  line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -370,11 +373,7 @@ html {
     Segoe UI Emoji,
     Segoe UI Symbol,
     Noto Color Emoji;
-  font-feature-settings: normal;
-  font-variation-settings: normal;
-  -moz-tab-size: 4;
-  tab-size: 4;
-  -webkit-tap-highlight-color: transparent;
+  line-height: 1.5;
 }
 body {
   line-height: inherit;
@@ -416,15 +415,15 @@ p {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 transparent;
-  --un-ring-shadow: 0 0 transparent;
+  --un-ring-offset-shadow: 0 0 #0000;
+  --un-ring-shadow: 0 0 #0000;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 transparent;
+  --un-shadow: 0 0 #0000;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgba(147, 197, 253, 0.5);
+  --un-ring-color: #93c5fd80;
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -636,8 +635,11 @@ exports[`template > produces correct output for loading template 2`] = `
   --un-content: "";
 }
 html {
-  line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -646,11 +648,7 @@ html {
     Segoe UI Emoji,
     Segoe UI Symbol,
     Noto Color Emoji;
-  font-feature-settings: normal;
-  font-variation-settings: normal;
-  -moz-tab-size: 4;
-  tab-size: 4;
-  -webkit-tap-highlight-color: transparent;
+  line-height: 1.5;
 }
 body {
   line-height: inherit;
@@ -658,6 +656,7 @@ body {
 }
 a {
   color: inherit;
+  -webkit-text-decoration: inherit;
   text-decoration: inherit;
 }
 svg {
@@ -690,15 +689,15 @@ svg {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 transparent;
-  --un-ring-shadow: 0 0 transparent;
+  --un-ring-offset-shadow: 0 0 #0000;
+  --un-ring-shadow: 0 0 #0000;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 transparent;
+  --un-shadow: 0 0 #0000;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgba(147, 197, 253, 0.5);
+  --un-ring-color: #93c5fd80;
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -723,14 +722,14 @@ svg {
 
 exports[`template > produces correct output for welcome template 1`] = `
 ".sr-only {
+  clip: rect(0, 0, 0, 0);
+  border-width: 0;
   height: 1px;
   margin: -1px;
   overflow: hidden;
   padding: 0;
-  width: 1px;
-  clip: rect(0, 0, 0, 0);
-  border-width: 0;
   white-space: nowrap;
+  width: 1px;
 }
 .absolute,
 .sr-only {
@@ -1027,7 +1026,7 @@ exports[`template > produces correct output for welcome template 1`] = `
     color: rgb(238 238 238 / var(--un-text-opacity));
   }
 }
-@media (min-width: 640px) {
+@media (width>=640px) {
   .sm\\:col-span-2 {
     grid-column: span 2 / span 2;
   }
@@ -1072,7 +1071,7 @@ exports[`template > produces correct output for welcome template 1`] = `
     line-height: 1.5rem;
   }
 }
-@media (min-width: 1024px) {
+@media (width>=1024px) {
   .lg\\:px-8 {
     padding-left: 2rem;
     padding-right: 2rem;
@@ -1095,8 +1094,11 @@ exports[`template > produces correct output for welcome template 2`] = `
   --un-content: "";
 }
 html {
-  line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -1105,11 +1107,7 @@ html {
     Segoe UI Emoji,
     Segoe UI Symbol,
     Noto Color Emoji;
-  font-feature-settings: normal;
-  font-variation-settings: normal;
-  -moz-tab-size: 4;
-  tab-size: 4;
-  -webkit-tap-highlight-color: transparent;
+  line-height: 1.5;
 }
 body {
   line-height: inherit;
@@ -1122,6 +1120,7 @@ h2 {
 }
 a {
   color: inherit;
+  -webkit-text-decoration: inherit;
   text-decoration: inherit;
 }
 h1,
@@ -1164,15 +1163,15 @@ svg {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 transparent;
-  --un-ring-shadow: 0 0 transparent;
+  --un-ring-offset-shadow: 0 0 #0000;
+  --un-ring-shadow: 0 0 #0000;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 transparent;
+  --un-shadow: 0 0 #0000;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgba(147, 197, 253, 0.5);
+  --un-ring-color: #93c5fd80;
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;

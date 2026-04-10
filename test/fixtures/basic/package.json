@@ -12,12 +12,12 @@
   "devDependencies": {
     "@vue/devtools-api": "latest",
     "defu": "latest",
-    "postcss": "^8.4.47",
+    "postcss": "^8.5.8",
     "ufo": "latest",
     "unplugin": "^3.0.0",
     "vue": "latest"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

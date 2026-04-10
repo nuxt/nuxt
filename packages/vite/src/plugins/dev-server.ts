@@ -67,9 +67,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }))
       })
 
-      if (nuxt.options.experimental.viteEnvironmentApi) {
-        await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
-      }
+      await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
 
       const staticBases: string[] = []
       for (const folder of nitro.options.publicAssets) {

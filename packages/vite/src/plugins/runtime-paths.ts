@@ -1,10 +1,9 @@
-import { pathToFileURL } from 'node:url'
 import MagicString from 'magic-string'
-import { parseQuery, parseURL } from 'ufo'
 import type { Plugin } from 'vite'
-import { isCSS } from '../utils/index.ts'
+import { isCSS, parseModuleId } from '../utils/index.ts'
 
 const VITE_ASSET_RE = /__VITE_ASSET__|__VITE_PUBLIC_ASSET__/
+const STYLE_QUERY_RE = /[?&]type=style/
 
 export function RuntimePathsPlugin (): Plugin {
   let sourcemap: boolean
@@ -16,14 +15,14 @@ export function RuntimePathsPlugin (): Plugin {
       sourcemap = !!config.build.sourcemap
     },
     transform (code, id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      const { pathname, search } = parseModuleId(id)
 
       // skip import into css files
       if (isCSS(pathname)) { return }
 
       // skip import into <style> vue files
       if (pathname.endsWith('.vue')) {
-        if (search && parseQuery(search).type === 'style') { return }
+        if (STYLE_QUERY_RE.test(search)) { return }
       }
 
       if (VITE_ASSET_RE.test(code)) {

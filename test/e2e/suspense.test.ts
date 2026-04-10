@@ -1,8 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
-import { join } from 'pathe'
 import { expect, test } from './test-utils'
-import { isDev } from '../matrix'
 
 /**
  * This test suite verifies that Nuxt's suspense integration works correctly,
@@ -11,19 +9,12 @@ import { isDev } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/suspense', import.meta.url))
 
-// Run tests in parallel in production mode, but serially in dev mode
-test.describe.configure({ mode: isDev ? 'serial' : 'parallel' })
-
 test.use({
   nuxt: {
     rootDir: fixtureDir,
-    dev: isDev,
     server: true,
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
-    nuxtConfig: {
-      buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
-    },
   },
 })
 
@@ -50,20 +41,20 @@ test.describe('Suspense multiple navigation', () => {
     await expect(page.getByTestId('index-title')).toBeVisible()
 
     // Test multiple rapid navigation (clicking both buttons before first navigation completes)
-    await Promise.all([
-      page.getByTestId('btn-a').click(),
-      page.getByTestId('btn-b').click(),
-      page.getByTestId('btn-a').click(),
-      page.getByTestId('btn-b').click(),
-      page.getByTestId('btn-a').click(),
-      page.getByTestId('btn-b').click(),
-      page.getByTestId('btn-a').click(),
-      page.getByTestId('btn-b').click(),
-    ])
+    const btnA = page.getByTestId('btn-a')
+    const btnB = page.getByTestId('btn-b')
+    await btnA.dispatchEvent('click')
+    await btnB.dispatchEvent('click')
+    await btnA.dispatchEvent('click')
+    await btnB.dispatchEvent('click')
+    await btnA.dispatchEvent('click')
+    await btnB.dispatchEvent('click')
+    await btnA.dispatchEvent('click')
+    await btnB.dispatchEvent('click')
 
     // Verify we reached the target page with the correct content (from the second navigation)
     await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/target')
-    await expect(page.getByTestId('content')).toContainText('Hello b')
+    await expect(page.getByTestId('content')).toContainText('Hello b', { timeout: 10_000 })
 
     // Verify no errors or warnings occurred
     expect(page).toHaveNoErrorsOrWarnings()

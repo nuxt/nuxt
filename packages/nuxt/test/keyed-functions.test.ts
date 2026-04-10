@@ -1,8 +1,100 @@
 import type { KeyedFunction } from '@nuxt/schema'
 import { describe, expect, it, vi } from 'vitest'
-import { KeyedFunctionsPlugin } from '../src/core/plugins/keyed-functions'
+import { KeyedFunctionsPlugin } from '../src/compiler/plugins/keyed-functions'
 import { logger } from '../src/utils'
 import type { Import } from 'unimport'
+
+describe('keyed functions plugin - reactive getter (dev mode)', () => {
+  it('should pick up dynamically added keyed functions', async () => {
+    const keyedFunctions: KeyedFunction[] = [
+      { name: 'useExisting', source: '#app', argumentLength: 1 },
+    ]
+
+    const plugin = KeyedFunctionsPlugin({
+      sourcemap: false,
+      keyedFunctions,
+      getKeyedFunctions: () => keyedFunctions,
+      alias: {},
+      getAutoImports: () => Promise.resolve([]),
+      appDir: '/nuxt/dist/app/',
+      dev: true,
+    }).raw({}, {} as any) as {
+      transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
+    }
+
+    // Initially, only useExisting is known
+    const code1 = `
+import { useExisting } from '#app'
+useExisting()
+    `
+    expect((await plugin.transform.handler(code1, 'plugin.ts'))?.code).toContain('/* nuxt-injected */')
+
+    // useNewComposable is not yet known
+    const code2 = `
+import { useNewComposable } from '#app/composables/new'
+useNewComposable()
+    `
+    expect(await plugin.transform.handler(code2, 'plugin.ts')).toBeUndefined()
+
+    // Simulate HMR: add a new keyed function to the list
+    keyedFunctions.push({ name: 'useNewComposable', source: '#app/composables/new', argumentLength: 1 })
+
+    // Now useNewComposable should be recognized
+    const result = await plugin.transform.handler(code2, 'plugin.ts')
+    expect(result?.code).toContain('/* nuxt-injected */')
+  })
+
+  it('should not rebuild state when list length has not changed', async () => {
+    const keyedFunctions: KeyedFunction[] = [
+      { name: 'useExisting', source: '#app', argumentLength: 1 },
+    ]
+
+    const plugin = KeyedFunctionsPlugin({
+      sourcemap: false,
+      keyedFunctions,
+      getKeyedFunctions: () => keyedFunctions,
+      alias: {},
+      getAutoImports: () => Promise.resolve([]),
+      appDir: '/nuxt/dist/app/',
+      dev: true,
+    }).raw({}, {} as any) as {
+      transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
+    }
+
+    const code = `
+import { useExisting } from '#app'
+useExisting()
+    `
+
+    // Both calls should succeed without rebuilding (same length)
+    const result1 = await plugin.transform.handler(code, 'plugin.ts')
+    const result2 = await plugin.transform.handler(code, 'other.ts')
+    expect(result1?.code).toContain('/* nuxt-injected */')
+    expect(result2?.code).toContain('/* nuxt-injected */')
+  })
+
+  it('should use static code filter in production mode', () => {
+    const keyedFunctions: KeyedFunction[] = [
+      { name: 'useExisting', source: '#app', argumentLength: 1 },
+    ]
+
+    const plugin = KeyedFunctionsPlugin({
+      sourcemap: false,
+      keyedFunctions,
+      getKeyedFunctions: () => keyedFunctions,
+      alias: {},
+      getAutoImports: () => Promise.resolve([]),
+      appDir: '/nuxt/dist/app/',
+      dev: false,
+    }).raw({}, {} as any) as {
+      transform: { filter: { code?: { include: RegExp } }, handler: (code: string, id: string) => Promise<{ code: string } | null> }
+    }
+
+    // In production mode, code filter should be present (static regex)
+    expect(plugin.transform.filter.code).toBeDefined()
+    expect(plugin.transform.filter.code!.include).toBeInstanceOf(RegExp)
+  })
+})
 
 describe('keyed functions plugin', () => {
   const keyedFunctions: KeyedFunction[] = [

@@ -85,7 +85,7 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
       sourcemap: nuxt.options.sourcemap.client ? nuxt.options.vite.build?.sourcemap ?? nuxt.options.sourcemap.client : false,
       manifest: 'manifest.json',
       outDir: resolve(nuxt.options.buildDir, 'dist/client'),
-      rollupOptions: {
+      rolldownOptions: {
         input: { entry },
       },
     },

@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { pathToFileURL } from 'node:url'
-import { isAbsolute, relative, resolve } from 'pathe'
-import { parseURL, withTrailingSlash } from 'ufo'
+import { isAbsolute, normalize, relative, resolve } from 'pathe'
+import { withTrailingSlash } from 'ufo'
 import { genArrayFromRaw, genObjectFromRawEntries } from 'knitwork'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveAlias, useNitro } from '@nuxt/kit'
+import { parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
@@ -18,7 +18,7 @@ const isCSSLike = (name: string) => /\.(?:css|scss|sass|less|styl(?:us)?|postcss
 
 function normalizePath (nuxt: Nuxt, id?: string | null): string | null {
   if (!id) { return null }
-  const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  const { pathname } = parseModuleId(id)
   const rel = relative(nuxt.options.srcDir, pathname)
   if (rel.startsWith('..')) { return null }
   return rel
@@ -26,7 +26,7 @@ function normalizePath (nuxt: Nuxt, id?: string | null): string | null {
 
 function resolveFilePath (id?: string | null): string | null {
   if (!id) { return null }
-  return parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname || null
+  return parseModuleId(normalize(id)).pathname || null
 }
 
 function sanitizeStyleAssetName (rel: string) {
@@ -229,12 +229,6 @@ export class SSRStylesPlugin {
     }
 
     return null
-  }
-
-  private normalizeResourcePath (resource?: string | null): string | null {
-    if (!resource) { return null }
-    const withoutQuery = resource.split('?')[0]
-    return resolveFilePath(withoutQuery)
   }
 
   apply (compiler: Compiler) {

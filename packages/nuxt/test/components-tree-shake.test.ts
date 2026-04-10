@@ -57,7 +57,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
 
 const treeshake = async (source: string): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await (treeshakeTemplatePlugin.transform! as Function)(source, 'test.ts')
+  const result = await ((treeshakeTemplatePlugin.transform as any)!.handler as Function)(source, 'test.vue')
   return typeof result === 'string' ? result : result?.code
 }
 

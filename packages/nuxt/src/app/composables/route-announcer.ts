@@ -47,9 +47,7 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
 
   _updateMessageWithPageHeading()
 
-  activeHead?.hooks?.hook('dom:rendered', () => {
-    _updateMessageWithPageHeading()
-  })
+  activeHead?.hooks?.hook('dom:rendered', _updateMessageWithPageHeading)
 
   return {
     _cleanup,

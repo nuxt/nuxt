@@ -91,6 +91,7 @@ export default withMatrix({
     typescriptBundlerResolution,
   },
   experimental: {
+    nitroAutoImports: true,
     typedPages: true,
     appManifest: true,
   },

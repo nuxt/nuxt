@@ -19,7 +19,7 @@ export function getUserTrace (): Trace[] {
   if (start === -1 || end === -1) {
     return []
   }
-  return trace.slice(start, -end).map(i => ({
+  return trace.slice(start, end > 0 ? -end : undefined).map(i => ({
     ...i,
     source: i.source.replace(/^file:\/\//, ''),
   }))

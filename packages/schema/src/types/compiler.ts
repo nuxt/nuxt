@@ -1,3 +1,5 @@
+import type { JavascriptExtension } from '../utils/definition.ts'
+
 export interface KeyedFunction {
   /**
    * The name of the function.
@@ -27,4 +29,44 @@ export interface KeyedFunction {
    * ```
    */
   argumentLength: number
+}
+
+export interface KeyedFunctionFactory extends Pick<KeyedFunction, 'argumentLength'> {
+  /**
+   * The name of the factory function.
+   * @example 'createUseFetch'
+   */
+  name: string
+  source: string
+}
+
+export interface NuxtCompilerOptions {
+  /**
+   * Enable scanning of directories for Nuxt compiler transformations.
+   */
+  scan?: boolean
+}
+
+export interface CompilerScanDir {
+  /**
+   * Path (absolute or relative) to the directory to scan for files.
+   * Relative paths are resolved against the Nuxt source directory of the project.
+   *
+   * You can use Nuxt aliases (~ or @) to refer to directories inside the project or directly use an NPM package path similar to `require()`.
+   */
+  path: string
+  /**
+   * The file extensions to scan in the specified path.
+   *
+   * This has no effect if `pattern` is specified.
+   */
+  extensions?: (JavascriptExtension | (string & {}))[]
+  /**
+   * Accept Pattern that will be run against the specified path.
+   */
+  pattern?: string | string[]
+  /**
+   * Ignore patterns that will be run against the specified path.
+   */
+  ignore?: string[]
 }

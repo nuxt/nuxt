@@ -49,13 +49,14 @@ describe('modules', () => {
             foo: 'bar',
           },
         },
-        '@nuxt/devtools': {
-          defaults: {
-            enabled: true,
-            // @ts-expect-error not a valid option
-            foo: 'bar',
-          },
-        },
+        // TODO: add back when we reenable @nuxt/devtools
+        // '@nuxt/devtools': {
+        //   defaults: {
+        //     enabled: true,
+        //     // @ts-expect-error not a valid option
+        //     foo: 'bar',
+        //   },
+        // },
       },
     })
   })

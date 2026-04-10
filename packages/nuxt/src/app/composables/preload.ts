@@ -68,7 +68,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
     }
     const promise = Promise.resolve((component as () => unknown)())
       .catch(() => {})
-      .finally(() => promises.splice(promises.indexOf(promise)))
+      .finally(() => promises.splice(promises.indexOf(promise), 1))
     promises.push(promise)
   }
 

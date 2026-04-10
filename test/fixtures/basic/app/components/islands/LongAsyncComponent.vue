@@ -43,13 +43,13 @@
 </template>
 
 <script setup lang="ts">
-import { getResponseHeaders } from 'h3'
-
 defineProps<{
   count: number
 }>()
 
 const evt = useRequestEvent()
-const headers = evt ? getResponseHeaders(evt) : {}
+const headers = evt
+  ? Object.fromEntries(evt.res.headers.entries())
+  : {}
 const { data } = await useFetch('/api/very-long-request')
 </script>

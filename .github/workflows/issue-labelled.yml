@@ -62,6 +62,8 @@ jobs:
 
   needs-reproduction:
     uses: nuxt/.github/.github/workflows/needs-reproduction.yml@main
+    permissions:
+      issues: write
     with:
       comment: |
         Would you be able to provide a **minimal** [reproduction](https://nuxt.com/docs/4.x/community/reporting-bugs/#create-a-minimal-reproduction)? 🙏

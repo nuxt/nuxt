@@ -2,9 +2,8 @@ import type { Ref } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
-import { deleteCookie, getCookie, getRequestHeader, setCookie } from '@nuxt/nitro-server/h3'
+import { deleteCookie, getCookie, setCookie } from '@nuxt/nitro-server/h3'
 import type { H3Event } from '@nuxt/nitro-server/h3'
-import destr from 'destr'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
@@ -12,6 +11,16 @@ import { useRequestEvent } from './ssr'
 
 // @ts-expect-error virtual import
 import { cookieStore } from '#build/nuxt.config.mjs'
+
+function parseCookieValue (value: string) {
+  if (value === 'undefined') { return undefined }
+  try {
+    const parsed = JSON.parse(value)
+    // avoid coercing number-like strings that lose precision or overflow (e.g. '4e71375682906041' -> Infinity)
+    if (typeof parsed === 'number' && String(parsed) !== value) { return value }
+    return parsed
+  } catch { return value }
+}
 
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 
@@ -44,16 +53,22 @@ export interface CookieRef<T> extends Ref<T> {}
 const CookieDefaults = {
   path: '/',
   watch: true,
-  decode: (val) => {
-    const decoded = decodeURIComponent(val)
-    const parsed = destr(decoded)
-    // destr can return Infinity or precision-loss numbers - keep original string
-    if (typeof parsed === 'number' && (!Number.isFinite(parsed) || String(parsed) !== decoded)) {
-      return decoded
+  decode: val => parseCookieValue(decodeURIComponent(val)),
+  encode: (val) => {
+    // JSON-quote strings that would be coerced on decode (e.g. '42', 'true', 'null', 'undefined')
+    if (typeof val !== 'string' || val === 'undefined') {
+      return encodeURIComponent(JSON.stringify(val))
     }
-    return parsed
+
+    try {
+      if (typeof JSON.parse(val) !== 'string') {
+        return encodeURIComponent(JSON.stringify(val))
+      }
+    } catch {
+      // ignore - value is not JSON, so encode as-is
+    }
+    return encodeURIComponent(val)
   },
-  encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
   refresh: false,
 } satisfies CookieOptions<any>
 
@@ -205,12 +220,19 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 export function refreshCookie (name: string) {
   if (import.meta.server || store || typeof BroadcastChannel === 'undefined') { return }
 
-  new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
+  try {
+    const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
+    channel.postMessage({ refresh: true })
+    channel.close()
+  } catch {
+    // BroadcastChannel will fail in certain situations when cookies are disabled
+    // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
+  }
 }
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
   if (import.meta.server) {
-    return parse(getRequestHeader(useRequestEvent()!, 'cookie') || '', opts)
+    return parse(useRequestEvent()!.req.headers.get('cookie') || '', opts)
   } else if (import.meta.client) {
     return parse(document.cookie, opts)
   }
@@ -268,18 +290,22 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
   return customRef((track, trigger) => {
     if (shouldWatch) { unsubscribe = watch(internalRef, trigger) }
 
-    function createExpirationTimeout () {
-      elapsed = 0
-      clearTimeout(timeout)
+    function scheduleTimeout () {
       const timeRemaining = delay - elapsed
       const timeoutLength = timeRemaining < MAX_TIMEOUT_DELAY ? timeRemaining : MAX_TIMEOUT_DELAY
       timeout = setTimeout(() => {
         elapsed += timeoutLength
-        if (elapsed < delay) { return createExpirationTimeout() }
+        if (elapsed < delay) { return scheduleTimeout() }
 
         internalRef.value = undefined
         trigger()
       }, timeoutLength)
+    }
+
+    function createExpirationTimeout () {
+      elapsed = 0
+      clearTimeout(timeout)
+      scheduleTimeout()
     }
 
     return {

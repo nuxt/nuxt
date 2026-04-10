@@ -2,14 +2,12 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
-import { destr } from 'destr'
-
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
-
 import { hasProtocol } from 'ufo'
-import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
-import * as composables from '#app/composables'
 
+import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
+
+import * as composables from '#app/composables'
 import { refreshNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
@@ -23,14 +21,14 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-
 import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
+
 import { isTestingAppManifest } from '../matrix'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
 describe('app config', () => {
@@ -140,31 +138,22 @@ describe('errors', () => {
   it('createError', () => {
     expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
       {
-        "message": "",
-        "statusCode": 404,
+        "data": undefined,
+        "message": "HTTPError 404",
+        "status": 404,
+        "statusText": undefined,
+        "unhandled": undefined,
       }
     `)
     expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
       {
+        "data": undefined,
         "message": "Message",
-        "statusCode": 500,
+        "status": 500,
+        "statusText": undefined,
+        "unhandled": undefined,
       }
     `)
-  })
-
-  // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
-  it('supports status/statusText getters', () => {
-    const error = createError({ status: 404, statusText: 'Not Found' })
-    expect(error.status).toBe(404)
-    expect(error.statusText).toBe('Not Found')
-    // backwards compat
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(error.statusCode).toBe(404)
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(error.statusMessage).toBe('Not Found')
-    // non-enumerable (no duplicate in toJSON)
-    expect(Object.keys(error.toJSON())).not.toContain('status')
-    expect(Object.keys(error.toJSON())).not.toContain('statusText')
   })
 
   it('isNuxtError', () => {
@@ -177,7 +166,7 @@ describe('errors', () => {
     const error = useError()
     expect(error.value).toBeUndefined()
     showError('new error')
-    expect(error.value).toMatchInlineSnapshot('[Error: new error]')
+    expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
   })
@@ -221,7 +210,7 @@ describe('useHydration', () => {
 describe('useState', () => {
   // be sure to not have colliding keys in tests
   afterEach(() => {
-    clearNuxtState()
+    clearNuxtState(undefined, { reset: false })
   })
 
   it('expect providing only init function to use autoKey default', () => {
@@ -256,7 +245,7 @@ describe('useState', () => {
 describe('clearNuxtState', () => {
   // be sure to not have colliding keys in tests
   afterEach(() => {
-    clearNuxtState()
+    clearNuxtState(undefined, { reset: false })
   })
 
   it('expect state in payload for single key to be removed', () => {
@@ -264,7 +253,9 @@ describe('clearNuxtState', () => {
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
     clearNuxtState(key)
-    expect(state.value).toBeUndefined()
+    // In v5 (resetOnClear: true), clearNuxtState resets to init value by default
+    // In v4 (resetOnClear: false), clearNuxtState sets to undefined
+    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
   })
 
   it('expect state in payload for array of keys to be removed', () => {
@@ -275,11 +266,13 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState([key1, 'other'])
-    expect(state1.value).toBeUndefined()
+    // In v5, resetOnClear resets to init value; in v4, it sets to undefined
+    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
+    expect(state1.value).toBe(cleared)
     expect(state2.value).toBe('test')
     clearNuxtState([key1, key2])
-    expect(state1.value).toBeUndefined()
-    expect(state2.value).toBeUndefined()
+    expect(state1.value).toBe(cleared)
+    expect(state2.value).toBe(cleared)
   })
 
   it('expect state in payload for function to be removed', () => {
@@ -289,7 +282,7 @@ describe('clearNuxtState', () => {
     clearNuxtState(() => false)
     expect(state.value).toBe('test')
     clearNuxtState(k => k === key)
-    expect(state.value).toBeUndefined()
+    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
   })
 
   it('expect all states to be removed when no key is provided', () => {
@@ -298,8 +291,9 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState(undefined)
-    expect(state1.value).toBeUndefined()
-    expect(state2.value).toBeUndefined()
+    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
+    expect(state1.value).toBe(cleared)
+    expect(state2.value).toBe(cleared)
   })
 
   it('expect state in payload for single key to reset', () => {
@@ -372,6 +366,35 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     const state3 = useState('clearNuxtState-test', () => 'test')
     expect(state3.value).toBe('test')
+  })
+
+  it('should only enumerate useState keys, ignoring internal payload.state entries', () => {
+    const nuxtApp = useNuxtApp()
+    // Simulate internal state entries that don't use the useState prefix
+    nuxtApp.payload.state._layout = 'default'
+    nuxtApp.payload.state._layoutProps = { foo: 'bar' }
+
+    const state = useState('clearNuxtState-test', () => 'test')
+    expect(state.value).toBe('test')
+
+    const matchedKeys: string[] = []
+    clearNuxtState((key) => {
+      matchedKeys.push(key)
+      return true
+    })
+
+    // Filter function should only receive actual useState keys, not garbled internal keys
+    expect(matchedKeys).not.toContain('ayout')
+    expect(matchedKeys).not.toContain('ayoutProps')
+    expect(matchedKeys).toContain('clearNuxtState-test')
+
+    // Internal state entries should not be affected
+    expect(nuxtApp.payload.state._layout).toBe('default')
+    expect(nuxtApp.payload.state._layoutProps).toEqual({ foo: 'bar' })
+
+    // Clean up
+    delete nuxtApp.payload.state._layout
+    delete nuxtApp.payload.state._layoutProps
   })
 })
 
@@ -479,6 +502,10 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             "/pre": {
               "prerender": true,
             },
+            "/pre/spa": {
+              "prerender": true,
+              "ssr": false,
+            },
           },
         },
         "prerendered": [],
@@ -486,16 +513,28 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     `)
   })
   it('getRouteRules', () => {
-    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot(`
+      {
+        "ssr": true,
+      }
+    `)
     expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
+        "ssr": true,
+      }
+    `)
+    expect(getRouteRules({ path: '/pre/spa/thing' })).toMatchInlineSnapshot(`
+      {
+        "prerender": true,
+        "ssr": false,
       }
     `)
     expect(getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
         "redirect": "/",
+        "ssr": true,
       }
     `)
   })
@@ -508,12 +547,17 @@ describe('compiled route rules', () => {
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+    expect(await isPrerendered('/pre/spa/thing')).toBeTruthy()
   })
 
   it('should determine if payload should be loaded based on route rules', async () => {
     // wildcard routes with prerender: true should load payloads
     const shouldLoadPre = await shouldLoadPayload('/pre/thing')
     expect(shouldLoadPre).toBe(true)
+
+    // prerendered routes with ssr: false should not load payloads
+    const shouldLoadSpaPre = await shouldLoadPayload('/pre/spa/thing')
+    expect(shouldLoadSpaPre).toBe(false)
 
     // specific prerendered routes should load payloads
     const shouldLoadSpecific = await shouldLoadPayload('/specific-prerendered')
@@ -580,7 +624,7 @@ describe('routing utilities: `navigateTo`', () => {
       ['\0data:alert("hi")', 'data'],
     ]
     for (const [url, protocol] of urls) {
-      expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+      expect(() => navigateTo(url, { external: true })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
   })
   it('navigateTo should replace current navigation state if called within middleware', () => {
@@ -781,7 +825,7 @@ describe('routing utilities: `useRoute`', () => {
 describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
-    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[HTTPError: Page not found]')
     expect(error.value).toBe(undefined)
   })
   it('should block navigation if no error is provided', () => {
@@ -884,7 +928,7 @@ describe('useCookie', () => {
       default: () => ({ s2: -1 }),
       decode (value) {
         barCallCount++
-        return destr(decodeURIComponent(value))
+        return JSON.parse(decodeURIComponent(value))
       },
     })
     bazCookie.value.s2++
@@ -897,7 +941,7 @@ describe('useCookie', () => {
       filter: key => key === 'bar' || key === 'baz',
       decode (value) {
         quxCallCount++
-        return destr(decodeURIComponent(value))
+        return JSON.parse(decodeURIComponent(value))
       },
     })
     quxCookie.value.s3++
@@ -1019,6 +1063,18 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(1)
 
       await navigateTo('/test')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it('should retry after a rejected promise', async () => {
+      const fn = vi.fn()
+        .mockRejectedValueOnce(new Error('fail'))
+        .mockResolvedValueOnce(undefined)
+      const execute = () => options ? callOnce('retry-key', fn, options) : callOnce('retry-key', fn)
+      await expect(execute()).rejects.toThrow('fail')
+      expect(fn).toHaveBeenCalledTimes(1)
+
       await execute()
       expect(fn).toHaveBeenCalledTimes(2)
     })

@@ -1,0 +1,62 @@
+name: agent-scan
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+
+concurrency:
+  group: agent-scan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  agentscan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - name: Cache AgentScan analysis
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        with:
+          path: .agentscan-cache
+          key: agentscan-cache-${{ github.actor }}
+          restore-keys: agentscan-cache-
+      - name: AgentScan
+        id: agentscan
+        uses: MatteoGabriele/agentscan-action@6b02b7903ab24fbd23da0314b1b04dbaad98151b
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-members: "dependabot[bot],renovate[bot]"
+          agent-scan-comment: false
+          cache-path: .agentscan-cache
+      - name: Label flagged PR
+        if: contains(fromJSON('["automation","suspicious"]'), steps.agentscan.outputs.classification) && !contains(steps.agentscan.outputs.community-flagged, 'true')
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const classification = '${{ steps.agentscan.outputs.classification }}';
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['possible bot'],
+            });
+      - name: Close community flagged accounts
+        if: steps.agentscan.outputs.community-flagged == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              state: 'closed',
+            });

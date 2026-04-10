@@ -1,0 +1,90 @@
+name: detect-bot-opt-in
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+  pull_request_target:
+    types:
+      - opened
+      - edited
+
+jobs:
+  detect:
+    name: Detect bot opt-in
+    runs-on: ubuntu-slim
+    if: >
+      contains(github.event.issue.title || github.event.pull_request.title, '🤖🤖🤖')
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Add 'possible bot' label and comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const isPR = !!context.payload.pull_request
+            const number = isPR
+              ? context.payload.pull_request.number
+              : context.payload.issue.number
+
+            const labels = isPR
+              ? context.payload.pull_request.labels.map(l => l.name)
+              : context.payload.issue.labels.map(l => l.name)
+
+            // Add the label (if not already present)
+            if (!labels.includes('possible bot')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+                labels: ['possible bot'],
+              })
+            }
+
+            // Check if we already commented (to avoid duplicates on edit events)
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              per_page: 30,
+            })
+            const alreadyCommented = comments.data.some(
+              c => c.user.type === 'Bot' && c.body.includes('AI-assisted contribution guidelines')
+            )
+            if (alreadyCommented) {
+              core.info('Already commented on this issue/PR - skipping.')
+              return
+            }
+
+            // Post the comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              body: [
+                "We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing to Nuxt, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):",
+                '',
+                '1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.',
+                '2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.',
+                '',
+                'Please review our [AI-assisted contribution guidelines](https://nuxt.com/docs/community/contribution#ai-assisted-contributions) and update this contribution if needed.',
+                '',
+                'If this was flagged in error, we apologise! 😳 Just let us know. 🙏',
+              ].join('\n'),
+            })
+
+            // Write job summary
+            core.summary
+              .addHeading('Bot Opt-In Detected', 2)
+              .addTable([
+                [{ data: 'Property', header: true }, { data: 'Value', header: true }],
+                ['Issue/PR', `#${number}`],
+                ['Type', isPR ? 'Pull Request' : 'Issue'],
+                ['Trigger', '🤖🤖🤖 in title'],
+              ])
+              .addRaw('\n\nAdded `possible bot` label and posted AI contribution policy comment.')
+
+            await core.summary.write()

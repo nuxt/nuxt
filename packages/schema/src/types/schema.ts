@@ -39,7 +39,7 @@ import type { SerializableHtmlAttributes } from './head.ts'
 import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
-import type { KeyedFunction } from './compiler.ts'
+import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
 
 export interface ConfigSchema {
   /**
@@ -57,6 +57,11 @@ export interface ConfigSchema {
    * @see [Nuxt documentation](https://nuxt.com/docs/4.x/directory-structure/app/composables)
    */
   imports: ImportsOptions
+
+  /**
+   * Configure the Nuxt compiler.
+   */
+  compiler: NuxtCompilerOptions
 
   /**
    * Whether to use the vue-router integration in Nuxt 3. If you do not provide a value it will be enabled if you have a `pages/` directory in your source folder.
@@ -523,6 +528,12 @@ export interface ConfigSchema {
      *
      */
     keyedComposables: KeyedFunction[]
+    /**
+     * Factories for functions that should be registered for automatic key injection.
+     *
+     * @see keyedComposables
+     */
+    keyedComposableFactories: KeyedFunctionFactory[]
 
     /**
      * Tree shake code from specific builds.
@@ -1078,14 +1089,6 @@ export interface ConfigSchema {
     asyncEntry: boolean
 
     /**
-     * Externalize `vue`, `@vue/*` and `vue-router` when building.
-     *
-     * @default true
-     * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
-     */
-    externalVue: boolean
-
-    /**
      * Enable accessing `appConfig` from server routes.
      *
      * @default true
@@ -1125,13 +1128,6 @@ export interface ConfigSchema {
     restoreState: boolean
 
     /**
-     * Render JSON payloads with support for revivifying complex types.
-     *
-     * @default true
-     */
-    renderJsonPayloads: boolean
-
-    /**
      * Disable vue server renderer endpoint within nitro.
      *
      * @default false
@@ -1139,11 +1135,19 @@ export interface ConfigSchema {
     noVueServer: boolean
 
     /**
-     * When this option is enabled (by default) payload of pages that are prerendered are extracted
+     * Controls how payload data is delivered for prerendered and cached (ISR/SWR) pages.
      *
-     * @default true
+     * - `'client'` - Payload is inlined in HTML for the initial server render, and extracted to
+     *   `_payload.json` files for client-side navigation. This avoids a separate request on
+     *   initial load while still enabling efficient client-side navigation.
+     * - `true` - Payload is extracted to a separate `_payload.json` file for both the initial
+     *   server render and client-side navigation.
+     * - `false` - Payload extraction is disabled entirely. Payload is always inlined in HTML and
+     *   no `_payload.json` files are generated.
+     *
+     * `@default` true (or 'client' when compatibilityVersion >= 5)
      */
-    payloadExtraction: boolean | undefined
+    payloadExtraction: 'client' | boolean | undefined
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
@@ -1304,14 +1308,6 @@ export interface ConfigSchema {
      * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
      */
     cookieStore: boolean
-
-    /**
-     * Enable experimental Vite Environment API
-     * @see [Vite Environment API](https://vite.dev/guide/api-environment#environment-api)
-     * @default false
-     * @default true with compatibilityVersion >= 5
-     */
-    viteEnvironmentApi: boolean
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.
@@ -1638,6 +1634,43 @@ export interface ConfigSchema {
        */
       botRegex?: string
     }
+
+    /**
+     * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.
+     *
+     * Hookable v6 may return `void` instead of `Promise<void>` when there are no registered
+     * hooks or all hooks are synchronous. When this option is enabled, Nuxt wraps `callHook`
+     * with `Promise.resolve()` so that `.then()` and `.catch()` chaining always works.
+     *
+     * Set to `false` for better performance if your code and modules use `await` with `callHook`.
+     * @default true
+     * @default false with compatibilityVersion >= 5
+     */
+    asyncCallHook: boolean
+
+    /**
+     * Whether to use comment nodes instead of `<div>` elements as placeholders for client-only
+     * components during server-side rendering.
+     *
+     * When enabled, `.client.vue` components and `createClientOnly()` wrappers render an HTML
+     * comment (`<!--placeholder-->`) on the server instead of an empty `<div>`. This fixes a
+     * Vue hydration issue where scoped styles may not be applied when the placeholder `<div>`
+     * and the actual component root share the same tag name.
+     *
+     * Note: enabling this means attributes (class, style, etc.) passed to `.client.vue`
+     * components will not be rendered in the SSR HTML. If you need styled placeholders,
+     * use `<ClientOnly>` with a `#fallback` slot instead.
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    clientNodePlaceholder: boolean
+
+    /**
+     * When enabled, Nuxt will clear build-related hooks after bundling, freeing
+     * memory before the Nitro build. Disable this if you need to call `build()`
+     * multiple times on the same Nuxt instance (e.g. in benchmarks).
+     */
+    clearBuildHooks: boolean
   }
 
   /**

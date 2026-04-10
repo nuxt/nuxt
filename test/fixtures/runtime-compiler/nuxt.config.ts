@@ -6,6 +6,6 @@ export default withMatrix({
     runtimeCompiler: true,
   },
   experimental: {
-    externalVue: false,
+    nitroAutoImports: true,
   },
 })

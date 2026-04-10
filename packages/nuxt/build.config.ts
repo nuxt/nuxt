@@ -14,6 +14,7 @@ export default defineBuildConfig({
       'head',
       'components',
       'pages',
+      'compiler',
     ].map(name => ({ input: `src/${name}/runtime/`, outDir: `dist/${name}/runtime`, format: 'esm', ext: 'js' } as BuildEntry)),
   ],
   hooks: {

@@ -1,8 +1,7 @@
-import type { EventHandler } from 'h3'
-import { defineEventHandler, getRequestHeader } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 
-const handler: EventHandler = defineEventHandler((event) => {
-  if (getRequestHeader(event, 'x-nuxt-no-ssr')) {
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
+  if (event.req.headers.get('x-nuxt-no-ssr')) {
     event.context.nuxt ||= {}
     event.context.nuxt.noSSR = true
   }

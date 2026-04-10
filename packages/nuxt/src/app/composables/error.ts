@@ -1,5 +1,4 @@
-import type { H3Error } from '@nuxt/nitro-server/h3'
-import { createError as createH3Error } from '@nuxt/nitro-server/h3'
+import { HTTPError } from '@nuxt/nitro-server/h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
@@ -11,18 +10,6 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 /** @since 3.0.0 */
 /* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
-
-// #34138 - `Omit` breaks the Error inheritance chain, causing `@typescript-eslint/only-throw-error` to fail
-// Adding `Error` explicitly restores throwability. TODO: remove `Error` in Nuxt 5 when `Omit` is no longer needed
-export interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'>, Error {
-  error?: true
-  status?: number
-  statusText?: string
-  /** @deprecated Use `status` */
-  statusCode?: H3Error<DataT>['statusCode']
-  /** @deprecated Use `statusText` */
-  statusMessage?: H3Error<DataT>['statusMessage']
-}
 
 /** @since 3.0.0 */
 export const showError = <DataT = unknown>(
@@ -64,35 +51,23 @@ export const clearError = async (options: { redirect?: string } = {}) => {
 }
 
 /** @since 3.0.0 */
-export const isNuxtError = <DataT = unknown>(
-  error: unknown,
-): error is NuxtError<DataT> => !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
+export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError<DataT> => {
+  return !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
+}
+
+export class NuxtError<DataT = unknown> extends HTTPError<DataT> {
+  readonly [NUXT_ERROR_SIGNATURE] = true
+  readonly fatal: boolean
+
+  constructor (message = '', opts: Partial<NuxtError<DataT>> = {}) {
+    super(message, opts)
+    this.fatal = opts.fatal ?? !!opts.unhandled
+  }
+}
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>) => {
-  if (typeof error !== 'string' && (error as Partial<NuxtError<DataT>>).statusText) {
-    error.message ??= (error as Partial<NuxtError<DataT>>).statusText
-  }
-
-  const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
-
-  Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {
-    value: true,
-    configurable: false,
-    writable: false,
-  })
-
-  // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
-  Object.defineProperty(nuxtError, 'status', {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    get: () => nuxtError.statusCode,
-    configurable: true,
-  })
-  Object.defineProperty(nuxtError, 'statusText', {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    get: () => nuxtError.statusMessage,
-    configurable: true,
-  })
-
-  return nuxtError
+  return typeof error === 'string'
+    ? new NuxtError<DataT>(error)
+    : new NuxtError<DataT>(error.message, error)
 }

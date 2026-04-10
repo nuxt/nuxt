@@ -1,8 +1,7 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
-import { parseQuery, parseURL } from 'ufo'
+
 import { isAbsolute, join, parse } from 'pathe'
 import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
@@ -13,48 +12,42 @@ import type { KeyedFunction } from '@nuxt/schema'
 import type { Node } from 'oxc-parser'
 import type { Import } from 'unimport'
 
-import { isWhitespace, logger, stripExtension } from '../../utils.ts'
-import type { FunctionCallMetadata } from '../utils/parse-utils.ts'
-import { parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../utils/parse-utils.ts'
+import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, isWhitespace, logger, stripExtension } from '../../utils.ts'
+import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface KeyedFunctionsOptions {
   sourcemap: boolean
   keyedFunctions: KeyedFunction[]
+  getKeyedFunctions?: () => KeyedFunction[]
   alias: Record<string, string>
   // TODO: remove in Nuxt 5
   getAutoImports: () => Promise<Import[]>
   // TODO: remove in Nuxt 5
   appDir: string
+  dev?: boolean
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
-const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
-const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
+const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
-
-export function shouldTransformFile (id: string, extensions: RegExp | readonly string[]) {
-  const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-  return !NUXT_LIB_RE.test(pathname)
-    && (
-      extensions instanceof RegExp
-        ? extensions.test(pathname)
-        : new RegExp(`\\.(${extensions.map(e => escapeRE(e)).join('|')})$`).test(pathname)
-    )
-    && parseQuery(search).type !== 'style' && !parseQuery(search).macro
-}
 
 // TODO: remove in Nuxt 5
 type BackwardsCompatibleKeyedFunction = Omit<KeyedFunction, 'source'> & { source?: KeyedFunction['source'] | RegExp }
 
-export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUnplugin(() => {
-  // DO NOT USE IN TRANSFORM - this is a global copy that doesn't include local import names
-  // - the `source`s have resolved aliases and are without extensions
+/**
+ * Builds the lookup state from a list of keyed functions.
+ *
+ * Note: `namesToSourcesToFunctionMeta` is a global copy that maps exported names to sources.
+ * It does NOT include local import renames — the transform handler builds per-file local
+ * name mappings separately. The `source`s have resolved aliases and are without extensions.
+ */
+function buildKeyedFunctionsState (keyedFunctions: KeyedFunction[]) {
   const namesToSourcesToFunctionMeta = new Map<string, Map<string, BackwardsCompatibleKeyedFunction>>()
   // filenames (without extension) of files that have a `default` keyed function export
   const defaultExportSources = new Set<string>()
 
-  for (const f of options.keyedFunctions) {
+  for (const f of keyedFunctions) {
     let functionName = f.name
     const fnSource = typeof f.source === 'string' ? stripExtension(f.source) : ''
 
@@ -97,21 +90,54 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   }
 
   // TODO: come up with a better way to include files importing a `default` export (imported name can be arbitrary)
-  const CODE_INCLUDE_RE = new RegExp(`\\b(${[...namesToSourcesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
+  const codeIncludeRE = new RegExp(`\\b(${[...namesToSourcesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
+
+  return { namesToSourcesToFunctionMeta, defaultExportSources, sources, codeIncludeRE }
+}
+
+export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUnplugin(() => {
+  // Build initial state from the static keyedFunctions list
+  let state = buildKeyedFunctionsState(options.keyedFunctions)
+  let lastKeyedFunctionsLength = options.keyedFunctions.length
+
+  // In dev mode with a reactive getter, rebuild state when data changes
+  function getState () {
+    if (options.dev && options.getKeyedFunctions) {
+      const current = options.getKeyedFunctions()
+      if (current.length !== lastKeyedFunctionsLength) {
+        state = buildKeyedFunctionsState(current)
+        lastKeyedFunctionsLength = current.length
+      }
+    }
+    return state
+  }
 
   return {
     name: 'nuxt:compiler:keyed-functions',
     enforce: 'post',
-    transformInclude: id => shouldTransformFile(id, SUPPORTED_EXT_RE),
     transform: {
       filter: {
-        code: { include: CODE_INCLUDE_RE },
+        id: {
+          include: SUPPORTED_EXT_RE,
+          exclude: [NUXT_LIB_RE, STYLE_QUERY_RE, MACRO_QUERY_RE],
+        },
+        // In dev mode, skip the static code filter to allow HMR-added composables to be processed.
+        // In production, use the static regex for performance.
+        ...(!options.dev && { code: { include: state.codeIncludeRE } }),
       },
       async handler (code, _id) {
+        const { namesToSourcesToFunctionMeta, sources } = getState()
+
+        // In dev mode, do an early return if no known composable names appear in the code
+        if (options.dev) {
+          const { codeIncludeRE } = getState()
+          if (!codeIncludeRE.test(code)) { return }
+        }
+
         const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { 0: code, index: 0 }
         const id = stripExtension(_id)
 
-        const { directImports, namespaces } = processImports(findStaticImports(script).map(i => parseStaticImport(i)))
+        const { directImports, namespaces } = processImports(findStaticImports(script).map(i => parseStaticImport(i)), options.alias)
 
         // consider exports when processing a file that exports a keyed function
         const shouldConsiderExports = sources.has(id)

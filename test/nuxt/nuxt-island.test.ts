@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, popScopeId, pushScopeId } from 'vue'
-import { type ServerHandler, serve } from 'srvx'
+import { serve } from 'srvx/node'
+import type { ServerHandler } from 'srvx'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { getPort } from 'get-port-please'
 
@@ -41,8 +42,6 @@ vi.mock('#build/nuxt.config.mjs', () => {
     appTeleportAttrs: { id: 'teleports' },
     appTeleportTag: 'div',
     appViewTransition: false,
-    // nuxt.config.mjs template exports
-    renderJsonPayloads: true,
     componentIslands: true,
     payloadExtraction: false,
     cookieStore: false,
@@ -66,6 +65,8 @@ vi.mock('#build/nuxt.config.mjs', () => {
     granularCachedData: false,
     pendingWhenIdle: false,
     alwaysRunFetchOnKeyChange: false,
+    asyncCallHook: false,
+    clientNodePlaceholder: true,
   }
 })
 

@@ -1,4 +1,5 @@
 import type { UseHeadInput } from '@unhead/vue/types'
+import type { $Fetch } from 'nitro/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 declare global {
@@ -30,6 +31,10 @@ declare global {
     __NUXT__?: Record<string, any> | Record<string, Record<string, any>>
     useNuxtApp?: typeof useNuxtApp
   }
+
+  // TODO: typed fetch
+  // @ts-expect-error type is coming in from `nitropack` v2
+  const $fetch: $Fetch
 }
 
 declare module 'vue' {

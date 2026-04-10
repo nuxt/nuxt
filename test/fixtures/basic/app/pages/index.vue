@@ -11,6 +11,9 @@
     <div>Composable | star: {{ useNestedBar() }}</div>
     <DevOnly>Some dev-only info</DevOnly>
     <div><DevOnly>Some dev-only info</DevOnly></div>
+    <DevOnly class="test-attr">
+      Dev-only with attributes
+    </DevOnly>
     <div>
       <DevOnly>
         Some dev-only info

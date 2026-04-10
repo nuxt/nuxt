@@ -1,16 +1,16 @@
-import { pathToFileURL } from 'node:url'
 import type { SourceMapInput } from 'rollup'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { dirname } from 'pathe'
-import { parseQuery, parseURL } from 'ufo'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import type { ArrowFunctionExpression, Function } from 'oxc-parser'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
-const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)$/
+const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
+const STYLE_QUERY_RE = /[?&]type=style/
+const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 
 export interface ExtractAsyncDataHandlersOptions {
   sourcemap: boolean
@@ -35,14 +35,11 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
         return asyncDatas[id]
       }
     },
-    transformInclude (id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return SUPPORTED_EXT_RE.test(pathname) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
-    },
     transform: {
       filter: {
         id: {
-          exclude: [/nuxt\/(src|dist)\/app/],
+          include: SUPPORTED_EXT_RE,
+          exclude: [/nuxt\/(src|dist)\/app/, STYLE_QUERY_RE, MACRO_QUERY_RE],
         },
         code: { include: FUNCTIONS_RE },
       },
