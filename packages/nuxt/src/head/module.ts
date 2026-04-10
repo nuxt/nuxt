@@ -70,8 +70,8 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           }
         }
 
-        // ValidatePlugin: dev only
-        if (options.validate && nuxt.options.dev) {
+        // ValidatePlugin: dev only, disabled during testing
+        if (options.validate && nuxt.options.dev && !nuxt.options.test) {
           imports.push('ValidatePlugin')
           plugins.push('ValidatePlugin()')
         }
