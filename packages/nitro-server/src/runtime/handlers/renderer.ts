@@ -5,7 +5,7 @@ import type { H3Event } from 'nitro/h3'
 import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'nitro/h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
-import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
+import type { Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { relative } from 'pathe'
@@ -68,9 +68,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(event)
 
-  // needed for hash hydration plugin to work
-  const headEntryOptions: HeadEntryOptions = { mode: 'server' }
-  ssrContext.head.push(appHead, headEntryOptions)
+  ssrContext.head.push(appHead)
 
   if (ssrError) {
     // @ts-expect-error TODO: investigate creating new error
@@ -198,12 +196,10 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     }
     ssrContext.head.push({
       script: [{
-        tagPosition: 'head',
-        tagPriority: -2,
         type: 'importmap',
-        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
+        innerHTML: { imports: { '#entry': path } },
       }],
-    }, headEntryOptions)
+    })
   }
   // 1. Preload payloads and app manifest
   // Skip preload when inlining full payload in HTML (no separate fetch needed for initial load)
@@ -212,7 +208,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
       link: [
         { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL },
       ],
-    }, headEntryOptions)
+    })
   }
 
   // 2. Styles
@@ -233,7 +229,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   }
 
   if (link.length) {
-    ssrContext.head.push({ link }, headEntryOptions)
+    ssrContext.head.push({ link })
   }
 
   if (!NO_SCRIPTS) {
@@ -247,10 +243,10 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     }
     ssrContext.head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
-    }, headEntryOptions)
+    })
     ssrContext.head.push({
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
-    }, headEntryOptions)
+    })
     // 5. Payloads
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
@@ -259,7 +255,6 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
         // Split payload: inline initial data, reference external _payload.json via src (payloadExtraction: true)
         : renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL }),
     }, {
-      ...headEntryOptions,
       // this should come before another end of body scripts
       tagPosition: 'bodyClose',
       tagPriority: 'high',
@@ -278,10 +273,10 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
         tagPosition: 'head',
         crossorigin: '',
       })),
-    }, headEntryOptions)
+    })
   }
 
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(ssrContext.head, renderSSRHeadOptions)
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {

@@ -1,13 +1,8 @@
 <script lang="ts" setup>
-import { TemplateParamsPlugin } from '@unhead/vue/plugins'
-// Unhead v2 requires an opt-in to template params
-const head = injectHead()
-head.use(TemplateParamsPlugin)
-
 const description = ref('head script setup description for %site.name')
 const siteName = ref()
 // server meta
-useServerSeoMeta({
+useSeoMeta({
   description,
   ogDescription: description,
   ogImage: '%site.url/og-image.png',
@@ -16,7 +11,7 @@ useServerSeoMeta({
   ogUrl: '%site.url/head-script-setup',
 })
 
-useServerHead({
+useHead({
   style: [
     '/* Custom styles */',
     'h1 { color: salmon; }',

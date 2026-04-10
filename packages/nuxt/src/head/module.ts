@@ -32,13 +32,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    // allow @unhead/vue server composables to be tree-shaken from the client bundle
-    if (!nuxt.options.dev) {
-      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
-        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe',
-      ]
-    }
-
     nuxt.options.alias['#unhead/composables'] = resolve(runtimeDir, 'composables')
     addBuildPlugin(UnheadImportsPlugin({
       sourcemap: !!nuxt.options.sourcemap.server,
@@ -52,21 +45,68 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {
-        // disableDefaults is enabled to avoid server component issues
-        if (!options.legacy) {
-          return `
-export default {
-  disableDefaults: true,
-}`
+        const plugins: string[] = []
+        const imports: string[] = []
+
+        if (options.templateParams) {
+          imports.push('TemplateParamsPlugin')
+          plugins.push('TemplateParamsPlugin')
         }
-        // v1 unhead legacy options
-        const disableCapoSorting = !nuxt.options.experimental.headNext
-        return `import { DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin } from ${JSON.stringify(unheadPlugins)};
-export default {
-  disableDefaults: true,
-  disableCapoSorting: ${Boolean(disableCapoSorting)},
-  plugins: [DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin],
-}`
+
+        if (options.legacy) {
+          if (nuxt.options.future.compatibilityVersion >= 5) {
+            console.warn('[nuxt] [unhead] `unhead.legacy` is ignored in compatibility version 5+. Remove deprecated head patterns (hid, vmid, children, body:true).')
+          } else {
+            for (const name of ['PromisesPlugin', 'AliasSortingPlugin']) {
+              if (!imports.includes(name)) {
+                imports.push(name)
+              }
+              plugins.push(name)
+            }
+            if (!imports.includes('TemplateParamsPlugin')) {
+              imports.push('TemplateParamsPlugin')
+              plugins.push('TemplateParamsPlugin')
+            }
+          }
+        }
+
+        // ValidatePlugin: dev only
+        if (options.validate && nuxt.options.dev) {
+          imports.push('ValidatePlugin')
+          plugins.push('ValidatePlugin()')
+        }
+
+        // CanonicalPlugin
+        if (options.canonical) {
+          imports.push('CanonicalPlugin')
+          const canonicalOpts = typeof options.canonical === 'object'
+            ? JSON.stringify(options.canonical)
+            : '{}'
+          plugins.push(`CanonicalPlugin(${canonicalOpts})`)
+        }
+
+        // MinifyPlugin: production only
+        if (options.minify && !nuxt.options.dev) {
+          imports.push('MinifyPlugin')
+          plugins.push('MinifyPlugin()')
+        }
+
+        const disableCapoSorting = options.legacy && nuxt.options.future.compatibilityVersion < 5 && !nuxt.options.experimental.headNext
+
+        const lines: string[] = []
+        if (imports.length) {
+          lines.push(`import { ${imports.join(', ')} } from ${JSON.stringify(unheadPlugins)};`)
+        }
+        lines.push(`export default {`)
+        lines.push(`  disableDefaults: true,`)
+        if (disableCapoSorting) {
+          lines.push(`  disableCapoSorting: true,`)
+        }
+        if (plugins.length) {
+          lines.push(`  plugins: [${plugins.join(', ')}],`)
+        }
+        lines.push(`}`)
+        return lines.join('\n')
       },
     })
 
@@ -84,6 +124,20 @@ export default {
       config.virtual!['#internal/unhead-options.mjs'] = () => nuxt.vfs['#build/unhead-options.mjs'] || ''
       config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs'] || ''
     })
+
+    // Remove deprecated server composables from auto-imports in v5
+    if (nuxt.options.future.compatibilityVersion >= 5) {
+      const deprecated = new Set(['useServerHead', 'useServerHeadSafe', 'useServerSeoMeta'])
+      nuxt.hooks.hook('imports:sources', (sources) => {
+        for (const source of sources) {
+          if ('from' in source && source.from === '#app/composables/head' && 'imports' in source && Array.isArray(source.imports)) {
+            source.imports = (source.imports as (string | { name: string })[]).filter(
+              i => !deprecated.has(typeof i === 'string' ? i : i.name),
+            )
+          }
+        }
+      })
+    }
 
     // Add library-specific plugin
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })

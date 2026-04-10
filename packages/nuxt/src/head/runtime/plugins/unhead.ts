@@ -17,11 +17,11 @@ export default defineNuxtPlugin({
     if (import.meta.client) {
       // pause dom updates until page is ready and between page transitions
       let pauseDOMUpdates = true
-      const syncHead = async () => {
+      const syncHead = () => {
         pauseDOMUpdates = false
-        await renderDOMHead(head)
+        renderDOMHead(head)
       }
-      head.hooks.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
+      head.hooks?.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
       nuxtApp.hooks.hook('page:start', () => { pauseDOMUpdates = true })
       // wait for new page before unpausing dom updates (triggered after suspense resolved)
       nuxtApp.hooks.hook('page:finish', () => {

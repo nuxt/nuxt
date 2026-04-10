@@ -398,36 +398,53 @@ export interface ConfigSchema {
    * An object that allows us to configure the `unhead` nuxt module.
    */
   unhead: {
-  /**
-   * Enable the legacy compatibility mode for `unhead` module. This applies the following changes: - Disables Capo.js sorting - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body` - Adds the `PromisesPlugin`: supports promises as input
-   *
-   *
-   * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/typescript/head/guides/get-started/migration)
-   *
-   * @example
-   * ```ts
-   * export default defineNuxtConfig({
-   *  unhead: {
-   *   legacy: true
-   * })
-   * ```
-   */
+    /**
+     * Enable the legacy compatibility mode for `unhead` v2. Adds `PromisesPlugin` and `AliasSortingPlugin`, disables Capo.js sorting.
+     *
+     * Ignored when `future.compatibilityVersion` >= 5.
+     *
+     * @default false
+     */
     legacy: boolean
 
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
-     *
-     * @example
-     * ```ts
-     * export default defineNuxtConfig({
-     *  unhead: {
-     *   renderSSRHeadOptions: {
-     *    omitLineBreaks: true
-     *   }
-     * })
-     * ```
      */
     renderSSRHeadOptions: RenderSSRHeadOptions
+
+    /**
+     * Enable the `TemplateParamsPlugin` to resolve template params like `%s`, `%separator`, and `%site.name` in head tags.
+     *
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     *
+     * @see https://unhead.unjs.io/docs/head/guides/template-params
+     */
+    templateParams: boolean
+
+    /**
+     * Enable the `ValidatePlugin` to detect common head tag issues and deprecated patterns in development.
+     *
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    validate: boolean
+
+    /**
+     * Enable the `CanonicalPlugin` to auto-generate canonical links and resolve relative `og:image` URLs.
+     *
+     * Pass `true` to enable with defaults, or an object with `canonicalHost`, `trailingSlash`, etc.
+     *
+     * @default false
+     */
+    canonical: boolean | { canonicalHost?: string, trailingSlash?: boolean }
+
+    /**
+     * Enable the `MinifyPlugin` to minify inline script and style content during SSR.
+     *
+     * @default false
+     */
+    minify: boolean
   }
 
   /**
