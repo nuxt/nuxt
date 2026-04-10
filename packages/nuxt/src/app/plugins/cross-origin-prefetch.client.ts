@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { defineScript } from 'unhead'
+import { defineScript } from '@unhead/vue'
 import { defineNuxtPlugin } from '../nuxt'
 import { useHead } from '../composables/head'
 

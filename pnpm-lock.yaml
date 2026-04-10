@@ -89,8 +89,8 @@ importers:
         specifier: 8.57.1
         version: 8.57.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       '@unhead/vue':
-        specifier: 3.0.1
-        version: 3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
+        specifier: 3.0.2
+        version: 3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
       '@vitest/coverage-v8':
         specifier: 4.1.2
         version: 4.1.2(vitest@4.1.2(@types/node@24.12.0)(happy-dom@20.8.4)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)))
@@ -347,8 +347,8 @@ importers:
         specifier: workspace:*
         version: link:../kit
       '@unhead/vue':
-        specifier: ^3.0.1
-        version: 3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
+        specifier: ^3.0.2
+        version: 3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
       '@vue/shared':
         specifier: 3.5.30
         version: 3.5.30
@@ -415,9 +415,6 @@ importers:
       unctx:
         specifier: ^2.5.0
         version: 2.5.0
-      unhead:
-        specifier: ^3.0.1
-        version: 3.0.1(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
       unstorage:
         specifier: ^2.0.0-alpha.6
         version: 2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1)(lru-cache@11.3.0)(ofetch@1.5.1)
@@ -483,8 +480,8 @@ importers:
         specifier: '>=18.12.0'
         version: 24.12.0
       '@unhead/vue':
-        specifier: ^3.0.1
-        version: 3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
+        specifier: ^3.0.2
+        version: 3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
       '@vue/shared':
         specifier: 3.5.30
         version: 3.5.30
@@ -605,9 +602,6 @@ importers:
       unctx:
         specifier: ^2.5.0
         version: 2.5.0
-      unhead:
-        specifier: ^3.0.1
-        version: 3.0.1(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
       unimport:
         specifier: ^6.0.2
         version: 6.0.2
@@ -629,7 +623,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.13.2
-        version: 0.13.2(@unhead/vue@3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0))(db0@0.3.4)(ioredis@5.10.1)(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+        version: 0.13.2(@unhead/vue@3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0))(db0@0.3.4)(ioredis@5.10.1)(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       '@parcel/watcher':
         specifier: 2.5.6
         version: 2.5.6
@@ -852,8 +846,8 @@ importers:
         specifier: 2.25.12
         version: 2.25.12(esbuild@0.27.4)
       '@unhead/vue':
-        specifier: 3.0.1
-        version: 3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
+        specifier: 3.0.2
+        version: 3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
       '@vitejs/plugin-vue':
         specifier: 6.0.5
         version: 6.0.5(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))
@@ -4114,13 +4108,13 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unhead/bundler@3.0.1':
-    resolution: {integrity: sha512-QIQH+nAIkJnIqdRxFi+OPSoPj2Pw3ohk3g/nsJR0lOJuE+GrW2zWEY616TiAJ9ypCZx8RH5mYIMNX6SKZewQBQ==}
+  '@unhead/bundler@3.0.2':
+    resolution: {integrity: sha512-9rsQMUdyZwwAc11amhSW1nPiuHLRRopSyVZN6QgfTUAmUQSivvFXpWaps5rt1UngFQMTBocMIB0V2AQfk8Y9fg==}
     peerDependencies:
       esbuild: '>=0.17.0'
       lightningcss: '>=1.20.0'
       rolldown: '>=1.0.0-beta.0'
-      unhead: ^3.0.1
+      unhead: ^3.0.2
     peerDependenciesMeta:
       esbuild:
         optional: true
@@ -4129,8 +4123,8 @@ packages:
       rolldown:
         optional: true
 
-  '@unhead/vue@3.0.1':
-    resolution: {integrity: sha512-9KdlHMOhuWUa5Z0z1Z44+iE9IWEuD8RL82D36mZ1Okmhi6Hie2nsP0+hNrlyihr5rAXFvS7cPkj7T0NS16DJ6g==}
+  '@unhead/vue@3.0.2':
+    resolution: {integrity: sha512-PW1eW0yXfqfXk4uPkdR2jW9SpepiFyWoH8ILGUe2G9WLTQ2ROtcgL0UEauoSqz9gSfx6gRLj0758HQhxQUb1og==}
     peerDependencies:
       vite: 8.0.0
       vue: 3.5.30
@@ -8941,8 +8935,8 @@ packages:
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
 
-  unhead@3.0.1:
-    resolution: {integrity: sha512-fSQHIclQ2bHMF1tkUN2RWSvCgdUlepaPEWWi5/Fabh2M6zQYHSB5oyDBRx8tQ0d/WSkbvLZNQb6nxBqTVnQDuA==}
+  unhead@3.0.2:
+    resolution: {integrity: sha512-vUHgbaWH47HaZSn7c9TQHqTLsTZbejf5ErYV6pEv4OQ1wCQccC1hoZ+Y6qEImQcg+oAZ8NjXCVujXulUBM0sBw==}
     peerDependencies:
       vite: 8.0.0
     peerDependenciesMeta:
@@ -10774,10 +10768,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.105.4(esbuild@0.27.4)
 
-  '@nuxt/scripts@0.13.2(@unhead/vue@3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0))(db0@0.3.4)(ioredis@5.10.1)(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))':
+  '@nuxt/scripts@0.13.2(@unhead/vue@3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0))(db0@0.3.4)(ioredis@5.10.1)(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@unhead/vue': 3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
+      '@unhead/vue': 3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)
       '@vueuse/core': 14.2.1(vue@3.5.30(typescript@5.9.3))
       consola: 3.4.2
       defu: 6.1.6
@@ -12174,14 +12168,14 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unhead/bundler@3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(unhead@3.0.1(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)))(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(ws@8.20.0)':
+  '@unhead/bundler@3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(unhead@3.0.2(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)))(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(ws@8.20.0)':
     dependencies:
       '@vitejs/devtools-kit': 0.1.13(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(ws@8.20.0)
       magic-string: 0.30.21
       oxc-parser: 0.124.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
       oxc-walker: 0.7.0(oxc-parser@0.124.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))
       ufo: 1.6.3
-      unhead: 3.0.1(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
+      unhead: 3.0.2(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
       unplugin: 3.0.0
     optionalDependencies:
       esbuild: 0.27.4
@@ -12194,14 +12188,14 @@ snapshots:
       - vite
       - ws
 
-  '@unhead/vue@3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)':
+  '@unhead/vue@3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))(ws@8.20.0)':
     dependencies:
-      '@unhead/bundler': 3.0.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(unhead@3.0.1(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)))(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(ws@8.20.0)
+      '@unhead/bundler': 3.0.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(esbuild@0.27.4)(lightningcss@1.32.0)(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(typescript@5.9.3)(unhead@3.0.2(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)))(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(ws@8.20.0)
       hookable: 6.1.0
       magic-string: 0.30.21
       oxc-parser: 0.124.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
       oxc-walker: 0.7.0(oxc-parser@0.124.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))
-      unhead: 3.0.1(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
+      unhead: 3.0.2(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
       vue: 3.5.30(typescript@5.9.3)
     optionalDependencies:
       vite: 8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)
@@ -17972,7 +17966,7 @@ snapshots:
     dependencies:
       pathe: 2.0.3
 
-  unhead@3.0.1(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)):
+  unhead@3.0.2(vite@8.0.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)):
     dependencies:
       hookable: 6.1.0
       magic-string: 0.30.21
