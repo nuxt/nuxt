@@ -44,6 +44,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         const { Unhead } = await import('@unhead/vue/vite')
         const viteOptions = options.vite || {}
         return Unhead({
+          validate: !nuxt.options.test,
           minify: {
             js: async (code) => {
               const { minify } = await import('rolldown/experimental')
