@@ -34,11 +34,11 @@ For updates that are not route changes (validation, toasts, loading copy), use [
 
 ## Links and `<NuxtLink>`
 
-Use [`<NuxtLink>`](/docs/4.x/api/components/nuxt-link) or [`<RouterLink>`](https://router.vuejs.org/guide/) for in-app navigation so the DOM keeps a normal `<a href="...">` and tab order.
+Use [`<NuxtLink>`](/docs/4.x/api/components/nuxt-link) or [`<RouterLink>`](https://router.vuejs.org/guide/) for in-app navigation, so the DOM keeps a normal `<a href="...">` and tab order.
 
 Avoid using `@click` on a `div` (or similar) plus `navigateTo` as a stand-in for a link unless you add `role`, keyboard handling, and focus styles yourself. [`<NuxtLink>`](/docs/4.x/api/components/nuxt-link) already does the right thing.
 
-For external URLs, `<NuxtLink>` applies `rel` and `target` where appropriate. Use [`external`](/docs/4.x/api/components/nuxt-link#handling-static-file-and-cross-app-links) for files under `/public` or another app on the same origin so the browser handles navigation outside Vue Router.
+For external URLs, `<NuxtLink>` applies `rel` and `target` where appropriate. Use [`external`](/docs/4.x/api/components/nuxt-link#handling-static-file-and-cross-app-links) for files under `/public` or another app on the same origin, so the browser handles navigation outside Vue Router.
 
 ### Active item
 
