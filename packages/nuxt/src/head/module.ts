@@ -78,6 +78,13 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         const plugins: string[] = []
         const imports: string[] = []
 
+        // TemplateParamsPlugin is always needed at runtime for resolving
+        // %s, %separator, %site.name etc. in head tags with reactive data
+        if (nuxt.options.future.compatibilityVersion >= 5) {
+          imports.push('TemplateParamsPlugin')
+          plugins.push('TemplateParamsPlugin')
+        }
+
         if (options.legacy) {
           if (nuxt.options.future.compatibilityVersion >= 5) {
             console.warn('[nuxt] [unhead] `unhead.legacy` is ignored in compatibility version 5+. Remove deprecated head patterns (hid, vmid, children, body:true).')
