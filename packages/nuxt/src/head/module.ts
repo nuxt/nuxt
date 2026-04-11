@@ -50,6 +50,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
               return (await minify('inline.js', code)).code.trim()
             },
             css: async (code) => {
+              // @ts-expect-error provided by vite
               const { transform } = await import('lightningcss')
               return new TextDecoder().decode(transform({
                 filename: 'inline.css',
