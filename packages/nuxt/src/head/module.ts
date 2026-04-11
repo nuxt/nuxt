@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, defineNuxtModule, directoryToURL } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -38,6 +38,31 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       rootDir: nuxt.options.rootDir,
     }))
 
+    // Register @unhead/vue/vite plugin for v5 compat mode
+    if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false) {
+      addVitePlugin(async () => {
+        const { Unhead } = await import('@unhead/vue/vite')
+        const viteOptions = options.vite || {}
+        return Unhead({
+          minify: {
+            js: async (code) => {
+              const { minify } = await import('rolldown/experimental')
+              return (await minify('inline.js', code)).code.trim()
+            },
+            css: async (code) => {
+              const { transform } = await import('lightningcss')
+              return new TextDecoder().decode(transform({
+                filename: 'inline.css',
+                code: new TextEncoder().encode(code),
+                minify: true,
+              }).code).trim()
+            },
+          },
+          ...viteOptions,
+        })
+      })
+    }
+
     // Opt-out feature allowing dependencies using @vueuse/head to work
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
     const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
@@ -48,47 +73,15 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         const plugins: string[] = []
         const imports: string[] = []
 
-        if (options.templateParams) {
-          imports.push('TemplateParamsPlugin')
-          plugins.push('TemplateParamsPlugin')
-        }
-
         if (options.legacy) {
           if (nuxt.options.future.compatibilityVersion >= 5) {
             console.warn('[nuxt] [unhead] `unhead.legacy` is ignored in compatibility version 5+. Remove deprecated head patterns (hid, vmid, children, body:true).')
           } else {
-            for (const name of ['PromisesPlugin', 'AliasSortingPlugin']) {
-              if (!imports.includes(name)) {
-                imports.push(name)
-              }
+            for (const name of ['TemplateParamsPlugin', 'PromisesPlugin', 'AliasSortingPlugin']) {
+              imports.push(name)
               plugins.push(name)
             }
-            if (!imports.includes('TemplateParamsPlugin')) {
-              imports.push('TemplateParamsPlugin')
-              plugins.push('TemplateParamsPlugin')
-            }
           }
-        }
-
-        // ValidatePlugin: dev only, disabled during testing
-        if (options.validate && nuxt.options.dev && !nuxt.options.test) {
-          imports.push('ValidatePlugin')
-          plugins.push('ValidatePlugin()')
-        }
-
-        // CanonicalPlugin
-        if (options.canonical) {
-          imports.push('CanonicalPlugin')
-          const canonicalOpts = typeof options.canonical === 'object'
-            ? JSON.stringify(options.canonical)
-            : '{}'
-          plugins.push(`CanonicalPlugin(${canonicalOpts})`)
-        }
-
-        // MinifyPlugin: production only
-        if (options.minify && !nuxt.options.dev) {
-          imports.push('MinifyPlugin')
-          plugins.push('MinifyPlugin()')
         }
 
         const disableCapoSorting = options.legacy && nuxt.options.future.compatibilityVersion < 5 && !nuxt.options.experimental.headNext

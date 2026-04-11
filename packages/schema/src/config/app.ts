@@ -181,20 +181,7 @@ export default defineResolvers({
         return false
       },
     },
-    templateParams: {
-      $resolve: async (val: unknown, get: Function) => {
-        if (typeof val === 'boolean') { return val }
-        return (await get('future.compatibilityVersion')) >= 5
-      },
-    },
-    validate: {
-      $resolve: async (val: unknown, get: Function) => {
-        if (typeof val === 'boolean') { return val }
-        return (await get('future.compatibilityVersion')) >= 5
-      },
-    },
-    canonical: false,
-    minify: false,
+    vite: {},
     renderSSRHeadOptions: {
       $resolve: (val: unknown) => ({
         omitLineBreaks: true,

@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AssetURLTagConfig } from '@vue/compiler-sfc'
 import type { CompilerOptions } from '@vue/compiler-core'
 import type { RenderSSRHeadOptions } from '@unhead/vue/types'
+import type { UnheadVueViteOptions } from '@unhead/vue/vite'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
@@ -413,38 +414,16 @@ export interface ConfigSchema {
     renderSSRHeadOptions: RenderSSRHeadOptions
 
     /**
-     * Enable the `TemplateParamsPlugin` to resolve template params like `%s`, `%separator`, and `%site.name` in head tags.
+     * Options for the `@unhead/vue/vite` build plugin. Provides tree-shaking, `useSeoMeta` transform,
+     * minification, and validation.
      *
-     * @default false
-     * @default true with compatibilityVersion >= 5
+     * Set to `false` to disable the plugin entirely.
      *
-     * @see https://unhead.unjs.io/docs/head/guides/template-params
+     * Only applies when `future.compatibilityVersion` >= 5.
+     *
+     * @default {}
      */
-    templateParams: boolean
-
-    /**
-     * Enable the `ValidatePlugin` to detect common head tag issues and deprecated patterns in development.
-     *
-     * @default false
-     * @default true with compatibilityVersion >= 5
-     */
-    validate: boolean
-
-    /**
-     * Enable the `CanonicalPlugin` to auto-generate canonical links and resolve relative `og:image` URLs.
-     *
-     * Pass `true` to enable with defaults, or an object with `canonicalHost`, `trailingSlash`, etc.
-     *
-     * @default false
-     */
-    canonical: boolean | { canonicalHost?: string, trailingSlash?: boolean }
-
-    /**
-     * Enable the `MinifyPlugin` to minify inline script and style content during SSR.
-     *
-     * @default false
-     */
-    minify: boolean
+    vite: false | Omit<UnheadVueViteOptions, 'streaming' | '_framework'>
   }
 
   /**
