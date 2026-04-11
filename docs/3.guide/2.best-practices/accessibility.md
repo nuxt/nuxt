@@ -25,7 +25,7 @@ The route announcer in the next section reacts when that title updates (through 
 
 1. Add [`<NuxtRouteAnnouncer>`](/docs/4.x/api/components/nuxt-route-announcer) in `app.vue` or the root layout (Nuxt v3.12+).
 2. Keep the document title aligned with the active route.
-3. Use [`useRouteAnnouncer`](/docs/4.x/api/composables/use-route-announcer) when you need a custom announcement or `polite` / `assertive` urgency.
+3. Use [`useRouteAnnouncer`](/docs/4.x/api/composables/use-route-announcer) when you need a custom announcement or to control `politeness` (`polite`, `assertive`, or `off`).
 
 For updates that are not route changes (validation, toasts, loading copy), use [`<NuxtAnnouncer>`](/docs/4.x/api/components/nuxt-announcer) with [`useAnnouncer`](/docs/4.x/api/composables/use-announcer).
 
