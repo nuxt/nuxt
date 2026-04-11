@@ -42,27 +42,34 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     // Register @unhead/vue/vite plugin for v5 compat mode
     // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
-    // are always available when using the vite builder.
+    // are always available when using the vite builder. We resolve paths at
+    // setup time so dynamic imports resolve from vite's deps, not nuxt's.
     if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false) {
+      const rolldownPath = resolveModulePath('rolldown/experimental', { try: true, from: importPaths })
+      const lightningcssPath = resolveModulePath('lightningcss', { try: true, from: importPaths })
+
       addVitePlugin(async () => {
         const { Unhead } = await import('@unhead/vue/vite')
         const viteOptions = options.vite || {}
         return Unhead({
           validate: !nuxt.options.test,
           minify: {
-            js: async (code) => {
-              const { minify } = await import('rolldown/experimental')
-              return (await minify('inline.js', code)).code.trim()
-            },
-            css: async (code) => {
-              // @ts-expect-error lightningcss types not hoisted in pnpm
-              const { transform } = await import('lightningcss')
-              return new TextDecoder().decode(transform({
-                filename: 'inline.css',
-                code: new TextEncoder().encode(code),
-                minify: true,
-              }).code).trim()
-            },
+            js: rolldownPath
+              ? async (code) => {
+                const { minify } = await import(rolldownPath)
+                return (await minify('inline.js', code)).code.trim()
+              }
+              : undefined,
+            css: lightningcssPath
+              ? async (code) => {
+                const { transform } = await import(lightningcssPath)
+                return new TextDecoder().decode(transform({
+                  filename: 'inline.css',
+                  code: new TextEncoder().encode(code),
+                  minify: true,
+                }).code).trim()
+              }
+              : undefined,
           },
           ...viteOptions,
         })
