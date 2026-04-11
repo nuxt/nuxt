@@ -63,13 +63,13 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.7.0",
     "@nuxt/vite-builder": "workspace:*",
-    "@unhead/vue": "^2.1.12",
+    "@unhead/vue": "^3.0.2",
     "@vue/shared": "^3.5.30",
     "c12": "^3.3.3",
     "chokidar": "^5.0.0",
     "compatx": "^0.2.0",
     "consola": "^3.4.2",
-    "cookie-es": "^2.0.0",
+    "cookie-es": "^3.1.1",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
     "devalue": "^5.6.4",
@@ -77,7 +77,7 @@
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
     "h3": "^1.15.6",
-    "hookable": "^5.5.3",
+    "hookable": "^6.1.0",
     "ignore": "^7.0.5",
     "impound": "^1.1.5",
     "jiti": "^2.6.1",
@@ -111,7 +111,7 @@
     "unplugin-vue-router": "^0.19.2",
     "untyped": "^2.0.0",
     "vue": "^3.5.30",
-    "vue-router": "^4.6.4"
+    "vue-router": "^5.0.4"
   },
   "devDependencies": {
     "@nuxt/scripts": "0.13.2",
@@ -121,7 +121,7 @@
     "@vitejs/plugin-vue-jsx": "5.1.5",
     "@vue/compiler-sfc": "3.5.30",
     "unbuild": "3.6.1",
-    "vite": "7.3.1",
+    "vite": "8.0.5",
     "vitest": "4.0.18",
     "vue-bundle-renderer": "2.2.0",
     "vue-sfc-transformer": "0.1.17"
