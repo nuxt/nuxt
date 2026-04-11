@@ -38,7 +38,11 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       rootDir: nuxt.options.rootDir,
     }))
 
+    const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
+
     // Register @unhead/vue/vite plugin for v5 compat mode
+    // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
+    // are always available when using the vite builder.
     if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false) {
       addVitePlugin(async () => {
         const { Unhead } = await import('@unhead/vue/vite')
@@ -51,7 +55,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
               return (await minify('inline.js', code)).code.trim()
             },
             css: async (code) => {
-              // @ts-expect-error provided by vite
+              // @ts-expect-error lightningcss types not hoisted in pnpm
               const { transform } = await import('lightningcss')
               return new TextDecoder().decode(transform({
                 filename: 'inline.css',
@@ -66,7 +70,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }
 
     // Opt-out feature allowing dependencies using @vueuse/head to work
-    const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
     const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
 
     addTemplate({
