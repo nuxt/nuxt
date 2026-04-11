@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
@@ -47,6 +48,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false) {
       const rolldownPath = resolveModulePath('rolldown/experimental', { try: true, from: importPaths })
       const lightningcssPath = resolveModulePath('lightningcss', { try: true, from: importPaths })
+      // Convert to file:// URLs for Windows compatibility with dynamic import()
+      const rolldownURL = rolldownPath ? pathToFileURL(rolldownPath).href : undefined
+      const lightningcssURL = lightningcssPath ? pathToFileURL(lightningcssPath).href : undefined
 
       addVitePlugin(async () => {
         const { Unhead } = await import('@unhead/vue/vite')
@@ -54,15 +58,15 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         return Unhead({
           validate: !nuxt.options.test,
           minify: {
-            js: rolldownPath
+            js: rolldownURL
               ? async (code) => {
-                const { minify } = await import(rolldownPath)
+                const { minify } = await import(rolldownURL)
                 return (await minify('inline.js', code)).code.trim()
               }
               : undefined,
-            css: lightningcssPath
+            css: lightningcssURL
               ? async (code) => {
-                const { transform } = await import(lightningcssPath)
+                const { transform } = await import(lightningcssURL)
                 return new TextDecoder().decode(transform({
                   filename: 'inline.css',
                   code: new TextEncoder().encode(code),
