@@ -174,9 +174,9 @@ export default defineResolvers({
   },
   unhead: {
     legacy: {
-      $resolve: async (val: unknown, get: Function) => {
+      $resolve: async (val, get) => {
         if (typeof val === 'boolean') {
-          return (await get('future.compatibilityVersion')) >= 5 ? false : val
+          return (await get('future.compatibilityVersion') as number) >= 5 ? false : val
         }
         return false
       },

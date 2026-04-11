@@ -276,6 +276,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
 
   // Create render context

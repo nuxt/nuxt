@@ -19,6 +19,7 @@ export default defineNuxtPlugin({
       let pauseDOMUpdates = true
       const syncHead = () => {
         pauseDOMUpdates = false
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         renderDOMHead(head)
       }
       head.hooks?.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
