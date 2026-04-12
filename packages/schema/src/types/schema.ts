@@ -400,10 +400,12 @@ export interface ConfigSchema {
    */
   unhead: {
     /**
-     * Enable the legacy compatibility mode for `unhead` v2. Adds `PromisesPlugin` and `AliasSortingPlugin`, disables Capo.js sorting.
+     * Adds `PromisesPlugin` and disables Capo.js sorting.
      *
      * Ignored when `future.compatibilityVersion` >= 5.
      *
+     * @deprecated Will be removed. Resolve promise values before passing to `useHead` and remove
+     * deprecated head patterns (`hid`, `vmid`, `children`, `body: true`, `renderPriority`).
      * @default false
      */
     legacy: boolean
@@ -1223,6 +1225,8 @@ export interface ConfigSchema {
      *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way. - Uses the hash hydration plugin to reduce initial hydration
      *
+     * @deprecated CAPO sorting is now the default in unhead v3. Set `unhead.legacy: true` to opt out
+     * temporarily on compat v4.
      * @default true
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */
