@@ -91,6 +91,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }
 
     const unheadLegacy = resolveModulePath('@unhead/vue/legacy', { try: true, from: importPaths }) || '@unhead/vue/legacy'
+    const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
 
     addTemplate({
       filename: 'unhead-options.mjs',
@@ -118,19 +119,20 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         const lines: string[] = []
         // v4 parity with v2 defaults: restore the plugin set that unhead v3 no
         // longer auto-loads (DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin,
-        // AliasSortingPlugin). v5 users opt in explicitly via their own plugin
-        // registration.
+        // AliasSortingPlugin). v5 keeps TemplateParamsPlugin because %s / %siteName
+        // / %separator title interpolation is a core Nuxt SEO idiom; other plugins
+        // must be registered explicitly.
         if (!isV5) {
           lines.push(`import { legacyPlugins } from ${JSON.stringify(unheadLegacy)};`)
+        } else {
+          lines.push(`import { TemplateParamsPlugin } from ${JSON.stringify(unheadPlugins)};`)
         }
         lines.push(`export default {`)
         lines.push(`  disableDefaults: true,`)
         if (disableCapoSorting) {
           lines.push(`  disableCapoSorting: true,`)
         }
-        if (!isV5) {
-          lines.push(`  plugins: legacyPlugins,`)
-        }
+        lines.push(`  plugins: ${isV5 ? '[TemplateParamsPlugin]' : 'legacyPlugins'},`)
         lines.push(`}`)
         return lines.join('\n')
       },
