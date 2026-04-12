@@ -33,7 +33,7 @@
   "dependencies": {
     "@babel/plugin-syntax-typescript": "^7.28.6",
     "@nuxt/kit": "workspace:*",
-    "@unhead/vue": "^3.0.2",
+    "@unhead/vue": "^3.0.3",
     "@vue/shared": "^3.5.30",
     "consola": "^3.4.2",
     "defu": "^6.1.4",

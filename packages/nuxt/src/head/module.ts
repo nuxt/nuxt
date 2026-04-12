@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, useLogger } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -14,6 +14,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     configKey: 'unhead',
   },
   setup (options, nuxt) {
+    const logger = useLogger('nuxt:unhead')
     const runtimeDir = resolve(distDir, 'head/runtime')
 
     // Transpile @unhead/vue
@@ -80,46 +81,42 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    // Opt-out feature allowing dependencies using @vueuse/head to work
-    const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
+    const unheadLegacy = resolveModulePath('@unhead/vue/legacy', { try: true, from: importPaths }) || '@unhead/vue/legacy'
 
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {
-        const plugins: string[] = []
-        const imports: string[] = []
-
-        // TemplateParamsPlugin is always needed at runtime for resolving
-        // %s, %separator, %site.name etc. in head tags with reactive data
-        if (nuxt.options.future.compatibilityVersion >= 5) {
-          imports.push('TemplateParamsPlugin')
-          plugins.push('TemplateParamsPlugin')
-        }
+        const isV5 = nuxt.options.future.compatibilityVersion >= 5
 
         if (options.legacy) {
-          if (nuxt.options.future.compatibilityVersion >= 5) {
-            console.warn('[nuxt] [unhead] `unhead.legacy` is ignored in compatibility version 5+. Remove deprecated head patterns (hid, vmid, children, body:true).')
+          if (isV5) {
+            logger.warn('`unhead.legacy` is ignored in compatibility version 5+. Remove deprecated head patterns (hid, vmid, children, body:true).')
           } else {
-            for (const name of ['TemplateParamsPlugin', 'PromisesPlugin', 'AliasSortingPlugin']) {
-              imports.push(name)
-              plugins.push(name)
-            }
+            logger.warn('`unhead.legacy` is deprecated and will be removed. Remove deprecated head patterns (hid, vmid, children, body:true) and migrate promise values to resolved values before passing to useHead.')
           }
         }
 
-        const disableCapoSorting = options.legacy && nuxt.options.future.compatibilityVersion < 5 && !nuxt.options.experimental.headNext
+        if (nuxt.options.experimental.headNext === false) {
+          logger.warn('`experimental.headNext` is deprecated. CAPO sorting is now the default; set `unhead.legacy: true` to opt out temporarily.')
+        }
+
+        const disableCapoSorting = options.legacy && !isV5 && !nuxt.options.experimental.headNext
 
         const lines: string[] = []
-        if (imports.length) {
-          lines.push(`import { ${imports.join(', ')} } from ${JSON.stringify(unheadPlugins)};`)
+        // v4 parity with v2 defaults: restore the plugin set that unhead v3 no
+        // longer auto-loads (DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin,
+        // AliasSortingPlugin). v5 users opt in explicitly via their own plugin
+        // registration.
+        if (!isV5) {
+          lines.push(`import { legacyPlugins } from ${JSON.stringify(unheadLegacy)};`)
         }
         lines.push(`export default {`)
         lines.push(`  disableDefaults: true,`)
         if (disableCapoSorting) {
           lines.push(`  disableCapoSorting: true,`)
         }
-        if (plugins.length) {
-          lines.push(`  plugins: [${plugins.join(', ')}],`)
+        if (!isV5) {
+          lines.push(`  plugins: legacyPlugins,`)
         }
         lines.push(`}`)
         return lines.join('\n')
