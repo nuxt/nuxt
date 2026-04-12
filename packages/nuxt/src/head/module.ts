@@ -40,6 +40,15 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       rootDir: nuxt.options.rootDir,
     }))
 
+    // v5 users get tree-shaking via the @unhead/vue/vite plugin registered below.
+    // On v4 we fall back to Nuxt's composable tree-shaker so server composables
+    // still get stripped from the client bundle in production builds.
+    if (nuxt.options.future.compatibilityVersion < 5 && !nuxt.options.dev) {
+      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
+        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe',
+      ]
+    }
+
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
     // Register @unhead/vue/vite plugin for v5 compat mode
