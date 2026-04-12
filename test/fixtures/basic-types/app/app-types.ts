@@ -622,6 +622,19 @@ describe('composables', () => {
       getCachedData: () => ({ bar: 2 }),
     })
   })
+
+  it('correctly infers DataT from transform when using getCachedData (#29567)', () => {
+    // DataT should be inferred as string from transform, not from getCachedData
+    const { data } = useAsyncData(
+      'test-transform-cached',
+      () => Promise.resolve({ foo: 'hello' }),
+      {
+        transform: response => response.foo,
+        getCachedData: key => useNuxtApp().payload.data[key],
+      },
+    )
+    expectTypeOf(data.value).toEqualTypeOf<string | DefaultAsyncDataValue>()
+  })
 })
 
 describe('app config', () => {
