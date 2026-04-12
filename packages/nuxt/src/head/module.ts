@@ -87,8 +87,12 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       filename: 'unhead-options.mjs',
       getContents () {
         const isV5 = nuxt.options.future.compatibilityVersion >= 5
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- reading user-facing deprecated option to emit migration warnings
+        const legacy = options.legacy
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- reading user-facing deprecated option to emit migration warnings
+        const headNext = nuxt.options.experimental.headNext
 
-        if (options.legacy) {
+        if (legacy) {
           if (isV5) {
             logger.warn('`unhead.legacy` is ignored in compatibility version 5+. Remove deprecated head patterns (hid, vmid, children, body:true).')
           } else {
@@ -96,11 +100,11 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           }
         }
 
-        if (nuxt.options.experimental.headNext === false) {
+        if (headNext === false) {
           logger.warn('`experimental.headNext` is deprecated. CAPO sorting is now the default; set `unhead.legacy: true` to opt out temporarily.')
         }
 
-        const disableCapoSorting = options.legacy && !isV5 && !nuxt.options.experimental.headNext
+        const disableCapoSorting = legacy && !isV5 && !headNext
 
         const lines: string[] = []
         // v4 parity with v2 defaults: restore the plugin set that unhead v3 no
