@@ -67,8 +67,8 @@
     "vue-bundle-renderer": "2.2.0",
     "vue-loader": "17.4.2",
     "vue-router": "5.0.3",
-    "webpack": "5.105.4",
-    "webpack-dev-middleware": "8.0.2"
+    "webpack": "5.106.1",
+    "webpack-dev-middleware": "8.0.3"
   },
   "dependencies": {
     "@vue/shared": "^3.5.30",
