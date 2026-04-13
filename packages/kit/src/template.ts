@@ -364,7 +364,8 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
-  const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
+  const globalTsConfig = nuxt.options.typescript?.tsConfig || {}
+  defu(nuxt.options.typescript?.appTsConfig, globalTsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: true,
@@ -416,7 +417,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   } satisfies TSConfig)
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
-  const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
+  const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, globalTsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,

@@ -256,7 +256,11 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('nitro:config', async (nitroConfig) => {
     paths ||= await resolveTypescriptPaths(nuxt)
     nitroConfig.typescript = defu(nitroConfig.typescript, {
-      tsConfig: { compilerOptions: { paths: { ...paths } } },
+      tsConfig: defu(
+        nuxt.options.typescript?.serverTsConfig,
+        nuxt.options.typescript?.tsConfig,
+        { compilerOptions: { paths: { ...paths } } },
+      ),
     })
   })
 

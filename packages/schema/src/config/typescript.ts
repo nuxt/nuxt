@@ -36,6 +36,8 @@ export default defineResolvers({
     includeWorkspace: false,
     typeCheck: false,
     tsConfig: {},
+    appTsConfig: {},
+    serverTsConfig: {},
     shim: false,
   },
 })
