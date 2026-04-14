@@ -644,6 +644,37 @@ describe('useAsyncData', () => {
     comp.unmount()
   })
 
+  it('should work with static string key and sync data with useNuxtData', async () => {
+    const staticKey = 'static-key-no-watcher'
+    const promiseFn = vi.fn(() => Promise.resolve('ok'))
+    const { data } = await useAsyncData(staticKey, promiseFn)
+    expect(data.value).toBe('ok')
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(useNuxtData(staticKey).data.value).toBe('ok')
+  })
+
+  it('should migrate container and re-fetch when reactive key changes', async () => {
+    const keyRef = ref('reactive-a')
+    const promiseFn = vi.fn(() => Promise.resolve(keyRef.value))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(keyRef, promiseFn)
+        return () => h('div', [data.value])
+      },
+    })
+    const comp = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(comp.text()).toBe('reactive-a')
+
+    keyRef.value = 'reactive-b'
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(comp.text()).toBe('reactive-b')
+    expect(useNuxtApp()._asyncData['reactive-b']!.data.value).toBe('reactive-b')
+
+    comp.unmount()
+  })
+
   it('should clear memory when last component using asyncData is unmounted', async () => {
     const key = 'several'
     const promiseFn = vi.fn(() => Promise.resolve('test'))
