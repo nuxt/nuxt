@@ -232,24 +232,24 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ```ts [Signature]
 export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
 
-export function useAsyncData<ResT, DataT = ResT, DataE = Error> (
-  handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT>,
+export function useAsyncData<DataT, DataE> (
+  handler: AsyncDataHandler<DataT>,
+  options?: AsyncDataOptions<DataT>,
 ): AsyncData<DataT, DataE>
-export function useAsyncData<ResT, DataT = ResT, DataE = Error> (
+export function useAsyncData<DataT, DataE> (
   key: MaybeRefOrGetter<string>,
-  handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT>,
+  handler: AsyncDataHandler<DataT>,
+  options?: AsyncDataOptions<DataT>,
 ): Promise<AsyncData<DataT, DataE>>
 
-type AsyncDataOptions<ResT, DataT = ResT> = {
+type AsyncDataOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   immediate?: boolean
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
-  default?: () => DataT | Ref<DataT>
-  transform?: (input: ResT) => DataT | Promise<DataT>
+  default?: () => DataT | Ref<DataT> | null
+  transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
   watch?: MultiWatchSources | false
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
