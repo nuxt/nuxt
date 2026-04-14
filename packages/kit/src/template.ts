@@ -365,7 +365,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const globalTsConfig = nuxt.options.typescript?.tsConfig || {}
-  defu(nuxt.options.typescript?.appTsConfig, globalTsConfig, {
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, globalTsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: true,
