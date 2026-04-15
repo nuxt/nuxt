@@ -25,7 +25,7 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 export type VueTSConfig = 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
 export interface NuxtPageMeta {
-  [key: string]: unknown
+  [key: PropertyKey]: unknown
 }
 
 export interface NuxtPage {
