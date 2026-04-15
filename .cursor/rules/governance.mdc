@@ -1,0 +1,47 @@
+---
+description: Governance rules for nuxt-framework — quality gates, security, conventions
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+alwaysApply: true
+---
+
+# Governance — nuxt-framework
+
+> Generated from governance.md by crag. Regenerate: `crag compile --target cursor`
+
+**Stack:** node, typescript, vue
+
+## Quality Gates
+
+Run these checks in order before committing:
+### Lint
+- `npm run lint`
+
+### Test
+- `npm run test`
+
+### Build
+- `npm run build`
+- `npm run typecheck`
+
+### Ci (inferred from workflow)
+- `pnpm build`
+- `pnpm lint:docs:fix`
+- `pnpm test:engines:fix`
+- `pnpm test:runtime -u`
+- `pnpm test:unit -u`
+- `pnpm lint:fix`
+- `pnpm test:types`
+- `pnpm lint`
+## Security
+
+- No hardcoded secrets — grep for sk_live, AKIA, password= before commit
+
+## Conventions
+
+- Conventional commits (feat:, fix:, docs:, etc.)
+- Commit trailer: Co-Authored-By: Claude <noreply@anthropic.com>
+- Runtimes: node
