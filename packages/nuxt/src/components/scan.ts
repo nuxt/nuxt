@@ -7,7 +7,10 @@ import { withTrailingSlash } from 'ufo'
 
 import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
 import { logger, resolveToAlias } from '../utils.ts'
+import { dirNameMatchesIgnorePatterns } from './ignore-dir-patterns.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
+
+const PATH_SEPARATOR_RE = /[\\/]/
 
 const ISLAND_RE = /\.island(?:\.global)?$/
 const GLOBAL_RE = /\.global(?:\.island)?$/
@@ -72,9 +75,15 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        * @example prefix: 'nuxt' -> ['nuxt']
        * @example prefix: 'nuxt-test' -> ['nuxt', 'test']
        */
+      const relPath = relative(dir.path, dirname(filePath))
+      const rawSegments = relPath ? relPath.split(PATH_SEPARATOR_RE).filter(Boolean) : []
+      const filteredSegments = dir.ignoreDirPatterns
+        ? rawSegments.filter(seg => !dirNameMatchesIgnorePatterns(seg, dir.ignoreDirPatterns!))
+        : rawSegments
+      const pathPrefixParts = filteredSegments.flatMap(seg => splitByCase(seg))
       const prefixParts = ([] as string[]).concat(
         dir.prefix ? splitByCase(dir.prefix) : [],
-        (dir.pathPrefix !== false) ? splitByCase(relative(dir.path, dirname(filePath))) : [],
+        (dir.pathPrefix !== false) ? pathPrefixParts : [],
       )
 
       /**
