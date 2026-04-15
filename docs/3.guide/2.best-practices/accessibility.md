@@ -58,7 +58,7 @@ After a few navigations, tab from the skip link through the nav into `<main>` an
 
 ## Scroll
 
-[`scrollBehaviorType`](/docs/4.x/guide/recipes/custom-routing#router-options) and [`router.options.ts`](/docs/4.x/guide/recipes/custom-routing#router-options) configure scroll on navigation (for example smooth scrolling to a hash).
+[`scrollBehaviorType`](/docs/4.x/guide/recipes/custom-routing#scroll-behavior-for-hash-links) and [`router.options.ts`](/docs/4.x/guide/recipes/custom-routing#router-options) configure scroll on navigation (for example smooth scrolling to a hash).
 
 ::read-more{to="/docs/4.x/guide/recipes/custom-routing"}
 ::
