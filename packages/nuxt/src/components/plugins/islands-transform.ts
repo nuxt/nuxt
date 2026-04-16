@@ -98,6 +98,10 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             return
           }
 
+          if (node.name === 'NuxtTeleportIslandComponent') {
+            return
+          }
+
           if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
             return
           }
