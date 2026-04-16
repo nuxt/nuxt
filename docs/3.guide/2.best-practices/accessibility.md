@@ -77,15 +77,14 @@ const name = ref('')
 const message = ref('')
 const { polite, assertive } = useAnnouncer()
 
-async function submitForm() {
+async function submitForm () {
   try {
     await $fetch('/api/contact', {
       method: 'POST',
       body: { name: name.value, message: message.value },
     })
     polite('Message sent successfully')
-  }
-  catch (error) {
+  } catch (error) {
     assertive('Error: Failed to send message. Please try again.')
   }
 }
@@ -112,13 +111,22 @@ Use `ariaCurrentValue` in navigation menus so assistive technologies can identif
   <nav aria-label="Main">
     <ul>
       <li>
-        <NuxtLink to="/" aria-current-value="page">Home</NuxtLink>
+        <NuxtLink
+          to="/"
+          aria-current-value="page"
+        >Home</NuxtLink>
       </li>
       <li>
-        <NuxtLink to="/about" aria-current-value="page">About</NuxtLink>
+        <NuxtLink
+          to="/about"
+          aria-current-value="page"
+        >About</NuxtLink>
       </li>
       <li>
-        <NuxtLink to="/contact" aria-current-value="page">Contact</NuxtLink>
+        <NuxtLink
+          to="/contact"
+          aria-current-value="page"
+        >Contact</NuxtLink>
       </li>
     </ul>
   </nav>
@@ -148,7 +156,10 @@ router.afterEach(() => {
 <template>
   <NuxtRouteAnnouncer />
   <AppNav />
-  <main ref="mainContent" tabindex="-1">
+  <main
+    ref="mainContent"
+    tabindex="-1"
+  >
     <NuxtPage />
   </main>
 </template>
@@ -162,12 +173,18 @@ A skip-to-content link lets keyboard and screen reader users bypass repeated nav
 
 ```vue [app/app.vue]
 <template>
-  <a href="#main-content" class="skip-link">
+  <a
+    href="#main-content"
+    class="skip-link"
+  >
     Skip to main content
   </a>
   <NuxtRouteAnnouncer />
   <AppNav />
-  <main id="main-content" tabindex="-1">
+  <main
+    id="main-content"
+    tabindex="-1"
+  >
     <NuxtPage />
   </main>
 </template>
@@ -232,11 +249,17 @@ const { data: products, status } = await useLazyAsyncData('products', () => {
 
 <template>
   <div :aria-busy="status === 'pending'">
-    <p v-if="status === 'pending'" role="status">
+    <p
+      v-if="status === 'pending'"
+      role="status"
+    >
       Loading products...
     </p>
     <ul v-else>
-      <li v-for="product in products" :key="product.id">
+      <li
+        v-for="product in products"
+        :key="product.id"
+      >
         {{ product.name }}
       </li>
     </ul>
