@@ -171,6 +171,28 @@ async function initNuxt (nuxt: Nuxt) {
 
   const layerDirs = getLayerDirectories(nuxt)
 
+  // Dynamically deduplicate layer dependencies to prevent multi-instance resolution bugs
+  for (const layer of nuxt.options._layers) {
+    // Skip the main project root
+    if (layer.cwd && layer.cwd !== nuxt.options.rootDir) {
+      try {
+        // Read the layer's package.json
+        const pkg = await readPackageJSON(layer.cwd).catch(() => null)
+        if (pkg && pkg.dependencies) {
+          for (const dep of Object.keys(pkg.dependencies)) {
+            // SAFETY FILTER: Exempt core framework packages from strict root aliasing
+            if (dep === 'nuxt' || dep === 'vue' || dep.startsWith('@nuxt/') || dep.startsWith('@vue/')) {
+              continue
+            }
+            // Force dependency to resolve to the root project's node_modules
+            nuxt.options.alias[dep] ??= resolve(nuxt.options.rootDir, 'node_modules', dep)
+          }
+        }
+      } catch {
+        // Silently ignore if package.json cannot be read
+      }
+    }
+  }
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
