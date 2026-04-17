@@ -21,9 +21,13 @@ It hooks into Unhead's `dom:rendered` hook to read the page's title and set it a
 Read more about page titles, focus, and route announcements.
 ::
 
+::read-more{to="/docs/4.x/guide/best-practices/performance"}
+Read more about built-in performance features for navigation and routing.
+::
+
 ## Parameters
 
-- `politeness`: Sets the urgency for screen reader announcements: `off` (disable the announcement), `polite` (waits for silence), or `assertive` (interrupts immediately).  (default `polite`).
+- `politeness`: Sets how screen readers prioritize announcements (`polite`, `assertive`, or `off`). (default `polite`).
 
 ## Properties
 
@@ -35,13 +39,13 @@ Read more about page titles, focus, and route announcements.
 ### `politeness`
 
 - **type**: `Ref<string>`
-- **description**: Screen reader announcement urgency level `off`, `polite`, or `assertive`
+- **description**: Screen reader announcement priority (`politeness`): `off`, `polite`, or `assertive`
 
 ## Methods
 
 ### `set(message, politeness = "polite")`
 
-Sets the message to announce with its urgency level.
+Sets the message to announce with the given `politeness` level.
 
 ### `polite(message)`
 
