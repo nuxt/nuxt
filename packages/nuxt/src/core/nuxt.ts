@@ -171,25 +171,36 @@ async function initNuxt (nuxt: Nuxt) {
 
   const layerDirs = getLayerDirectories(nuxt)
 
+  const layerPkgPromises = nuxt.options._layers
+    .filter(layer => layer.cwd && layer.cwd !== nuxt.options.rootDir)
+    .map(async layer => ({
+      layer,
+      pkg: await readPackageJSON(layer.cwd).catch(() => null),
+    }))
+
+  const resolvedLayers = await Promise.all(layerPkgPromises)
+
   // Dynamically deduplicate layer dependencies to prevent multi-instance resolution bugs
-  for (const layer of nuxt.options._layers) {
-    // Skip the main project root
-    if (layer.cwd && layer.cwd !== nuxt.options.rootDir) {
-      try {
-        // Read the layer's package.json
-        const pkg = await readPackageJSON(layer.cwd).catch(() => null)
-        if (pkg && pkg.dependencies) {
-          for (const dep of Object.keys(pkg.dependencies)) {
-            // SAFETY FILTER: Exempt core framework packages from strict root aliasing
-            if (dep === 'nuxt' || dep === 'vue' || dep.startsWith('@nuxt/') || dep.startsWith('@vue/')) {
-              continue
-            }
-            // Force dependency to resolve to the root project's node_modules
-            nuxt.options.alias[dep] ??= resolve(nuxt.options.rootDir, 'node_modules', dep)
-          }
-        }
-      } catch {
-        // Silently ignore if package.json cannot be read
+  for (const { layer, pkg } of resolvedLayers) {
+    if (!pkg) { continue }
+
+    const allDeps = {
+      ...(pkg.dependencies || {}),
+      ...(pkg.devDependencies || {}),
+      ...(pkg.peerDependencies || {}),
+    }
+
+    for (const dep of Object.keys(allDeps)) {
+      // SAFETY FILTER: Exempt core framework packages from strict root aliasing
+      if (dep === 'nuxt' || dep === 'vue' || dep.startsWith('@nuxt/') || dep.startsWith('@vue/')) {
+        continue
+      }
+
+      if (!nuxt.options.alias[dep]) {
+        try {
+          const resolvedPath = resolveModulePath(dep, { from: [nuxt.options.rootDir, layer.cwd] })
+          if (resolvedPath) { nuxt.options.alias[dep] = resolvedPath }
+        } catch { /* ignore */ }
       }
     }
   }
