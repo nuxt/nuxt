@@ -47,7 +47,7 @@ function buildViteError (errorData: any, id: string): Error {
   // description by a blank line. Split on that boundary so we can show the
   // clean one-liner as the heading and feed the frame text to `hint` below.
   const rawMessage: string = errorData.message || ''
-  const [headRaw, ...frameTail] = rawMessage.split(/\r?\n\s*\r?\n/)
+  const [headRaw, ...frameTail] = rawMessage.split(/\r?\n\s*\n/)
   const reason = (headRaw || '')
     .split(/\r?\n/)[0]!
     .replace(/^\[@?[\w\-/:]+\]\s*/, '')
