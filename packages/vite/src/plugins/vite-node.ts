@@ -95,7 +95,7 @@ function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string
           from: nuxt.options.modulesDir.map(d => directoryToURL(d)),
         })
         if (!resolved) { continue }
-        css.add('/@fs' + resolved)
+        css.add('/@fs' + resolved.replace(/^(?!\/)/, '/'))
       } else {
         css.add(resolved)
       }

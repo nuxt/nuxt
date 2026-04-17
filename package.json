@@ -63,7 +63,7 @@
     "@babel/helper-plugin-utils": "7.28.6",
     "@codspeed/core": "5.2.0",
     "@codspeed/vitest-plugin": "5.2.0",
-    "@eslint/markdown": "7.5.1",
+    "@eslint/markdown": "8.0.1",
     "@nuxt/cli": "3.34.0",
     "@nuxt/eslint-config": "1.15.2",
     "@nuxt/kit": "workspace:*",
@@ -126,7 +126,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.30",
     "vue-tsc": "3.2.5",
-    "webpack": "5.105.4"
+    "webpack": "5.106.1"
   },
   "packageManager": "pnpm@10.32.1",
   "version": ""
