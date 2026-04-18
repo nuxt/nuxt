@@ -8,7 +8,6 @@ import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
 import { renderOnigiri } from 'vue-onigiri/runtime/deserialize'
-import { join } from 'pathe'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
@@ -17,18 +16,6 @@ import { injectHead } from '../composables/head'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
- const viteFetch = import.meta.server ?
-  import.meta.dev
-    ? (src: string, exportName: string) => import('#build/dist/server/server.mjs').then(r => r.executeFile(src)).then((r) => {
-        return r[exportName]
-      }) :
-    // todo path association between server and client chunks
-       ((src: string, exportName: string) => import('virtual:vue-onigiri').then(r => {
-        console.log(src, exportName)
-   return r.default.get(src+'__'+exportName);
-       }))
-      /// : ?????????????????????????? todo fix
-  : (src: string) => import(/* @vite-ignore */join(src.replace('/app', ''))).then(r => r.default || r)
 
 const pKey = '_islandPromises'
 let id = 1
@@ -185,10 +172,10 @@ export default defineComponent({
     }
 
     return () => {
-      return renderOnigiri(
-        ast.value,
-        viteFetch,
-      )
+      // `renderOnigiri` resolves chunks through `virtual:onigiri/manifest`
+      // (a Vite glob). Nuxt registers the manifest plugin in both client
+      // and server envs, so no explicit importFn is needed here.
+      return renderOnigiri(ast.value)
     }
   },
 })

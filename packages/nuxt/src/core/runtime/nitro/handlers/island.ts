@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
 
   const app = await createSSRApp(ssrContext, renderer.rendererContext)
 
-  const ast = await app.runWithContext(() => serializeApp(app, ssrContext))
+  const ast = await app.runWithContext(() => serializeApp(app, undefined, ssrContext))
 
   // Handle errors
   if (ssrContext.payload?.error) {

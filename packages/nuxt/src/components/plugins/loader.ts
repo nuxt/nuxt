@@ -38,6 +38,11 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
+      // vue-onigiri virtual modules contain `_resolveComponent("Name")` calls
+      // that need the same auto-import rewrite as regular SFC templates.
+      if (id.startsWith('virtual:onigiri:')) {
+        return true
+      }
       return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
     },
     transform (code, id) {

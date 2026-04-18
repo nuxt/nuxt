@@ -8,7 +8,8 @@ import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 
-import { vueOnigiriPluginFactory } from 'vue-onigiri'
+import vuePlugin from '@vitejs/plugin-vue'
+import { onigiriChunkPlugin, onigiriCompilerPlugin, onigiriManifestPlugin } from 'vue-onigiri'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import { warmupViteServer } from './utils/warmup'
@@ -165,80 +166,65 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ),
   }
 
-  const { client, server, serverChunks, clientChunks } = vueOnigiriPluginFactory({
-    serverAssetsDir: '_nuxt/',
-    clientAssetsDir: '_nuxt/',
-    includeClientChunks: ctx.nuxt.apps.default!.components.map(c => relative(ctx.nuxt.options.rootDir, c.filePath)),
-    rootDir: ctx.nuxt.options.rootDir,
+  // vue-onigiri integration. Both client and server builds get the same
+  // plugin set — onigiri's chunk plugin emits source paths in `__chunk`,
+  // and `virtual:onigiri/manifest` (via `import.meta.glob`) resolves those
+  // paths to the correct module in each environment.
+  //
+  // The `virtual:vsc:<abs-path>` prefix is used by Nuxt's island templates
+  // (`components/templates.ts`) to disambiguate server variants of a
+  // component. We strip the prefix and hand the raw path to Vite /
+  // plugin-vue, which compiles it as a normal SFC in the active env.
+  const vscPlugin: Plugin = {
+    name: 'nuxt:virtual-vsc',
+    resolveId: {
+      order: 'pre',
+      handler (id) {
+        if (id.startsWith('virtual:vsc:')) {
+          return id.slice('virtual:vsc:'.length)
+        }
+        if (id.startsWith('/@id/virtual:vsc:')) {
+          return id.slice('/@id/virtual:vsc:'.length)
+        }
+      },
+    },
+  }
+
+  const onigiri: Plugin[] = [
+    vscPlugin,
+    onigiriCompilerPlugin(),
+    onigiriChunkPlugin(),
+    onigiriManifestPlugin(),
+  ]
+
+  // Register onigiri plugins into Vite's client + server configs. The
+  // compiler plugin declares `enforce: 'post'` so it runs AFTER
+  // @vitejs/plugin-vue's transform (seeing its compiled output) but
+  // before Vite's `vite:import-analysis` — the latter needs to see the
+  // `virtual:onigiri:*` imports we inject so it can rewrite them to
+  // browser-fetchable `/@id/` URLs.
+  nuxt.hook('vite:extendConfig', (viteInlineConfig) => {
+    viteInlineConfig.plugins ||= []
+    viteInlineConfig.plugins.push(...onigiri)
   })
-  nuxt.hook('vite:extendConfig', (ctx, { isServer }) => {
-    if (isServer) {
-      const allComponents = nuxt.apps.default!.components
-      ctx.plugins!.push({
-        name: 'nuxt:vue-onigiri',
-        load: {
-          order: 'pre',
-          handler (id) {
-            if (id === 'virtual:vue-onigiri') {
-              const imports = new Set()
-              const mapValues = new Map()
 
-              for (const chunk of clientChunks) {
-                const components = allComponents.filter(c => (c.mode === 'client' || c.mode === 'all') && normalize(c.filePath) === normalize(chunk.originalPath))
-                if (!components.length) { continue }
-                for (const component of components) {
-                  const serverSideCounterPart = allComponents.find(c => normalize(c.filePath) === normalize(chunk.originalPath) && (c.mode === 'server' || c.mode === 'all'))
-                  if (!serverSideCounterPart) { continue }
-                  imports.add(`import { ${component.export} as ${component.pascalName} } from 'virtual:vsc:${serverSideCounterPart.filePath}'`)
-                  mapValues.set(`/${chunk.filename}__${component.export}`, component.pascalName)
-                }
-              }
-
-              return {
-                code: `
-                  ${[...imports].join('\n')}
-                  export default new Map([ ${[...mapValues].map(([k, v]) => `['${k}', ${v}]`).join(', ')}] )
-                `,
-              }
-            }
-          },
-        },
-      })
-    }
-  })
-
+  // Nitro (SSR runtime) also imports from `virtual:vsc:*` (Nuxt island
+  // templates) and `virtual:onigiri/manifest` (vue-onigiri runtime loader,
+  // inlined via nuxt.config's `nitro.externals.inline`). Mirror both
+  // resolvers into the rollup build.
   useNitro().hooks.hook('rollup:before', (_, rollupConfig) => {
-    const allComponents = nuxt.apps.default!.components;
     (rollupConfig.plugins! as Plugin[]).push({
-      name: 'nuxt:vue-onigiri',
-      load: {
+      name: 'nuxt:virtual-vsc',
+      resolveId: {
         order: 'pre',
         handler (id) {
-          if (id === 'virtual:vue-onigiri') {
-            const imports = new Set()
-            const mapValues = new Map()
-
-            for (const chunk of clientChunks) {
-              const components = allComponents.filter(c => (c.mode === 'client' || c.mode === 'all') && normalize(c.filePath) === normalize(chunk.originalPath))
-              if (!components.length) { continue }
-              for (const component of components) {
-                const serverSideCounterPart = allComponents.find(c => normalize(c.filePath) === normalize(chunk.originalPath) && (c.mode === 'server' || c.mode === 'all'))
-                if (!serverSideCounterPart) { continue }
-                imports.add(`import { ${component.export} as ${component.pascalName} } from 'virtual:vsc:${serverSideCounterPart.filePath}'`)
-                mapValues.set(`/${chunk.filename}__${component.export}`, component.pascalName)
-              }
-            }
-
-            return {
-              code: `
-                  ${[...imports].join('\n')}
-                  export default new Map([ ${[...mapValues].map(([k, v]) => `['${k}', ${v}]`).join(', ')}] )
-                `,
-            }
+          if (id.startsWith('virtual:vsc:')) {
+            return id.slice('virtual:vsc:'.length)
           }
         },
       },
-    })
+    });
+    (rollupConfig.plugins! as Plugin[]).push(onigiriManifestPlugin())
   })
 
   // In build mode we explicitly override any vite options that vite is relying on
@@ -261,8 +247,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       })
     }
   })
-  await withLogs(() => buildClient(nuxt, ctx, client), 'Vite client built', nuxt.options.dev)
-  await withLogs(() => buildServer(nuxt, ctx, server), 'Vite server built', nuxt.options.dev)
+  // `buildClient` / `buildServer` expect a factory that takes plugin-vue's
+  // options and returns the plugin list to prepend. Plain `@vitejs/plugin-vue`
+  // is enough — onigiri plugins are added separately through
+  // `vite:extendConfig` above.
+  const vueFactory = (opts: any) => [vuePlugin(opts)]
+  await withLogs(() => buildClient(nuxt, ctx, vueFactory), 'Vite client built', nuxt.options.dev)
+  await withLogs(() => buildServer(nuxt, ctx, vueFactory), 'Vite server built', nuxt.options.dev)
 }
 
 async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
