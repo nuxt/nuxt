@@ -18,7 +18,7 @@ jobs:
   agentscan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       - name: Cache AgentScan analysis
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
@@ -27,7 +27,7 @@ jobs:
           restore-keys: agentscan-cache-
       - name: AgentScan
         id: agentscan
-        uses: MatteoGabriele/agentscan-action@a584774dd15cabe6df4c6ab45fc43514a3b56b2d
+        uses: MatteoGabriele/agentscan-action@6b02b7903ab24fbd23da0314b1b04dbaad98151b
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-members: "dependabot[bot],renovate[bot]"
