@@ -750,9 +750,6 @@ importers:
       seroval:
         specifier: ^1.5.1
         version: 1.5.2
-      std-env:
-        specifier: ^4.0.0
-        version: 4.0.0
       time-fix-plugin:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.106.1(esbuild@0.27.4))
@@ -1218,9 +1215,6 @@ importers:
       seroval:
         specifier: ^1.5.1
         version: 1.5.2
-      std-env:
-        specifier: ^4.0.0
-        version: 4.0.0
       time-fix-plugin:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.106.1(esbuild@0.27.4))
