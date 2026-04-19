@@ -61,6 +61,12 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
+
+  // preserve original buildDir for emitting types
+  nuxtConfig.typesDir ||= opts.overrides?.buildDir
+    ? layers.find(l => l.config?.buildDir && l.config.buildDir !== opts.overrides?.buildDir)?.config!.buildDir || defaultBuildDir
+    : nuxtConfig.buildDir
+
   if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
     nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
   }
