@@ -81,7 +81,7 @@
     "hookable": "6.1.0",
     "nuxt": "workspace:*",
     "obuild": "0.4.32",
-    "vitest": "4.1.2"
+    "vitest": "4.1.4"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
