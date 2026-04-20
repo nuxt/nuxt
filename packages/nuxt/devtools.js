@@ -1,1 +1,1 @@
-export * from "@nuxt/devtools";
+export * from '@nuxt/devtools'
