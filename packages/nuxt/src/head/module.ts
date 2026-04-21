@@ -55,7 +55,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
     // are always available when using the vite builder. We resolve paths at
     // setup time so dynamic imports resolve from vite's deps, not nuxt's.
-    if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false) {
+    if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false && nuxt.options.builder === '@nuxt/vite-builder') {
       const rolldownPath = resolveModulePath('rolldown/experimental', { try: true, from: importPaths })
       const lightningcssPath = resolveModulePath('lightningcss', { try: true, from: importPaths })
       // Convert to file:// URLs for Windows compatibility with dynamic import()
@@ -114,7 +114,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           logger.warn('`experimental.headNext` is deprecated. CAPO sorting is now the default; set `unhead.legacy: true` to opt out temporarily.')
         }
 
-        const disableCapoSorting = legacy && !isV5 && !headNext
+        const disableCapoSorting = !isV5 && (legacy || headNext === false)
 
         const lines: string[] = []
         // v4 parity with v2 defaults: restore the plugin set that unhead v3 no
