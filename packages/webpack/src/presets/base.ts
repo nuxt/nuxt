@@ -8,7 +8,6 @@ import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
-import { isTest } from 'std-env'
 import { defu } from 'defu'
 import type { WarningFilter } from '../plugins/warning-ignore.ts'
 import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
@@ -233,12 +232,12 @@ function getEnv (ctx: WebpackConfigContext) {
     '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.dev': ctx.options.dev,
-    'process.test': isTest,
+    'process.test': ctx.nuxt.options.test,
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
     'process.server': ctx.isServer,
     'import.meta.dev': ctx.options.dev,
-    'import.meta.test': isTest,
+    'import.meta.test': ctx.nuxt.options.test,
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
     'import.meta.server': ctx.isServer,

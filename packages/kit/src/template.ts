@@ -487,7 +487,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const aliases: Record<string, string> = nuxt.options.alias
 
+  // TODO: remove support for baseUrl in nuxt v5
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = tsConfig.compilerOptions!.baseUrl
+    // TODO: remove support for baseUrl in nuxt v5
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 

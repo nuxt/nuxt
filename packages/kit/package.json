@@ -56,8 +56,8 @@
     "obuild": "0.4.32",
     "unimport": "6.0.2",
     "vite": "8.0.0",
-    "vitest": "4.1.2",
-    "webpack": "5.105.4"
+    "vitest": "4.1.4",
+    "webpack": "5.106.2"
   },
   "engines": {
     "node": ">=18.12.0"
