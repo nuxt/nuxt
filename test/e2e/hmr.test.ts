@@ -135,27 +135,33 @@ test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) 
 })
 
 test('HMR for island components', async ({ page, goto }) => {
-  // Navigate to the page with the island components
-  await goto('/server-component')
-
   const componentPath = join(fixtureDir, 'app/components/islands/HmrComponent.vue')
-  const componentContents = readFileSync(componentPath, 'utf8')
+  const sourcePath = join(sourceDir, 'app/components/islands/HmrComponent.vue')
+  const componentContents = readFileSync(sourcePath, 'utf8')
+  try {
+    writeFileSync(componentPath, componentContents)
 
-  // Test initial state of the component
-  await expect(page.getByTestId('hmr-id')).toHaveText('0')
+    // Navigate to the page with the island components
+    await goto('/server-component')
 
-  // Function to update the component and check for changes
-  const triggerHmr = (number: string) => writeFileSync(componentPath, componentContents.replace('ref(0)', `ref(${number})`))
+    // Test initial state of the component
+    await expect(page.getByTestId('hmr-id')).toHaveText('0')
 
-  // First edit
-  triggerHmr('1')
-  await expect(page.getByTestId('hmr-id')).toHaveText('1', { timeout: 10000 })
+    // Function to update the component and check for changes
+    const triggerHmr = (number: string) => writeFileSync(componentPath, componentContents.replace('ref(0)', `ref(${number})`))
 
-  // Second edit to make sure HMR is working consistently
-  triggerHmr('2')
-  await expect(page.getByTestId('hmr-id')).toHaveText('2', { timeout: 10000 })
+    // First edit
+    triggerHmr('1')
+    await expect(page.getByTestId('hmr-id')).toHaveText('1', { timeout: 10000 })
 
-  expect(page).toHaveNoErrorsOrWarnings()
+    // Second edit to make sure HMR is working consistently
+    triggerHmr('2')
+    await expect(page.getByTestId('hmr-id')).toHaveText('2', { timeout: 10000 })
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  } finally {
+    writeFileSync(componentPath, componentContents)
+  }
 })
 
 test.describe('vite-only HMR tests', () => {
@@ -279,6 +285,9 @@ test.describe('vite-only HMR tests', () => {
       await expect(page.getByTestId('example')).toHaveText('test.vue')
 
       renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
+
+      // Let the watcher emit unlink/create before the follow-up write (rename + write in one turn can coalesce to a single update in Vite)
+      await new Promise(resolve => setTimeout(resolve, 50))
 
       writeFileSync(
         join(fixtureDir, 'app/components/example/example-test.vue'),
