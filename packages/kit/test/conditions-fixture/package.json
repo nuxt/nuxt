@@ -1,0 +1,10 @@
+{
+  "name": "conditional-package",
+  "type": "module",
+  "exports": {
+    ".": {
+      "custom-kit": "./custom.js",
+      "import": "./default.js"
+    }
+  }
+}
