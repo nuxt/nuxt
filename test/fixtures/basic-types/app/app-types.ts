@@ -154,6 +154,12 @@ describe('aliases', () => {
   })
 })
 
+describe('import meta', () => {
+  it('types envName', () => {
+    expectTypeOf(import.meta.envName).toEqualTypeOf<string>()
+  })
+})
+
 describe('middleware', () => {
   it('recognizes named middleware', () => {
     definePageMeta({ middleware: 'named' })

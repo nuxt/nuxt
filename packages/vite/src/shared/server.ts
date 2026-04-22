@@ -2,6 +2,7 @@ import * as vite from 'vite'
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
+import { getNuxtEnvName } from '@nuxt/kit'
 import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
 
@@ -76,6 +77,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       'import.meta.server': true,
       'import.meta.client': false,
       'import.meta.browser': false,
+      'import.meta.envName': JSON.stringify(getNuxtEnvName(nuxt.options)),
       'window': 'undefined',
       'document': 'undefined',
       'navigator': 'undefined',
