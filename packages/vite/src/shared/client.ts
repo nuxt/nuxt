@@ -1,5 +1,6 @@
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
+import { getNuxtEnvName } from '@nuxt/kit'
 
 import { getTranspileStrings } from '../utils/transpile.ts'
 
@@ -76,6 +77,7 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
       'import.meta.server': false,
       'import.meta.client': true,
       'import.meta.browser': true,
+      'import.meta.envName': JSON.stringify(getNuxtEnvName(nuxt.options)),
       'import.meta.nitro': false,
       'import.meta.prerender': false,
       'module.hot': false,

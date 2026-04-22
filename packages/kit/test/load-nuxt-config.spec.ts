@@ -3,7 +3,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { loadNuxtConfig } from '@nuxt/kit'
+import { getNuxtEnvName, loadNuxtConfig } from '@nuxt/kit'
 import { basename, join } from 'pathe'
 
 describe('loadNuxtConfig', () => {
@@ -82,5 +82,11 @@ describe('loadNuxtConfig', () => {
       expect(config.devServer.port).toBe(3005)
       expect(config.devServer.host).toBe('0.0.0.0')
     })
+  })
+
+  it('should preserve and resolve a custom env name', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd, envName: 'staging' })
+    expect(getNuxtEnvName(config)).toBe('staging')
   })
 })
