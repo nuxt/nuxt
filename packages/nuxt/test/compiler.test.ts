@@ -31,7 +31,7 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/guide/going-further/compiler\`]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/api/composables/create-use-fetch\`]`)
 
     vi.unstubAllGlobals()
   })
@@ -145,7 +145,7 @@ describe('createScanPluginContext', () => {
 
     beforeEach(() => {
       parseAndWalkSpy = vi.spyOn(oxcWalker, 'parseAndWalk').mockReturnValue({ program: {} } as any) as any
-      walkSpy = vi.spyOn(oxcWalker, 'walk').mockImplementation((() => {}) as any) as any
+      walkSpy = vi.spyOn(oxcWalker, 'walk').mockImplementation((() => { }) as any) as any
     })
 
     afterEach(() => {
@@ -533,7 +533,7 @@ describe('parseFunctionCall', () => {
     expect(result).toBeNull()
   })
 
-  it ('should return null for call made via call', () => {
+  it('should return null for call made via call', () => {
     const code = `createUseFetch.call(null)`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
     expect(result).toBeNull()
