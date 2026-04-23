@@ -24,6 +24,7 @@ describe('resolveApp', () => {
           ".js",
           ".jsx",
           ".mjs",
+          ".mts",
           ".ts",
           ".tsx",
           ".vue",
