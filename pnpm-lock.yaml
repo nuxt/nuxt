@@ -349,6 +349,9 @@ importers:
       '@unhead/vue':
         specifier: ^2.1.12
         version: 2.1.12(vue@3.5.30(typescript@6.0.3))
+      '@vue/shared':
+        specifier: 3.5.30
+        version: 3.5.30
       consola:
         specifier: ^3.4.2
         version: 3.4.2
@@ -405,7 +408,7 @@ importers:
         version: 2.5.0
       unstorage:
         specifier: ^2.0.0-alpha.6
-        version: 2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1)(lru-cache@11.3.0)(ofetch@1.5.1)
+        version: 2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1)(lru-cache@11.3.0)(ofetch@2.0.0-alpha.3)
       vue:
         specifier: 3.5.30
         version: 3.5.30(typescript@6.0.3)
@@ -18043,14 +18046,6 @@ snapshots:
     optionalDependencies:
       db0: 0.3.4
       ioredis: 5.10.1
-
-  unstorage@2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1)(lru-cache@11.3.0)(ofetch@1.5.1):
-    optionalDependencies:
-      chokidar: 5.0.0
-      db0: 0.3.4
-      ioredis: 5.10.1
-      lru-cache: 11.3.0
-      ofetch: 1.5.1
 
   unstorage@2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1)(lru-cache@11.3.0)(ofetch@2.0.0-alpha.3):
     optionalDependencies:
