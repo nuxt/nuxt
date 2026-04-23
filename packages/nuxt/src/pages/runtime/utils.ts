@@ -7,10 +7,10 @@ export type RouterViewSlotProps = Parameters<RouterViewSlot>[0]
 
 type SerializablePrimitive = string | number | boolean | null | undefined
 
-/** JSON-serializable value (non-recursive definition to avoid excessive type depth) */
-export type SerializableValue = SerializablePrimitive | SerializablePrimitive[] | Record<string, unknown>
-
 export type MaybeArray<T> = T | T[]
+
+/** JSON-serializable value (non-recursive definition to avoid excessive type depth) */
+export type SerializableValue = MaybeArray<SerializablePrimitive | Record<string, unknown>>
 
 /** Constrains T to only contain serializable properties. Non-serializable properties become `never`. */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
