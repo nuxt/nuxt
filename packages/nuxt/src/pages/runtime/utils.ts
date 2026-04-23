@@ -10,14 +10,14 @@ type SerializablePrimitive = string | number | boolean | null | undefined
 export type MaybeArray<T> = T | T[]
 
 /** JSON-serializable value (non-recursive definition to avoid excessive type depth) */
-export type SerializableValue = MaybeArray<SerializablePrimitive | Record<string, unknown>>
+export type SerializableValue = MaybeArray<SerializablePrimitive | Record<string, SerializablePrimitive>>
 
 /** Constrains T to only contain serializable properties. Non-serializable properties become `never`. */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export type MakeSerializableObject<T> = T extends Function | symbol
   ? never
   : {
-      [K in keyof T]: T[K] extends MaybeArray<SerializablePrimitive | Record<string, unknown>>
+      [K in keyof T]: T[K] extends SerializableValue
         ? T[K]
         : never
     }
