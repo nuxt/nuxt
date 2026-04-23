@@ -10,17 +10,17 @@ type SerializablePrimitive = string | number | boolean | null | undefined
 /** JSON-serializable value (non-recursive definition to avoid excessive type depth) */
 export type SerializableValue = SerializablePrimitive | SerializablePrimitive[] | Record<string, unknown>
 
+export type MaybeArray<T> = T | T[]
+
 /** Constrains T to only contain serializable properties. Non-serializable properties become `never`. */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export type MakeSerializableObject<T> = T extends Function | symbol ? never : {
-  [K in keyof T]: T[K] extends SerializablePrimitive
-    ? T[K]
-    : T[K] extends (infer U)[]
-      ? U extends SerializablePrimitive ? T[K] : never
-      : T[K] extends Record<string, unknown>
+export type MakeSerializableObject<T> = T extends Function | symbol
+  ? never
+  : {
+      [K in keyof T]: T[K] extends MaybeArray<SerializablePrimitive | Record<string, unknown>>
         ? T[K]
         : never
-}
+    }
 
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
 const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
