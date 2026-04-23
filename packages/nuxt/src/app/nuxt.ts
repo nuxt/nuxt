@@ -25,6 +25,8 @@ import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
 import { appId, asyncCallHook, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
+import { runtimeErrorUtils } from '#app/utils'
+import { E1001, E1003, E1005 } from '#app/error-codes'
 
 export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
@@ -418,7 +420,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
-    const unreg = nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+    const unreg = nuxtApp.hook('app:error', (...args) => { runtimeErrorUtils.warn({ message: 'Error caught during app initialization.', code: E1005, fix: 'Check your plugins, `app:created`, and `app:beforeMount` hooks for unhandled errors.', cause: args[0] }) })
     nuxtApp.hook('app:mounted', unreg)
   }
 
@@ -579,9 +581,9 @@ export function useNuxtApp (id?: string): NuxtApp {
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/4.x/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
+      runtimeErrorUtils.throw({ message: 'A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug.', code: E1001, fix: 'Move this call inside a Vue `setup()` function, a Nuxt plugin, or a Nuxt middleware.' })
     } else {
-      throw new Error('[nuxt] instance unavailable')
+      runtimeErrorUtils.throw({ message: 'Nuxt instance unavailable.', code: E1001 })
     }
   }
 
@@ -619,7 +621,7 @@ function wrappedConfig (runtimeConfig: Record<string, unknown>) {
       if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         if (!loggedKeys.has(p)) {
           loggedKeys.add(p)
-          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/4.x/guide/going-further/runtime-config for more information.`)
+          runtimeErrorUtils.warn({ message: `Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}.`, code: E1003, fix: `Move \`${p}\` under \`runtimeConfig.public\` in \`nuxt.config\` to make it available on the client side.` })
         }
       }
       return Reflect.get(target, p, receiver)

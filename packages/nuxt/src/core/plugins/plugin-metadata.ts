@@ -8,8 +8,8 @@ import { normalize } from 'pathe'
 import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
+import { ErrorCodes, buildErrorUtils } from '../utils/error-format.ts'
 import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
-import { logger } from '../../utils.ts'
 
 const internalOrderMap = {
   // -50: pre-all (nuxt)
@@ -61,7 +61,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const metaArg = node.arguments[1]
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throw new Error('Invalid plugin metadata')
+        buildErrorUtils.throw({ message: `Invalid plugin metadata: the second argument to \`${name}\` must be an object literal, but got \`${metaArg.type}\`.`, code: ErrorCodes.B2001, fix: 'Pass an object literal as the second argument, e.g. `defineNuxtPlugin(() => {}, { name: \'my-plugin\' })`.' })
       }
       meta = extractMetaFromObject(metaArg.properties)
     }
@@ -93,7 +93,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
   const meta: PluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
-      throw new Error('Invalid plugin metadata')
+      buildErrorUtils.throw({ message: 'Invalid plugin metadata: spread elements and computed keys are not supported in plugin options.', code: ErrorCodes.B2002, fix: 'Use static properties instead.' })
     }
     const propertyKey = property.key.name
     if (!isMetadataKey(propertyKey)) { continue }
@@ -105,7 +105,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
     }
     if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
       if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
-        throw new Error('dependsOn must take an array of string literals')
+        buildErrorUtils.throw({ message: 'Invalid plugin metadata: `dependsOn` must be an array of string literals.', code: ErrorCodes.B2003, fix: 'Use string literals in the `dependsOn` array, e.g. `dependsOn: [\'my-plugin\']`.' })
       }
       meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
     }
@@ -122,7 +122,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       if (!plugin) { return }
 
       if (!code.trim()) {
-        logger.warn(`Plugin \`${plugin.src}\` has no content.`)
+        buildErrorUtils.warn({ message: `Plugin \`${plugin.src}\` has no content.`, code: ErrorCodes.B2004, fix: 'Add content to the plugin file, or remove it from the `plugins/` directory.', context: { src: plugin.src } })
 
         return {
           code: 'export default () => {}',
@@ -133,7 +133,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const exports = findExports(code)
       const defaultExport = exports.find(e => e.type === 'default' || e.name === 'default')
       if (!defaultExport) {
-        logger.warn(`Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
+        buildErrorUtils.warn({ message: `Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`, code: ErrorCodes.B2005, fix: 'Add `export default defineNuxtPlugin(() => {})` to your plugin.', context: { src: plugin.src } })
         return {
           code: 'export default () => {}',
           map: null,
@@ -174,12 +174,12 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           }
         })
       } catch (e) {
-        logger.error(e)
+        buildErrorUtils.error({ message: `Error parsing plugin \`${plugin.src}\`.`, code: ErrorCodes.B2006, fix: 'Check the plugin file for syntax errors.', cause: e })
         return
       }
 
       if (!wrapped) {
-        logger.warn(`Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`)
+        buildErrorUtils.warn({ message: `Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`, code: ErrorCodes.B2007, fix: 'Wrap your plugin with `defineNuxtPlugin` — in the future this may enable enhancements.', context: { src: plugin.src } })
       }
 
       if (s.hasChanged()) {

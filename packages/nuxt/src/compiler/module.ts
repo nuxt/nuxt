@@ -1,8 +1,9 @@
 import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../core/utils/error-format.ts'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, normalizeExtension, toArray } from '../utils.ts'
 import { createScanPluginContext, matchWithStringOrRegex } from './utils.ts'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin, scanFileForFactories } from './plugins/keyed-function-factories.ts'
@@ -127,11 +128,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              logger.error(`[nuxt:compiler] Plugin \`${plugin.name}\` failed to scan file \`${filePath}\``, e)
+              buildErrorUtils.error({ message: `Plugin \`${plugin.name}\` failed to scan file \`${filePath}\`.`, code: ErrorCodes.B1005, fix: 'Check the file for syntax errors, or report this issue to the plugin author.', context: { plugin: plugin.name, file: filePath }, cause: e })
             }
           }))
         } catch (e) {
-          logger.error(`[nuxt:compiler] Cannot read file \`${filePath}\``, e)
+          buildErrorUtils.error({ message: `Cannot read file \`${filePath}\`.`, code: ErrorCodes.B1006, fix: 'Check that the file exists and has correct permissions.', context: { file: filePath }, cause: e })
         }
       }
 
@@ -140,7 +141,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         try {
           await plugin.afterScan(nuxt)
         } catch (e) {
-          logger.error(`[nuxt:compiler] Error in \`afterScan\` hook of plugin \`${plugin.name}\``, e)
+          buildErrorUtils.error({ message: `Error in \`afterScan\` hook of plugin \`${plugin.name}\`.`, code: ErrorCodes.B1007, fix: 'Check the plugin implementation or report this issue to the plugin author.', context: { plugin: plugin.name }, cause: e })
         }
       }))
     }

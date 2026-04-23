@@ -11,6 +11,8 @@ import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError } from './composables/error'
+import { runtimeErrorUtils } from './utils'
+import { E1008, E1011 } from './error-codes'
 
 // @ts-expect-error virtual file
 import '#build/css'
@@ -38,7 +40,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
-    if (ssrContext?.['~renderResponse']) { throw new Error('skipping render') }
+    if (ssrContext?.['~renderResponse']) { throw Object.assign(new Error('Skipping render: a response was already set by middleware or a plugin.'), { code: E1008 }) }
 
     return vueApp
   }
@@ -103,7 +105,7 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    console.error('Error while mounting app:', error)
+    runtimeErrorUtils.warn({ message: 'Error while mounting app.', code: E1011, fix: 'Check your plugins and app initialization code for unhandled errors.', cause: error })
     throw error
   })
 }

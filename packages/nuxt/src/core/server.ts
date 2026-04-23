@@ -1,4 +1,5 @@
 import { directoryToURL, importModule } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './utils/error-format.ts'
 
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
@@ -20,6 +21,11 @@ async function loadServerBuilder (nuxt: Nuxt, builder = '@nuxt/nitro-server'): P
   try {
     return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
   } catch (err) {
-    throw new Error(`Loading \`${builder}\` server builder failed. You can read more about the nuxt \`server.builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder-1\``, { cause: err })
+    buildErrorUtils.throw({ message: `Loading \`${builder}\` server builder failed.`,
+      code: ErrorCodes.B1018,
+      fix: `Run \`npm install ${builder}\` to install it.`,
+      docs: 'https://nuxt.com/docs/4.x/api/nuxt-config#builder-1',
+      context: { builder, rootDir: nuxt.options.rootDir, cause: err },
+    })
   }
 }

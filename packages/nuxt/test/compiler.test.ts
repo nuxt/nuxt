@@ -31,7 +31,7 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/guide/going-further/compiler\`]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [NUXT_E1007] \`createUseFetch\` is a compiler macro and cannot be called at runtime.]`)
 
     vi.unstubAllGlobals()
   })
@@ -42,7 +42,7 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt] \`createUseFetch\` is a compiler macro and cannot be called at runtime.]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [NUXT_E1007] \`createUseFetch\` is a compiler macro and cannot be called at runtime.]`)
   })
 
   it('should have a non-enumerable `__nuxt_factory` property', () => {

@@ -24,6 +24,16 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       mergeHeaders(headers, entries, setCookies)
     }
 
+    // Forward structured error properties in dev JSON responses
+    if (import.meta.dev && defaultRes.body && typeof defaultRes.body !== 'string') {
+      const src = error as any
+      if (src.fix) { defaultRes.body.fix = src.fix }
+      if (src.why) { defaultRes.body.why = src.why }
+      if (src.hint) { defaultRes.body.hint = src.hint }
+      if (src.docsUrl) { defaultRes.body.docsUrl = src.docsUrl }
+      if (src.code) { defaultRes.body.errorCode = src.code }
+    }
+
     return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
       headers,
       status: defaultRes.status,
@@ -40,6 +50,16 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ??= error.data
   errorObject.url = event.req.url
+
+  // Forward structured error properties for error pages
+  if (import.meta.dev) {
+    const src = error as any
+    if (src.fix) { (errorObject as any).fix = src.fix }
+    if (src.why) { (errorObject as any).why = src.why }
+    if (src.hint) { (errorObject as any).hint = src.hint }
+    if (src.docsUrl) { (errorObject as any).docsUrl = src.docsUrl }
+    if (src.code) { (errorObject as any).errorCode = src.code }
+  }
 
   // Merge defaultRes headers, skipping content-type (would be application/json)
   // and content-security-policy (would disable JS execution in the error page)
@@ -64,7 +84,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
         '~internal': true,
       },
     },
-  ).catch(() => null)
+  ).catch((err) => {
+    if (import.meta.dev) {
+      console.warn('[nuxt] Failed to render SSR error page:', err)
+    }
+    return null
+  })
 
   // Fallback to static rendered error page
   if (!res) {

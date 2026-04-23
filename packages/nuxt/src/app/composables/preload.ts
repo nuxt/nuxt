@@ -1,7 +1,8 @@
 import type { Component } from 'vue'
 import type { RouteLocationRaw, Router } from 'vue-router'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../utils'
+import { runtimeErrorUtils, toArray } from '../utils'
+import { E2011 } from '../error-codes'
 import { useRouter } from './router'
 
 /**
@@ -67,7 +68,11 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
       continue
     }
     const promise = Promise.resolve((component as () => unknown)())
-      .catch(() => {})
+      .catch((err) => {
+        if (import.meta.dev) {
+          runtimeErrorUtils.warn({ message: `Failed to preload route component for \`${path}\`:`, code: E2011, fix: 'Check that the page component exists and can be imported. This may be a network issue or a missing chunk.', cause: err })
+        }
+      })
       .finally(() => promises.splice(promises.indexOf(promise), 1))
     promises.push(promise)
   }

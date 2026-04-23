@@ -8,10 +8,14 @@ import type { ComponentsDir } from 'nuxt/schema'
 
 const rFixture = (...p: string[]) => resolve(componentsFixtureDir, ...p)
 
-vi.mock('@nuxt/kit', () => ({
-  isIgnored: () => false,
-  useLogger: () => consola.create({}).withTag('nuxt'),
-}))
+vi.mock('@nuxt/kit', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@nuxt/kit')>()
+  return {
+    ...mod,
+    isIgnored: () => false,
+    useLogger: () => consola.create({}).withTag('nuxt'),
+  }
+})
 
 const dirs: ComponentsDir[] = [
   {

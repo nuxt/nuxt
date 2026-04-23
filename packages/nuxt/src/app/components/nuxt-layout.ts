@@ -7,6 +7,8 @@ import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
+import { E4001, E4002, E4003 } from '../error-codes'
+import { runtimeErrorUtils } from '../utils'
 import { _mergeTransitionProps, _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
@@ -64,7 +66,10 @@ export default defineComponent({
       let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          console.warn(`[nuxt] Invalid layout \`${layout}\` selected.`)
+          runtimeErrorUtils.warn({ message: `Invalid layout \`${layout}\` selected. Available layouts: ${Object.keys(layouts).join(', ') || 'none'}.`,
+            code: E4001,
+            fix: `Create a \`layouts/${layout}.vue\` file, or use one of the available layouts.`,
+          })
         }
         if (props.fallback) {
           layout = unref(props.fallback)
@@ -205,9 +210,15 @@ const LayoutProvider = defineComponent({
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
-              console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+              runtimeErrorUtils.warn({ message: `\`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`,
+                code: E4002,
+                fix: 'Wrap the layout\'s template in a single root element (e.g., a `<div>`).',
+              })
             } else {
-              console.warn('[nuxt] `<NuxtLayout>` needs to be passed a single root node in its default slot.')
+              runtimeErrorUtils.warn({ message: '`<NuxtLayout>` needs to be passed a single root node in its default slot.',
+                code: E4003,
+                fix: 'Wrap the content inside `<NuxtLayout>` in a single root element.',
+              })
             }
           }
         })

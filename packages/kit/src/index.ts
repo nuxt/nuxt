@@ -39,6 +39,9 @@ export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { logger, useLogger } from './logger.ts'
+export { createErrorUtils } from './errors.ts'
+export type { ErrorInfo, ErrorUtils, ErrorUtilsOptions } from './errors.ts'
+export * as ErrorCodes from './error-codes.ts'
 
 // Dependencies
 export { ensureDependencyInstalled } from './dependency.ts'

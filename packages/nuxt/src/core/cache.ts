@@ -3,10 +3,11 @@ import type { FileHandle } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { createIsIgnored } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './utils/error-format.ts'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
+import { logger } from '../utils.ts'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
-import { consola } from 'consola'
 import { dirname, join, relative } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
@@ -53,14 +54,14 @@ export async function getVueHash (nuxt: Nuxt) {
       await writeFile(buildIdCacheFile, nuxt.options.buildId)
 
       const elapsed = Date.now() - start
-      consola.success(`Cached Vue client and server builds in \`${elapsed}ms\`.`)
+      logger.success(`Cached Vue client and server builds in \`${elapsed}ms\`.`)
     },
     async restoreCache () {
       const start = Date.now()
       const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
       if (res) {
-        consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
+        logger.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
       }
       return res
     },
@@ -91,7 +92,7 @@ export async function restoreCachedBuildId (nuxt: Nuxt) {
 
   nuxt.options.buildId = cachedBuildId
   nuxt.options.runtimeConfig.app.buildId = cachedBuildId
-  consola.debug(`Restored cached buildId: ${cachedBuildId}`)
+  logger.debug(`Restored cached buildId: ${cachedBuildId}`)
 }
 
 export async function cleanupCaches (nuxt: Nuxt) {
@@ -109,7 +110,7 @@ export async function cleanupCaches (nuxt: Nuxt) {
       await unlink(cache)
     }
     const elapsed = Date.now() - start
-    consola.success(`Cleaned up old build caches in \`${elapsed}ms\`.`)
+    logger.success(`Cleaned up old build caches in \`${elapsed}ms\`.`)
   }
 }
 
@@ -195,7 +196,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
   })
 
   const elapsed = Date.now() - start
-  consola.debug(`Computed \`${options.id}\` build hash in \`${elapsed}ms\`.`)
+  logger.debug(`Computed \`${options.id}\` build hash in \`${elapsed}ms\`.`)
 
   return res
 }
@@ -253,7 +254,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       if (count < 5) {
         return await readFileWithMeta(dir, fileName, count + 1)
       }
-      console.warn(`Failed to read file \`${fileName}\` as it changed during read.`)
+      buildErrorUtils.warn({ message: `Failed to read file \`${fileName}\` as it changed during read.`, code: ErrorCodes.B1010, fix: 'The file was modified while being read. This is usually caused by a concurrent process writing to the file. Try restarting the build.' })
       return
     }
 
@@ -266,7 +267,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       },
     }
   } catch (err) {
-    console.warn(`Failed to read file \`${fileName}\`:`, err)
+    buildErrorUtils.warn({ message: `Failed to read file \`${fileName}\`.`, code: ErrorCodes.B1011, fix: 'Check that the file exists and is readable, or try clearing the build cache with `nuxi clean`.', cause: err })
   } finally {
     await fd?.close()
   }
@@ -286,7 +287,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
       // Prevent path traversal attacks
       if (!filePath.startsWith(resolvedCwd)) {
-        consola.warn(`Skipping unsafe cache path: ${file.name}`)
+        buildErrorUtils.warn({ message: `Skipping unsafe cache path: ${file.name}`, code: ErrorCodes.B1012, fix: 'This cache file has a path that escapes the project directory (possible path traversal). Delete the cache with `nuxi clean` and rebuild.', context: { path: file.name } })
         continue
       }
 
@@ -298,7 +299,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       if (existingStats?.isFile() && existingStats.size === cachedSize) {
         const lastModified = Number.parseInt(file.attrs?.mtime?.toString().padEnd(13, '0') || '0')
         if (existingStats.mtime.getTime() >= lastModified) {
-          consola.debug(`Skipping \`${file.name}\` (up to date or newer than cache)`)
+          logger.debug(`Skipping \`${file.name}\` (up to date or newer than cache)`)
           continue
         }
       }
@@ -306,7 +307,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
-      console.error(err)
+      buildErrorUtils.error({ message: `Failed to restore cached file \`${file.name}\`.`, code: ErrorCodes.B1013, fix: 'Try clearing the build cache with `nuxi clean` and rebuilding from scratch.', cause: err })
     } finally {
       await fd?.close()
     }

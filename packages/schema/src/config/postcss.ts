@@ -23,7 +23,7 @@ export default defineResolvers({
       $resolve: (val) => {
         if (typeof val === 'string') {
           if (!(val in orderPresets)) {
-            throw new Error(`[nuxt] Unknown PostCSS order preset: ${val}`)
+            throw Object.assign(new Error(`[nuxt] Unknown PostCSS order preset: ${val}`), { code: 'B5008' })
           }
           return orderPresets[val as keyof typeof orderPresets]
         }

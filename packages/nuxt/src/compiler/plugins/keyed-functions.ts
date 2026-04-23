@@ -8,11 +8,12 @@ import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 import type { KeyedFunction } from '@nuxt/schema'
 import type { Node } from 'oxc-parser'
 import type { Import } from 'unimport'
 
-import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, isWhitespace, logger, stripExtension } from '../../utils.ts'
+import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, isWhitespace, stripExtension } from '../../utils.ts'
 import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface KeyedFunctionsOptions {
@@ -61,7 +62,7 @@ function buildKeyedFunctionsState (keyedFunctions: KeyedFunction[]) {
       const sourcesToFunctionMeta = namesToSourcesToFunctionMeta.get(functionName)
       const existingEntry = sourcesToFunctionMeta?.get(fnSource)
       if (existingEntry?.source && existingEntry.source === fnSource) {
-        logger.warn(`[nuxt:compiler] [keyed-functions] Duplicate function name \`${functionName}\`${functionName !== f.name ? ` defined as \`${f.name}\`` : ''} with ${f.source ? `the same source \`${f.source}\`` : 'no source'} found. Overwriting the existing entry.`)
+        buildErrorUtils.warn({ message: `Duplicate keyed function name \`${functionName}\`${functionName !== f.name ? ` defined as \`${f.name}\`` : ''} with ${f.source ? `the same source \`${f.source}\`` : 'no source'} found. Overwriting the existing entry.`, code: ErrorCodes.B1009, fix: 'Ensure each keyed function has a unique name, or use a different source to distinguish them.', context: { functionName, source: f.source } })
       }
     }
 

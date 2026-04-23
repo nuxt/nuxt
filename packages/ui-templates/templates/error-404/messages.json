@@ -2,5 +2,10 @@
   "status": 404,
   "statusText": "Page not found",
   "description": "Sorry, the page you are looking for could not be found.",
-  "backHome": "Go back home"
+  "backHome": "Go back home",
+  "fix": "",
+  "why": "",
+  "hint": "",
+  "docsUrl": "",
+  "errorCode": ""
 }

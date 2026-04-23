@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../core/utils/error-format.ts'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -100,7 +101,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          logger.warn('Components directory not found: `' + dirPath + '`')
+          buildErrorUtils.warn({ message: `Components directory not found: \`${dirPath}\`. If this is intentional, you can remove it from \`components.dirs\` in your \`nuxt.config\`.`, code: ErrorCodes.B3001, fix: 'If this is intentional, you can remove it from `components.dirs` in your `nuxt.config`.', context: { dirPath } })
         }
 
         const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs
@@ -198,7 +199,15 @@ export default defineNuxtModule<ComponentsOptions>({
           })
         }
         if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
-          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
+          buildErrorUtils.warn({ message: `Using server component \`${component.pascalName}\` with \`ssr: false\` is not supported with auto-detected component islands.`,
+            code: ErrorCodes.B3002,
+            fix: 'Set `experimental.componentIslands` to `true` in your `nuxt.config`, or convert the component to a client component.',
+            context: {
+              component: component.filePath,
+              ssr: nuxt.options.ssr,
+              componentIslands: nuxt.options.experimental.componentIslands,
+            },
+          })
         }
       }
       context.components = newComponents

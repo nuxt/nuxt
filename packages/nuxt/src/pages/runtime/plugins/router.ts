@@ -13,6 +13,8 @@ import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
+import { runtimeErrorUtils } from '#app/utils'
+import { E2004 } from '#app/error-codes'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
@@ -224,9 +226,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
           if (!middleware) {
             if (import.meta.dev) {
-              throw new Error(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
+              runtimeErrorUtils.throw({ message: `Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`,
+                code: E2004,
+                fix: `Create a \`middleware/${entry}.ts\` file, or check the middleware name for typos.`,
+              })
             }
-            throw new Error(`Unknown route middleware: '${entry}'.`)
+            runtimeErrorUtils.throw({ message: `Unknown route middleware: '${entry}'.`, code: E2004 })
           }
 
           try {
@@ -276,7 +281,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         return nuxtApp.runWithContext(() => showError(createError({
           status: 404,
           fatal: false,
-          statusText: `Page not found: ${to.fullPath}`,
+          statusText: `Page Not Found: ${to.fullPath}`,
           data: {
             path: to.fullPath,
           },

@@ -5,6 +5,8 @@ import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitro/types'
 import type { NuxtError } from 'nuxt/app'
 import { useNuxtApp } from '#app/nuxt'
+import { runtimeErrorUtils } from '#app/utils'
+import { E1007 } from '#app/error-codes'
 import type { SerializableValue } from './utils'
 
 // Generated at runtime to be extended
@@ -66,11 +68,7 @@ declare module 'vue-router' {
 }
 
 const warnRuntimeUsage = (method: string) => {
-  console.warn(
-    `${method}() is a compiler-hint helper that is only usable inside ` +
-    'the script block of a single file component which is also a page. Its arguments should be ' +
-    'compiled away and passing it at runtime has no effect.',
-  )
+  runtimeErrorUtils.warn({ message: `${method}() is a compiler-hint helper that is only usable inside the script block of a single file component which is also a page. Its arguments should be compiled away and passing it at runtime has no effect.`, code: E1007, fix: `Move the \`${method}()\` call into the \`<script setup>\` block of a page component in the \`pages/\` directory.` })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
