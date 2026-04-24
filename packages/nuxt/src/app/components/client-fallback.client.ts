@@ -1,4 +1,4 @@
-import { createElementBlock, defineComponent, onMounted, shallowRef, useId, Fragment, h } from 'vue'
+import { Fragment, createElementBlock, defineComponent, h, onMounted, shallowRef, useId } from 'vue'
 import { useState } from '../composables/state'
 
 const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
