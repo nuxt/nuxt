@@ -64,7 +64,6 @@
     "@nuxt/vite-builder": "workspace:*",
     "@unhead/vue": "^2.1.12",
     "@vue/shared": "^3.5.30",
-    "c12": "^3.3.3",
     "chokidar": "^5.0.0",
     "compatx": "^0.2.0",
     "consola": "^3.4.2",
