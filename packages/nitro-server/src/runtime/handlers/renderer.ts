@@ -111,7 +111,10 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
     }
   }
 
-  if (routeOptions.ssr === false) {
+  // Skip `ssr: false` when rendering a payload URL — the payload endpoint may inherit `ssr: false`
+  // from a catch-all route rule (e.g. `/**`) even though the actual page enables SSR with caching.
+  // Payload URLs always require SSR to collect async data.
+  if (routeOptions.ssr === false && !isRenderingPayload) {
     ssrContext.noSSR = true
   }
 
