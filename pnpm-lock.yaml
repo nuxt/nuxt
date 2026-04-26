@@ -140,8 +140,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.1-rc.16
-        version: 2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12))
+        specifier: 2.0.1-rc.18
+        version: 2.0.1-rc.18(crossws@0.4.4(srvx@0.11.12))
       happy-dom:
         specifier: 20.8.4
         version: 20.8.4
@@ -885,8 +885,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.106.2(esbuild@0.27.4))
       h3:
-        specifier: 2.0.1-rc.16
-        version: 2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15))
+        specifier: 2.0.1-rc.18
+        version: 2.0.1-rc.18(crossws@0.4.4(srvx@0.11.15))
       hookable:
         specifier: 6.1.0
         version: 6.1.0
@@ -6105,6 +6105,16 @@ packages:
 
   h3@2.0.1-rc.16:
     resolution: {integrity: sha512-h+pjvyujdo9way8qj6FUbhaQcHlR8FEq65EhTX9ViT5pK8aLj68uFl4hBkF+hsTJAH+H1END2Yv6hTIsabGfag==}
+    engines: {node: '>=20.11.1'}
+    hasBin: true
+    peerDependencies:
+      crossws: ^0.4.1
+    peerDependenciesMeta:
+      crossws:
+        optional: true
+
+  h3@2.0.1-rc.18:
+    resolution: {integrity: sha512-2EdYEOIJwZHfhfdxvqZsmmUz4tgwzQSuzre+l50j+voHJV4m7j3zw2lYLgHoyfkCF9EAZcaH4ea0zH/hgcs9Yg==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -14336,14 +14346,21 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.4(srvx@0.11.12)
 
-  h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12)):
+  h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15)):
+    dependencies:
+      rou3: 0.8.1
+      srvx: 0.11.12
+    optionalDependencies:
+      crossws: 0.4.4(srvx@0.11.15)
+
+  h3@2.0.1-rc.18(crossws@0.4.4(srvx@0.11.12)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.12
     optionalDependencies:
       crossws: 0.4.4(srvx@0.11.12)
 
-  h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15)):
+  h3@2.0.1-rc.18(crossws@0.4.4(srvx@0.11.15)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.12
@@ -15784,7 +15801,7 @@ snapshots:
       crossws: 0.4.4(srvx@0.11.12)
       db0: 0.3.4
       env-runner: 0.1.7
-      h3: 2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12))
+      h3: 2.0.1-rc.18(crossws@0.4.4(srvx@0.11.12))
       hookable: 6.1.0
       nf3: 0.3.16
       ocache: 0.1.4
