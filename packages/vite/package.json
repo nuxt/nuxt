@@ -50,7 +50,7 @@
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.1.0",
     "pkg-types": "^2.3.0",
-    "postcss": "^8.5.8",
+    "postcss": "^8.5.12",
     "seroval": "^1.5.1",
     "std-env": "^4.0.0",
     "ufo": "^1.6.3",
