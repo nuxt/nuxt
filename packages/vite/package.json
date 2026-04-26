@@ -62,7 +62,7 @@
     "h3-next": "npm:h3@2.0.1-rc.16",
     "nitropack": "2.13.1",
     "obuild": "0.4.32",
-    "postcss": "8.5.8",
+    "postcss": "8.5.10",
     "rolldown": "1.0.0-rc.9",
     "rollup": "4.59.0",
     "rollup-plugin-visualizer": "7.0.1",
