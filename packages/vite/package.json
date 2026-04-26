@@ -31,7 +31,7 @@
     "@nuxt/kit": "workspace:*",
     "@vitejs/plugin-vue": "^6.0.5",
     "consola": "^3.4.2",
-    "defu": "^6.1.4",
+    "defu": "^6.1.7",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
     "get-port-please": "^3.2.0",
