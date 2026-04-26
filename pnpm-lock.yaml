@@ -788,8 +788,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15))
+        specifier: npm:h3@2.0.1-rc.18
+        version: h3@2.0.1-rc.18(crossws@0.4.4(srvx@0.11.15))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(chokidar@5.0.0)(dotenv@17.4.1)(giget@3.2.0)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(picomatch@4.0.4)(rollup@4.59.0)(typescript@6.0.3)(vue-tsc@3.2.5(typescript@6.0.3))
@@ -1093,8 +1093,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15))
+        specifier: npm:h3@2.0.1-rc.18
+        version: h3@2.0.1-rc.18(crossws@0.4.4(srvx@0.11.15))
       nitropack:
         specifier: 2.13.1
         version: 2.13.1(rolldown@1.0.0-rc.9(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(srvx@0.11.15)
@@ -1265,8 +1265,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15))
+        specifier: npm:h3@2.0.1-rc.18
+        version: h3@2.0.1-rc.18(crossws@0.4.4(srvx@0.11.15))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(chokidar@5.0.0)(dotenv@17.4.1)(giget@3.2.0)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2))(picomatch@4.0.4)(rollup@4.59.0)(typescript@6.0.3)(vue-tsc@3.2.5(typescript@6.0.3))
@@ -6105,6 +6105,16 @@ packages:
 
   h3@2.0.1-rc.16:
     resolution: {integrity: sha512-h+pjvyujdo9way8qj6FUbhaQcHlR8FEq65EhTX9ViT5pK8aLj68uFl4hBkF+hsTJAH+H1END2Yv6hTIsabGfag==}
+    engines: {node: '>=20.11.1'}
+    hasBin: true
+    peerDependencies:
+      crossws: ^0.4.1
+    peerDependenciesMeta:
+      crossws:
+        optional: true
+
+  h3@2.0.1-rc.18:
+    resolution: {integrity: sha512-2EdYEOIJwZHfhfdxvqZsmmUz4tgwzQSuzre+l50j+voHJV4m7j3zw2lYLgHoyfkCF9EAZcaH4ea0zH/hgcs9Yg==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -14344,6 +14354,13 @@ snapshots:
       crossws: 0.4.4(srvx@0.11.12)
 
   h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15)):
+    dependencies:
+      rou3: 0.8.1
+      srvx: 0.11.12
+    optionalDependencies:
+      crossws: 0.4.4(srvx@0.11.15)
+
+  h3@2.0.1-rc.18(crossws@0.4.4(srvx@0.11.15)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.12
