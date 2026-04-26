@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@vue/shared": "^3.5.30",
-    "defu": "^6.1.4",
+    "defu": "^6.1.7",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "std-env": "^4.0.0"
