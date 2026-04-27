@@ -56,7 +56,7 @@
     "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
     "vite": "^7.3.1",
-    "vite-node": "^5.3.0",
+    "vite-node": "^6.0.0",
     "vite-plugin-checker": "^0.12.0",
     "vue-bundle-renderer": "^2.2.0"
   },
