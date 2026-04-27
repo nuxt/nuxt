@@ -59,4 +59,28 @@ test.describe('Suspense multiple navigation', () => {
     // Verify no errors or warnings occurred
     expect(page).toHaveNoErrorsOrWarnings()
   })
+
+  // https://github.com/nuxt/nuxt/issues/23232
+  test('should not throw when navigating from a deeply nested route to an async page', async ({ page, goto }) => {
+    await goto('/')
+    await expect(page.getByTestId('index-title')).toBeVisible()
+
+    await page.getByTestId('link-project').click()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/setting/project')
+    await expect(page.getByTestId('project-title')).toBeVisible()
+
+    await page.getByTestId('link-create').click()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/setting/project/create')
+    await expect(page.getByTestId('create-title')).toBeVisible()
+
+    await page.getByTestId('link-back-project').click()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/setting/project')
+    await expect(page.getByTestId('project-title')).toBeVisible()
+
+    await page.getByTestId('link-waiting').click()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/waiting')
+    await expect(page.getByTestId('waiting-title')).toBeVisible()
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
 })
