@@ -2,7 +2,6 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AssetURLTagConfig } from '@vue/compiler-sfc'
 import type { CompilerOptions } from '@vue/compiler-core'
 import type { RenderSSRHeadOptions } from '@unhead/vue/types'
-import type { UnheadVueOptions } from '@unhead/vue/bundler'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
@@ -399,33 +398,54 @@ export interface ConfigSchema {
    * An object that allows us to configure the `unhead` nuxt module.
    */
   unhead: {
-    /**
-     * Adds `PromisesPlugin` and disables Capo.js sorting.
-     *
-     * Ignored when `future.compatibilityVersion` >= 5.
-     *
-     * @deprecated Will be removed. Resolve promise values before passing to `useHead` and remove
-     * deprecated head patterns (`hid`, `vmid`, `children`, `body: true`, `renderPriority`).
-     * @default false
-     */
+  /**
+   * Enable the legacy compatibility mode for `unhead` module. This applies the following changes: - Disables Capo.js sorting - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body` - Adds the `PromisesPlugin`: supports promises as input
+   *
+   *
+   * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/typescript/head/guides/get-started/migration)
+   *
+   * @example
+   * ```ts
+   * export default defineNuxtConfig({
+   *  unhead: {
+   *   legacy: true
+   * })
+   * ```
+   */
     legacy: boolean
 
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *  unhead: {
+     *   renderSSRHeadOptions: {
+     *    omitLineBreaks: true
+     *   }
+     * })
+     * ```
      */
     renderSSRHeadOptions: RenderSSRHeadOptions
 
     /**
-     * Options for the `@unhead/vue/bundler` build plugin. Provides tree-shaking, `useSeoMeta`
-     * transform, minification, validation, and streaming SSR across vite, webpack, and rspack.
+     * Enable the `TemplateParamsPlugin` to resolve template params like `%s`, `%separator`, and `%site.name` in head tags.
      *
-     * Set to `false` to disable the plugin entirely.
+     * @default false
      *
-     * Only applies when `future.compatibilityVersion` >= 5.
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *  unhead: {
+     *   templateParams: true,
+     *  },
+     * })
+     * ```
      *
-     * @default {}
+     * @see https://unhead.unjs.io/docs/head/guides/template-params
      */
-    vite: false | Omit<UnheadVueOptions, 'streaming' | '_framework'>
+    templateParams: boolean
   }
 
   /**
@@ -1225,8 +1245,6 @@ export interface ConfigSchema {
      *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way. - Uses the hash hydration plugin to reduce initial hydration
      *
-     * @deprecated CAPO sorting is now the default in unhead v3. Set `unhead.legacy: true` to opt out
-     * temporarily on compat v4.
      * @default true
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */

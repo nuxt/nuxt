@@ -14,7 +14,7 @@
     "defu": "latest",
     "postcss": "^8.5.8",
     "ufo": "latest",
-    "unplugin": "latest",
+    "unplugin": "^3.0.0",
     "vue": "latest"
   },
   "engines": {

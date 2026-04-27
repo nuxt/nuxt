@@ -5,7 +5,7 @@ import type { RenderResponse } from 'nitro/types'
 import type { H3Event } from 'nitro/h3'
 import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'nitro/h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
-import { propsToString, renderSSRHead } from '@unhead/vue/server'
+import { propsToString } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '@unhead/vue/stream/server'
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
@@ -216,8 +216,10 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     }
     ssrContext.head.push({
       script: [{
-        type: 'importmap',
-        innerHTML: { imports: { '#entry': path } },
+        tagPosition: 'head',
+        tagPriority: 'critical',
+        type: 'importmap' as unknown as 'application/json',
+        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
       }],
     })
   }
@@ -296,8 +298,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
@@ -424,9 +425,7 @@ async function renderStreamedResponse (ctx: {
     })
   }
 
-  // 4. Render the shell head (atomically renders and clears entries). From
-  // here on, head entries pushed during Vue's render are streamed inline
-  // via `renderSSRHeadSuspenseChunk` after each chunk in step 7.
+  // 4. Render the shell head (atomically renders and clears entries)
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
 
   // 5. Build the HTML shell
@@ -454,39 +453,31 @@ async function renderStreamedResponse (ctx: {
   const createSSRApp = await getServerApp()
   const vueStream = renderToWebStream(await createSSRApp(ssrContext), ssrContext)
 
-  // 7. Build the streaming response. Mirrors the pattern from
-  // `@unhead/vue/stream/server`'s `wrapStream`: after each chunk from Vue's
-  // stream and once the stream completes, flush any head entries pushed
-  // during render via `renderSSRHeadSuspenseChunk` as a self-deleting
-  // inline script that updates `window.__unhead__` at HTML parse time.
-  // We don't call `wrapStream` directly because Nuxt composes the shell
-  // programmatically (manifest links, payload, hooks) rather than from a
-  // single HTML template.
+  // 7. Build the streaming response
   const encoder = new TextEncoder()
-  const flushHeadPatch = (controller: ReadableStreamDefaultController<Uint8Array>) => {
-    const patch = renderSSRHeadSuspenseChunk(ssrContext.head)
-    if (patch) {
-      controller.enqueue(encoder.encode(`<script>${patch};document.currentScript.remove()</script>`))
-    }
-  }
   const outputStream = new ReadableStream<Uint8Array>({
     async start (controller) {
       try {
+        // Send shell + app root open tag
         controller.enqueue(encoder.encode(shellHtml + APP_ROOT_OPEN_TAG))
 
+        // Pipe Vue stream, injecting head suspense chunks
         const reader = vueStream.getReader()
         try {
           while (true) {
             const { done, value } = await reader.read()
             if (done) { break }
             controller.enqueue(value)
-            flushHeadPatch(controller)
+
+            // Inject head updates from resolved suspense boundaries
+            const headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
+            if (headChunk) {
+              controller.enqueue(encoder.encode(`<script>${headChunk};document.currentScript.remove()</script>`))
+            }
           }
         } finally {
           reader.releaseLock()
         }
-        // Final flush: head entries pushed in the last chunk before stream close.
-        flushHeadPatch(controller)
 
         // Stream complete — build closing HTML
         await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: {} as any })

@@ -173,17 +173,10 @@ export default defineResolvers({
     },
   },
   unhead: {
-    legacy: {
-      $resolve: async (val, get) => {
-        if (typeof val === 'boolean') {
-          return (await get('future.compatibilityVersion') as number) >= 5 ? false : val
-        }
-        return false
-      },
-    },
-    vite: {},
+    legacy: false,
+    templateParams: false,
     renderSSRHeadOptions: {
-      $resolve: (val: unknown) => ({
+      $resolve: val => ({
         omitLineBreaks: true,
         ...typeof val === 'object' ? val : {},
       }),

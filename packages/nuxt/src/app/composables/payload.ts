@@ -1,6 +1,5 @@
 import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
-import { defineLink } from '@unhead/vue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
@@ -42,17 +41,15 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
       return
     }
     const payloadURL = await _getPayloadURL(url, opts)
-    const rel = detectLinkRelType()
-    const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
+    const link = { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
 
     if (import.meta.server) {
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
     } else {
       const linkEl = document.createElement('link')
-      linkEl.rel = rel
-      linkEl.setAttribute('as', 'fetch')
-      linkEl.crossOrigin = 'anonymous'
-      linkEl.href = payloadURL
+      for (const key of Object.keys(link) as Array<keyof typeof link>) {
+        linkEl[key === 'crossorigin' ? 'crossOrigin' : key] = link[key]!
+      }
       document.head.appendChild(linkEl)
       return new Promise<void>((resolve, reject) => {
         linkEl.addEventListener('load', () => resolve())

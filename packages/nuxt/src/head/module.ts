@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto'
-import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, useLogger } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
+// @ts-expect-error fix type in unhead
+import { streamingIifeCode } from 'unhead/stream/iife'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
@@ -15,7 +16,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     configKey: 'unhead',
   },
   setup (options, nuxt) {
-    const logger = useLogger('nuxt:unhead')
     const runtimeDir = resolve(distDir, 'head/runtime')
 
     // Transpile @unhead/vue
@@ -41,110 +41,49 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       rootDir: nuxt.options.rootDir,
     }))
 
-    // v5 users get tree-shaking via the @unhead/vue/vite plugin registered below.
-    // On v4 we fall back to Nuxt's composable tree-shaker so server composables
-    // still get stripped from the client bundle in production builds.
-    if (nuxt.options.future.compatibilityVersion < 5 && !nuxt.options.dev) {
-      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
-        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe',
-      ]
-    }
-
+    // Opt-out feature allowing dependencies using @vueuse/head to work
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
-
-    const ssrStreamingEnabled = typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
-
-    // Register @unhead/vue bundler plugin for v5 compat mode. The unified
-    // factory covers tree-shaking, useSeoMeta transform, JS/CSS minifiers,
-    // SSR static-replace, and (optionally) streaming — across vite, webpack,
-    // and rspack. Vite 8+ ships rolldown and lightningcss as direct deps so
-    // minifiers are always available; we resolve paths at setup time so
-    // dynamic imports resolve from vite's deps, not nuxt's.
-    if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false) {
-      const rolldownPath = resolveModulePath('rolldown/experimental', { try: true, from: importPaths })
-      const lightningcssPath = resolveModulePath('lightningcss', { try: true, from: importPaths })
-      // Convert to file:// URLs for Windows compatibility with dynamic import()
-      const rolldownURL = rolldownPath ? pathToFileURL(rolldownPath).href : undefined
-      const lightningcssURL = lightningcssPath ? pathToFileURL(lightningcssPath).href : undefined
-
-      const makeFactory = async () => {
-        const { Unhead } = await import('@unhead/vue/bundler')
-        const viteOptions = options.vite || {}
-        return Unhead({
-          validate: !nuxt.options.test,
-          streaming: ssrStreamingEnabled,
-          minify: {
-            js: rolldownURL
-              ? async (code) => {
-                const { minify } = await import(rolldownURL)
-                return (await minify('inline.js', code)).code.trim()
-              }
-              : undefined,
-            css: lightningcssURL
-              ? async (code) => {
-                const { transform } = await import(lightningcssURL)
-                return new TextDecoder().decode(transform({
-                  filename: 'inline.css',
-                  code: new TextEncoder().encode(code),
-                  minify: true,
-                }).code).trim()
-              }
-              : undefined,
-          },
-          ...viteOptions,
-        })
-      }
-
-      addBuildPlugin({
-        vite: async () => (await makeFactory()).vite(),
-        webpack: async () => (await makeFactory()).webpack(),
-        rspack: async () => (await makeFactory()).rspack(),
-      })
-    }
-
-    const unheadLegacy = resolveModulePath('@unhead/vue/legacy', { try: true, from: importPaths }) || '@unhead/vue/legacy'
     const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
 
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {
-        const isV5 = nuxt.options.future.compatibilityVersion >= 5
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- reading user-facing deprecated option to emit migration warnings
-        const legacy = options.legacy
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- reading user-facing deprecated option to emit migration warnings
-        const headNext = nuxt.options.experimental.headNext
+        const plugins: string[] = []
+        const imports: string[] = []
 
-        if (legacy) {
-          if (isV5) {
-            logger.warn('`unhead.legacy` is ignored in compatibility version 5+. Remove deprecated head patterns (hid, vmid, children, body:true).')
-          } else {
-            logger.warn('`unhead.legacy` is deprecated and will be removed. Remove deprecated head patterns (hid, vmid, children, body:true) and migrate promise values to resolved values before passing to useHead.')
+        if (options.templateParams) {
+          imports.push('TemplateParamsPlugin')
+          plugins.push('TemplateParamsPlugin')
+        }
+
+        if (options.legacy) {
+          // v1 unhead legacy options
+          for (const name of ['PromisesPlugin', 'AliasSortingPlugin']) {
+            if (!imports.includes(name)) {
+              imports.push(name)
+            }
+            plugins.push(name)
+          }
+          if (!imports.includes('TemplateParamsPlugin')) {
+            imports.push('TemplateParamsPlugin')
+            plugins.push('TemplateParamsPlugin')
           }
         }
 
-        if (headNext === false) {
-          logger.warn('`experimental.headNext` is deprecated. CAPO sorting is now the default; set `unhead.legacy: true` to opt out temporarily.')
-        }
-
-        const disableCapoSorting = !isV5 && (legacy || headNext === false)
+        const disableCapoSorting = options.legacy && !nuxt.options.experimental.headNext
 
         const lines: string[] = []
-        // v4 parity with v2 defaults: restore the plugin set that unhead v3 no
-        // longer auto-loads (DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin,
-        // AliasSortingPlugin). v5 keeps TemplateParamsPlugin because %s / %siteName
-        // / %separator title interpolation is a core Nuxt SEO idiom; other plugins
-        // must be registered explicitly.
-        if (!isV5) {
-          lines.push(`import { legacyPlugins } from ${JSON.stringify(unheadLegacy)};`)
-        } else {
-          lines.push(`import { TemplateParamsPlugin } from ${JSON.stringify(unheadPlugins)};`)
+        if (imports.length) {
+          lines.push(`import { ${imports.join(', ')} } from ${JSON.stringify(unheadPlugins)};`)
         }
         lines.push(`export default {`)
         lines.push(`  disableDefaults: true,`)
         if (disableCapoSorting) {
           lines.push(`  disableCapoSorting: true,`)
         }
-        lines.push(`  plugins: ${isV5 ? '[TemplateParamsPlugin]' : 'legacyPlugins'},`)
+        if (plugins.length) {
+          lines.push(`  plugins: [${plugins.join(', ')}],`)
+        }
         lines.push(`}`)
         return lines.join('\n')
       },
@@ -155,7 +94,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       getContents () {
         return [
           `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
-          `export const ssrStreaming = ${ssrStreamingEnabled}`,
+          `export const ssrStreaming = ${!!(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled)}`,
         ].join('\n')
       },
     })
@@ -166,26 +105,16 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs'] || ''
     })
 
-    // Remove deprecated server composables from auto-imports in v5
-    if (nuxt.options.future.compatibilityVersion >= 5) {
-      const deprecated = new Set(['useServerHead', 'useServerHeadSafe', 'useServerSeoMeta'])
-      nuxt.hooks.hook('imports:sources', (sources) => {
-        for (const source of sources) {
-          if ('from' in source && source.from === '#app/composables/head' && 'imports' in source && Array.isArray(source.imports)) {
-            source.imports = (source.imports as (string | { name: string })[]).filter(
-              i => !deprecated.has(typeof i === 'string' ? i : i.name),
-            )
-          }
-        }
-      })
-    }
-
-    // SSR streaming: emit the unhead streaming iife as a raw JS asset in
-    // production so the renderer can reference it via a stable file name.
-    // The IIFE is a prebuilt, pre-minified string so there is nothing
-    // useful to run through the bundler's chunk graph; emitting it as an
-    // asset keeps it a classic script (the renderer loads it without
-    // `type="module"`).
+    // SSR streaming: emit the unhead streaming IIFE as a raw, content-hashed
+    // JS asset in production so the renderer can load it as a classic script
+    // (`<script async src>` without `type="module"`). The IIFE is a prebuilt,
+    // pre-minified self-invoking string; running it through the bundler's
+    // chunk graph would wrap it in ESM and break the loader.
+    // Note: we intentionally do NOT use unheadVuePlugin's SFC transform
+    // (HeadStream injection) because it causes hydration mismatches (server
+    // renders <script>, client renders null). The renderer injects head
+    // update scripts outside the Vue render tree.
+    const ssrStreamingEnabled = typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
     if (ssrStreamingEnabled) {
       let iifeChunkFileName: string | undefined
 
@@ -198,9 +127,8 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         name: 'nuxt:streaming-iife-chunk',
         applyToEnvironment: (env: any) => env.name === 'client',
 
-        async buildStart () {
+        buildStart () {
           if (nuxt.options.dev) { return }
-          const { streamingIifeCode } = await import('@unhead/vue/stream/iife')
           const contentHash = createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)
           const baseName = `streaming-iife.${contentHash}.js`
           const prefix = nuxt.options.app.buildAssetsDir.replace(/^\//, '')
@@ -213,28 +141,20 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         },
       })
 
-      // Webpack/rspack parity: the IIFE is a prebuilt, pre-minified string so
-      // there is nothing useful to run through the chunk graph. Hash it and
-      // emit as a raw asset via `compilation.emitAsset` (works identically on
-      // webpack and rspack via the shared `compiler.webpack.sources.RawSource`
-      // and `processAssets` hook). Only runs on the client compiler in
-      // production — in dev the renderer inlines the IIFE.
+      // Webpack/rspack parity: emit the IIFE as a raw asset via
+      // `compilation.emitAsset` so it ships as a classic script alongside
+      // the chunk graph (no ESM wrapping). Runs only on the client compiler
+      // in production — in dev the renderer inlines the IIFE.
       if (!nuxt.options.dev && nuxt.options.builder !== '@nuxt/vite-builder') {
         const makeIifeAssetPlugin = () => ({
           apply (compiler: any) {
-            // Nuxt names compilers 'client' and 'server'. Only emit on client.
-            if (compiler.options.name !== 'client') {
-              return
-            }
+            if (compiler.options.name !== 'client') { return }
             compiler.hooks.thisCompilation.tap('nuxt:streaming-iife-chunk', (compilation: any) => {
               const { RawSource } = compiler.webpack.sources
               const { PROCESS_ASSETS_STAGE_ADDITIONAL } = compiler.webpack.Compilation
               compilation.hooks.processAssets.tapPromise(
                 { name: 'nuxt:streaming-iife-chunk', stage: PROCESS_ASSETS_STAGE_ADDITIONAL },
                 async () => {
-                  const { streamingIifeCode } = await import('@unhead/vue/stream/iife')
-                  // Short content hash so we get cache-busting without a full
-                  // chunk graph registration.
                   const contentHash = createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)
                   const fileName = `streaming-iife.${contentHash}.js`
                   if (!compilation.getAsset(fileName)) {

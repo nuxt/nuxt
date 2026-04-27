@@ -1,4 +1,4 @@
-import { createHead as createClientHead, renderDOMHead } from '@unhead/vue/client'
+import { createHead as createClientHead } from '@unhead/vue/client'
 import { createStreamableHead as createStreamableClientHead } from '@unhead/vue/stream/client'
 import { defineNuxtPlugin } from '#app/nuxt'
 
@@ -28,8 +28,7 @@ export default defineNuxtPlugin({
       let pauseDOMUpdates = true
       const syncHead = () => {
         pauseDOMUpdates = false
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        renderDOMHead(head)
+        head.render()
       }
       head.hooks?.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
       nuxtApp.hooks.hook('page:start', () => { pauseDOMUpdates = true })
