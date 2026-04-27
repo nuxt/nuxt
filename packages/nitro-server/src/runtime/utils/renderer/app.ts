@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { encodePath } from 'ufo'
+import { decodePath, encodePath } from 'ufo'
 import { useRuntimeConfig } from 'nitropack/runtime'
 import { createHead } from '@unhead/vue/server'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -11,11 +11,11 @@ import { NUXT_NO_SSR, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
-// path is decoded in h3, but vue-router expects an encoded path
+// path is decoded in h3, but vue-router expects an encoded path; decode-then-encode is idempotent
 function encodeEventPath (path: string): string {
   const queryIndex = path.indexOf('?')
-  if (queryIndex === -1) { return encodePath(path) }
-  return encodePath(path.slice(0, queryIndex)) + path.slice(queryIndex)
+  if (queryIndex === -1) { return encodePath(decodePath(path)) }
+  return encodePath(decodePath(path.slice(0, queryIndex))) + path.slice(queryIndex)
 }
 
 export function createSSRContext (event: H3Event): NuxtSSRContext {
