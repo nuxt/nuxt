@@ -55,7 +55,7 @@
     "nitropack": "2.13.1",
     "obuild": "0.4.32",
     "unimport": "6.0.2",
-    "vite": "8.0.0",
+    "vite": "8.0.5",
     "vitest": "4.1.4",
     "webpack": "5.106.2"
   },
