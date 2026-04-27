@@ -12,7 +12,7 @@
     "ofetch": "latest",
     "vitest": "latest",
     "vue": "latest",
-    "vue-router": "5.0.3"
+    "vue-router": "5.0.6"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
