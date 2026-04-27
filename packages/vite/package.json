@@ -62,11 +62,11 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "h3": "1.15.6",
+    "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.20",
     "nitropack": "2.13.3",
     "obuild": "0.4.33",
-    "rolldown": "1.0.0-rc.9",
+    "rolldown": "1.0.0-rc.16",
     "rollup": "4.60.2",
     "rollup-plugin-visualizer": "7.0.1",
     "vue": "3.5.33"
