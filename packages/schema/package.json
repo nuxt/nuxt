@@ -73,7 +73,7 @@
     "vue-loader": "17.4.2",
     "vue-router": "4.6.4",
     "webpack": "5.105.4",
-    "webpack-dev-middleware": "7.4.5"
+    "webpack-dev-middleware": "8.0.3"
   },
   "dependencies": {
     "@vue/shared": "^3.5.30",
