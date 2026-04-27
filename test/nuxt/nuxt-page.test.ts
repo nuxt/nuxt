@@ -650,6 +650,73 @@ describe('NuxtPage render counts with synchronous components', () => {
   })
 })
 
+// Navigating up the tree (e.g. /a/b/c -> /a/b) doesn't remount any Suspense, so `_route`
+// has to be synced from `router.afterEach` rather than `<NuxtPage>`'s `Suspense.onResolve`.
+describe('nuxtApp._route should follow the router on tree-narrowing navigations', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    router.addRoute({
+      name: 'narrowing-parent',
+      path: '/narrowing-parent',
+      component: defineComponent({
+        name: 'narrowing-parent',
+        setup: () => () => h('div', [h('span', 'Parent'), h(NuxtPage)]),
+      }),
+      children: [
+        {
+          name: 'narrowing-child',
+          path: 'child',
+          component: defineComponent({
+            name: 'narrowing-child',
+            setup: () => () => h('div', [h('span', 'Child'), h(NuxtPage)]),
+          }),
+          children: [
+            {
+              name: 'narrowing-grandchild',
+              path: 'grandchild',
+              component: defineComponent({
+                name: 'narrowing-grandchild',
+                setup: () => () => h('div', 'Grandchild'),
+              }),
+            },
+          ],
+        },
+      ],
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('narrowing-parent')
+  })
+
+  it('should sync _route when navigating from a leaf back to its parent', async () => {
+    const el = await mountSuspended({
+      setup () {
+        return () => h(NuxtLayout, {}, { default: () => h(NuxtPage) })
+      },
+    })
+
+    await navigateTo('/narrowing-parent/child/grandchild')
+    await flushPromises()
+    expect(nuxtApp._route.path).toBe('/narrowing-parent/child/grandchild')
+
+    await navigateTo('/narrowing-parent/child')
+    await flushPromises()
+    expect(nuxtApp._route.path).toBe('/narrowing-parent/child')
+
+    await navigateTo('/narrowing-parent')
+    await flushPromises()
+    expect(nuxtApp._route.path).toBe('/narrowing-parent')
+
+    el.unmount()
+  })
+})
+
 describe('NuxtPage should work with keepalive options', () => {
   let visits = 0
   let router: ReturnType<typeof useRouter>
