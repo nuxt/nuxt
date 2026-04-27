@@ -46,8 +46,15 @@
         "4.x",
         "3.x"
       ],
-      "groupName": "all dependencies",
-      "groupSlug": "all",
+      "matchUpdateTypes": [
+        "patch",
+        "minor",
+        "pin",
+        "digest",
+        "lockFileMaintenance"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-non-major",
       "matchPackageNames": [
         "*"
       ]
@@ -56,8 +63,6 @@
   "vulnerabilityAlerts": {
     "postUpdateOptions": [
       "pnpmDedupe"
-    ],
-    "groupName": "all dependencies",
-    "groupSlug": "all"
+    ]
   }
 }
