@@ -702,7 +702,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
   // Add prerender payload support
-  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
+  if (nuxt.options.ssr && nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
     logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
     nuxt.options.experimental.payloadExtraction = true
   }
