@@ -4,7 +4,7 @@ import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
 import type { SnakeCase } from 'scule'
-import type { ResolvedConfig } from 'c12'
+import type { ConfigLayerMeta, DefineConfig, ResolvedConfig } from 'c12'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 import type { ConfigSchema } from './schema.ts'
 import type { Nuxt } from './nuxt.ts'
@@ -73,6 +73,9 @@ export type NuxtConfigLayer = ResolvedConfig<NuxtConfig & {
   cwd: string
   configFile: string
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface DefineNuxtConfig extends DefineConfig<NuxtConfig, ConfigLayerMeta> {}
 
 export interface NuxtBuilder {
   bundle: (nuxt: Nuxt) => Promise<void>
