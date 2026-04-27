@@ -71,7 +71,7 @@
     "@nuxt/test-utils": "4.0.3",
     "@nuxt/webpack-builder": "workspace:*",
     "@playwright/test": "1.59.1",
-    "@rspack/core": "1.7.11",
+    "@rspack/core": "2.0.0",
     "@testing-library/vue": "8.1.0",
     "@types/babel__core": "7.20.5",
     "@types/babel__helper-plugin-utils": "7.10.3",
