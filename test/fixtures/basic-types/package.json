@@ -6,6 +6,7 @@
     "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
   },
   "dependencies": {
+    "hook-augmenting-module": "workspace:*",
     "nuxt": "workspace:*"
   },
   "devDependencies": {

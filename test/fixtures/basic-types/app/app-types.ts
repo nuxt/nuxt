@@ -6,7 +6,8 @@ import type { H3Event } from 'h3'
 import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
 import type { NitroRouteRules } from 'nitropack/types'
 
-import type { AppConfig } from 'nuxt/schema'
+import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
+import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
@@ -28,6 +29,30 @@ declare module 'nuxt/app' {
     }
   }
 }
+
+// Hook augmentation bridge between `@nuxt/schema` and `nuxt/schema`.
+//
+// `_local-modules/hook-augmenting-module/types.d.mts` augments
+// `@nuxt/schema { interface NuxtHooks }` with `'hook-augmenting-module:ping'`
+// and is pulled in via `<reference types="hook-augmenting-module" />` in
+// `.nuxt/nuxt*.d.ts` (the path real published modules take).
+//
+// Regression test for the bug where `declare module '@nuxt/schema'` augments
+// of `NuxtHooks` were visible on `NuxtHooks` directly but not on
+// `NuxtConfig['hooks']` when read via `nuxt/schema` — the path
+// `defineNuxtConfig` types take. See `packages/nuxt/schema.d.ts`.
+expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NuxtHooksFromAt>()
+expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NuxtHooksFromNuxt>()
+expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NonNullable<NuxtConfigFromAt['hooks']>>()
+expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NonNullable<NuxtConfigFromNuxt['hooks']>>()
+
+defineNuxtConfig({
+  hooks: {
+    'hook-augmenting-module:ping' (payload) {
+      expectTypeOf(payload).toEqualTypeOf<{ value: number }>()
+    },
+  },
+})
 
 describe('API routes', () => {
   it('generates types for routes', () => {

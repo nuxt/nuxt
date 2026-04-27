@@ -1309,6 +1309,9 @@ importers:
 
   test/fixtures/basic-types:
     dependencies:
+      hook-augmenting-module:
+        specifier: workspace:*
+        version: link:_local-modules/hook-augmenting-module
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -1325,6 +1328,8 @@ importers:
       vue-router:
         specifier: 5.0.6
         version: 5.0.6(@vue/compiler-sfc@3.5.33)(vue@3.5.33(typescript@6.0.3))
+
+  test/fixtures/basic-types/_local-modules/hook-augmenting-module: {}
 
   test/fixtures/hmr:
     dependencies:
