@@ -618,8 +618,8 @@ importers:
         version: 5.0.6(@vue/compiler-sfc@3.5.33)(vue@3.5.33(typescript@6.0.3))
     devDependencies:
       '@nuxt/scripts':
-        specifier: 0.13.4
-        version: 0.13.4(@unhead/vue@2.1.13(vue@3.5.33(typescript@6.0.3)))(db0@0.3.4)(ioredis@5.10.1)(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))
+        specifier: 1.0.2
+        version: 1.0.2(@unhead/vue@2.1.13(vue@3.5.33(typescript@6.0.3)))(db0@0.3.4)(ioredis@5.10.1)(typescript@6.0.3)(vite@7.3.2(@types/node@24.12.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.33(typescript@6.0.3))
       '@parcel/watcher':
         specifier: 2.5.6
         version: 2.5.6
@@ -2513,16 +2513,18 @@ packages:
     peerDependencies:
       webpack: ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
 
-  '@nuxt/scripts@0.13.4':
-    resolution: {integrity: sha512-VYsoSAA7JIfSHN7f7WgBbSeKunwLFIzIlx171Cep2LTszgLFX20SjsRTeNbw746LuSB2aWjVSN40Sx+/g/6WdA==}
+  '@nuxt/scripts@1.0.2':
+    resolution: {integrity: sha512-JMsM9H54jdsW6SKNzQoHviEzXTn9cc60XsIYj7Fyxn3bIXuKGI/mC663lHx1z5wfaV10uZrCdqjqxs8hP5Z9NA==}
+    hasBin: true
     peerDependencies:
       '@googlemaps/markerclusterer': ^2.6.2
       '@paypal/paypal-js': ^8.1.2 || ^9.0.0
-      '@stripe/stripe-js': ^7.0.0 || ^8.0.0
+      '@stripe/stripe-js': ^7.0.0 || ^8.0.0 || ^9.0.0
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
       '@unhead/vue': ^2.0.3
+      posthog-js: ^1.0.0
     peerDependenciesMeta:
       '@googlemaps/markerclusterer':
         optional: true
@@ -2535,6 +2537,8 @@ packages:
       '@types/vimeo__player':
         optional: true
       '@types/youtube':
+        optional: true
+      posthog-js:
         optional: true
 
   '@nuxt/telemetry@2.8.0':
@@ -4495,16 +4499,16 @@ packages:
       '@vue/server-renderer':
         optional: true
 
-  '@vueuse/core@14.1.0':
-    resolution: {integrity: sha512-rgBinKs07hAYyPF834mDTigH7BtPqvZ3Pryuzt1SD/lg5wEcWqvwzXXYGEDb2/cP0Sj5zSvHl3WkmMELr5kfWw==}
+  '@vueuse/core@14.2.1':
+    resolution: {integrity: sha512-3vwDzV+GDUNpdegRY6kzpLm4Igptq+GA0QkJ3W61Iv27YWwW/ufSlOfgQIpN6FZRMG0mkaz4gglJRtq5SeJyIQ==}
     peerDependencies:
       vue: 3.5.33
 
-  '@vueuse/metadata@14.1.0':
-    resolution: {integrity: sha512-7hK4g015rWn2PhKcZ99NyT+ZD9sbwm7SGvp7k+k+rKGWnLjS/oQozoIZzWfCewSUeBmnJkIb+CNr7Zc/EyRnnA==}
+  '@vueuse/metadata@14.2.1':
+    resolution: {integrity: sha512-1ButlVtj5Sb/HDtIy1HFr1VqCP4G6Ypqt5MAo0lCgjokrk2mvQKsK2uuy0vqu/Ks+sHfuHo0B9Y9jn9xKdjZsw==}
 
-  '@vueuse/shared@14.1.0':
-    resolution: {integrity: sha512-EcKxtYvn6gx1F8z9J5/rsg3+lTQnvOruQd8fUecW99DCK04BkWD7z5KQ/wTAx+DazyoEE9dJt/zV8OIEQbM6kw==}
+  '@vueuse/shared@14.2.1':
+    resolution: {integrity: sha512-shTJncjV9JTI4oVNyF1FQonetYAiTBd+Qj7cY89SWbXSkx7gyhrgtEdF2ZAVWS1S3SHlaROO6F2IesJxQEkZBw==}
     peerDependencies:
       vue: 3.5.33
 
@@ -9064,8 +9068,8 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  valibot@1.2.0:
-    resolution: {integrity: sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg==}
+  valibot@1.3.1:
+    resolution: {integrity: sha512-sfdRir/QFM0JaF22hqTroPc5xy4DimuGQVKFrzF1YfGwaS1nJot3Y8VqMdLO2Lg27fMzat2yD3pY5PbAYO39Gg==}
     peerDependencies:
       typescript: '>=5'
     peerDependenciesMeta:
@@ -10658,25 +10662,30 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.106.2
 
-  '@nuxt/scripts@0.13.4(@unhead/vue@2.1.13(vue@3.5.33(typescript@6.0.3)))(db0@0.3.4)(ioredis@5.10.1)(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))':
+  '@nuxt/scripts@1.0.2(@unhead/vue@2.1.13(vue@3.5.33(typescript@6.0.3)))(db0@0.3.4)(ioredis@5.10.1)(typescript@6.0.3)(vite@7.3.2(@types/node@24.12.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.33(typescript@6.0.3))':
     dependencies:
+      '@nuxt/devtools-kit': 3.2.4(vite@7.3.2(@types/node@24.12.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
       '@nuxt/kit': link:packages/kit
       '@unhead/vue': 2.1.13(vue@3.5.33(typescript@6.0.3))
-      '@vueuse/core': 14.1.0(vue@3.5.33(typescript@6.0.3))
+      '@vueuse/core': 14.2.1(vue@3.5.33(typescript@6.0.3))
+      '@vueuse/shared': 14.2.1(vue@3.5.33(typescript@6.0.3))
       consola: 3.4.2
       defu: 6.1.7
-      h3: 1.15.6
+      h3: 1.15.11
       magic-string: 0.30.21
       ofetch: 1.5.1
       ohash: 2.0.11
+      oxc-parser: 0.127.0
+      oxc-walker: 0.7.0(oxc-parser@0.127.0)
       pathe: 2.0.3
       pkg-types: 2.3.0
       sirv: 3.0.2
-      std-env: 3.10.0
+      std-env: 4.1.0
       ufo: 1.6.3
-      unplugin: 2.3.11
+      ultrahtml: 1.6.0
+      unplugin: 3.0.0
       unstorage: 1.17.5(db0@0.3.4)(ioredis@5.10.1)
-      valibot: 1.2.0(typescript@6.0.3)
+      valibot: 1.3.1(typescript@6.0.3)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -10698,6 +10707,7 @@ snapshots:
       - ioredis
       - typescript
       - uploadthing
+      - vite
       - vue
 
   '@nuxt/telemetry@2.8.0(@nuxt/kit@packages+kit)':
@@ -12511,16 +12521,16 @@ snapshots:
     optionalDependencies:
       '@vue/server-renderer': 3.5.33(vue@3.5.33(typescript@6.0.3))
 
-  '@vueuse/core@14.1.0(vue@3.5.33(typescript@6.0.3))':
+  '@vueuse/core@14.2.1(vue@3.5.33(typescript@6.0.3))':
     dependencies:
       '@types/web-bluetooth': 0.0.21
-      '@vueuse/metadata': 14.1.0
-      '@vueuse/shared': 14.1.0(vue@3.5.33(typescript@6.0.3))
+      '@vueuse/metadata': 14.2.1
+      '@vueuse/shared': 14.2.1(vue@3.5.33(typescript@6.0.3))
       vue: 3.5.33(typescript@6.0.3)
 
-  '@vueuse/metadata@14.1.0': {}
+  '@vueuse/metadata@14.2.1': {}
 
-  '@vueuse/shared@14.1.0(vue@3.5.33(typescript@6.0.3))':
+  '@vueuse/shared@14.2.1(vue@3.5.33(typescript@6.0.3))':
     dependencies:
       vue: 3.5.33(typescript@6.0.3)
 
@@ -17884,7 +17894,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  valibot@1.2.0(typescript@6.0.3):
+  valibot@1.3.1(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
 
