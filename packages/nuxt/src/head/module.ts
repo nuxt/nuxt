@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, useLogger } from '@nuxt/kit'
@@ -51,22 +52,27 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
-    // Register @unhead/vue/vite plugin for v5 compat mode
-    // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
-    // are always available when using the vite builder. We resolve paths at
-    // setup time so dynamic imports resolve from vite's deps, not nuxt's.
-    if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false && nuxt.options.builder === '@nuxt/vite-builder') {
+    const ssrStreamingEnabled = typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
+
+    // Register @unhead/vue bundler plugin for v5 compat mode. The unified
+    // factory covers tree-shaking, useSeoMeta transform, JS/CSS minifiers,
+    // SSR static-replace, and (optionally) streaming — across vite, webpack,
+    // and rspack. Vite 8+ ships rolldown and lightningcss as direct deps so
+    // minifiers are always available; we resolve paths at setup time so
+    // dynamic imports resolve from vite's deps, not nuxt's.
+    if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false) {
       const rolldownPath = resolveModulePath('rolldown/experimental', { try: true, from: importPaths })
       const lightningcssPath = resolveModulePath('lightningcss', { try: true, from: importPaths })
       // Convert to file:// URLs for Windows compatibility with dynamic import()
       const rolldownURL = rolldownPath ? pathToFileURL(rolldownPath).href : undefined
       const lightningcssURL = lightningcssPath ? pathToFileURL(lightningcssPath).href : undefined
 
-      addVitePlugin(async () => {
-        const { Unhead } = await import('@unhead/vue/vite')
+      const makeFactory = async () => {
+        const { Unhead } = await import('@unhead/vue/bundler')
         const viteOptions = options.vite || {}
         return Unhead({
           validate: !nuxt.options.test,
+          streaming: ssrStreamingEnabled,
           minify: {
             js: rolldownURL
               ? async (code) => {
@@ -87,6 +93,12 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           },
           ...viteOptions,
         })
+      }
+
+      addBuildPlugin({
+        vite: async () => (await makeFactory()).vite(),
+        webpack: async () => (await makeFactory()).webpack(),
+        rspack: async () => (await makeFactory()).rspack(),
       })
     }
 
@@ -143,6 +155,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       getContents () {
         return [
           `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
+          `export const ssrStreaming = ${ssrStreamingEnabled}`,
         ].join('\n')
       },
     })
@@ -165,6 +178,79 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           }
         }
       })
+    }
+
+    // SSR streaming: emit the unhead streaming iife as a raw JS asset in
+    // production so the renderer can reference it via a stable file name.
+    // The IIFE is a prebuilt, pre-minified string so there is nothing
+    // useful to run through the bundler's chunk graph; emitting it as an
+    // asset keeps it a classic script (the renderer loads it without
+    // `type="module"`).
+    if (ssrStreamingEnabled) {
+      let iifeChunkFileName: string | undefined
+
+      nuxt.hooks.hook('nitro:config', (config) => {
+        config.virtual!['#internal/streaming-iife-chunk.mjs'] = () =>
+          `export const iifeChunkFileName = ${JSON.stringify(iifeChunkFileName)}`
+      })
+
+      addVitePlugin({
+        name: 'nuxt:streaming-iife-chunk',
+        applyToEnvironment: (env: any) => env.name === 'client',
+
+        async buildStart () {
+          if (nuxt.options.dev) { return }
+          const { streamingIifeCode } = await import('@unhead/vue/stream/iife')
+          const contentHash = createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)
+          const baseName = `streaming-iife.${contentHash}.js`
+          const prefix = nuxt.options.app.buildAssetsDir.replace(/^\//, '')
+          this.emitFile({
+            type: 'asset',
+            fileName: prefix + baseName,
+            source: streamingIifeCode,
+          })
+          iifeChunkFileName = baseName
+        },
+      })
+
+      // Webpack/rspack parity: the IIFE is a prebuilt, pre-minified string so
+      // there is nothing useful to run through the chunk graph. Hash it and
+      // emit as a raw asset via `compilation.emitAsset` (works identically on
+      // webpack and rspack via the shared `compiler.webpack.sources.RawSource`
+      // and `processAssets` hook). Only runs on the client compiler in
+      // production — in dev the renderer inlines the IIFE.
+      if (!nuxt.options.dev && nuxt.options.builder !== '@nuxt/vite-builder') {
+        const makeIifeAssetPlugin = () => ({
+          apply (compiler: any) {
+            // Nuxt names compilers 'client' and 'server'. Only emit on client.
+            if (compiler.options.name !== 'client') {
+              return
+            }
+            compiler.hooks.thisCompilation.tap('nuxt:streaming-iife-chunk', (compilation: any) => {
+              const { RawSource } = compiler.webpack.sources
+              const { PROCESS_ASSETS_STAGE_ADDITIONAL } = compiler.webpack.Compilation
+              compilation.hooks.processAssets.tapPromise(
+                { name: 'nuxt:streaming-iife-chunk', stage: PROCESS_ASSETS_STAGE_ADDITIONAL },
+                async () => {
+                  const { streamingIifeCode } = await import('@unhead/vue/stream/iife')
+                  // Short content hash so we get cache-busting without a full
+                  // chunk graph registration.
+                  const contentHash = createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)
+                  const fileName = `streaming-iife.${contentHash}.js`
+                  if (!compilation.getAsset(fileName)) {
+                    compilation.emitAsset(fileName, new RawSource(streamingIifeCode))
+                  }
+                  iifeChunkFileName = fileName
+                },
+              )
+            })
+          },
+        })
+        addBuildPlugin({
+          webpack: makeIifeAssetPlugin,
+          rspack: makeIifeAssetPlugin,
+        })
+      }
     }
 
     // Add library-specific plugin

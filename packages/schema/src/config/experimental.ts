@@ -245,6 +245,21 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
+    ssrStreaming: {
+      $resolve (val) {
+        if (val && (val === true || (typeof val === 'object' && (!('enabled' in val) || val.enabled !== false)))) {
+          return {
+            botRegex: val !== true && 'botRegex' in val && typeof val.botRegex === 'string'
+              ? val.botRegex
+              : 'bot\\b|crawl|spider|slurp|chrome-lighthouse|facebookexternalhit|google\\b|bing\\b|yandex\\b|baidu\\b|duckduck',
+            enabled: true,
+          }
+        }
+        return {
+          enabled: false,
+        }
+      },
+    },
     asyncCallHook: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
