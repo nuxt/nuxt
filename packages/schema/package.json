@@ -39,7 +39,7 @@
     "@types/pug": "2.0.10",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "@unhead/vue": "2.1.12",
+    "@unhead/vue": "3.1.0",
     "@vitejs/plugin-vue": "6.0.5",
     "@vitejs/plugin-vue-jsx": "5.1.5",
     "@vue/compiler-core": "3.5.30",
@@ -78,7 +78,7 @@
     "webpack-dev-middleware": "8.0.3"
   },
   "peerDependencies": {
-    "@unhead/vue": "^2.0.10",
+    "@unhead/vue": "^2.0.10 || ^3.0.0",
     "@vitejs/plugin-vue": "^6.0.50",
     "@vitejs/plugin-vue-jsx": "^5.0.1",
     "@vue/compiler-core": "^3.5.17",
