@@ -15,6 +15,7 @@ export default defineBuildConfig({
           '@vue/compiler-core',
           '@vue/compiler-sfc',
           '@vue/language-core',
+          '@rspack/core',
           'c12',
           'chokidar',
           'compatx',

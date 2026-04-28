@@ -31,7 +31,14 @@ function baseConfig (ctx: WebpackConfigContext) {
   ctx.config = defu({}, {
     name: ctx.name,
     entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
-    module: { rules: [] },
+    module: {
+      rules: [],
+      // Nuxt resolves some virtual module exports lazily (e.g. `?inline` CSS), so missing exports
+      // must not fail the build under Rspack.
+      ...builder === 'rspack'
+        ? { parser: { javascript: { exportsPresence: 'auto' as const } } }
+        : {},
+    },
     plugins: [],
     externals: [],
     optimization: {
