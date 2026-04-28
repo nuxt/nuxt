@@ -52,7 +52,7 @@ const PAYLOAD_FILENAME = '_payload.json'
 
 let entryPath: string
 
-const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
   // Whether we're rendering an error page
   const ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery<NuxtPayload['error'] & { url: string }>(event)
