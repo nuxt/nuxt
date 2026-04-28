@@ -529,6 +529,10 @@ describe('pages', () => {
     expect(html).toContain('<span class="break-in-ssr">this failed to render</span>')
     // ensure Fallback slot is being rendered server side
     expect(html).toContain('Hello world !')
+    // ensure fallback is rendered when an async component throws inside a wrapping component
+    // (regression test for nested promises in the SSR buffer not being awaited)
+    expect(html).toContain('Nested async fallback rendered')
+    expect(html).not.toContain('break-in-async-setup-wrapper')
 
     // ensure not failed component are correctly rendered
     expect(html).not.toContain('<p></p>')
