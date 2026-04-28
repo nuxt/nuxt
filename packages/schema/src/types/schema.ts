@@ -147,7 +147,7 @@ export interface ConfigSchema {
    *
    * @example
    * ```bash
-   * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
+   * NUXT_APP_BASE_URL=/prefix/ NODE_ENV=production node .output/server/index.mjs
    * ```
    */
     baseURL: string
@@ -175,7 +175,7 @@ export interface ConfigSchema {
      *
      * @example
      * ```bash
-     * NUXT_APP_CDN_URL=https://mycdn.org/ node .output/server/index.mjs
+     * NUXT_APP_CDN_URL=https://mycdn.org/ NODE_ENV=production node .output/server/index.mjs
      * ```
      */
     cdnURL: string
