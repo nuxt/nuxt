@@ -788,8 +788,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15))
+        specifier: npm:h3@2.0.1-rc.17
+        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.15))
       obuild:
         specifier: 0.4.33
         version: 0.4.33(chokidar@5.0.0)(dotenv@17.4.1)(giget@3.2.0)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(picomatch@4.0.4)(rollup@4.60.2)(typescript@6.0.3)(vue-tsc@3.2.7(typescript@6.0.3))
@@ -1081,8 +1081,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15))
+        specifier: npm:h3@2.0.1-rc.17
+        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.15))
       nitropack:
         specifier: 2.13.3
         version: 2.13.3(rolldown@1.0.0-rc.16)(srvx@0.11.15)
@@ -1253,8 +1253,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15))
+        specifier: npm:h3@2.0.1-rc.17
+        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.15))
       obuild:
         specifier: 0.4.33
         version: 0.4.33(chokidar@5.0.0)(dotenv@17.4.1)(giget@3.2.0)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(picomatch@4.0.4)(rollup@4.60.2)(typescript@6.0.3)(vue-tsc@3.2.7(typescript@6.0.3))
@@ -6463,6 +6463,16 @@ packages:
 
   h3@2.0.1-rc.16:
     resolution: {integrity: sha512-h+pjvyujdo9way8qj6FUbhaQcHlR8FEq65EhTX9ViT5pK8aLj68uFl4hBkF+hsTJAH+H1END2Yv6hTIsabGfag==}
+    engines: {node: '>=20.11.1'}
+    hasBin: true
+    peerDependencies:
+      crossws: ^0.4.1
+    peerDependenciesMeta:
+      crossws:
+        optional: true
+
+  h3@2.0.1-rc.17:
+    resolution: {integrity: sha512-9rPJs68qMj7HJH78z7uSIAw6rl3EElLdVSirTeAf6B5ogwiFVIr9AKMMS4u00Gp8DYIPnnjtw3ZWN7EkYcPBrQ==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -14882,6 +14892,13 @@ snapshots:
       uncrypto: 0.1.3
 
   h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.15)):
+    dependencies:
+      rou3: 0.8.1
+      srvx: 0.11.15
+    optionalDependencies:
+      crossws: 0.4.4(srvx@0.11.15)
+
+  h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.15)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.15
