@@ -3,7 +3,6 @@ import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
-// @ts-expect-error fix type in unhead
 import { streamingIifeCode } from 'unhead/stream/iife'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
@@ -152,9 +151,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
             compiler.hooks.thisCompilation.tap('nuxt:streaming-iife-chunk', (compilation: any) => {
               const { RawSource } = compiler.webpack.sources
               const { PROCESS_ASSETS_STAGE_ADDITIONAL } = compiler.webpack.Compilation
-              compilation.hooks.processAssets.tapPromise(
+              compilation.hooks.processAssets.tap(
                 { name: 'nuxt:streaming-iife-chunk', stage: PROCESS_ASSETS_STAGE_ADDITIONAL },
-                async () => {
+                () => {
                   const contentHash = createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)
                   const fileName = `streaming-iife.${contentHash}.js`
                   if (!compilation.getAsset(fileName)) {
