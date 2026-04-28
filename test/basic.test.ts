@@ -669,6 +669,12 @@ describe('pages', () => {
     expect(b).toContain('loop-shared-b ok')
   })
 
+  // https://github.com/nuxt/nuxt/issues/33871 - bare $fetch path (no useFetch / shared cache).
+  it.skipIf(isDev)('prerenders pages whose middleware calls $fetch against the same URL', async () => {
+    const html = await $fetch<string>('/prerender/loop-bare-fetch')
+    expect(html).toContain('loop-bare-fetch ok')
+  })
+
   it('renders unicode routes correctly', async () => {
     const html = await $fetch('/random/日本語')
     expect(html).toContain('Japanese random route')
