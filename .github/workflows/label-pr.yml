@@ -46,14 +46,14 @@ jobs:
 
             // Select label based on the type in PR title
             const pullRequestTypeToLabelName = {
-              chore: 'chore',
-              ci: 'chore',
-              docs: 'documentation',
-              feat: 'enhancement',
-              fix: 'bug',
-              perf: 'performance',
-              refactor: 'refactor',
-              test: 'test'
+              chore: '🧹 p1-chore',
+              ci: '🧹 p1-chore',
+              docs: '📚 documentation',
+              feat: '✨ enhancement',
+              fix: '🐛 bug',
+              perf: '⚡ performance',
+              refactor: '♻️ refactor',
+              test: '🧪 test'
             }
 
             for (const [pullRequestType, labelName] of Object.entries(
