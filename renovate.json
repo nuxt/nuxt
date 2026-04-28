@@ -58,6 +58,13 @@
       "matchPackageNames": [
         "*"
       ]
+    },
+    {
+      "groupName": "rolldown",
+      "groupSlug": "rolldown",
+      "matchPackageNames": [
+        "rolldown"
+      ]
     }
   ],
   "vulnerabilityAlerts": {
