@@ -443,7 +443,7 @@ export interface ConfigSchema {
      * })
      * ```
      *
-     * @see https://unhead.unjs.io/docs/head/guides/template-params
+     * @see https://unhead.unjs.io/docs/head/guides/plugins/template-params
      */
     templateParams: boolean
   }
