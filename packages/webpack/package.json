@@ -59,7 +59,7 @@
     "pug-plain-loader": "^1.1.0",
     "seroval": "^1.5.2",
     "time-fix-plugin": "^2.0.7",
-    "ufo": "^1.6.3",
+    "ufo": "^1.6.4",
     "unenv": "^2.0.0-rc.24",
     "unplugin": "^3.0.0",
     "url-loader": "^4.1.1",
@@ -78,7 +78,7 @@
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
     "h3": "1.15.11",
-    "h3-next": "npm:h3@2.0.1-rc.20",
+    "h3-next": "npm:h3@2.0.1-rc.21",
     "obuild": "0.4.33",
     "rollup": "4.60.2",
     "vue": "3.5.33"
