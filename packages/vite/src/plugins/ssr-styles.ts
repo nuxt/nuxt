@@ -21,7 +21,16 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
 
   const chunksWithInlinedCSS = new Set<string>()
+  // CSS source module ids (with `?...` query stripped) whose styles were
+  // successfully inlined into the SSR response
+  const inlinedCSSModuleIds = new Set<string>()
+  // For each output chunk that originates from a source file, the set of CSS
+  // source module ids (no query) vite/rolldown bundled into that chunk's CSS
+  // asset. Keyed by the manifest source path (`chunk.src`).
+  const cssSourcesByChunkSrc = new Map<string, Set<string>>()
   const clientCSSMap: Record<string, Set<string>> = {}
+
+  const stripQuery = (id: string) => id.replace(QUERY_RE, '')
 
   // Remove CSS entries for files that will have inlined styles
   const nitro = useNitro()
@@ -54,6 +63,25 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             }
           }
         }
+      }
+    }
+
+    // Drop a chunk's bundled CSS link when every CSS source module bundled into
+    // that chunk has already been inlined as a `<style>` tag during SSR. This
+    // prevents duplicate styles when `inlineStyles` is enabled. (#30435)
+    for (const chunk of Object.values(manifest)) {
+      if (!chunk.css?.length || !chunk.src) { continue }
+      const cssSources = cssSourcesByChunkSrc.get(chunk.src)
+      if (!cssSources?.size) { continue }
+      let allInlined = true
+      for (const cssId of cssSources) {
+        if (!inlinedCSSModuleIds.has(cssId)) {
+          allInlined = false
+          break
+        }
+      }
+      if (allInlined) {
+        chunk.css = []
       }
     }
 
@@ -195,12 +223,24 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           if (isEntry) {
             clientCSSMap[chunk.facadeModuleId!] ||= new Set()
           }
+          let chunkCSSSources: Set<string> | undefined
+          if (environment.name === 'client' && chunk.facadeModuleId) {
+            const chunkSrc = relativeToSrcDir(chunk.facadeModuleId)
+            if (chunkSrc) {
+              chunkCSSSources = cssSourcesByChunkSrc.get(chunkSrc)
+              if (!chunkCSSSources) {
+                chunkCSSSources = new Set()
+                cssSourcesByChunkSrc.set(chunkSrc, chunkCSSSources)
+              }
+            }
+          }
           for (const moduleId of [chunk.facadeModuleId, ...chunk.moduleIds].filter(Boolean) as string[]) {
             // 'Teleport' CSS chunks that made it into the bundle on the client side
             // to be inlined on server rendering
             if (environment.name === 'client') {
               const moduleMap = clientCSSMap[moduleId] ||= new Set()
               if (isCSS(moduleId)) {
+                chunkCSSSources?.add(stripQuery(moduleId))
                 // Vue files can (also) be their own entrypoints as they are tracked separately
                 if (isVue(moduleId)) {
                   moduleMap.add(moduleId)
@@ -255,6 +295,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                     continue
                   }
                   idClientCSSMap.add(resolved.id)
+                  inlinedCSSModuleIds.add(stripQuery(resolved.id))
                 }
                 if (s.hasChanged()) {
                   return {
@@ -297,6 +338,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                 continue
               }
               emittedIds.add(file)
+              inlinedCSSModuleIds.add(stripQuery(resolved.id))
 
               // Reuse ref from a previous emission of the same file to avoid rolldown
               // returning incorrect refs when the same chunk ID is emitted multiple times
@@ -332,6 +374,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               }
 
               if (emittedIds.has(resolved.id)) { continue }
+              inlinedCSSModuleIds.add(stripQuery(resolved.id))
 
               // Reuse ref from a previous emission of the same file
               const resolvedInlineId = res.id
