@@ -108,7 +108,7 @@
     "ts-blank-space": "0.8.0",
     "typescript": "5.9.3",
     "ufo": "1.6.3",
-    "vite": "7.3.2",
+    "vite": "8.0.10",
     "vitest": "4.1.5",
     "vitest-environment-nuxt": "2.0.0",
     "vue": "3.5.33",
