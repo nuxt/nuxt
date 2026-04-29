@@ -73,7 +73,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event
     const renderingURL = event.url.pathname + event.url.search
     const stack = prerenderRenderingURLs.getStore()
     if (stack?.includes(renderingURL)) {
-      const chain = [...stack, renderingURL].map(url => `"${url}"`).join(' -> ')
+      const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `"${url}"`).join(' -> ')
       throw new HTTPError({
         status: 508,
         statusText: `Loop detected while prerendering "${renderingURL}" (${chain}). Check for \`useFetch\`/\`$fetch\` calls targeting a URL that is currently being rendered.`,
