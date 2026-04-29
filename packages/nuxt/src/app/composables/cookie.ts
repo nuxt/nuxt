@@ -25,7 +25,7 @@ function parseCookieValue (value: string) {
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 
 export interface CookieOptions<T = any> extends _CookieOptions {
-  decode?(value: string): T
+  decode?(value: string | null | undefined): T
   encode?(value: T): string
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
@@ -53,7 +53,7 @@ export interface CookieRef<T> extends Ref<T> {}
 const CookieDefaults = {
   path: '/',
   watch: true,
-  decode: val => parseCookieValue(decodeURIComponent(val)),
+  decode: val => val ? parseCookieValue(decodeURIComponent(val)) : val,
   encode: (val) => {
     // JSON-quote strings that would be coerced on decode (e.g. '42', 'true', 'null', 'undefined')
     if (typeof val !== 'string' || val === 'undefined') {
@@ -121,13 +121,16 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       if (!force) {
         if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       }
-      writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
+      const encoded = cookie.value === null || cookie.value === undefined
+        ? undefined
+        : opts.encode(cookie.value as T)
+      writeClientCookie(name, encoded, opts)
 
       cookies[name] = klona(cookie.value)
       channel?.postMessage({ value: opts.encode(cookie.value as T) })
     }
 
-    const handleChange = (data: { value?: any, refresh?: boolean }) => {
+    const handleChange = (data: { value?: string | null, refresh?: boolean }) => {
       const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
       watchPaused = true
       cookie.value = value
@@ -149,9 +152,9 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     if (store) {
       /* event is of type CookieChangeEvent */
-      const changeHandler = (event: any) => {
-        const changedCookie = event.changed.find((c: any) => c.name === name)
-        const removedCookie = event.deleted.find((c: any) => c.name === name)
+      const changeHandler = (event: CookieChangeEvent) => {
+        const changedCookie = event.changed.find(c => c.name === name)
+        const removedCookie = event.deleted.find(c => c.name === name)
 
         if (changedCookie) {
           handleChange({ value: changedCookie.value })
@@ -205,7 +208,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         }
       }
       nuxtApp._cookies[name] = cookie.value
-      writeServerCookie(useRequestEvent(nuxtApp)!, name, cookie.value, opts as CookieOptions<any>)
+      const encoded = cookie.value === null || cookie.value === undefined
+        ? undefined
+        : opts.encode(cookie.value as T)
+      writeServerCookie(useRequestEvent(nuxtApp)!, name, encoded, opts)
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
@@ -238,29 +244,39 @@ function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | un
   }
 }
 
-function serializeCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
-  if (value === null || value === undefined) {
-    return serialize(name, value, { ...opts, maxAge: -1 })
-  }
-  return serialize(name, value, opts)
+// value is expected to be already encoded via `opts.encode`; pass through as-is
+const identityEncode = (val: string) => val
+
+function toSerializeOptions (opts: CookieOptions): CookieSerializeOptions {
+  const { encode: _encode, decode: _decode, ...rest } = opts
+  return { ...rest, encode: identityEncode }
 }
 
-function writeClientCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
+function serializeCookie (name: string, value: string | undefined, opts: CookieOptions = {}) {
+  const serializeOpts = toSerializeOptions(opts)
+  if (value === undefined) {
+    return serialize(name, '', { ...serializeOpts, maxAge: -1 })
+  }
+  return serialize(name, value, serializeOpts)
+}
+
+function writeClientCookie (name: string, value: string | undefined, opts: CookieOptions = {}) {
   if (import.meta.client) {
     document.cookie = serializeCookie(name, value, opts)
   }
 }
 
-function writeServerCookie (event: H3Event, name: string, value: any, opts: CookieSerializeOptions = {}) {
+function writeServerCookie (event: H3Event, name: string, value: string | undefined, opts: CookieOptions = {}) {
   if (event) {
+    const serializeOpts = toSerializeOptions(opts)
     // update if value is set
-    if (value !== null && value !== undefined) {
-      return setCookie(event, name, value, opts)
+    if (value !== undefined) {
+      return setCookie(event, name, value, serializeOpts)
     }
 
     // delete if cookie exists in browser and value is null/undefined
     if (getCookie(event, name) !== undefined) {
-      return deleteCookie(event, name, opts)
+      return deleteCookie(event, name, serializeOpts)
     }
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined

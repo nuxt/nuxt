@@ -1,4 +1,4 @@
-import { createElementBlock, defineComponent, onMounted, shallowRef, useId } from 'vue'
+import { Fragment, createElementBlock, defineComponent, h, onMounted, shallowRef, useId } from 'vue'
 import { useState } from '../composables/state'
 
 const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
@@ -42,13 +42,13 @@ export default defineComponent({
       if (ssrFailed.value) {
         if (!mounted.value || props.keepFallback) {
           const slot = ctx.slots.placeholder || ctx.slots.fallback
-          if (slot) { return slot() }
+          if (slot) { return h(Fragment, null, slot()) }
           const fallbackStr = props.placeholder || props.fallback
           const fallbackTag = sanitizeTag(props.placeholderTag || props.fallbackTag, 'div')
           return createElementBlock(fallbackTag, null, fallbackStr)
         }
       }
-      return ctx.slots.default?.()
+      return h(Fragment, null, ctx.slots.default?.())
     }
   },
 })
