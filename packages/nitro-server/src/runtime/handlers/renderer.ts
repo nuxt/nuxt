@@ -363,6 +363,8 @@ declare module 'srvx' {
       'noSSR'?: boolean
       /** @internal */
       '~internal'?: boolean
+      /** @internal */
+      '~rendering-error'?: boolean
     }
   }
 }
