@@ -50,7 +50,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const reqHeaders = getRequestHeaders(event)
 
   // Detect to avoid recursion in SSR rendering of errors
-  const isRenderingError = event.path.startsWith('/__nuxt_error') || !!reqHeaders['x-nuxt-error']
+  const isRenderingError = event.path.startsWith('/__nuxt_error') || !!reqHeaders['x-nuxt-error'] || !!event.context.nuxt?.['~rendering-error']
+
+  if (!isRenderingError) {
+    event.context.nuxt ||= {}
+    event.context.nuxt['~rendering-error'] = true
+  }
 
   // HTML response (via SSR)
   const res = isRenderingError
