@@ -7,9 +7,9 @@ import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { basename, join, relative } from 'pathe'
+import { basename, join, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
-import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { directoryToURL } from '../internal/esm.ts'
 
@@ -24,6 +24,22 @@ const merger = createDefu((obj, key, value) => {
     return true
   }
 })
+
+/** Filter scanned layers */
+function createResolve (cwd: string): Required<LoadConfigOptions<NuxtConfig>>['resolve'] {
+  const resolved = new Set<string>()
+
+  return (id, options) => {
+    const path = hasProtocol(id, { acceptRelative: false }) ? id : withoutTrailingSlash(resolve(options.cwd || cwd, id))
+
+    if (resolved.has(path)) {
+      return { config: {} }
+    }
+
+    resolved.add(path)
+    return null
+  }
+}
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
@@ -46,6 +62,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       globalRc: true,
       // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
       merger,
+      resolve: createResolve(opts.cwd || process.cwd()),
       ...opts,
     }),
   )
