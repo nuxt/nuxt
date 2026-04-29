@@ -382,6 +382,27 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
         expect(result).toContain('import NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'')
       })
 
+      it('should not wrap an existing NuxtTeleportIslandComponent (#34817)', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+          <NuxtTeleportIslandComponent :nuxt-client="true">
+            <HelloWorld />
+          </NuxtTeleportIslandComponent>
+        </div>
+      </template>
+
+      <script setup lang="ts">
+      import HelloWorld from './HelloWorld.vue'
+      </script>
+      `, 'hello.server.vue', true)
+
+        const openTags = result.match(/<NuxtTeleportIslandComponent\b/g) ?? []
+        const closeTags = result.match(/<\/NuxtTeleportIslandComponent>/g) ?? []
+        expect(openTags).toHaveLength(1)
+        expect(closeTags).toHaveLength(1)
+        expect(result).not.toMatch(/<NuxtTeleportIslandComponent[^>]*>\s*<NuxtTeleportIslandComponent/)
+      })
+
       it('should move v-if to the wrapper component', async () => {
         const result = await viteTransform(`<template>
         <div>
