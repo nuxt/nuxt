@@ -10,8 +10,10 @@ const projectSuffix = [
   process.env.TEST_MANIFEST,
 ].filter(Boolean).join('-') || 'default'
 
+const isPrepare = process.argv.slice(2).includes('prepare')
+
 export default withMatrix({
-  buildDir: `.nuxt-${projectSuffix}`,
+  ...(isPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   sourcemap: false,
   nitro: {
     output: {
