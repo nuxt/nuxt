@@ -54,7 +54,7 @@
     "esbuild": "0.28.0",
     "esbuild-loader": "4.4.3",
     "file-loader": "6.2.0",
-    "h3": "2.0.1-rc.16",
+    "h3": "2.0.1-rc.20",
     "hookable": "6.1.1",
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.10.2",
