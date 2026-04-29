@@ -175,6 +175,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
               from: resolve(distDir, 'runtime/utils/config'),
               priority: -1,
             },
+            {
+              name: 'useRuntimeConfig',
+              from: 'nitro/runtime-config',
+            },
           ],
           exclude: [...excludePattern, /[\\/]\.git[\\/]/],
         },
