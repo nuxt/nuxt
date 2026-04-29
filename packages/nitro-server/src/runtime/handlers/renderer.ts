@@ -65,13 +65,18 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event
     })
   }
 
+  // During prerender, refuse to recurse into a URL that is already rendering
+  // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
+  // the in-flight URL (typically from route middleware) silently deadlocks the
+  // build. See https://github.com/nuxt/nuxt/issues/33871.
   if (import.meta.prerender && prerenderRenderingURLs) {
     const renderingURL = event.url.pathname + event.url.search
     const stack = prerenderRenderingURLs.getStore()
     if (stack?.includes(renderingURL)) {
+      const chain = [...stack, renderingURL].map(url => `"${url}"`).join(' -> ')
       throw new HTTPError({
         status: 508,
-        statusText: `Loop detected while prerendering "${renderingURL}". A request was made to this URL while the same URL was already being rendered in the same call chain (commonly caused by calling \`useFetch\`/\`$fetch\` in route middleware against a path that is not handled at build time).`,
+        statusText: `Loop detected while prerendering "${renderingURL}" (${chain}). Check for \`useFetch\`/\`$fetch\` calls targeting a URL that is currently being rendered.`,
       })
     }
     return prerenderRenderingURLs.run([...(stack || []), renderingURL], () => renderRoute(event, ssrError))

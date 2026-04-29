@@ -5,11 +5,8 @@ import { useStorage } from 'nitro/storage'
 import { NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
 /**
- * Async-context-scoped stack of URLs the current request is rendering, oldest
- * first. Maintained by the renderer handler. A given URL appears more than
- * once in the stack only if a recursive render of it is in progress, which
- * indicates a cycle (e.g. `useFetch` in middleware against the URL it is
- * currently rendering). See https://github.com/nuxt/nuxt/issues/33871
+ * Stack of URLs currently rendering in the active async context (oldest first).
+ * A repeated entry signals a render cycle.
  */
 export const prerenderRenderingURLs: AsyncLocalStorage<readonly string[]> | null = import.meta.prerender ? new AsyncLocalStorage() : null
 
@@ -23,9 +20,8 @@ export const islandPropCache: Storage | null = import.meta.prerender ? useStorag
 export const sharedPrerenderPromises: Map<string, Promise<any>> | null = import.meta.prerender && NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 
 const sharedPrerenderKeys = new Set<string>()
-// Render-chain (snapshot of `prerenderRenderingURLs.getStore()`) captured when
-// each pending shared promise was inserted. Used to detect cycles where a
-// `get()` from inside that chain would create a cyclic await.
+// Render chain in flight when each pending shared promise was inserted,
+// used to detect cyclic awaits in `get()`.
 const sharedPrerenderChains: Map<string, readonly string[]> | null = import.meta.prerender && NUXT_SHARED_DATA ? new Map() : null
 
 interface SharedPrerenderCache {
@@ -38,11 +34,7 @@ export const sharedPrerenderCache: SharedPrerenderCache | null = import.meta.pre
       get<T = unknown> (key: string): Promise<T> | undefined {
         if (!sharedPrerenderKeys.has(key)) { return }
 
-        // Detect recursive prerender cycles where returning the cached pending
-        // promise would create a cyclic await: if any URL the cached promise
-        // is part of the chain for is also in the requestor's current chain,
-        // the cached promise's resolution may depend on the requestor.
-        // See https://github.com/nuxt/nuxt/issues/33871
+        // Skip a pending entry whose render chain overlaps the caller's.
         const currentChain = prerenderRenderingURLs?.getStore()
         const setChain = sharedPrerenderChains?.get(key)
         if (currentChain?.length && setChain?.length && setChain.some(url => currentChain.includes(url))) {
@@ -61,8 +53,7 @@ export const sharedPrerenderCache: SharedPrerenderCache | null = import.meta.pre
           const resolved = await value
           await useStorage('internal:nuxt:prerender:shared').setItem(key, resolved as any)
         } catch {
-          // Errors are surfaced via the original promise (returned to the caller
-          // through `get`); the shared cache itself only persists resolved values.
+          // Rejections propagate through the original promise; only resolved values are persisted.
         } finally {
           sharedPrerenderPromises!.delete(key)
           sharedPrerenderChains?.delete(key)
