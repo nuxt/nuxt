@@ -8,7 +8,7 @@ import { normalize } from 'pathe'
 import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
-import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 import { logger } from '../../utils.ts'
 
 const internalOrderMap = {
@@ -85,11 +85,11 @@ const keys: Record<PluginMetaKey, string> = {
   enforce: 'enforce',
   dependsOn: 'dependsOn',
 }
-function isMetadataKey (key: string | IdentifierName): key is PluginMetaKey {
+function isMetadataKey (key: string | ESTree.IdentifierName): key is PluginMetaKey {
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
+function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
   const meta: PluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {

@@ -1,8 +1,6 @@
 import { tryUseNuxt } from '@nuxt/kit'
-import type { TransformOptions, TransformResult } from 'oxc-transform'
-import { transformSync } from 'oxc-transform'
-import { minifySync } from 'oxc-minify'
-import type { MinifyResult } from 'oxc-minify'
+import { minifySync, transformSync } from 'rolldown/utils'
+import type { MinifyResult, TransformOptions, TransformResult } from 'rolldown/utils'
 
 export function transformAndMinify (input: string, options?: TransformOptions): TransformResult | MinifyResult {
   const oxcOptions = tryUseNuxt()?.options.oxc

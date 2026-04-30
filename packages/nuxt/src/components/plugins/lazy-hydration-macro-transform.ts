@@ -6,7 +6,7 @@ import { genImport } from 'knitwork'
 import { isJS, isVue } from '../../core/utils/index.ts'
 import type { ComponentsOptions } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
-import type { Argument, Expression, FunctionBody, ImportExpression } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 
 interface LoaderOptions {
   srcDir: string
@@ -112,11 +112,11 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
   }
 })
 
-function isStringLiteral (node: Argument | undefined) {
+function isStringLiteral (node: ESTree.Argument | undefined) {
   return !!node && node.type === 'Literal' && typeof node.value === 'string'
 }
 
-function findImportExpression (node: Expression | FunctionBody): { importExpression?: ImportExpression, importLiteral?: Expression } {
+function findImportExpression (node: ESTree.Expression | ESTree.FunctionBody): { importExpression?: ESTree.ImportExpression, importLiteral?: ESTree.Expression } {
   if (node.type === 'ImportExpression') {
     return { importExpression: node, importLiteral: node.source }
   }
