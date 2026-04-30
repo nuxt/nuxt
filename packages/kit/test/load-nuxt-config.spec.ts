@@ -1,5 +1,6 @@
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { loadNuxtConfig } from '@nuxt/kit'
 import { basename } from 'pathe'
 
@@ -43,5 +44,34 @@ describe('loadNuxtConfig', () => {
         "a",
       ]
     `)
+  })
+
+  describe('with .env file', () => {
+    const envKeys = ['NUXT_PORT', 'NUXT_HOST', 'NITRO_PORT', 'NITRO_HOST', 'PORT', 'HOST'] as const
+    const original: Record<string, string | undefined> = {}
+
+    beforeEach(() => {
+      for (const key of envKeys) {
+        original[key] = process.env[key]
+        delete process.env[key]
+      }
+    })
+
+    afterEach(() => {
+      for (const key of envKeys) {
+        if (original[key] === undefined) {
+          delete process.env[key]
+        } else {
+          process.env[key] = original[key]
+        }
+      }
+    })
+
+    it('should apply NUXT_PORT and NUXT_HOST from .env to devServer defaults', async () => {
+      const cwd = fileURLToPath(new URL('./dotenv-fixture', import.meta.url)).replace(/\\/g, '/')
+      const config = await loadNuxtConfig({ cwd })
+      expect(config.devServer.port).toBe(3005)
+      expect(config.devServer.host).toBe('0.0.0.0')
+    })
   })
 })
