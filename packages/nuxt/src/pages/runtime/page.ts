@@ -121,7 +121,7 @@ export default defineComponent({
               if (!routeProps.Component) {
               // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
               // we'll render the old vnode until the new route finishes resolving
-                if (vnode && !hasSameChildren) {
+                if (vnode && !hasSameChildren && !isStaleVNode(vnode)) {
                   return vnode
                 }
                 done()
@@ -129,13 +129,13 @@ export default defineComponent({
               }
 
               // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
-              if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+              if (vnode && _layoutMeta && !isStaleVNode(vnode) && !_layoutMeta.isCurrent(routeProps.route)) {
                 return vnode
               }
 
               if (isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
               // if leaving a route with an existing child route, render the old vnode
-                if (hasSameChildren || vnode) {
+                if ((hasSameChildren || vnode) && !isStaleVNode(vnode)) {
                   return vnode
                 }
                 // If _leaving_ null child route, return null vnode
@@ -281,4 +281,11 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
 function normalizeSlot (slot: Slot, data: RouterViewSlotProps) {
   const slotContent = slot(data)
   return slotContent.length === 1 ? h(slotContent[0]!) : h(Fragment, undefined, slotContent)
+}
+
+// A previously-stored Suspense vnode whose boundary has already been unmounted carries a stale
+// `el` reference; returning it would put Vue on the hydration code path during a fresh mount and
+// throw `Cannot read properties of null (reading 'nodeType' / 'exposed')`. See nuxt/nuxt#23232.
+function isStaleVNode (vnode: VNode | undefined): boolean {
+  return !!vnode && (!!vnode.suspense?.isUnmounted || !!vnode.component?.isUnmounted)
 }

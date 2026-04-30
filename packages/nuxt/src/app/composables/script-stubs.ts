@@ -148,3 +148,35 @@ export function useScriptRedditPixel (...args: unknown[]) {
 export function useScriptPayPal (...args: unknown[]) {
   renderStubMessage('useScriptPayPal')
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptVercelAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptVercelAnalytics')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptPostHog (...args: unknown[]) {
+  renderStubMessage('useScriptPostHog')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptMixpanelAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptMixpanelAnalytics')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptBingUet (...args: unknown[]) {
+  renderStubMessage('useScriptBingUet')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptTikTokPixel (...args: unknown[]) {
+  renderStubMessage('useScriptTikTokPixel')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptGoogleRecaptcha (...args: unknown[]) {
+  renderStubMessage('useScriptGoogleRecaptcha')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptGoogleSignIn (...args: unknown[]) {
+  renderStubMessage('useScriptGoogleSignIn')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptGravatar (...args: unknown[]) {
+  renderStubMessage('useScriptGravatar')
+}
