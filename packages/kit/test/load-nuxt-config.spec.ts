@@ -46,15 +46,16 @@ describe('loadNuxtConfig', () => {
     `)
   })
 
-  describe('with .env file', () => {
-    const envKeys = ['NUXT_PORT', 'NUXT_HOST', 'NITRO_PORT', 'NITRO_HOST', 'PORT', 'HOST'] as const
+  describe('with NUXT_PORT/NUXT_HOST env vars', () => {
+    const envKeys = ['NUXT_PORT', 'NUXT_HOST'] as const
     const original: Record<string, string | undefined> = {}
 
     beforeEach(() => {
       for (const key of envKeys) {
         original[key] = process.env[key]
-        delete process.env[key]
       }
+      process.env.NUXT_PORT = '3005'
+      process.env.NUXT_HOST = '0.0.0.0'
     })
 
     afterEach(() => {
@@ -67,8 +68,11 @@ describe('loadNuxtConfig', () => {
       }
     })
 
-    it('should apply NUXT_PORT and NUXT_HOST from .env to devServer defaults', async () => {
-      const cwd = fileURLToPath(new URL('./dotenv-fixture', import.meta.url)).replace(/\\/g, '/')
+    // Regression test for #34955: env vars must be read at applyDefaults time,
+    // not at schema module-import time, since the schema is loaded in parallel
+    // with c12's loadConfig (which populates process.env from .env).
+    it('should apply NUXT_PORT and NUXT_HOST env vars to devServer defaults', async () => {
+      const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
       const config = await loadNuxtConfig({ cwd })
       expect(config.devServer.port).toBe(3005)
       expect(config.devServer.host).toBe('0.0.0.0')
