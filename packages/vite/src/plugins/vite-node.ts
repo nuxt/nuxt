@@ -237,7 +237,8 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
         const viteNodeServerOptions = {
           socketPath,
           root: nuxt.options.srcDir,
-          entryPath: resolveServerEntry(ssrServer.config),
+          // skip in SPA — no SSR input, only used on SSR render path
+          entryPath: nuxt.options.ssr ? resolveServerEntry(ssrServer.config) : '',
           base: ssrServer.config.base || '/_nuxt/',
           maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
           baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
@@ -252,7 +253,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
         socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, viteNodeServerOptions)
       }
 
-      if (nuxt.options.experimental.viteEnvironmentApi) {
+      // since #34666 the SPA renderer also fetches the manifest via vite-node IPC,
+      // but `vite:serverCreated` never fires server-side in SPA — init via client
+      if (nuxt.options.experimental.viteEnvironmentApi || !nuxt.options.ssr) {
         resolveServer(clientServer)
       } else {
         nuxt.hook('vite:serverCreated', (ssrServer, ctx) => ctx.isServer ? resolveServer(ssrServer) : undefined)
