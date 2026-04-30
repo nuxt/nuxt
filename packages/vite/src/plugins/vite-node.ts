@@ -180,7 +180,8 @@ function useInvalidates () {
 }
 
 export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
-  if (!nuxt.options.dev) {
+  // skip in prod, and in SPA dev
+  if (!nuxt.options.dev || !nuxt.options.ssr) {
     return
   }
 

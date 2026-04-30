@@ -6,7 +6,6 @@ import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { normalizeViteManifest, precomputeDependencies } from 'vue-bundle-renderer'
 import { serialize } from 'seroval'
-import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
@@ -38,39 +37,49 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:client-manifest',
     // needs to run after server build (or after client build if there is no server build)
-    applyToEnvironment: environment => environment.name === 'ssr',
+    applyToEnvironment: environment => environment.name === 'ssr'
+      || (nuxt.options.dev && !nuxt.options.ssr && environment.name === 'client'),
     configResolved (config) {
       clientEntry = resolveClientEntry(config)
       key = relative(config.root, clientEntry)
       disableCssCodeSplit = config.build?.cssCodeSplit === false
+
+      // SPA dev: closeBundle doesn't fire in dev — populate the manifest here
+      if (nuxt.options.dev && !nuxt.options.ssr) {
+        const manifest = normalizeViteManifest({
+          '@vite/client': {
+            isEntry: true,
+            file: '@vite/client',
+            css: [],
+            module: true,
+            resourceType: 'script',
+          },
+          ...nuxt.options.features.noScripts === 'all'
+            ? {}
+            : {
+                [clientEntry]: {
+                  isEntry: true,
+                  file: clientEntry,
+                  module: true,
+                  resourceType: 'script',
+                },
+              },
+        })
+        precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
+        manifestCode = 'export default ' + serialize(manifest)
+      }
     },
     async closeBundle () {
-      // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
-      const devClientManifest: RendererManifest = {
-        '@vite/client': {
-          isEntry: true,
-          file: '@vite/client',
-          css: [],
-          module: true,
-          resourceType: 'script',
-        },
-        ...nuxt.options.features.noScripts === 'all'
-          ? {}
-          : {
-              [clientEntry]: {
-                isEntry: true,
-                file: clientEntry,
-                module: true,
-                resourceType: 'script',
-              },
-            },
+      if (nuxt.options.dev) {
+        // dev manifest is set up in configResolved (SPA) or via vite-node IPC (SSR)
+        return
       }
 
       // expose client manifest for use in vue-bundle-renderer
       const clientDist = resolve(nuxt.options.buildDir, 'dist/client')
 
       const manifestFile = resolve(clientDist, 'manifest.json')
-      const clientManifest = nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
+      const clientManifest = JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
       const manifestEntries = Object.values(clientManifest)
 
       const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
@@ -99,16 +108,14 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
       manifestCode = 'export default ' + serialize(manifest)
 
-      if (!nuxt.options.dev) {
-        if (nuxt.options.experimental.buildCache) {
-          const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
-          await mkdir(serverDist, { recursive: true })
-          await writeFile(resolve(serverDist, 'client.manifest.mjs'), manifestCode, 'utf8')
-          await writeFile(resolve(serverDist, 'client.precomputed.mjs'), precomputedCode, 'utf8')
-        }
-
-        await rm(manifestFile, { force: true })
+      if (nuxt.options.experimental.buildCache) {
+        const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
+        await mkdir(serverDist, { recursive: true })
+        await writeFile(resolve(serverDist, 'client.manifest.mjs'), manifestCode, 'utf8')
+        await writeFile(resolve(serverDist, 'client.precomputed.mjs'), precomputedCode, 'utf8')
       }
+
+      await rm(manifestFile, { force: true })
     },
   }
 }
