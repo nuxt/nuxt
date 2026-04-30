@@ -75,10 +75,12 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     }
   }
 
+  const UNSAFE_HEAD_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
   const islandHead: SerializableHead = {}
   for (const entry of ssrContext.head.entries.values()) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+      if (UNSAFE_HEAD_KEYS.has(key)) { continue }
       const currentValue = islandHead[key as keyof SerializableHead]
       if (Array.isArray(currentValue)) {
         currentValue.push(...value)
