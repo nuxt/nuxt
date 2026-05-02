@@ -135,7 +135,7 @@ function generateSocketPath () {
   // Linux: abstract namespace
   if (process.platform === 'linux') {
     const nodeMajor = Number.parseInt(process.versions.node.split('.')[0]!, 10)
-    if (nodeMajor >= 20 && provider !== 'stackblitz') {
+    if (nodeMajor >= 22 && provider !== 'stackblitz') {
       // We avoid abstract sockets in Docker due to performance issues
       let isDocker = false
 
