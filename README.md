@@ -117,3 +117,6 @@ Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/
 ## <a name="license">⚖️ License</a>
 
 [MIT](https://github.com/nuxt/nuxt/blob/main/LICENSE)
+
+
+> **Note:** Please refer to the official documentation site for complete, up-to-date deployment configurations.
