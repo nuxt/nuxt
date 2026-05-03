@@ -6,10 +6,10 @@ import type { MatrixOptions } from './test/e2e/test-utils'
 type E2eConfigOptions = ConfigOptions & MatrixOptions
 
 const e2eMatrix = [
-  { builder: 'vite' as const, isDev: true },
-  { builder: 'vite' as const, isDev: false },
-  { builder: 'rspack' as const, isDev: false },
-  { builder: 'webpack' as const, isDev: false },
+  { builder: 'vite', isDev: true },
+  { builder: 'vite', isDev: false },
+  { builder: 'rspack', isDev: false },
+  { builder: 'webpack', isDev: false },
 ] as const
 
 const devOnlyTests = ['**/hmr.test.ts']

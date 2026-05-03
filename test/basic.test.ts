@@ -529,6 +529,10 @@ describe('pages', () => {
     expect(html).toContain('<span class="break-in-ssr">this failed to render</span>')
     // ensure Fallback slot is being rendered server side
     expect(html).toContain('Hello world !')
+    // ensure fallback is rendered when an async component throws inside a wrapping component
+    // (regression test for nested promises in the SSR buffer not being awaited)
+    expect(html).toContain('Nested async fallback rendered')
+    expect(html).not.toContain('break-in-async-setup-wrapper')
 
     // ensure not failed component are correctly rendered
     expect(html).not.toContain('<p></p>')
@@ -647,6 +651,28 @@ describe('pages', () => {
   it.skipIf(isDev)('prerenders pages with special characters', async () => {
     const html = await $fetch('/prerender/ç')
     expect(html).toContain('should be prerendered: true')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33871
+  it.skipIf(isDev)('prerenders pages whose middleware calls useFetch against the same URL', async () => {
+    const html = await $fetch<string>('/prerender/loop-self')
+    expect(html).toContain('loop-self ok')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33871
+  it.skipIf(isDev)('prerenders parallel pages whose middleware shares a useFetch key against an unhandled URL', async () => {
+    const [a, b] = await Promise.all([
+      $fetch<string>('/prerender/loop-shared-a'),
+      $fetch<string>('/prerender/loop-shared-b'),
+    ])
+    expect(a).toContain('loop-shared-a ok')
+    expect(b).toContain('loop-shared-b ok')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33871 - bare $fetch path (no useFetch / shared cache).
+  it.skipIf(isDev)('prerenders pages whose middleware calls $fetch against the same URL', async () => {
+    const html = await $fetch<string>('/prerender/loop-bare-fetch')
+    expect(html).toContain('loop-bare-fetch ok')
   })
 
   it('renders unicode routes correctly', async () => {

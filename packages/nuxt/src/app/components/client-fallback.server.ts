@@ -62,7 +62,7 @@ const NuxtClientFallbackServer = defineComponent({
 
       const buffer = ssrVNodes.getBuffer()
       if (buffer.hasAsync) {
-        await Promise.all(buffer.filter(isPromise))
+        await Promise.all((buffer as unknown[]).flat(Infinity).filter(isPromise))
       }
 
       return { ssrFailed, ssrVNodes }

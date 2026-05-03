@@ -6,6 +6,7 @@ packages:
   - '!packages/nuxt/test/package-fixture/pkg'
   - playground
   - test/fixtures/*
+  - test/fixtures/*/_local-modules/*
 
 ignoredBuiltDependencies:
   - '@parcel/watcher'
@@ -24,3 +25,18 @@ shellEmulator: true
 
 verifyDepsBeforeRun: install
 
+
+overrides:
+  "@nuxt/kit": "workspace:*"
+  "@nuxt/nitro-server": "workspace:*"
+  "@nuxt/rspack-builder": "workspace:*"
+  "@nuxt/schema": "workspace:*"
+  "@nuxt/vite-builder": "workspace:*"
+  "@nuxt/webpack-builder": "workspace:*"
+  "@vue/compiler-core": "3.5.33"
+  "@vue/compiler-dom": "3.5.33"
+  "@vue/shared": "3.5.33"
+  nuxt: "workspace:*"
+  send: ">=1.2.1"
+  vite: "8.0.10"
+  vue: "3.5.33"

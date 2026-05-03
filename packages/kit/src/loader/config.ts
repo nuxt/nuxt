@@ -34,6 +34,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     .sort((a, b) => b.localeCompare(a))
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
+  const schemaPromise = loadNuxtSchema(opts.cwd || process.cwd())
+
   const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await withDefineNuxtConfig(
     () => loadConfig<NuxtConfig>({
       name: 'nuxt',
@@ -65,7 +67,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
   }
 
-  const NuxtConfigSchema = await loadNuxtSchema(nuxtConfig.rootDir || cwd || process.cwd())
+  const NuxtConfigSchema = await schemaPromise
 
   const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
   const layerSchema = Object.create(null)
