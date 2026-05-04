@@ -70,6 +70,32 @@ describe('formatIncludeSnippet', () => {
     expect(result).toContain('\'lodash\', // CJS')
     expect(result).not.toContain('\'radash\', // CJS')
   })
+
+  it('sorts deps in expected order (scoped first, then alphabetical)', () => {
+    const result = formatIncludeSnippet([
+      'zod',
+      'b-pkg',
+      '@vueuse/core',
+      'lodash',
+      '@nuxt/kit',
+      'a-pkg',
+    ])
+    const order = [...result.matchAll(/'([^']+)'/g)].map(m => m[1])
+    expect(order).toEqual([
+      '@nuxt/kit',
+      '@vueuse/core',
+      'a-pkg',
+      'b-pkg',
+      'lodash',
+      'zod',
+    ])
+  })
+
+  it('does not mutate the input array', () => {
+    const deps = ['zod', 'vue']
+    formatIncludeSnippet(deps)
+    expect(deps).toEqual(['zod', 'vue'])
+  })
 })
 
 describe('formatDepLines', () => {
