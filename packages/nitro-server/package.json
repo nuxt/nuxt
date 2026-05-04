@@ -39,7 +39,7 @@
     "consola": "^3.4.2",
     "defu": "^6.1.7",
     "destr": "^2.0.5",
-    "devalue": "^5.7.1",
+    "devalue": "^5.8.0",
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
@@ -78,7 +78,7 @@
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "7.0.0",
     "nuxt": "workspace:*",
-    "obuild": "0.4.33",
+    "obuild": "0.4.34",
     "vitest": "4.1.5"
   },
   "engines": {
