@@ -41,12 +41,60 @@ jobs:
             const prNumber = context.payload.pull_request.number;
             const classification = '${{ steps.agentscan.outputs.classification }}';
 
-            await github.rest.issues.addLabels({
+            const issue = context.payload.pull_request
+            const labels = issue.labels?.map(l => l.name) || []
+
+            if (!labels.includes('possible bot')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: ['possible bot'],
+              })
+            }
+
+            const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
-              labels: ['possible bot'],
-            });
+              per_page: 30,
+            })
+
+            const alreadyCommented = comments.data.some(
+              c => c.user.type === 'Bot' && c.body.includes('AI-assisted contribution guidelines')
+            )
+
+            if (alreadyCommented) {
+              core.info('Possible-bot comment already exists - skipping.')
+              return
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: [
+                "We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing to Nuxt, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):",
+                '',
+                '1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.',
+                '2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.',
+                '',
+                'Please review our [AI-assisted contribution guidelines](https://nuxt.com/docs/community/contribution#ai-assisted-contributions) and update this contribution if needed.',
+                '',
+                'If this was flagged in error, we apologise! 😳 Just let us know. 🙏',
+              ].join('\n'),
+            })
+
+            core.summary
+              .addHeading('AgentScan: Possible Bot Flag', 2)
+              .addTable([
+                [{ data: 'Property', header: true }, { data: 'Value', header: true }],
+                ['Pull Request', `#${prNumber}`],
+                ['Classification', classification],
+                ['Action', 'Added `possible bot` label and posted policy comment'],
+              ])
+
+            await core.summary.write()
       - name: Close community flagged accounts
         if: steps.agentscan.outputs.community-flagged == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0

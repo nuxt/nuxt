@@ -110,9 +110,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     router.afterEach((to, from) => {
-      // We won't trigger suspense if the component is reused between routes
-      // so we need to update the route manually
-      if (to.matched.at(-1)?.components?.default === from.matched.at(-1)?.components?.default) {
+      // `_route` is usually re-synced by `<NuxtPage>`'s `Suspense.onResolve`. When no Suspense
+      // remounts (leaf component reused, or navigating up the tree) we sync manually.
+      const lastTo = to.matched.at(-1)?.components?.default
+      const lastFrom = from.matched.at(-1)?.components?.default
+      if (lastTo === lastFrom) {
+        syncCurrentRoute()
+        return
+      }
+      if (to.matched.length < from.matched.length && to.matched.every((m, i) => m.components?.default === from.matched[i]?.components?.default)) {
         syncCurrentRoute()
       }
     })

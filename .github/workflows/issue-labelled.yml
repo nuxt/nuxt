@@ -19,8 +19,8 @@ jobs:
             const label = context.payload.label.name;
 
             const issueTypes = {
-              'bug': 'Bug',
-              'enhancement': 'Enhancement'
+              '🐛 bug': 'Bug',
+              '✨ enhancement': 'Enhancement'
             };
 
             const issueType = issueTypes[label];
