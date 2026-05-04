@@ -1,8 +1,10 @@
 import process from 'node:process'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { loadNuxtConfig } from '@nuxt/kit'
-import { basename } from 'pathe'
+import { basename, join } from 'pathe'
 
 describe('loadNuxtConfig', () => {
   it('should add named aliases for local layers', async () => {
@@ -46,34 +48,37 @@ describe('loadNuxtConfig', () => {
     `)
   })
 
-  describe('with NUXT_PORT/NUXT_HOST env vars', () => {
-    const envKeys = ['NUXT_PORT', 'NUXT_HOST'] as const
-    const original: Record<string, string | undefined> = {}
+  describe('with .env file', () => {
+    let tempDir: string
 
-    beforeEach(() => {
-      for (const key of envKeys) {
-        original[key] = process.env[key]
-      }
-      process.env.NUXT_PORT = '3005'
-      process.env.NUXT_HOST = '0.0.0.0'
+    beforeAll(async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'nuxt-loadConfig-'))
+      await writeFile(join(tempDir, '.env'), 'NUXT_PORT=3005\nNUXT_HOST=0.0.0.0\n')
     })
 
-    afterEach(() => {
-      for (const key of envKeys) {
-        if (original[key] === undefined) {
-          delete process.env[key]
-        } else {
-          process.env[key] = original[key]
+    afterAll(async () => {
+      delete process.env.NUXT_PORT
+      delete process.env.NUXT_HOST
+      vi.restoreAllMocks()
+      await rm(tempDir, { recursive: true, force: true })
+    })
+
+    it('should apply NUXT_PORT and NUXT_HOST from .env to devServer defaults', async () => {
+      vi.resetModules()
+      // delay c12 so the schema import wins the race (#34955 repro)
+      vi.doMock('c12', async () => {
+        const actual = await vi.importActual<typeof import('c12')>('c12')
+        return {
+          ...actual,
+          loadConfig: async (opts: Parameters<typeof actual.loadConfig>[0]) => {
+            await new Promise(resolve => setTimeout(resolve, 50))
+            return actual.loadConfig(opts)
+          },
         }
-      }
-    })
+      })
 
-    // Regression test for #34955: env vars must be read at applyDefaults time,
-    // not at schema module-import time, since the schema is loaded in parallel
-    // with c12's loadConfig (which populates process.env from .env).
-    it('should apply NUXT_PORT and NUXT_HOST env vars to devServer defaults', async () => {
-      const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
-      const config = await loadNuxtConfig({ cwd })
+      const { loadNuxtConfig } = await import('@nuxt/kit')
+      const config = await loadNuxtConfig({ cwd: tempDir })
       expect(config.devServer.port).toBe(3005)
       expect(config.devServer.host).toBe('0.0.0.0')
     })
