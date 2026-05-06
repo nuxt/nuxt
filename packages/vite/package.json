@@ -63,7 +63,7 @@
     "nitropack": "2.13.4",
     "obuild": "0.4.33",
     "postcss": "8.5.12",
-    "rolldown": "1.0.0-rc.16",
+    "rolldown": "1.0.0-rc.18",
     "rollup": "4.60.2",
     "rollup-plugin-visualizer": "7.0.1",
     "vue": "3.5.33"
