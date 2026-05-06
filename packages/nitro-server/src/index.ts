@@ -138,11 +138,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
 
-  if (nuxt.options.nitro.handlers?.length && nuxt.options.nitro.handlers !== nuxt.options.serverHandlers) {
-    nuxt.options.serverHandlers.unshift(...nuxt.options.nitro.handlers)
-  }
-  nuxt.options.nitro.handlers = nuxt.options.serverHandlers
-
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
@@ -195,8 +190,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     renderer: {
       handler: resolve(distDir, 'runtime/handlers/renderer'),
     },
-    handlers: nuxt.options.serverHandlers,
-    devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
@@ -340,7 +333,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig === true && nitroConfig.imports) {
     nitroConfig.imports.imports ||= []
     nitroConfig.imports.imports.push({
