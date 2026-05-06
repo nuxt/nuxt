@@ -68,6 +68,7 @@ export default defineComponent({
 
     const done = nuxtApp.deferHydration()
     let isSuspensePending = false
+    let hasResolvedOnce = false
     let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
@@ -154,9 +155,9 @@ export default defineComponent({
                 })
               }
 
-              // force suspense remount and restart async tracking
-              // if suspense is already pending and page key changed
-              if (isSuspensePending && previousPageKey !== key) {
+              // remount suspense on rapid navigation, but not before the first resolve:
+              // tearing down a never-resolved suspensible Suspense strands its parent. See #28425, #34683.
+              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce) {
                 suspenseKey++
               }
 
@@ -193,6 +194,7 @@ export default defineComponent({
                   },
                   onResolve: async () => {
                     isSuspensePending = false
+                    hasResolvedOnce = true
                     try {
                       await nextTick()
                       nuxtApp._route.sync?.()
