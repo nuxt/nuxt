@@ -252,8 +252,6 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
         socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, viteNodeServerOptions)
       }
 
-      // since #34666 the SPA renderer also fetches the manifest via vite-node IPC,
-      // but `vite:serverCreated` never fires server-side in SPA — init via client
       if (nuxt.options.experimental.viteEnvironmentApi || !nuxt.options.ssr) {
         resolveServer(clientServer)
       } else {
