@@ -46,7 +46,8 @@
     "config.*",
     "kit.*",
     "meta.*",
-    "schema.*"
+    "schema.*",
+    "stubs"
   ],
   "scripts": {
     "prepack": "unbuild",
@@ -85,6 +86,7 @@
     "ofetch": "^2.0.0-alpha.3",
     "ohash": "^2.0.11",
     "on-change": "^6.0.2",
+    "oxc-parser": "file:./stubs/oxc-parser",
     "oxc-walker": "^0.7.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.1.0",

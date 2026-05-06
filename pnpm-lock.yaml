@@ -539,9 +539,12 @@ importers:
       on-change:
         specifier: ^6.0.2
         version: 6.0.2
+      oxc-parser:
+        specifier: file:./stubs/oxc-parser
+        version: link:stubs/oxc-parser
       oxc-walker:
         specifier: ^0.7.0
-        version: 0.7.0(oxc-parser@0.129.0)
+        version: 0.7.0(oxc-parser@file:packages/nuxt/stubs/oxc-parser)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -583,7 +586,7 @@ importers:
         version: 2.5.0
       unimport:
         specifier: ^6.2.0
-        version: 6.2.0(oxc-parser@0.129.0)
+        version: 6.2.0(oxc-parser@file:packages/nuxt/stubs/oxc-parser)
       unplugin:
         specifier: ^3.0.0
         version: 3.0.0
@@ -636,6 +639,8 @@ importers:
       vue-sfc-transformer:
         specifier: 0.1.17
         version: 0.1.17(@vue/compiler-core@3.5.34)(esbuild@0.28.0)(vue@3.5.34(typescript@6.0.3))
+
+  packages/nuxt/stubs/oxc-parser: {}
 
   packages/rspack:
     dependencies:
@@ -7647,6 +7652,9 @@ packages:
     resolution: {integrity: sha512-S6eFI+VLkpyA+/Lf8z6qURjDV6Mgo74SLNznNopHTlQW3hedv2MB/z31kBRuBCCTqZN9HHdva0ojljEhPnBKFA==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
+  oxc-parser@file:packages/nuxt/stubs/oxc-parser:
+    resolution: {directory: packages/nuxt/stubs/oxc-parser, type: directory}
+
   oxc-resolver@11.19.1:
     resolution: {integrity: sha512-qE/CIg/spwrTBFt5aKmwe3ifeDdLfA2NESN30E42X/lII5ClF8V7Wt6WIJhcGZjp0/Q+nQ+9vgxGk//xZNX2hg==}
 
@@ -7656,6 +7664,7 @@ packages:
 
   oxc-walker@0.7.0:
     resolution: {integrity: sha512-54B4KUhrzbzc4sKvKwVYm7E2PgeROpGba0/2nlNZMqfDyca+yOor5IMb4WLGBatGDT0nkzYdYuzylg7n3YfB7A==}
+    version: 0.7.0
     peerDependencies:
       oxc-parser: '>=0.98.0'
 
@@ -10998,7 +11007,7 @@ snapshots:
       ofetch: 1.5.1
       ohash: 2.0.11
       oxc-parser: 0.128.0
-      oxc-walker: 0.7.0(oxc-parser@0.128.0)
+      oxc-walker: 0.7.0(oxc-parser@file:packages/nuxt/stubs/oxc-parser)
       pathe: 2.0.3
       pkg-types: 2.3.1
       sirv: 3.0.2
@@ -11403,7 +11412,8 @@ snapshots:
 
   '@oxc-project/types@0.128.0': {}
 
-  '@oxc-project/types@0.129.0': {}
+  '@oxc-project/types@0.129.0':
+    optional: true
 
   '@oxc-resolver/binding-android-arm-eabi@11.19.1':
     optional: true
@@ -16426,6 +16436,9 @@ snapshots:
       '@oxc-parser/binding-win32-arm64-msvc': 0.129.0
       '@oxc-parser/binding-win32-ia32-msvc': 0.129.0
       '@oxc-parser/binding-win32-x64-msvc': 0.129.0
+    optional: true
+
+  oxc-parser@file:packages/nuxt/stubs/oxc-parser: {}
 
   oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0):
     optionalDependencies:
@@ -16481,15 +16494,10 @@ snapshots:
       magic-regexp: 0.10.0
       oxc-parser: 0.124.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
 
-  oxc-walker@0.7.0(oxc-parser@0.128.0):
+  oxc-walker@0.7.0(oxc-parser@file:packages/nuxt/stubs/oxc-parser):
     dependencies:
       magic-regexp: 0.10.0
-      oxc-parser: 0.128.0
-
-  oxc-walker@0.7.0(oxc-parser@0.129.0):
-    dependencies:
-      magic-regexp: 0.10.0
-      oxc-parser: 0.129.0
+      oxc-parser: file:packages/nuxt/stubs/oxc-parser
 
   p-limit@3.1.0:
     dependencies:
@@ -18128,6 +18136,25 @@ snapshots:
       unplugin-utils: 0.3.1
     optionalDependencies:
       oxc-parser: 0.129.0
+
+  unimport@6.2.0(oxc-parser@file:packages/nuxt/stubs/oxc-parser):
+    dependencies:
+      acorn: 8.16.0
+      escape-string-regexp: 5.0.0
+      estree-walker: 3.0.3
+      local-pkg: 1.1.2
+      magic-string: 0.30.21
+      mlly: 1.8.2
+      pathe: 2.0.3
+      picomatch: 4.0.4
+      pkg-types: 2.3.1
+      scule: 1.3.0
+      strip-literal: 3.1.0
+      tinyglobby: 0.2.16
+      unplugin: 3.0.0
+      unplugin-utils: 0.3.1
+    optionalDependencies:
+      oxc-parser: file:packages/nuxt/stubs/oxc-parser
 
   unist-builder@4.0.0:
     dependencies:
