@@ -126,6 +126,11 @@ describe('modules', () => {
     const result = await $fetch<string>('/auto-registered-module')
     expect(result).toEqual('handler added by auto-registered module')
   })
+
+  it('should respect addServerHandler called from a nitro:config hook (#34982)', async () => {
+    const result = await $fetch<string>('/auto-registered-module-late')
+    expect(result).toEqual('handler added from nitro:config hook')
+  })
 })
 
 describe('pages', () => {

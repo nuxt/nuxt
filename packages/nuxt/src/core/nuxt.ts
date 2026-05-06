@@ -891,6 +891,14 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nitroOptions = options.nitro
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {
+    options.serverHandlers.unshift(...nitroOptions.handlers)
+  }
+  createPortalProperties(options.serverHandlers, options, ['nitro.handlers', 'serverHandlers'])
+  if (nitroOptions.devHandlers?.length && nitroOptions.devHandlers !== options.devServerHandlers) {
+    options.devServerHandlers.unshift(...nitroOptions.devHandlers)
+  }
+  createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {
