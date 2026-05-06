@@ -108,6 +108,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  if (nuxt.options.experimental.runtimeBaseURL) {
+    nuxt.options.serverHandlers.unshift({
+      route: '',
+      middleware: true,
+      handler: resolve(distDir, 'runtime/middleware/base-url'),
+    })
+  }
+
   if (nuxt.options.experimental.componentIslands) {
     // sync conditions with /packages/nuxt/src/core/templates.ts#L539
     nuxt.options.nitro.virtual ||= {}
@@ -117,8 +125,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       }
       return `import { defineEventHandler } from 'h3'; export default defineEventHandler(() => {});`
     }
-    nuxt.options.nitro.handlers ||= []
-    nuxt.options.nitro.handlers.push({
+    nuxt.options.serverHandlers.push({
       route: '/__nuxt_island/**',
       handler: '#internal/nuxt/island-renderer.mjs',
     })
@@ -208,8 +215,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     renderer: resolve(distDir, 'runtime/handlers/renderer'),
     errorHandler: resolve(distDir, 'runtime/handlers/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
-    handlers: nuxt.options.serverHandlers,
-    devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'],
