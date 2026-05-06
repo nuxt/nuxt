@@ -4,7 +4,7 @@ import type { MinifyResult, TransformOptions, TransformResult } from 'rolldown/u
 
 export function transformAndMinify (input: string, options?: TransformOptions): TransformResult | MinifyResult {
   const oxcOptions = tryUseNuxt()?.options.oxc
-  const transformResult = transformSync('', input, { ...oxcOptions?.transform.options, ...options })
+  const transformResult = transformSync('', input, { tsconfig: false, ...oxcOptions?.transform.options, ...options })
   const minifyResult = minifySync('', transformResult.code, { compress: { target: oxcOptions?.transform.options.target as 'esnext' || 'esnext' } })
 
   return {

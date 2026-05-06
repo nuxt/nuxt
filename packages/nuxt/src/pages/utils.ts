@@ -253,10 +253,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // TODO: always true because `extractScriptContent` only detects ts/tsx loader
       if (/tsx?/.test(script.loader)) {
         // slice, transform and parse the `define...` macro node to avoid parsing the whole file
-        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
+        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader, tsconfig: false })
         if (transformed.errors.length) {
           for (const error of transformed.errors) {
-            logger.warn(`Error while transforming \`${fnName}()\`` + (error as any).codeframe)
+            logger.warn(`Error while transforming \`${fnName}()\`\n` + error.message)
           }
           return
         }
