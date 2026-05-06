@@ -1,7 +1,9 @@
 import { fileURLToPath } from 'node:url'
+import process from 'node:process'
 import { describe, expect, it } from 'vitest'
+import { rmSync, writeFileSync } from 'node:fs'
 import { loadNuxtConfig } from '@nuxt/kit'
-import { basename } from 'pathe'
+import { basename, join } from 'pathe'
 
 describe('loadNuxtConfig', () => {
   it('should add named aliases for local layers', async () => {
@@ -43,5 +45,30 @@ describe('loadNuxtConfig', () => {
         "a",
       ]
     `)
+  })
+
+  it('should expand environment variables from files', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url))
+    const secretFile = join(cwd, 'secret.txt')
+    writeFileSync(secretFile, 'secret-value')
+    process.env.TEST_SECRET_FILE = secretFile
+
+    const secretFileExisting = join(cwd, 'secret-existing.txt')
+    writeFileSync(secretFileExisting, 'new-value')
+    process.env.TEST_SECRET_EXISTING_FILE = secretFileExisting
+    process.env.TEST_SECRET_EXISTING = 'existing-value'
+
+    await loadNuxtConfig({ cwd })
+
+    expect(process.env.TEST_SECRET).toBe('secret-value')
+    expect(process.env.TEST_SECRET_EXISTING).toBe('existing-value')
+
+    delete process.env.TEST_SECRET_FILE
+    delete process.env.TEST_SECRET
+    rmSync(secretFile)
+
+    delete process.env.TEST_SECRET_EXISTING_FILE
+    delete process.env.TEST_SECRET_EXISTING
+    rmSync(secretFileExisting)
   })
 })
