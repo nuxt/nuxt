@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { loadNuxtConfig } from '@nuxt/kit'
+import { getNuxtEnvName, loadNuxtConfig } from '@nuxt/kit'
 import { basename } from 'pathe'
 
 describe('loadNuxtConfig', () => {
@@ -43,5 +43,11 @@ describe('loadNuxtConfig', () => {
         "a",
       ]
     `)
+  })
+
+  it('should preserve and resolve a custom env name', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd, envName: 'staging' })
+    expect(getNuxtEnvName(config)).toBe('staging')
   })
 })

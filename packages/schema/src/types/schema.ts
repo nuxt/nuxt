@@ -1673,7 +1673,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | DotenvOptions }
+  _loadOptions: { dotenv?: boolean | DotenvOptions, envName?: string | false }
 
   /**
    *

@@ -22,6 +22,7 @@ declare global {
     browser: boolean
     client: boolean
     dev: boolean
+    envName: string
     server: boolean
     test: boolean
   }

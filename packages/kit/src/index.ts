@@ -16,6 +16,7 @@ export { getLayerDirectories } from './layers.ts'
 export type { LayerDirectories } from './layers.ts'
 
 // Utils
+export { getNuxtEnvName } from './env.ts'
 export { setGlobalHead } from './head.ts'
 export { addImports, addImportsDir, addImportsSources } from './imports.ts'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config.ts'
