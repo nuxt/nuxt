@@ -237,8 +237,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
         const viteNodeServerOptions = {
           socketPath,
           root: nuxt.options.srcDir,
-          // skip in SPA — no SSR input, only used on SSR render path
-          entryPath: nuxt.options.ssr ? resolveServerEntry(ssrServer.config) : '',
+          entryPath: resolveServerEntry(ssrServer.config),
           base: ssrServer.config.base || '/_nuxt/',
           maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
           baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
