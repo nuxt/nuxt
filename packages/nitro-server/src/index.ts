@@ -138,6 +138,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
 
+  if (nuxt.options.nitro.handlers?.length && nuxt.options.nitro.handlers !== nuxt.options.serverHandlers) {
+    nuxt.options.serverHandlers.unshift(...nuxt.options.nitro.handlers)
+  }
+  nuxt.options.nitro.handlers = nuxt.options.serverHandlers
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
