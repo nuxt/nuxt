@@ -107,8 +107,14 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     setSSRError(ssrContext, ssrError)
   }
 
+  // Strip `/_payload.json` suffix so route rules match the actual route path
+  const isPayloadUrl = PAYLOAD_URL_RE.test(event.url.pathname)
+  const routeRulesPath = isPayloadUrl
+    ? event.url.pathname.substring(0, event.url.pathname.lastIndexOf('/')) || '/'
+    : event.url.pathname
+
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
-  const routeOptions = getRouteRules(event.req.method, event.url.pathname).routeRules || {}
+  const routeOptions = getRouteRules(event.req.method, routeRulesPath).routeRules || {}
 
   // Whether we are prerendering route or using ISR/SWR caching
   const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
@@ -119,7 +125,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   // When NUXT_PAYLOAD_INLINE is true (payloadExtraction: 'client'), we inline the full payload
   const _PAYLOAD_INLINE = !_PAYLOAD_EXTRACTION || NUXT_PAYLOAD_INLINE
 
-  const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
+  const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && isPayloadUrl
   if (isRenderingPayload) {
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
     ssrContext.url = url
