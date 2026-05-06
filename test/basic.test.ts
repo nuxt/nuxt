@@ -653,6 +653,28 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  // https://github.com/nuxt/nuxt/issues/33871
+  it.skipIf(isDev)('prerenders pages whose middleware calls useFetch against the same URL', async () => {
+    const html = await $fetch<string>('/prerender/loop-self')
+    expect(html).toContain('loop-self ok')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33871
+  it.skipIf(isDev)('prerenders parallel pages whose middleware shares a useFetch key against an unhandled URL', async () => {
+    const [a, b] = await Promise.all([
+      $fetch<string>('/prerender/loop-shared-a'),
+      $fetch<string>('/prerender/loop-shared-b'),
+    ])
+    expect(a).toContain('loop-shared-a ok')
+    expect(b).toContain('loop-shared-b ok')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33871 - bare $fetch path (no useFetch / shared cache).
+  it.skipIf(isDev)('prerenders pages whose middleware calls $fetch against the same URL', async () => {
+    const html = await $fetch<string>('/prerender/loop-bare-fetch')
+    expect(html).toContain('loop-bare-fetch ok')
+  })
+
   it('renders unicode routes correctly', async () => {
     const html = await $fetch('/random/日本語')
     expect(html).toContain('Japanese random route')

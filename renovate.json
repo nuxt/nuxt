@@ -63,7 +63,8 @@
       "groupName": "rolldown",
       "groupSlug": "rolldown",
       "matchPackageNames": [
-        "rolldown"
+        "rolldown",
+        "obuild"
       ]
     }
   ],

@@ -13,7 +13,7 @@ import { relative } from 'pathe'
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
 
 import { getRenderer } from '../utils/renderer/build-files'
-import { payloadCache } from '../utils/cache'
+import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, setSSRError } from '../utils/renderer/app'
@@ -52,7 +52,7 @@ const PAYLOAD_FILENAME = '_payload.json'
 
 let entryPath: string
 
-const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
   // Whether we're rendering an error page
   const ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery<NuxtPayload['error'] & { url: string }>(event)
@@ -65,6 +65,27 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     })
   }
 
+  // During prerender, refuse to recurse into a URL that is already rendering
+  // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
+  // the in-flight URL (typically from route middleware) silently deadlocks the
+  // build. See https://github.com/nuxt/nuxt/issues/33871.
+  if (import.meta.prerender && prerenderRenderingURLs) {
+    const renderingURL = event.url.pathname + event.url.search
+    const stack = prerenderRenderingURLs.getStore()
+    if (stack?.includes(renderingURL)) {
+      const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `"${url}"`).join(' -> ')
+      throw new HTTPError({
+        status: 508,
+        statusText: `Loop detected while prerendering "${renderingURL}" (${chain}). Check for \`useFetch\`/\`$fetch\` calls targeting a URL that is currently being rendered.`,
+      })
+    }
+    return prerenderRenderingURLs.run([...(stack || []), renderingURL], () => renderRoute(event, ssrError))
+  }
+
+  return renderRoute(event, ssrError)
+})
+
+async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { url: string }) | null) {
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(event)
 
@@ -303,7 +324,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   event.res.headers.set('x-powered-by', 'Nuxt')
 
   return renderHTMLDocument(htmlContext)
-})
+}
 
 export default handler
 
@@ -342,6 +363,8 @@ declare module 'srvx' {
       'noSSR'?: boolean
       /** @internal */
       '~internal'?: boolean
+      /** @internal */
+      '~rendering-error'?: boolean
     }
   }
 }
