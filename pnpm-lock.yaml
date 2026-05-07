@@ -1332,7 +1332,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
-  test/fixtures/inline-styles-dedupe:
+  test/fixtures/inline-styles:
     dependencies:
       nuxt:
         specifier: workspace:*

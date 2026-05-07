@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "fixture-inline-styles-dedupe",
+  "name": "fixture-inline-styles",
   "scripts": {
     "build": "nuxt build"
   },
