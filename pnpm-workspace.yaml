@@ -25,6 +25,7 @@ shellEmulator: true
 
 verifyDepsBeforeRun: install
 
+ignoreWorkspaceCycles: true
 
 overrides:
   "@nuxt/kit": "workspace:*"
