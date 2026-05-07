@@ -4,10 +4,10 @@ import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
-import { joinURL, withQuery } from 'ufo'
+import { joinURL } from 'ufo'
 
 import type { NuxtIslandResponse } from '../types'
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
@@ -83,7 +83,6 @@ export default defineComponent({
     const key = shallowRef(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
-    const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
     const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
@@ -198,15 +197,21 @@ export default defineComponent({
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
-      const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
-        ...props.context,
-        props: props.props ? JSON.stringify(props.props) : undefined,
-      }))
+      // `$fetch` handles `app.baseURL` via its configured `defaults` and routes
+      // relative paths through Nitro's hybrid fetch on the server.
+      const r = await $fetch.raw<NuxtIslandResponse>(url, {
+        query: {
+          ...props.context,
+          props: props.props ? JSON.stringify(props.props) : undefined,
+        },
+        responseType: 'json',
+        ignoreResponseError: true,
+      })
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
-        const result = await r.json()
+        const result = r._data!
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')
