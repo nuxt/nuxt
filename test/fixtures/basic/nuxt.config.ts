@@ -184,6 +184,8 @@ export default withMatrix({
       '/route-rules/redirect': { redirect: '/' },
       '/isr': { isr: 60 },
       '/route-rules/isr-spa': { isr: 60, ssr: false },
+      '/route-rules/swr-in-spa/**': { ssr: false },
+      '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
       '/swr': { swr: 60 },
     },
     prerender: {
