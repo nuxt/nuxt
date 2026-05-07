@@ -95,6 +95,8 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
 
         // these will never be imported on the client
         '#app-manifest',
+
+        'vue-onigiri',
       ],
     },
     cacheDir: resolve(nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),

@@ -71,6 +71,7 @@
     "unimport": "5.4.1",
     "vite": "7.1.9",
     "vue": "3.5.22",
+    "vue-onigiri": "0.3.0",
     "webpack": "5.102.0"
   },
   "devDependencies": {
@@ -144,7 +145,7 @@
     "vitest": "3.2.4",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.22",
-    "vue-onigiri": "0.2.1",
+    "vue-onigiri": "link:../vue-onigiri",
     "vue-tsc": "3.1.1",
     "webpack": "5.102.0"
   },

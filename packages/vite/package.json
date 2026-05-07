@@ -61,7 +61,7 @@
     "unenv": "^2.0.0-rc.21",
     "vite": "^7.1.9",
     "vite-node": "^3.2.4",
-    "vue-onigiri": "^0.2.0",
+    "vue-onigiri": "^0.3.0",
     "vite-plugin-checker": "^0.11.0",
     "vue-bundle-renderer": "^2.2.0"
   },

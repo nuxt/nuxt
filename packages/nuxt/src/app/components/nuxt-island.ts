@@ -171,11 +171,6 @@ export default defineComponent({
       await fetchComponent()
     }
 
-    return () => {
-      // `renderOnigiri` resolves chunks through `virtual:onigiri/manifest`
-      // (a Vite glob). Nuxt registers the manifest plugin in both client
-      // and server envs, so no explicit importFn is needed here.
-      return renderOnigiri(ast.value)
-    }
+    return () => renderOnigiri(ast.value)
   },
 })

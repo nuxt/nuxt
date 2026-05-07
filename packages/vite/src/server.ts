@@ -64,7 +64,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
         // TODO: remove in v5
         '#internal/nitro',
         '#internal/nitro/utils',
-        'vue-onigiri'
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: nuxt.options.dev }),
@@ -72,6 +71,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
         '#app',
         /^nuxt(\/|$)/,
         /(nuxt|nuxt3|nuxt-nightly)\/(dist|src|app)/,
+        'vue-onigiri',
       ],
     },
     cacheDir: resolve(nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'server'),

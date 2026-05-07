@@ -133,7 +133,7 @@
     "vue": "^3.5.22",
     "vue-bundle-renderer": "^2.2.0",
     "vue-devtools-stub": "^0.1.0",
-    "vue-onigiri": "^0.2.0",
+    "vue-onigiri": "^0.3.0",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
