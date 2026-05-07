@@ -1471,4 +1471,27 @@ describe('useAsyncData', () => {
       expect((await p).data.value).toBe('value')
     }
   })
+
+  it('should re-fetch after clearNuxtData rather than serving the cached lookup from a previous call', async () => {
+    const key = `clear-getCachedData-${++counter}`
+    const nuxtApp = useNuxtApp()
+    nuxtApp.payload.data[key] = 'initial-payload'
+
+    let fetchCount = 0
+    const handler = () => {
+      fetchCount++
+      return Promise.resolve(`fresh-${fetchCount}`)
+    }
+    const getCachedData = (k: string, app: NuxtApp) => app.payload.data[k]
+
+    const { data: first } = await useAsyncData(key, handler, { getCachedData })
+    expect(first.value).toBe('initial-payload')
+    expect(fetchCount).toBe(0)
+
+    clearNuxtData(key)
+
+    const { data: second } = await useAsyncData(key, handler, { getCachedData })
+    expect(fetchCount).toBe(1)
+    expect(second.value).toBe('fresh-1')
+  })
 })

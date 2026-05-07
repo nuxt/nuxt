@@ -680,6 +680,7 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
       nuxtApp._asyncData[key]!.pending.value = false
     }
     nuxtApp._asyncData[key]!.status.value = 'idle'
+    nuxtApp._asyncData[key]!._initialCachedData = undefined
   }
 
   if (key in nuxtApp._asyncDataPromises) {
