@@ -18,6 +18,18 @@ export const typescriptBundlerResolution = process.env.MODULE_RESOLUTION !== 'no
 
 export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 
+/**
+ * Suffix identifying the current matrix combination.
+ */
+export const projectSuffix = [
+  process.env.TEST_BUILDER,
+  process.env.TEST_ENV,
+  process.env.TEST_CONTEXT,
+  process.env.TEST_MANIFEST,
+].filter(Boolean).join('-') || 'default'
+
+export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
+
 export function withMatrix (config: NuxtConfig) {
   return defu(config, {
     builder,

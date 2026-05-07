@@ -3,7 +3,7 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
-import { withMatrix } from '../../matrix'
+import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
 
 // (defined in nuxt/src/core/nitro.ts)
 declare module 'nitropack' {
@@ -13,6 +13,7 @@ declare module 'nitropack' {
 }
 
 export default withMatrix({
+  ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   appId: 'nuxt-app-basic',
   extends: [
     './extends/node_modules/foo',
