@@ -1453,4 +1453,22 @@ describe('useAsyncData', () => {
       router.removeRoute('v-once-other')
     }
   })
+
+  // https://github.com/nuxt/nuxt/issues/31576
+  it('should call getCachedData only once when concurrent useAsyncData calls share a key', async () => {
+    const key = `dedupe-getCachedData-${++counter}`
+    const getCachedData = vi.fn((_key: string, nuxtApp: NuxtApp) => nuxtApp.payload.data[_key])
+    const promiseFn = vi.fn(() => Promise.resolve('value'))
+
+    const promises = Array.from({ length: 10 }, () =>
+      useAsyncData(key, promiseFn, { getCachedData, dedupe: 'defer' }),
+    )
+    await Promise.all(promises)
+
+    expect(getCachedData).toHaveBeenCalledTimes(1)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    for (const p of promises) {
+      expect((await p).data.value).toBe('value')
+    }
+  })
 })

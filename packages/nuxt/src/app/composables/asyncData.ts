@@ -365,9 +365,14 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       // Create or use a shared asyncData entity
       function createInitialFetch () {
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
-        if (!nuxtApp._asyncData[key.value]?._init) {
+        const existing = nuxtApp._asyncData[key.value]
+        if (!existing?._init) {
           initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
           nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
+          nuxtApp._asyncData[key.value]!._initialCachedData = initialFetchOptions.cachedData
+        } else {
+          // reuse the cache lookup performed by the first concurrent caller
+          initialFetchOptions.cachedData = existing._initialCachedData
         }
         return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
       }
@@ -697,7 +702,7 @@ export type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: 
   isPending: () => boolean
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _initialCachedData?: DataT | undefined, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController }
 
 function buildAsyncData<
   ResT,
