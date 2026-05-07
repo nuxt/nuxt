@@ -365,9 +365,14 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       // Create or use a shared asyncData entity
       function createInitialFetch () {
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
-        if (!nuxtApp._asyncData[key.value]?._init) {
+        const existing = nuxtApp._asyncData[key.value]
+        if (!existing?._init) {
           initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
           nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
+          nuxtApp._asyncData[key.value]!._initialCachedData = initialFetchOptions.cachedData
+        } else {
+          // reuse the cache lookup performed by the first concurrent caller
+          initialFetchOptions.cachedData = existing._initialCachedData
         }
         return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
       }
@@ -675,6 +680,7 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
       nuxtApp._asyncData[key]!.pending.value = false
     }
     nuxtApp._asyncData[key]!.status.value = 'idle'
+    nuxtApp._asyncData[key]!._initialCachedData = undefined
   }
 
   if (key in nuxtApp._asyncDataPromises) {
