@@ -119,6 +119,17 @@ describe('route rules', () => {
     })
     expect(routeRules['/route-rules/isr-spa/_payload.json']).toBeUndefined()
   })
+
+  it('should generate payload route rules with explicit `ssr: true`', () => {
+    // @ts-expect-error untyped internal property
+    const routeRules = useTestContext().nuxt._nitro.options.routeRules
+
+    // https://github.com/nuxt/nuxt/issues/34856
+    expect(routeRules['/route-rules/swr-in-spa/_payload.json']).toMatchObject({
+      ssr: true,
+      cache: { swr: true },
+    })
+  })
 })
 
 describe('modules', () => {
@@ -2806,6 +2817,14 @@ describe.skipIf(isWindows)('payload rendering', () => {
     expect(data.data).toBeDefined()
     expect(data.data['swr-data']).toBeDefined()
     expect(Array.isArray(data.data['swr-data'])).toBe(true)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/34856
+  it('should render payload for SSR+SWR routes that opt out of a catch-all `ssr: false` rule', async () => {
+    const payload = await $fetch('/route-rules/swr-in-spa/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['swr-in-spa-data']).toEqual({ ok: true })
   })
 })
 
