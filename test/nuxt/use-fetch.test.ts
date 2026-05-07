@@ -325,7 +325,7 @@ describe('useFetch', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/32102
-  it.fails('passes the current key to getCachedData with watch:false and a reactive key', async () => {
+  it('passes the current key to getCachedData with watch:false and a reactive key', async () => {
     registerEndpoint('/api/stale-key', defineEventHandler(() => ({ ok: true })))
 
     const query = ref('a')
@@ -354,7 +354,7 @@ describe('useFetch', () => {
   // https://github.com/nuxt/nuxt/issues/32437
   // two useFetch calls with the same shape share an auto-key; with watch:false
   // the key is frozen at first init, so a second instance reads the first's data.
-  it.fails('does not leak data between instances sharing an auto-key with watch:false + execute()', async () => {
+  it('does not leak data between instances sharing an auto-key with watch:false + execute()', async () => {
     registerEndpoint('/api/key/1', defineEventHandler(event => ({ url: '/api/key/1', q: event.req.url })))
     registerEndpoint('/api/key/2', defineEventHandler(event => ({ url: '/api/key/2', q: event.req.url })))
 
