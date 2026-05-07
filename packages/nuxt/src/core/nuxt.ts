@@ -25,6 +25,7 @@ import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
+import type { NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
 
 import { installNuxtModule } from '../core/features.ts'
 import pagesModule from '../pages/module.ts'
@@ -902,11 +903,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
   if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {
-    options.serverHandlers.unshift(...nitroOptions.handlers)
+    options.serverHandlers.unshift(...nitroOptions.handlers as NitroEventHandler[])
   }
   createPortalProperties(options.serverHandlers, options, ['nitro.handlers', 'serverHandlers'])
   if (nitroOptions.devHandlers?.length && nitroOptions.devHandlers !== options.devServerHandlers) {
-    options.devServerHandlers.unshift(...nitroOptions.devHandlers)
+    options.devServerHandlers.unshift(...nitroOptions.devHandlers as NitroDevEventHandler[])
   }
   createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
 
