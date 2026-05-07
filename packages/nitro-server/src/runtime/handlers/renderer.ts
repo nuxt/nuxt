@@ -383,4 +383,3 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
     `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>` +
     '</html>'
 }
-
