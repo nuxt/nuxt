@@ -145,6 +145,8 @@ interface _NuxtApp {
     _hash?: Record<string, string | undefined>
     /** @internal */
     _abortController?: AbortController
+    /** @internal */
+    _initialCachedData?: unknown
   } | undefined>
 
   /** @internal */
