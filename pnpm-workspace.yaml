@@ -37,3 +37,5 @@ publicHoistPattern:
   - 'webpack-*'
 
 shellEmulator: true
+
+ignoreWorkspaceCycles: true
