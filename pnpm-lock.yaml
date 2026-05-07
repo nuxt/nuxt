@@ -606,6 +606,9 @@ importers:
       '@nuxt/scripts':
         specifier: 1.0.6
         version: 1.0.6(@unhead/vue@2.1.13(vue@3.5.34(typescript@6.0.3)))(db0@0.3.4)(ioredis@5.10.1)(typescript@6.0.3)(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))
+      '@oxc-project/types':
+        specifier: 0.129.0
+        version: 0.129.0
       '@parcel/watcher':
         specifier: 2.5.6
         version: 2.5.6
@@ -11412,8 +11415,7 @@ snapshots:
 
   '@oxc-project/types@0.128.0': {}
 
-  '@oxc-project/types@0.129.0':
-    optional: true
+  '@oxc-project/types@0.129.0': {}
 
   '@oxc-resolver/binding-android-arm-eabi@11.19.1':
     optional: true
