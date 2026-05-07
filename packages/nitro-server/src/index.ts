@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { hash } from 'ohash'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
@@ -97,6 +97,27 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
+
+  // Resolve user-supplied asset dirs against rootDir (and resolve aliases) so that
+  // relative `dir` values like `'public/foo'` work the same in dev and prod.
+  const resolveAssetDir = (dir: string) => {
+    const aliased = resolveAlias(dir, nuxt.options.alias)
+    return isAbsolute(aliased) ? aliased : resolve(nuxt.options.rootDir, aliased)
+  }
+  if (nuxt.options.nitro.publicAssets) {
+    for (const asset of nuxt.options.nitro.publicAssets) {
+      if (asset?.dir) {
+        asset.dir = resolveAssetDir(asset.dir)
+      }
+    }
+  }
+  if (nuxt.options.nitro.serverAssets) {
+    for (const asset of nuxt.options.nitro.serverAssets) {
+      if (asset?.dir) {
+        asset.dir = resolveAssetDir(asset.dir)
+      }
+    }
+  }
 
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))

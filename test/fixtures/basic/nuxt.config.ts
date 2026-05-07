@@ -165,9 +165,15 @@ export default withMatrix({
   },
   nitro: {
     publicAssets: [
+      // exercise relative `dir` resolution against rootDir (nuxt/nuxt#26517)
       {
-        dir: '../custom-public',
+        dir: 'custom-public',
         baseURL: '/custom',
+      },
+      // exercise alias resolution in `dir`
+      {
+        dir: '~~/custom-public',
+        baseURL: '/aliased',
       },
     ],
     esbuild: {

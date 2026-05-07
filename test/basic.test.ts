@@ -2304,6 +2304,19 @@ describe('public directories', () => {
     expect(html).toContain('"/public.svg"')
     expect(html).toContain('"/custom/file.svg"')
   })
+
+  // nuxt/nuxt#26517: relative & aliased `dir` in nitro.publicAssets
+  // should be served (not 404) in both dev and build.
+  it('should serve files from nitro.publicAssets with a relative dir', async () => {
+    const res = await fetch('/custom/file.svg')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('image/svg')
+  })
+  it('should serve files from nitro.publicAssets with an aliased dir', async () => {
+    const res = await fetch('/aliased/file.svg')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('image/svg')
+  })
 })
 
 // TODO: dynamic paths in dev
