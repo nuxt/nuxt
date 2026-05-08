@@ -109,14 +109,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  if (nuxt.options.experimental.runtimeBaseURL) {
-    nuxt.options.serverHandlers.unshift({
-      route: '',
-      middleware: true,
-      handler: resolve(distDir, 'runtime/middleware/base-url'),
-    })
-  }
-
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
     const h3Path = JSON.stringify(resolve(distDir, 'runtime/h3-compat'))

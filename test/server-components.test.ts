@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { withQuery } from 'ufo'
 import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
-import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
+import { $fetch, setup } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
 
 import { isDev, isWebpack } from './matrix'
@@ -428,19 +428,6 @@ describe('component islands', () => {
     }
 
     await page.close()
-  })
-
-  it.skipIf(isDev)('should not render an error when having a baseURL', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BASE_URL: '/foo/',
-      },
-    })
-
-    const result = await fetch('/foo/islands')
-    expect(result.status).toBe(200)
-
-    await startServer()
   })
 
   it('render island page', async () => {
