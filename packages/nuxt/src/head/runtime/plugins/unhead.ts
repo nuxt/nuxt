@@ -14,9 +14,11 @@ export default defineNuxtPlugin({
       : createClientHead(unheadOptions)
 
     // Drop plugin-phase `useHead` writes for islands -- they belong to the
-    // surrounding route, not the island response.
+    // surrounding route, not the island response. Unfreeze on `app:created`
+    // (after `applyPlugins` resolves) so island components write normally.
     if (import.meta.server && nuxtApp.ssrContext!.islandContext) {
-      nuxtApp.hooks.hookOnce('app:created', freezeHead(head))
+      const unfreeze = freezeHead(head)
+      nuxtApp.hooks.hookOnce('app:created', unfreeze)
     }
 
     // nuxt.config appHead is set server-side within the renderer
