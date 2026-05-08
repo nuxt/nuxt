@@ -4,7 +4,7 @@ import { IslandsTransformPlugin } from '../src/components/plugins/islands-transf
 import { normalizeLineEndings } from './utils.ts'
 
 const getComponents = () => [{
-  filePath: '/root/hello.server.vue',
+  filePath: 'hello.server.vue',
   mode: 'server',
   pascalName: 'HelloWorld',
   island: true,
@@ -21,9 +21,10 @@ const pluginWebpack = IslandsTransformPlugin({
   selectiveClient: true,
 }).raw({}, { framework: 'webpack', webpack: { compiler: {} as any } }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
-const viteTransform = async (source: string, id: string, selectiveClient = false) => {
+async function viteTransform (source: string, id: string, selectiveClient: boolean | 'deep' = false, getServerPages: () => string[] = () => []) {
   const vitePlugin = IslandsTransformPlugin({
     getComponents,
+    getServerPages,
     selectiveClient,
   }).raw({}, { framework: 'vite' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
@@ -229,7 +230,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
       <slot v-else-if="test" />
       <slot v-else />
       </template>
-      `, 'WithVif.vue', true)
+      `, 'hello.server.vue', true)
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<script setup lang="ts">
@@ -474,6 +475,66 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
 
         expect(spyOnWarn).toHaveBeenCalledWith('The `nuxt-client` attribute and client components within islands are only supported with Vite. file: hello.server.vue')
       })
+    })
+  })
+
+  // https://github.com/nuxt/nuxt/issues/30005
+  describe('selectiveClient: "deep" with non-island components', () => {
+    it('does not wrap <slot/> in NuxtTeleportSsrSlot for non-island Vue files', async () => {
+      const source = `<script setup lang="ts">
+defineProps<{ to: string }>()
+</script>
+
+<template>
+<a :href="to"><slot /></a>
+</template>
+`
+      const result = await viteTransform(source, 'components/Link.vue', 'deep')
+      // Link.vue is a regular component (not registered as an island);
+      // its <slot/> must remain a normal Vue slot so its contents render.
+      expect(result).toContain('<a :href="to"><slot /></a>')
+      expect(result).not.toContain('<NuxtTeleportSsrSlot')
+    })
+
+    it('still wraps <slot/> in NuxtTeleportSsrSlot for island components in deep mode', async () => {
+      const source = `<template>
+<div><slot /></div>
+</template>
+`
+      const result = await viteTransform(source, 'hello.server.vue', 'deep')
+      expect(result).toContain('<NuxtTeleportSsrSlot')
+    })
+
+    it('still wraps nuxt-client on non-island components in deep mode', async () => {
+      const source = `<template>
+<div><HelloWorld nuxt-client /></div>
+</template>
+
+<script setup lang="ts">
+import HelloWorld from './HelloWorld.vue'
+</script>
+`
+      const result = await viteTransform(source, 'components/Wrapper.vue', 'deep')
+      // The nuxt-client wrapping is the whole point of `'deep'` mode and
+      // must keep working for non-island files.
+      expect(result).toContain('<NuxtTeleportIslandComponent :nuxt-client=')
+    })
+  })
+
+  // https://github.com/nuxt/nuxt/issues/30016
+  describe('selectiveClient: true with island pages', () => {
+    it('wraps nuxt-client used directly inside a server page', async () => {
+      const source = `<template>
+<div><InteractiveButton nuxt-client /></div>
+</template>
+
+<script setup lang="ts">
+import InteractiveButton from '~/components/InteractiveButton.vue'
+</script>
+`
+      const pageFile = 'pages/index.server.vue'
+      const result = await viteTransform(source, pageFile, true, () => [pageFile])
+      expect(result).toContain('<NuxtTeleportIslandComponent :nuxt-client=')
     })
   })
 })
