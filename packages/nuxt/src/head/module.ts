@@ -87,6 +87,5 @@ export default {
 
     // Add library-specific plugin
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })
-    addPlugin({ src: resolve(runtimeDir, 'plugins/island-head.server'), mode: 'server' })
   },
 })
