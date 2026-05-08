@@ -69,10 +69,6 @@ describe('resolveApp', () => {
             "src": "<rootDir>/.nuxt/components.plugin.mjs",
           },
           {
-            "mode": "server",
-            "src": "<repoRoot>/packages/nuxt/src/head/runtime/plugins/island-head.server.ts",
-          },
-          {
             "mode": "all",
             "src": "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.ts",
           },
