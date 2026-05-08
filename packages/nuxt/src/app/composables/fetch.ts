@@ -222,8 +222,8 @@ export const createUseFetch = defineKeyedFunctionFactory({
         let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || globalThis.$fetch
 
         // Use fetch with request context and headers for server direct API calls
-        if (import.meta.server && !opts.$fetch) {
-          const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
+        if (import.meta.server && !fetchOptions.$fetch) {
+          const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(fetchOptions.baseURL) || toValue(fetchOptions.baseURL)![0] === '/')
           if (isLocalFetch) {
             _$fetch = useRequestFetch()
           }
