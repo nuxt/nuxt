@@ -1,11 +1,14 @@
 import type { defineAsyncComponent } from 'vue'
-import { createVNode, defineComponent, onErrorCaptured } from 'vue'
+import { createVNode, defineComponent, onErrorCaptured, provide } from 'vue'
+import { createHead, headSymbol } from '@unhead/vue/server'
 
-import { injectHead } from '../composables/head'
+import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
 
 // @ts-expect-error virtual file
 import { islandComponents } from '#build/components.islands.mjs'
+// @ts-expect-error virtual file
+import unheadOptions from '#build/unhead-options.mjs'
 
 export default defineComponent({
   name: 'IslandRenderer',
@@ -16,9 +19,15 @@ export default defineComponent({
     },
   },
   setup (props) {
-    // reset head - we don't want to have any head tags from plugin or anywhere else.
-    const head = injectHead()
-    head.entries.clear()
+    // Use an isolated head for the island so it doesn't include head tags from plugins
+    // and, more importantly, so concurrent route renders don't clobber each other's head
+    // entries via Vue's module-global `currentInstance` (see #32100 regression).
+    const head = createHead(unheadOptions)
+    provide(headSymbol, head)
+    const ssrContext = useNuxtApp().ssrContext
+    if (ssrContext) {
+      ssrContext.head = head
+    }
 
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
 
