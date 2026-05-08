@@ -1,5 +1,6 @@
 import { createHead as createClientHead, renderDOMHead } from '@unhead/vue/client'
 import { defineNuxtPlugin } from '#app/nuxt'
+import { lockHead } from '../island-head'
 
 // @ts-expect-error virtual file
 import unheadOptions from '#build/unhead-options.mjs'
@@ -11,6 +12,16 @@ export default defineNuxtPlugin({
     const head = import.meta.server
       ? nuxtApp.ssrContext!.head
       : createClientHead(unheadOptions)
+
+    // Island responses must not include head tags registered by user plugins --
+    // those belong to the surrounding route, not the island. Lock the head
+    // during the plugin phase, then unlock it on `app:created` (after
+    // `applyPlugins` resolves) so island components register their own tags as
+    // expected.
+    if (import.meta.server && nuxtApp.ssrContext!.islandContext) {
+      nuxtApp.hooks.hookOnce('app:created', lockHead(head))
+    }
+
     // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
 
