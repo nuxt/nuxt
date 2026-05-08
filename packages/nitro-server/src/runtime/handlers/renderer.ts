@@ -161,11 +161,6 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
     throw _err
   }).finally(() => {
-    // Vue's `withAsyncContext` for top-level `await` in `<script setup>` leaves
-    // `currentInstance` set to the suspended component on resume and never
-    // re-unsets it, so the global stays pinned to a foreign request's <App>
-    // until another `setup()` overwrites it. Clear it explicitly here so the
-    // next render starts clean and the leaked component graph is GC-eligible.
     clearVueCurrentInstance()
   })
 

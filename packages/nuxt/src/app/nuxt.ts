@@ -557,7 +557,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  */
 export function tryUseNuxtApp (): NuxtApp | null
 export function tryUseNuxtApp (id?: string): NuxtApp | null {
-  // ALS first: Vue's `currentInstance` can leak across concurrent SSR via `withAsyncContext`.
+  // https://github.com/nuxt/nuxt/pull/35011
   let nuxtAppInstance: NuxtApp | null | undefined = getNuxtAppCtx(id).tryUse()
 
   if (!nuxtAppInstance && hasInjectionContext()) {

@@ -41,8 +41,6 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
   }).finally(() => {
-    // Clear leaked Vue `currentInstance` from this render so the next render
-    // starts clean. See companion comment in the page renderer.
     clearVueCurrentInstance()
   })
 

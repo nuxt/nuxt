@@ -1,6 +1,7 @@
 import type { H3Event } from 'nitro/h3'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { createHead } from '@unhead/vue/server'
+// HACK: using `withAsyncContext` to clear `currentInstance` until Vue exports an equivalent public API
 // @ts-expect-error withAsyncContext is exported at runtime but not in Vue's public types
 import { getCurrentInstance, withAsyncContext } from 'vue'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -44,8 +45,6 @@ export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['err
   ssrContext.url = url.pathname + url.search + url.hash
 }
 
-// Vue's `withAsyncContext` synchronously captures+unsets `currentInstance` (restore fn discarded).
-// Guard avoids a Vue warning when `currentInstance` is already null (no leak to clear).
 export function clearVueCurrentInstance (): void {
   if (getCurrentInstance()) {
     withAsyncContext(() => null)
