@@ -1,6 +1,7 @@
 <template>
   <main class="page-index">
     index page
+    <ServerComponent />
   </main>
 </template>
 

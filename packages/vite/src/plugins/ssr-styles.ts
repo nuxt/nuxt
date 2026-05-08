@@ -323,7 +323,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
             const { pathname, search } = parseModuleId(id)
 
-            if (!(id in clientCSSMap) && !islandPaths.has(pathname)) { return }
+            if (!(id in clientCSSMap) && !islandPaths.has(pathname) && !isVue(pathname)) { return }
 
             if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
 
