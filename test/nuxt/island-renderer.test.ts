@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, provide } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import { createHead, headSymbol } from '@unhead/vue/server'
+import { createHead } from '@unhead/vue/server'
+import { headSymbol } from '@unhead/vue'
 
 import IslandRenderer from '../../packages/nuxt/src/app/components/island-renderer'
 

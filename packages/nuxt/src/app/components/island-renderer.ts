@@ -1,6 +1,7 @@
 import type { defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent, onErrorCaptured, provide } from 'vue'
-import { createHead, headSymbol } from '@unhead/vue/server'
+import { createHead } from '@unhead/vue/server'
+import { headSymbol } from '@unhead/vue'
 
 import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
