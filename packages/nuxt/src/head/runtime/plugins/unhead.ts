@@ -13,14 +13,10 @@ export default defineNuxtPlugin({
       ? nuxtApp.ssrContext!.head
       : createClientHead(unheadOptions)
 
-    // Island responses must not include head tags registered by user plugins --
-    // those belong to the surrounding route, not the island. Lock the head
-    // during the plugin phase, then unlock it on `app:created` (after
-    // `applyPlugins` resolves) so island components register their own tags as
-    // expected.
+    // Drop plugin-phase `useHead` writes for islands -- they belong to the
+    // surrounding route, not the island response.
     if (import.meta.server && nuxtApp.ssrContext!.islandContext) {
-      const unfreeze = freezeHead(head)
-      nuxtApp.hooks.hookOnce('app:created', unfreeze)
+      nuxtApp.hooks.hookOnce('app:created', freezeHead(head))
     }
 
     // nuxt.config appHead is set server-side within the renderer
