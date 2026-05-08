@@ -461,7 +461,7 @@ describe('component islands', () => {
   })
 })
 
-describe.skipIf(isDev || isWebpack)('regressions (expected failures)', () => {
+describe.skipIf(isDev || isWebpack)('regressions', () => {
   // https://github.com/nuxt/nuxt/issues/26527
   it.fails('renders <Counter nuxt-client /> when nested two levels deep in server components', async () => {
     const { page } = await renderPage('/nested-nuxt-client')
@@ -476,7 +476,7 @@ describe.skipIf(isDev || isWebpack)('regressions (expected failures)', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/32251
-  it.fails('does not produce hydration mismatches with selectiveClient: "deep" on slot-using components', async () => {
+  it('does not produce hydration mismatches with selectiveClient: "deep" on slot-using components', async () => {
     const { page, consoleLogs } = await renderPage('/selective-client-slots')
 
     await page.locator('#slotted').waitFor()
