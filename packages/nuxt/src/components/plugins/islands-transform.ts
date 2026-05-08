@@ -10,6 +10,13 @@ import { isVue, parseModuleId } from '../../core/utils/index.ts'
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
   /**
+   * Returns the resolved file paths of pages that should be rendered as islands
+   * (i.e. `pages/*.server.vue`). These need the same `<slot>` / `nuxt-client`
+   * transform as island components, but they live in the pages registry rather
+   * than the components registry.
+   */
+  getServerPages?: () => string[]
+  /**
    * allow using `nuxt-client` attribute on components
    */
   selectiveClient?: boolean | 'deep'
@@ -36,13 +43,8 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     transformInclude (id) {
       if (!isVue(id)) { return false }
       if (isVite && options.selectiveClient === 'deep') { return true }
-      const components = options.getComponents()
-
-      const islands = components.filter(component =>
-        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
-      )
       const { pathname } = parseModuleId(normalize(id))
-      return islands.some(c => c.filePath === pathname)
+      return isIslandFile(pathname, options)
     },
     transform: {
       filter: {
@@ -55,6 +57,9 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         if (!template) { return }
         const startingIndex = template.index || 0
         const s = new MagicString(code)
+
+        const { pathname } = parseModuleId(normalize(id))
+        const isIsland = isIslandFile(pathname, options)
 
         if (!SCRIPT_RE.test(code)) {
           s.prepend('<script setup>' + IMPORT_CODE + '</script>')
@@ -72,6 +77,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             return
           }
           if (node.name === 'slot') {
+            if (!isIsland) { return }
             const { attributes, children, loc } = node
 
             const slotName = attributes.name ?? 'default'
@@ -144,6 +150,16 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     },
   }
 })
+
+function isIslandFile (pathname: string, options: ServerOnlyComponentTransformPluginOptions): boolean {
+  const components = options.getComponents()
+  const isIslandComponent = components.some(component =>
+    component.filePath === pathname &&
+    (component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))),
+  )
+  if (isIslandComponent) { return true }
+  return options.getServerPages?.().includes(pathname) ?? false
+}
 
 /**
  * extract attributes from a node

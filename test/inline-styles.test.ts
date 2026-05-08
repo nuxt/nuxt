@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { join } from 'pathe'
-import { builder, isBuilt } from './matrix'
+import { builder, isBuilt, projectSuffix } from './matrix'
 
 describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/inline-styles', import.meta.url))
@@ -15,12 +15,6 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
     }
   }, 120 * 1000)
 
-  const projectSuffix = [
-    process.env.TEST_BUILDER,
-    process.env.TEST_ENV,
-    process.env.TEST_CONTEXT,
-    process.env.TEST_MANIFEST,
-  ].filter(Boolean).join('-') || 'default'
   const outputDir = join(rootDir, `.output-${projectSuffix}`)
 
   // https://github.com/nuxt/nuxt/issues/30435
