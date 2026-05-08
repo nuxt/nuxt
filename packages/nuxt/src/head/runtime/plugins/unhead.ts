@@ -1,6 +1,6 @@
 import { createHead as createClientHead, renderDOMHead } from '@unhead/vue/client'
 import { defineNuxtPlugin } from '#app/nuxt'
-import { lockHead } from '../island-head'
+import { freezeHead } from '../island-head'
 
 // @ts-expect-error virtual file
 import unheadOptions from '#build/unhead-options.mjs'
@@ -19,7 +19,8 @@ export default defineNuxtPlugin({
     // `applyPlugins` resolves) so island components register their own tags as
     // expected.
     if (import.meta.server && nuxtApp.ssrContext!.islandContext) {
-      nuxtApp.hooks.hookOnce('app:created', lockHead(head))
+      const unfreeze = freezeHead(head)
+      nuxtApp.hooks.hookOnce('app:created', unfreeze)
     }
 
     // nuxt.config appHead is set server-side within the renderer
