@@ -286,9 +286,48 @@ export interface CreateOptions {
   id?: NuxtApp['_id']
 }
 
+function createRunWithContext (nuxtApp: NuxtApp) {
+  return function runWithContext<T> (fn: () => T) {
+    if (nuxtApp._scope.active && !getCurrentScope()) {
+      return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
+    }
+    return callWithNuxt(nuxtApp, fn)
+  }
+}
+
+function createDeferHydration (nuxtApp: NuxtApp, counter: { value: number }) {
+  return function deferHydration () {
+    if (!nuxtApp.isHydrating) { return () => {} }
+
+    counter.value++
+    let called = false
+
+    return () => {
+      if (called) { return }
+
+      called = true
+      counter.value--
+
+      if (counter.value === 0) {
+        nuxtApp.isHydrating = false
+        return nuxtApp.callHook('app:suspense:resolve')
+      }
+    }
+  }
+}
+
+function createChunkErrorListener (nuxtApp: NuxtApp) {
+  return (event: Event) => {
+    nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
+    if ((event as Event & { payload: Error }).payload.message.includes('Unable to preload CSS')) {
+      event.preventDefault()
+    }
+  }
+}
+
 /** @since 3.0.0 */
 export function createNuxtApp (options: CreateOptions): NuxtApp {
-  let hydratingCount = 0
+  const hydratingCounter = { value: 0 }
   const nuxtApp: NuxtApp = {
     _id: options.id || appId || 'nuxt-app',
     _scope: effectScope(),
@@ -307,37 +346,15 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     static: {
       data: {},
     },
-    runWithContext <T>(fn: () => T) {
-      if (nuxtApp._scope.active && !getCurrentScope()) {
-        return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
-      }
-      return callWithNuxt(nuxtApp, fn)
-    },
     isHydrating: import.meta.client,
-    deferHydration () {
-      if (!nuxtApp.isHydrating) { return () => {} }
-
-      hydratingCount++
-      let called = false
-
-      return () => {
-        if (called) { return }
-
-        called = true
-        hydratingCount--
-
-        if (hydratingCount === 0) {
-          nuxtApp.isHydrating = false
-          return nuxtApp.callHook('app:suspense:resolve')
-        }
-      }
-    },
     _asyncDataPromises: {},
     _asyncData: shallowReactive({}),
     _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
+  nuxtApp.runWithContext = createRunWithContext(nuxtApp)
+  nuxtApp.deferHydration = createDeferHydration(nuxtApp, hydratingCounter)
 
   if (import.meta.server) {
     nuxtApp.payload.serverRendered = true
@@ -409,12 +426,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
   if (import.meta.client) {
     // Listen to chunk load errors
     if (chunkErrorEvent) {
-      window.addEventListener(chunkErrorEvent, (event) => {
-        nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-        if (event.payload.message.includes('Unable to preload CSS')) {
-          event.preventDefault()
-        }
-      })
+      window.addEventListener(chunkErrorEvent, createChunkErrorListener(nuxtApp))
     }
     window.useNuxtApp ||= useNuxtApp
 
