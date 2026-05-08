@@ -5,8 +5,8 @@ import { exec } from 'tinyexec'
 import { join } from 'pathe'
 import { builder, isBuilt, projectSuffix } from './matrix'
 
-describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles dedupe (#30435)', () => {
-  const rootDir = fileURLToPath(new URL('./fixtures/inline-styles-dedupe', import.meta.url))
+describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/inline-styles', import.meta.url))
 
   beforeAll(async () => {
     const result = await exec('pnpm', ['nuxt', 'generate', rootDir])
@@ -17,6 +17,7 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles dedupe (#30435)',
 
   const outputDir = join(rootDir, `.output-${projectSuffix}`)
 
+  // https://github.com/nuxt/nuxt/issues/30435
   it.each([
     ['/', 'index', '--inline-app-token:app', '--inline-page-index-token:index'],
     ['/about', 'about', '--inline-app-token:app', '--inline-page-about-token:about'],
@@ -28,5 +29,11 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles dedupe (#30435)',
 
     const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
     expect(cssLinks, page).toEqual([])
+  })
+
+  // https://github.com/nuxt/nuxt/issues/31558
+  it('inlines CSS for a non-island child of a server component', async () => {
+    const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
+    expect(html).toContain('--island-child-token:child')
   })
 })
