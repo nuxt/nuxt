@@ -1,7 +1,7 @@
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets, fileName } from '../utils/config'
-import { getPostcssConfig } from '../utils/postcss'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets, fileName } from '../utils/config.ts'
+import { getPostcssConfig } from '../utils/postcss.ts'
 
 import { MiniCssExtractPlugin } from '#builder'
 

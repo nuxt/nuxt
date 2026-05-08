@@ -6,6 +6,7 @@ package-lock.json
 packages/*/README.md
 !packages/nuxi/README.md
 packages/*/LICENSE
+!packages/nuxt/test/package-fixture/root/node_modules
 docs/LICENSE
 */**/yarn.lock
 /.yarn
@@ -49,6 +50,10 @@ coverage
 !.idea/nuxt.iml
 !.idea/modules.xml
 !.idea/inspectionProfiles/Project_Default.xml
+
+# AI config 
+.agents
+.claude
 
 # OSX
 .DS_Store

@@ -11,6 +11,7 @@
       <excludeFolder url="file://$MODULE_DIR$/test/fixtures/minimal/.nuxt-inline" />
       <excludeFolder url="file://$MODULE_DIR$/test/fixtures/minimal/.output" />
       <excludeFolder url="file://$MODULE_DIR$/test/fixtures/minimal/.output-inline" />
+      <excludeFolder url="file://$MODULE_DIR$/test/fixtures/basic/.output" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

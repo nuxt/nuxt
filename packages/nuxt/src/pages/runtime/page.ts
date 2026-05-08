@@ -1,15 +1,14 @@
 import { Fragment, Suspense, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
-import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
 
-import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
+import { generateRouteKey, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-import { _wrapInTransition } from '#app/components/utils'
+import { _mergeTransitionProps, _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
@@ -68,11 +67,16 @@ export default defineComponent({
     let vnode: VNode
 
     const done = nuxtApp.deferHydration()
+    let isSuspensePending = false
+    let hasResolvedOnce = false
+    let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      useRouter().beforeEach(removeErrorHook)
+      const removeGuard = useRouter().beforeEach(() => {
+        removeErrorHook()
+        removeGuard()
+      })
     }
-
     if (import.meta.client && props.pageKey) {
       watch(() => props.pageKey, (next, prev) => {
         if (next !== prev) {
@@ -92,6 +96,8 @@ export default defineComponent({
       })
       onBeforeUnmount(() => {
         unsub()
+        // Ensure hydration completes if unmounted before Suspense resolves (e.g., layout change)
+        done()
       })
     }
 
@@ -116,7 +122,7 @@ export default defineComponent({
               if (!routeProps.Component) {
               // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
               // we'll render the old vnode until the new route finishes resolving
-                if (vnode && !hasSameChildren) {
+                if (vnode && !hasSameChildren && !isStaleVNode(vnode)) {
                   return vnode
                 }
                 done()
@@ -124,13 +130,13 @@ export default defineComponent({
               }
 
               // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
-              if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+              if (vnode && _layoutMeta && !isStaleVNode(vnode) && !_layoutMeta.isCurrent(routeProps.route)) {
                 return vnode
               }
 
               if (isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
               // if leaving a route with an existing child route, render the old vnode
-                if (hasSameChildren) {
+                if ((hasSameChildren || vnode) && !isStaleVNode(vnode)) {
                   return vnode
                 }
                 // If _leaving_ null child route, return null vnode
@@ -142,9 +148,17 @@ export default defineComponent({
               const willRenderAnotherChild = hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
               if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
                 nextTick(() => {
-                  pageLoadingEndHookAlreadyCalled = true
-                  nuxtApp.callHook('page:loading:end')
+                  if (!pageLoadingEndHookAlreadyCalled) {
+                    pageLoadingEndHookAlreadyCalled = true
+                    nuxtApp.callHook('page:loading:end')
+                  }
                 })
+              }
+
+              // remount suspense on rapid navigation, but not before the first resolve:
+              // tearing down a never-resolved suspensible Suspense strands its parent. See #28425, #34683.
+              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce) {
+                suspenseKey++
               }
 
               previousPageKey = key
@@ -156,7 +170,9 @@ export default defineComponent({
                 defaultPageTransition,
                 {
                   onAfterLeave () {
-                    delete nuxtApp._runningTransition
+                    nuxtApp['~transitionFinish']?.()
+                    delete nuxtApp['~transitionFinish']
+                    delete nuxtApp['~transitionPromise']
                     nuxtApp.callHook('page:transition:finish', routeProps.Component)
                   },
                 },
@@ -165,19 +181,31 @@ export default defineComponent({
               const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
               vnode = _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
+                  key: suspenseKey,
                   suspensible: true,
                   onPending: () => {
-                    if (hasTransition) { nuxtApp._runningTransition = true }
+                    isSuspensePending = true
+                    if (hasTransition && !nuxtApp['~transitionPromise']) {
+                      nuxtApp['~transitionPromise'] = new Promise((resolve) => {
+                        nuxtApp['~transitionFinish'] = resolve
+                      })
+                    }
                     nuxtApp.callHook('page:start', routeProps.Component)
                   },
-                  onResolve: () => {
-                    nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
-                      delete nuxtApp._runningTransition
+                  onResolve: async () => {
+                    isSuspensePending = false
+                    hasResolvedOnce = true
+                    try {
+                      await nextTick()
+                      nuxtApp._route.sync?.()
+                      await nuxtApp.callHook('page:finish', routeProps.Component)
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true
-                        return nuxtApp.callHook('page:loading:end')
+                        await nuxtApp.callHook('page:loading:end')
                       }
-                    }).finally(done))
+                    } finally {
+                      done()
+                    }
                   },
                 }, {
                   default: () => {
@@ -232,18 +260,6 @@ export default defineComponent({
   }
 }
 
-function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
-  const _props: TransitionProps[] = []
-  for (const prop of routeProps) {
-    if (!prop) { continue }
-    _props.push({
-      ...prop,
-      onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
-    })
-  }
-  return defu(..._props as [TransitionProps, TransitionProps])
-}
-
 function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }
 
@@ -267,4 +283,11 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
 function normalizeSlot (slot: Slot, data: RouterViewSlotProps) {
   const slotContent = slot(data)
   return slotContent.length === 1 ? h(slotContent[0]!) : h(Fragment, undefined, slotContent)
+}
+
+// A previously-stored Suspense vnode whose boundary has already been unmounted carries a stale
+// `el` reference; returning it would put Vue on the hydration code path during a fresh mount and
+// throw `Cannot read properties of null (reading 'nodeType' / 'exposed')`. See nuxt/nuxt#23232.
+function isStaleVNode (vnode: VNode | undefined): boolean {
+  return !!vnode && (!!vnode.suspense?.isUnmounted || !!vnode.component?.isUnmounted)
 }

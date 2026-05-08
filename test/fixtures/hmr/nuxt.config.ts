@@ -1,10 +1,8 @@
-export default defineNuxtConfig({
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
+import { withMatrix } from '../../matrix'
+
+export default withMatrix({
   experimental: {
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
+    nitroAutoImports: true,
     inlineRouteRules: true,
   },
-  compatibilityDate: 'latest',
 })

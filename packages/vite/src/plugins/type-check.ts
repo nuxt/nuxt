@@ -1,7 +1,7 @@
 import MagicString from 'magic-string'
 import type { Nuxt } from '@nuxt/schema'
 import type { Plugin } from 'vite'
-import { resolveClientEntry } from '../utils/config'
+import { resolveClientEntry } from '../utils/config.ts'
 
 const QUERY_RE = /\?.+$/
 

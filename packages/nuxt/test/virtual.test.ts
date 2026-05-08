@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
-import { rollup } from 'rollup'
+import { rolldown } from 'rolldown'
 
-import { VirtualFSPlugin } from '../src/core/plugins/virtual'
+import { VirtualFSPlugin } from '../src/core/plugins/virtual.ts'
 
 describe('virtual fs plugin', () => {
   it('should support loading files virtually', async () => {
@@ -12,8 +12,9 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "const foo = "hello world";
-
+      "//#region virtual:nuxt:%2F.nuxt%2Ffoo
+      const foo = "hello world";
+      //#endregion
       export { foo };"
     `)
   })
@@ -27,8 +28,9 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "const foo = "foo client file";
-
+      "//#region virtual:nuxt:%2F.nuxt%2Ffoo.client.ts
+      const foo = "foo client file";
+      //#endregion
       export { foo };"
     `)
   })
@@ -41,8 +43,9 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "const foo = "relative import";
-
+      "//#region virtual:nuxt:%2F.nuxt%2Fbar
+      const foo = "relative import";
+      //#endregion
       export { foo };"
     `)
   })
@@ -52,6 +55,7 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
   const stubNuxt = {
     options: {
       extensions: ['.ts', '.js'],
+      buildDir: '/.nuxt',
       alias: {
         '~': '/',
         '#build': '/.nuxt',
@@ -60,7 +64,7 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
     vfs: options.vfs,
   } as unknown as Nuxt
 
-  const bundle = await rollup({
+  const bundle = await rolldown({
     input: 'entry.ts',
     plugins: [
       {
@@ -76,9 +80,10 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
           }
         },
       },
-      VirtualFSPlugin(stubNuxt, { mode: options.mode || 'client', alias: stubNuxt.options.alias }).rollup(),
+      VirtualFSPlugin(stubNuxt, { mode: options.mode || 'client', alias: stubNuxt.options.alias }).rolldown(),
     ],
   })
   const { output: [chunk] } = await bundle.generate({})
+  // Rolldown may wrap output in an IIFE or add runtime code; extract the meaningful part
   return chunk.code.trim()
 }

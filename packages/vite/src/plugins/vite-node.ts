@@ -1,24 +1,25 @@
-import { mkdir, unlink, writeFile } from 'node:fs/promises'
+import process from 'node:process'
+import { unlink } from 'node:fs/promises'
 import type { Socket } from 'node:net'
 import net from 'node:net'
 import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
-import { createError } from 'h3'
-import { join, normalize, resolve } from 'pathe'
-import type { ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import { isAbsolute, join, normalize } from 'pathe'
+import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
+import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
-import { ViteNodeServer } from 'vite-node/server'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
 import { provider } from 'std-env'
+import { resolveModulePath } from 'exsolve'
 
-import { distDir } from '../dirs'
-import { isCSS } from '../utils'
-import { resolveClientEntry, resolveServerEntry } from '../utils/config'
+import { isCSS } from '../utils/index.ts'
+import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
+import type { ErrorPartial } from '../types.ts'
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
@@ -64,8 +65,11 @@ export interface ViteNodeFetch {
   ensureConnected(): Promise<Socket>
 }
 
-function getManifest (nuxt: Nuxt, ssrServer: ViteDevServer, clientEntry: string) {
+function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string) {
   const css = new Set<string>()
+  const ssrServer = viteServer.environments.ssr
+
+  // Collect CSS from module graph (already loaded modules)
   for (const key of ssrServer.moduleGraph.urlToModuleMap.keys()) {
     if (isCSS(key)) {
       const query = getQuery(key)
@@ -75,6 +79,26 @@ function getManifest (nuxt: Nuxt, ssrServer: ViteDevServer, clientEntry: string)
         continue
       }
       css.add(key)
+    }
+  }
+
+  // Add global CSS from config as fallback to prevent FOUC
+  // This ensures CSS is in manifest even if moduleGraph isn't populated yet
+  for (const globalCss of nuxt.options.css) {
+    if (typeof globalCss === 'string') {
+      let resolved: string | undefined = resolveAlias(globalCss, nuxt.options.alias)
+
+      // Resolve bare module specifiers to absolute paths
+      if (!isAbsolute(resolved)) {
+        resolved = resolveModulePath(resolved, {
+          try: true,
+          from: nuxt.options.modulesDir.map(d => directoryToURL(d)),
+        })
+        if (!resolved) { continue }
+        css.add('/@fs' + resolved.replace(/^(?!\/)/, '/'))
+      } else {
+        css.add(resolved)
+      }
     }
   }
 
@@ -134,14 +158,14 @@ function useInvalidates () {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
 
-  function markInvalidate (mod: ModuleNode) {
+  function markInvalidate (mod: ModuleNode | EnvironmentModuleNode) {
     if (!mod.id) { return }
     if (invalidates.has(mod.id)) { return }
     invalidates.add(mod.id)
     markInvalidates(mod.importers)
   }
 
-  function markInvalidates (mods?: ModuleNode[] | Set<ModuleNode>) {
+  function markInvalidates (mods?: (ModuleNode | EnvironmentModuleNode)[] | Set<ModuleNode | EnvironmentModuleNode>) {
     if (!mods) { return }
     for (const mod of mods) {
       markInvalidate(mod)
@@ -155,14 +179,16 @@ function useInvalidates () {
   }
 }
 
-export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
+export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
+  if (!nuxt.options.dev) {
+    return
+  }
+
   let socketServer: net.Server | undefined
   const socketPath = generateSocketPath()
-  let viteNodeServerOptions: ViteNodeServerOptions | undefined
-
   const { invalidates, markInvalidate, markInvalidates } = useInvalidates()
 
-  const cleanupSocket = async () => {
+  async function cleanupSocket () {
     if (socketServer && socketServer.listening) {
       await new Promise<void>(resolveClose => socketServer!.close(() => resolveClose()))
     }
@@ -170,22 +196,43 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
       try {
         await unlink(socketPath)
       } catch {
-      // Error is ignored if the file doesn't exist or cannot be unlinked
+        // Error is ignored if the file doesn't exist or cannot be unlinked
       }
     }
+  }
+
+  const nitro = useNitro()
+
+  const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
+  const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
+  const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
+
+  const vfs = {
+    'server.mjs': `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
+    'runner.mjs': `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`,
+    'client.manifest.mjs': `import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))};export default () => viteNodeFetch.getManifest()`,
+  }
+
+  nitro.options.virtual ||= {}
+  nitro.options._config.virtual ||= {}
+
+  for (const key in vfs) {
+    const filename = `#build/dist/server/${key}`
+    nitro.options.virtual[filename] = vfs[key as keyof typeof vfs]
+    nitro.options._config.virtual[filename] = vfs[key as keyof typeof vfs]
   }
 
   return {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
-    applyToEnvironment: environment => environment.name === 'client',
     configureServer (clientServer) {
-      nuxt.hook('vite:serverCreated', (ssrServer, ctx) => {
-        if (!ctx.isServer) {
-          return
-        }
+      // early return if plugins are 'borrowed' for testing/storybook
+      if (!tryUseNuxt()) {
+        return
+      }
 
-        viteNodeServerOptions = {
+      function resolveServer (ssrServer: ViteDevServer) {
+        const viteNodeServerOptions = {
           socketPath,
           root: nuxt.options.srcDir,
           entryPath: resolveServerEntry(ssrServer.config),
@@ -201,12 +248,16 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
         process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
         socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, viteNodeServerOptions)
-      })
+      }
+
+      resolveServer(clientServer)
+
       nuxt.hook('close', cleanupSocket)
 
+      const client = clientServer.environments.client
       nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
         for (const template of changedTemplates) {
-          const mods = clientServer.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
+          const mods = client.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
           for (const mod of mods || []) {
             markInvalidate(mod)
           }
@@ -219,29 +270,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
       })
     },
     async buildEnd () {
-      if (socketServer && socketServer.listening) {
-        await new Promise<void>(resolveClose => socketServer!.close(() => resolveClose()))
-      }
-      if (socketPath && !socketPath.startsWith('\\\\.\\pipe\\')) {
-        try {
-          await unlink(socketPath)
-        } catch {
-          // Error is ignored if the file doesn't exist or cannot be unlinked
-        }
-      }
+      await cleanupSocket()
     },
   }
-}
-
-let _node: ViteNodeServer | undefined
-
-function getNode (server: ViteDevServer) {
-  return _node ||= new ViteNodeServer(server, {
-    transformMode: {
-      ssr: [/.*/],
-      web: [],
-    },
-  })
 }
 
 function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {
@@ -273,19 +304,18 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           }
           case 'resolve': {
             const { id: resolveId, importer } = request.payload
-            if (!resolveId || !ssrServer) {
-              throw createError({ statusCode: 400, message: 'Missing id for resolve' })
+            if (!resolveId) {
+              throw { status: 400, message: 'Missing id for resolve' } satisfies ErrorPartial
             }
-            const resolvedResult = await getNode(ssrServer).resolveId(resolveId, importer).catch(() => null)
+            const resolvedResult = await ssrServer.environments.ssr.pluginContainer.resolveId(resolveId, importer).catch(() => null)
             sendResponse<typeof request.type>(socket, request.id, resolvedResult)
             return
           }
           case 'module': {
-            if (request.payload.moduleId === '/' || !ssrServer) {
-              throw createError({ statusCode: 400, message: 'Invalid moduleId' })
+            if (request.payload.moduleId === '/') {
+              throw { status: 400, message: 'Invalid moduleId' } satisfies ErrorPartial
             }
-            const node = getNode(ssrServer)
-            const response = await node.fetchModule(request.payload.moduleId)
+            const response = await ssrServer.environments.ssr.fetchModule(request.payload.moduleId)
               .catch(async (err) => {
                 const errorData: Record<string, any> = {
                   code: 'VITE_ERROR',
@@ -297,20 +327,20 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
                 if (!errorData.frame && err.code === 'PARSE_ERROR') {
                   try {
-                    errorData.frame = await node.transformRequest(request.payload.moduleId, 'web')
+                    errorData.frame = await ssrServer.environments.client.transformRequest(request.payload.moduleId)
                       .then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
                   } catch {
                   // Ignore transform errors
                   }
                 }
-                throw createError({ data: errorData, message: err.message || 'Error fetching module' })
+                throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
               }) as Exclude<FetchResult, { cache: true }>
             sendResponse<typeof request.type>(socket, request.id, response)
             return
           }
           default:
             // @ts-expect-error this should never happen
-            throw createError({ statusCode: 400, message: `Unknown request type: ${request.type}` })
+            throw { status: 400, message: `Unknown request type: ${request.type}` } satisfies ErrorPartial
         }
       } catch (error: any) {
         sendError(socket, request.id, error)
@@ -466,8 +496,8 @@ function sendError (socket: net.Socket, id: number, error: any) {
     error: {
       message: error.message,
       stack: error.stack,
-      statusCode: error.statusCode,
-      statusMessage: error.statusMessage,
+      status: error.status,
+      statusText: error.statusText,
       data: error.data,
     },
   }
@@ -497,25 +527,4 @@ export type ViteNodeServerOptions = {
   baseRetryDelay?: number
   maxRetryDelay?: number
   requestTimeout?: number
-}
-
-export async function writeDevServer (nuxt: Nuxt) {
-  const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
-  const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
-
-  const serverDist = join(nuxt.options.buildDir, 'dist/server')
-
-  await mkdir(serverDist, { recursive: true })
-
-  const island = resolve(distDir, 'runtime/island.mjs')
-
-  await Promise.all([
-    writeFile(join(serverDist, 'server.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`),
-    writeFile(join(serverDist, 'client.precomputed.mjs'), `export default undefined`),
-    writeFile(join(serverDist, 'client.manifest.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`),
-    writeFile(
-      resolve(nuxt.options.buildDir, 'dist/server/components.islands.mjs'),
-      `export { default } from ${JSON.stringify(pathToFileURL(island).href)}`,
-    ),
-  ])
 }

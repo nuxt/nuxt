@@ -5,7 +5,7 @@ import MagicString from 'magic-string'
 import { basename } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
-import { toArray } from '../utils'
+import { toArray } from '../utils/index.ts'
 
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
   let sourcemap: boolean
@@ -35,7 +35,7 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
         }
       }
       // only apply plugin if the entry file name is hashed
-      return toArray(environment.config.build.rollupOptions?.output)
+      return toArray(environment.config.build.rolldownOptions?.output)
         .some(output => typeof output?.entryFileNames === 'string' && output?.entryFileNames.includes('[hash]'))
     },
     renderChunk (code, chunk, _options, meta) {

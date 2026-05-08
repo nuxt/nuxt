@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "4.1.3",
+  "version": "4.3.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -10,56 +10,54 @@
   "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.mjs"
-    },
+    ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepack": "unbuild",
+    "prepack": "obuild",
+    "build:stub": "obuild --stub",
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "c12": "^3.3.0",
+    "c12": "^3.3.4",
     "consola": "^3.4.2",
-    "defu": "^6.1.4",
+    "defu": "^6.1.7",
     "destr": "^2.0.5",
     "errx": "^0.1.0",
-    "exsolve": "^1.0.7",
+    "exsolve": "^1.0.8",
     "ignore": "^7.0.5",
-    "jiti": "^2.6.1",
+    "jiti": "^2.7.0",
     "klona": "^2.0.6",
-    "mlly": "^1.8.0",
+    "mlly": "^1.8.2",
+    "nypm": "^0.6.6",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
-    "pkg-types": "^2.3.0",
-    "rc9": "^2.1.2",
+    "pkg-types": "^2.3.1",
+    "rc9": "^3.0.1",
     "scule": "^1.3.0",
-    "semver": "^7.7.3",
-    "std-env": "^3.9.0",
-    "tinyglobby": "^0.2.15",
-    "ufo": "^1.6.1",
-    "unctx": "^2.4.1",
-    "unimport": "^5.4.1",
+    "semver": "^7.7.4",
+    "tinyglobby": "^0.2.16",
+    "ufo": "^1.6.4",
+    "unctx": "^2.5.0",
     "untyped": "^2.0.0"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.5.8",
+    "@rspack/core": "2.0.1",
     "@types/semver": "7.7.1",
-    "hookable": "5.5.3",
-    "nitropack": "2.12.7",
-    "unbuild": "3.6.1",
-    "vite": "7.1.9",
-    "vitest": "3.2.4",
-    "webpack": "5.102.0"
+    "hookable": "6.1.1",
+    "nitro": "3.0.260311-beta",
+    "nitropack": "2.13.4",
+    "obuild": "0.4.33",
+    "unimport": "6.2.0",
+    "vite": "8.0.10",
+    "vitest": "4.1.5",
+    "webpack": "5.106.2"
   },
   "engines": {
     "node": ">=18.12.0"

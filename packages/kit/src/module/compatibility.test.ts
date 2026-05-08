@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { loadNuxt } from '../loader/nuxt'
-import { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './compatibility'
-import { defineNuxtModule } from './define'
+import { loadNuxt } from '../loader/nuxt.ts'
+import { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './compatibility.ts'
+import { defineNuxtModule } from './define.ts'
 
 describe('nuxt module compatibility', () => {
   it('check module installed', async () => {

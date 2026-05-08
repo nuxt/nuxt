@@ -1,8 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-const testWithInlineVue = process.env.EXTERNAL_VUE === 'false'
-
 const nuxtEntry = fileURLToPath(new URL('../../../packages/nuxt/dist/index.mjs', import.meta.url))
 const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes('const _module = await jiti')
 
@@ -11,7 +9,7 @@ export default defineNuxtConfig({
     vite: {
       $client: {
         build: {
-          rollupOptions: {
+          rolldownOptions: {
             output: {
               chunkFileNames: '_nuxt/[name].js',
               entryFileNames: '_nuxt/[name].js',
@@ -22,15 +20,9 @@ export default defineNuxtConfig({
     },
   },
   pages: false,
-  buildDir: testWithInlineVue ? '.nuxt-inline' : '.nuxt',
+  devtools: { enabled: false },
   sourcemap: false,
-  experimental: {
-    externalVue: !testWithInlineVue,
-  },
   compatibilityDate: 'latest',
-  nitro: {
-    output: { dir: fileURLToPath(new URL(testWithInlineVue ? './.output-inline' : './.output', import.meta.url)) },
-  },
   typescript: {
     typeCheck: isStubbed ? false : 'build',
   },

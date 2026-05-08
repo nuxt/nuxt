@@ -1,7 +1,7 @@
 import type { ResolvedConfig } from 'vite'
 
 export function resolveClientEntry (config: ResolvedConfig) {
-  const input = config.environments.client?.build.rollupOptions.input ?? config.build.rollupOptions.input
+  const input = config.environments.client?.build.rolldownOptions.input ?? config.build.rolldownOptions.input
   if (input) {
     if (typeof input === 'string') {
       return input
@@ -11,11 +11,11 @@ export function resolveClientEntry (config: ResolvedConfig) {
     }
   }
 
-  throw new Error('No entry found in rollupOptions.input')
+  throw new Error('No entry found in rolldownOptions.input')
 }
 
 export function resolveServerEntry (config: ResolvedConfig) {
-  const input = config.environments.ssr?.build.rollupOptions.input ?? config.build.rollupOptions.input
+  const input = config.environments.ssr?.build.rolldownOptions.input ?? config.build.rolldownOptions.input
   if (input) {
     if (typeof input === 'string') {
       return input
@@ -25,5 +25,5 @@ export function resolveServerEntry (config: ResolvedConfig) {
     }
   }
 
-  throw new Error('No entry found in rollupOptions.input')
+  throw new Error('No entry found in rolldownOptions.input')
 }

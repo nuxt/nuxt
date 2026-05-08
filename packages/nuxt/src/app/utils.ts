@@ -6,7 +6,9 @@ export function toArray<T> (value: T | T[]): T[] {
 }
 
 const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
-export function getUserTrace () {
+type Trace = { source: string, line?: number, column?: number }
+
+export function getUserTrace (): Trace[] {
   if (!import.meta.dev) {
     return []
   }
@@ -17,13 +19,13 @@ export function getUserTrace () {
   if (start === -1 || end === -1) {
     return []
   }
-  return trace.slice(start, -end).map(i => ({
+  return trace.slice(start, end > 0 ? -end : undefined).map(i => ({
     ...i,
     source: i.source.replace(/^file:\/\//, ''),
   }))
 }
 
-export function getUserCaller () {
+export function getUserCaller (): Trace | null {
   if (!import.meta.dev) {
     return null
   }

@@ -1,4 +1,6 @@
-export default defineNuxtConfig({
+import { withMatrix } from '../../matrix'
+
+export default withMatrix({
   devtools: { enabled: false },
   spaLoadingTemplate: true,
   routeRules: {
@@ -8,5 +10,4 @@ export default defineNuxtConfig({
   experimental: {
     spaLoadingTemplateLocation: 'within',
   },
-  compatibilityDate: 'latest',
 })

@@ -1,0 +1,110 @@
+name: agent-scan
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+
+concurrency:
+  group: agent-scan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  agentscan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - name: Cache AgentScan analysis
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        with:
+          path: .agentscan-cache
+          key: agentscan-cache-${{ github.actor }}
+          restore-keys: agentscan-cache-
+      - name: AgentScan
+        id: agentscan
+        uses: MatteoGabriele/agentscan-action@6b02b7903ab24fbd23da0314b1b04dbaad98151b
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-members: "dependabot[bot],renovate[bot]"
+          agent-scan-comment: false
+          cache-path: .agentscan-cache
+      - name: Label flagged PR
+        if: contains(fromJSON('["automation","suspicious"]'), steps.agentscan.outputs.classification) && !contains(steps.agentscan.outputs.community-flagged, 'true')
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const classification = '${{ steps.agentscan.outputs.classification }}';
+
+            const issue = context.payload.pull_request
+            const labels = issue.labels?.map(l => l.name) || []
+
+            if (!labels.includes('possible bot')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: ['possible bot'],
+              })
+            }
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 30,
+            })
+
+            const alreadyCommented = comments.data.some(
+              c => c.user.type === 'Bot' && c.body.includes('AI-assisted contribution guidelines')
+            )
+
+            if (alreadyCommented) {
+              core.info('Possible-bot comment already exists - skipping.')
+              return
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: [
+                "We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing to Nuxt, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):",
+                '',
+                '1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.',
+                '2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.',
+                '',
+                'Please review our [AI-assisted contribution guidelines](https://nuxt.com/docs/community/contribution#ai-assisted-contributions) and update this contribution if needed.',
+                '',
+                'If this was flagged in error, we apologise! 😳 Just let us know. 🙏',
+              ].join('\n'),
+            })
+
+            core.summary
+              .addHeading('AgentScan: Possible Bot Flag', 2)
+              .addTable([
+                [{ data: 'Property', header: true }, { data: 'Value', header: true }],
+                ['Pull Request', `#${prNumber}`],
+                ['Classification', classification],
+                ['Action', 'Added `possible bot` label and posted policy comment'],
+              ])
+
+            await core.summary.write()
+      - name: Close community flagged accounts
+        if: steps.agentscan.outputs.community-flagged == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              state: 'closed',
+            });

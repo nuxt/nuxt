@@ -1,16 +1,17 @@
 import { existsSync } from 'node:fs'
+import process from 'node:process'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
-import { loadConfig } from 'c12'
+import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
-import defu, { createDefu } from 'defu'
+import { createDefu, defu } from 'defu'
 import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
-import { directoryToURL } from '../internal/esm'
-import { withTrailingSlash } from 'ufo'
+import { directoryToURL } from '../internal/esm.ts'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -29,9 +30,19 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const localLayers = (await glob('layers/*', {
     onlyDirectories: true, cwd: opts.cwd || process.cwd(),
   }))
-    .map((d: string) => d.endsWith('/') ? d.substring(0, d.length - 1) : d)
+    .map((d: string) => withTrailingSlash(d))
     .sort((a, b) => b.localeCompare(a))
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
+
+  // populate process.env before the schema imports its env-based defaults
+  if (opts.dotenv !== false) {
+    await setupDotenv({
+      cwd: opts.cwd || process.cwd(),
+      ...(typeof opts.dotenv === 'object' ? opts.dotenv : {}),
+    })
+  }
+
+  const schemaPromise = loadNuxtSchema(opts.cwd || process.cwd())
 
   const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await withDefineNuxtConfig(
     () => loadConfig<NuxtConfig>({
@@ -39,11 +50,11 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       configFile: 'nuxt.config',
       rcFile: '.nuxtrc',
       extend: { extendKey: ['theme', '_extends', 'extends'] },
-      dotenv: true,
       globalRc: true,
       // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
       merger,
       ...opts,
+      dotenv: false, // already loaded above
     }),
   )
 
@@ -64,7 +75,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
   }
 
-  const NuxtConfigSchema = await loadNuxtSchema(nuxtConfig.rootDir || cwd || process.cwd())
+  const NuxtConfigSchema = await schemaPromise
 
   const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
   const layerSchema = Object.create(null)
@@ -76,15 +87,19 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
   const processedLayers = new Set<string>()
-  const localRelativePaths = new Set(localLayers)
+  const localRelativePaths = new Set(localLayers.map(layer => withoutTrailingSlash(layer)))
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
-    layer.config ||= {}
-    layer.config.rootDir ??= layer.cwd!
+    // Create a shallow copy to avoid mutating the cached ESM config object
+    const resolvedRootDir = layer.config?.rootDir ?? layer.cwd!
+    layer.config = {
+      ...(layer.config || {}),
+      rootDir: resolvedRootDir,
+    }
 
     // Only process/resolve layers once
-    if (processedLayers.has(layer.config.rootDir)) { continue }
-    processedLayers.add(layer.config.rootDir)
+    if (processedLayers.has(resolvedRootDir)) { continue }
+    processedLayers.add(resolvedRootDir)
 
     // Normalise layer directories
     layer.config = await applyDefaults(layerSchema, layer.config as NuxtConfig & Record<string, JSValue>) as unknown as NuxtConfig
@@ -123,7 +138,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
 }
 
-async function loadNuxtSchema (cwd: string) {
+function loadNuxtSchema (cwd: string) {
   const url = directoryToURL(cwd)
   const urls: Array<URL | string> = [url]
   const nuxtPath = resolveModuleURL('nuxt', { try: true, from: url }) ?? resolveModuleURL('nuxt-nightly', { try: true, from: url })
@@ -131,7 +146,7 @@ async function loadNuxtSchema (cwd: string) {
     urls.unshift(nuxtPath)
   }
   const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: urls }) ?? '@nuxt/schema'
-  return await import(schemaPath).then(r => r.NuxtConfigSchema)
+  return import(schemaPath).then(r => r.NuxtConfigSchema)
 }
 
 async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {

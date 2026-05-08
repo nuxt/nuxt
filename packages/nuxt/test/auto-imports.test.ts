@@ -7,8 +7,8 @@ import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
-import { TransformPlugin } from '../src/imports/transform'
-import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets'
+import { TransformPlugin } from '../src/imports/transform.ts'
+import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets.ts'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -194,6 +194,8 @@ const excludedVueHelpers = [
   'hydrateOnIdle',
   'onWatcherCleanup',
   'getCurrentWatcher',
+  'patchProp',
+  'nodeOps',
   'module.exports',
 ]
 

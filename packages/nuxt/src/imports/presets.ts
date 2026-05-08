@@ -30,7 +30,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/component',
   },
   {
-    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
+    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData', 'createUseAsyncData'],
     from: '#app/composables/asyncData',
   },
   {
@@ -50,7 +50,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/error',
   },
   {
-    imports: ['useFetch', 'useLazyFetch'],
+    imports: ['useFetch', 'useLazyFetch', 'createUseFetch'],
     from: '#app/composables/fetch',
   },
   {
@@ -102,6 +102,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/route-announcer',
   },
   {
+    imports: ['useAnnouncer'],
+    from: '#app/composables/announcer',
+  },
+  {
     imports: ['useRuntimeHook'],
     from: '#app/composables/runtime-hook',
   },
@@ -122,13 +126,20 @@ export const scriptsStubsPreset = {
     'useScriptCrisp',
     'useScriptClarity',
     'useScriptCloudflareWebAnalytics',
+    'useScriptVercelAnalytics',
+    'useScriptPostHog',
     'useScriptFathomAnalytics',
     'useScriptMatomoAnalytics',
+    'useScriptMixpanelAnalytics',
+    'useScriptBingUet',
     'useScriptGoogleTagManager',
     'useScriptGoogleAdsense',
+    'useScriptGoogleRecaptcha',
+    'useScriptGoogleSignIn',
     'useScriptSegment',
     'useScriptMetaPixel',
     'useScriptXPixel',
+    'useScriptTikTokPixel',
     'useScriptIntercom',
     'useScriptHotjar',
     'useScriptStripe',
@@ -143,6 +154,7 @@ export const scriptsStubsPreset = {
     'useScriptDatabuddyAnalytics',
     'useScriptRedditPixel',
     'useScriptPayPal',
+    'useScriptGravatar',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',

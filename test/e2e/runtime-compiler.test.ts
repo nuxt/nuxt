@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
-import { join } from 'pathe'
 import { expect, test } from './test-utils'
 
 /**
@@ -8,26 +7,14 @@ import { expect, test } from './test-utils'
  * testing various ways of using runtime-compiled components across multiple pages.
  */
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
-const isDev = process.env.TEST_ENV === 'dev'
-
 const fixtureDir = fileURLToPath(new URL('../fixtures/runtime-compiler', import.meta.url))
-
-// Run tests in parallel in production mode, but serially in dev mode
-// to avoid interference between HMR and test execution
-test.describe.configure({ mode: isDev ? 'serial' : 'parallel' })
 
 test.use({
   nuxt: {
     rootDir: fixtureDir,
-    dev: isDev,
     server: true,
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
-    nuxtConfig: {
-      builder: isWebpack ? 'webpack' : 'vite',
-      buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
-    },
   },
 })
 

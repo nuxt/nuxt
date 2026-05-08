@@ -18,6 +18,10 @@ export async function getPostcssConfig (nuxt: Nuxt) {
 
   const postcssOptions = defu({}, nuxt.options.postcss, {
     plugins: {
+      'autoprefixer': {},
+
+      'cssnano': nuxt.options.dev ? false : {},
+
       /**
        * https://github.com/postcss/postcss-import
        */

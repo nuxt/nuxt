@@ -2,7 +2,6 @@ import type { PropType } from 'vue'
 import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendResponseHeader, defineLazyEventHandler } from 'h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -64,7 +63,6 @@ export default defineComponent({
     const ast = ref(nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.ast)
     let activeHead: ActiveHeadEntry<SerializableHead>
 
-    const eventFetch = import.meta.server ? event!.fetch : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
@@ -98,13 +96,12 @@ export default defineComponent({
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
-      // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
+      const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
       if (!r.ok) {
-        throw createError({ statusCode: r.status, statusMessage: r.statusText })
+        throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
         const result = await r.json()
@@ -112,7 +109,7 @@ export default defineComponent({
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')
           if (hints) {
-            appendResponseHeader(event!, 'x-nitro-prerender', hints)
+            event!.res.headers.append('x-nitro-prerender', hints)
           }
         }
         setPayload(key, result)
@@ -163,6 +160,14 @@ export default defineComponent({
 
     if (import.meta.client) {
       watch(props, debounce(() => fetchComponent(), 100), { deep: true })
+    }
+
+    // Restore head entries from SSR payload during hydration
+    if (import.meta.client && instance.vnode.el) {
+      const headData = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.head
+      if (headData) {
+        activeHead = head.push(headData)
+      }
     }
 
     if (import.meta.client && !instance.vnode.el && props.lazy) {

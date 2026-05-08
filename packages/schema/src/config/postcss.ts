@@ -1,4 +1,4 @@
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 const ensureItemIsLast = (item: string) => (arr: string[]) => {
   const index = arr.indexOf(item)
@@ -36,19 +36,6 @@ export default defineResolvers({
         return orderPresets.autoprefixerAndCssnanoLast
       },
     },
-    plugins: {
-      autoprefixer: {},
-      cssnano: {
-        $resolve: async (val, get) => {
-          if (val || val === false) {
-            return val
-          }
-          if (await get('dev')) {
-            return false
-          }
-          return {}
-        },
-      },
-    },
+    plugins: {},
   },
 })

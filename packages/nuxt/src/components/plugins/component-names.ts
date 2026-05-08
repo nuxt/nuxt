@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { parseAndWalk } from 'oxc-walker'
 
-import { SX_RE, isVue } from '../../core/utils'
+import { SX_RE, isVue } from '../../core/utils/index.ts'
 import type { Component } from 'nuxt/schema'
 
 interface NameDevPluginOptions {

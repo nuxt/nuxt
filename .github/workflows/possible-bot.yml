@@ -1,0 +1,26 @@
+name: possible-bot
+
+on:
+  issues:
+    types:
+      - labeled
+  pull_request_target:
+    types:
+      - labeled
+
+jobs:
+  possible-bot:
+    uses: nuxt/.github/.github/workflows/possible-bot.yml@main
+    permissions:
+      issues: write
+      pull-requests: write
+    with:
+      comment: |
+        We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing to Nuxt, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):
+
+        1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.
+        2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.
+
+        Please review our [AI-assisted contribution guidelines](https://nuxt.com/docs/community/contribution#ai-assisted-contributions) and update this contribution if needed.
+
+        If this was flagged in error, we apologise! 😳 Just let us know. 🙏
