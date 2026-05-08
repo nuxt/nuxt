@@ -5,6 +5,13 @@ import { destr } from 'destr'
 import type { H3Event } from 'nitro/h3'
 import { HTTPError, defineEventHandler, getQuery, readBody } from 'nitro/h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
+// @ts-expect-error withAsyncContext is internal Vue API; we call it with a no-op to
+// clear Vue's module-global `currentInstance` (it captures+unsets synchronously).
+import { withAsyncContext as _withVueAsyncContext } from 'vue'
+
+function clearVueCurrentInstance () {
+  _withVueAsyncContext(() => null)
+}
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
@@ -40,6 +47,10 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
+  }).finally(() => {
+    // Clear leaked Vue `currentInstance` from this render so the next render
+    // starts clean. See companion comment in the page renderer.
+    clearVueCurrentInstance()
   })
 
   // Handle errors

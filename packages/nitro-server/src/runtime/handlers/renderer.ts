@@ -5,6 +5,17 @@ import type { H3Event } from 'nitro/h3'
 import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'nitro/h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
+// @ts-expect-error withAsyncContext is internal Vue API; we call it with a no-op to
+// clear Vue's module-global `currentInstance` (it captures+unsets synchronously).
+import { withAsyncContext as _withVueAsyncContext } from 'vue'
+
+function clearVueCurrentInstance () {
+  // Vue's `withAsyncContext(getAwaitable)` synchronously: captures `currentInstance`,
+  // calls `getAwaitable`, then unsets `currentInstance`. We discard the restore fn so
+  // the global stays unset. This avoids depending on `unsetCurrentInstance` (not in
+  // Vue's public ESM exports).
+  _withVueAsyncContext(() => null)
+}
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
@@ -160,6 +171,13 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     const _err = (!ssrError && ssrContext.payload?.error) || error
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
     throw _err
+  }).finally(() => {
+    // Vue's `withAsyncContext` for top-level `await` in `<script setup>` leaves
+    // `currentInstance` set to the suspended component on resume and never
+    // re-unsets it, so the global stays pinned to a foreign request's <App>
+    // until another `setup()` overwrites it. Clear it explicitly here so the
+    // next render starts clean and the leaked component graph is GC-eligible.
+    clearVueCurrentInstance()
   })
 
   // Render inline styles
