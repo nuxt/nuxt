@@ -8,14 +8,6 @@ import { propsToString, renderSSRHead } from '@unhead/vue/server'
 // @ts-expect-error withAsyncContext is internal Vue API; we call it with a no-op to
 // clear Vue's module-global `currentInstance` (it captures+unsets synchronously).
 import { withAsyncContext as _withVueAsyncContext } from 'vue'
-
-function clearVueCurrentInstance () {
-  // Vue's `withAsyncContext(getAwaitable)` synchronously: captures `currentInstance`,
-  // calls `getAwaitable`, then unsets `currentInstance`. We discard the restore fn so
-  // the global stays unset. This avoids depending on `unsetCurrentInstance` (not in
-  // Vue's public ESM exports).
-  _withVueAsyncContext(() => null)
-}
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
@@ -43,6 +35,14 @@ import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import type { AppConfig } from '@nuxt/schema'
+
+function clearVueCurrentInstance () {
+  // Vue's `withAsyncContext(getAwaitable)` synchronously: captures `currentInstance`,
+  // calls `getAwaitable`, then unsets `currentInstance`. We discard the restore fn so
+  // the global stays unset. This avoids depending on `unsetCurrentInstance` (not in
+  // Vue's public ESM exports).
+  _withVueAsyncContext(() => null)
+}
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
