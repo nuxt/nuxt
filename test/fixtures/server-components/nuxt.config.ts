@@ -6,7 +6,6 @@ export default withMatrix({
     componentIslands: {
       selectiveClient: 'deep',
     },
-    runtimeBaseURL: true,
   },
   nitro: {
     prerender: {
