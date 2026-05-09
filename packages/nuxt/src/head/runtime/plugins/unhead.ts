@@ -26,7 +26,14 @@ export default defineNuxtPlugin({
       // wait for new page before unpausing dom updates (triggered after suspense resolved)
       nuxtApp.hooks.hook('page:finish', () => {
         // app:suspense:resolve hook will unpause the DOM
-        if (!nuxtApp.isHydrating) { syncHead() }
+        if (nuxtApp.isHydrating) { return }
+        // hold DOM updates until any in-flight page transition finishes
+        const transitionPromise = nuxtApp['~transitionPromise']
+        if (transitionPromise) {
+          transitionPromise.then(syncHead)
+        } else {
+          syncHead()
+        }
       })
       // unpause on error
       nuxtApp.hooks.hook('app:error', syncHead)
