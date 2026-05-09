@@ -484,6 +484,46 @@ describe.skipIf(isDev || isWebpack)('regressions', () => {
 
     await page.close()
   })
+
+  // https://github.com/nuxt/nuxt/issues/32537
+  it('keeps a leaving page\'s useHead styles applied throughout pageTransition leave', async () => {
+    const { page } = await renderPage('/page-transition-style/red')
+
+    const redLocator = page.locator('.red-page')
+    await redLocator.waitFor()
+    expect(await redLocator.evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(255, 0, 0)')
+
+    // While the leaving page's <Transition> still has its DOM mounted, the
+    // `useHead({ style })` entry registered by red.vue must still be present in
+    // <head> — otherwise the leaving DIV becomes unstyled mid-animation. Sample
+    // the computed background-color across the leave window (rAF) starting from
+    // the click; before the fix unhead's debounced render fires within ~20ms of
+    // click, dropping the style and turning the bg transparent.
+    await page.evaluate(() => {
+      const w = window as unknown as { __samples?: Array<{ bg: string | null, hasLeave: boolean | null }> }
+      w.__samples = []
+      const start = performance.now()
+      const tick = () => {
+        const el = document.querySelector('.red-page')
+        w.__samples!.push({
+          bg: el ? getComputedStyle(el).backgroundColor : null,
+          hasLeave: el ? el.classList.contains('page-leave-active') : null,
+        })
+        if (performance.now() - start < 600) { requestAnimationFrame(tick) }
+      }
+      ;(document.querySelector('#to-blue') as HTMLAnchorElement).click()
+      requestAnimationFrame(tick)
+    })
+
+    await page.locator('.blue-page').waitFor()
+
+    const samples = await page.evaluate(() => (window as unknown as { __samples: Array<{ bg: string | null, hasLeave: boolean | null }> }).__samples)
+    const leaveSamples = samples.filter(s => s.hasLeave)
+    expect(leaveSamples.length).toBeGreaterThan(0)
+    expect(leaveSamples.every(s => s.bg === 'rgb(255, 0, 0)')).toBe(true)
+
+    await page.close()
+  })
 })
 
 function normaliseIslandResult (result: NuxtIslandResponse) {
