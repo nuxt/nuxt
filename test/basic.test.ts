@@ -2265,6 +2265,8 @@ describe.skipIf(isDev)('dynamic paths', () => {
 
     const html = await $fetch<string>('/')
     expect(html).toContain('<script type="importmap">{"imports":{"#entry":"./assets')
+    expect(html).toMatch(/"#routes":"\.\/assets/)
+    expect(html).toMatch(/"#layouts":"\.\/assets/)
   })
 
   it('restore server', async () => {

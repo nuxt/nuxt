@@ -2,21 +2,44 @@ import { useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import escapeStringRegexp from 'escape-string-regexp'
 import MagicString from 'magic-string'
-import { basename } from 'pathe'
+import { basename, resolve } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
 import { toArray } from '../utils/index.ts'
 
+interface StableAlias {
+  alias: string
+  chunkName: string
+  exportName: string
+}
+
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
   let sourcemap: boolean
-  let entryFileName: string | undefined
+
+  const routesPath = resolve(nuxt.options.buildDir, 'routes.mjs')
+  const layoutsPath = resolve(nuxt.options.buildDir, 'layouts.mjs')
+
+  const aliases: StableAlias[] = [
+    { alias: '#entry', chunkName: 'entry', exportName: 'entryFileName' },
+    { alias: '#routes', chunkName: 'routes', exportName: 'routesFileName' },
+    { alias: '#layouts', chunkName: 'layouts', exportName: 'layoutsFileName' },
+  ]
+
+  const fileNames: Record<string, string | undefined> = {}
+  for (const a of aliases) {
+    fileNames[a.exportName] = undefined
+  }
+
+  const renderVirtual = () => aliases
+    .map(a => `export const ${a.exportName} = ${JSON.stringify(fileNames[a.exportName])}`)
+    .join('\n')
 
   const nitro = useNitro()
 
   nitro.options.virtual ||= {}
   nitro.options._config.virtual ||= {}
 
-  nitro.options._config.virtual['#internal/entry-chunk.mjs'] = nitro.options.virtual['#internal/entry-chunk.mjs'] = () => `export const entryFileName = ${JSON.stringify(entryFileName)}`
+  nitro.options._config.virtual['#internal/entry-chunk.mjs'] = nitro.options.virtual['#internal/entry-chunk.mjs'] = renderVirtual
 
   return {
     name: 'nuxt:stable-entry',
@@ -24,6 +47,31 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
       sourcemap = !!config.build.sourcemap
     },
     apply: () => !nuxt.options.dev && nuxt.options.experimental.entryImportMap,
+    configEnvironment (name) {
+      if (name !== 'client') { return }
+      if (nuxt.options.dev || !nuxt.options.experimental.entryImportMap) { return }
+      return {
+        build: {
+          rolldownOptions: {
+            output: {
+              codeSplitting: {
+                groups: [
+                  {
+                    name: (id: string) => {
+                      const path = normalizeVirtualId(id)
+                      if (path === routesPath) { return 'routes' }
+                      if (path === layoutsPath) { return 'layouts' }
+                      return null
+                    },
+                    priority: 100,
+                  },
+                ],
+              },
+            },
+          },
+        },
+      }
+    },
     applyToEnvironment (environment) {
       if (environment.name !== 'client') {
         return false
@@ -39,14 +87,22 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
         .some(output => typeof output?.entryFileNames === 'string' && output?.entryFileNames.includes('[hash]'))
     },
     renderChunk (code, chunk, _options, meta) {
-      const entry = Object.values(meta.chunks).find(chunk => chunk.isEntry && chunk.name === 'entry')?.fileName
-      if (!entry || !chunk.imports.includes(entry)) {
+      const targets: Array<{ alias: string, fileName: string }> = []
+      for (const { alias, chunkName } of aliases) {
+        const target = Object.values(meta.chunks).find(c => c.name === chunkName)
+        if (!target || target.fileName === chunk.fileName) { continue }
+        if (!chunk.imports.includes(target.fileName)) { continue }
+        targets.push({ alias, fileName: target.fileName })
+      }
+      if (targets.length === 0) {
         return
       }
 
-      const filename = new RegExp(`(?<=['"])[\\./]*${escapeStringRegexp(basename(entry))}`, 'g')
       const s = new MagicString(code)
-      s.replaceAll(filename, '#entry')
+      for (const { alias, fileName } of targets) {
+        const filename = new RegExp(`(?<=['"])[\\./]*${escapeStringRegexp(basename(fileName))}`, 'g')
+        s.replaceAll(filename, alias)
+      }
 
       if (s.hasChanged()) {
         return {
@@ -56,12 +112,14 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
       }
     },
     writeBundle (_options, bundle) {
-      let entry = Object.values(bundle).find(chunk => chunk.type === 'chunk' && chunk.isEntry && chunk.name === 'entry')?.fileName
       const prefix = withoutLeadingSlash(nuxt.options.app.buildAssetsDir)
-      if (entry?.startsWith(prefix)) {
-        entry = entry.slice(prefix.length)
+      for (const { chunkName, exportName } of aliases) {
+        let file = Object.values(bundle).find(c => c.type === 'chunk' && c.name === chunkName)?.fileName
+        if (file?.startsWith(prefix)) {
+          file = file.slice(prefix.length)
+        }
+        fileNames[exportName] = file
       }
-      entryFileName = entry
     },
   }
 }
@@ -75,6 +133,14 @@ const supportedEnvironments = {
   ios: 16.4,
   opera: 75,
   safari: 16.4,
+}
+
+const VIRTUAL_PREFIX_RE = /^\/?virtual:nuxt:/
+function normalizeVirtualId (id: string) {
+  if (VIRTUAL_PREFIX_RE.test(id)) {
+    id = decodeURIComponent(id.replace(VIRTUAL_PREFIX_RE, ''))
+  }
+  return id.replace(/\?.*$/, '')
 }
 
 function isSupported (target: string) {

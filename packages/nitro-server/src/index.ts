@@ -196,7 +196,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
       // this will be overridden in vite plugin
-      '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
+      '#internal/entry-chunk.mjs': () => [
+        `export const entryFileName = undefined`,
+        `export const routesFileName = undefined`,
+        `export const layoutsFileName = undefined`,
+      ].join('\n'),
       '#internal/nuxt/entry-ids.mjs': () => `export default []`,
       '#internal/nuxt/nitro-config.mjs': () => {
         const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)

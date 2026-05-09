@@ -28,7 +28,7 @@ import { appHead, appTeleportAttrs, appTeleportTag, componentIslands } from '#in
 // @ts-expect-error virtual file
 import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
-import { entryFileName } from '#internal/entry-chunk.mjs'
+import { entryFileName, layoutsFileName, routesFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import type { AppConfig } from '@nuxt/schema'
@@ -50,7 +50,12 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/
 const PAYLOAD_FILENAME = '_payload.json'
 
-let entryPath: string
+const stableImports: Array<[alias: string, fileName: string | undefined]> = [
+  ['#entry', entryFileName],
+  ['#routes', routesFileName],
+  ['#layouts', layoutsFileName],
+]
+let cachedStableImportPaths: Record<string, string> | undefined
 
 const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
   // Whether we're rendering an error page
@@ -201,30 +206,39 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
 
   // 0. Add import map for stable chunk hashes
-  if (entryFileName && !NO_SCRIPTS) {
-    let path = entryPath
-    if (!path) {
-      path = buildAssetsURL(entryFileName) as string
-      if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(path)) {
-        // cache absolute entry path
-        entryPath = path
-      } else {
-        // TODO: provide support for relative paths in assets as well
-        // relativise path
-        path = relative(event.url.pathname.replace(/\/[^/]+$/, '/'), joinURL('/', path))
-        if (!/^(?:\/|\.+\/)/.test(path)) {
-          path = `./${path}`
+  if (!NO_SCRIPTS) {
+    let imports = cachedStableImportPaths
+    if (!imports) {
+      imports = {}
+      let allAbsolute = true
+      for (const [alias, fileName] of stableImports) {
+        if (!fileName) { continue }
+        let path = buildAssetsURL(fileName) as string
+        if (!ssrContext.runtimeConfig.app.cdnURL && !/^(?:\/|\.+\/)/.test(path)) {
+          allAbsolute = false
+          // TODO: provide support for relative paths in assets as well
+          // relativise path
+          path = relative(event.url.pathname.replace(/\/[^/]+$/, '/'), joinURL('/', path))
+          if (!/^(?:\/|\.+\/)/.test(path)) {
+            path = `./${path}`
+          }
         }
+        imports[alias] = path
+      }
+      if (allAbsolute) {
+        cachedStableImportPaths = imports
       }
     }
-    ssrContext.head.push({
-      script: [{
-        tagPosition: 'head',
-        tagPriority: -2,
-        type: 'importmap',
-        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
-      }],
-    }, headEntryOptions)
+    if (Object.keys(imports).length) {
+      ssrContext.head.push({
+        script: [{
+          tagPosition: 'head',
+          tagPriority: -2,
+          type: 'importmap',
+          innerHTML: JSON.stringify({ imports }),
+        }],
+      }, headEntryOptions)
+    }
   }
   // 1. Preload payloads and app manifest
   // Skip preload when inlining full payload in HTML (no separate fetch needed for initial load)
