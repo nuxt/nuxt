@@ -5,7 +5,7 @@ import { cpus } from 'node:os'
 import process from 'node:process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import type { AliasValue, Nuxt, NuxtOptions } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import { join, relative, resolve } from 'pathe'
@@ -14,7 +14,7 @@ import { hash } from 'ohash'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitropack/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, filterAliases, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors, setHeader } from 'h3'
@@ -332,7 +332,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Nuxt aliases
-      ...nuxt.options.alias,
+      ...filterAliases(nuxt.options.alias, 'server'),
 
       // Paths
       '#internal/nuxt/paths': resolve(distDir, 'runtime/utils/paths'),
@@ -717,7 +717,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // TODO: remove support for baseUrl in nuxt v5
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
-  const aliases = nitroConfig.alias!
+  nitroConfig.alias = filterAliases(nitroConfig.alias as Record<string, AliasValue>, 'server')
+  const aliases = nitroConfig.alias
   const tsConfig = nitroConfig.typescript!.tsConfig!
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}

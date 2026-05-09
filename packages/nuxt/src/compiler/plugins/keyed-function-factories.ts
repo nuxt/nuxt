@@ -14,7 +14,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
-import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
+import type { AliasValue, KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
 import type { ScanPlugin } from '../types.ts'
 import type { Import } from 'unimport'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
@@ -99,7 +99,7 @@ function createFactoryProcessor (
   namesToFactoryMeta: Map<string, KeyedFunctionFactory>,
   imports: ParsedStaticImport[],
   autoImportsToSources: Map<string, string> | undefined,
-  alias: Record<string, string>,
+  alias: Record<string, AliasValue>,
 ) {
   const { directImports, namespaces } = processImports(imports, alias)
 
@@ -235,7 +235,7 @@ interface KeyedFunctionFactoriesScanPluginOptions {
    * Aliases in `source` have not been resolved yet.
    */
   factories: KeyedFunctionFactory[]
-  alias: Record<string, string>
+  alias: Record<string, AliasValue>
 }
 
 /**
@@ -251,7 +251,7 @@ export function scanFileForFactories (
   code: string,
   namesToFactoryMeta: Map<string, KeyedFunctionFactory>,
   autoImportsToSources: Map<string, string>,
-  alias: Record<string, string>,
+  alias: Record<string, AliasValue>,
 ): KeyedFunction[] {
   const results: KeyedFunction[] = []
   const context = createScanPluginContext(code, id)
@@ -391,7 +391,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
 interface KeyedFunctionFactoriesPluginOptions {
   sourcemap: boolean
   factories: KeyedFunctionFactory[]
-  alias: Record<string, string>
+  alias: Record<string, AliasValue>
   getAutoImports: () => Promise<Import[]>
 }
 

@@ -1,4 +1,5 @@
 import createResolver from 'postcss-import-resolver'
+import { filterAliases } from '@nuxt/kit'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
@@ -23,7 +24,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
        */
       'postcss-import': {
         resolve: createResolver({
-          alias: { ...nuxt.options.alias },
+          alias: filterAliases(nuxt.options.alias, 'app'),
           modules: nuxt.options.modulesDir,
         }),
       },
@@ -36,7 +37,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
     sourceMap: nuxt.options.webpack.cssSourceMap,
   })
 
-  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+  const jiti = createJiti(nuxt.options.rootDir, { alias: filterAliases(nuxt.options.alias) })
 
   // Keep the order of default plugins
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {

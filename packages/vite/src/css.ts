@@ -2,6 +2,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { InlineConfig as ViteConfig } from 'vite'
 import type { Plugin } from 'postcss'
 import { createJiti } from 'jiti'
+import { filterAliases } from '@nuxt/kit'
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
@@ -17,7 +18,7 @@ export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']>
 
   const postcssOptions = nuxt.options.postcss
 
-  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+  const jiti = createJiti(nuxt.options.rootDir, { alias: filterAliases(nuxt.options.alias) })
 
   for (const pluginName of sortPlugins(postcssOptions)) {
     const pluginOptions = postcssOptions.plugins[pluginName]

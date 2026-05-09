@@ -1,5 +1,5 @@
 import { promises as fsp, statSync } from 'node:fs'
-import { tryUseNuxt, useLogger } from '@nuxt/kit'
+import { filterAliases, tryUseNuxt, useLogger } from '@nuxt/kit'
 import { reverseResolveAlias } from 'pathe/utils'
 
 /** @since 3.9.0 */
@@ -56,7 +56,7 @@ export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts', 'd.vue.ts', 'd.
 export const logger = useLogger('nuxt')
 
 export function resolveToAlias (path: string, nuxt = tryUseNuxt()) {
-  return reverseResolveAlias(path, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || path
+  return reverseResolveAlias(path, { ...filterAliases(nuxt?.options.alias || {}), ...strippedAtAliases }).pop() || path
 }
 
 const strippedAtAliases = {

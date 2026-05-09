@@ -1,4 +1,4 @@
-import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, defineNuxtModule, filterAliases, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'
@@ -34,7 +34,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       addBuildPlugin(KeyedFunctionFactoriesPlugin({
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         factories: nuxt.options.optimization.keyedComposableFactories,
-        alias: nuxt.options.alias,
+        alias: filterAliases(nuxt.options.alias),
         getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
       }))
 
@@ -42,7 +42,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       if (_options.scan) {
         const scanPlugin = KeyedFunctionFactoriesScanPlugin({
           factories: nuxt.options.optimization.keyedComposableFactories,
-          alias: nuxt.options.alias,
+          alias: filterAliases(nuxt.options.alias),
         })
         scanResult = scanPlugin.result
         await runScanPlugins([scanPlugin])
@@ -59,7 +59,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         keyedFunctions: normalizedKeyedFunctions,
         getKeyedFunctions: () => normalizedKeyedFunctions,
-        alias: nuxt.options.alias,
+        alias: filterAliases(nuxt.options.alias),
         getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
         appDir: nuxt.options.appDir,
         dev: nuxt.options.dev,
@@ -187,7 +187,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
           contents,
           namesToFactoryMeta,
           autoImportsToSources,
-          nuxt.options.alias,
+          filterAliases(nuxt.options.alias),
         )
 
         if (newEntries.length) {
