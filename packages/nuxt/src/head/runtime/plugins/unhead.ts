@@ -1,6 +1,7 @@
 import { createHead as createClientHead, renderDOMHead } from '@unhead/vue/client'
 import type { ActiveHeadEntry } from '@unhead/vue'
 import { defineNuxtPlugin } from '#app/nuxt'
+import { freezeHead } from '../island-head'
 
 // @ts-expect-error virtual file
 import unheadOptions from '#build/unhead-options.mjs'
@@ -12,6 +13,15 @@ export default defineNuxtPlugin({
     const head = import.meta.server
       ? nuxtApp.ssrContext!.head
       : createClientHead(unheadOptions)
+
+    // Drop plugin-phase `useHead` writes for islands -- they belong to the
+    // surrounding route, not the island response. Unfreeze on `app:created`
+    // (after `applyPlugins` resolves) so island components write normally.
+    if (import.meta.server && nuxtApp.ssrContext!.islandContext) {
+      const unfreeze = freezeHead(head)
+      nuxtApp.hooks.hookOnce('app:created', unfreeze)
+    }
+
     // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
 
