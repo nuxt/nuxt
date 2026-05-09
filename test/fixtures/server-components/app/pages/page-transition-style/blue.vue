@@ -19,4 +19,3 @@ useHead({
     </NuxtLink>
   </div>
 </template>
-
