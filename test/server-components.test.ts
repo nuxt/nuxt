@@ -509,7 +509,7 @@ describe.skipIf(isDev || isWebpack)('regressions', () => {
           bg: el ? getComputedStyle(el).backgroundColor : null,
           hasLeave: el ? el.classList.contains('page-leave-active') : null,
         })
-        if (performance.now() - start < 400) { requestAnimationFrame(tick) }
+        if (performance.now() - start < 600) { requestAnimationFrame(tick) }
       }
       ;(document.querySelector('#to-blue') as HTMLAnchorElement).click()
       requestAnimationFrame(tick)
