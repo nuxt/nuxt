@@ -108,14 +108,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  if (nuxt.options.experimental.runtimeBaseURL) {
-    nuxt.options.serverHandlers.unshift({
-      route: '',
-      middleware: true,
-      handler: resolve(distDir, 'runtime/middleware/base-url'),
-    })
-  }
-
   if (nuxt.options.experimental.componentIslands) {
     // sync conditions with /packages/nuxt/src/core/templates.ts#L539
     nuxt.options.nitro.virtual ||= {}
