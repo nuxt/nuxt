@@ -24,7 +24,7 @@ interface LoaderOptions {
 // Match both:
 // 1. _resolveComponent("ComponentName") - Vue's component resolution
 // 2. h(ComponentName, ...) - JSX h() calls with PascalCase component identifiers
-const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b/g
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Combined|combined-|Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Combined|combined-|Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b/g
 
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
@@ -94,6 +94,12 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             if (modifier && normalComponent) {
               const relativePath = relative(options.srcDir, component.filePath)
               switch (modifier) {
+                case 'Combined':
+                case 'combined-':
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyCombinedComponent' }]))
+                  identifier += '_lazy_combined'
+                  imports.add(`const ${identifier} = createLazyCombinedComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  break
                 case 'Visible':
                 case 'visible-':
                   imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))

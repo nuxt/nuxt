@@ -288,6 +288,71 @@ describe('lazy hydration macro transform', () => {
     const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
     expect(components).toContain(`createLazyVisibleComponent("components/MyComponent.vue"`)
   })
+
+  it('should correctly transform array of strategies to createLazyCombinedComponent in sfc', async () => {
+    const sfc = `
+    <script setup>
+    const LazyCombinedMyComponent = defineLazyHydrationComponent(['idle', 'visible'], () => import('~/components/MyComponent.vue'))
+    </script>
+
+    <template>
+      <LazyCombinedMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain('createLazyCombinedComponent')
+    expect(code).toContain('from "/client-runtime.mjs"')
+
+    const component = code.split('\n').map(line => line.trim()).find(line => line.startsWith('const LazyCombined'))
+    expect(component).toContain('createLazyCombinedComponent("components/MyComponent.vue"')
+  })
+
+  it('should correctly transform array of strategies to createLazyCombinedComponent in jsx', async () => {
+    const component = `
+    import { defineComponent } from 'vue'
+    export default defineComponent({
+      setup () {
+        const LazyCombinedMyComponent = defineLazyHydrationComponent(['interaction', 'visible', 'idle'], () => import('~/components/MyComponent.vue'))
+        return () => <LazyCombinedMyComponent />
+      }
+    })
+    `
+
+    const code = await transform(component, '/pages/index.tsx')
+    expect(code).toContain('createLazyCombinedComponent')
+    expect(code).toContain('from "/client-runtime.mjs"')
+    expect(code).toContain('createLazyCombinedComponent("components/MyComponent.vue"')
+  })
+
+  it('should throw a compile error when hydrateNever is combined with other strategies', async () => {
+    const sfc = `
+    <script setup>
+    const LazyCombinedMyComponent = defineLazyHydrationComponent(['never', 'idle'], () => import('~/components/MyComponent.vue'))
+    </script>
+
+    <template>
+      <LazyCombinedMyComponent />
+    </template>
+    `
+
+    await expect(transform(sfc, '/pages/index.vue')).rejects.toThrow('`hydrateNever` cannot be combined with other hydration strategies')
+  })
+
+  it('should skip empty array of strategies', async () => {
+    const sfc = `
+    <script setup>
+    const LazyCombinedMyComponent = defineLazyHydrationComponent([], () => import('~/components/MyComponent.vue'))
+    </script>
+
+    <template>
+      <LazyCombinedMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).not.toContain('createLazyCombinedComponent')
+  })
 })
 
 async function transform (code: string, filename: string, noComponents?: boolean) {

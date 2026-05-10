@@ -6,7 +6,7 @@ import { genImport } from 'knitwork'
 import { isJS, isVue } from '../../core/utils/index.ts'
 import type { ComponentsOptions } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
-import type { Argument, Expression, FunctionBody, ImportExpression } from 'oxc-parser'
+import type { Argument, ArrayExpression, Expression, FunctionBody, ImportExpression } from 'oxc-parser'
 
 interface LoaderOptions {
   srcDir: string
@@ -68,11 +68,25 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           if (node.arguments.length < 2) { return }
           const [strategyArgument, loaderArgument] = node.arguments
 
-          if (!isStringLiteral(strategyArgument)) { return }
-          const strategy: string = strategyArgument.value
+          let functionName: string | undefined
 
-          const functionName = HYDRATION_TO_FACTORY.get(strategy)
-          if (!functionName) { return }
+          if (isStringLiteral(strategyArgument)) {
+            const strategy: string = strategyArgument.value
+            functionName = HYDRATION_TO_FACTORY.get(strategy)
+            if (!functionName) { return }
+          } else if (strategyArgument?.type === 'ArrayExpression') {
+            const elements = (strategyArgument as ArrayExpression).elements
+            if (elements.length === 0) { return }
+            for (const element of elements) {
+              if (!element || element.type !== 'Literal' || typeof (element as unknown as { value: unknown }).value !== 'string') { return }
+              if ((element as unknown as { value: string }).value === 'never') {
+                throw new Error(`[nuxt] \`hydrateNever\` cannot be combined with other hydration strategies in \`defineLazyHydrationComponent\``)
+              }
+            }
+            functionName = 'createLazyCombinedComponent'
+          } else {
+            return
+          }
 
           if (loaderArgument?.type !== 'ArrowFunctionExpression') { return }
 

@@ -266,6 +266,23 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
     const result = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
     expect(result.join('\n')).toContain(component)
   })
+
+  it.each([
+    ['hydrate-on-idle hydrate-on-visible', 'createLazyCombinedComponent'],
+    ['hydrate-on-idle hydrate-on-interaction', 'createLazyCombinedComponent'],
+    ['hydrate-on-visible hydrate-when', 'createLazyCombinedComponent'],
+    ['hydrate-on-idle hydrate-on-visible hydrate-on-interaction', 'createLazyCombinedComponent'],
+    ['hydrateOnIdle hydrateOnVisible', 'createLazyCombinedComponent'],
+    ['hydrate-on-idle hydrate-after', 'createLazyCombinedComponent'],
+  ])('should correctly resolve combined lazy hydration components (%s)', async (props, component) => {
+    const sfc = `
+    <template>
+      <LazyMyComponent ${props} />
+    </template>
+    `
+    const result = await transform(sfc, '/pages/index.vue')
+    expect(result).toContain(component)
+  })
 })
 const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
   export: opts.export || 'default',

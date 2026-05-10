@@ -86,19 +86,22 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               return
             }
 
-            let strategy: string | undefined
+            const strategies: string[] = []
 
             for (const attr in node.attributes) {
               const isDynamic = attr.startsWith(':')
               const prop = camelCase(isDynamic ? attr.slice(1) : attr)
               if (prop in hydrationStrategyMap) {
-                if (strategy) {
-                  logger.warn(`Multiple hydration strategies are not supported in the same component`)
-                } else {
-                  strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
-                }
+                strategies.push(hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap])
               }
             }
+
+            if (strategies.length > 1 && strategies.includes('Never')) {
+              logger.error(`\`hydrateNever\` cannot be combined with other hydration strategies`)
+              return
+            }
+
+            const strategy = strategies.length === 1 ? strategies[0] : strategies.length > 1 ? 'Combined' : undefined
 
             if (strategy && !/^(?:Lazy|lazy-)/.test(node.name)) {
               if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
