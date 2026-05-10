@@ -111,7 +111,7 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
       for (const { alias, chunkName } of aliases) {
         const target = Object.values(meta.chunks).find(c => c.name === chunkName)
         if (!target || target.fileName === chunk.fileName) { continue }
-        if (!chunk.imports.includes(target.fileName)) { continue }
+        if (!chunk.imports.includes(target.fileName) && !chunk.dynamicImports.includes(target.fileName)) { continue }
         targets.push({ alias, fileName: target.fileName })
       }
       if (targets.length === 0) {
