@@ -143,7 +143,7 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
       for (const { chunkName, exportName } of aliases) {
         let file = Object.values(bundle).find(c => c.type === 'chunk' && c.name === chunkName)?.fileName
         if (file?.startsWith(prefix)) {
-          file = file.slice(prefix.length)
+          file = file.slice(prefix.length).replace(/^[\\/]+/, '')
         }
         fileNames[exportName] = file
       }
@@ -162,7 +162,7 @@ const supportedEnvironments = {
   safari: 16.4,
 }
 
-const VIRTUAL_PREFIX_RE = /^\/?virtual:nuxt:/
+const VIRTUAL_PREFIX_RE = /^\0?\/?virtual:nuxt:/
 function normalizeVirtualId (id: string) {
   if (VIRTUAL_PREFIX_RE.test(id)) {
     id = decodeURIComponent(id.replace(VIRTUAL_PREFIX_RE, ''))
