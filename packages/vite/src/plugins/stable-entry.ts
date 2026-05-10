@@ -2,7 +2,7 @@ import { useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import escapeStringRegexp from 'escape-string-regexp'
 import MagicString from 'magic-string'
-import { basename, resolve } from 'pathe'
+import { basename, dirname, relative, resolve } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
 import { toArray } from '../utils/index.ts'
@@ -102,9 +102,9 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
           return false
         }
       }
-      // only apply plugin if the entry file name is hashed
+      // only apply plugin if any relevant output filename pattern is hashed
       return toArray(environment.config.build.rolldownOptions?.output)
-        .some(output => typeof output?.entryFileNames === 'string' && output?.entryFileNames.includes('[hash]'))
+        .some(output => [output?.entryFileNames, output?.chunkFileNames].some(pattern => typeof pattern === 'string' && pattern.includes('[hash]')))
     },
     renderChunk (code, chunk, _options, meta) {
       const targets: Array<{ alias: string, fileName: string }> = []
@@ -120,7 +120,9 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
 
       const s = new MagicString(code)
       for (const { alias, fileName } of targets) {
-        const filename = new RegExp(`(?<=['"])[\\./]*${escapeStringRegexp(basename(fileName))}`, 'g')
+        const specifier = relative(dirname(chunk.fileName), fileName)
+        const normalisedSpecifier = specifier.startsWith('.') ? specifier : `./${specifier}`
+        const filename = new RegExp(`(?<=['"])${escapeStringRegexp(normalisedSpecifier)}`, 'g')
         s.replaceAll(filename, alias)
       }
 
