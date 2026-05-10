@@ -352,6 +352,7 @@ describe('component islands', () => {
     if (!isDev) {
       expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
+          "link": [],
           "style": [
             {
               "innerHTML": "pre[data-v-xxxxx]{color:#00f}",
@@ -376,6 +377,7 @@ describe('component islands', () => {
               "rel": "stylesheet",
             },
           ],
+          "style": [],
         }
       `)
     }
