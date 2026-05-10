@@ -15,6 +15,7 @@ interface StableAlias {
 
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
   let sourcemap: boolean
+  const stablePreloadFiles = new Set<string>()
 
   const routesPath = resolve(nuxt.options.buildDir, 'routes.mjs')
   const layoutsPath = resolve(nuxt.options.buildDir, 'layouts.mjs')
@@ -47,9 +48,21 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
       sourcemap = !!config.build.sourcemap
     },
     apply: () => !nuxt.options.dev && nuxt.options.experimental.entryImportMap,
-    configEnvironment (name) {
+    configEnvironment (name, config) {
       if (name !== 'client') { return }
       if (nuxt.options.dev || !nuxt.options.experimental.entryImportMap) { return }
+      const modulePreload = config.build?.modulePreload
+      const resolveDependencies = typeof modulePreload === 'object' ? modulePreload.resolveDependencies : undefined
+      if (modulePreload !== false) {
+        config.build ||= {}
+        config.build.modulePreload = {
+          ...typeof modulePreload === 'object' ? modulePreload : {},
+          resolveDependencies: (filename, deps, context) => {
+            const resolvedDeps = resolveDependencies ? resolveDependencies(filename, deps, context) : deps
+            return resolvedDeps.filter(dep => !isStablePreloadDependency(dep, stablePreloadFiles))
+          },
+        }
+      }
       return {
         build: {
           rolldownOptions: {
@@ -111,6 +124,20 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
         }
       }
     },
+    generateBundle: {
+      order: 'pre',
+      handler (_options, bundle) {
+        stablePreloadFiles.clear()
+        for (const { chunkName } of aliases) {
+          if (chunkName === 'entry') { continue }
+          const target = Object.values(bundle).find(c => c.type === 'chunk' && c.name === chunkName)
+          if (target?.type === 'chunk') {
+            stablePreloadFiles.add(target.fileName)
+            stablePreloadFiles.add(basename(target.fileName))
+          }
+        }
+      },
+    },
     writeBundle (_options, bundle) {
       const prefix = withoutLeadingSlash(nuxt.options.app.buildAssetsDir)
       for (const { chunkName, exportName } of aliases) {
@@ -141,6 +168,10 @@ function normalizeVirtualId (id: string) {
     id = decodeURIComponent(id.replace(VIRTUAL_PREFIX_RE, ''))
   }
   return id.replace(/\?.*$/, '')
+}
+
+function isStablePreloadDependency (dep: string, aliases: Set<string>) {
+  return aliases.has(dep) || aliases.has(dep.replace(/^\.\//, '')) || aliases.has(basename(dep))
 }
 
 function isSupported (target: string) {
