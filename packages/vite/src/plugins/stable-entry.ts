@@ -14,6 +14,14 @@ interface StableAlias {
 }
 
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
+  const enabled = !nuxt.options.dev && nuxt.options.experimental.entryImportMap
+  if (!enabled) {
+    return {
+      name: 'nuxt:stable-entry',
+      apply: () => false,
+    }
+  }
+
   let sourcemap: boolean
   const stablePreloadFiles = new Set<string>()
 
@@ -47,10 +55,9 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
     configResolved (config) {
       sourcemap = !!config.build.sourcemap
     },
-    apply: () => !nuxt.options.dev && nuxt.options.experimental.entryImportMap,
+    apply: () => true,
     configEnvironment (name, config) {
       if (name !== 'client') { return }
-      if (nuxt.options.dev || !nuxt.options.experimental.entryImportMap) { return }
       const modulePreload = config.build?.modulePreload
       const resolveDependencies = typeof modulePreload === 'object' ? modulePreload.resolveDependencies : undefined
       if (modulePreload !== false) {
