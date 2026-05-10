@@ -36,4 +36,15 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
     expect(html).toContain('--island-child-token:child')
   })
+
+  // https://github.com/nuxt/nuxt/issues/27417
+  it.each([
+    ['preprocessor extension imported from <script>', '--inline-preprocessor-from-script-token:preprocessor-from-script'],
+    ['CSS imported as a side effect from a non-Vue JS module', '--inline-js-module-token:js-module'],
+  ])('inlines CSS for %s', async (_, token) => {
+    const html = await readFile(join(outputDir, 'public', 'js-imported-css/index.html'), 'utf-8')
+    expect(html).toContain(token)
+    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    expect(cssLinks).toEqual([])
+  })
 })
