@@ -260,8 +260,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                   const parentMap = clientCSSMap[parent] ||= new Set()
                   parentMap.add(moduleId)
                 }
-                // This is required to track CSS in entry chunk
-                if (isEntry && chunk.facadeModuleId) {
+                // Track CSS in the chunk's facade so it gets inlined alongside the
+                // owning Vue component (or the entry chunk) at SSR time. Without this
+                // step, CSS imported as a side effect from a non-Vue JS module
+                // is never attributed to a `.vue` ancestor that the SSR renderer can
+                // ask for via `ssrContext.modules`
+                if (chunk.facadeModuleId && (isEntry || isVue(chunk.facadeModuleId))) {
                   const facadeMap = clientCSSMap[chunk.facadeModuleId] ||= new Set()
                   facadeMap.add(moduleId)
                 }
@@ -371,7 +375,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             if (!SUPPORTED_FILES_RE.test(pathname)) { return }
 
             for (const i of findStaticImports(code)) {
-              if (!i.specifier.endsWith('.css') && !STYLE_QUERY_RE.test(i.specifier)) { continue }
+              if (!IS_CSS_RE.test(i.specifier) && !STYLE_QUERY_RE.test(i.specifier)) { continue }
 
               const resolved = await this.resolve(i.specifier, id)
               if (!resolved) { continue }
