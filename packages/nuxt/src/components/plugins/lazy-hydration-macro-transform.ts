@@ -1,10 +1,10 @@
 import { createUnplugin } from 'unplugin'
 import { relative } from 'pathe'
-import { resolveAlias } from 'pathe/utils'
+import { resolveAlias } from '@nuxt/kit'
 import MagicString from 'magic-string'
 import { genImport } from 'knitwork'
 import { isJS, isVue } from '../../core/utils/index.ts'
-import type { ComponentsOptions } from 'nuxt/schema'
+import type { AliasValue, ComponentsOptions } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
 import type { Argument, Expression, FunctionBody, ImportExpression } from 'oxc-parser'
 
@@ -13,7 +13,7 @@ interface LoaderOptions {
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   clientDelayedComponentRuntime: string
-  alias: Record<string, string>
+  alias: Record<string, AliasValue>
 }
 
 const LAZY_HYDRATION_MACRO_RE = /\bdefineLazyHydrationComponent\s*\(/

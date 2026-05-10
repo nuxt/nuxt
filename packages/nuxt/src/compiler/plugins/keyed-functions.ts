@@ -8,7 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
-import type { KeyedFunction } from '@nuxt/schema'
+import type { AliasValue, KeyedFunction } from '@nuxt/schema'
 import type { Node } from 'oxc-parser'
 import type { Import } from 'unimport'
 
@@ -19,7 +19,7 @@ interface KeyedFunctionsOptions {
   sourcemap: boolean
   keyedFunctions: KeyedFunction[]
   getKeyedFunctions?: () => KeyedFunction[]
-  alias: Record<string, string>
+  alias: Record<string, AliasValue>
   // TODO: remove in Nuxt 5
   getAutoImports: () => Promise<Import[]>
   // TODO: remove in Nuxt 5
