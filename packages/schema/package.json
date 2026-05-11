@@ -56,7 +56,7 @@
     "hookable": "6.1.1",
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.10.2",
-    "obuild": "0.4.34",
+    "obuild": "0.4.35",
     "ofetch": "1.5.1",
     "oxc-transform": "0.128.0",
     "postcss": "8.5.14",
@@ -72,7 +72,7 @@
     "vue-loader": "17.4.2",
     "vue-router": "5.0.6",
     "webpack": "5.106.2",
-    "webpack-dev-middleware": "7.4.5"
+    "webpack-dev-middleware": "8.0.3"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
