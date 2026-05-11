@@ -39,5 +39,5 @@ overrides:
   "@vue/shared": "3.5.34"
   nuxt: "workspace:*"
   send: ">=1.2.1"
-  vite: "8.0.10"
+  vite: "8.0.12"
   vue: "3.5.34"
