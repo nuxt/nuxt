@@ -309,6 +309,17 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
     const route = useRoute()
     route.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
     route.meta.layoutProps = props
+    if (import.meta.client) {
+      const unsubscribe = useRouter().beforeResolve((to, from) => {
+        if (to.path === from.path) {
+          to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+          to.meta.layoutProps = props
+        } else {
+          unsubscribe()
+        }
+      })
+      onScopeDispose(unsubscribe, true)
+    }
   }
 }
 
