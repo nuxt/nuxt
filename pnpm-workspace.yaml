@@ -8,12 +8,6 @@ packages:
   - test/fixtures/*
   - test/fixtures/*/_local-modules/*
 
-ignoredBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - oxc-resolver
-  - unrs-resolver
-
 patchedDependencies:
   changelogen: patches/changelogen.patch
 
@@ -41,3 +35,8 @@ overrides:
   send: ">=1.2.1"
   vite: "8.0.12"
   vue: "3.5.34"
+
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  unrs-resolver: false
