@@ -45,8 +45,8 @@ importers:
         specifier: 8.0.1
         version: 8.0.1
       '@nuxt/cli':
-        specifier: 3.35.1
-        version: 3.35.1(@nuxt/schema@packages+schema)(magicast@0.5.2)
+        specifier: 3.35.2
+        version: 3.35.2(@nuxt/schema@packages+schema)(magicast@0.5.2)
       '@nuxt/eslint-config':
         specifier: 1.15.2
         version: 1.15.2(@typescript-eslint/utils@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.34)(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3)
@@ -442,8 +442,8 @@ importers:
         specifier: ^0.4.1
         version: 0.4.1(typescript@6.0.3)
       '@nuxt/cli':
-        specifier: ^3.35.1
-        version: 3.35.1(@nuxt/schema@packages+schema)(magicast@0.5.2)
+        specifier: ^3.35.2
+        version: 3.35.2(@nuxt/schema@packages+schema)(magicast@0.5.2)
       '@nuxt/devtools':
         specifier: ^3.2.4
         version: 3.2.4(vite@8.0.12(@types/node@24.12.3)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.2)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))
@@ -1580,8 +1580,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@bomb.sh/tab@0.0.14':
-    resolution: {integrity: sha512-cHMk2LI430MVoX1unTt9oK1iZzQS4CYDz97MSxKLNErW69T43Z2QLFTpdS/3jVOIKrIADWfuxQ+nQNJkNV7E4w==}
+  '@bomb.sh/tab@0.0.15':
+    resolution: {integrity: sha512-Y90ub44TAvbdO9P8mcD/XPyQjFhiR5xmd4Fk7JErmWmEWEUimNnjWiBrVZ16Tj3GA1rLZ+uvCN2V/pzLawv31g==}
     hasBin: true
     peerDependencies:
       cac: ^6.7.14
@@ -2446,8 +2446,8 @@ packages:
     resolution: {integrity: sha512-pwK+BfEBZJbKdNYpHHRTNBwBoqrN/iIMO0AiGvYsp3Hoaq0WbgGSWQR6SCldZovoDpY3yje5lkFUe6gsDgJ2vg==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  '@nuxt/cli@3.35.1':
-    resolution: {integrity: sha512-nX9XO+e3l9pnhHL2zsbnBmQb/nsOQYhGz2XiqE8X962QN9ufc1ZSuDZoTmQVv/ymkbYNR6hpNWW8RZQhuhzadw==}
+  '@nuxt/cli@3.35.2':
+    resolution: {integrity: sha512-sCxNnFuYamqippdj+Cj4Nue55yaUvasaneyf2mnowK5/F1TKln/WVqTH18McxQ4baLlIlVapIFovKjJx1L8XMQ==}
     engines: {node: ^16.14.0 || >=18.0.0}
     hasBin: true
     peerDependencies:
@@ -10060,7 +10060,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@bomb.sh/tab@0.0.14(citty@0.2.2)':
+  '@bomb.sh/tab@0.0.15(citty@0.2.2)':
     optionalDependencies:
       citty: 0.2.2
 
@@ -10769,9 +10769,9 @@ snapshots:
 
   '@npmcli/name-from-folder@2.0.0': {}
 
-  '@nuxt/cli@3.35.1(@nuxt/schema@packages+schema)(magicast@0.5.2)':
+  '@nuxt/cli@3.35.2(@nuxt/schema@packages+schema)(magicast@0.5.2)':
     dependencies:
-      '@bomb.sh/tab': 0.0.14(citty@0.2.2)
+      '@bomb.sh/tab': 0.0.15(citty@0.2.2)
       '@clack/prompts': 1.3.0
       c12: 3.3.4(magicast@0.5.2)
       citty: 0.2.2
