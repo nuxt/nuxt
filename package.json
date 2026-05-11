@@ -63,7 +63,7 @@
     "@types/node": "24.12.3",
     "@types/semver": "7.7.1",
     "@typescript-eslint/parser": "8.59.2",
-    "@unhead/vue": "3.0.3",
+    "@unhead/vue": "3.1.0",
     "@vitest/coverage-v8": "4.1.5",
     "@vue/test-utils": "2.4.10",
     "acorn": "8.16.0",
