@@ -61,7 +61,7 @@
     "nitro": "3.0.260311-beta",
     "obuild": "0.4.33",
     "ofetch": "2.0.0-alpha.3",
-    "oxc-transform": "0.129.0",
+    "oxc-transform": "0.130.0",
     "postcss": "8.5.14",
     "rollup-plugin-visualizer": "7.0.1",
     "sass-loader": "16.0.8",
