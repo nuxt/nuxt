@@ -13,6 +13,7 @@ export default defineNuxtPlugin({
       return defineScript({
         type: 'speculationrules',
         key: 'speculationrules',
+        // unhead v3 JSON-stringifies object innerHTML for <script> tags
         innerHTML: {
           prefetch: [
             {

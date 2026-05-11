@@ -197,6 +197,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     ssrContext.head.push({
       script: [{
         type: 'importmap',
+        // unhead v3 JSON-stringifies object innerHTML for <script> tags
         innerHTML: { imports: { '#entry': path } },
       }],
     })
