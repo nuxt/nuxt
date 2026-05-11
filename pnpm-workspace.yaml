@@ -7,11 +7,11 @@ packages:
   - playground
   - test/fixtures/*
 
-ignoredBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - oxc-resolver
-  - unrs-resolver
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  oxc-resolver: false
+  unrs-resolver: false
 
 overrides:
   '@nuxt/kit': workspace:*
