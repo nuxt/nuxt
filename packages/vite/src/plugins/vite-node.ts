@@ -231,6 +231,29 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
         return
       }
 
+      // The SSR module graph isn't reachable from the file watcher or the
+      // `app:templatesGenerated` hook for modules invalidated by user plugins
+      // (e.g. virtual modules invalidated via `handleHotUpdate`). Track the
+      // most recent invalidation/HMR timestamp we've observed so we can pick
+      // up any module whose timestamp advanced since the previous SSR render.
+      // See https://github.com/nuxt/nuxt/issues/30169.
+      let lastSeenTimestamp = 0
+
+      function collectInvalidatedSsrModules (ssrServer: ViteDevServer) {
+        const ssrModuleGraph = ssrServer.environments.ssr.moduleGraph
+        let maxSeen = lastSeenTimestamp
+        for (const mod of ssrModuleGraph.idToModuleMap.values()) {
+          const modTimestamp = Math.max(mod.lastHMRTimestamp, mod.lastInvalidationTimestamp)
+          if (modTimestamp > lastSeenTimestamp) {
+            markInvalidate(mod)
+            if (modTimestamp > maxSeen) {
+              maxSeen = modTimestamp
+            }
+          }
+        }
+        lastSeenTimestamp = maxSeen
+      }
+
       function resolveServer (ssrServer: ViteDevServer) {
         const viteNodeServerOptions = {
           socketPath,
@@ -247,7 +270,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
         process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
-        socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, viteNodeServerOptions)
+        socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, () => collectInvalidatedSsrModules(ssrServer), viteNodeServerOptions)
       }
 
       resolveServer(clientServer)
@@ -275,7 +298,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   }
 }
 
-function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {
+function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, collectInvalidatedSsrModules: () => void, config: ViteNodeServerOptions) {
   const server = net.createServer((socket) => {
     const INITIAL_BUFFER_SIZE = 64 * 1024 // 64kB
     const MAX_BUFFER_SIZE = 1024 * 1024 * 1024 // 1GB
@@ -297,6 +320,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
             return
           }
           case 'invalidates': {
+            collectInvalidatedSsrModules()
             const responsePayload = Array.from(invalidates)
             invalidates.clear()
             sendResponse<typeof request.type>(socket, request.id, responsePayload)
