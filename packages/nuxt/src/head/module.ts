@@ -102,12 +102,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         // eslint-disable-next-line @typescript-eslint/no-deprecated -- reading user-facing deprecated option to emit migration warnings
         const headNext = nuxt.options.experimental.headNext
 
+        // legacy is forced false on v5 by the schema resolver (which warns there), so only v4 reaches this
         if (legacy) {
-          if (isV5) {
-            logger.warn('`unhead.legacy` is ignored in compatibility version 5+. Remove deprecated head patterns (hid, vmid, children, body:true).')
-          } else {
-            logger.warn('`unhead.legacy` is deprecated and will be removed. Remove deprecated head patterns (hid, vmid, children, body:true) and migrate promise values to resolved values before passing to useHead.')
-          }
+          logger.warn('`unhead.legacy` is deprecated and will be removed. Remove deprecated head patterns (hid, vmid, children, body:true) and migrate promise values to resolved values before passing to useHead.')
         }
 
         if (headNext === false) {

@@ -175,10 +175,14 @@ export default defineResolvers({
   unhead: {
     legacy: {
       $resolve: async (val, get) => {
-        if (typeof val === 'boolean') {
-          return (await get('future.compatibilityVersion') as number) >= 5 ? false : val
+        if (typeof val !== 'boolean') { return false }
+        if ((await get('future.compatibilityVersion') as number) >= 5) {
+          if (val) {
+            console.warn('`unhead.legacy` is ignored when `future.compatibilityVersion` >= 5. Remove deprecated head patterns (`hid`, `vmid`, `children`, `body: true`, `renderPriority`) and resolve promise values before passing to `useHead`.')
+          }
+          return false
         }
-        return false
+        return val
       },
     },
     vite: {},
