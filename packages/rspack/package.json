@@ -32,7 +32,7 @@
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
     "@rspack/core": "^1.7.11",
-    "@vue/compiler-sfc": "3.5.33",
+    "@vue/compiler-sfc": "3.5.34",
     "autoprefixer": "^10.5.0",
     "css-loader": "^7.1.4",
     "css-minimizer-webpack-plugin": "^8.0.0",
@@ -79,7 +79,7 @@
     "h3-next": "npm:h3@2.0.1-rc.22",
     "obuild": "0.4.35",
     "rollup": "4.60.3",
-    "vue": "3.5.33"
+    "vue": "3.5.34"
   },
   "peerDependencies": {
     "nuxt": "workspace:*",
