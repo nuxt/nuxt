@@ -131,8 +131,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     ssrContext.url = url
 
     event._path = event.node.req.url = url
-    if (payloadCache && await payloadCache.hasItem(url)) {
-      return payloadCache.getItem(url) as Promise<Partial<RenderResponse>>
+    if (payloadCache && await payloadCache.hasItem(url + '.json')) {
+      return payloadCache.getItem(url + '.json') as Promise<Partial<RenderResponse>>
     }
   }
 
@@ -192,7 +192,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   if (isRenderingPayload) {
     const response = renderPayloadResponse(ssrContext)
     if (payloadCache) {
-      await payloadCache.setItem(ssrContext.url, response)
+      await payloadCache.setItem(ssrContext.url + '.json', response)
     }
     return response
   }
@@ -205,7 +205,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     // Cache payload from the current SSR context so _payload.json requests can be served
     // without a full re-render (during prerender via LRU+FS, at runtime via in-memory TTL cache)
     if (payloadCache) {
-      await payloadCache.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
+      await payloadCache.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext))
     }
   }
 
