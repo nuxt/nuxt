@@ -21,6 +21,12 @@ describe('loadNuxtConfig', () => {
     expect(config.alias).toMatchInlineSnapshot(`
       {
         "#build": "<rootDir>/.nuxt/",
+        "#contextual": {
+          "context": [
+            "app",
+          ],
+          "path": "./contextual",
+        },
         "#internal/nuxt/paths": "<rootDir>/.nuxt/paths.mjs",
         "#layers/c": "<rootDir>/layers/c/",
         "#layers/d": "<rootDir>/layers/d/",

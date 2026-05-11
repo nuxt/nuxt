@@ -930,7 +930,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.sharedTsConfig.compilerOptions ||= {}
     opts.sharedTsConfig.compilerOptions.paths ||= {}
     for (const key in nuxt.options.alias) {
-      if (nitro.options.alias[key] && nitro.options.alias[key] === nuxt.options.alias[key]) {
+      const nuxtAlias = typeof nuxt.options.alias[key] === 'string'
+        ? nuxt.options.alias[key]
+        : nuxt.options.alias[key]?.path
+      if (nuxtAlias && nitro.options.alias[key] === nuxtAlias) {
         const dirKey = join(key, '*')
         if (opts.tsConfig.compilerOptions?.paths[key]) {
           opts.sharedTsConfig.compilerOptions.paths[key] = opts.tsConfig.compilerOptions.paths[key]

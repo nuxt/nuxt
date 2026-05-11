@@ -586,6 +586,14 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // Legacy tsConfig for backward compatibility
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
+    compilerOptions: {
+      ...tsConfig.compilerOptions,
+      paths: {
+        ...tsConfig.compilerOptions?.paths,
+        ...nodeTsConfig.compilerOptions?.paths,
+        ...sharedTsConfig.compilerOptions?.paths,
+      },
+    },
     include: [...tsConfig.include, ...legacyInclude],
     exclude: [...legacyExclude],
   })
