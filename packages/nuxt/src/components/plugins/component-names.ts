@@ -1,12 +1,11 @@
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { parseAndWalk } from 'oxc-walker'
 
 import { SX_RE, isVue } from '../../core/utils/index.ts'
 import type { Component } from 'nuxt/schema'
 
 interface NameDevPluginOptions {
-  sourcemap: boolean
   getComponents: () => Component[]
 }
 const FILENAME_RE = /([^/\\]+)\.\w+$/
@@ -25,7 +24,7 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
       filter: {
         id: { include: FILENAME_RE },
       },
-      handler (code, id) {
+      handler (code, id, meta?: unknown) {
         const filename = id.match(FILENAME_RE)?.[1]
         if (!filename) {
           return
@@ -37,7 +36,7 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
         }
 
         const NAME_RE = new RegExp(`__name:\\s*['"]${filename}['"]`)
-        const s = new MagicString(code)
+        const s = rolldownString(code, id, meta)
         s.replace(NAME_RE, `__name: ${JSON.stringify(component.pascalName)}`)
 
         // Without setup function, vue compiler does not generate __name
@@ -53,15 +52,7 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
           })
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              /* v8 ignore next */
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

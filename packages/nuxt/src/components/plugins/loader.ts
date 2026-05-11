@@ -1,6 +1,6 @@
 import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { pascalCase } from 'scule'
 import { relative } from 'pathe'
 
@@ -16,7 +16,6 @@ interface LoaderOptions {
   srcDir: string
   serverComponentRuntime: string
   clientDelayedComponentRuntime: string
-  sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
 }
@@ -47,13 +46,13 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       }
       return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
     },
-    transform (code, id) {
+    transform (code, id, meta?: unknown) {
       const components = options.getComponents()
 
       let num = 0
       const imports = new Set<string>()
       const map = new Map<Component, string>()
-      const s = new MagicString(code)
+      const s = rolldownString(code, id, meta)
       // replace `_resolveComponent("...")` to direct import
       s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, ...args) => {
         const groups = args.pop()
@@ -165,14 +164,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
         s.prepend([...imports, ''].join('\n'))
       }
 
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap
-            ? s.generateMap({ hires: true })
-            : undefined,
-        }
-      }
+      return generateTransform(s, id)
     },
   }
 })

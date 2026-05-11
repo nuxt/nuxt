@@ -1,9 +1,9 @@
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Nuxt } from '@nuxt/schema'
 import { isVue } from '../utils/index.ts'
 
-export const AsyncContextInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
+export const AsyncContextInjectionPlugin = (_nuxt: Nuxt) => createUnplugin(() => {
   return {
     name: 'nuxt:vue-async-context',
     transformInclude (id) {
@@ -13,18 +13,11 @@ export const AsyncContextInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => 
       filter: {
         code: { include: /_withAsyncContext/ },
       },
-      handler (code) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         s.prepend('import { withAsyncContext as _withAsyncContext } from "#app/composables/asyncContext";\n')
         s.replace(/withAsyncContext as _withAsyncContext,?/, '')
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

@@ -1,6 +1,6 @@
 import type { Component } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
@@ -52,11 +52,11 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           include: [HAS_SLOT_OR_CLIENT_RE],
         },
       },
-      async handler (code, id) {
+      async handler (code, id, transformMeta?: unknown) {
         const template = code.match(TEMPLATE_RE)
         if (!template) { return }
         const startingIndex = template.index || 0
-        const s = new MagicString(code)
+        const s = rolldownString(code, id, transformMeta)
 
         const { pathname } = parseModuleId(normalize(id))
         const isIsland = isIslandFile(pathname, options)
@@ -140,12 +140,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           }
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: s.generateMap({ source: id, includeContent: true }),
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

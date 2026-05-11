@@ -3,7 +3,7 @@ import { defu } from 'defu'
 import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
 import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
@@ -116,7 +116,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
 export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
   return {
     name: 'nuxt:remove-plugin-metadata',
-    transform (code, id) {
+    transform (code, id, meta?: unknown) {
       id = normalize(id)
       const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
       if (!plugin) { return }
@@ -140,7 +140,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
         }
       }
 
-      const s = new MagicString(code)
+      const s = rolldownString(code, id, meta)
       let wrapped = false
       const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
@@ -182,12 +182,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
         logger.warn(`Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`)
       }
 
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server ? s.generateMap({ hires: true }) : null,
-        }
-      }
+      return generateTransform(s, id)
     },
   }
 })

@@ -3,7 +3,7 @@ import { dirname, relative } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
 import type { Nuxt } from '@nuxt/schema'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { findStaticImports } from 'mlly'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
@@ -290,7 +290,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               exclude: environment.name === 'client' ? [] : [/\?.*macro=/, /\?.*nuxt_component=/],
             },
           },
-          async handler (code, id) {
+          async handler (code, id, meta?: unknown) {
             if (environment.name === 'client') {
               // We will either teleport global CSS to the 'entry' chunk on the server side
               // or include it here in the client build so it is emitted in the CSS.
@@ -298,7 +298,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                 const idClientCSSMap = clientCSSMap[id] ||= new Set()
                 if (!options.globalCSS.length) { return }
 
-                const s = new MagicString(code)
+                const s = rolldownString(code, id, meta)
                 for (const file of options.globalCSS) {
                   const resolved = await this.resolve(file) ?? await this.resolve(file, id)
                   const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
@@ -312,12 +312,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                   }
                   idClientCSSMap.add(resolved.id)
                 }
-                if (s.hasChanged()) {
-                  return {
-                    code: s.toString(),
-                    map: s.generateMap({ hires: true }),
-                  }
-                }
+                return generateTransform(s, id)
               }
               return
             }
