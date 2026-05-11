@@ -61,9 +61,9 @@
     "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.22",
     "nitropack": "2.13.4",
-    "obuild": "0.4.33",
+    "obuild": "0.4.35",
     "postcss": "8.5.14",
-    "rolldown": "1.0.0-rc.16",
+    "rolldown": "1.0.0",
     "rollup": "4.60.3",
     "rollup-plugin-visualizer": "7.0.1",
     "vue": "3.5.34"
