@@ -78,7 +78,7 @@
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "7.0.0",
     "nuxt": "workspace:*",
-    "obuild": "0.4.34",
+    "obuild": "0.4.35",
     "vitest": "4.1.5"
   },
   "engines": {
