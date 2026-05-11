@@ -366,7 +366,7 @@ export class NuxtPerfProfiler {
         }
       }),
       slowHooks: this.#computeSlowHooks(new Set(allPhases.map(p => p.name))),
-      modules: [...this.#modules].sort((a, b) => b.setupTime - a.setupTime),
+      modules: this.#modules.toSorted((a, b) => b.setupTime - a.setupTime),
       bundlerPlugins: [...this.#bundlerPluginTimings.entries()]
         .map(([name, hookMap]) => {
           const hooks: Record<string, PluginHookTiming> = {}
@@ -617,7 +617,7 @@ export class NuxtPerfProfiler {
     const emitPluginSpans = (spans: typeof viteSpans, label: string, baseTid: number) => {
       if (spans.length === 0) { return }
       // Sort by start time for lane allocation
-      const sorted = [...spans].sort((a, b) => a.startTime - b.startTime)
+      const sorted = spans.toSorted((a, b) => a.startTime - b.startTime)
       // Each lane tracks when it becomes free (end time in ms)
       const laneEnds: number[] = []
 
