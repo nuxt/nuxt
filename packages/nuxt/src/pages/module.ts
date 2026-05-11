@@ -10,7 +10,7 @@ import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
-import { resolveTypePath } from '../core/utils/types.ts'
+import { resolveTypePaths } from '../core/utils/types.ts'
 import { logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
@@ -120,7 +120,7 @@ export default defineNuxtModule({
     }
 
     nuxt.options.alias['#vue-router'] = 'vue-router'
-    const routerPath = await resolveTypePath('vue-router', '', nuxt.options.modulesDir) || 'vue-router'
+    const routerPath = (await resolveTypePaths(['vue-router'], nuxt.options.modulesDir))[0]?.[1] || 'vue-router'
     nuxt.hook('prepare:types', ({ tsConfig }) => {
       tsConfig.compilerOptions ||= {}
       tsConfig.compilerOptions.paths ||= {}
@@ -347,7 +347,7 @@ export default defineNuxtModule({
 
     // Add vue-router route guard imports
     nuxt.hook('imports:sources', (sources) => {
-      const routerImports = sources.find(s => 'from' in s && s.from === '#app/composables/router' && s.imports.includes('onBeforeRouteLeave')) as InlinePreset | undefined
+      const routerImports = sources.find(s => typeof s === 'object' && 'from' in s && s.from === '#app/composables/router' && s.imports.includes('onBeforeRouteLeave')) as InlinePreset | undefined
       if (routerImports) {
         routerImports.from = 'vue-router'
       }

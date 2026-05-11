@@ -6,6 +6,7 @@
     "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
   },
   "dependencies": {
+    "hook-augmenting-module": "workspace:*",
     "nuxt": "workspace:*",
     "ofetch": "^2.0.0-alpha.3",
     "vue": "^3.5.22",

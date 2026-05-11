@@ -109,6 +109,31 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
     `)
   })
 
+  it('should auto-import deduplicated _resolveComponent calls (#30929)', async () => {
+    // Mimics what `@vue/compiler-sfc` emits for an SFC whose `<script setup lang="jsx">`
+    // block calls `resolveComponent` (via JSX) and whose `<template>` also calls
+    // `resolveComponent`: the second import is suffixed (`_resolveComponent2`) and
+    // the JSX-site is rewritten to `_createVNode(_resolveComponent2("MyComponent"), …)`.
+    const content = `import { resolveComponent as _resolveComponent, createVNode as _createVNode, resolveComponent as _resolveComponent2, createVNode as _createVNode2 } from "vue";
+export default {
+  __name: 'app',
+  setup(__props) {
+    const Jsx = _createVNode2(_resolveComponent2("MyComponent"), null, null);
+    return (_ctx, _cache) => {
+      const _component_OtherComponent = _resolveComponent("OtherComponent");
+      return _createVNode(_component_OtherComponent);
+    };
+  }
+};
+`
+    const code = await ((plugin.raw({}, { framework: 'vite' }) as { transform: (code: string, id: string) => { code: string } | null }).transform(
+      content,
+      '/app.vue?vue&type=script&setup=true&lang.jsx',
+    ))
+    expect(code?.code).toContain('import { default as __nuxt_component_0 } from "/components/MyComponent.vue"')
+    expect(code?.code).toContain('_createVNode2(__nuxt_component_0, null, null)')
+  })
+
   it('should auto-import JSX components with h() calls', async () => {
     const component = `
     import { h } from 'vue'
