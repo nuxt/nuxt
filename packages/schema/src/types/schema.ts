@@ -400,12 +400,17 @@ export interface ConfigSchema {
    */
   unhead: {
     /**
-     * Adds `PromisesPlugin` and disables Capo.js sorting.
+     * Disables Capo.js head tag sorting.
      *
-     * Ignored when `future.compatibilityVersion` >= 5.
+     * On compat v4, the unhead legacy plugin set (`DeprecationsPlugin`, `PromisesPlugin`,
+     * `TemplateParamsPlugin`, `AliasSortingPlugin`) is always loaded so existing head patterns
+     * (`hid`, `vmid`, `children`, `body: true`, promise values, `%s` template params)
+     * keep working.
      *
-     * @deprecated Will be removed. Resolve promise values before passing to `useHead` and remove
-     * deprecated head patterns (`hid`, `vmid`, `children`, `body: true`, `renderPriority`).
+     * Forced to `false` when `future.compatibilityVersion` >= 5.
+     *
+     * @deprecated Will be removed. Migrate off the deprecated head patterns and resolve promise
+     * values before passing to `useHead`.
      * @default false
      */
     legacy: boolean
