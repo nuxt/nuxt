@@ -22,8 +22,8 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-describe('dependency mismatch', () => {
-  it.sequential('expect mismatched dependency to log a warning', async () => {
+describe('dependency mismatch', { concurrent: false }, () => {
+  it('expect mismatched dependency to log a warning', async () => {
     vi.mocked(readPackageJSON).mockReturnValue(Promise.resolve({
       version: '3.0.0',
     }))
@@ -38,7 +38,7 @@ describe('dependency mismatch', () => {
 
     vi.mocked(readPackageJSON).mockRestore()
   })
-  it.sequential.each([
+  it.each([
     {
       name: 'nuxt version is lower',
       depVersion: inc(version, 'minor'),
