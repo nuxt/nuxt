@@ -1146,11 +1146,11 @@ describe('head tags', () => {
 
     // useHead - title & titleTemplate are working
     expect(headHtml).toContain('<title>head script setup - Nuxt Playground</title>')
-    // useSeoMeta - template params
+    // server-only useSeoMeta - template params
     expect(headHtml).toContain('<meta property="og:title" content="head script setup - Nuxt Playground">')
-    // useSeoMeta - refs
+    // server-only useSeoMeta - refs
     expect(headHtml).toContain('<meta name="description" content="head script setup description for Nuxt Playground">')
-    // useServerHead - shorthands
+    // server-only useHead - shorthands
     expect(headHtml).toContain('>/* Custom styles */</style>')
     // useHeadSafe - removes dangerous content
     expect(headHtml).not.toContain('<script id="xss-script">')
