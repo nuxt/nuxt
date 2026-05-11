@@ -182,7 +182,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   if (isRenderingPayload) {
     const response = renderPayloadResponse(ssrContext)
     if (import.meta.prerender) {
-      await payloadCache!.setItem(ssrContext.url, response)
+      await payloadCache!.setItem(ssrContext.url + '.json', response)
     }
 
     return returnResponse(event, response)
