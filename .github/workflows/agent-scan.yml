@@ -18,13 +18,6 @@ jobs:
   agentscan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - name: Cache AgentScan analysis
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
-        with:
-          path: .agentscan-cache
-          key: agentscan-cache-${{ github.actor }}
-          restore-keys: agentscan-cache-
       - name: AgentScan
         id: agentscan
         uses: MatteoGabriele/agentscan-action@a584774dd15cabe6df4c6ab45fc43514a3b56b2d
@@ -32,14 +25,15 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-members: "dependabot[bot],renovate[bot]"
           agent-scan-comment: false
-          cache-path: .agentscan-cache
       - name: Label flagged PR
         if: contains(fromJSON('["automation","suspicious"]'), steps.agentscan.outputs.classification) && !contains(steps.agentscan.outputs.community-flagged, 'true')
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          CLASSIFICATION: ${{ steps.agentscan.outputs.classification }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
-            const classification = '${{ steps.agentscan.outputs.classification }}';
+            const classification = process.env.CLASSIFICATION;
 
             const issue = context.payload.pull_request
             const labels = issue.labels?.map(l => l.name) || []
