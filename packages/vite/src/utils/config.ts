@@ -14,7 +14,7 @@ export function resolveClientEntry (config: ResolvedConfig) {
   throw new Error('No entry found in rollupOptions.input')
 }
 
-export function resolveServerEntry (config: ResolvedConfig, fallback?: string) {
+export function resolveServerEntry (config: ResolvedConfig) {
   const input = config.environments.ssr?.build.rollupOptions.input ?? config.build.rollupOptions.input
   if (input) {
     if (typeof input === 'string') {
@@ -23,10 +23,6 @@ export function resolveServerEntry (config: ResolvedConfig, fallback?: string) {
     if (!Array.isArray(input) && input.server) {
       return input.server
     }
-  }
-
-  if (fallback) {
-    return fallback
   }
 
   throw new Error('No entry found in rollupOptions.input')

@@ -212,7 +212,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           ? [
               vuePlugin(viteConfig.vue),
               viteJsxPlugin(viteConfig.vueJsx),
-              ViteNodePlugin(nuxt, serverEntry),
+              ViteNodePlugin(nuxt),
               ClientManifestPlugin(nuxt),
               DevServerPlugin(nuxt),
             ]
