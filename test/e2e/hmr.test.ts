@@ -384,7 +384,7 @@ test.describe('vite-only HMR tests', () => {
 
     // Wait for the page to be available SSR-side (file may need to be picked up
     // by the router after the writeFileSync above).
-    await expect(readCounter).toBeWithPolling(c => Number.isFinite(c))
+    await expect(readCounter).toBeWithPolling((c: unknown) => Number.isFinite(c))
     const before = await readCounter()
 
     // Edit the page to trigger handleHotUpdate, which invalidates the virtual
@@ -392,6 +392,6 @@ test.describe('vite-only HMR tests', () => {
     // so `counter` never advanced even though the plugin re-ran load().
     writeFileSync(pagePath, pageContents.replace('<!-- HMR_TRIGGER -->', '<!-- HMR_TRIGGER edited -->'))
 
-    await expect(readCounter).toBeWithPolling(c => Number.isFinite(c) && c > before)
+    await expect(readCounter).toBeWithPolling((c: unknown) => Number.isFinite(c) && c > before)
   })
 })
