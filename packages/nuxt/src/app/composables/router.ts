@@ -127,7 +127,18 @@ export interface NavigateToOptions {
   open?: OpenOptions
 }
 
-const URL_QUOTE_RE = /"/g
+const HTML_ATTR_UNSAFE_RE = /[&"'<>]/g
+const HTML_ATTR_ENCODE_MAP: Record<string, string> = {
+  '&': '%26',
+  '"': '%22',
+  '\'': '%27',
+  '<': '%3C',
+  '>': '%3E',
+}
+function encodeForHtmlAttr (value: string): string {
+  return value.replace(HTML_ATTR_UNSAFE_RE, c => HTML_ATTR_ENCODE_MAP[c]!)
+}
+
 /**
  * A helper that aids in programmatic navigation within your Nuxt application.
  *
@@ -201,7 +212,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
-        const encodedLoc = location.replace(URL_QUOTE_RE, '%22')
+        const encodedLoc = encodeForHtmlAttr(location)
         const encodedHeader = encodeURL(location, isExternalHost)
 
         nuxtApp.ssrContext!['~renderResponse'] = {
