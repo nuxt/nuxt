@@ -355,8 +355,8 @@ describe('useFetch', () => {
   // two useFetch calls with the same shape share an auto-key; with watch:false
   // the key is frozen at first init, so a second instance reads the first's data.
   it('does not leak data between instances sharing an auto-key with watch:false + execute()', async () => {
-    registerEndpoint('/api/key/1', defineEventHandler(event => ({ url: '/api/key/1', q: event.req.url })))
-    registerEndpoint('/api/key/2', defineEventHandler(event => ({ url: '/api/key/2', q: event.req.url })))
+    registerEndpoint('/api/key/1', defineEventHandler(() => ({ url: '/api/key/1' })))
+    registerEndpoint('/api/key/2', defineEventHandler(() => ({ url: '/api/key/2' })))
 
     const createScope = () => () => {
       const id = ref(1)
