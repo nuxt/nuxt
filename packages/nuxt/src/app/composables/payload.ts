@@ -113,8 +113,13 @@ async function _isPrerenderedInManifest (url: string) {
     return false
   }
   url = url === '/' ? url : url.replace(/\/$/, '')
-  const manifest = await getAppManifest()
-  return manifest.prerendered.includes(url)
+  try {
+    const manifest = await getAppManifest()
+    return manifest.prerendered.includes(url)
+  } catch {
+    // handle errors fetching manifest
+    return false
+  }
 }
 
 /**
