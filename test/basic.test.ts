@@ -2902,7 +2902,9 @@ describe('nuxt-time', () => {
       '"30 seconds ago"',
     )
 
-    await page.getByTestId('relative').getByText('32 seconds ago').textContent()
+    // Wait for the relative time to tick at least once. Under CI load `setInterval`
+    // can be delayed enough that `Math.round` skips a value (e.g. 30 → 31 → 33).
+    await expect.poll(() => page.getByTestId('relative').textContent(), { timeout: 10_000 }).toMatch(/3[1-9] seconds ago/)
 
     // No hydration errors
     expect(logs.join('')).toMatchInlineSnapshot('""')
