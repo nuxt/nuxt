@@ -17,6 +17,11 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     const logger = useLogger('nuxt:unhead')
     const runtimeDir = resolve(distDir, 'head/runtime')
 
+    /* eslint-disable @typescript-eslint/no-deprecated */
+    const legacy = options.legacy
+    const headNext = nuxt.options.experimental.headNext
+    /* eslint-enable @typescript-eslint/no-deprecated */
+
     // Transpile @unhead/vue
     nuxt.options.build.transpile.push('@unhead/vue')
 
@@ -97,10 +102,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       filename: 'unhead-options.mjs',
       getContents () {
         const isV5 = nuxt.options.future.compatibilityVersion >= 5
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- reading user-facing deprecated option to emit migration warnings
-        const legacy = options.legacy
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- reading user-facing deprecated option to emit migration warnings
-        const headNext = nuxt.options.experimental.headNext
 
         // legacy is forced false on v5 by the schema resolver (which warns there), so only v4 reaches this
         if (legacy) {
