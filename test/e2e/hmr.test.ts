@@ -368,4 +368,30 @@ test.describe('vite-only HMR tests', () => {
     )
     expect(errors).toStrictEqual([])
   })
+
+  // https://github.com/nuxt/nuxt/issues/30169
+  test('SSR re-evaluates virtual modules invalidated via handleHotUpdate', async ({ fetch }) => {
+    const pagePath = join(fixtureDir, 'app/pages/virtual-module.vue')
+    const pageContents = readFileSync(join(sourceDir, 'app/pages/virtual-module.vue'), 'utf8')
+    writeFileSync(pagePath, pageContents)
+
+    async function readCounter () {
+      const res = await fetch('/virtual-module')
+      const html = await res.text()
+      const match = html.match(/data-testid="counter"[^>]*>(\d+)</)
+      return match ? Number(match[1]) : Number.NaN
+    }
+
+    // Wait for the page to be available SSR-side (file may need to be picked up
+    // by the router after the writeFileSync above).
+    await expect(readCounter).toBeWithPolling(c => Number.isFinite(c))
+    const before = await readCounter()
+
+    // Edit the page to trigger handleHotUpdate, which invalidates the virtual
+    // module. The bug was that SSR continued to serve the cached evaluation,
+    // so `counter` never advanced even though the plugin re-ran load().
+    writeFileSync(pagePath, pageContents.replace('<!-- HMR_TRIGGER -->', '<!-- HMR_TRIGGER edited -->'))
+
+    await expect(readCounter).toBeWithPolling(c => Number.isFinite(c) && c > before)
+  })
 })
