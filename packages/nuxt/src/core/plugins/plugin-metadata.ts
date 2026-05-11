@@ -44,7 +44,10 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
   if (metaCache[code]) {
     return metaCache[code]
   }
-  // non-object syntax plugin
+  // non-object syntax plugin fast paths
+  if (/defineLazyNuxtPlugin\s*\([\w(]/.test(code)) {
+    return { lazy: true, order: orderMap.default }
+  }
   if (/defineNuxtPlugin\s*\([\w(]/.test(code)) {
     return {}
   }
@@ -52,7 +55,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
 
     const name = 'name' in node.callee && node.callee.name
-    if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin') { return }
+    if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin' && name !== 'defineLazyNuxtPlugin') { return }
 
     if (name === 'definePayloadPlugin') {
       meta.order = internalOrderMap['user-revivers']
@@ -71,6 +74,11 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
       meta = defu(extractMetaFromObject(plugin.properties), meta)
     }
 
+    // Set after defu merge so defineLazyNuxtPlugin always wins over object properties
+    if (name === 'defineLazyNuxtPlugin') {
+      meta.lazy = true
+    }
+
     meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
     delete meta.enforce
   })
@@ -84,6 +92,7 @@ const keys: Record<PluginMetaKey, string> = {
   order: 'order',
   enforce: 'enforce',
   dependsOn: 'dependsOn',
+  lazy: 'lazy',
 }
 function isMetadataKey (key: string | IdentifierName): key is PluginMetaKey {
   return typeof key !== 'string' ? key.name in keys : key in keys
@@ -142,11 +151,11 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
 
       const s = new MagicString(code)
       let wrapped = false
-      const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
+      const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin', 'defineLazyNuxtPlugin'])
 
       try {
         parseAndWalk(code, id, (node) => {
-          if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && (node.imported.name === 'defineNuxtPlugin' || node.imported.name === 'definePayloadPlugin')) {
+          if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && (node.imported.name === 'defineNuxtPlugin' || node.imported.name === 'definePayloadPlugin' || node.imported.name === 'defineLazyNuxtPlugin')) {
             wrapperNames.add(node.local.name)
           }
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
@@ -156,7 +165,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           wrapped = true
 
           // Remove metadata that already has been extracted
-          if (!('order' in plugin) && !('name' in plugin)) { return }
+          if (!('order' in plugin) && !('name' in plugin) && !('lazy' in plugin)) { return }
           for (const [argIndex, arg] of node.arguments.entries()) {
             if (arg.type !== 'ObjectExpression') { continue }
 
@@ -164,7 +173,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
               if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
 
               const propertyKey = property.key.name
-              if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name') {
+              if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name' || propertyKey === 'lazy') {
                 const nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
                 const nextIndex = nextNode?.start || (arg.end - 1)
 

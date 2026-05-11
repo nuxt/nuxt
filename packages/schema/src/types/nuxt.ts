@@ -20,6 +20,12 @@ export interface NuxtPlugin {
    */
   order?: number
   /**
+   * When true, the plugin will be dynamically imported and executed after hydration
+   * instead of being included in the critical entry bundle. This reduces initial JS
+   * parse time for plugins that only need to run post-hydration.
+   */
+  lazy?: boolean
+  /**
    * @internal
    */
   name?: string

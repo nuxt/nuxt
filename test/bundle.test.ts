@@ -46,17 +46,51 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
         "_nuxt/a.js",
         "_nuxt/client-component.js",
         "_nuxt/default.js",
+        "_nuxt/defu.js",
         "_nuxt/entry.js",
+        "_nuxt/manifest.js",
         "_nuxt/pages.js",
         "_nuxt/runtime-core.js",
         "_nuxt/server-component.js",
-        "_nuxt/utils.js",
       ]
     `)
   })
 
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
+
+    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"66.7k"`)
+
+    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"462k"`)
+
+    const packages = modules.files
+      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
+      .sort()
+    expect(packages).toMatchInlineSnapshot(`
+      [
+        "@unhead/vue+[...]",
+        "defu",
+        "destr",
+        "devalue",
+        "h3+rou3+srvx",
+        "ocache+ohash",
+        "ofetch",
+        "pathe",
+        "scule",
+        "ufo",
+        "unctx",
+        "unstorage",
+        "vue",
+        "vue-bundle-renderer",
+        "vue__server-renderer",
+      ]
+    `)
+  })
+
+  it('default server bundle size (inlined vue modules)', async () => {
+    const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"66.7k"`)

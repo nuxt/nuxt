@@ -1626,6 +1626,12 @@ export interface ConfigSchema {
      * multiple times on the same Nuxt instance (e.g. in benchmarks).
      */
     clearBuildHooks: boolean
+
+    /**
+     * Enable lazy plugin support via `defineLazyNuxtPlugin`. Lazy plugins are code-split
+     * and executed after hydration, reducing initial JS bundle size.
+     */
+    lazyPlugins: boolean
   }
 
   /**

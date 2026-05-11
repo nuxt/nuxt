@@ -138,6 +138,11 @@ export default defineResolvers({
         return 'chokidar' as const
       },
     },
+    /**
+     * Enable lazy plugin support via `defineLazyNuxtPlugin`. Lazy plugins are code-split
+     * and executed after hydration, reducing initial JS bundle size.
+     */
+    lazyPlugins: false,
     asyncContext: false,
     headNext: true,
     inlineRouteRules: false,

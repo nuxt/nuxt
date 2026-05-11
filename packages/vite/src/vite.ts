@@ -30,6 +30,7 @@ import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
 import { TypeCheckPlugin } from './plugins/type-check.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
+import { LazyPluginPreloadPlugin } from './plugins/lazy-plugins.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
@@ -215,6 +216,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ModulePreloadPolyfillPlugin(),
         // ensure changes in chunks do not invalidate whole build
         StableEntryPlugin(nuxt),
+        LazyPluginPreloadPlugin(nuxt),
         AnalyzePlugin(nuxt),
         OptimizeDepsHintPlugin(nuxt),
       ],
