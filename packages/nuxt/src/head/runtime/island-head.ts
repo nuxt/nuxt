@@ -6,7 +6,7 @@ import type { VueHeadClient } from '@unhead/vue/types'
  */
 export function freezeHead (head: VueHeadClient): () => void {
   const realPush = head.push
-  head.push = () => ({ dispose: () => {}, patch: () => {}, _poll: () => {} }) as ReturnType<typeof head.push>
+  head.push = () => ({ dispose: () => {}, patch: () => {}, _i: 0 }) as ReturnType<typeof head.push>
   return () => {
     head.push = realPush
   }

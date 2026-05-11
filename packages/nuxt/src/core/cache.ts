@@ -327,7 +327,7 @@ async function writeCache (cwd: string, sources: string | string[], cacheFile: s
 function getCacheDir (nuxt: Nuxt) {
   let cacheDir = join(nuxt.options.workspaceDir, 'node_modules')
   if (!existsSync(cacheDir)) {
-    for (const dir of [...nuxt.options.modulesDir].sort((a, b) => a.length - b.length)) {
+    for (const dir of nuxt.options.modulesDir.toSorted((a, b) => a.length - b.length)) {
       if (existsSync(dir)) {
         cacheDir = dir
         break

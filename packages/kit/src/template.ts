@@ -346,7 +346,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   }
 
   const nestedModulesDirs: string[] = []
-  for (const dir of [...nuxt.options.modulesDir].sort()) {
+  for (const dir of nuxt.options.modulesDir.toSorted()) {
     const withSlash = withTrailingSlash(dir)
     if (nestedModulesDirs.every(d => !d.startsWith(withSlash))) {
       nestedModulesDirs.push(withSlash)

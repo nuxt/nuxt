@@ -1132,11 +1132,11 @@ describe('head tags', () => {
 
     // useHead - title & titleTemplate are working
     expect(headHtml).toContain('<title>head script setup - Nuxt Playground</title>')
-    // useSeoMeta - template params
+    // server-only useSeoMeta - template params
     expect(headHtml).toContain('<meta property="og:title" content="head script setup - Nuxt Playground">')
-    // useSeoMeta - refs
+    // server-only useSeoMeta - refs
     expect(headHtml).toContain('<meta name="description" content="head script setup description for Nuxt Playground">')
-    // useServerHead - shorthands
+    // server-only useHead - shorthands
     expect(headHtml).toContain('>/* Custom styles */</style>')
     // useHeadSafe - removes dangerous content
     expect(headHtml).not.toContain('<script id="xss-script">')
@@ -2887,7 +2887,9 @@ describe('nuxt-time', () => {
       '"30 seconds ago"',
     )
 
-    await page.getByTestId('relative').getByText('32 seconds ago').textContent()
+    // Wait for the relative time to tick at least once. Under CI load `setInterval`
+    // can be delayed enough that `Math.round` skips a value (e.g. 30 → 31 → 33).
+    await expect.poll(() => page.getByTestId('relative').textContent(), { timeout: 10_000 }).toMatch(/3[1-9] seconds ago/)
 
     // No hydration errors
     expect(logs.join('')).toMatchInlineSnapshot('""')

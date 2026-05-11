@@ -4,7 +4,7 @@ import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
 
 import { parseAndWalk, walk } from 'oxc-walker'
-import type { BindingPattern, BindingProperty, CallExpression, Node, ObjectExpression, Program, ReturnStatement, VariableDeclaration } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 import { distDir } from '../../dirs.ts'
 import { VUE_ID_RE } from '../../core/utils/plugins.ts'
 
@@ -83,7 +83,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
         })
 
         const componentsToRemove = [...componentsToRemoveSet]
-        const removedNodes = new WeakSet<Node>()
+        const removedNodes = new WeakSet<ESTree.Node>()
 
         for (const componentName of componentsToRemove) {
         // remove import declaration if it exists
@@ -110,7 +110,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
 /**
  * find and remove all property with the name parameter from the setup return statement and the __returned__ object
  */
-function removeFromSetupReturn (codeAst: Program, name: string, magicString: MagicString) {
+function removeFromSetupReturn (codeAst: ESTree.Program, name: string, magicString: MagicString) {
   let walkedInSetup = false
   walk(codeAst, {
     enter (node) {
@@ -120,17 +120,17 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
         // walk into the setup function
         walkedInSetup = true
         if (node.value.body?.type === 'BlockStatement') {
-          const returnStatement = node.value.body.body.find(statement => statement.type === 'ReturnStatement') as ReturnStatement
+          const returnStatement = node.value.body.body.find(statement => statement.type === 'ReturnStatement') as ESTree.ReturnStatement
           if (returnStatement && returnStatement.argument?.type === 'ObjectExpression') {
             // remove from return statement
             removePropertyFromObject(returnStatement.argument, name, magicString)
           }
 
           // remove from __returned__
-          const variableList = node.value.body.body.filter((statement): statement is VariableDeclaration => statement.type === 'VariableDeclaration')
+          const variableList = node.value.body.body.filter((statement): statement is ESTree.VariableDeclaration => statement.type === 'VariableDeclaration')
           const returnedVariableDeclaration = variableList.find(declaration => declaration.declarations[0]?.id.type === 'Identifier' && declaration.declarations[0]?.id.name === '__returned__' && declaration.declarations[0]?.init?.type === 'ObjectExpression')
           if (returnedVariableDeclaration) {
-            const init = returnedVariableDeclaration.declarations[0]?.init as ObjectExpression | undefined
+            const init = returnedVariableDeclaration.declarations[0]?.init as ESTree.ObjectExpression | undefined
             if (init) {
               removePropertyFromObject(init, name, magicString)
             }
@@ -144,7 +144,7 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
 /**
  * remove a property from an object expression
  */
-function removePropertyFromObject (node: ObjectExpression, name: string, magicString: MagicString) {
+function removePropertyFromObject (node: ESTree.ObjectExpression, name: string, magicString: MagicString) {
   for (const property of node.properties) {
     if (property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === name) {
       magicString.remove(property.start, property.end + 1)
@@ -157,11 +157,11 @@ function removePropertyFromObject (node: ObjectExpression, name: string, magicSt
 /**
  * is the node a call expression ssrRenderComponent()
  */
-function isSsrRender (node: Node): node is CallExpression {
+function isSsrRender (node: ESTree.Node): node is ESTree.CallExpression {
   return node.type === 'CallExpression' && node.callee.type === 'Identifier' && SSR_RENDER_RE.test(node.callee.name)
 }
 
-function removeImportDeclaration (ast: Program, importName: string, magicString: MagicString): boolean {
+function removeImportDeclaration (ast: ESTree.Program, importName: string, magicString: MagicString): boolean {
   for (const node of ast.body) {
     if (node.type !== 'ImportDeclaration' || !node.specifiers) {
       continue
@@ -213,7 +213,7 @@ function isComponentNotCalledInSetup (code: string, id: string, name: string): s
  * retrieve the component identifier being used on ssrRender callExpression
  * @param ssrRenderNode - ssrRender callExpression
  */
-function getComponentName (ssrRenderNode: CallExpression): string | undefined {
+function getComponentName (ssrRenderNode: ESTree.CallExpression): string | undefined {
   const componentCall = ssrRenderNode.arguments[0]
   if (!componentCall) { return }
 
@@ -231,7 +231,7 @@ function getComponentName (ssrRenderNode: CallExpression): string | undefined {
 /**
  * remove a variable declaration within the code
  */
-function removeVariableDeclarator (codeAst: Program, name: string, magicString: MagicString, removedNodes: WeakSet<Node>): Node | void {
+function removeVariableDeclarator (codeAst: ESTree.Program, name: string, magicString: MagicString, removedNodes: WeakSet<ESTree.Node>): ESTree.Node | void {
   // remove variables
   walk(codeAst, {
     enter (node) {
@@ -250,23 +250,23 @@ function removeVariableDeclarator (codeAst: Program, name: string, magicString: 
 /**
  * find the Pattern to remove which the identifier is equal to the name parameter.
  */
-function findMatchingPatternToRemove (node: BindingPattern, toRemoveIfMatched: Node, name: string, removedNodeSet: WeakSet<Node>): Node | undefined {
+function findMatchingPatternToRemove (node: ESTree.BindingPattern, toRemoveIfMatched: ESTree.Node, name: string, removedNodeSet: WeakSet<ESTree.Node>): ESTree.Node | undefined {
   if (node.type === 'Identifier') {
     if (node.name === name) {
       return toRemoveIfMatched
     }
   } else if (node.type === 'ArrayPattern') {
-    const elements = node.elements.filter((e): e is BindingPattern => e !== null && !removedNodeSet.has(e))
+    const elements = node.elements.filter((e): e is ESTree.BindingPattern => e !== null && !removedNodeSet.has(e))
 
     for (const element of elements) {
       const matched = findMatchingPatternToRemove(element, elements.length > 1 ? element : toRemoveIfMatched, name, removedNodeSet)
       if (matched) { return matched }
     }
   } else if (node.type === 'ObjectPattern') {
-    const properties = node.properties.filter((e): e is BindingProperty => e.type === 'Property' && !removedNodeSet.has(e))
+    const properties = node.properties.filter((e): e is ESTree.BindingProperty => e.type === 'Property' && !removedNodeSet.has(e))
 
     for (const [index, property] of properties.entries()) {
-      let nodeToRemove: Node = property
+      let nodeToRemove: ESTree.Node = property
       if (properties.length < 2) {
         nodeToRemove = toRemoveIfMatched
       }

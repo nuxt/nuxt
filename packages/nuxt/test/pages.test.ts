@@ -48,19 +48,19 @@ describe('pages:generateRoutesFromFiles', () => {
   const enUSComparator = new Intl.Collator('en-US')
   function sortRoutes (routes: NuxtPage[]) {
     for (const route of routes) {
-      route.children &&= sortRoutes([...route.children])
+      route.children &&= sortRoutes(route.children)
     }
-    return [...routes].sort((a, b) => enUSComparator.compare(b.path, a.path))
+    return routes.toSorted((a, b) => enUSComparator.compare(b.path, a.path))
   }
 
   // Sort normalized route arrays by their serialized path for order-independent snapshots
   function sortNormalizedArray (arr: any[]): any[] {
-    return [...arr].map((item: any) => {
+    return arr.map((item) => {
       if (item && typeof item === 'object' && item.children) {
         return { ...item, children: sortNormalizedArray(item.children) }
       }
       return item
-    }).sort((a: any, b: any) => {
+    }).sort((a, b) => {
       const aPath = typeof a === 'string' ? a : JSON.stringify(a)
       const bPath = typeof b === 'string' ? b : JSON.stringify(b)
       return enUSComparator.compare(bPath, aPath)
