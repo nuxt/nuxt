@@ -72,7 +72,7 @@
     "vue-loader": "17.4.2",
     "vue-router": "5.0.6",
     "webpack": "5.106.2",
-    "webpack-dev-middleware": "7.4.5"
+    "webpack-dev-middleware": "8.0.3"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

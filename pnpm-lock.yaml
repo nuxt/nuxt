@@ -773,8 +773,8 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       webpack-dev-middleware:
-        specifier: ^7.4.5
-        version: 7.4.5(tslib@2.8.1)(webpack@5.106.2)
+        specifier: ^8.0.3
+        version: 8.0.3(tslib@2.8.1)(webpack@5.106.2)
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -934,8 +934,8 @@ importers:
         specifier: 5.106.2
         version: 5.106.2(esbuild@0.28.0)
       webpack-dev-middleware:
-        specifier: 7.4.5
-        version: 7.4.5(tslib@2.8.1)(webpack@5.106.2(esbuild@0.28.0))
+        specifier: 8.0.3
+        version: 8.0.3(tslib@2.8.1)(webpack@5.106.2(esbuild@0.28.0))
 
   packages/ui-templates:
     devDependencies:
@@ -1229,8 +1229,8 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       webpack-dev-middleware:
-        specifier: ^7.4.5
-        version: 7.4.5(tslib@2.8.1)(webpack@5.106.2)
+        specifier: ^8.0.3
+        version: 8.0.3(tslib@2.8.1)(webpack@5.106.2)
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -9568,11 +9568,11 @@ packages:
     engines: {node: '>= 20.9.0'}
     hasBin: true
 
-  webpack-dev-middleware@7.4.5:
-    resolution: {integrity: sha512-uxQ6YqGdE4hgDKNf7hUiPXOdtkXvBJXrfEGYSx7P7LC8hnUYGK70X6xQXUvXeNyBDDcsiQXpG2m3G9vxowaEuA==}
-    engines: {node: '>= 18.12.0'}
+  webpack-dev-middleware@8.0.3:
+    resolution: {integrity: sha512-zWrde9VZDiRaFuWsjHO40wm9LxxtXEk8DdzFXdU7eU5ZpiANnZZDBbZgN3guxbEoKqUHd9YupBmynyioz42nkA==}
+    engines: {node: '>= 20.9.0'}
     peerDependencies:
-      webpack: ^5.0.0
+      webpack: ^5.101.0
     peerDependenciesMeta:
       webpack:
         optional: true
@@ -18483,9 +18483,8 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  webpack-dev-middleware@7.4.5(tslib@2.8.1)(webpack@5.106.2(esbuild@0.28.0)):
+  webpack-dev-middleware@8.0.3(tslib@2.8.1)(webpack@5.106.2(esbuild@0.28.0)):
     dependencies:
-      colorette: 2.0.20
       memfs: 4.57.2(tslib@2.8.1)
       mime-types: 3.0.2
       on-finished: 2.4.1
@@ -18496,9 +18495,8 @@ snapshots:
     transitivePeerDependencies:
       - tslib
 
-  webpack-dev-middleware@7.4.5(tslib@2.8.1)(webpack@5.106.2):
+  webpack-dev-middleware@8.0.3(tslib@2.8.1)(webpack@5.106.2):
     dependencies:
-      colorette: 2.0.20
       memfs: 4.57.2(tslib@2.8.1)
       mime-types: 3.0.2
       on-finished: 2.4.1
