@@ -101,6 +101,9 @@ export default withMatrix({
     layoutTransition: true,
     teleportId: 'nuxt-teleport',
     teleportTag: 'span',
+    importMap: {
+      'lodash': 'https://cdn.example.com/lodash.esm.js',
+    },
     head: {
       charset: 'utf-8',
       link: [undefined],

@@ -145,6 +145,20 @@ export default defineResolvers({
     spaLoaderAttrs: {
       id: '__nuxt-loader',
     },
+    importMap: {
+      $resolve: (val) => {
+        if (val && typeof val === 'object' && !Array.isArray(val)) {
+          const result: Record<string, string> = {}
+          for (const [key, value] of Object.entries(val)) {
+            if (typeof value === 'string') {
+              result[key] = value
+            }
+          }
+          return result
+        }
+        return {}
+      },
+    },
   },
   spaLoadingTemplate: {
     $resolve: async (val, get) => {
