@@ -32,6 +32,12 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   } else {
     _manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
       responseType: 'json',
+    }).then((res) => {
+      // handle errors fetching manifest, e.g. from an improperly configured proxy
+      if (!res || typeof res !== 'object' || !Array.isArray((res as NuxtAppManifest).prerendered)) {
+        throw new Error('[nuxt] Received malformed app manifest. Ensure that `builds/meta/*.json` is served as JSON by your hosting/proxy and not rewritten to an HTML fallback.')
+      }
+      return res
     })
   }
   manifest = _manifest
