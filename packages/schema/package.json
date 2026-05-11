@@ -50,7 +50,7 @@
     "chokidar": "5.0.0",
     "compatx": "0.2.0",
     "css-minimizer-webpack-plugin": "8.0.0",
-    "cssnano": "7.1.9",
+    "cssnano": "8.0.1",
     "esbuild": "0.28.0",
     "esbuild-loader": "4.4.3",
     "file-loader": "6.2.0",
