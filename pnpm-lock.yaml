@@ -1320,6 +1320,12 @@ importers:
 
   test/fixtures/basic-types/_local-modules/hook-augmenting-module: {}
 
+  test/fixtures/build-assets-dir-collision:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/hmr:
     dependencies:
       nuxt:
