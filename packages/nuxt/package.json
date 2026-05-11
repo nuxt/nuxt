@@ -88,7 +88,7 @@
     "oxc-minify": "^0.129.0",
     "oxc-parser": "^0.129.0",
     "oxc-transform": "^0.129.0",
-    "oxc-walker": "^0.7.0",
+    "oxc-walker": "^1.0.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.1.0",
     "picomatch": "^4.0.4",
