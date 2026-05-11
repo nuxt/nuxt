@@ -55,14 +55,14 @@
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/test-utils": "4.0.3",
     "@nuxt/webpack-builder": "workspace:*",
-    "@playwright/test": "1.59.1",
+    "@playwright/test": "1.60.0",
     "@rspack/core": "2.0.2",
     "@testing-library/vue": "8.1.0",
     "@types/babel__core": "7.20.5",
     "@types/babel__helper-plugin-utils": "7.10.3",
     "@types/node": "24.12.3",
     "@types/semver": "7.7.1",
-    "@typescript-eslint/parser": "8.59.2",
+    "@typescript-eslint/parser": "8.59.3",
     "@unhead/vue": "3.1.0",
     "@vitest/coverage-v8": "4.1.6",
     "@vue/test-utils": "2.4.10",
@@ -94,7 +94,7 @@
     "ofetch": "2.0.0-alpha.3",
     "pathe": "2.0.3",
     "pkg-pr-new": "0.0.71",
-    "playwright-core": "1.59.1",
+    "playwright-core": "1.60.0",
     "rollup": "4.60.3",
     "semver": "7.8.0",
     "sherif": "1.11.1",
@@ -112,6 +112,6 @@
     "vue-tsc": "3.2.8",
     "webpack": "5.106.2"
   },
-  "packageManager": "pnpm@11.0.9",
+  "packageManager": "pnpm@11.1.0",
   "version": ""
 }
