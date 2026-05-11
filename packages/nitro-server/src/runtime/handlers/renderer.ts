@@ -128,8 +128,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     ssrContext.url = url
 
     event._path = event.node.req.url = url
-    if (import.meta.prerender && await payloadCache!.hasItem(url)) {
-      return payloadCache!.getItem(url) as Promise<Partial<RenderResponse>>
+    if (import.meta.prerender && await payloadCache!.hasItem(url + '.json')) {
+      return payloadCache!.getItem(url + '.json') as Promise<Partial<RenderResponse>>
     }
   }
 
@@ -189,7 +189,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   if (isRenderingPayload) {
     const response = renderPayloadResponse(ssrContext)
     if (import.meta.prerender) {
-      await payloadCache!.setItem(ssrContext.url, response)
+      await payloadCache!.setItem(ssrContext.url + '.json', response)
     }
     return response
   }
@@ -198,7 +198,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     // Hint nitro to prerender payload for this route
     appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
+    await payloadCache!.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext))
   }
 
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || routeOptions.noScripts
