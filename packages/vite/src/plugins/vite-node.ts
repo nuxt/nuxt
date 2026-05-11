@@ -180,7 +180,7 @@ function useInvalidates () {
   }
 }
 
-export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
+export function ViteNodePlugin (nuxt: Nuxt, serverEntry?: string): VitePlugin | undefined {
   if (!nuxt.options.dev) {
     return
   }
@@ -237,7 +237,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
         const viteNodeServerOptions = {
           socketPath,
           root: nuxt.options.srcDir,
-          entryPath: resolveServerEntry(ssrServer.config),
+          entryPath: resolveServerEntry(ssrServer.config, serverEntry),
           base: ssrServer.config.base || '/_nuxt/',
           maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
           baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
