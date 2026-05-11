@@ -27,12 +27,6 @@
       Link
     </NuxtLink>
     <NuxtLink
-      id="islands"
-      to="/islands"
-    >
-      islands
-    </NuxtLink>
-    <NuxtLink
       id="to-immediate-remove-unmounted"
       to="/useAsyncData/immediate-remove-unmounted"
     >
@@ -94,17 +88,8 @@
     <NuxtLink to="/big-page-1">
       to big 1
     </NuxtLink>
-    <NuxtLink to="/server-page">
-      to server page
-    </NuxtLink>
     <NuxtLink to="/page-load-hook">
       to page load hook
-    </NuxtLink>
-    <NuxtLink
-      data-testid="server-page-404"
-      to="/server-components/lost-page"
-    >
-      to 404 server page
     </NuxtLink>
 
     <NuxtLink

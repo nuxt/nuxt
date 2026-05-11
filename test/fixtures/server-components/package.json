@@ -1,9 +1,7 @@
 {
+  "name": "fixture-server-components",
   "private": true,
-  "name": "fixture-inline-styles-dedupe",
-  "scripts": {
-    "build": "nuxt build"
-  },
+  "type": "module",
   "dependencies": {
     "nuxt": "workspace:*"
   },
