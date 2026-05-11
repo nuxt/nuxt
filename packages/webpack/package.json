@@ -31,7 +31,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@vue/compiler-sfc": "3.5.33",
+    "@vue/compiler-sfc": "3.5.34",
     "autoprefixer": "^10.5.0",
     "css-loader": "^7.1.4",
     "css-minimizer-webpack-plugin": "^8.0.0",
@@ -42,7 +42,7 @@
     "exsolve": "^1.0.8",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
-    "jiti": "^2.6.1",
+    "jiti": "^2.7.0",
     "knitwork": "^1.3.0",
     "magic-string": "^0.30.21",
     "memfs": "^4.57.2",
@@ -57,7 +57,7 @@
     "postcss-loader": "^8.2.1",
     "postcss-url": "^10.1.3",
     "pug-plain-loader": "^1.1.0",
-    "seroval": "^1.5.3",
+    "seroval": "^1.5.4",
     "time-fix-plugin": "^2.0.7",
     "tinyglobby": "^0.2.16",
     "ufo": "^1.6.4",
@@ -78,10 +78,10 @@
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
     "h3": "1.15.11",
-    "h3-next": "npm:h3@2.0.1-rc.21",
+    "h3-next": "npm:h3@2.0.1-rc.22",
     "obuild": "0.4.35",
     "rollup": "4.60.3",
-    "vue": "3.5.33"
+    "vue": "3.5.34"
   },
   "peerDependencies": {
     "nuxt": "workspace:*",
