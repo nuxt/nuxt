@@ -209,6 +209,11 @@ export const createUseFetch = defineKeyedFunctionFactory({
         (_asyncDataOptions as typeof _asyncDataOptions & { _functionName?: string })._functionName ||= (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useFetch'
       }
 
+      if (watchSources === false) {
+        // opt-out of automatic re-execution while keeping key reactive
+        ;(_asyncDataOptions as typeof _asyncDataOptions & { _keyTriggersExecute?: boolean })._keyTriggersExecute = false
+      }
+
       if (alwaysRunFetchOnKeyChange && !immediate) {
         // ensure that updates to watched sources trigger an update
         function setImmediate () {
@@ -218,7 +223,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
         watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
       }
 
-      const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { signal }) => {
+      const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
         let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || globalThis.$fetch
 
         // Use fetch with request context and headers for server direct API calls
