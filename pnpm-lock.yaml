@@ -1335,6 +1335,12 @@ importers:
         specifier: ^4.6.4
         version: 4.6.4(vue@3.5.34(typescript@5.9.3))
 
+  test/fixtures/build-assets-dir-collision:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/hmr:
     dependencies:
       nuxt:
