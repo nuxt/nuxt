@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "name": "fixture-layout-reactivity",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}
