@@ -51,7 +51,12 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
       if (!layer) { return }
 
       const s = rolldownString(code, id, meta)
-      s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
+      for (const match of code.matchAll(ALIAS_RE)) {
+        const replacement = aliases[layer]?.[match[0] as '~']
+        if (replacement && replacement !== match[0]) {
+          s.overwrite(match.index, match.index + match[0].length, replacement)
+        }
+      }
 
       return generateTransform(s, id)
     },

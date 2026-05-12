@@ -64,9 +64,9 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         if (!SCRIPT_RE.test(code)) {
           s.prepend('<script setup>' + IMPORT_CODE + '</script>')
         } else {
-          s.replace(SCRIPT_RE_GLOBAL, (full) => {
-            return full + IMPORT_CODE
-          })
+          for (const match of code.matchAll(SCRIPT_RE_GLOBAL)) {
+            s.appendRight(match.index + match[0].length, IMPORT_CODE)
+          }
         }
 
         let hasNuxtClient = false

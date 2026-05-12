@@ -54,12 +54,12 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       const map = new Map<Component, string>()
       const s = rolldownString(code, id, meta)
       // replace `_resolveComponent("...")` to direct import
-      s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, ...args) => {
-        const groups = args.pop()
+      for (const match of code.matchAll(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE)) {
+        const groups = match.groups!
         const lazy = groups.hLazy || groups.lazy
         const modifier = groups.hModifier || groups.modifier
         const name = groups.hName || groups.name
-        const normalComponent = findComponent(components, name, options.mode)
+        const normalComponent = findComponent(components, name!, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent
 
@@ -83,7 +83,8 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
-            return identifier
+            s.overwrite(match.index, match.index + match[0].length, identifier)
+            continue
           }
 
           const isClientOnly = !component._raw && component.mode === 'client'
@@ -154,11 +155,9 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             }
           }
 
-          return identifier
+          s.overwrite(match.index, match.index + match[0].length, identifier)
         }
-        // no matched
-        return full
-      })
+      }
 
       if (imports.size) {
         s.prepend([...imports, ''].join('\n'))

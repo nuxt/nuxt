@@ -37,10 +37,13 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
 
         const NAME_RE = new RegExp(`__name:\\s*['"]${filename}['"]`)
         const s = rolldownString(code, id, meta)
-        s.replace(NAME_RE, `__name: ${JSON.stringify(component.pascalName)}`)
+        const nameMatch = NAME_RE.exec(code)
+        if (nameMatch) {
+          s.overwrite(nameMatch.index, nameMatch.index + nameMatch[0].length, `__name: ${JSON.stringify(component.pascalName)}`)
+        }
 
         // Without setup function, vue compiler does not generate __name
-        if (!s.hasChanged()) {
+        if (!nameMatch) {
           parseAndWalk(code, id, function (node) {
             if (node.type !== 'ExportDefaultDeclaration') {
               return
