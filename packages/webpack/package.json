@@ -35,7 +35,7 @@
     "autoprefixer": "^10.5.0",
     "css-loader": "^7.1.4",
     "css-minimizer-webpack-plugin": "^8.0.0",
-    "cssnano": "^7.1.9",
+    "cssnano": "^8.0.1",
     "defu": "^6.1.7",
     "esbuild-loader": "^4.4.3",
     "escape-string-regexp": "^5.0.0",
@@ -88,6 +88,6 @@
     "vue": "^3.3.4"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
   }
 }

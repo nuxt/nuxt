@@ -34,7 +34,7 @@
     "@vitejs/plugin-vue-jsx": "^5.1.5",
     "autoprefixer": "^10.5.0",
     "consola": "^3.4.2",
-    "cssnano": "^7.1.9",
+    "cssnano": "^8.0.1",
     "defu": "^6.1.7",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
@@ -93,6 +93,6 @@
     }
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
   }
 }
