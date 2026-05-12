@@ -1,5 +1,5 @@
-import { getCurrentScope, onScopeDispose, readonly, shallowRef } from 'vue'
-import type { Ref } from 'vue'
+import { getCurrentScope, onScopeDispose, readonly, shallowReadonly, shallowRef } from 'vue'
+import type { ShallowRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
 
 export type LoadingIndicatorOpts = {
@@ -21,9 +21,9 @@ export type LoadingIndicatorOpts = {
 
 export type LoadingIndicator = {
   _cleanup: () => void
-  progress: Readonly<Ref<number>>
-  isLoading: Readonly<Ref<boolean>>
-  error: Readonly<Ref<boolean>>
+  progress: Readonly<ShallowRef<number>>
+  isLoading: Readonly<ShallowRef<boolean>>
+  error: Readonly<ShallowRef<boolean>>
   start: (opts?: { force?: boolean }) => void
   set: (value: number, opts?: { force?: boolean }) => void
   finish: (opts?: { force?: boolean, error?: boolean }) => void
@@ -154,9 +154,9 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 
   return {
     _cleanup,
-    progress: readonly(progress),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
+    progress: shallowReadonly(progress),
+    isLoading: shallowReadonly(isLoading),
+    error: shallowReadonly(error),
     start,
     set,
     finish,
