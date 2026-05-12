@@ -57,7 +57,7 @@
     "@nuxt/schema": "workspace:*",
     "@vitejs/plugin-vue-jsx": "5.1.5",
     "autoprefixer": "10.5.0",
-    "cssnano": "7.1.9",
+    "cssnano": "8.0.1",
     "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.22",
     "nitropack": "2.13.4",
@@ -73,7 +73,7 @@
     "@babel/plugin-syntax-jsx": "^7.25.0",
     "@vitejs/plugin-vue-jsx": "^5.1.5",
     "autoprefixer": "^10.4.27",
-    "cssnano": "^7.1.3",
+    "cssnano": "^7.1.3 || ^8.0.0",
     "nuxt": "workspace:*",
     "rollup-plugin-visualizer": "^6.0.0 || ^7.0.1",
     "vue": "^3.3.4"
@@ -99,6 +99,6 @@
     }
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
   }
 }
