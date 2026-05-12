@@ -1,4 +1,4 @@
-import { getCurrentScope, onScopeDispose, readonly, shallowReadonly, shallowRef } from 'vue'
+import { getCurrentScope, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
 import type { ShallowRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
 
