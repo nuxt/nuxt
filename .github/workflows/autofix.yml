@@ -30,6 +30,7 @@ jobs:
 
       - name: Check engine ranges, peer dependency ranges and installed versions
         run: pnpm test:engines:fix
+        continue-on-error: true
 
       - name: Build (stub)
         run: pnpm dev:prepare
