@@ -65,12 +65,12 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     } else if (value instanceof ArrayBuffer) {
       segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
     } else if (value instanceof FormData) {
-      const obj: Record<string, string> = {}
+      const entries: Array<[string, string]> = []
       for (const entry of value.entries()) {
         const [key, val] = entry
-        obj[key] = val instanceof File ? val.name : val
+        entries.push([key, val instanceof File ? `${val.name}:${val.size}:${val.lastModified}` : val])
       }
-      segments.push(hash(obj))
+      segments.push(hash(entries))
     } else if (isPlainObject(value)) {
       segments.push(hash(reactive(value)))
     } else {
@@ -208,6 +208,11 @@ export const createUseFetch = defineKeyedFunctionFactory({
         (_asyncDataOptions as typeof _asyncDataOptions & { _functionName?: string })._functionName ||= (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useFetch'
       }
 
+      if (watchSources === false) {
+        // opt-out of automatic re-execution while keeping key reactive
+        ;(_asyncDataOptions as typeof _asyncDataOptions & { _keyTriggersExecute?: boolean })._keyTriggersExecute = false
+      }
+
       if (alwaysRunFetchOnKeyChange && !immediate) {
         // ensure that updates to watched sources trigger an update
         function setImmediate () {
@@ -217,7 +222,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
         watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
       }
 
-      const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { signal }) => {
+      const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
         const _$fetch: $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || $fetch
 
         return _$fetch(_request.value, { signal, ..._fetchOptions } as any) as Promise<_ResT>

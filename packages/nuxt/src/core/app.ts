@@ -139,7 +139,7 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // resolve layer
   const layerDirs = getLayerDirectories(nuxt)
-  const reversedLayerDirs = [...layerDirs].reverse()
+  const reversedLayerDirs = layerDirs.toReversed()
 
   // Resolve main (app.vue)
   app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.app, 'App'), join(d.app, 'app')]))
@@ -202,7 +202,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Add back plugins not specified in layers or user config
-  for (const p of [...nuxt.options.plugins].reverse()) {
+  for (const p of nuxt.options.plugins.toReversed()) {
     const plugin = normalizePlugin(p)
     if (!plugins.some(p => p.src === plugin.src)) {
       plugins.unshift(plugin)
@@ -210,7 +210,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  middleware = uniqueBy(await resolvePaths(nuxt, [...middleware].reverse(), 'path'), 'name').reverse()
+  middleware = uniqueBy(await resolvePaths(nuxt, middleware.toReversed(), 'path'), 'name').reverse()
   plugins = uniqueBy(await resolvePaths(nuxt, plugins, 'src'), 'src')
 
   // Resolve app.config

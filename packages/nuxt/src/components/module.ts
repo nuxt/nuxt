@@ -16,7 +16,7 @@ import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
+import type { Component, ComponentsDir, ComponentsOptions, NuxtPage } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const SLASH_SEPARATOR_RE = /[\\/]/
@@ -258,7 +258,23 @@ export default defineNuxtModule<ComponentsOptions>({
         },
       }, { server: false })
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false, prepend: true })
+      function getServerPages (): string[] {
+        const paths: string[] = []
+        function visit (pages: NuxtPage[]) {
+          for (const page of pages) {
+            if (page.mode === 'server' && page.file) {
+              paths.push(normalize(page.file))
+            }
+            if (page.children?.length) { visit(page.children) }
+          }
+        }
+        for (const app of Object.values(nuxt.apps)) {
+          if (app.pages) { visit(app.pages) }
+        }
+        return paths
+      }
+
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
         addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
