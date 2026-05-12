@@ -55,10 +55,12 @@ import{defineComponent as _defineComponent}from"vue";const _sfc_main=_defineComp
 
 function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", line, column, vnode) }
 `
-    const code = await ((plugin.raw({}, { framework: 'vite' }) as { transform: (code: string, id: string) => { code: string } | null }).transform(
+    const code = await ((plugin.raw({}, { framework: 'vite' }) as { transform: (code: string, id: string) => { code: string, map?: unknown } | null }).transform(
       content,
       '/app.vue',
     ))
+    expect(code?.map).toBeDefined()
+    delete code?.map
     expect(code).toMatchInlineSnapshot(`
       {
         "code": "import { default as __nuxt_component_0 } from "/components/MyComponent.vue";
@@ -67,7 +69,6 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
 
       function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", line, column, vnode) }
       ",
-        "map": undefined,
       }
     `)
 

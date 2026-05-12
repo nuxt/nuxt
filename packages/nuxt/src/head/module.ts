@@ -41,7 +41,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     nuxt.options.alias['#unhead/composables'] = resolve(runtimeDir, 'composables')
     addBuildPlugin(UnheadImportsPlugin({
-      sourcemap: !!nuxt.options.sourcemap.server,
       rootDir: nuxt.options.rootDir,
     }))
 
