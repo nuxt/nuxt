@@ -83,7 +83,7 @@
     "@rollup/plugin-babel": "7.0.0",
     "nuxt": "workspace:*",
     "obuild": "0.4.35",
-    "vitest": "4.1.5"
+    "vitest": "4.1.6"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
