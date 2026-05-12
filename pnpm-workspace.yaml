@@ -8,11 +8,11 @@ packages:
   - test/fixtures/*
   - test/fixtures/*/_local-modules/*
 
-ignoredBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - oxc-resolver
-  - unrs-resolver
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  oxc-resolver: false
+  unrs-resolver: false
 
 patchedDependencies:
   changelogen: patches/changelogen.patch
