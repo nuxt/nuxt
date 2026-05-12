@@ -269,7 +269,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
           socketPath,
           root: nuxt.options.srcDir,
           entryPath: spaEntryPath ?? resolveServerEntry(ssrServer.config),
-          base: ssrServer.config.base || '/_nuxt/',
+          base: '/',
           maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
           baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
           maxRetryDelay: nuxt.options.vite.viteNode?.maxRetryDelay,
