@@ -273,7 +273,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               continue
             }
 
-            const relativePath = relativeToSrcDir(moduleId)
+            const relativePath = relativeToSrcDir(stripQuery(moduleId))
             if (relativePath in cssMap) {
               cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativePath) || isEntry)
             }
@@ -332,7 +332,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
             }
 
-            const relativeId = relativeToSrcDir(id)
+            const relativeId = relativeToSrcDir(stripQuery(id))
             const idMap = cssMap[relativeId] ||= { files: [] }
             const idCssIds = idMap.cssIds ||= new Set()
 
