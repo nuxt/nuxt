@@ -121,13 +121,13 @@ describe('composables', () => {
       'useFetch',
       'useHead',
       'useHeadSafe',
+      'useServerHead',
+      'useServerHeadSafe',
+      'useServerSeoMeta',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
-      'useServerHead',
-      'useServerHeadSafe',
-      'useServerSeoMeta',
       'usePreviewMode',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
@@ -849,6 +849,24 @@ describe('routing utilities: `setPageLayout`', () => {
     setPageLayout('custom')
     expect(route.meta.layout).toBeUndefined()
     nuxtApp._processingMiddleware = false
+  })
+
+  it('should preserve layout and props on same-path (query-only) navigation', async () => {
+    const router = useRouter()
+    router.addRoute({
+      name: 'layout-props-test',
+      path: '/layout-props-test',
+      component: defineComponent({ template: '<div />' }),
+    })
+    await router.push('/layout-props-test')
+    const route = useRoute()
+    setPageLayout('with-props', { someProp: 'hello' })
+    expect(route.meta.layout).toEqual('with-props')
+    expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
+    await router.push({ query: { tab: 'b' } })
+    expect(route.meta.layout).toEqual('with-props')
+    expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
+    router.removeRoute('layout-props-test')
   })
 })
 

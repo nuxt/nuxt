@@ -482,7 +482,8 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
                 }
 
                 // Trigger the fetch for the new key if needed.
-                if (opts.immediate || hadData || wasRunning) {
+                const keyTriggersExecute = (opts as typeof opts & { _keyTriggersExecute?: boolean })._keyTriggersExecute !== false
+                if (keyTriggersExecute && (opts.immediate || hadData || wasRunning)) {
                   nuxtApp._asyncData[newKey].execute(initialFetchOptions)
                 }
 

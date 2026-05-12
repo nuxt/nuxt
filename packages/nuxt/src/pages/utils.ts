@@ -1,20 +1,20 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
+
 import { normalize } from 'pathe'
 import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-
 import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
-import { parseSync } from 'oxc-parser'
-import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
-import { transformSync } from 'oxc-transform'
+import { parseSync, transformSync } from 'rolldown/utils'
+import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
+
 import { getLoader } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -253,16 +253,16 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // TODO: always true because `extractScriptContent` only detects ts/tsx loader
       if (/tsx?/.test(script.loader)) {
         // slice, transform and parse the `define...` macro node to avoid parsing the whole file
-        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
+        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader, tsconfig: false })
         if (transformed.errors.length) {
           for (const error of transformed.errors) {
-            logger.warn(`Error while transforming \`${fnName}()\`` + error.codeframe)
+            logger.warn(`Error while transforming \`${fnName}()\`\n` + error.message)
           }
           return
         }
 
         // we already know that the first statement is a call expression
-        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]
+        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ESTree.ExpressionStatement).expression as ESTree.CallExpression).arguments[0]
         code = transformed.code
       }
 
@@ -284,7 +284,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
       if (fnName === 'definePageMeta') {
         for (const key of extractionKeys) {
-          const property = pageExtractArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+          const property = pageExtractArgument.properties.find((property): property is ESTree.ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
           if (!property) { continue }
 
           const { value, serializable } = isSerializable(code, property.value)
@@ -512,7 +512,7 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
   ]
 }
 
-export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
+export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {
   if (node.type === 'ObjectExpression') {
     const valueString = code.slice(node.start, node.end)
     try {

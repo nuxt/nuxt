@@ -3,7 +3,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { dirname } from 'pathe'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
-import type { ArrowFunctionExpression, Function } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
@@ -61,7 +61,7 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
 
             const callExpression = node
 
-            const fetcherFunction = callExpression.arguments.find((fn): fn is Function | ArrowFunctionExpression => fn.type === 'ArrowFunctionExpression' || fn.type === 'FunctionExpression')
+            const fetcherFunction = callExpression.arguments.find((fn): fn is ESTree.Function | ESTree.ArrowFunctionExpression => fn.type === 'ArrowFunctionExpression' || fn.type === 'FunctionExpression')
 
             if (!fetcherFunction || (fetcherFunction.type !== 'ArrowFunctionExpression' && fetcherFunction.type !== 'FunctionExpression') || !fetcherFunction.body) {
               return

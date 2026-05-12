@@ -71,7 +71,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
       }
     }
     if (link.length) {
-      ssrContext.head.push({ link }, { mode: 'server' })
+      ssrContext.head.push({ link })
     }
   }
 
