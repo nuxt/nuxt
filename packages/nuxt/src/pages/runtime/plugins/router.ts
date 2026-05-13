@@ -6,20 +6,17 @@ import { isSamePath, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
-
 import { toArray } from '../utils'
-
+import _routes, { handleHotUpdate } from '#build/routes'
+import routerOptions, { hashMode } from '#build/router.options.mjs'
+// @ts-expect-error virtual file
+import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
 const NUXT_LAYOUT_FROM_ROUTE_RULES = '__nuxt_layout_from_route_rules'
-
-import _routes, { handleHotUpdate } from '#build/routes'
-import routerOptions, { hashMode } from '#build/router.options.mjs'
-// @ts-expect-error virtual file
-import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (

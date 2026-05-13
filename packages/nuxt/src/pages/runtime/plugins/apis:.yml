@@ -1,0 +1,9 @@
+apis:
+  production:
+    root: ./openapi-descriptions/production.yaml
+  test:
+    root: ./openapi-descriptions/test.yaml
+
+lint:
+  extends:
+    - recommended

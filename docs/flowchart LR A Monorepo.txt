@@ -1,0 +1,113 @@
+flowchart LR
+  A[Monorepo Root\nKonfig & Orchestrierung] --> B[packages/nuxt\nCore Framework]
+  A --> C[packages/vite\nBuilder & Dev Server]
+  A --> D[packages/nitro-server\nServer Runtime]
+  A --> E[test + fixtures\nQualitätssicherung]
+
+  subgraph Build_Flow[Build Flow]
+    B --> C
+    C --> F[Client Bundle]
+    C --> G[SSR Server Bundle]
+    G --> D
+    F --> H[.output/public]
+    D --> I[.output/server]
+  end
+
+  subgraph Runtime_Flow[Runtime Flow]
+    J[Browser Request] --> K[Vite Dev Server oder Nitro]
+    K --> D
+    D --> L[Rendering + API + Middleware]
+    L --> M[HTML/JSON Response]
+  end
+
+  subgraph Test_Flow[Test Flow]
+    E --> N[Unit Tests\npackages/*/test]
+    E --> O[Integration Tests\ntest/*.test.ts]
+    E --> P[E2E/Fixtures\ntest/fixtures]
+    N --> Q[Regression Schutz]
+    O --> Q
+    P --> Q
+  end
+
+  Q --> A
+  
+  Stark, ich dokumentiere dir die wichtigsten Abhängigkeiten zwischen den Kernpaketen so, dass du sie direkt verwenden kannst.
+
+**Wichtigste Abhängigkeiten**
+1. nuxt → schema  
+Nuxt-Core nutzt zentrale Typen und Konfigurationsdefinitionen aus Schema.
+
+2. nuxt → kit  
+Nuxt-Core verwendet Kit-Helfer für Module, Templates, Hooks und Build-Orchestrierung.
+
+3. nuxt → vite  
+Nuxt übergibt Build- und Dev-Verantwortung an den Vite-Builder (Client/SSR, Plugins, Dev-Server).
+
+4. nuxt → nitro-server  
+Nuxt verbindet App-Layer mit Server-Runtime (Rendering, API, Middleware, Route Rules).
+
+5. vite ↔ nitro-server  
+Im Dev-Flow koppeln sich beide über Vite-Node/SSR-Mechanik; Nitro liefert Serverkontext, Vite liefert Transform/Module.
+
+6. nuxi → nuxt, kit  
+CLI startet und steuert Nuxt-Workflows wie dev, build, prepare.
+
+7. test, test, test, test  
+Tests hängen jeweils am Verhalten der zugehörigen Pakete und sichern Regressionen über Paketgrenzen hinweg.
+
+**Kurz als Kette**
+nuxi → nuxt → (vite + nitro-server) → output/runtime  
+und dabei gestützt durch schema + kit + Tests.
+
+Wenn du willst, schreibe ich dir das jetzt direkt als Abschnitt Dokumentation in eine Datei, z. B. in PROGRESS.md oder als neue Architektur-Notiz.
+Ich richte jetzt einen echten PR-Quality-Gate-Workflow ein; dafür prüfe ich zuerst die vorhandenen GitHub-Workflows und passe die Checks exakt auf eure vorhandenen npm-Skripte an.
+
+Read [](file:///home/josef/Niche-Connect/.github/workflows)
+
+Read [](file:///home/josef/Niche-Connect/package.json)
+
+Read [](file:///home/josef/Niche-Connect/apps/miniapp/package.json)
+
+Ich prüfe kurz die Smoke-Test-Skripte, damit der CI-Workflow nur stabile Checks enthält und nicht wegen externer URLs oder fehlender Runtime unnötig fehlschlägt.
+
+Read [](file:///home/josef/Niche-Connect/script/agent-smoke.mjs)
+
+Read [](file:///home/josef/Niche-Connect/script/a2a-smoke.mjs)
+
+Read [](file:///home/josef/Niche-Connect/apps/miniapp)
+
+Ich lege jetzt den PR-Workflow mit zwei stabilen Pflichtjobs an (Root + Miniapp) und dokumentiere direkt die Check-Namen für Branch-Protection.
+
+Created [](file:///home/josef/Niche-Connect/.github/workflows/pr-quality-gate.yml)
+
+Generating patch (16 lines) in [](file:///home/josef/Niche-Connect/CONTRIBUTING.md)
+
+
+```
+
+```
+Ich mache noch einen schnellen Fehlercheck über die neuen Dateien, damit der Workflow syntaktisch sauber ist, bevor ich abschließe.
+
+Checked [](file:///home/josef/Niche-Connect/.github/workflows/pr-quality-gate.yml), [](file:///home/josef/Niche-Connect/CONTRIBUTING.md), no problems found
+
+CI-Quality-Gate ist jetzt eingerichtet.
+
+Neu:
+1. PR-Workflow mit zwei Pflichtjobs: pr-quality-gate.yml
+2. Beitragshandbuch um Required Checks ergänzt: CONTRIBUTING.md
+
+Was der Workflow prüft:
+1. CI Root Quality
+2. CI Miniapp Quality
+
+Inhalt der Checks:
+1. Root: npm ci, Type Check, Build
+2. Miniapp: npm ci, Lint, Build
+
+Validierung:
+1. Keine Fehler in den neuen Dateien laut Workspace-Problems.
+
+Nächster sinnvoller Schritt:
+1. In GitHub Branch Protection für main die beiden Statuschecks als required markieren: CI Root Quality und CI Miniapp Quality.
+
+Made changes.
