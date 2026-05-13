@@ -378,6 +378,9 @@ importers:
       nitro:
         specifier: ^3.0.260311-beta
         version: 3.0.260311-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.3.6)(rollup@4.60.3)(vite@8.0.12(@types/node@24.12.3)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(yaml@2.8.4))
+      ohash:
+        specifier: ^2.0.11
+        version: 2.0.11
       pathe:
         specifier: ^2.0.3
         version: 2.0.3

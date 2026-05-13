@@ -1,7 +1,6 @@
 import type { Component, PropType, RendererNode, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
-import { hash } from 'ohash'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -12,6 +11,7 @@ import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
+import { computeIslandHash, filterIslandProps } from '../island-hash'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
@@ -85,8 +85,8 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
-    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
+    const filteredProps = computed(() => filterIslandProps(props.props))
+    const hashId = computed(() => computeIslandHash(props.name, filteredProps.value, props.context, props.source))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 

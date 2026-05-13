@@ -5,9 +5,19 @@ import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
 import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
+import { computeIslandHash, filterIslandProps } from '../packages/nuxt/src/app/island-hash'
 
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
+
+function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
+  const filtered = filterIslandProps(opts.props ?? {})
+  const ctx = opts.context ?? {}
+  const hashId = computeIslandHash(name, filtered, ctx, undefined)
+  const query: Record<string, any> = { ...ctx }
+  if (opts.props) { query.props = JSON.stringify(opts.props) }
+  return withQuery(`/__nuxt_island/${name}_${hashId}.json`, query)
+}
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/server-components', import.meta.url)),
@@ -171,7 +181,7 @@ describe('server components/islands', () => {
 
 describe('component islands', () => {
   it('renders components with route', async () => {
-    const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/RouteComponent.json?url=/foo')
+    const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev) {
@@ -180,6 +190,7 @@ describe('component islands', () => {
 
     result.head.link ||= []
     result.head.style ||= []
+    delete result.id
 
     expect(result).toMatchInlineSnapshot(`
       {
@@ -194,11 +205,7 @@ describe('component islands', () => {
   })
 
   it('render async component', async () => {
-    const result = await $fetch<NuxtIslandResponse>(withQuery('/__nuxt_island/LongAsyncComponent.json', {
-      props: JSON.stringify({
-        count: 3,
-      }),
-    }))
+    const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
@@ -206,6 +213,7 @@ describe('component islands', () => {
     result.head.link ||= []
     result.head.style ||= []
     result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
+    delete result.id
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
@@ -255,11 +263,7 @@ describe('component islands', () => {
   })
 
   it('render .server async component', async () => {
-    const result = await $fetch<NuxtIslandResponse>(withQuery('/__nuxt_island/AsyncServerComponent.json', {
-      props: JSON.stringify({
-        count: 2,
-      }),
-    }))
+    const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
     }
@@ -270,6 +274,7 @@ describe('component islands', () => {
     result.components = {}
     result.slots = {}
     result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
+    delete result.id
 
     expect(result).toMatchInlineSnapshot(`
       {
@@ -287,7 +292,7 @@ describe('component islands', () => {
 
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
-      const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
+      const result = await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient'))
       if (isDev) {
         result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
 
@@ -304,6 +309,7 @@ describe('component islands', () => {
 
       result.head.link ||= []
       result.head.style ||= []
+      delete result.id
 
       expect(result).toMatchInlineSnapshot(`
         {
@@ -327,13 +333,13 @@ describe('component islands', () => {
   }
 
   it('renders pure components', async () => {
-    const result = await $fetch<NuxtIslandResponse>(withQuery('/__nuxt_island/PureComponent.json', {
-      props: JSON.stringify({
+    const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', {
+      props: {
         bool: false,
         number: 3487,
         str: 'something',
         obj: { foo: 42, bar: false, me: 'hi' },
-      }),
+      },
     }))
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
 
@@ -458,6 +464,49 @@ describe('component islands', () => {
     const { page } = await renderPage('/')
     await page.click('[href="/server-components/lost-page"]')
     await page.getByText('This is the error page').waitFor()
+  })
+})
+
+describe('hash binding', () => {
+  it('accepts a request whose URL hash matches the props', async () => {
+    const res = await fetch(islandURL('PureComponent', {
+      props: { bool: false, number: 1, str: 's', obj: {} },
+    }))
+    expect(res.status).toBe(200)
+  })
+
+  it('rejects a request whose URL hash was computed over different props', async () => {
+    // Compute a valid hash for one set of props, then swap the actual query props.
+    const url = islandURL('PureComponent', {
+      props: { bool: false, number: 1, str: 's', obj: {} },
+    })
+    const tampered = url.replace(/props=[^&]+/, 'props=' + encodeURIComponent(JSON.stringify({
+      bool: true, number: 999, str: '<script>x</script>', obj: { evil: true },
+    })))
+    const res = await fetch(tampered)
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects a request with a fabricated hash', async () => {
+    const res = await fetch(withQuery('/__nuxt_island/PureComponent_deadbeefcafef00d.json', {
+      props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects a request with no hash segment in the URL', async () => {
+    const res = await fetch(withQuery('/__nuxt_island/PureComponent.json', {
+      props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('sets conservative cache headers on island responses by default', async () => {
+    const res = await fetch(islandURL('PureComponent', {
+      props: { bool: false, number: 1, str: 's', obj: {} },
+    }))
+    expect(res.headers.get('cache-control')).toMatch(/private|no-store/)
+    expect(res.headers.get('vary')?.toLowerCase()).toContain('cookie')
   })
 })
 
