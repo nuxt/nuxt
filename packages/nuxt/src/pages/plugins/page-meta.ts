@@ -2,6 +2,7 @@ import { createUnplugin } from 'unplugin'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
@@ -12,7 +13,6 @@ import type { ESTree, ParserOptions } from 'rolldown/utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
-  sourcemap?: boolean
   isPage?: (file: string) => boolean
   routesPath?: string
   extractedKeys?: string[]
@@ -63,20 +63,13 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           ],
         },
       },
-      handler (code, id) {
+      handler (code, id, transformMeta?: unknown) {
         const query = parseMacroQuery(id)
         if (query.type && query.type !== 'script') { return }
 
-        const s = new MagicString(code)
+        const s = rolldownString(code, id, transformMeta)
         function result () {
-          if (s.hasChanged()) {
-            return {
-              code: s.toString(),
-              map: options.sourcemap
-                ? s.generateMap({ hires: true })
-                : undefined,
-            }
-          }
+          return generateTransform(s, id)
         }
 
         const hasMacro = HAS_MACRO_RE.test(code)

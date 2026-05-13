@@ -540,7 +540,6 @@ export default defineNuxtModule({
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({
         dev: nuxt.options.dev,
-        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         isPage,
         routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
         extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],

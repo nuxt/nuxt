@@ -1220,6 +1220,20 @@ describe('navigate', () => {
     expect(status).toEqual(302)
     expect(headers.get('location') || '').toEqual(encodeURI('/cœur') + '?redirected=' + encodeURIComponent('https://google.com'))
   })
+
+  it('encodes HTML-significant characters in external redirect body', async () => {
+    const res = await fetch('/navigate-to-external-encode', { redirect: 'manual' })
+    const body = await res.text()
+    expect(res.status).toEqual(302)
+    expect(res.headers.get('location')).not.toContain('<')
+    expect(res.headers.get('location')).not.toContain('>')
+    const content = body.match(/content="0; url=([^"]*)"/)?.[1] ?? ''
+    expect(content).not.toMatch(/[<>&"']/)
+    expect(content).toContain('%3C')
+    expect(content).toContain('%3E')
+    expect(content).toContain('%26')
+    expect(content).toContain('%27')
+  })
 })
 
 describe('preserves current instance', () => {

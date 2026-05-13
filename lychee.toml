@@ -49,6 +49,7 @@ exclude = [
   "https://nuxt.new/c/v4",
   "https://nuxt.new/s/v4",
   "https://www.npmjs.com/",
+  "https://nuxt.com/docs/4.x/api/composables/$%7BkebabCase(factory.name)%7D/",
   # TODO: fix upstream API issues
   "https://nuxt.com/modules",
   # single-quotes are required for regexp

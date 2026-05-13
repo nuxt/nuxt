@@ -38,9 +38,11 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/27417
+  // https://github.com/nuxt/nuxt/issues/35065
   it.each([
     ['preprocessor extension imported from <script>', '--inline-preprocessor-from-script-token:preprocessor-from-script'],
     ['CSS imported as a side effect from a non-Vue JS module', '--inline-js-module-token:js-module'],
+    ['CSS imported from <script setup>', '--inline-script-setup-css-token:script-setup-css'],
   ])('inlines CSS for %s', async (_, token) => {
     const html = await readFile(join(outputDir, 'public', 'js-imported-css/index.html'), 'utf-8')
     expect(html).toContain(token)
