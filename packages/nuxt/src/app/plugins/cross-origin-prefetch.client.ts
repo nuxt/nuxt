@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { Script } from '@unhead/vue'
+import { defineScript } from '@unhead/vue'
 import { defineNuxtPlugin } from '../nuxt'
 import { useHead } from '../composables/head'
 
@@ -9,10 +9,11 @@ export default defineNuxtPlugin({
   name: 'nuxt:cross-origin-prefetch',
   setup (nuxtApp) {
     const externalURLs = ref(new Set<string>())
-    function generateRules (): Script {
-      return {
+    function generateRules () {
+      return defineScript({
         type: 'speculationrules',
         key: 'speculationrules',
+        // unhead v3 JSON-stringifies object innerHTML for <script> tags
         innerHTML: {
           prefetch: [
             {
@@ -22,7 +23,7 @@ export default defineNuxtPlugin({
             },
           ],
         },
-      }
+      })
     }
     const head = useHead({
       script: [generateRules()],

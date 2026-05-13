@@ -18,13 +18,6 @@ jobs:
   agentscan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
-      - name: Cache AgentScan analysis
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
-        with:
-          path: .agentscan-cache
-          key: agentscan-cache-${{ github.actor }}
-          restore-keys: agentscan-cache-
       - name: AgentScan
         id: agentscan
         uses: MatteoGabriele/agentscan-action@6b02b7903ab24fbd23da0314b1b04dbaad98151b
@@ -32,14 +25,15 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-members: "dependabot[bot],renovate[bot]"
           agent-scan-comment: false
-          cache-path: .agentscan-cache
       - name: Label flagged PR
         if: contains(fromJSON('["automation","suspicious"]'), steps.agentscan.outputs.classification) && !contains(steps.agentscan.outputs.community-flagged, 'true')
+        env:
+          CLASSIFICATION: ${{ steps.agentscan.outputs.classification }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
-            const classification = '${{ steps.agentscan.outputs.classification }}';
+            const classification = process.env.CLASSIFICATION;
 
             const issue = context.payload.pull_request
             const labels = issue.labels?.map(l => l.name) || []

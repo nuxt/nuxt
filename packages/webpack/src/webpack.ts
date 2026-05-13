@@ -52,9 +52,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const ssrStylesPlugin = nuxt.options.ssr && !nuxt.options.dev ? new SSRStylesPlugin(nuxt) : null
 
   for (const config of webpackConfigs) {
-    config.plugins!.push(DynamicBasePlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
-    }))
+    config.plugins!.push(DynamicBasePlugin.webpack())
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
@@ -137,9 +135,8 @@ async function createDevMiddleware (compiler: Compiler) {
 // TODO: implement upstream in `webpack-dev-middleware`
 function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
   return defineEventHandler(async (event) => {
-    // disallow cross-site requests in no-cors mode
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-    if (req.headers['sec-fetch-mode'] === 'no-cors' && req.headers['sec-fetch-site'] === 'cross-site') {
+    if (!isSameOriginRequest(req)) {
       res!.statusCode = 403
       res!.end('Forbidden')
       return
@@ -168,6 +165,30 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
     })
     return body
   })
+}
+
+// `Sec-Fetch-Site` is not sent in every context, so fall back to comparing the
+// initiator (`Origin` / `Referer`) host against the request's `Host`.
+function isSameOriginRequest (req: { headers: Record<string, string | string[] | undefined> }): boolean {
+  const site = firstHeader(req.headers['sec-fetch-site'])
+  if (site !== undefined) {
+    return site === 'same-origin' || site === 'none'
+  }
+
+  const initiator = firstHeader(req.headers.origin) || firstHeader(req.headers.referer)
+  if (!initiator) {
+    return true
+  }
+
+  try {
+    return new URL(initiator).host === firstHeader(req.headers.host)
+  } catch {
+    return false
+  }
+}
+
+function firstHeader (value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value
 }
 
 async function compile (compiler: Compiler) {

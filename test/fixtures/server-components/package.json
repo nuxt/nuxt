@@ -1,0 +1,11 @@
+{
+  "name": "fixture-server-components",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
+  }
+}
