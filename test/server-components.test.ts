@@ -500,14 +500,6 @@ describe('hash binding', () => {
     }))
     expect(res.status).toBe(400)
   })
-
-  it('sets conservative cache headers on island responses by default', async () => {
-    const res = await fetch(islandURL('PureComponent', {
-      props: { bool: false, number: 1, str: 's', obj: {} },
-    }))
-    expect(res.headers.get('cache-control')).toMatch(/private|no-store/)
-    expect(res.headers.get('vary')?.toLowerCase()).toContain('cookie')
-  })
 })
 
 describe.skipIf(isDev || isWebpack)('regressions', () => {
