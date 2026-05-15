@@ -731,7 +731,7 @@ describe('NuxtPage should render child routes when the parent route omits its co
       path: '/index-34967',
       component: defineComponent({
         name: 'index-34967',
-        setup: () => () => h('div', { 'data-testid': 'index-34967' }, 'Index'),
+        render: () => h('div', { 'data-testid': 'index-34967' }, 'Index'),
       }),
     })
 
@@ -744,7 +744,7 @@ describe('NuxtPage should render child routes when the parent route omits its co
           path: 'child',
           component: defineComponent({
             name: 'child-34967',
-            setup: () => () => h('div', { 'data-testid': 'child-34967' }, 'Child'),
+            render: () => h('div', { 'data-testid': 'child-34967' }, 'Child'),
           }),
         },
       ],
@@ -752,8 +752,7 @@ describe('NuxtPage should render child routes when the parent route omits its co
   })
 
   afterEach(() => {
-    router.removeRoute('index-34967')
-    router.removeRoute('child-34967')
+    router.clearRoutes()
   })
 
   it('renders the child after client-side navigation into a parent without a component', async () => {
