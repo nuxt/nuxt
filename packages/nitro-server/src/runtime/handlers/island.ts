@@ -154,7 +154,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // the actual (name, props, context) is rejected.
   const expectedHash = computeIslandHash(componentName, filteredProps, clientContext, undefined)
   if (!hashId || hashId !== expectedHash) {
-    throw createError({ status: 400, statusMessage: 'Invalid island request hash' })
+    throw createError({ statusCode: 400, statusMessage: 'Invalid island request hash' })
   }
 
   return {

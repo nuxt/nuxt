@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { withQuery } from 'ufo'
 import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
-import { $fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { computeIslandHash, filterIslandProps } from '../packages/nuxt/src/app/island-hash'
 
