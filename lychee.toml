@@ -37,6 +37,7 @@ exclude = [
   "https://stackoverflow.com/help/minimal-reproducible-example",
   "https://gsap.com/",
   # external docs sites that block or rate-limit CI bots
+  'https://eslint.org/(.*)',
   'https://router.vuejs.org/(.*)',
   'https://vitest.dev/(.*)',
   'https://vite.dev/(.*)',
