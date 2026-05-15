@@ -121,10 +121,11 @@ const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   let url = event.path || ''
-  if (import.meta.prerender && event.path && await islandPropCache!.hasItem(event.path)) {
+  const islandPath = url.replace(/\?.*$/, '')
+  if (import.meta.prerender && event.path && await islandPropCache!.hasItem(islandPath)) {
     // for prerender, the original request URL (with query) is rehydrated from cache
     // so that re-renders of the same island path use the original props
-    url = await islandPropCache!.getItem(withoutQuery(event.path)) as string
+    url = await islandPropCache!.getItem(islandPath) as string
   }
 
   if (!url.startsWith(ISLAND_PATH_PREFIX)) {
