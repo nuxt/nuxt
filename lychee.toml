@@ -38,9 +38,13 @@ exclude = [
   "https://gsap.com/",
   # external docs sites that block or rate-limit CI bots
   'https://eslint.org/(.*)',
+  'https://pinia.vuejs.org/(.*)',
   'https://router.vuejs.org/(.*)',
+  'https://tailwindcss.nuxtjs.org/(.*)',
   'https://vitest.dev/(.*)',
   'https://vite.dev/(.*)',
+  'https://vuejs.org/(.*)',
+  'https://vuex.vuejs.org/(.*)',
   # dummy example URLs
   "https://myawesome-lib.js/",
   "https://awesome-lib.js/",
