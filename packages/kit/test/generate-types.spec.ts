@@ -115,7 +115,7 @@ describe('tsConfig generation', () => {
 })
 
 describe('resolveLayerPaths', () => {
-  it('should include existing top-level test directories in node type paths', async () => {
+  it('should include existing top-level test directories in nuxt type paths', async () => {
     const rootDir = await fsp.mkdtemp(join(tmpdir(), 'nuxt-layer-paths-'))
     await Promise.all([
       fsp.mkdir(join(rootDir, 'app')),
@@ -141,10 +141,10 @@ describe('resolveLayerPaths', () => {
         public: join(rootDir, 'public'),
       }, join(rootDir, '.nuxt'))
 
-      expect(paths.node).toContain('../test/**/*')
-      expect(paths.node).toContain('../tests/**/*')
-      expect(paths.nuxt).not.toContain('../test/**/*')
-      expect(paths.nuxt).not.toContain('../tests/**/*')
+      expect(paths.nuxt).toContain('../test/*')
+      expect(paths.nuxt).toContain('../tests/*')
+      expect(paths.node).not.toContain('../test/*')
+      expect(paths.node).not.toContain('../tests/*')
     } finally {
       await fsp.rm(rootDir, { recursive: true, force: true })
     }
@@ -174,8 +174,8 @@ describe('resolveLayerPaths', () => {
         public: join(rootDir, 'public'),
       }, join(rootDir, '.nuxt'))
 
-      expect(paths.node).not.toContain('../test/**/*')
-      expect(paths.node).not.toContain('../tests/**/*')
+      expect(paths.nuxt).not.toContain('../test/*')
+      expect(paths.nuxt).not.toContain('../tests/*')
     } finally {
       await fsp.rm(rootDir, { recursive: true, force: true })
     }
@@ -204,6 +204,16 @@ describe('resolveLayerPaths with workspace config', async () => {
       '../layers/*/server/**/*',
       '../layers/*/modules/*/runtime/server/**/*',
     ])
+    expect(paths.nuxt).toEqual(expect.arrayContaining([
+      '../app/**/*',
+      '../custom-modules/*/runtime/**/*',
+      '../test/*',
+      '../test/nuxt/**/*',
+      '../tests/nuxt/**/*',
+      '../layers/*/app/**/*',
+      '../layers/*/modules/*/runtime/**/*',
+    ]))
+    expect(paths.nuxt).not.toContain('../tests/*')
     expect(paths.node).toEqual(expect.arrayContaining([
       '../custom-modules/*.*',
       '../nuxt.config.*',
@@ -211,14 +221,6 @@ describe('resolveLayerPaths with workspace config', async () => {
       '../layers/*/nuxt.config.*',
       '../layers/*/.config/nuxt.*',
       '../layers/*/modules/**/*',
-    ]))
-    expect(paths.nuxt).toEqual(expect.arrayContaining([
-      '../app/**/*',
-      '../custom-modules/*/runtime/**/*',
-      '../test/nuxt/**/*',
-      '../tests/nuxt/**/*',
-      '../layers/*/app/**/*',
-      '../layers/*/modules/*/runtime/**/*',
     ]))
     expect(paths.shared).toEqual([
       '../custom-shared/**/*',
@@ -240,7 +242,7 @@ describe('resolveLayerPaths with workspace config', async () => {
 describe('writeTypes', async () => {
   const repoRoot = await findWorkspaceDir()
 
-  it('should include top-level test files in the node project without adding them to the app project', async () => {
+  it('should include top-level test files in the app project', async () => {
     const fixtureDir = join(repoRoot, 'test/fixtures/minimal-types')
     const buildDir = join(fixtureDir, '.nuxt')
     const testDir = join(fixtureDir, 'tests')
@@ -261,8 +263,8 @@ describe('writeTypes', async () => {
         return ts.parseJsonConfigFileContent(config.config, ts.sys, buildDir).fileNames
       }
 
-      expect(parseProject('tsconfig.node.json').map(normalize)).toContain(normalizedTestFile)
-      expect(parseProject('tsconfig.app.json').map(normalize)).not.toContain(normalizedTestFile)
+      expect(parseProject('tsconfig.app.json').map(normalize)).toContain(normalizedTestFile)
+      expect(parseProject('tsconfig.node.json').map(normalize)).not.toContain(normalizedTestFile)
     } finally {
       await fsp.rm(testFile, { force: true })
       await fsp.rm(buildDir, { recursive: true, force: true })
