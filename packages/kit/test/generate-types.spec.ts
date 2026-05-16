@@ -109,13 +109,19 @@ describe('tsConfig generation', () => {
   })
 })
 
-describe('resolveLayerPaths', async () => {
+describe('resolveLayerPaths', () => {
   it('should include top-level test directories in nuxt type paths', () => {
     const paths = resolveLayerPaths({
       root: '/my-app',
+      server: '/my-app/server',
       app: '/my-app/app',
+      appLayouts: '/my-app/app/layouts',
+      appMiddleware: '/my-app/app/middleware',
+      appPages: '/my-app/app/pages',
+      appPlugins: '/my-app/app/plugins',
       modules: '/my-app/modules',
       shared: '/my-app/shared',
+      public: '/my-app/public',
     }, '/my-app/.nuxt')
 
     expect(paths.nuxt).toContain('../test/**/*')
@@ -163,8 +169,8 @@ describe('resolveLayerPaths with workspace config', async () => {
           "../app/**/*",
           "../custom-modules/*/runtime/**/*",
           "../test/**/*",
-          "../test/nuxt/**/*",
           "../tests/**/*",
+          "../test/nuxt/**/*",
           "../tests/nuxt/**/*",
           "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
