@@ -8,6 +8,7 @@ import { resolveUnrefHeadInput } from '@unhead/vue'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { serializeApp } from 'vue-onigiri/runtime/serialize'
+import { computeIslandHash, filterIslandProps } from '#app/island-hash'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
@@ -15,7 +16,7 @@ import { getComponentsIslands, getSSRRenderer, getServerEntry } from '../utils/r
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 
 let _componentsPromise: Promise<Record<string, any>> | undefined
-function getComponents (): Promise<Record<string, any>> {
+function getComponents(): Promise<Record<string, any>> {
   if (!_componentsPromise) {
     _componentsPromise = getComponentsIslands().then(r => r.islandComponents)
   }
@@ -85,7 +86,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
       }
     }
     if (link.length) {
-      ssrContext.head.push({ link }, { mode: 'server' })
+      ssrContext.head.push({ link })
     }
   }
 
@@ -124,11 +125,12 @@ export default handler
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 
-async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
+async function getIslandContext(event: H3Event): Promise<NuxtIslandContext> {
   let url = event.url.pathname + event.url.search + event.url.hash
   const islandPath = event.url.pathname
   if (import.meta.prerender && await islandPropCache!.hasItem(islandPath)) {
-    // rehydrate props from cache so we can rerender island if cache does not have it any more
+    // for prerender, the original request URL (with query) is rehydrated from cache
+    // so that re-renders of the same island path use the original props
     url = await islandPropCache!.getItem(islandPath) as string
   }
 
@@ -144,14 +146,33 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     throw new HTTPError({ status: 400, statusText: 'Invalid island component name' })
   }
 
-  const context = event.req.method === 'GET' ? getQuery<NuxtIslandContext>(event) : await readBody<NuxtIslandContext>(event)
+  const rawContext = event.req.method === 'GET' ? getQuery<NuxtIslandContext>(event) : await readBody<NuxtIslandContext>(event)
+  const rawProps = destr<Record<string, any> | null | undefined>(rawContext?.props) || {}
+  const filteredProps = filterIslandProps(rawProps)
 
-  // Only extract known context fields to prevent arbitrary data injection
+  // Reconstruct the `context` object as the client computed its hash over.
+  // `<NuxtIsland>` sends `{ ...props.context, props: JSON.stringify(props.props) }`
+  const clientContext: Record<string, any> = {}
+  if (rawContext && typeof rawContext === 'object') {
+    for (const key in rawContext) {
+      if (key !== 'props') {
+        clientContext[key] = (rawContext as Record<string, any>)[key]
+      }
+    }
+  }
+
+  // Bind the response to the URL: a request whose URL-resident `hashId` does not match
+  // the actual (name, props, context) is rejected.
+  const expectedHash = computeIslandHash(componentName, filteredProps, clientContext, undefined)
+  if (!hashId || hashId !== expectedHash) {
+    throw new HTTPError({ status: 400, statusText: 'Invalid island request hash' })
+  }
+
   return {
-    url: typeof context?.url === 'string' ? context.url : '/',
+    url: typeof rawContext?.url === 'string' ? rawContext.url : '/',
     id: hashId,
     name: componentName,
-    props: destr(context?.props) || {},
+    props: rawProps,
     slots: {},
     components: {},
   }

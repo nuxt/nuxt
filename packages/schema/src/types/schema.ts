@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AssetURLTagConfig } from '@vue/compiler-sfc'
 import type { CompilerOptions } from '@vue/compiler-core'
 import type { RenderSSRHeadOptions } from '@unhead/vue/types'
+import type { UnheadVueViteOptions } from '@unhead/vue/vite'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
@@ -398,36 +399,38 @@ export interface ConfigSchema {
    * An object that allows us to configure the `unhead` nuxt module.
    */
   unhead: {
-  /**
-   * Enable the legacy compatibility mode for `unhead` module. This applies the following changes: - Disables Capo.js sorting - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body` - Adds the `PromisesPlugin`: supports promises as input
-   *
-   *
-   * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/typescript/head/guides/get-started/migration)
-   *
-   * @example
-   * ```ts
-   * export default defineNuxtConfig({
-   *  unhead: {
-   *   legacy: true
-   * })
-   * ```
-   */
+    /**
+     * Disables Capo.js head tag sorting.
+     *
+     * On compat v4, the unhead legacy plugin set (`DeprecationsPlugin`, `PromisesPlugin`,
+     * `TemplateParamsPlugin`, `AliasSortingPlugin`) is always loaded so existing head patterns
+     * (`hid`, `vmid`, `children`, `body: true`, promise values, `%s` template params)
+     * keep working.
+     *
+     * Forced to `false` when `future.compatibilityVersion` >= 5.
+     *
+     * @deprecated Will be removed. Migrate off the deprecated head patterns and resolve promise
+     * values before passing to `useHead`.
+     * @default false
+     */
     legacy: boolean
 
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
-     *
-     * @example
-     * ```ts
-     * export default defineNuxtConfig({
-     *  unhead: {
-     *   renderSSRHeadOptions: {
-     *    omitLineBreaks: true
-     *   }
-     * })
-     * ```
      */
     renderSSRHeadOptions: RenderSSRHeadOptions
+
+    /**
+     * Options for the `@unhead/vue/vite` build plugin. Provides tree-shaking, `useSeoMeta` transform,
+     * minification, and validation.
+     *
+     * Set to `false` to disable the plugin entirely.
+     *
+     * Only applies when `future.compatibilityVersion` >= 5.
+     *
+     * @default {}
+     */
+    vite: false | Omit<UnheadVueViteOptions, 'streaming' | '_framework'>
   }
 
   /**
@@ -1227,6 +1230,8 @@ export interface ConfigSchema {
      *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way. - Uses the hash hydration plugin to reduce initial hydration
      *
+     * @deprecated CAPO sorting is now the default in unhead v3. Set `unhead.legacy: true` to opt out
+     * temporarily on compat v4.
      * @default true
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */

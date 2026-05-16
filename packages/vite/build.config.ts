@@ -10,6 +10,7 @@ export default defineBuildConfig({
         external: [
           '@nuxt/schema',
           '@rspack/core',
+          'nitro/types',
           'nitropack/types',
           '#vite-node',
           '#vite-node-runner',

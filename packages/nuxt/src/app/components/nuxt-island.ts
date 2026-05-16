@@ -1,7 +1,6 @@
 import type { PropType } from 'vue'
 import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
-import { hash } from 'ohash'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -15,6 +14,7 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
+import { computeIslandHash, filterIslandProps } from '../island-hash'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
@@ -100,8 +100,8 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
-    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
+    const filteredProps = computed(() => filterIslandProps(props.props))
+    const hashId = computed(() => computeIslandHash(props.name, filteredProps.value, props.context, props.source))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     const ast = ref(nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.ast)

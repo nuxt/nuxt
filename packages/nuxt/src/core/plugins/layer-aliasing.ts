@@ -1,11 +1,10 @@
 import { type UnpluginOptions, createUnplugin } from 'unplugin'
 import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import type { NuxtConfigLayer } from 'nuxt/schema'
 
 interface LayerAliasingOptions {
-  sourcemap?: boolean
   root: string
   dev: boolean
   layers: NuxtConfigLayer[]
@@ -46,20 +45,20 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
     filter: {
       code: { include: ALIAS_RE_SINGLE },
     },
-    handler (code, id) {
+    handler (code, id, meta?: unknown) {
       const _id = normalize(id)
       const layer = layers.find(l => _id.startsWith(l))
       if (!layer) { return }
 
-      const s = new MagicString(code)
-      s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
-
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
+      const s = rolldownString(code, id, meta)
+      for (const match of code.matchAll(ALIAS_RE)) {
+        const replacement = aliases[layer]?.[match[0] as '~']
+        if (replacement && replacement !== match[0]) {
+          s.overwrite(match.index, match.index + match[0].length, replacement)
         }
       }
+
+      return generateTransform(s, id)
     },
   }
 

@@ -1,4 +1,4 @@
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { createUnplugin } from 'unplugin'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import escapeStringRegexp from 'escape-string-regexp'
@@ -8,7 +8,6 @@ import { isJS, isVue } from '../utils/index.ts'
 type ImportPath = string
 
 interface TreeShakeComposablesPluginOptions {
-  sourcemap?: boolean
   composables: Record<ImportPath, string[]>
 }
 
@@ -30,8 +29,8 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       filter: {
         code: { include: new RegExp(`\\b(?:${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\b`) },
       },
-      handler (code, id) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
 
         // Parse and collect scope information
         const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
@@ -88,12 +87,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
           },
         })
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

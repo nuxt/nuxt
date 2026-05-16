@@ -5,7 +5,7 @@ import type { H3Event } from 'nitro/h3'
 import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'nitro/h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
-import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
+import type { Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { relative } from 'pathe'
@@ -89,9 +89,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(event)
 
-  // needed for hash hydration plugin to work
-  const headEntryOptions: HeadEntryOptions = { mode: 'server' }
-  ssrContext.head.push(appHead, headEntryOptions)
+  ssrContext.head.push(appHead)
 
   if (ssrError) {
     // @ts-expect-error TODO: investigate creating new error
@@ -124,8 +122,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
     ssrContext.url = url
 
-    if (import.meta.prerender && await payloadCache!.hasItem(url)) {
-      return returnResponse(event, await payloadCache!.getItem(url) as Partial<RenderResponse>)
+    if (import.meta.prerender && await payloadCache!.hasItem(url + '.json')) {
+      return returnResponse(event, await payloadCache!.getItem(url + '.json') as Partial<RenderResponse>)
     }
   }
 
@@ -182,7 +180,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   if (isRenderingPayload) {
     const response = renderPayloadResponse(ssrContext)
     if (import.meta.prerender) {
-      await payloadCache!.setItem(ssrContext.url, response)
+      await payloadCache!.setItem(ssrContext.url + '.json', response)
     }
 
     return returnResponse(event, response)
@@ -192,7 +190,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     // Hint nitro to prerender payload for this route
     event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
+    await payloadCache!.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext))
   }
 
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
@@ -219,12 +217,11 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     }
     ssrContext.head.push({
       script: [{
-        tagPosition: 'head',
-        tagPriority: -2,
         type: 'importmap',
-        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
+        // unhead v3 JSON-stringifies object innerHTML for <script> tags
+        innerHTML: { imports: { '#entry': path } },
       }],
-    }, headEntryOptions)
+    })
   }
   // 1. Preload payloads and app manifest
   // Skip preload when inlining full payload in HTML (no separate fetch needed for initial load)
@@ -233,7 +230,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
       link: [
         { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL },
       ],
-    }, headEntryOptions)
+    })
   }
 
   // 2. Styles
@@ -254,7 +251,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   }
 
   if (link.length) {
-    ssrContext.head.push({ link }, headEntryOptions)
+    ssrContext.head.push({ link })
   }
 
   if (!NO_SCRIPTS) {
@@ -268,10 +265,10 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     }
     ssrContext.head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext).filter(l => !l.href.includes('virtual:vsc:')) as Link[],
-    }, headEntryOptions)
+    })
     ssrContext.head.push({
       link: getPrefetchLinks(ssrContext, renderer.rendererContext).filter(l => !l.href.includes('virtual:vsc:')) as Link[],
-    }, headEntryOptions)
+    })
     // 5. Payloads
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
@@ -280,7 +277,6 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
         // Split payload: inline initial data, reference external _payload.json via src (payloadExtraction: true)
         : renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL }),
     }, {
-      ...headEntryOptions,
       // this should come before another end of body scripts
       tagPosition: 'bodyClose',
       tagPriority: 'high',
@@ -299,10 +295,12 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
         tagPosition: 'head',
         crossorigin: '',
       })),
-    }, headEntryOptions)
+    })
   }
 
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(ssrContext.head, renderSSRHeadOptions)
+  // TODO: migrate to `ssrContext.head.render()` once `renderSSRHeadOptions` (e.g. `omitLineBreaks`) can be passed to `createServerHead` at construction time.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {

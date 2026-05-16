@@ -25,6 +25,7 @@ export default createConfigForNuxt({
       ignores: [
         '.goff/**',
         'packages/schema/schema/**',
+        'packages/nuxt/stubs/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
