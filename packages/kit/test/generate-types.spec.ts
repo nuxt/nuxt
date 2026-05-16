@@ -248,14 +248,14 @@ describe('writeTypes', async () => {
     const testDir = join(fixtureDir, 'tests')
     const testFile = join(testDir, 'utils.test.ts')
     const normalizedTestFile = normalize(testFile)
+    let nuxt: Awaited<ReturnType<typeof loadNuxt>> | undefined
 
     await fsp.mkdir(testDir, { recursive: true })
     await fsp.writeFile(testFile, 'const a: number = "asdf";')
 
     try {
-      const nuxt = await loadNuxt({ cwd: fixtureDir, ready: false })
+      nuxt = await loadNuxt({ cwd: fixtureDir, ready: false })
       await writeTypes(nuxt)
-      await nuxt.close()
 
       const parseProject = (configName: string) => {
         const configPath = join(buildDir, configName)
@@ -266,6 +266,7 @@ describe('writeTypes', async () => {
       expect(parseProject('tsconfig.app.json').map(normalize)).toContain(normalizedTestFile)
       expect(parseProject('tsconfig.node.json').map(normalize)).not.toContain(normalizedTestFile)
     } finally {
+      await nuxt?.close()
       await fsp.rm(testFile, { force: true })
       await fsp.rm(buildDir, { recursive: true, force: true })
       await fsp.rmdir(testDir).catch(() => undefined)
