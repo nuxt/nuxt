@@ -5,9 +5,9 @@ import { viteNodeFetch, viteNodeOptions } from '#vite-node'
 import type { NuxtSSRContext } from 'nuxt/app'
 import runner from '#vite-node-runner'
 
-let render: (ssrContext: NuxtSSRContext) => Promise<any>
+let render: (...args: any[]) => Promise<any>
 
-export default async (ssrContext: NuxtSSRContext): Promise<any> => {
+export default async (ssrContext: NuxtSSRContext, ...rest: any[]): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   // eslint-disable-next-line nuxt/prefer-import-meta,@typescript-eslint/no-deprecated
@@ -26,6 +26,9 @@ export default async (ssrContext: NuxtSSRContext): Promise<any> => {
     consola.success(`Vite server hmr ${updates.size} files`, time ? `in ${time}ms` : '')
   }
 
-  const result = await render(ssrContext)
+  // Forward any extra arguments (e.g. island handler's `{ rootComponent }`)
+  // so dev-mode behaviour matches the production bundle, where the entry
+  // is called directly with the same arity.
+  const result = await render(ssrContext, ...rest)
   return result
 }

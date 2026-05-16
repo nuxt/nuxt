@@ -13,7 +13,6 @@ import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getComponentsIslands, getSSRRenderer, getServerEntry } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
-import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
 
 let _componentsPromise: Promise<Record<string, any>> | undefined
 function getComponents (): Promise<Record<string, any>> {
@@ -51,16 +50,11 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   // `serializeApp` produces the island's AST (not the wrapping app
   // shell). Resolved via the build-time `components.islands.mjs` map.
   const components = await getComponents()
-  ssrContext.rootComponent = components[islandContext.name]
+  const rootComponent = components[islandContext.name]
 
-  const app = await createSSRApp(ssrContext, renderer.rendererContext)
+  const app = await createSSRApp(ssrContext, { rootComponent })
 
   const ast = await app.runWithContext(() => serializeApp(app, undefined, ssrContext))
-
-  // Replace v-load-client source paths (e.g. `/components/Counter.vue`)
-  // with the public chunk URL (`/_nuxt/<hash>.js`) so the island
-  // response doesn't leak the project's source layout to clients.
-  rewriteIslandChunkPaths(ast, renderer.rendererContext)
 
   // Handle errors
   if (ssrContext.payload?.error) {
@@ -129,71 +123,6 @@ export default handler
 
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
-
-// vue-onigiri Component tuple is `[1, props, chunkPath, exportName, slots]`
-// (VServerComponentType.Component === 1). The compiler emits the source
-// path of the imported `.vue` file in `chunkPath`; we rewrite it to the
-// public chunk URL through the renderer's manifest.
-const V_COMPONENT_TYPE = 1
-
-interface RendererCtxWithChunks {
-  manifest?: Record<string, { file?: string }>
-  // Precomputed dependency map (build mode): keyed by source path, the
-  // entry's `preload[src].file` is the actual chunk filename.
-  _dependencies?: Record<
-    string,
-    { preload?: Record<string, { file?: string }> }
-  >
-  buildAssetsURL: (file: string) => string
-}
-
-function rewriteIslandChunkPaths (node: unknown, rendererContext: RendererCtxWithChunks): void {
-  if (!node || typeof node !== 'object') { return }
-  if (Array.isArray(node)) {
-    if (node[0] === V_COMPONENT_TYPE && typeof node[2] === 'string') {
-      const resolved = resolveChunkUrl(node[2], rendererContext)
-      if (resolved) { node[2] = resolved }
-      // Recurse into props (index 1) and slots (index 4) — slot bodies
-      // are arrays/objects that may contain nested Component tuples.
-      rewriteIslandChunkPaths(node[1], rendererContext)
-      rewriteIslandChunkPaths(node[4], rendererContext)
-      return
-    }
-    for (const child of node) {
-      rewriteIslandChunkPaths(child, rendererContext)
-    }
-    return
-  }
-  for (const value of Object.values(node)) {
-    rewriteIslandChunkPaths(value, rendererContext)
-  }
-}
-
-function resolveChunkUrl (
-  sourcePath: string,
-  rendererContext: RendererCtxWithChunks,
-): string | undefined {
-  // Compiler emits an absolute-ish path like `/components/Counter.vue`;
-  // both manifest and precomputed maps are keyed without a leading slash.
-  const key = sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
-
-  // Build mode: vue-bundle-renderer pre-resolves a `_dependencies` map
-  // keyed by source path; the entry's `preload[key].file` is the
-  // bundled chunk filename.
-  const deps = rendererContext._dependencies?.[key] || rendererContext._dependencies?.[sourcePath]
-  const fromDeps = deps?.preload?.[key]?.file || deps?.preload?.[sourcePath]?.file
-  if (fromDeps) {
-    return rendererContext.buildAssetsURL(fromDeps)
-  }
-
-  // Dev mode: fresh manifest exposes `manifest[id].file` directly.
-  const manifest = rendererContext.manifest
-  const entry = manifest?.[key] || manifest?.[sourcePath]
-  if (entry?.file) {
-    return rendererContext.buildAssetsURL(entry.file)
-  }
-  return undefined
-}
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   let url = event.url.pathname + event.url.search + event.url.hash

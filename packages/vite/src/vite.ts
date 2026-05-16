@@ -12,7 +12,8 @@ import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 
 import { onigiriCompilerPlugin, onigiriManifestPlugin } from 'vue-onigiri'
-import type { Plugin } from 'rollup'
+import type { Plugin } from 'vite'
+import type { Plugin as RollupPlugin } from 'rollup'
 import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
@@ -84,6 +85,86 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const isIgnored = createIsIgnored(nuxt)
   const serverEntry = nuxt.options.ssr ? entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
+
+
+  const vscPlugin: Plugin = {
+    name: 'nuxt:virtual-vsc',
+    resolveId: {
+      order: 'pre',
+      handler (id) {
+        if (id.startsWith('virtual:vsc:')) {
+          return id.slice('virtual:vsc:'.length)
+        }
+        if (id.startsWith('/@id/virtual:vsc:')) {
+          return id.slice('/@id/virtual:vsc:'.length)
+        }
+      },
+    },
+  }
+
+  const onigiriComponentImports = new Map<string, { path: string, export?: string }>()
+  const ingestComponents = (components: Iterable<{ pascalName?: string, filePath?: string, export?: string, _raw?: boolean }>) => {
+    for (const c of components) {
+      if (!c.pascalName || !c.filePath) { continue }
+      if (c._raw) { continue }
+      onigiriComponentImports.set(c.pascalName, {
+        path: c.filePath.replaceAll('\\', '/'),
+        export: c.export,
+      })
+    }
+  }
+  for (const app of Object.values(nuxt.apps)) {
+    if (app.components) { ingestComponents(app.components) }
+  }
+  nuxt.hook('components:extend', (components) => {
+    onigiriComponentImports.clear()
+    ingestComponents(components)
+  })
+
+
+  const onigiriChunkMap = new Map<string, string>()
+  const onigiriBuildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
+  const onigiriDevAssetsBase = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
+  const onigiriCompilerOptions = {
+    additionalImports: () => onigiriComponentImports,
+    resolveChunkUrl: (sourcePath: string): string | undefined => {
+      if (nuxt.options.dev) {
+        return joinURL(onigiriDevAssetsBase, sourcePath)
+      }
+      if (onigiriChunkMap.size === 0) { return undefined }
+      const key = sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
+      return onigiriChunkMap.get(key) ?? onigiriChunkMap.get(sourcePath)
+    },
+  }
+
+  const onigiriChunkCollectorPlugin: Plugin = {
+    name: 'nuxt:vue-onigiri-chunk-collector',
+    applyToEnvironment: environment => environment.name === 'client',
+    generateBundle (_outputOptions, bundle) {
+      const root = nuxt.options.srcDir.replaceAll('\\', '/').replace(/\/$/, '')
+      for (const file in bundle) {
+        const chunk = bundle[file]
+        if (!chunk || chunk.type !== 'chunk' || !chunk.facadeModuleId) { continue }
+        if (!chunk.facadeModuleId.endsWith('.vue')) { continue }
+        const normalised = chunk.facadeModuleId.replaceAll('\\', '/')
+        const key = normalised.startsWith(root + '/') ? normalised.slice(root.length + 1) : normalised
+        const filePath = chunk.fileName.startsWith(onigiriBuildAssetsDir) ? chunk.fileName : onigiriBuildAssetsDir + chunk.fileName
+        onigiriChunkMap.set(key, '/' + filePath)
+      }
+    },
+  }
+
+  const onigiriPlugins: Plugin[] = [
+    vscPlugin,
+    onigiriCompilerPlugin(onigiriCompilerOptions),
+    // Defaults: server uses `"auto"` — the compiler registers each
+    // v-load-client target during transform, the manifest plugin emits
+    // an `import.meta.glob([...])` covering exactly those. Client is
+    // off because the AST carries fetchable URLs (the compile-time
+    // bake), so the runtime importFn does a direct `import(url)`.
+    onigiriManifestPlugin(),
+    onigiriChunkCollectorPlugin,
+  ]
   const config: vite.InlineConfig = mergeConfig(
     {
       base: nuxt.options.dev
@@ -188,6 +269,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveExternalsPlugin(nuxt),
         vuePlugin(viteConfig.vue),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
+        ...onigiriPlugins,
         ViteNodePlugin(nuxt),
         ClientManifestPlugin(nuxt),
         DevServerPlugin(nuxt),
@@ -238,60 +320,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     },
   )
 
-  // `virtual:vsc:<abs-path>` is Nuxt's island-template prefix used to
-  // disambiguate server variants of a component. Strip it and let
-  // plugin-vue compile the raw path as a normal SFC.
-  const vscPlugin: Plugin = {
-    name: 'nuxt:virtual-vsc',
-    resolveId: {
-      order: 'pre',
-      handler (id) {
-        if (id.startsWith('virtual:vsc:')) {
-          return id.slice('virtual:vsc:'.length)
-        }
-        if (id.startsWith('/@id/virtual:vsc:')) {
-          return id.slice('/@id/virtual:vsc:'.length)
-        }
-      },
-    },
-  }
-
-  const onigiriComponentImports = new Map<string, { path: string, export?: string }>()
-  const ingestComponents = (components: Iterable<{ pascalName?: string, filePath?: string, export?: string, _raw?: boolean }>) => {
-    for (const c of components) {
-      if (!c.pascalName || !c.filePath) { continue }
-      if (c._raw) { continue }
-      onigiriComponentImports.set(c.pascalName, {
-        path: c.filePath.replaceAll('\\', '/'),
-        export: c.export,
-      })
-    }
-  }
-  for (const app of Object.values(nuxt.apps)) {
-    if (app.components) { ingestComponents(app.components) }
-  }
-  nuxt.hook('components:extend', (components) => {
-    onigiriComponentImports.clear()
-    ingestComponents(components)
-  })
-  const onigiriCompilerOptions = { additionalImports: () => onigiriComponentImports }
-
-  const onigiri: Plugin[] = [
-    vscPlugin,
-    onigiriCompilerPlugin(onigiriCompilerOptions),
-    onigiriManifestPlugin({ clientInclude: '/**/*.vue' }),
-  ]
-
-  nuxt.hook('vite:extendConfig', (viteInlineConfig) => {
-    const plugins = viteInlineConfig.plugins!
-    for (const plugin of onigiri) {
-      if (!plugins.includes(plugin)) {
-        plugins.push(plugin)
-      }
-    }
-  })
-
-  const onigiriNitroPlugins = (): Plugin[] => [
+  const onigiriNitroPlugins = (): RollupPlugin[] => [
     {
       name: 'nuxt:virtual-vsc',
       resolveId: {
@@ -303,11 +332,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       },
     },
-    onigiriCompilerPlugin(onigiriCompilerOptions),
-    onigiriManifestPlugin({ stub: true }),
+    onigiriCompilerPlugin(onigiriCompilerOptions) as RollupPlugin,
+    onigiriManifestPlugin({ stub: true }) as RollupPlugin,
   ]
   useNitro().hooks.hook('rollup:before', (_, rollupConfig) => {
-    (rollupConfig.plugins! as Plugin[]).unshift(...onigiriNitroPlugins())
+    (rollupConfig.plugins! as RollupPlugin[]).unshift(...onigiriNitroPlugins())
   })
   useNitro().hooks.hook('prerender:config', (preConfig: any) => {
     preConfig.rollupConfig ||= {}

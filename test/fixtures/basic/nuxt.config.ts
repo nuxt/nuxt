@@ -6,6 +6,9 @@ import { withoutLeadingSlash } from 'ufo'
 import { withMatrix } from '../../matrix'
 
 export default withMatrix({
+  devtools: {
+    enabled: true,
+  },
   appId: 'nuxt-app-basic',
   extends: [
     './extends/node_modules/foo',
@@ -172,6 +175,7 @@ export default withMatrix({
         baseURL: '/custom',
       },
     ],
+    
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/redirect/catchall': { ssr: false },
@@ -196,6 +200,7 @@ export default withMatrix({
         '/prefetch/server-components',
       ],
     },
+    minify: false
   },
   vite: {
     $client: {
@@ -206,7 +211,9 @@ export default withMatrix({
     logLevel: 'silent',
     build: {
       assetsInlineLimit: 100, // keep SVG as assets URL
+      minify: false
     },
+
   },
   postcss: {
     plugins: {

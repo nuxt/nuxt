@@ -17,6 +17,7 @@
   "imports": {
     "#vite-node": "./dist/vite-node.mjs",
     "#vite-node-entry": "./dist/vite-node-entry.mjs",
+    "#vite-node-islands-entry": "./dist/vite-node-islands-entry.mjs",
     "#vite-node-runner": "./dist/vite-node-runner.mjs"
   },
   "files": [

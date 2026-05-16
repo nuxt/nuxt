@@ -4,7 +4,7 @@ export default defineBuildConfig({
   entries: [
     {
       type: 'bundle',
-      input: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-runner', 'src/fix-stacktrace'],
+      input: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-islands-entry', 'src/vite-node-runner', 'src/fix-stacktrace'],
       dts: { oxc: true },
       rolldown: {
         external: [

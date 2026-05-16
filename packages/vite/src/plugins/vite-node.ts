@@ -205,12 +205,14 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
   const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
+  const islandsResolvedPath = resolveModulePath('#vite-node-islands-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
 
   const vfs = {
     'server.mjs': `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
     'runner.mjs': `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`,
     'client.manifest.mjs': `import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))};export default () => viteNodeFetch.getManifest()`,
+    'components.islands.mjs': `export { default } from ${JSON.stringify(pathToFileURL(islandsResolvedPath).href)}`,
   }
 
   nitro.options.virtual ||= {}

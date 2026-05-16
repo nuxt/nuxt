@@ -43,7 +43,7 @@
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxt prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
   "resolutions": {
-    "vue-onigiri": "0.3.0"
+    "vue-onigiri": "link:../vue-onigiri/packages/core"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",

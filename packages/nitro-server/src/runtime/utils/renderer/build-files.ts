@@ -25,8 +25,12 @@ const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 // @ts-expect-error file will be produced after app build
 export const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
+// In dev the virtual exports a `default` async function (vite-node
+// fetches the components.islands.mjs template fresh through Vite's
+// plugin chain). In production, Vite's SSR build emits the file
+// directly with `export const islandComponents`. Handle both shapes.
 // @ts-expect-error file will be produced after app build
-export const getComponentsIslands = () => import('#build/dist/server/components.islands.mjs').then(r => r)
+export const getComponentsIslands = () => import('#build/dist/server/components.islands.mjs').then(r => typeof r.default === 'function' ? r.default() : r)
 
 // @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
@@ -57,6 +61,24 @@ export const getSSRRenderer: () => Promise<Renderer> = lazyCachedFunction(async 
 
   // Load precomputed dependencies
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
+
+  // Expose a chunk URL → source path reverse map for vue-onigiri's
+  // server-side `importFn`. `NuxtIsland`'s setup constructs an
+  // importFn that reads this global and threads it into the
+  // `renderOnigiri(ast, { importFn })` call so the loader's async
+  // setup can translate the public chunk URL baked into the AST back
+  // to a source path the SSR-side `import.meta.glob` resolves.
+  // Skipped in dev — the AST already carries Vite dev URLs there.
+  if (precomputed && !import.meta.dev) {
+    const reverseMap: Record<string, string> = {}
+    for (const sourcePath in precomputed.dependencies) {
+      const file = precomputed.dependencies[sourcePath]?.preload?.[sourcePath]?.file
+      if (file) {
+        reverseMap[buildAssetsURL(file) as string] = '/' + sourcePath
+      }
+    }
+    ;(globalThis as { __NUXT_ONIGIRI_REVERSE_MAP__?: Record<string, string> }).__NUXT_ONIGIRI_REVERSE_MAP__ = reverseMap
+  }
 
   // Create renderer
   const renderer = createRenderer(createSSRApp, {
