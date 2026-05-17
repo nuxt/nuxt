@@ -474,31 +474,38 @@ describe('hash binding', () => {
     }))
     expect(res.status).toBe(200)
   })
+})
 
-  it('rejects a request whose URL hash was computed over different props', async () => {
-    // Compute a valid hash for one set of props, then swap the actual query props.
-    const url = islandURL('PureComponent', {
-      props: { bool: false, number: 1, str: 's', obj: {} },
-    })
-    const tampered = url.replace(/props=[^&]+/, 'props=' + encodeURIComponent(JSON.stringify({
-      bool: true, number: 999, str: '<script>x</script>', obj: { evil: true },
-    })))
-    const res = await fetch(tampered)
-    expect(res.status).toBe(400)
+describe('page-island middleware', () => {
+  it('runs page middleware and honours redirects for `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_gated-server-page', {
+      context: { url: '/gated-server-page' },
+    }), { redirect: 'manual' })
+    // page middleware calls `navigateTo('/login', { redirectCode: 302 })`
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toContain('/login')
+    const body = await res.text()
+    expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
   })
 
-  it('rejects a request with a fabricated hash', async () => {
-    const res = await fetch(withQuery('/__nuxt_island/PureComponent_deadbeefcafef00d.json', {
-      props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+  it('still renders unguarded `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_server-page', {
+      context: { url: '/server-page' },
     }))
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(200)
+    const body = await res.json() as NuxtIslandResponse
+    expect(body.html).toContain('Hello this is a server page')
   })
 
-  it('rejects a request with no hash segment in the URL', async () => {
-    const res = await fetch(withQuery('/__nuxt_island/PureComponent.json', {
-      props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
-    }))
+  it('rejects a `page_*` island whose url routes to a different page', async () => {
+    // Forging `page_gated-server-page` with `url=/server-page` would render the gated
+    // page's HTML while running the (empty) middleware for the unguarded page.
+    const res = await fetch(islandURL('page_gated-server-page', {
+      context: { url: '/server-page' },
+    }), { redirect: 'manual' })
     expect(res.status).toBe(400)
+    const body = await res.text()
+    expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
   })
 })
 

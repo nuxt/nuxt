@@ -39,13 +39,25 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   const renderer = await getSSRRenderer()
 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
+    if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
+      return undefined
+    }
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
   })
 
+  // honour redirects / explicit responses queued by page middleware
+  if (ssrContext['~renderResponse']) {
+    return returnIslandResponse(event, ssrContext['~renderResponse'])
+  }
+
   // Handle errors
   if (ssrContext.payload?.error) {
     throw ssrContext.payload.error
+  }
+
+  if (!renderResult) {
+    throw new HTTPError({ status: 500, statusText: 'Island render failed' })
   }
 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
@@ -108,6 +120,19 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 })
 
 export default handler
+
+function returnIslandResponse (event: H3Event, response: Partial<RenderResponse>) {
+  for (const header in response.headers || {}) {
+    event.res.headers.set(header, response.headers![header]!)
+  }
+  if (response.status) {
+    event.res.status = response.status
+  }
+  if (response.statusText) {
+    event.res.statusText = response.statusText
+  }
+  return response.body
+}
 
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
