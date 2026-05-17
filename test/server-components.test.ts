@@ -486,6 +486,20 @@ describe('hash binding', () => {
     const res = await fetch(tampered)
     expect(res.status).toBe(400)
   })
+
+  it('rejects a request with a fabricated hash', async () => {
+    const res = await fetch(withQuery('/__nuxt_island/PureComponent_deadbeefcafef00d.json', {
+      props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects a request with no hash segment in the URL', async () => {
+    const res = await fetch(withQuery('/__nuxt_island/PureComponent.json', {
+      props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+    }))
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('page-island middleware', () => {
