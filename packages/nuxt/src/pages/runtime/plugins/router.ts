@@ -286,7 +286,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           nuxtApp.ssrContext!['~renderResponse'] = {
             status: 400,
             statusText: 'Invalid island request path',
-            body: '',
           }
           return false
         }

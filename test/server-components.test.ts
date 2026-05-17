@@ -512,6 +512,8 @@ describe('page-island middleware', () => {
     expect(res.headers.get('location')).toContain('/login')
     const body = await res.text()
     expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
+    // this asserts the island handler fires `app:rendered` even when middleware short-circuits response
+    expect(res.headers.get('set-cookie')).toContain('island-auth-marker=set-from-island-middleware')
   })
 
   it('still renders unguarded `page_*` islands', async () => {

@@ -40,15 +40,25 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
     if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
-      return undefined
+      return {} as Awaited<ReturnType<typeof renderer.renderToString>>
     }
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
   })
 
-  // honour redirects / explicit responses queued by page middleware
+  // Fire `app:rendered` before checking `~renderResponse` (matches `renderer.ts`), so
+  // anything hooking into it, like `useCookie`, will still work on redirect/reject.
+  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
+
   if (ssrContext['~renderResponse']) {
-    return returnIslandResponse(event, ssrContext['~renderResponse'])
+    const response = ssrContext['~renderResponse']
+    if (response.status && response.status >= 400) {
+      throw new HTTPError({
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+    return returnIslandResponse(event, response)
   }
 
   // Handle errors
@@ -56,13 +66,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     throw ssrContext.payload.error
   }
 
-  if (!renderResult) {
-    throw new HTTPError({ status: 500, statusText: 'Island render failed' })
-  }
-
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
-
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
 
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles })
