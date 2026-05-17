@@ -344,7 +344,7 @@ interface NormalizeRoutesOptions {
 
 function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined, islandKey: string | undefined): string {
   if (page.mode === 'server') {
-    return `() => createIslandPage(${routeName}, ${islandKey})`
+    return `() => createIslandPage(${routeName}, import.meta.server ? ${islandKey} : undefined)`
   }
   if (page.mode === 'client') {
     return `() => createClientPage(${pageImport})`
@@ -358,7 +358,7 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
   }
   // Server components already receive the name via createIslandPage(name)
   if (page.mode === 'server') {
-    return `() => createIslandPage(${routeName}, ${islandKey})`
+    return `() => createIslandPage(${routeName}, import.meta.server ? ${islandKey} : undefined)`
   }
   // Client components return a processed component (not a module with .default)
   if (page.mode === 'client') {
