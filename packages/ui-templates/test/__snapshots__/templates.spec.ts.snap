@@ -139,10 +139,10 @@ exports[`template > produces correct output for error-404 template 2`] = `
 "*,
 :after,
 :before {
-  border-color: var(--un-default-border-color, #e5e7eb);
-  border-style: solid;
-  border-width: 0;
   box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--un-default-border-color, #e5e7eb);
 }
 :after,
 :before {
@@ -151,6 +151,8 @@ exports[`template > produces correct output for error-404 template 2`] = `
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -161,13 +163,11 @@ html {
     Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
-  -moz-tab-size: 4;
-  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  line-height: inherit;
   margin: 0;
+  line-height: inherit;
 }
 h1,
 h2 {
@@ -350,10 +350,10 @@ exports[`template > produces correct output for error-500 template 2`] = `
 "*,
 :after,
 :before {
-  border-color: var(--un-default-border-color, #e5e7eb);
-  border-style: solid;
-  border-width: 0;
   box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--un-default-border-color, #e5e7eb);
 }
 :after,
 :before {
@@ -362,6 +362,8 @@ exports[`template > produces correct output for error-500 template 2`] = `
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -372,13 +374,11 @@ html {
     Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
-  -moz-tab-size: 4;
-  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  line-height: inherit;
   margin: 0;
+  line-height: inherit;
 }
 h1,
 h2 {
@@ -450,23 +450,23 @@ p {
 exports[`template > produces correct output for loading template 1`] = `
 ".nuxt-loader-bar {
   background: #00dc82;
-  bottom: 0;
-  height: 3px;
-  left: 0;
   position: fixed;
+  bottom: 0;
+  left: 0;
   right: 0;
+  height: 3px;
 }
 .triangle-loading {
   position: absolute;
 }
 .triangle-loading > path {
-  animation: nuxt-loading-move 3s linear infinite;
   fill: none;
-  stroke-dasharray: 128;
-  stroke-dashoffset: 128;
+  stroke-width: 4px;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 4px;
+  stroke-dasharray: 128;
+  stroke-dashoffset: 128;
+  animation: nuxt-loading-move 3s linear infinite;
 }
 .nuxt-logo:hover .triangle-loading > path {
   animation-play-state: paused;
@@ -529,8 +529,8 @@ exports[`template > produces correct output for loading template 1`] = `
   padding-right: 0.625rem;
 }
 .py-1\\.5 {
-  padding-bottom: 0.375rem;
   padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
 }
 .text-center {
   text-align: center;
@@ -626,10 +626,10 @@ exports[`template > produces correct output for loading template 2`] = `
 *,
 :after,
 :before {
-  border-color: var(--un-default-border-color, #e5e7eb);
-  border-style: solid;
-  border-width: 0;
   box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--un-default-border-color, #e5e7eb);
 }
 :after,
 :before {
@@ -638,6 +638,8 @@ exports[`template > produces correct output for loading template 2`] = `
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -648,13 +650,11 @@ html {
     Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
-  -moz-tab-size: 4;
-  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  line-height: inherit;
   margin: 0;
+  line-height: inherit;
 }
 a {
   color: inherit;
@@ -723,14 +723,14 @@ svg {
 
 exports[`template > produces correct output for welcome template 1`] = `
 ".sr-only {
+  width: 1px;
   height: 1px;
+  padding: 0;
   margin: -1px;
   overflow: hidden;
-  padding: 0;
-  width: 1px;
   clip: rect(0, 0, 0, 0);
-  border-width: 0;
   white-space: nowrap;
+  border-width: 0;
 }
 .absolute,
 .sr-only {
@@ -771,17 +771,17 @@ exports[`template > produces correct output for welcome template 1`] = `
   display: inline-block;
 }
 .size-\\[18px\\] {
-  height: 18px;
   width: 18px;
+  height: 18px;
 }
 .size-4 {
-  height: 1rem;
   width: 1rem;
+  height: 1rem;
 }
 .group:hover .group-hover\\:size-5,
 .size-5 {
-  height: 1.25rem;
   width: 1.25rem;
+  height: 1.25rem;
 }
 .h-\\[32px\\] {
   height: 32px;
@@ -893,8 +893,8 @@ exports[`template > produces correct output for welcome template 1`] = `
   padding-right: 1rem;
 }
 .py-1 {
-  padding-bottom: 0.25rem;
   padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 .text-\\[12px\\] {
   font-size: 12px;
@@ -970,9 +970,9 @@ exports[`template > produces correct output for welcome template 1`] = `
     var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);
 }
 .transition-all {
-  transition-duration: 0.15s;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.15s;
 }
 @media (prefers-color-scheme: dark) {
   .dark\\:border-\\[\\#00DC82\\]\\/50 {
@@ -1061,8 +1061,8 @@ exports[`template > produces correct output for welcome template 1`] = `
     padding-right: 1.5rem;
   }
   .sm\\:py-1\\.5 {
-    padding-bottom: 0.375rem;
     padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
   }
   .sm\\:text-\\[14px\\] {
     font-size: 14px;
@@ -1085,10 +1085,10 @@ exports[`template > produces correct output for welcome template 2`] = `
 "*,
 :after,
 :before {
-  border-color: var(--un-default-border-color, #e5e7eb);
-  border-style: solid;
-  border-width: 0;
   box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--un-default-border-color, #e5e7eb);
 }
 :after,
 :before {
@@ -1097,6 +1097,8 @@ exports[`template > produces correct output for welcome template 2`] = `
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -1107,13 +1109,11 @@ html {
     Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
-  -moz-tab-size: 4;
-  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  line-height: inherit;
   margin: 0;
+  line-height: inherit;
 }
 h1,
 h2 {
