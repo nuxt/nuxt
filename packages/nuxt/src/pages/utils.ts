@@ -536,6 +536,7 @@ interface NormalizeRoutesOptions {
   clientComponentRuntime: string
 }
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
+  const nuxt = useNuxt()
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -548,6 +549,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
           metaFiltered[key] = page.meta![key]
         }
       }
+
       const skipAlias = toArray(page.alias).every(val => !val)
 
       const route: NormalizedRoute = {
@@ -585,6 +587,11 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file)
 
+      // we use this to validate that a server page is rendering the correct url
+      const islandKey = page.mode === 'server' && page.file
+        ? JSON.stringify(hash(relative(nuxt.options.rootDir, page.file)))
+        : undefined
+
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
         path: `${metaImportName}?.path ?? ${route.path}`,
@@ -593,7 +600,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
         component: page.mode === 'server'
-          ? `() => createIslandPage(${route.name})`
+          ? `() => createIslandPage(${route.name}, import.meta.server ? ${islandKey} : undefined)`
           : page.mode === 'client'
             ? `() => createClientPage(${pageImport})`
             : pageImport,
@@ -602,9 +609,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       if (page.mode === 'server') {
         metaImports.add(`
 let _createIslandPage
-async function createIslandPage (name) {
+async function createIslandPage (name, islandKey) {
   _createIslandPage ||= await import(${JSON.stringify(options?.serverComponentRuntime)}).then(r => r.createIslandPage)
-  return _createIslandPage(name)
+  return _createIslandPage(name, islandKey)
 };`)
       } else if (page.mode === 'client') {
         metaImports.add(`

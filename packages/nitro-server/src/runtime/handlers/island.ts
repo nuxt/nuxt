@@ -2,7 +2,7 @@ import type { RenderResponse } from 'nitropack/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { EventHandler, H3Event } from 'h3'
-import { createError, defineEventHandler, getQuery, readBody, setResponseHeaders } from 'h3'
+import { createError, defineEventHandler, getQuery, readBody, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
@@ -43,9 +43,27 @@ const handler: EventHandler = defineEventHandler(async (event) => {
   const renderer = await getSSRRenderer()
 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
+    if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
+      return {} as Awaited<ReturnType<typeof renderer.renderToString>>
+    }
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
   })
+
+  // Fire `app:rendered` before checking `~renderResponse` (matches `renderer.ts`), so
+  // anything hooking into it, like `useCookie`, will still work on redirect/reject.
+  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
+
+  if (ssrContext['~renderResponse']) {
+    const response = ssrContext['~renderResponse']
+    if (response.statusCode && response.statusCode >= 400) {
+      throw createError({
+        statusCode: response.statusCode,
+        statusMessage: response.statusMessage,
+      })
+    }
+    return returnIslandResponse(event, response)
+  }
 
   // Handle errors
   if (ssrContext.payload?.error) {
@@ -53,8 +71,6 @@ const handler: EventHandler = defineEventHandler(async (event) => {
   }
 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
-
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
 
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles })
@@ -115,6 +131,16 @@ const handler: EventHandler = defineEventHandler(async (event) => {
 })
 
 export default handler
+
+function returnIslandResponse (event: H3Event, response: Partial<RenderResponse>) {
+  for (const header in response.headers || {}) {
+    setResponseHeader(event, header, response.headers![header]!)
+  }
+  if (response.statusCode) {
+    setResponseStatus(event, response.statusCode, response.statusMessage)
+  }
+  return response.body
+}
 
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i

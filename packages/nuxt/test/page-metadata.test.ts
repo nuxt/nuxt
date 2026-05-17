@@ -11,6 +11,19 @@ import type { NuxtPage } from '../schema.ts'
 const filePath = '/app/pages/index.vue'
 
 vi.mock('klona', { spy: true })
+vi.mock('@nuxt/kit', async (original) => {
+  const mod = await original<typeof import('@nuxt/kit')>()
+  return {
+    ...mod,
+    useNuxt: vi.fn(() => {
+      return {
+        options: {
+          rootDir: '/app',
+        },
+      }
+    }),
+  }
+})
 
 describe('page metadata', () => {
   it('should not extract metadata from empty files', () => {

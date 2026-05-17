@@ -6,6 +6,20 @@ import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
+vi.mock('@nuxt/kit', async (original) => {
+  const mod = await original<typeof import('@nuxt/kit')>()
+  return {
+    ...mod,
+    useNuxt: vi.fn(() => {
+      return {
+        options: {
+          rootDir: '/app',
+        },
+      }
+    }),
+  }
+})
+
 describe('pages:generateRoutesFromFiles', () => {
   vi.mock('knitwork', async (original) => {
     return {
