@@ -5,6 +5,8 @@ on:
     types:
       - opened
       - edited
+  # zizmor: ignore[dangerous-triggers] needs write access to label/comment on PRs from forks
+  # DO NOT add action/checkout in this workflow
   pull_request_target:
     types:
       - opened

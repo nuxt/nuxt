@@ -1,6 +1,8 @@
 name: chore
 
 on:
+  # zizmor: ignore[dangerous-triggers] needs write access to label PRs from forks
+  # DO NOT checkout code in this workflow
   pull_request_target:
     types:
       - opened
@@ -22,15 +24,18 @@ jobs:
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
+          PULL_REQUEST_BASE_LABEL: ${{ github.event.pull_request.base.label }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          PULL_REQUEST_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
         with:
           script: |
             const labelsToAdd = []
 
             const pullRequest = {
-              baseLabel: '${{ github.event.pull_request.base.label }}',
-              number: ${{ github.event.pull_request.number }},
+              baseLabel: process.env.PULL_REQUEST_BASE_LABEL,
+              number: Number(process.env.PULL_REQUEST_NUMBER),
               title: process.env.PULL_REQUEST_TITLE,
-              labelsNames: ${{ toJson(github.event.pull_request.labels.*.name) }}
+              labelsNames: JSON.parse(process.env.PULL_REQUEST_LABELS)
             }
 
             // Select label based on the name of the base branch

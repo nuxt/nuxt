@@ -5,11 +5,15 @@ on:
     types:
       - labeled
 
+permissions: {}
+
 jobs:
   convert-label-to-issue-type:
     name: Convert labels to issue types
     runs-on: ubuntu-slim
     if: github.repository == 'nuxt/nuxt'
+    permissions:
+      issues: write
     steps:
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
@@ -54,14 +58,14 @@ jobs:
 
   transfer-spam:
     if: github.event.label.name == 'spam'
-    uses: nuxt/.github/.github/workflows/triage-spam-transfer.yml@main
+    uses: nuxt/.github/.github/workflows/triage-spam-transfer.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation
     with:
       spam-repo-id: ${{ vars.TRIAGE_SPAM_REPO_ID }}
     permissions:
       issues: write
 
   needs-reproduction:
-    uses: nuxt/.github/.github/workflows/needs-reproduction.yml@main
+    uses: nuxt/.github/.github/workflows/needs-reproduction.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation
     permissions:
       issues: write
     with:
