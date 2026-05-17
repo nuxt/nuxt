@@ -1,6 +1,7 @@
 name: agent-scan
 
 on:
+# zizmor: ignore[dangerous-triggers] - DO NOT add action/checkout in this workflow as it use pull_request_target
   pull_request_target:
     types:
       - opened
