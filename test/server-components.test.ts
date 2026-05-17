@@ -502,6 +502,41 @@ describe('hash binding', () => {
   })
 })
 
+describe('page-island middleware', () => {
+  it('runs page middleware and honours redirects for `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_gated-server-page', {
+      context: { url: '/gated-server-page' },
+    }), { redirect: 'manual' })
+    // page middleware calls `navigateTo('/login', { redirectCode: 302 })`
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toContain('/login')
+    const body = await res.text()
+    expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
+    // this asserts the island handler fires `app:rendered` even when middleware short-circuits response
+    expect(res.headers.get('set-cookie')).toContain('island-auth-marker=set-from-island-middleware')
+  })
+
+  it('still renders unguarded `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_server-page', {
+      context: { url: '/server-page' },
+    }))
+    expect(res.status).toBe(200)
+    const body = await res.json() as NuxtIslandResponse
+    expect(body.html).toContain('Hello this is a server page')
+  })
+
+  it('rejects a `page_*` island whose url routes to a different page', async () => {
+    // Forging `page_gated-server-page` with `url=/server-page` would render the gated
+    // page's HTML while running the (empty) middleware for the unguarded page.
+    const res = await fetch(islandURL('page_gated-server-page', {
+      context: { url: '/server-page' },
+    }), { redirect: 'manual' })
+    expect(res.status).toBe(400)
+    const body = await res.text()
+    expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
+  })
+})
+
 describe.skipIf(isDev || isWebpack)('regressions', () => {
   // https://github.com/nuxt/nuxt/issues/26527
   it.fails('renders <Counter nuxt-client /> when nested two levels deep in server components', async () => {

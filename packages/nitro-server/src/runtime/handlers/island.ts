@@ -39,9 +39,27 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   const renderer = await getSSRRenderer()
 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
+    if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
+      return {} as Awaited<ReturnType<typeof renderer.renderToString>>
+    }
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
   })
+
+  // Fire `app:rendered` before checking `~renderResponse` (matches `renderer.ts`), so
+  // anything hooking into it, like `useCookie`, will still work on redirect/reject.
+  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
+
+  if (ssrContext['~renderResponse']) {
+    const response = ssrContext['~renderResponse']
+    if (response.status && response.status >= 400) {
+      throw new HTTPError({
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+    return returnIslandResponse(event, response)
+  }
 
   // Handle errors
   if (ssrContext.payload?.error) {
@@ -49,8 +67,6 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   }
 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
-
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
 
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles })
@@ -108,6 +124,19 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 })
 
 export default handler
+
+function returnIslandResponse (event: H3Event, response: Partial<RenderResponse>) {
+  for (const header in response.headers || {}) {
+    event.res.headers.set(header, response.headers![header]!)
+  }
+  if (response.status) {
+    event.res.status = response.status
+  }
+  if (response.statusText) {
+    event.res.statusText = response.statusText
+  }
+  return response.body
+}
 
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
