@@ -474,6 +474,18 @@ describe('hash binding', () => {
     }))
     expect(res.status).toBe(200)
   })
+
+  it('rejects a request whose URL hash was computed over different props', async () => {
+    // Compute a valid hash for one set of props, then swap the actual query props.
+    const url = islandURL('PureComponent', {
+      props: { bool: false, number: 1, str: 's', obj: {} },
+    })
+    const tampered = url.replace(/props=[^&]+/, 'props=' + encodeURIComponent(JSON.stringify({
+      bool: true, number: 999, str: '<script>x</script>', obj: { evil: true },
+    })))
+    const res = await fetch(tampered)
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('page-island middleware', () => {
