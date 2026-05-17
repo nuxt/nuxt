@@ -37,8 +37,8 @@ export const createServerComponent = (name: string) => {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createIslandPage = (name: string) => {
-  return defineComponent({
+export const createIslandPage = (name: string, islandKey?: string) => {
+  const component = defineComponent({
     name,
     inheritAttrs: false,
     props: { lazy: Boolean },
@@ -72,4 +72,10 @@ export const createIslandPage = (name: string) => {
       }
     },
   })
+
+  // we use this to validate that a server page is rendering the correct url
+  if (import.meta.server && islandKey) {
+    (component as any).__nuxt_island = islandKey
+  }
+  return component
 }
