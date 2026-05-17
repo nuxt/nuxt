@@ -1797,6 +1797,9 @@ export interface ConfigSchema {
   /**
    * Configuration that will be passed directly to Vite.
    *
+   * Use `$client` and `$server` to provide Vite options that should only apply
+   * to the client or server build.
+   *
    * @see [Vite configuration docs](https://vite.dev/config/) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */

@@ -31,6 +31,11 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
       : never
 }
 
+type ViteConfigWithEnvironmentOverrides = ConfigSchema['vite'] & {
+  $client?: ConfigSchema['vite']
+  $server?: ConfigSchema['vite']
+}
+
 // Runtime Config
 
 type RuntimeConfigNamespace = Record<string, unknown>
@@ -52,7 +57,7 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
   components?: ConfigSchema['components']
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
-  vite?: ConfigSchema['vite']
+  vite?: ViteConfigWithEnvironmentOverrides
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
@@ -82,12 +87,13 @@ export interface NuxtBuilder {
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`
-export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'debug' | 'builder' | 'postcss' | 'webpack'> {
+export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'debug' | 'builder' | 'postcss' | 'vite' | 'webpack'> {
   vue: Omit<ConfigSchema['vue'], 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   debug: Required<Exclude<ConfigSchema['debug'], true>>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rspack-builder' | NuxtBuilder
   postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
+  vite: ViteConfigWithEnvironmentOverrides
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']
     $server: ConfigSchema['webpack']
