@@ -24,6 +24,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        # zizmor: ignore[artipacked] scripts/update-changelog.ts runs `git push` and requires the persisted token
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6.0.7
