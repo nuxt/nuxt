@@ -737,6 +737,7 @@ describe('NuxtPage should render child routes when the parent route omits its co
 
     router.addRoute({
       // parent route deliberately has no component (added via `pages:extend` without `file`)
+      name: 'parent-34967',
       path: '/parent-34967',
       children: [
         {
@@ -752,7 +753,8 @@ describe('NuxtPage should render child routes when the parent route omits its co
   })
 
   afterEach(() => {
-    router.clearRoutes()
+    router.removeRoute('index-34967')
+    router.removeRoute('parent-34967')
   })
 
   it('renders the child after client-side navigation into a parent without a component', async () => {
