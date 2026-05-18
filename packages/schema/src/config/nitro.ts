@@ -45,4 +45,10 @@ export default defineResolvers({
   routeRules: {},
   serverHandlers: [],
   devServerHandlers: [],
+  /**
+   * Order of server middleware execution. When `configuredFirst` (default), handlers added via
+   * `serverHandlers` / `addServerHandler` run before auto-scanned handlers from `server/middleware/`.
+   * Use `scannedFirst` to restore the previous behavior (scanned handlers run first).
+   */
+  serverMiddlewareOrder: 'configuredFirst',
 })
