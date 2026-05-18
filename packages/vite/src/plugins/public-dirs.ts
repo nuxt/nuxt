@@ -6,8 +6,8 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { isCSSRequest } from 'vite'
 import type { Plugin } from 'vite'
 
-const PREFIX = 'virtual:public?'
-const PREFIX_RE = /^virtual:public\?/
+const PREFIX = '\0virtual:public?'
+const PREFIX_RE = /^\0virtual:public\?/
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
 const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
 const RENDER_CHUNK_RE = /(?<= = )['"`]/
