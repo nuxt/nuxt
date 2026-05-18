@@ -16,7 +16,7 @@ import { getRenderer } from '../utils/renderer/build-files'
 import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
-import { createSSRContext, setSSRError } from '../utils/renderer/app'
+import { clearVueCurrentInstance, createSSRContext, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
@@ -158,6 +158,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     const _err = (!ssrError && ssrContext.payload?.error) || error
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
     throw _err
+  }).finally(() => {
+    clearVueCurrentInstance()
   })
 
   // Render inline styles

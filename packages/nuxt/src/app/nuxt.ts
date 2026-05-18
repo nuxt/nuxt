@@ -557,12 +557,11 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  */
 export function tryUseNuxtApp (): NuxtApp | null
 export function tryUseNuxtApp (id?: string): NuxtApp | null {
-  let nuxtAppInstance
-  if (hasInjectionContext()) {
+  let nuxtAppInstance: NuxtApp | null | undefined = getNuxtAppCtx(id).tryUse()
+
+  if (!nuxtAppInstance && hasInjectionContext()) {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
-
-  nuxtAppInstance ||= getNuxtAppCtx(id).tryUse()
 
   return nuxtAppInstance || null
 }

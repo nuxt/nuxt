@@ -10,7 +10,7 @@ import { getQuery as getURLQuery } from 'ufo'
 import { computeIslandHash, filterIslandProps } from '#app/island-hash'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { islandCache, islandPropCache } from '../utils/cache'
-import { createSSRContext } from '../utils/renderer/app'
+import { clearVueCurrentInstance, createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
@@ -44,6 +44,8 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     }
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
+  }).finally(() => {
+    clearVueCurrentInstance()
   })
 
   // Fire `app:rendered` before checking `~renderResponse` (matches `renderer.ts`), so
