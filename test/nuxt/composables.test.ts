@@ -627,6 +627,16 @@ describe('routing utilities: `navigateTo`', () => {
       expect(() => navigateTo(url, { external: true })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
   })
+  it('reloadNuxtApp should disallow paths with data/script URLs', () => {
+    const urls = [
+      ['javascript:alert("hi")', 'javascript'],
+      ['data:alert("hi")', 'data'],
+      ['\0data:alert("hi")', 'data'],
+    ]
+    for (const [url, protocol] of urls) {
+      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+    }
+  })
   it('navigateTo should replace current navigation state if called within middleware', () => {
     const nuxtApp = useNuxtApp()
     nuxtApp._processingMiddleware = true
