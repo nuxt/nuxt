@@ -370,10 +370,12 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
           initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
           nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
           nuxtApp._asyncData[key.value]!._initialCachedData = initialFetchOptions.cachedData
-        } else {
-          // reuse the cache lookup performed by the first concurrent caller
+        } else if (nuxtApp._asyncDataPromises[key.value]) {
+          // reuse the cache lookup performed by the first concurrent caller while their fetch is still in flight
           initialFetchOptions.cachedData = existing._initialCachedData
         }
+        // otherwise let execute() perform a fresh getCachedData lookup so subscribers that mount
+        // after the initial fetch has settled still go through getCachedData (#35116)
         return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
       }
 
