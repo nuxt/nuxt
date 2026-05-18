@@ -39,3 +39,7 @@ publicHoistPattern:
 shellEmulator: true
 
 ignoreWorkspaceCycles: true
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@nuxt/*'
