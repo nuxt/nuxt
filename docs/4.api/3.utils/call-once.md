@@ -1,6 +1,7 @@
 ---
 title: "callOnce"
 description: "Run a given function or block of code once during SSR or CSR."
+minimalVersion: "3.9"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -35,7 +36,7 @@ await callOnce(async () => {
 </script>
 ```
 
-It is also possible to run on every navigation while still avoiding the initial server/client double load. For this, it is possible to use the `navigation` mode:
+It is also possible to run on every navigation while still avoiding the initial server/client double execution. For this, it is possible to use the `navigation` mode :badge[v3.15]{color="info" size="xs" class="align-middle"}:
 
 ```vue [app/app.vue]
 <script setup lang="ts">
