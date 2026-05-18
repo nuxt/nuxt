@@ -1,6 +1,6 @@
 import { defineComponent, h } from 'vue'
 import { parseQuery } from 'vue-router'
-import { resolve } from 'pathe'
+import { isAbsolute, relative, resolve } from 'pathe'
 import destr from 'destr'
 // @ts-expect-error virtual file
 import { devRootDir } from '#build/nuxt.config.mjs'
@@ -12,7 +12,8 @@ export default (url: string) => defineComponent({
     const query = parseQuery(new URL(url, 'http://localhost').search)
     const urlProps = query.props ? destr<Record<string, any>>(query.props as string) : {}
     const path = resolve(query.path as string)
-    if (!path.startsWith(devRootDir)) {
+    const rel = relative(devRootDir, path)
+    if (rel.startsWith('..') || isAbsolute(rel)) {
       throw new Error(`[nuxt] Cannot access path outside of project root directory: \`${path}\`.`)
     }
     const comp = await import(/* @vite-ignore */ path as string).then(r => r.default)
