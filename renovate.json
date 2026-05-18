@@ -14,6 +14,7 @@
     "node",
     "npm"
   ],
+  "minimumReleaseAge": "1 day",
   "packageRules": [
     {
       "groupName": "webpack",
@@ -58,6 +59,12 @@
       "matchPackageNames": [
         "*"
       ]
+    },
+    {
+      "matchPackageNames": [
+        "@nuxt/**"
+      ],
+      "minimumReleaseAge": "0"
     }
   ],
   "vulnerabilityAlerts": {
