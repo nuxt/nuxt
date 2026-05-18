@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, tryUseNuxt } from '@nuxt/kit'
+import type { DevEnvironment, EnvironmentModuleNode } from 'vite'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -174,6 +175,175 @@ export default defineNuxtModule<ComponentsOptions>({
         return nuxt.callHook('restart')
       }
     })
+
+    // HMR: when a component file is renamed, invalidate importers after generateApp so they resolve to the new path (fixes #31569)
+    // Applies to client and SSR Vite environments so full navigation (SSR + hydration) still resolves `#components` after a rename.
+    // Uses `hotUpdate` hook (not deprecated `handleHotUpdate`) which fires for all event types: create, update, delete.
+    const getComponentDirs = () => componentDirs
+    const UNLINK_INVALIDATE_DELAY_MS = 200
+    if (nuxt.options.dev && nuxt.options.builder === '@nuxt/vite-builder') {
+      const pendingUnlinkInvalidations = new Map<string, { importers: EnvironmentModuleNode[], timeoutId?: ReturnType<typeof setTimeout> }>()
+
+      const getComponentDirForFile = (filePath: string): string | null => {
+        const normalized = normalize(filePath)
+        for (const dir of getComponentDirs()) {
+          const dirPath = normalize(dir.path)
+          if (normalized === dirPath || normalized.startsWith(dirPath + '/')) {
+            return dirPath
+          }
+        }
+        return null
+      }
+
+      const scheduleUnlinkInvalidation = (dirPath: string, importers: EnvironmentModuleNode[], environment: DevEnvironment) => {
+        const existing = pendingUnlinkInvalidations.get(dirPath)
+        if (existing?.timeoutId) {
+          clearTimeout(existing.timeoutId)
+        }
+        const merged = new Set<EnvironmentModuleNode>(existing?.importers ?? [])
+        for (const m of importers) {
+          merged.add(m)
+        }
+        const timeoutId = setTimeout(async () => {
+          pendingUnlinkInvalidations.delete(dirPath)
+          const nuxtInstance = tryUseNuxt()
+          if (nuxtInstance) {
+            await nuxtInstance.callHook('builder:generateApp', {})
+          }
+          for (const mod of merged) {
+            environment.moduleGraph.invalidateModule(mod)
+            await environment.reloadModule(mod)
+          }
+        }, UNLINK_INVALIDATE_DELAY_MS)
+        pendingUnlinkInvalidations.set(dirPath, { importers: [...merged], timeoutId })
+      }
+
+      const collectModulesForPath = (environment: DevEnvironment, file: string): EnvironmentModuleNode[] => {
+        const seen = new Set<EnvironmentModuleNode>()
+        const out: EnvironmentModuleNode[] = []
+        for (const candidate of new Set([file, normalize(file), resolve(file)])) {
+          const fromFile = environment.moduleGraph.getModulesByFile(candidate)
+          if (!fromFile) {
+            continue
+          }
+          for (const mod of fromFile) {
+            if (!seen.has(mod)) {
+              seen.add(mod)
+              out.push(mod)
+            }
+          }
+        }
+        return out
+      }
+
+      const collectImportersOfComponentModules = (componentModules: EnvironmentModuleNode[]) => {
+        const importers = new Set<EnvironmentModuleNode>()
+        for (const mod of componentModules) {
+          for (const imp of mod.importers) {
+            importers.add(imp)
+          }
+        }
+        return importers
+      }
+
+      const collectPageLayoutVueModules = (environment: DevEnvironment, srcRoot: string): EnvironmentModuleNode[] => {
+        const out: EnvironmentModuleNode[] = []
+        const root = normalize(srcRoot)
+        for (const mod of environment.moduleGraph.idToModuleMap.values()) {
+          const f = mod.file && normalize(mod.file)
+          if (f && f.startsWith(root) && f.endsWith('.vue') && (f.includes('/pages/') || f.includes('/layouts/'))) {
+            out.push(mod)
+          }
+        }
+        return out
+      }
+
+      addVitePlugin({
+        name: 'nuxt:components-rename-hmr',
+        async hotUpdate (options) {
+          const normalizedFile = normalize(options.file)
+          const componentDir = getComponentDirForFile(normalizedFile)
+          if (!componentDir) {
+            return
+          }
+
+          const environment = this.environment
+
+          if (options.type === 'delete') {
+            let componentModules = options.modules
+            if (componentModules.length === 0) {
+              componentModules = collectModulesForPath(environment, options.file)
+            }
+            const importers = collectImportersOfComponentModules(componentModules)
+            if (importers.size === 0) {
+              const nuxtInstance = tryUseNuxt()
+              const srcRoot = nuxtInstance && normalize(nuxtInstance.options.srcDir!)
+              if (srcRoot) {
+                for (const mod of collectPageLayoutVueModules(environment, srcRoot)) {
+                  importers.add(mod)
+                }
+              }
+            }
+            if (importers.size > 0) {
+              scheduleUnlinkInvalidation(componentDir, [...importers], environment)
+            }
+            return []
+          }
+
+          // For 'create' or 'update' — check for a pending rename in the same component dir
+          const pending = pendingUnlinkInvalidations.get(componentDir)
+          if (!pending?.importers.length) {
+            // Atomic rename can leave no pending invalidation when delete had no module nodes (path mismatch)
+            // or importers were not wired yet. Regenerate the registry and reload the new file + pages that use components.
+            if (options.type === 'create' && normalizedFile.endsWith('.vue')) {
+              const nuxtInstance = tryUseNuxt()
+              if (nuxtInstance) {
+                await nuxtInstance.callHook('builder:generateApp', {})
+              }
+              const mods = new Set<EnvironmentModuleNode>(options.modules)
+              for (const m of collectModulesForPath(environment, options.file)) {
+                mods.add(m)
+              }
+              const toReload = new Set<EnvironmentModuleNode>()
+              for (const mod of mods) {
+                toReload.add(mod)
+                for (const imp of mod.importers) {
+                  toReload.add(imp)
+                }
+              }
+              if (toReload.size === 0) {
+                const srcRoot = normalize(nuxtInstance?.options.srcDir ?? '')
+                if (srcRoot) {
+                  for (const mod of collectPageLayoutVueModules(environment, srcRoot)) {
+                    toReload.add(mod)
+                  }
+                }
+              }
+              if (toReload.size === 0) {
+                return
+              }
+              for (const mod of toReload) {
+                environment.moduleGraph.invalidateModule(mod)
+                await environment.reloadModule(mod)
+              }
+              return [...toReload]
+            }
+            return
+          }
+          if (pending.timeoutId) {
+            clearTimeout(pending.timeoutId)
+          }
+          pendingUnlinkInvalidations.delete(componentDir)
+
+          await tryUseNuxt()?.callHook('builder:generateApp', {})
+          for (const mod of pending.importers) {
+            environment.moduleGraph.invalidateModule(mod)
+            await environment.reloadModule(mod)
+          }
+          return [...new Set([...options.modules, ...pending.importers])]
+        },
+      })
+    }
 
     const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
 

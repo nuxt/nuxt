@@ -1,4 +1,4 @@
-import { readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
@@ -7,6 +7,15 @@ import { expect, test } from './test-utils'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
 const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
+
+function restoreExampleTestComponent () {
+  const renamed = join(fixtureDir, 'app/components/example/example-test.vue')
+  const dest = join(fixtureDir, 'app/components/example/test.vue')
+  if (existsSync(renamed)) {
+    unlinkSync(renamed)
+  }
+  copyFileSync(join(sourceDir, 'app/components/example/test.vue'), dest)
+}
 
 test.use({
   nuxt: {
@@ -126,27 +135,33 @@ test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) 
 })
 
 test('HMR for island components', async ({ page, goto }) => {
-  // Navigate to the page with the island components
-  await goto('/server-component')
-
   const componentPath = join(fixtureDir, 'app/components/islands/HmrComponent.vue')
-  const componentContents = readFileSync(componentPath, 'utf8')
+  const sourcePath = join(sourceDir, 'app/components/islands/HmrComponent.vue')
+  const componentContents = readFileSync(sourcePath, 'utf8')
+  try {
+    writeFileSync(componentPath, componentContents)
 
-  // Test initial state of the component
-  await expect(page.getByTestId('hmr-id')).toHaveText('0')
+    // Navigate to the page with the island components
+    await goto('/server-component')
 
-  // Function to update the component and check for changes
-  const triggerHmr = (number: string) => writeFileSync(componentPath, componentContents.replace('ref(0)', `ref(${number})`))
+    // Test initial state of the component
+    await expect(page.getByTestId('hmr-id')).toHaveText('0')
 
-  // First edit
-  triggerHmr('1')
-  await expect(page.getByTestId('hmr-id')).toHaveText('1', { timeout: 10000 })
+    // Function to update the component and check for changes
+    const triggerHmr = (number: string) => writeFileSync(componentPath, componentContents.replace('ref(0)', `ref(${number})`))
 
-  // Second edit to make sure HMR is working consistently
-  triggerHmr('2')
-  await expect(page.getByTestId('hmr-id')).toHaveText('2', { timeout: 10000 })
+    // First edit
+    triggerHmr('1')
+    await expect(page.getByTestId('hmr-id')).toHaveText('1', { timeout: 10000 })
 
-  expect(page).toHaveNoErrorsOrWarnings()
+    // Second edit to make sure HMR is working consistently
+    triggerHmr('2')
+    await expect(page.getByTestId('hmr-id')).toHaveText('2', { timeout: 10000 })
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  } finally {
+    writeFileSync(componentPath, componentContents)
+  }
 })
 
 test.describe('vite-only HMR tests', () => {
@@ -263,23 +278,33 @@ test.describe('vite-only HMR tests', () => {
     expect(filteredLogs).toStrictEqual([])
   })
 
-  test.fail('should support renaming files to same import name', async ({ page, goto }) => {
-    await goto('/rename-component')
+  test('should support renaming files to same import name (#31569)', async ({ page, goto }) => {
+    try {
+      await goto('/rename-component')
 
-    await expect(page.getByTestId('example')).toHaveText('test.vue')
+      await expect(page.getByTestId('example')).toHaveText('test.vue')
 
-    renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
+      renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
 
-    writeFileSync(
-      join(fixtureDir, 'app/components/example/example-test.vue'),
-      `<template><div data-testid="example">example-test.vue</div></template>`,
-    )
+      // Let the watcher emit unlink/create before the follow-up write (rename + write in one turn can coalesce to a single update in Vite)
+      await new Promise(resolve => setTimeout(resolve, 50))
 
-    await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+      writeFileSync(
+        join(fixtureDir, 'app/components/example/example-test.vue'),
+        `<template><div data-testid="example">example-test.vue</div></template>`,
+      )
 
-    await page.reload()
+      // HMR should update without "Pre-transform error: Failed to load url"
+      await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
 
-    await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+      await goto('/rename-component')
+
+      await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
+
+      expect(page).toHaveNoErrorsOrWarnings()
+    } finally {
+      restoreExampleTestComponent()
+    }
   })
 
   test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
