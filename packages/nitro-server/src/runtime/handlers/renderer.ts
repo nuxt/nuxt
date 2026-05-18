@@ -114,6 +114,10 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
   const routeOptions = getRouteRules(event)
 
+  if (routeOptions.ssr === false) {
+    ssrContext.noSSR = true
+  }
+
   // Whether we are prerendering route or using ISR/SWR caching
   const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
     (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
@@ -134,10 +138,6 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     if (payloadCache && await payloadCache.hasItem(url + '.json')) {
       return payloadCache.getItem(url + '.json') as Promise<Partial<RenderResponse>>
     }
-  }
-
-  if (routeOptions.ssr === false) {
-    ssrContext.noSSR = true
   }
 
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
