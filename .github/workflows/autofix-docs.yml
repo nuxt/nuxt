@@ -36,4 +36,4 @@ jobs:
       - name: Typecheck (docs)
         run: pnpm typecheck:docs
 
-      - uses: autofix-ci/action@7a166d7532b277f34e16238930461bf77f9d7ed8 # 7a166d7532b277f34e16238930461bf77f9d7ed8
+      - uses: autofix-ci/action@7a166d7532b277f34e16238930461bf77f9d7ed8 # v1.3.3
