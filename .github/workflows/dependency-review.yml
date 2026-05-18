@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   dependency-review:
-    uses: nuxt/.github/.github/workflows/dependency-review.yml@main
-    # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github
+    uses: nuxt/.github/.github/workflows/dependency-review.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation
     with:
       fail-on-provenance-change: true
