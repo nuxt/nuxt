@@ -73,9 +73,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ]),
   ].filter(d => d && existsSync(d))
 
-  for (const dir of allowDirs) {
-    allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
-  }
+  allowDirs = allowDirs.filter(d =>
+    !allowDirs.some(other => other !== d && d.startsWith(other + '/')),
+  )
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
