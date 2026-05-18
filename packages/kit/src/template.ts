@@ -2,7 +2,7 @@ import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
-import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
+import type { AliasValue, Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
@@ -10,7 +10,7 @@ import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
-import { distDirURL, filterInPlace } from './utils.ts'
+import { distDirURL, filterInPlace, toArray } from './utils.ts'
 import { directoryToURL } from './internal/esm.ts'
 import { getDirectory } from './module/install.ts'
 import { tryUseNuxt, useNuxt } from './context.ts'
@@ -485,7 +485,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...sharedExclude],
   } satisfies TSConfig)
 
-  const aliases: Record<string, string> = nuxt.options.alias
+  const aliases: Record<string, AliasValue> = nuxt.options.alias
 
   // TODO: remove support for baseUrl in nuxt v5
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -500,16 +500,26 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   tsConfig.include ||= []
   tsConfig.exclude ||= []
 
+  nodeTsConfig.compilerOptions ||= {}
+  nodeTsConfig.compilerOptions.paths ||= {}
+
+  sharedTsConfig.compilerOptions ||= {}
+  sharedTsConfig.compilerOptions.paths ||= {}
+
   const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    let absolutePath = resolve(basePath, aliases[alias]!)
+    const value = aliases[alias]!
+    const path = typeof value === 'string' ? value : value.path
+    const contexts = typeof value === 'string' ? ['app', 'server', 'shared'] : toArray(value.context)
+
+    let absolutePath = resolve(basePath, path)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
-      const resolvedModule = resolveModulePath(aliases[alias]!, {
+      const resolvedModule = resolveModulePath(path, {
         try: true,
         from: importPaths,
         extensions: [...nuxt.options.extensions, '.d.ts', '.d.mts', '.d.cts'],
@@ -521,17 +531,31 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     }
 
     const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
-    if (stats?.isDirectory() || aliases[alias]!.endsWith('/')) {
-      tsConfig.compilerOptions.paths[alias] = [relativePath]
-      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
-    } else {
-      const path = stats?.isFile()
-        // remove extension
-        ? relativePath.replace(EXTENSION_RE, '')
-        // non-existent file probably shouldn't be resolved
-        : aliases[alias]!
+    const isDir = stats?.isDirectory() || path.endsWith('/')
+    const finalPath = isDir
+      ? relativePath
+      : (stats?.isFile()
+          ? relativePath.replace(EXTENSION_RE, '')
+          // non-existent file probably shouldn't be resolved
+          : path)
 
-      tsConfig.compilerOptions.paths[alias] = [path]
+    if (contexts.includes('app')) {
+      tsConfig.compilerOptions.paths[alias] = [finalPath]
+      if (isDir) {
+        tsConfig.compilerOptions.paths[`${alias}/*`] = [`${finalPath}/*`]
+      }
+    }
+    if (contexts.includes('server')) {
+      nodeTsConfig.compilerOptions.paths[alias] = [finalPath]
+      if (isDir) {
+        nodeTsConfig.compilerOptions.paths[`${alias}/*`] = [`${finalPath}/*`]
+      }
+    }
+    if (contexts.includes('shared')) {
+      sharedTsConfig.compilerOptions.paths[alias] = [finalPath]
+      if (isDir) {
+        sharedTsConfig.compilerOptions.paths[`${alias}/*`] = [`${finalPath}/*`]
+      }
     }
   }
 
@@ -563,6 +587,14 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // Legacy tsConfig for backward compatibility
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
+    compilerOptions: {
+      ...tsConfig.compilerOptions,
+      paths: {
+        ...tsConfig.compilerOptions?.paths,
+        ...nodeTsConfig.compilerOptions?.paths,
+        ...sharedTsConfig.compilerOptions?.paths,
+      },
+    },
     include: [...tsConfig.include, ...legacyInclude],
     exclude: [...tsConfig.exclude, ...legacyExclude],
   })

@@ -1,10 +1,11 @@
 import type { ESTree } from 'rolldown/utils'
 import type { ParsedStaticImport } from 'mlly'
 import { resolveAlias } from '@nuxt/kit'
+import type { AliasValue } from '@nuxt/schema'
 
 import { stripExtension } from '../../utils.ts'
 
-export function processImports (imports: ParsedStaticImport[], alias: Record<string, string>) {
+export function processImports (imports: ParsedStaticImport[], alias: Record<string, AliasValue>) {
   /**
    * import alias -> original name; source with aliases resolved and without extension
    */

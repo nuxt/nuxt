@@ -11,7 +11,7 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, filterAliases, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
@@ -314,7 +314,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Nuxt aliases
-      ...nuxt.options.alias,
+      ...filterAliases(nuxt.options.alias, 'server'),
 
       // Paths
       '#internal/nuxt/paths': resolve(distDir, 'runtime/utils/paths'),
@@ -930,7 +930,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.sharedTsConfig.compilerOptions ||= {}
     opts.sharedTsConfig.compilerOptions.paths ||= {}
     for (const key in nuxt.options.alias) {
-      if (nitro.options.alias[key] && nitro.options.alias[key] === nuxt.options.alias[key]) {
+      const nuxtAlias = typeof nuxt.options.alias[key] === 'string'
+        ? nuxt.options.alias[key]
+        : nuxt.options.alias[key]?.path
+      if (nuxtAlias && nitro.options.alias[key] === nuxtAlias) {
         const dirKey = join(key, '*')
         if (opts.tsConfig.compilerOptions?.paths[key]) {
           opts.sharedTsConfig.compilerOptions.paths[key] = opts.tsConfig.compilerOptions.paths[key]

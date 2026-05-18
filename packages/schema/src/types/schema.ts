@@ -42,6 +42,9 @@ import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
 
+export type AliasContext = 'app' | 'server' | 'shared'
+export type AliasValue = string | { path: string, context: AliasContext | AliasContext[] }
+
 export interface ConfigSchema {
   /**
    * Configure Nuxt component auto-registration.
@@ -835,7 +838,7 @@ export interface ConfigSchema {
    * </style>
    * ```
    */
-  alias: Record<string, string>
+  alias: Record<string, AliasValue>
 
   /**
    * Pass options directly to `node-ignore` (which is used by Nuxt to ignore files).

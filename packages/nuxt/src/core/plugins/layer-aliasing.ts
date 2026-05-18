@@ -2,7 +2,8 @@ import { type UnpluginOptions, createUnplugin } from 'unplugin'
 import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import type { NuxtConfigLayer } from 'nuxt/schema'
+import type { AliasValue, NuxtConfigLayer } from 'nuxt/schema'
+import type { DeepPartial } from '#app/config'
 
 interface LayerAliasingOptions {
   root: string
@@ -21,11 +22,18 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
     const srcDir = layer.config.srcDir || layer.cwd
     const rootDir = layer.config.rootDir || layer.cwd
 
+    const alias = layer.config?.alias || {}
+    const getAliasPath = (val?: DeepPartial<AliasValue>) => {
+      if (typeof val === 'string') { return val }
+      if (!val) { return }
+      const contexts = (Array.isArray(val.context) ? val.context : [val.context]).filter(Boolean)
+      return contexts.length === 0 || contexts.includes('app') ? val.path : undefined
+    }
     aliases[srcDir] = {
-      '~': layer.config?.alias?.['~'] || srcDir,
-      '@': layer.config?.alias?.['@'] || srcDir,
-      '~~': layer.config?.alias?.['~~'] || rootDir,
-      '@@': layer.config?.alias?.['@@'] || rootDir,
+      '~': getAliasPath(alias['~']) || srcDir,
+      '@': getAliasPath(alias['@']) || srcDir,
+      '~~': getAliasPath(alias['~~']) || rootDir,
+      '@@': getAliasPath(alias['@@']) || rootDir,
     }
   }
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)

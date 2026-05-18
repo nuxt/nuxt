@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
-import { useNitro } from '@nuxt/kit'
+import { filterAliases, useNitro } from '@nuxt/kit'
 
 import { annotatePlugins, checkForCircularDependencies } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
@@ -335,7 +335,7 @@ export const middlewareTemplate: NuxtTemplate = {
   getContents ({ app, nuxt }) {
     const globalMiddleware = app.middleware.filter(mw => mw.global)
     const namedMiddleware = app.middleware.filter(mw => !mw.global)
-    const alias = nuxt.options.dev ? { ...nuxt?.options.alias || {}, ...strippedAtAliases } : {}
+    const alias = nuxt.options.dev ? { ...filterAliases(nuxt?.options.alias || {}), ...strippedAtAliases } : {}
     return [
       ...globalMiddleware.map(mw => genImport(mw.path, genSafeVariableName(mw.name))),
       ...!nuxt.options.dev

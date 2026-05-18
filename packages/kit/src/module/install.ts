@@ -10,9 +10,10 @@ import { isRelative } from 'ufo'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { read as readRc, update as updateRc } from 'rc9'
 import semver from 'semver'
+
 import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
-import { resolveAlias } from '../resolve.ts'
+import { filterAliases, resolveAlias } from '../resolve.ts'
 import { logger } from '../logger.ts'
 import { getLayerDirectories } from '../layers.ts'
 
@@ -289,7 +290,7 @@ function getSharedJiti (nuxt: Nuxt): ReturnType<typeof createJiti> {
   _jitiCache ||= new WeakMap()
   let jiti = _jitiCache.get(nuxt)
   if (!jiti) {
-    jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+    jiti = createJiti(nuxt.options.rootDir, { alias: filterAliases(nuxt.options.alias) })
     _jitiCache.set(nuxt, jiti)
   }
   return jiti
