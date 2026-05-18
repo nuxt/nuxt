@@ -98,7 +98,7 @@ async function main () {
   const allTags = tagsInput
     .split(',')
     .map(tag => tag.trim())
-    .filter(Boolean)
+    .filter(Boolean) as [string, ...string[]]
 
   console.info(`🚀 ${isNightly ? 'Nightly' : 'Regular'} release with tags: ${allTags.join(', ')}`)
 
