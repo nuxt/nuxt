@@ -187,12 +187,11 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
   const topLevelTestPaths = ['test', 'tests']
     .filter(dir => existsSync(resolve(dirs.root, dir)))
-    .map(dir => join(relativeRootDir, `${dir}/*`))
+    .map(dir => join(relativeRootDir, `${dir}/**/*`))
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
       join(relativeModulesDir, `*/runtime/**/*`),
-      ...topLevelTestPaths,
       join(relativeRootDir, `test/nuxt/**/*`),
       join(relativeRootDir, `tests/nuxt/**/*`),
       join(relativeRootDir, `layers/*/app/**/*`),
@@ -204,6 +203,7 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `layers/*/modules/*/runtime/server/**/*`),
     ],
     node: [
+      ...topLevelTestPaths,
       join(relativeModulesDir, `*.*`),
       join(relativeRootDir, `nuxt.config.*`),
       join(relativeRootDir, `.config/nuxt.*`),
