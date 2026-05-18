@@ -6,6 +6,7 @@ import { propsToString } from '@unhead/vue/server'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 
 import type { NuxtSSRContext } from 'nuxt/app'
+import type { Entry } from '#app/entry'
 
 // @ts-expect-error virtual file
 import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
@@ -19,8 +20,8 @@ globalThis.__buildAssetsURL = buildAssetsURL
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__publicAssetsURL = publicAssetsURL
 
-const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`
-const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
+export const APP_ROOT_OPEN_TAG: string = `<${appRootTag}${propsToString(appRootAttrs)}>`
+export const APP_ROOT_CLOSE_TAG: string = `</${appRootTag}>`
 
 // @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
@@ -134,6 +135,9 @@ function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
 export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
   return (NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()
 }
+
+// Expose the server app factory for streaming (renderToWebStream needs it directly)
+export const getServerApp: () => Promise<Entry> = lazyCachedFunction(getServerEntry)
 
 // @ts-expect-error file will be produced after app build
 export const getSSRStyles: () => Promise<Record<string, () => Promise<string[]>>> = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))

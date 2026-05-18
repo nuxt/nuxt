@@ -26,8 +26,8 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   }
   return null
 }
-let linkRelType: string | undefined
-function detectLinkRelType () {
+let linkRelType: 'preload' | 'prefetch' | undefined
+function detectLinkRelType (): 'preload' | 'prefetch' {
   if (import.meta.server) { return 'preload' }
   if (linkRelType) { return linkRelType }
   const relList = document.createElement('link').relList

@@ -1,18 +1,27 @@
 import { createHead as createClientHead } from '@unhead/vue/client'
+import { createStreamableHead as createStreamableClientHead } from '@unhead/vue/stream/client'
 import type { ActiveHeadEntry } from '@unhead/vue'
 import { defineNuxtPlugin } from '#app/nuxt'
 import { freezeHead } from '../island-head'
 
 // @ts-expect-error virtual file
 import unheadOptions from '#build/unhead-options.mjs'
+// @ts-expect-error virtual file
+import { ssrStreaming } from '#build/unhead.config.mjs'
 
 export default defineNuxtPlugin({
   name: 'nuxt:head',
   enforce: 'pre',
   setup (nuxtApp) {
+    // When streaming is enabled, use createStreamableHead to consume the
+    // window.__unhead__ queue populated during SSR streaming. Falls back
+    // to createClientHead if no stream queue is found (e.g. bot requests
+    // that received a fully-buffered response).
     const head = import.meta.server
       ? nuxtApp.ssrContext!.head
-      : createClientHead(unheadOptions)
+      : ssrStreaming
+        ? (createStreamableClientHead(unheadOptions) || createClientHead(unheadOptions))
+        : createClientHead(unheadOptions)
 
     // Drop plugin-phase `useHead` writes for islands -- they belong to the
     // surrounding route, not the island response. Unfreeze on `app:created`
