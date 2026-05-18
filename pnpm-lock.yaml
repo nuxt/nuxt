@@ -328,6 +328,8 @@ importers:
         specifier: 5.106.2
         version: 5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)
 
+  packages/kit/test/conditions-fixture: {}
+
   packages/nitro-server:
     dependencies:
       '@nuxt/kit':
