@@ -31,12 +31,14 @@ export interface NuxtTimeProps {
   relative?: boolean
   numeric?: 'always' | 'auto'
   relativeStyle?: 'long' | 'short' | 'narrow'
+  relativeCompact?: boolean
 
   title?: boolean | string
 }
 
 const props = withDefaults(defineProps<NuxtTimeProps>(), {
   hour12: undefined,
+  relativeCompact: undefined,
 })
 
 const el = getCurrentInstance()?.vnode.el
@@ -62,7 +64,7 @@ if (import.meta.client && props.relative) {
 }
 
 const formatter = computed(() => {
-  const { locale: propsLocale, relative, relativeStyle, ...rest } = props
+  const { locale: propsLocale, relative, relativeStyle, relativeCompact, ...rest } = props
   if (relative) {
     return new Intl.RelativeTimeFormat(_locale ?? propsLocale, { ...rest, style: relativeStyle })
   }
@@ -96,6 +98,15 @@ const formattedDate = computed(() => {
   const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
 
   const value = diffInSeconds / seconds
+
+  if (props.relativeCompact) {
+    return new Intl.NumberFormat(_locale ?? props.locale, {
+      style: 'unit',
+      unit,
+      unitDisplay: props.relativeStyle || 'long',
+    }).format(Math.abs(Math.round(value)))
+  }
+
   return (formatter.value as Intl.RelativeTimeFormat).format(Math.round(value), unit)
 })
 
@@ -132,7 +143,7 @@ if (import.meta.server) {
       return
     }
 
-    const options: Intl.DateTimeFormatOptions & Intl.RelativeTimeFormatOptions & { locale?: Intl.LocalesArgument, relative?: boolean } = {}
+    const options: Intl.DateTimeFormatOptions & Intl.RelativeTimeFormatOptions & { locale?: Intl.LocalesArgument, relative?: boolean, relativeCompact?: boolean } = {}
     for (const name of el.getAttributeNames()) {
       if (name.startsWith('data-')) {
         let optionName = name.slice(5).split('-').map(toCamelCase).join('') as keyof (Intl.DateTimeFormatOptions & Intl.RelativeTimeFormatOptions)
@@ -162,8 +173,16 @@ if (import.meta.server) {
       ]
       const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
       const value = diffInSeconds / seconds
-      const formatter = new Intl.RelativeTimeFormat(options.locale, options)
-      el.textContent = formatter.format(Math.round(value), unit)
+      if (options.relativeCompact) {
+        el.textContent = new Intl.NumberFormat(options.locale, {
+          style: 'unit',
+          unit,
+          unitDisplay: options.style || 'long',
+        }).format(Math.abs(Math.round(value)))
+      } else {
+        const formatter = new Intl.RelativeTimeFormat(options.locale, options)
+        el.textContent = formatter.format(Math.round(value), unit)
+      }
     } else {
       const formatter = new Intl.DateTimeFormat(options.locale, options)
       el.textContent = formatter.format(date)
