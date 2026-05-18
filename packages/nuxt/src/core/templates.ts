@@ -498,13 +498,13 @@ export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.server.mjs',
   getContents () {
     return [
-      'import { $fetch } from \'ofetch\'',
+      'import { createFetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
-      'import { serverFetch } from "nitro";',
-      'globalThis.fetch = serverFetch',
+      'import { fetch } from \'nitro\'',
       'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = $fetch.create({',
-      '    baseURL: baseURL()',
+      '  globalThis.$fetch = createFetch({',
+      '    fetch,',
+      '    defaults: { baseURL: baseURL() }',
       '  })',
       '}',
     ].join('\n')
