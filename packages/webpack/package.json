@@ -74,13 +74,13 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "2.0.2",
+    "@rspack/core": "2.0.3",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
     "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.22",
     "obuild": "0.4.35",
-    "rollup": "4.60.3",
+    "rollup": "4.60.4",
     "vue": "3.5.34"
   },
   "peerDependencies": {
