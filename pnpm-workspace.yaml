@@ -25,7 +25,7 @@ overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
   nuxt: "workspace:*"
-  vite: "8.0.12"
+  vite: "8.0.13"
   vue: "3.5.34"
 
 allowBuilds:
