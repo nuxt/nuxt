@@ -8,7 +8,7 @@ import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
-import type { PackageJson } from 'pkg-types'
+import type { PackageJson, TSConfig } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 import { consola } from 'consola'
@@ -256,7 +256,11 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('nitro:config', async (nitroConfig) => {
     paths ||= await resolveTypescriptPaths(nuxt)
     nitroConfig.typescript = defu(nitroConfig.typescript, {
-      tsConfig: { compilerOptions: { paths: { ...paths } } },
+      tsConfig: defu(
+        nuxt.options.typescript?.serverTsConfig,
+        nuxt.options.typescript?.tsConfig,
+        { compilerOptions: { paths: { ...paths } } },
+      ) as TSConfig,
     })
   })
 

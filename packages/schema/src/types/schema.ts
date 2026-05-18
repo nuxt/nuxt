@@ -1758,7 +1758,8 @@ export interface ConfigSchema {
     typeCheck: boolean | 'build'
 
     /**
-     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
+     * You can extend all generated tsconfig files using this option.
+     * Use `appTsConfig`, `serverTsConfig`, `nodeTsConfig` or `sharedTsConfig` to customize specific environments.
      */
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
@@ -1771,6 +1772,18 @@ export interface ConfigSchema {
      * You can extend the generated `.nuxt/tsconfig.shared.json` using this option.
      */
     sharedTsConfig: TSConfig
+
+    /**
+     *  You can extend the generated `.nuxt/tsconfig.app.json` using this option.
+     * This takes precedence over options set in `tsConfig` for the app environment.
+     */
+    appTsConfig: TSConfig
+
+    /**
+     * You can extend the generated Nitro server tsconfig using this option.
+     * This takes precedence over options set in `tsConfig` for the server environment.
+     */
+    serverTsConfig: TSConfig
 
     /**
      * Generate a `*.vue` shim.
