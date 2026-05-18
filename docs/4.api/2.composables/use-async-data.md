@@ -155,6 +155,28 @@ The `handler` function should be **side-effect free** to ensure predictable beha
       : nuxtApp.static.data[key]
     ```
     Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
+
+    The default caching behavior depends on how the user navigates to the page:
+    - **Hard reload or direct access (SSR):** During hydration, data is retrieved from `nuxtApp.payload.data[key]`, so the fetch is not repeated on the client.
+    - **Client-side navigation with `payloadExtraction` enabled:** Data is retrieved from `nuxtApp.static.data[key]` (pre-extracted during generation), avoiding a new fetch.
+    - **Client-side navigation without `payloadExtraction`:** `nuxtApp.static.data[key]` will be `undefined`, so the fetch will be executed again.
+
+    If you want to always reuse cached data during client-side navigation (regardless of `payloadExtraction`), provide a custom `getCachedData` function:
+    ```ts
+    const { data } = await useAsyncData('mountains', () => $fetch('/api/mountains'), {
+      getCachedData: (key, nuxtApp, ctx) => {
+        if (ctx.cause === 'refresh:manual' || ctx.cause === 'refresh:hook') {
+          return undefined
+        }
+        return nuxtApp.payload.data[key]
+      },
+    })
+    ```
+    This keeps the data in `payload.data` and reuses it during navigation, while still allowing `refresh()` to re-fetch when called manually.
+
+    ::warning
+    When using a custom `getCachedData` that returns cached data unconditionally (without checking `ctx.cause`), calling `refresh()` will have no effect since the cached value will still be returned. If you also use the `watch` option, make sure to also return `undefined` when `ctx.cause === 'watch'`, otherwise watched source changes will not trigger a re-fetch.
+    ::
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
   - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
