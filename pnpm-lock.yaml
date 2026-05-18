@@ -174,8 +174,8 @@ importers:
         specifier: 2.0.3
         version: 2.0.3
       pkg-pr-new:
-        specifier: 0.0.73
-        version: 0.0.73
+        specifier: 0.0.74
+        version: 0.0.74
       playwright-core:
         specifier: 1.60.0
         version: 1.60.0
@@ -7570,8 +7570,8 @@ packages:
     resolution: {integrity: sha512-KocF8ve28eFjjuBKKGvzOBGzG8ew2OqOOSxTTZhirkzH7h3BI1vyzqlR0qbfcDBve1Yzo3FVlWUAtCRrbVN8Fw==}
     engines: {node: '>=14.16'}
 
-  pkg-pr-new@0.0.73:
-    resolution: {integrity: sha512-/4iUn/yiDo5Fur+wGBASVPUTPPzcu422+BA0KeyTtDNX7uPuDfB/Lul9vGLXyk6Y2lULZ9YIxfqnNTGiImRLbw==}
+  pkg-pr-new@0.0.74:
+    resolution: {integrity: sha512-f2gScB4cjpVcMLeCMEhkrkt3KJCx3TgHTqaWZx54dUgvQcYASh+Hj+txMLjCkSN5ofHEGEmzi1gXK3lWZ2imTA==}
     hasBin: true
 
   pkg-types@1.3.1:
@@ -16324,7 +16324,7 @@ snapshots:
 
   pify@6.1.0: {}
 
-  pkg-pr-new@0.0.73: {}
+  pkg-pr-new@0.0.74: {}
 
   pkg-types@1.3.1:
     dependencies:
