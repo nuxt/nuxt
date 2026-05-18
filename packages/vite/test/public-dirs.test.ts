@@ -25,7 +25,8 @@ afterAll(() => {
 })
 
 describe('PublicDirsPlugin', () => {
-  const [, plugin] = PublicDirsPlugin({})
+  const plugins = PublicDirsPlugin({})
+  const plugin = plugins[1]!
   const resolveId = typeof plugin.resolveId === 'function' ? plugin.resolveId : plugin.resolveId!.handler
   const load = typeof plugin.load === 'function' ? plugin.load : plugin.load!.handler
 
