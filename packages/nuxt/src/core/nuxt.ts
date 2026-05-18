@@ -171,6 +171,39 @@ async function initNuxt (nuxt: Nuxt) {
 
   const layerDirs = getLayerDirectories(nuxt)
 
+  const layerPkgPromises = nuxt.options._layers
+    .filter(layer => layer.cwd && layer.cwd !== nuxt.options.rootDir)
+    .map(async layer => ({
+      layer,
+      pkg: await readPackageJSON(layer.cwd).catch(() => null),
+    }))
+
+  const resolvedLayers = await Promise.all(layerPkgPromises)
+
+  // Dynamically deduplicate layer dependencies to prevent multi-instance resolution bugs
+  for (const { layer, pkg } of resolvedLayers) {
+    if (!pkg) { continue }
+
+    const allDeps = {
+      ...(pkg.dependencies || {}),
+      ...(pkg.devDependencies || {}),
+      ...(pkg.peerDependencies || {}),
+    }
+
+    for (const dep of Object.keys(allDeps)) {
+      // SAFETY FILTER: Exempt core framework packages from strict root aliasing
+      if (dep === 'nuxt' || dep === 'vue' || dep.startsWith('@nuxt/') || dep.startsWith('@vue/')) {
+        continue
+      }
+
+      if (!nuxt.options.alias[dep]) {
+        try {
+          const resolvedPath = resolveModulePath(dep, { from: [nuxt.options.rootDir, layer.cwd] })
+          if (resolvedPath) { nuxt.options.alias[dep] = resolvedPath }
+        } catch { /* ignore */ }
+      }
+    }
+  }
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
