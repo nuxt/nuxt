@@ -2,7 +2,7 @@ import process from 'node:process'
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import { relative, resolve } from 'pathe'
+import { basename, dirname, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -99,6 +99,22 @@ export default defineResolvers({
           if (dir && typeof dir === 'string') {
             modulesDir.add(resolve(rootDir, dir))
           }
+        }
+      }
+      // App may run from inside node_modules (e.g. component libs). Add ancestor node_modules
+      // dirs so host deps resolve. Stop once the path has no node_modules segment so we never
+      // walk toward the OS root.
+      if (rootDir.includes('node_modules')) {
+        let current = rootDir
+        for (let depth = 0; depth < 10; depth++) {
+          const parent = dirname(current)
+          if (parent === current) { break }
+          if (basename(parent) === 'node_modules' && existsSync(parent)) {
+            modulesDir.add(parent)
+          }
+          current = parent
+          const pathSegments = current.split(/[/\\]/)
+          if (!pathSegments.includes('node_modules')) { break }
         }
       }
       return [...modulesDir]
