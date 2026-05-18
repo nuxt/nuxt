@@ -32,3 +32,7 @@ allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   unrs-resolver: false
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@nuxt/*'
