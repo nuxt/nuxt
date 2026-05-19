@@ -1373,6 +1373,16 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/ssr-streaming:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: latest
+        version: 6.0.3
+
   test/fixtures/suspense:
     dependencies:
       nuxt:
