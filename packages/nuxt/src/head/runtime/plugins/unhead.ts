@@ -1,7 +1,6 @@
 import { createHead as createClientHead } from '@unhead/vue/client'
 import { createStreamableHead as createStreamableClientHead } from '@unhead/vue/stream/client'
 import type { ActiveHeadEntry } from '@unhead/vue'
-import { createStreamableHead as createStreamableClientHead } from '@unhead/vue/stream/client'
 import { defineNuxtPlugin } from '#app/nuxt'
 import { freezeHead } from '../island-head'
 
@@ -31,6 +30,7 @@ export default defineNuxtPlugin({
       const unfreeze = freezeHead(head)
       nuxtApp.hooks.hookOnce('app:created', unfreeze)
     }
+
     // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
 
