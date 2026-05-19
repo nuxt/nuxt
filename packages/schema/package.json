@@ -13,8 +13,8 @@
   "types": "./dist/index.d.mts",
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./builder-env": "./dist/builder-env.mjs",
+    ".": "./src/index.ts",
+    "./builder-env": "./src/builder-env.ts",
     "./package.json": "./package.json"
   },
   "files": [
@@ -24,8 +24,8 @@
     "env.d.ts"
   ],
   "scripts": {
-    "prepack": "obuild",
-    "build:stub": "obuild --stub",
+    "prepack": "tsdown",
+    "build": "tsdown",
     "test:attw": "attw --pack"
   },
   "dependencies": {
@@ -36,6 +36,7 @@
     "std-env": "^4.1.0"
   },
   "devDependencies": {
+    "@nuxt/ui-templates": "workspace:*",
     "@types/pug": "2.0.10",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
@@ -59,13 +60,13 @@
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.10.2",
     "nitro": "3.0.260522-beta",
-    "obuild": "0.4.36",
     "ofetch": "2.0.0-alpha.3",
     "oxc-transform": "0.132.0",
     "postcss": "8.5.15",
     "rollup-plugin-visualizer": "7.0.1",
     "sass-loader": "17.0.0",
     "scule": "1.3.0",
+    "tsdown": "0.22.0",
     "unctx": "2.5.0",
     "unimport": "6.3.0",
     "untyped": "2.0.0",
@@ -79,5 +80,12 @@
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./builder-env": "./dist/builder-env.mjs",
+      "./package.json": "./package.json"
+    }
   }
 }
