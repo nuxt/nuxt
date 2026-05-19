@@ -113,9 +113,11 @@ describe('route rules', () => {
   it('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
     const html = await $fetch<string>('/route-rules/spa-async-data')
     const { attrs } = parseData(html)
-    expect(attrs['data-ssr']).toEqual('false')
-    expect(attrs['data-src']).toBeUndefined()
-    expect(html).not.toContain('/route-rules/spa-async-data/_payload.json')
+    if (isRenderingJson) {
+      expect(attrs['data-ssr']).toEqual('false')
+      expect(attrs['data-src']).toBeUndefined()
+    }
+    expect(html).not.toContain(`/route-rules/spa-async-data/_payload.${isRenderingJson ? 'json' : 'js'}`)
     await expectNoClientErrors('/route-rules/spa-async-data')
   })
 
