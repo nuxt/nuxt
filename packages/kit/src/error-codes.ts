@@ -166,6 +166,10 @@ export const B5012 = 'B5012'
 export const B6001 = 'B6001'
 /** Auto-import name conflict with Nuxt built-in */
 export const B6002 = 'B6002'
+/** `unhead.legacy` option is deprecated */
+export const B6003 = 'B6003'
+/** `experimental.headNext` option is deprecated */
+export const B6004 = 'B6004'
 
 // ---------- B7xxx: Webpack / Vite bundler ----------
 /** Bundle analysis requires rollup-plugin-visualizer */

@@ -2,7 +2,7 @@ import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { NitroRouteRules } from 'nitro/types'
 import { useRuntimeConfig } from '../nuxt'
 import { runtimeErrorUtils } from '../utils'
-import { E5001, E5002, E5003 } from '../error-codes'
+import { E5001, E5002, E5003, E5005 } from '../error-codes'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -37,7 +37,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     }).then((res) => {
       // handle errors fetching manifest, e.g. from an improperly configured proxy
       if (!res || typeof res !== 'object' || !Array.isArray((res as NuxtAppManifest).prerendered)) {
-        throw new Error('[nuxt] Received malformed app manifest. Ensure that `builds/meta/*.json` is served as JSON by your hosting/proxy and not rewritten to an HTML fallback.')
+        runtimeErrorUtils.throw({ message: 'Received malformed app manifest.', code: E5005, fix: 'Ensure that `builds/meta/*.json` is served as JSON by your hosting/proxy and not rewritten to an HTML fallback.' })
       }
       return res
     })

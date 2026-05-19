@@ -117,6 +117,8 @@ export const E5002 = 'E5002'
 export const E5003 = 'E5003'
 /** Setting response headers not supported in browser */
 export const E5004 = 'E5004'
+/** Malformed app manifest received */
+export const E5005 = 'E5005'
 
 // ---------- E6xxx: Head / SEO ----------
 /** Missing Unhead instance */

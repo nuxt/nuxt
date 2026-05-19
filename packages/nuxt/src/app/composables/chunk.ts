@@ -1,5 +1,7 @@
 import { isScriptProtocol } from 'ufo'
 import { useNuxtApp } from '../nuxt'
+import { runtimeErrorUtils } from '../utils'
+import { E2002 } from '../error-codes'
 
 export interface ReloadNuxtAppOptions {
   /**
@@ -34,7 +36,7 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
 
   const { protocol } = new URL(path, window.location.href)
   if (protocol && isScriptProtocol(protocol)) {
-    throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+    runtimeErrorUtils.throw({ message: `Cannot navigate to URL \`${path}\` with \`${protocol}\` protocol.`, code: E2002, fix: 'Script protocols (e.g., `javascript:`) are blocked for security. Use a valid `http:` or `https:` URL.' })
   }
 
   let handledPath: Record<string, any> = {}
