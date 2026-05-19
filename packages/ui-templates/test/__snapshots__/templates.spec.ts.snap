@@ -102,12 +102,12 @@ exports[`template > produces correct output for error-404 template 1`] = `
   padding-right: 1rem;
 }
 .py-1 {
-  padding-bottom: 0.25rem;
   padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 .py-3 {
-  padding-bottom: 0.75rem;
   padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 .text-center {
   text-align: center;
@@ -485,12 +485,12 @@ exports[`template > produces correct output for error-500 template 1`] = `
   padding-right: 1rem;
 }
 .py-1 {
-  padding-bottom: 0.25rem;
   padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 .py-3 {
-  padding-bottom: 0.75rem;
   padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 .text-center {
   text-align: center;

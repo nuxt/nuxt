@@ -634,7 +634,7 @@ describe('routing utilities: `navigateTo`', () => {
       ['\0data:alert("hi")', 'data'],
     ]
     for (const [url, protocol] of urls) {
-      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+      expect(() => reloadNuxtApp({ path: url })).toThrow(new RegExp(`\\[NUXT_E2002\\].*Cannot navigate to URL.*with \\\`${protocol}:\\\` protocol`))
     }
   })
   it('navigateTo should replace current navigation state if called within middleware', () => {
