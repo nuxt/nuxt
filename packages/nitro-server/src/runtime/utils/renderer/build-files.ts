@@ -11,8 +11,7 @@ import type { NuxtSSRContext } from 'nuxt/app'
 import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
-// @ts-expect-error virtual file
-import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { buildAssetsURL, publicAssetsURL } from '../paths'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
