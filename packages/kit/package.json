@@ -12,15 +12,15 @@
   "type": "module",
   "types": "./dist/index.d.mts",
   "exports": {
-    ".": "./dist/index.mjs",
+    ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepack": "obuild",
-    "build:stub": "obuild --stub",
+    "prepack": "tsdown",
+    "build": "tsdown",
     "test:attw": "attw --pack"
   },
   "dependencies": {
@@ -41,6 +41,7 @@
     "rc9": "^3.0.1",
     "scule": "^1.3.0",
     "semver": "^7.8.0",
+    "std-env": "^4.1.0",
     "tinyglobby": "^0.2.16",
     "ufo": "^1.6.4",
     "unctx": "^2.5.0",
@@ -53,7 +54,7 @@
     "hookable": "6.1.1",
     "nitro": "3.0.260311-beta",
     "nitropack": "2.13.4",
-    "obuild": "0.4.36",
+    "tsdown": "0.22.0",
     "unimport": "6.3.0",
     "vite": "8.0.12",
     "vitest": "4.1.7",
@@ -61,5 +62,11 @@
   },
   "engines": {
     "node": ">=18.12.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./package.json": "./package.json"
+    }
   }
 }
