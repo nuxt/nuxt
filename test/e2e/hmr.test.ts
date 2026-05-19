@@ -7,6 +7,8 @@ import { expect, test } from './test-utils'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
 const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
+const siblingLayerFixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr-sibling-layer', import.meta.url))
+const siblingLayerSourceDir = fileURLToPath(new URL('../fixtures/hmr-sibling-layer', import.meta.url))
 
 test.use({
   nuxt: {
@@ -367,6 +369,31 @@ test.describe('vite-only HMR tests', () => {
         !log.text.includes('No match found for location with path "/hmr-trigger"'),
     )
     expect(errors).toStrictEqual([])
+  })
+
+  // https://github.com/nuxt/nuxt/issues/34763 / https://github.com/nuxt/nuxt/issues/30169
+  test('SSR re-evaluates components in a sibling local layer', async ({ fetch }) => {
+    const componentPath = join(siblingLayerFixtureDir, 'app/components/SiblingLayerMarker.vue')
+    const original = readFileSync(join(siblingLayerSourceDir, 'app/components/SiblingLayerMarker.vue'), 'utf8')
+    writeFileSync(componentPath, original)
+
+    async function readMarker () {
+      const res = await fetch('/sibling-layer')
+      const html = await res.text()
+      const match = html.match(/data-testid="sibling-marker"[^>]*>([^<]+)</)
+      return match ? match[1] : null
+    }
+
+    // Wait for the route + component (provided by the sibling layer) to be
+    // wired up by the dev server.
+    await expect(readMarker).toBeWithPolling('v1')
+
+    writeFileSync(componentPath, original.replace(`'v1'`, `'v2'`))
+
+    // Without the SSR cache invalidation fix (c58bb749a), this poll would
+    // keep observing 'v1' because the sibling layer's module stayed cached on
+    // the SSR side even though the plugin re-ran load().
+    await expect(readMarker).toBeWithPolling('v2')
   })
 
   // https://github.com/nuxt/nuxt/issues/30169
