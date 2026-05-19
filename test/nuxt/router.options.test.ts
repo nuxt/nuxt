@@ -60,7 +60,7 @@ describe('scrollBehavior of router options with global transition', () => {
     await navigateTo('/')
     await flushPromises()
     vi.clearAllMocks()
-    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
   })
 
   afterAll(() => {
@@ -222,7 +222,7 @@ describe('scrollBehavior with cross-layout transitions (#34196)', () => {
     await navigateTo('/')
     await flushPromises()
     vi.clearAllMocks()
-    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
   })
 
   afterAll(() => {
@@ -258,6 +258,84 @@ describe('scrollBehavior with cross-layout transitions (#34196)', () => {
     // scrollTo should fire AFTER the layout transition finishes (onAfterLeave),
     // not immediately when page:loading:end fires.
     expect(layoutAfterLeave).toHaveBeenCalledBefore(scrollTo)
+  })
+})
+
+describe('scrollBehavior with scrollToTop and fixed page key', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  let wrapper: VueWrapper<unknown>
+  let scrollTo: ReturnType<typeof vi.spyOn>
+  const cleanups: Array<() => void> = []
+
+  const pageLoadingEnd = vi.fn()
+
+  const FixedKeyPage = defineComponent({ setup: () => () => h('div', 'Fixed key page') })
+
+  beforeAll(async () => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    cleanups.push(router.addRoute({
+      name: 'fixed-key-scroll-top',
+      path: '/fixed-key-scroll-top/:id',
+      meta: { key: 'fixed-key-scroll-top', scrollToTop: true },
+      component: FixedKeyPage,
+    }))
+
+    cleanups.push(router.addRoute({
+      name: 'fixed-key-no-scroll-top',
+      path: '/fixed-key-no-scroll-top/:id',
+      meta: { key: 'fixed-key-no-scroll-top', scrollToTop: false },
+      component: FixedKeyPage,
+    }))
+
+    cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEnd))
+
+    wrapper = await mountSuspended(defineComponent({
+      setup: () => () => h(NuxtPage),
+    }))
+    await flushPromises()
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
+  })
+
+  afterAll(() => {
+    wrapper.unmount()
+    for (const cleanup of cleanups) {
+      cleanup()
+    }
+  })
+
+  it.each(['push', 'replace'] as const)('should not scroll to top on router.%s when page key is unchanged and scrollToTop is false', async (method) => {
+    await navigateTo('/fixed-key-no-scroll-top/1')
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+    vi.clearAllMocks()
+
+    await router[method]('/fixed-key-no-scroll-top/2')
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/31654
+  it.each(['push', 'replace'] as const)('should scroll to top on router.%s when page key is unchanged but scrollToTop is true', async (method) => {
+    await navigateTo('/fixed-key-scroll-top/1')
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+    vi.clearAllMocks()
+
+    await router[method]('/fixed-key-scroll-top/2')
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
   })
 })
 

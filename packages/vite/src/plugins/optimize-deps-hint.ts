@@ -7,7 +7,7 @@ import { colorize } from 'consola/utils'
 
 export function formatIncludeSnippet (deps: string[], cjsDeps?: Set<string>): string {
   if (!deps.length) { return '[]' }
-  const lines = deps.map((d) => {
+  const lines = deps.toSorted().map((d) => {
     const comment = cjsDeps?.has(d) ? ' // CJS' : ''
     return `        '${d}',${comment}`
   })

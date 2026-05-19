@@ -9,7 +9,7 @@ import {
 import { createScanPluginContext } from '../src/compiler/utils.ts'
 import * as oxcWalker from 'oxc-walker'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
-import type { Node } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 
 vi.mock('oxc-walker', async importOriginal => ({ ...await importOriginal() }))
 
@@ -194,7 +194,7 @@ describe('createScanPluginContext', () => {
 
   it('should parse and walk the AST and track variables', () => {
     const code = `const a: number = 1`
-    const nodes: Node[] = []
+    const nodes: ESTree.Node[] = []
     const context = createScanPluginContext(code, 'file.ts')
 
     const scopeTracker = new ScopeTracker()

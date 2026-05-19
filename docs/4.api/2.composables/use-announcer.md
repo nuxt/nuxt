@@ -9,7 +9,7 @@ links:
 ---
 
 ::important
-This composable is available in Nuxt v3.17+.
+This composable is available in Nuxt v4.4.2+.
 ::
 
 ## Description

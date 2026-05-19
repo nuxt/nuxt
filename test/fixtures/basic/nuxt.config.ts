@@ -3,9 +3,10 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
-import { withMatrix } from '../../matrix'
+import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
 
 export default withMatrix({
+  ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   appId: 'nuxt-app-basic',
   extends: [
     './extends/node_modules/foo',
@@ -174,6 +175,7 @@ export default withMatrix({
     ],
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
@@ -184,6 +186,8 @@ export default withMatrix({
       '/route-rules/redirect': { redirect: '/' },
       '/isr': { isr: 60 },
       '/route-rules/isr-spa': { isr: 60, ssr: false },
+      '/route-rules/swr-in-spa/**': { ssr: false },
+      '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
       '/swr': { swr: 60 },
     },
     prerender: {

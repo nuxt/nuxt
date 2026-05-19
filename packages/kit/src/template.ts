@@ -348,7 +348,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   }
 
   const nestedModulesDirs: string[] = []
-  for (const dir of [...nuxt.options.modulesDir].sort()) {
+  for (const dir of nuxt.options.modulesDir.toSorted()) {
     const withSlash = withTrailingSlash(dir)
     if (nestedModulesDirs.every(d => !d.startsWith(withSlash))) {
       nestedModulesDirs.push(withSlash)
@@ -489,13 +489,18 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const aliases: Record<string, string> = nuxt.options.alias
 
+  // TODO: remove support for baseUrl in nuxt v5
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = tsConfig.compilerOptions!.baseUrl
+    // TODO: remove support for baseUrl in nuxt v5
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
+  tsConfig.exclude ||= []
 
   const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
@@ -561,7 +566,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
     include: [...tsConfig.include, ...legacyInclude],
-    exclude: [...legacyExclude],
+    exclude: [...tsConfig.exclude, ...legacyExclude],
   })
 
   async function resolveConfig (tsConfig: TSConfig) {

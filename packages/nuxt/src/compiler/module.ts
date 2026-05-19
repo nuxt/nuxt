@@ -33,7 +33,6 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
     nuxt.hook('build:before', async () => {
       // Replace keyed function factory compiler macro placeholders with actual factories.
       addBuildPlugin(KeyedFunctionFactoriesPlugin({
-        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         factories: nuxt.options.optimization.keyedComposableFactories,
         alias: nuxt.options.alias,
         getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
@@ -57,7 +56,6 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       })))
 
       addBuildPlugin(KeyedFunctionsPlugin({
-        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         keyedFunctions: normalizedKeyedFunctions,
         getKeyedFunctions: () => normalizedKeyedFunctions,
         alias: nuxt.options.alias,

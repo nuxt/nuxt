@@ -1,11 +1,10 @@
 import { type UnpluginOptions, createUnplugin } from 'unplugin'
 import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import type { NuxtConfigLayer } from 'nuxt/schema'
 
 interface LayerAliasingOptions {
-  sourcemap?: boolean
   root: string
   dev: boolean
   layers: NuxtConfigLayer[]
@@ -14,6 +13,7 @@ interface LayerAliasingOptions {
 const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
 const ALIAS_ID_RE = /^[~@]{1,2}\//
+const CSS_LANG_RE = /\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:\?|$)/
 
 export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnplugin((_options, meta) => {
   const aliases: Record<string, Record<string, string>> = {}
@@ -30,28 +30,35 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
   }
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
-  const nonViteTransformIncludes: UnpluginOptions['transformInclude'] = (id) => {
+  // On vite, JS imports are handled by the `resolveId` hook below; the
+  // textual rewrite is only needed for CSS files, whose `@import` / `url()`
+  // resolution skips plugin `resolveId`. Webpack/rspack rely on the textual
+  // rewrite for everything.
+  const isCssLikeOnly = meta.framework === 'vite'
+  const transformInclude: UnpluginOptions['transformInclude'] = (id) => {
     const _id = normalize(id)
-    return layers.some(dir => _id.startsWith(dir))
+    if (!layers.some(dir => _id.startsWith(dir))) { return false }
+    if (isCssLikeOnly && !CSS_LANG_RE.test(id)) { return false }
+    return true
   }
-  const nonViteTransform: UnpluginOptions['transform'] = {
+  const transform: UnpluginOptions['transform'] = {
     filter: {
       code: { include: ALIAS_RE_SINGLE },
     },
-    handler (code, id) {
+    handler (code, id, meta?: unknown) {
       const _id = normalize(id)
       const layer = layers.find(l => _id.startsWith(l))
       if (!layer) { return }
 
-      const s = new MagicString(code)
-      s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
-
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
+      const s = rolldownString(code, id, meta)
+      for (const match of code.matchAll(ALIAS_RE)) {
+        const replacement = aliases[layer]?.[match[0] as '~']
+        if (replacement && replacement !== match[0]) {
+          s.overwrite(match.index, match.index + match[0].length, replacement)
         }
       }
+
+      return generateTransform(s, id)
     },
   }
 
@@ -78,8 +85,8 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
       },
     },
 
-    // webpack-only transform
-    transformInclude: meta.framework !== 'vite' ? nonViteTransformIncludes : undefined,
-    transform: meta.framework !== 'vite' ? nonViteTransform : undefined,
+    // https://github.com/nuxt/nuxt/issues/24427
+    transformInclude,
+    transform,
   }
 })

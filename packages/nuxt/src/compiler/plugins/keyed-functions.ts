@@ -1,5 +1,5 @@
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { hash } from 'ohash'
 
 import { isAbsolute, join, parse } from 'pathe'
@@ -10,14 +10,13 @@ import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-wal
 import { resolveAlias } from '@nuxt/kit'
 import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 import type { KeyedFunction } from '@nuxt/schema'
-import type { Node } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 import type { Import } from 'unimport'
 
 import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, isWhitespace, stripExtension } from '../../utils.ts'
 import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface KeyedFunctionsOptions {
-  sourcemap: boolean
   keyedFunctions: KeyedFunction[]
   getKeyedFunctions?: () => KeyedFunction[]
   alias: Record<string, string>
@@ -126,7 +125,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         // In production, use the static regex for performance.
         ...(!options.dev && { code: { include: state.codeIncludeRE } }),
       },
-      async handler (code, _id) {
+      async handler (code, _id, meta?: unknown) {
         const { namesToSourcesToFunctionMeta, sources } = getState()
 
         // In dev mode, do an early return if no known composable names appear in the code
@@ -221,7 +220,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           return join(parse(id).dir, p)
         }
 
-        const s = new MagicString(code)
+        const s = rolldownString(code, _id, meta)
         let count = 0
 
         const scopeTracker = new ScopeTracker({
@@ -261,7 +260,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
         function processKeyedFunction (
           walkContext: ThisParameterType<NonNullable<Parameters<typeof walk>[1]['enter']>>, // TODO: export type from `oxc-walker`
-          node: Node,
+          node: ESTree.Node,
           handler: (ctx: { parsedCall: FunctionCallMetadata, fnMeta: BackwardsCompatibleKeyedFunction }) => void,
         ) {
           if (node.type !== 'CallExpression' && node.type !== 'ChainExpression') { return }
@@ -429,14 +428,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           },
         })
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, _id)
       },
     },
   }

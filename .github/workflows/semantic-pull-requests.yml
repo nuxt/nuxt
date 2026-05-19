@@ -1,6 +1,8 @@
 name: chore
 
 on:
+  # zizmor: ignore[dangerous-triggers] needs write access to set status check on PRs from forks; no PR code is checked out (only metadata is read)
+  # DO NOT add action/checkout in this workflow
   pull_request_target:
     types:
       - opened

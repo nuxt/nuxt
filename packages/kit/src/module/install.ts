@@ -49,6 +49,13 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   const resolvedModules: Array<ResolvedModule> = []
   // allow moduleDependencies to reference modules by their meta.name
   const modulesByMetaName = new Map<string, ModuleToInstall>()
+
+  // preload known modules in parallel
+  const moduleLoadCache = new Map<ModuleToInstall, Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }>>()
+  for (const [key] of modulesToInstall) {
+    moduleLoadCache.set(key, loadNuxtModuleInstance(key, nuxt))
+  }
+
   const inlineConfigKeys = new Set(
     await Promise.all([...modulesToInstall].map(async ([mod]) => {
       if (typeof mod === 'string') { return }
@@ -67,7 +74,8 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   let error: Error | undefined
   const dependencyMap = new Map<ModuleToInstall, string>()
   for (const [key, options] of modulesToInstall) {
-    const res = await loadNuxtModuleInstance(key, nuxt).catch((err) => {
+    const loadPromise = moduleLoadCache.get(key) || loadNuxtModuleInstance(key, nuxt)
+    const res = await loadPromise.catch((err) => {
       if (dependencyMap.has(key) && typeof key === 'string') {
         (err as Error).cause = `Could not resolve \`${key}\` (specified as a dependency of ${dependencyMap.get(key)!}).`
       }
@@ -276,6 +284,18 @@ export function resolveModuleWithOptions (
   }
 }
 
+let _jitiCache: WeakMap<Nuxt, ReturnType<typeof createJiti>> | undefined
+
+function getSharedJiti (nuxt: Nuxt): ReturnType<typeof createJiti> {
+  _jitiCache ||= new WeakMap()
+  let jiti = _jitiCache.get(nuxt)
+  if (!jiti) {
+    jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+    _jitiCache.set(nuxt, jiti)
+  }
+  return jiti
+}
+
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()): Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }> {
   let buildTimeModuleMeta: ModuleMeta = {}
 
@@ -290,7 +310,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     buildErrorUtils.throw({ message: `Nuxt module should be a function or a string to import. Received: \`${nuxtModule}\`.`, code: ErrorCodes.B8015, fix: 'Pass a module function or a string package name to the `modules` array in `nuxt.config`.', context: { received: typeof nuxtModule } })
   }
 
-  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+  const jiti = getSharedJiti(nuxt)
 
   // Import if input is string
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)

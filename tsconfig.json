@@ -22,7 +22,7 @@
     "noEmit": true,
     /* If your code runs in the DOM: */
     "lib": [
-      "es2022",
+      "es2023",
       "webworker",
       "dom",
       "dom.iterable"

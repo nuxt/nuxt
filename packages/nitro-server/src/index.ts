@@ -105,6 +105,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  if (nuxt.options.experimental.runtimeBaseURL) {
+    nuxt.options.serverHandlers.unshift({
+      route: '',
+      middleware: true,
+      handler: resolve(distDir, 'runtime/middleware/base-url'),
+    })
+  }
+
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
     const h3Path = JSON.stringify(resolve(distDir, 'runtime/h3-compat'))
@@ -118,8 +126,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       }
       return `import { defineEventHandler } from ${h3Path}; export default defineEventHandler(() => {});`
     }
-    nuxt.options.nitro.handlers ||= []
-    nuxt.options.nitro.handlers.push({
+    nuxt.options.serverHandlers.push({
       route: '/__nuxt_island/**',
       handler: ISLAND_RENDERER_KEY,
     })
@@ -185,17 +192,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     renderer: {
       handler: resolve(distDir, 'runtime/handlers/renderer'),
     },
-    handlers: [
-      ...nuxt.options.experimental.runtimeBaseURL
-        ? [{
-            route: '',
-            middleware: true,
-            handler: resolve(distDir, 'runtime/middleware/base-url'),
-          }]
-        : [],
-      ...nuxt.options.serverHandlers,
-    ],
-    devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
@@ -425,8 +421,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
             if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
-              const payloadKey = route + '/_payload.json'
-              const defaults = {} as Record<string, any>
+              const payloadKey = (route === '/' ? '' : route) + '/_payload.json'
+              const defaults = { ssr: true } as Record<string, any>
               for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
                 if (key in value) {
                   defaults[key] = value[key as keyof typeof value]
@@ -542,7 +538,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Add decorator support via Babel when experimental.decorators is enabled.
   if (nuxt.options.experimental.decorators) {
-    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators']
+    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
     const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
       rootDir: nuxt.options.rootDir,
       searchPaths: nuxt.options.modulesDir,
@@ -676,6 +672,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // TODO: extract to shared utility?
   const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+  // TODO: remove support for baseUrl in nuxt v5
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
   const tsConfig = nitroConfig.typescript!.tsConfig!
@@ -712,7 +710,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitro.storage ||= { watch: () => {}, getMount: () => ({}) }
 
   // For full-static output, ensure payload extraction is not disabled
-  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
+  if (nuxt.options.ssr && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
     buildErrorUtils.warn({ message: 'Payload extraction is recommended for full-static output.', code: ErrorCodes.B7015, fix: 'Enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.' })
   }
 
@@ -782,7 +780,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     configEnvironment (name, config) {
       if (name === 'ssr') {
         config.resolve ||= {}
-        config.resolve.conditions = [...nitro.options.exportConditions || [], 'import']
+        config.resolve.conditions = [...nitro.options.exportConditions || []]
+        // TODO: remove in v5
+        config.resolve.conditions = config.resolve.conditions.filter(c => c !== 'import')
       }
     },
   })

@@ -207,7 +207,7 @@ export const Link = defineComponent({
   setup (props) {
     const { input, update } = useHeadComponentCtx()
     input.link ||= []
-    const idx: keyof typeof input.link = input.link.push({}) - 1
+    const idx: keyof typeof input.link = input.link.push(null) - 1
     const key = useVNodeStringKey()
 
     onUnmounted(() => {
@@ -287,7 +287,7 @@ export const Meta = defineComponent({
     const { input, update } = useHeadComponentCtx()
     const key = useVNodeStringKey()
     input.meta ||= []
-    const idx: keyof typeof input.meta = input.meta.push({}) - 1
+    const idx: keyof typeof input.meta = input.meta.push(null) - 1
     onUnmounted(() => {
       input.meta![idx] = null
       update()
@@ -339,7 +339,7 @@ export const Style = defineComponent({
           runtimeErrorUtils.warn({ message: '`<Style>` can only take a string in its default slot.', code: E6003 })
         }
         input.style![idx] = style
-        style.textContent = textContent
+        style.textContent = textContent as string
       }
       update()
       return null

@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { defineScript } from '@unhead/vue'
 import { defineNuxtPlugin } from '../nuxt'
 import { useHead } from '../composables/head'
 
@@ -9,10 +10,11 @@ export default defineNuxtPlugin({
   setup (nuxtApp) {
     const externalURLs = ref(new Set<string>())
     function generateRules () {
-      return {
+      return defineScript({
         type: 'speculationrules',
         key: 'speculationrules',
-        innerHTML: JSON.stringify({
+        // unhead v3 JSON-stringifies object innerHTML for <script> tags
+        innerHTML: {
           prefetch: [
             {
               source: 'list',
@@ -20,8 +22,8 @@ export default defineNuxtPlugin({
               requires: ['anonymous-client-ip-when-cross-origin'],
             },
           ],
-        }),
-      }
+        },
+      })
     }
     const head = useHead({
       script: [generateRules()],
