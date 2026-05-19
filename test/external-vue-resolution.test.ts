@@ -1,10 +1,6 @@
-import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
-
-const nuxtEntry = fileURLToPath(new URL('../packages/nuxt/dist/index.mjs', import.meta.url))
-const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes('const _module = await jiti')
 
 // only run once across the fixture matrix
 const isMatrixRun = !!process.env.TEST_BUILDER
