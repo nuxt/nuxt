@@ -43,7 +43,7 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      src: ${{ steps.filter.outputs.src }}
+      src: ${{ (github.event_name == 'push' && (github.ref_name == '4.x' || github.ref_name == '3.x')) && 'true' || steps.filter.outputs.src }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
