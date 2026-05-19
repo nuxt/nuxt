@@ -53,7 +53,6 @@
     "std-env": "^4.1.0",
     "ufo": "^1.6.4",
     "unctx": "^2.5.0",
-    "unhead": "^3.0.0",
     "unstorage": "^2.0.0-alpha.7",
     "vue": "^3.5.34",
     "vue-bundle-renderer": "^2.2.0",

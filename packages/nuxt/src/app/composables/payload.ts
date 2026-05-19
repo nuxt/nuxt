@@ -46,7 +46,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
     const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
 
     if (import.meta.server) {
-      nuxtApp.runWithContext(() => useHead({ link: [link as Link] }))
+      nuxtApp.runWithContext(() => useHead({ link: [link] }))
     } else {
       const linkEl = document.createElement('link')
       linkEl.rel = rel

@@ -1,4 +1,5 @@
 import { createHead as createClientHead } from '@unhead/vue/client'
+import { createStreamableHead as createStreamableClientHead } from '@unhead/vue/stream/client'
 import type { ActiveHeadEntry } from '@unhead/vue'
 import { createStreamableHead as createStreamableClientHead } from '@unhead/vue/stream/client'
 import { defineNuxtPlugin } from '#app/nuxt'
