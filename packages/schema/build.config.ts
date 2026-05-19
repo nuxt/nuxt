@@ -10,6 +10,7 @@ export default defineBuildConfig({
         external: [
           // Type imports
           '@unhead/vue/types',
+          '@unhead/vue/vite',
           '@vitejs/plugin-vue',
           '@vitejs/plugin-vue-jsx',
           '@vue/compiler-core',

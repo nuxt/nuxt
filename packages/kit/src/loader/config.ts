@@ -3,7 +3,7 @@ import process from 'node:process'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
-import { loadConfig } from 'c12'
+import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
@@ -34,6 +34,14 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     .sort((a, b) => b.localeCompare(a))
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
+  // populate process.env before the schema imports its env-based defaults
+  if (opts.dotenv !== false) {
+    await setupDotenv({
+      cwd: opts.cwd || process.cwd(),
+      ...(typeof opts.dotenv === 'object' ? opts.dotenv : {}),
+    })
+  }
+
   const schemaPromise = loadNuxtSchema(opts.cwd || process.cwd())
 
   const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await withDefineNuxtConfig(
@@ -42,11 +50,11 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       configFile: 'nuxt.config',
       rcFile: '.nuxtrc',
       extend: { extendKey: ['theme', '_extends', 'extends'] },
-      dotenv: true,
       globalRc: true,
       // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
       merger,
       ...opts,
+      dotenv: false, // already loaded above
     }),
   )
 

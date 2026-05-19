@@ -8,12 +8,6 @@ packages:
   - test/fixtures/*
   - test/fixtures/*/_local-modules/*
 
-ignoredBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - oxc-resolver
-  - unrs-resolver
-
 patchedDependencies:
   changelogen: patches/changelogen.patch
 
@@ -25,3 +19,20 @@ shellEmulator: true
 
 verifyDepsBeforeRun: install
 
+ignoreWorkspaceCycles: true
+
+overrides:
+  "@nuxt/kit": "workspace:*"
+  "@nuxt/schema": "workspace:*"
+  nuxt: "workspace:*"
+  vite: "8.0.12"
+  vue: "3.5.34"
+
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  unrs-resolver: false
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@nuxt/*'

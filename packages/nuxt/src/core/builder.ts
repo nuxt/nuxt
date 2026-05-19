@@ -264,7 +264,11 @@ async function bundle (nuxt: Nuxt) {
 
 async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   try {
-    return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
+    // prefer our own dependency tree before walking up from rootDir
+    if (builder === '@nuxt/vite-builder') {
+      return await import(builder)
+    }
+    return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err) {
     throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder\``, { cause: err })
   }

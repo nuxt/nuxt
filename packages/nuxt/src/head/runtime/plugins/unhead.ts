@@ -1,6 +1,8 @@
 import { createHead as createClientHead } from '@unhead/vue/client'
+import type { ActiveHeadEntry } from '@unhead/vue'
 import { createStreamableHead as createStreamableClientHead } from '@unhead/vue/stream/client'
 import { defineNuxtPlugin } from '#app/nuxt'
+import { freezeHead } from '../island-head'
 
 // @ts-expect-error virtual file
 import unheadOptions from '#build/unhead-options.mjs'
@@ -20,6 +22,14 @@ export default defineNuxtPlugin({
       : ssrStreaming
         ? (createStreamableClientHead(unheadOptions) || createClientHead(unheadOptions))
         : createClientHead(unheadOptions)
+
+    // Drop plugin-phase `useHead` writes for islands -- they belong to the
+    // surrounding route, not the island response. Unfreeze on `app:created`
+    // (after `applyPlugins` resolves) so island components write normally.
+    if (import.meta.server && nuxtApp.ssrContext!.islandContext) {
+      const unfreeze = freezeHead(head)
+      nuxtApp.hooks.hookOnce('app:created', unfreeze)
+    }
     // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
 
@@ -41,6 +51,22 @@ export default defineNuxtPlugin({
       nuxtApp.hooks.hook('app:error', syncHead)
       // unpause the DOM once the mount suspense is resolved
       nuxtApp.hooks.hook('app:suspense:resolve', syncHead)
+
+      // Defer head-entry disposal during a page transition.
+      const originalPush = head.push.bind(head)
+      head.push = ((input: Parameters<typeof head.push>[0], options?: Parameters<typeof head.push>[1]) => {
+        const entry = originalPush(input, options) as ActiveHeadEntry<typeof input>
+        const originalDispose = entry.dispose.bind(entry)
+        entry.dispose = () => {
+          const transitionPromise = nuxtApp['~transitionPromise']
+          if (transitionPromise) {
+            transitionPromise.then(originalDispose)
+          } else {
+            originalDispose()
+          }
+        }
+        return entry
+      }) as typeof head.push
     }
   },
 })

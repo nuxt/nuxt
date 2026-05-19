@@ -1,6 +1,6 @@
 import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
-import type { Link } from '@unhead/vue'
+import { defineLink } from '@unhead/vue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
@@ -42,15 +42,17 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
       return
     }
     const payloadURL = await _getPayloadURL(url, opts)
-    const link = { rel: detectLinkRelType(), as: 'fetch' as const, crossorigin: 'anonymous' as const, href: payloadURL }
+    const rel = detectLinkRelType()
+    const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
 
     if (import.meta.server) {
       nuxtApp.runWithContext(() => useHead({ link: [link as Link] }))
     } else {
       const linkEl = document.createElement('link')
-      for (const key of Object.keys(link) as Array<keyof typeof link>) {
-        linkEl[key === 'crossorigin' ? 'crossOrigin' : key] = link[key]!
-      }
+      linkEl.rel = rel
+      linkEl.setAttribute('as', 'fetch')
+      linkEl.crossOrigin = 'anonymous'
+      linkEl.href = payloadURL
       document.head.appendChild(linkEl)
       return new Promise<void>((resolve, reject) => {
         linkEl.addEventListener('load', () => resolve())
@@ -111,8 +113,13 @@ async function _isPrerenderedInManifest (url: string) {
     return false
   }
   url = url === '/' ? url : url.replace(/\/$/, '')
-  const manifest = await getAppManifest()
-  return manifest.prerendered.includes(url)
+  try {
+    const manifest = await getAppManifest()
+    return manifest.prerendered.includes(url)
+  } catch {
+    // handle errors fetching manifest
+    return false
+  }
 }
 
 /**

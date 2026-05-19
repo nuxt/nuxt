@@ -338,7 +338,7 @@ export const Style = defineComponent({
         }
         if (typeof textContent === 'string') {
           input.style![idx] = style
-          style.textContent = textContent
+          style.textContent = textContent as string
         }
       }
       update()

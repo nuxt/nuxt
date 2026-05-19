@@ -17,7 +17,7 @@ import { relative } from 'pathe'
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
-import { payloadCache } from '../utils/cache'
+import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, setSSRError } from '../utils/renderer/app'
@@ -61,7 +61,7 @@ let entryPath: string
 // Bot detection regex for SSR streaming (compiled once, tree-shaken when streaming disabled)
 const SSR_BOT_RE = NUXT_SSR_STREAMING ? new RegExp(NUXT_SSR_STREAMING_BOT_RE, 'i') : null
 
-const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
   // Whether we're rendering an error page
   const ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery<NuxtPayload['error'] & { url: string }>(event)
@@ -74,6 +74,27 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     })
   }
 
+  // During prerender, refuse to recurse into a URL that is already rendering
+  // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
+  // the in-flight URL (typically from route middleware) silently deadlocks the
+  // build. See https://github.com/nuxt/nuxt/issues/33871.
+  if (import.meta.prerender && prerenderRenderingURLs) {
+    const renderingURL = event.url.pathname + event.url.search
+    const stack = prerenderRenderingURLs.getStore()
+    if (stack?.includes(renderingURL)) {
+      const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `"${url}"`).join(' -> ')
+      throw new HTTPError({
+        status: 508,
+        statusText: `Loop detected while prerendering "${renderingURL}" (${chain}). Check for \`useFetch\`/\`$fetch\` calls targeting a URL that is currently being rendered.`,
+      })
+    }
+    return prerenderRenderingURLs.run([...(stack || []), renderingURL], () => renderRoute(event, ssrError))
+  }
+
+  return renderRoute(event, ssrError)
+})
+
+async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { url: string }) | null) {
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(event)
 
@@ -96,6 +117,10 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
   const routeOptions = getRouteRules(event.req.method, event.url.pathname).routeRules || {}
 
+  if (!routeOptions?.ssr) {
+    ssrContext.noSSR = true
+  }
+
   // Whether we are prerendering route or using ISR/SWR caching
   const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
     (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
@@ -110,13 +135,9 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
     ssrContext.url = url
 
-    if (import.meta.prerender && await payloadCache!.hasItem(url)) {
-      return returnResponse(event, await payloadCache!.getItem(url) as Partial<RenderResponse>)
+    if (import.meta.prerender && await payloadCache!.hasItem(url + '.json')) {
+      return returnResponse(event, await payloadCache!.getItem(url + '.json') as Partial<RenderResponse>)
     }
-  }
-
-  if (!routeOptions?.ssr) {
-    ssrContext.noSSR = true
   }
 
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
@@ -179,7 +200,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   if (isRenderingPayload) {
     const response = renderPayloadResponse(ssrContext)
     if (import.meta.prerender) {
-      await payloadCache!.setItem(ssrContext.url, response)
+      await payloadCache!.setItem(ssrContext.url + '.json', response)
     }
 
     return returnResponse(event, response)
@@ -189,7 +210,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     // Hint nitro to prerender payload for this route
     event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
+    await payloadCache!.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext))
   }
 
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
@@ -216,10 +237,9 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     }
     ssrContext.head.push({
       script: [{
-        tagPosition: 'head',
-        tagPriority: 'critical',
-        type: 'importmap' as unknown as 'application/json',
-        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
+        type: 'importmap',
+        // unhead v3 JSON-stringifies object innerHTML for <script> tags
+        innerHTML: { imports: { '#entry': path } },
       }],
     })
   }
@@ -298,7 +318,9 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     })
   }
 
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
+  // TODO: migrate to `ssrContext.head.render()` once `renderSSRHeadOptions` (e.g. `omitLineBreaks`) can be passed to `createServerHead` at construction time.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
@@ -320,7 +342,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   event.res.headers.set('x-powered-by', 'Nuxt')
 
   return renderHTMLDocument(htmlContext)
-})
+}
 
 export default handler
 
@@ -590,6 +612,8 @@ declare module 'srvx' {
       'noSSR'?: boolean
       /** @internal */
       '~internal'?: boolean
+      /** @internal */
+      '~rendering-error'?: boolean
     }
   }
 }

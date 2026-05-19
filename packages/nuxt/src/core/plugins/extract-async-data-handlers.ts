@@ -1,9 +1,10 @@
 import type { SourceMapInput } from 'rollup'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
+import type { RolldownString } from 'rolldown-string'
 import { dirname } from 'pathe'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
-import type { ArrowFunctionExpression, Function } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
@@ -43,10 +44,10 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
         },
         code: { include: FUNCTIONS_RE },
       },
-      handler (code, id) {
+      handler (code, id, meta?: unknown) {
         const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { index: 0, 0: code }
 
-        let s: MagicString | undefined
+        let s: RolldownString | undefined
 
         const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
         const parseResult = parseAndWalk(script, id, { scopeTracker })
@@ -61,13 +62,13 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
 
             const callExpression = node
 
-            const fetcherFunction = callExpression.arguments.find((fn): fn is Function | ArrowFunctionExpression => fn.type === 'ArrowFunctionExpression' || fn.type === 'FunctionExpression')
+            const fetcherFunction = callExpression.arguments.find((fn): fn is ESTree.Function | ESTree.ArrowFunctionExpression => fn.type === 'ArrowFunctionExpression' || fn.type === 'FunctionExpression')
 
             if (!fetcherFunction || (fetcherFunction.type !== 'ArrowFunctionExpression' && fetcherFunction.type !== 'FunctionExpression') || !fetcherFunction.body) {
               return
             }
 
-            s ||= new MagicString(code)
+            s ||= rolldownString(code, id, meta)
 
             const referencedVariables = new Set<string>()
             const imports = new Set<string>()
@@ -174,14 +175,7 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
           },
         })
 
-        if (s?.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

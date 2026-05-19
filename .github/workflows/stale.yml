@@ -4,13 +4,14 @@ on:
   schedule:
     - cron: '30 1 * * *' # run every day
 
-permissions:
-  issues: write
+permissions: {}
 
 jobs:
   stale-reproduction:
     runs-on: ubuntu-slim
     if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
+    permissions:
+      issues: write
     steps:
       - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10.2.0
         with:
@@ -27,6 +28,8 @@ jobs:
   stale-bot:
     runs-on: ubuntu-slim
     if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
+    permissions:
+      issues: write
     steps:
       - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10.2.0
         with:

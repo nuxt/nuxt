@@ -46,7 +46,7 @@ export type NoInfer<T> = [T][T extends any ? 0 : never]
 
 export type AsyncDataRefreshCause = 'initial' | 'refresh:hook' | 'refresh:manual' | 'watch'
 
-export interface AsyncDataOptions<
+interface BaseAsyncDataOptions<
   ResT,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
@@ -66,17 +66,6 @@ export interface AsyncDataOptions<
    * a factory function to set the default value of the data, before the async function resolves - useful with the `lazy: true` or `immediate: false` options
    */
   default?: () => DefaultT | Ref<DefaultT>
-  /**
-   * Provide a function which returns cached data.
-   * An `undefined` return value will trigger a fetch.
-   * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
-   */
-  getCachedData?: (key: string, nuxtApp: NuxtApp, context: { cause: AsyncDataRefreshCause }) => NoInfer<DataT> | undefined
-  /**
-   * A function that can be used to alter handler function result after resolving.
-   * Do not use it along with the `pick` option.
-   */
-  transform?: _Transform<ResT, DataT>
   /**
    * Only pick specified keys in this array from the handler function result.
    * Do not use it along with the `transform` option.
@@ -104,6 +93,44 @@ export interface AsyncDataOptions<
    * A timeout in milliseconds after which the request will be aborted if it has not resolved yet.
    */
   timeout?: number
+}
+
+export interface AsyncDataOptions<
+  ResT,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = undefined,
+> extends BaseAsyncDataOptions<ResT, DataT, PickKeys, DefaultT> {
+  /**
+   * Provide a function which returns cached data.
+   * An `undefined` return value will trigger a fetch.
+   * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
+   */
+  getCachedData?: (key: string, nuxtApp: NuxtApp, context: { cause: AsyncDataRefreshCause }) => NoInfer<DataT> | undefined
+  /**
+   * A function that can be used to alter handler function result after resolving.
+   * Do not use it along with the `pick` option.
+   */
+  transform?: _Transform<ResT, DataT>
+}
+
+export interface AsyncDataOptionsWithTransform<
+  ResT,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = undefined,
+> extends BaseAsyncDataOptions<ResT, DataT, PickKeys, DefaultT> {
+  /**
+   * Provide a function which returns cached data.
+   * An `undefined` return value will trigger a fetch.
+   * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
+   */
+  getCachedData?: (key: string, nuxtApp: NuxtApp, context: { cause: AsyncDataRefreshCause }) => NoInfer<DataT | undefined>
+  /**
+   * A function that can be used to alter handler function result after resolving.
+   * Do not use it along with the `pick` option.
+   */
+  transform: _Transform<ResT, DataT>
 }
 
 export interface AsyncDataExecuteOptions {
@@ -162,6 +189,26 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       DefaultT = undefined,
     > (
       handler: AsyncDataHandler<ResT>,
+      opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
+    ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
+    function useAsyncData<
+      ResT,
+      NuxtErrorDataT = unknown,
+      DataT = ResT,
+      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+      DefaultT = DataT,
+    > (
+      handler: AsyncDataHandler<ResT>,
+      opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
+    ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
+    function useAsyncData<
+      ResT,
+      NuxtErrorDataT = unknown,
+      DataT = ResT,
+      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+      DefaultT = undefined,
+    > (
+      handler: AsyncDataHandler<ResT>,
       opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
     function useAsyncData<
@@ -181,6 +228,28 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
      * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
      * @param opts customize the behavior of useAsyncData
      */
+    function useAsyncData<
+      ResT,
+      NuxtErrorDataT = unknown,
+      DataT = ResT,
+      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+      DefaultT = undefined,
+    > (
+      key: MaybeRefOrGetter<string>,
+      handler: AsyncDataHandler<ResT>,
+      opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
+    ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
+    function useAsyncData<
+      ResT,
+      NuxtErrorDataT = unknown,
+      DataT = ResT,
+      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+      DefaultT = DataT,
+    > (
+      key: MaybeRefOrGetter<string>,
+      handler: AsyncDataHandler<ResT>,
+      opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
+    ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
     function useAsyncData<
       ResT,
       NuxtErrorDataT = unknown,
@@ -296,10 +365,17 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       // Create or use a shared asyncData entity
       function createInitialFetch () {
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
-        if (!nuxtApp._asyncData[key.value]?._init) {
+        const existing = nuxtApp._asyncData[key.value]
+        if (!existing?._init) {
           initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
           nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
+          nuxtApp._asyncData[key.value]!._initialCachedData = initialFetchOptions.cachedData
+        } else if (nuxtApp._asyncDataPromises[key.value]) {
+          // reuse the cache lookup performed by the first concurrent caller while their fetch is still in flight
+          initialFetchOptions.cachedData = existing._initialCachedData
         }
+        // otherwise let execute() perform a fresh getCachedData lookup so subscribers that mount
+        // after the initial fetch has settled still go through getCachedData (#35116)
         return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
       }
 
@@ -408,7 +484,8 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
                 }
 
                 // Trigger the fetch for the new key if needed.
-                if (opts.immediate || hadData || wasRunning) {
+                const keyTriggersExecute = (opts as typeof opts & { _keyTriggersExecute?: boolean })._keyTriggersExecute !== false
+                if (keyTriggersExecute && (opts.immediate || hadData || wasRunning)) {
                   nuxtApp._asyncData[newKey].execute(initialFetchOptions)
                 }
 
@@ -606,6 +683,7 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
       nuxtApp._asyncData[key]!.pending.value = false
     }
     nuxtApp._asyncData[key]!.status.value = 'idle'
+    nuxtApp._asyncData[key]!._initialCachedData = undefined
   }
 
   if (key in nuxtApp._asyncDataPromises) {

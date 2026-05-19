@@ -41,6 +41,15 @@
           <div>Hello world !</div>
         </template>
       </NuxtClientFallback>
+      <!-- async failure inside a wrapping component (nested promise in SSR buffer) -->
+      <NuxtClientFallback>
+        <BreakInAsyncSetupWrapper />
+        <template #fallback>
+          <div class="nested-async-fallback">
+            Nested async fallback rendered
+          </div>
+        </template>
+      </NuxtClientFallback>
       <ClientFallbackStateful />
       <ClientFallbackStatefulSetup />
       <ClientFallbackNonStatefulSetup />

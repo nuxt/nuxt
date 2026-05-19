@@ -58,7 +58,13 @@ export default class VueSSRClientPlugin {
 
   apply (compiler: Compiler) {
     compiler.hooks.afterEmit.tap('VueSSRClientPlugin', async (compilation: Compilation) => {
-      const stats = compilation.getStats().toJson()
+      const stats = compilation.getStats().toJson({
+        modules: true,
+        assets: true,
+        chunks: true,
+        chunkGroups: true,
+        entrypoints: true,
+      })
       const context = this.nuxt.options.srcDir
 
       const initialFiles = new Set<string>()

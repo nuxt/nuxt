@@ -647,6 +647,20 @@ describe('composables', () => {
       getCachedData: () => ({ bar: 2 }),
     })
   })
+
+  it('infers transformed data independently from typed cached data', () => {
+    const asyncData = useAsyncData(
+      () => Promise.resolve({
+        foo: 'bar',
+      }),
+      {
+        transform: data => data.foo,
+        getCachedData: () => 'bar',
+      },
+    )
+
+    expectTypeOf(asyncData.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
 })
 
 describe('app config', () => {

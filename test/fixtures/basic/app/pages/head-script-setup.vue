@@ -1,22 +1,24 @@
 <script lang="ts" setup>
 const description = ref('head script setup description for %site.name')
 const siteName = ref()
-// server meta
-useSeoMeta({
-  description,
-  ogDescription: description,
-  ogImage: '%site.url/og-image.png',
-  ogTitle: '%s %separator %site.name',
-  ogType: 'website',
-  ogUrl: '%site.url/head-script-setup',
-})
+// server-only meta
+if (import.meta.server) {
+  useSeoMeta({
+    description,
+    ogDescription: description,
+    ogImage: '%site.url/og-image.png',
+    ogTitle: '%s %separator %site.name',
+    ogType: 'website',
+    ogUrl: '%site.url/head-script-setup',
+  })
 
-useHead({
-  style: [
-    '/* Custom styles */',
-    'h1 { color: salmon; }',
-  ],
-})
+  useHead({
+    style: [
+      '/* Custom styles */',
+      'h1 { color: salmon; }',
+    ],
+  })
+}
 
 useHead({
   title: 'head script setup',

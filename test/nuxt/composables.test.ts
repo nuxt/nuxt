@@ -627,6 +627,16 @@ describe('routing utilities: `navigateTo`', () => {
       expect(() => navigateTo(url, { external: true })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
   })
+  it('reloadNuxtApp should disallow paths with data/script URLs', () => {
+    const urls = [
+      ['javascript:alert("hi")', 'javascript'],
+      ['data:alert("hi")', 'data'],
+      ['\0data:alert("hi")', 'data'],
+    ]
+    for (const [url, protocol] of urls) {
+      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+    }
+  })
   it('navigateTo should replace current navigation state if called within middleware', () => {
     const nuxtApp = useNuxtApp()
     nuxtApp._processingMiddleware = true
@@ -849,6 +859,24 @@ describe('routing utilities: `setPageLayout`', () => {
     setPageLayout('custom')
     expect(route.meta.layout).toBeUndefined()
     nuxtApp._processingMiddleware = false
+  })
+
+  it('should preserve layout and props on same-path (query-only) navigation', async () => {
+    const router = useRouter()
+    router.addRoute({
+      name: 'layout-props-test',
+      path: '/layout-props-test',
+      component: defineComponent({ template: '<div />' }),
+    })
+    await router.push('/layout-props-test')
+    const route = useRoute()
+    setPageLayout('with-props', { someProp: 'hello' })
+    expect(route.meta.layout).toEqual('with-props')
+    expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
+    await router.push({ query: { tab: 'b' } })
+    expect(route.meta.layout).toEqual('with-props')
+    expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
+    router.removeRoute('layout-props-test')
   })
 })
 

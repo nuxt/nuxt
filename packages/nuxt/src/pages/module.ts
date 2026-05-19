@@ -347,7 +347,7 @@ export default defineNuxtModule({
 
     // Add vue-router route guard imports
     nuxt.hook('imports:sources', (sources) => {
-      const routerImports = sources.find(s => 'from' in s && s.from === '#app/composables/router' && s.imports.includes('onBeforeRouteLeave')) as InlinePreset | undefined
+      const routerImports = sources.find(s => typeof s === 'object' && 'from' in s && s.from === '#app/composables/router' && s.imports.includes('onBeforeRouteLeave')) as InlinePreset | undefined
       if (routerImports) {
         routerImports.from = 'vue-router'
       }
@@ -540,7 +540,6 @@ export default defineNuxtModule({
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({
         dev: nuxt.options.dev,
-        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         isPage,
         routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
         extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],
