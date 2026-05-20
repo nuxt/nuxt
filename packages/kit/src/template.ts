@@ -1,4 +1,4 @@
-import { existsSync, promises as fsp } from 'node:fs'
+import { existsSync, promises as fsp, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
@@ -181,20 +181,34 @@ interface LayerPaths {
 }
 
 const DEFAULT_RUNTIME_TEST_GLOBS = ['test/nuxt/**/*', 'tests/nuxt/**/*']
+const TOP_LEVEL_RUNTIME_TEST_GLOB_RE = /^tests?\/\*\*\/\*$/
 
 export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string, runtimeTestGlobs: string[] = DEFAULT_RUNTIME_TEST_GLOBS): LayerPaths {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
   const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
-  const runtimeTestRootDirs = new Set(runtimeTestGlobs
+  const normalizedRuntimeTestGlobs = runtimeTestGlobs
     .map(pattern => pattern.replace(/^[./\\]+/, '').replaceAll('\\', '/'))
-    .filter(pattern => /^(test|tests)\/\*\*\/\*$/.test(pattern))
+  const runtimeTestRootDirs = new Set(normalizedRuntimeTestGlobs
+    .filter(pattern => TOP_LEVEL_RUNTIME_TEST_GLOB_RE.test(pattern))
     .map(pattern => pattern.slice(0, pattern.indexOf('/'))))
-  const topLevelTestPaths = ['test', 'tests']
-    .filter(dir => existsSync(resolve(dirs.root, dir)) && !runtimeTestRootDirs.has(dir))
-    .map(dir => join(relativeRootDir, `${dir}/**/*`))
-  const runtimeTestPaths = runtimeTestGlobs.map(pattern => join(relativeRootDir, pattern))
+  const topLevelTestPaths = ['test', 'tests'].flatMap((dir) => {
+    const testDir = resolve(dirs.root, dir)
+    if (!existsSync(testDir) || runtimeTestRootDirs.has(dir)) {
+      return []
+    }
+
+    return readdirSync(testDir, { withFileTypes: true })
+      .filter((entry) => {
+        const entryPattern = `${dir}/${entry.name}`
+        return !normalizedRuntimeTestGlobs.some(pattern => pattern === entryPattern || pattern.startsWith(`${entryPattern}/`))
+      })
+      .map(entry => entry.isDirectory()
+        ? join(relativeRootDir, `${dir}/${entry.name}/**/*`)
+        : join(relativeRootDir, `${dir}/${entry.name}`))
+  })
+  const runtimeTestPaths = normalizedRuntimeTestGlobs.map(pattern => join(relativeRootDir, pattern))
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
