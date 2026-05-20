@@ -11,8 +11,12 @@ export default defineNuxtModule({
     addVitePlugin({
       name: 'ssr-resolve-check',
       configResolved (config) {
-        const conditions = config.environments?.ssr?.resolve?.conditions
-        if (!conditions) { return }
+        const ssr = config.environments?.ssr
+        if (!ssr) { return }
+        const conditions = ssr.resolve?.conditions
+        if (!conditions) {
+          throw new Error('SSR vite environment has no resolve.conditions configured. See https://github.com/nuxt/nuxt/issues/34888.')
+        }
         for (const id of ['vue', 'vue-router']) {
           const resolved = resolveModulePath(id, { try: true, from: importer, conditions })
           if (!resolved) {
