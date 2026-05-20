@@ -180,20 +180,26 @@ interface LayerPaths {
   globalDeclarations: string[]
 }
 
-export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string): LayerPaths {
+const DEFAULT_RUNTIME_TEST_GLOBS = ['test/nuxt/**/*', 'tests/nuxt/**/*']
+
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string, runtimeTestGlobs: string[] = DEFAULT_RUNTIME_TEST_GLOBS): LayerPaths {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
   const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
+  const runtimeTestRootDirs = new Set(runtimeTestGlobs
+    .map(pattern => pattern.replace(/^[./\\]+/, '').replaceAll('\\', '/'))
+    .filter(pattern => /^(test|tests)\/\*\*\/\*$/.test(pattern))
+    .map(pattern => pattern.split('/')[0]!))
   const topLevelTestPaths = ['test', 'tests']
-    .filter(dir => existsSync(resolve(dirs.root, dir)))
+    .filter(dir => existsSync(resolve(dirs.root, dir)) && !runtimeTestRootDirs.has(dir))
     .map(dir => join(relativeRootDir, `${dir}/**/*`))
+  const runtimeTestPaths = runtimeTestGlobs.map(pattern => join(relativeRootDir, pattern))
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
       join(relativeModulesDir, `*/runtime/**/*`),
-      join(relativeRootDir, `test/nuxt/**/*`),
-      join(relativeRootDir, `tests/nuxt/**/*`),
+      ...runtimeTestPaths,
       join(relativeRootDir, `layers/*/app/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/**/*`),
     ],
@@ -284,7 +290,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   for (const dirs of layerDirs) {
     if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
       const rootGlob = join(relativeWithDot(nuxt.options.buildDir, dirs.root), '**/*')
-      const paths = resolveLayerPaths(dirs, nuxt.options.buildDir)
+      const paths = resolveLayerPaths(dirs, nuxt.options.buildDir, nuxt.options.typescript.runtimeTestGlobs)
       for (const path of paths.nuxt) {
         include.add(path)
         legacyInclude.add(path)

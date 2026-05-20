@@ -35,6 +35,7 @@ export default defineResolvers({
     },
     includeWorkspace: false,
     typeCheck: false,
+    runtimeTestGlobs: ['test/nuxt/**/*', 'tests/nuxt/**/*'],
     tsConfig: {},
     shim: false,
   },

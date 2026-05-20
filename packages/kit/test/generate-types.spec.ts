@@ -180,6 +180,38 @@ describe('resolveLayerPaths', () => {
       await fsp.rm(rootDir, { recursive: true, force: true })
     }
   })
+
+  it('should allow custom runtime test globs', async () => {
+    const rootDir = await fsp.mkdtemp(join(tmpdir(), 'nuxt-layer-paths-'))
+    await Promise.all([
+      fsp.mkdir(join(rootDir, 'app')),
+      fsp.mkdir(join(rootDir, 'modules')),
+      fsp.mkdir(join(rootDir, 'public')),
+      fsp.mkdir(join(rootDir, 'server')),
+      fsp.mkdir(join(rootDir, 'shared')),
+      fsp.mkdir(join(rootDir, 'test')),
+    ])
+
+    try {
+      const paths = resolveLayerPaths({
+        root: rootDir,
+        server: join(rootDir, 'server'),
+        app: join(rootDir, 'app'),
+        appLayouts: join(rootDir, 'app/layouts'),
+        appMiddleware: join(rootDir, 'app/middleware'),
+        appPages: join(rootDir, 'app/pages'),
+        appPlugins: join(rootDir, 'app/plugins'),
+        modules: join(rootDir, 'modules'),
+        shared: join(rootDir, 'shared'),
+        public: join(rootDir, 'public'),
+      }, join(rootDir, '.nuxt'), ['test/**/*'])
+
+      expect(paths.nuxt).toContain('../test/**/*')
+      expect(paths.node).not.toContain('../test/**/*')
+    } finally {
+      await fsp.rm(rootDir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('resolveLayerPaths with workspace config', async () => {
@@ -271,7 +303,46 @@ describe('writeTypes', async () => {
       await nuxt?.close()
       await fsp.rm(testFile, { force: true })
       await fsp.rm(buildDir, { recursive: true, force: true })
-      await fsp.rmdir(testDir).catch(() => undefined)
+      await fsp.rm(testDir, { recursive: true, force: true }).catch(() => undefined)
+    }
+  })
+
+  it('should allow opting top-level runtime tests into the app project', async () => {
+    const fixtureDir = join(repoRoot, 'test/fixtures/minimal-types')
+    const buildDir = join(fixtureDir, '.nuxt')
+    const testDir = join(fixtureDir, 'test')
+    const testFile = join(testDir, 'utils.test.ts')
+    const normalizedTestFile = normalize(testFile)
+    let nuxt: Awaited<ReturnType<typeof loadNuxt>> | undefined
+
+    await fsp.mkdir(testDir, { recursive: true })
+    await fsp.writeFile(testFile, 'const a: number = "asdf";')
+
+    try {
+      nuxt = await loadNuxt({
+        cwd: fixtureDir,
+        ready: false,
+        overrides: {
+          typescript: {
+            runtimeTestGlobs: ['test/**/*'],
+          },
+        },
+      })
+      await writeTypes(nuxt)
+
+      const parseProject = (configName: string) => {
+        const configPath = join(buildDir, configName)
+        const config = ts.readConfigFile(configPath, ts.sys.readFile)
+        return ts.parseJsonConfigFileContent(config.config, ts.sys, buildDir).fileNames
+      }
+
+      expect(parseProject('tsconfig.app.json').map(normalize)).toContain(normalizedTestFile)
+      expect(parseProject('tsconfig.node.json').map(normalize)).not.toContain(normalizedTestFile)
+    } finally {
+      await nuxt?.close()
+      await fsp.rm(testFile, { force: true })
+      await fsp.rm(buildDir, { recursive: true, force: true })
+      await fsp.rm(testDir, { recursive: true, force: true }).catch(() => undefined)
     }
   })
 })
