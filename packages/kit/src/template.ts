@@ -190,7 +190,7 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   const runtimeTestRootDirs = new Set(runtimeTestGlobs
     .map(pattern => pattern.replace(/^[./\\]+/, '').replaceAll('\\', '/'))
     .filter(pattern => /^(test|tests)\/\*\*\/\*$/.test(pattern))
-    .map(pattern => pattern.split('/')[0]!))
+    .map(pattern => pattern.slice(0, pattern.indexOf('/'))))
   const topLevelTestPaths = ['test', 'tests']
     .filter(dir => existsSync(resolve(dirs.root, dir)) && !runtimeTestRootDirs.has(dir))
     .map(dir => join(relativeRootDir, `${dir}/**/*`))
