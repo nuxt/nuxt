@@ -186,7 +186,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       NuxtErrorDataT = unknown,
       DataT = ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = undefined,
+      DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
     > (
       handler: AsyncDataHandler<ResT>,
       opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
@@ -196,7 +196,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       NuxtErrorDataT = unknown,
       DataT = ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = DataT,
+      DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
     > (
       handler: AsyncDataHandler<ResT>,
       opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
@@ -204,9 +204,9 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
     function useAsyncData<
       ResT,
       NuxtErrorDataT = unknown,
-      DataT = ResT,
-      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = undefined,
+      DataT = [unknown] extends [FDataT] ? ResT : FDataT,
+      PickKeys extends KeysOf<DataT> = [Array<never>] extends [FPickKeys] ? KeysOf<DataT> : FPickKeys,
+      DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
     > (
       handler: AsyncDataHandler<ResT>,
       opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
@@ -214,9 +214,9 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
     function useAsyncData<
       ResT,
       NuxtErrorDataT = unknown,
-      DataT = ResT,
-      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = DataT,
+      DataT = [unknown] extends [FDataT] ? ResT : FDataT,
+      PickKeys extends KeysOf<DataT> = [Array<never>] extends [FPickKeys] ? KeysOf<DataT> : FPickKeys,
+      DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
     > (
       handler: AsyncDataHandler<ResT>,
       opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
@@ -233,7 +233,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       NuxtErrorDataT = unknown,
       DataT = ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = undefined,
+      DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
     > (
       key: MaybeRefOrGetter<string>,
       handler: AsyncDataHandler<ResT>,
@@ -244,7 +244,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       NuxtErrorDataT = unknown,
       DataT = ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = DataT,
+      DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
     > (
       key: MaybeRefOrGetter<string>,
       handler: AsyncDataHandler<ResT>,
@@ -253,9 +253,9 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
     function useAsyncData<
       ResT,
       NuxtErrorDataT = unknown,
-      DataT = ResT,
-      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = undefined,
+      DataT = [unknown] extends [FDataT] ? ResT : FDataT,
+      PickKeys extends KeysOf<DataT> = [Array<never>] extends [FPickKeys] ? KeysOf<DataT> : FPickKeys,
+      DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
     > (
       key: MaybeRefOrGetter<string>,
       handler: AsyncDataHandler<ResT>,
@@ -264,9 +264,9 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
     function useAsyncData<
       ResT,
       NuxtErrorDataT = unknown,
-      DataT = ResT,
-      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = DataT,
+      DataT = [unknown] extends [FDataT] ? ResT : FDataT,
+      PickKeys extends KeysOf<DataT> = [Array<never>] extends [FPickKeys] ? KeysOf<DataT> : FPickKeys,
+      DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
     > (
       key: MaybeRefOrGetter<string>,
       handler: AsyncDataHandler<ResT>,
