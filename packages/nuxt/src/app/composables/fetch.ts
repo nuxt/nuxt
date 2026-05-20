@@ -153,12 +153,12 @@ export const createUseFetch = defineKeyedFunctionFactory({
       Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = [unknown] extends [FDataT] ? _ResT : FDataT,
-      PickKeys extends KeysOf<DataT> = [Array<never>] extends [FPickKeys] ? KeysOf<DataT> : FPickKeys,
+      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
       DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
       opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
-    ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+    ): AsyncData<PickFrom<DataT, [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
       ErrorT = FetchError,
@@ -166,12 +166,12 @@ export const createUseFetch = defineKeyedFunctionFactory({
       Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = [unknown] extends [FDataT] ? _ResT : FDataT,
-      PickKeys extends KeysOf<DataT> = [Array<never>] extends [FPickKeys] ? KeysOf<DataT> : FPickKeys,
+      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
       DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
       opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
-    ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+    ): AsyncData<PickFrom<DataT, [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
       ErrorT = FetchError,
