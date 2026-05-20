@@ -5,6 +5,7 @@ interface ButtonProps {
 }
 defineProps<ButtonProps>()
 </script>
+
 <template>
   <button>{{ label }}</button>
 </template>
