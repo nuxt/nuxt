@@ -108,6 +108,15 @@ describe('route rules', () => {
     expect(html).toContain('Custom Layout')
   })
 
+  it('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
+    const html = await $fetch<string>('/route-rules/spa-async-data')
+    const { attrs } = parseData(html)
+    expect(attrs['data-ssr']).toEqual('false')
+    expect(attrs['data-src']).toBeUndefined()
+    expect(html).not.toContain('/route-rules/spa-async-data/_payload.json')
+    await expectNoClientErrors('/route-rules/spa-async-data')
+  })
+
   it('should not generate payload route rules for non-wildcard ssr: false routes', () => {
     // @ts-expect-error untyped internal property
     const routeRules = useTestContext().nuxt._nitro.options.routeRules

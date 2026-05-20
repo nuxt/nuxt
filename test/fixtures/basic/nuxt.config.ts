@@ -175,6 +175,7 @@ export default withMatrix({
     ],
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },

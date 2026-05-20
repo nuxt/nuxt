@@ -498,6 +498,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
+  tsConfig.exclude ||= []
 
   nodeTsConfig.compilerOptions ||= {}
   nodeTsConfig.compilerOptions.paths ||= {}
@@ -595,7 +596,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       },
     },
     include: [...tsConfig.include, ...legacyInclude],
-    exclude: [...legacyExclude],
+    exclude: [...tsConfig.exclude, ...legacyExclude],
   })
 
   async function resolveConfig (tsConfig: TSConfig) {

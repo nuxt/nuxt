@@ -180,3 +180,19 @@ export function useScriptGoogleSignIn (...args: unknown[]) {
 export function useScriptGravatar (...args: unknown[]) {
   renderStubMessage('useScriptGravatar')
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptAhrefsAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptAhrefsAnalytics')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptLinkedInInsight (...args: unknown[]) {
+  renderStubMessage('useScriptLinkedInInsight')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptCalendly (...args: unknown[]) {
+  renderStubMessage('useScriptCalendly')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptUsercentrics (...args: unknown[]) {
+  renderStubMessage('useScriptUsercentrics')
+}
