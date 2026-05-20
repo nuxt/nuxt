@@ -4,6 +4,7 @@ packages:
   - '!packages/nuxi'
   - '!packages/test-utils'
   - '!packages/nuxt/test/package-fixture/pkg'
+  - '!packages/nuxt/test/sibling-layer-fixture/**'
   - playground
   - test/fixtures/*
   - test/fixtures/*/_local-modules/*

@@ -6,7 +6,7 @@ import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTyp
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
-import { isDirectory, logger, resolveToAlias } from '../utils.ts'
+import { hasExternalSiblingLayer, isDirectory, logger, resolveToAlias } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
 import { appCompatPresets, defaultPresets } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
@@ -212,11 +212,19 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
   const importPaths = nuxt.options.modulesDir.map(dir => directoryToURL(dir))
 
+  // When the project extends an external sibling layer, the layer's own
+  // `imports.d.ts` emits absolute paths for hoisted packages (e.g. `vue`),
+  // while the consumer normally short-circuits to the bare specifier when the
+  // package is in `package.json`. The two contexts then disagree on the
+  // identity of `vue` (and friends), making layer components show up as
+  // `any` in the editor. Force absolute-path resolution in that case.
+  const externalSibling = hasExternalSiblingLayer(nuxt)
+
   async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.typeFrom || i.from)))
     // skip relative import paths for node_modules that are explicitly installed
     await Promise.all(importSource.map(async (from) => {
-      if (resolvedImportPathMap.has(from) || nuxt._dependencies?.has(from)) {
+      if (resolvedImportPathMap.has(from) || (!externalSibling && nuxt._dependencies?.has(from))) {
         return
       }
       let path = resolveAlias(from)
@@ -225,7 +233,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
           if (!r) { return r }
 
           const { dir, name } = parseNodeModulePath(r)
-          if (name && nuxt._dependencies?.has(name)) { return from }
+          if (name && !externalSibling && nuxt._dependencies?.has(name)) { return from }
 
           if (!dir || !name) { return r }
           const subpath = await lookupNodeModuleSubpath(r)

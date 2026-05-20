@@ -1,0 +1,8 @@
+{
+  "name": "sibling-layer-consumer-fixture",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vue": "*"
+  }
+}
