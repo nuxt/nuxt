@@ -278,6 +278,18 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
+  it('removes the key from payload.data and _asyncDataPromises on clear', async () => {
+    const nuxtApp = useNuxtApp()
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+
+    expect(uniqueKey in nuxtApp.payload.data).toBe(true)
+
+    clearNuxtData(uniqueKey)
+
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+    expect(uniqueKey in nuxtApp._asyncDataPromises).toBe(false)
+  })
+
   it('should have correct status for previously fetched requests', async () => {
     vi.useFakeTimers()
 

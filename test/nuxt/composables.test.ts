@@ -400,6 +400,17 @@ describe('clearNuxtState', () => {
     delete nuxtApp.payload.state._layout
     delete nuxtApp.payload.state._layoutProps
   })
+
+  it('removes the key from payload.state rather than setting it to undefined', () => {
+    const nuxtApp = useNuxtApp()
+    const key = 'clearNuxtState-test'
+    useState(key, () => 'test')
+    expect(`$s${key}` in nuxtApp.payload.state).toBe(true)
+
+    clearNuxtState(key, { reset: false })
+
+    expect(`$s${key}` in nuxtApp.payload.state).toBe(false)
+  })
 })
 
 describe('url', () => {
