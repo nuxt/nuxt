@@ -2,6 +2,7 @@ import { spawn, spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import process from 'node:process'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 
@@ -110,7 +111,9 @@ class TsServer {
         } else if (msg.type === 'event') {
           this.events.push(msg)
         }
-      } catch {}
+      } catch {
+        // ignore non-json banners
+      }
     }
   }
 
@@ -138,7 +141,7 @@ function findPosition (src: string, needle: string, offsetInMatch = 0) {
   return { line, offset }
 }
 
-describe.sequential('external sibling layer typescript inference', () => {
+describe('external sibling layer typescript inference', { concurrent: false }, () => {
   let tmpRoot: string
   let consumerDir: string
   let consumerPage: string
@@ -185,7 +188,11 @@ describe.sequential('external sibling layer typescript inference', () => {
   afterAll(async () => {
     await server?.close()
     if (tmpRoot) {
-      try { rmSync(tmpRoot, { recursive: true, force: true }) } catch {}
+      try {
+        rmSync(tmpRoot, { recursive: true, force: true })
+      } catch {
+        // best effort
+      }
     }
   })
 
