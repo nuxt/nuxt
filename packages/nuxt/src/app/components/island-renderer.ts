@@ -1,4 +1,4 @@
-import type { defineAsyncComponent } from 'vue'
+import type { DefineSetupFnComponent, defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 
 import { createError } from '../composables/error'
@@ -6,7 +6,11 @@ import { createError } from '../composables/error'
 // @ts-expect-error virtual file
 import { islandComponents } from '#build/components.islands.mjs'
 
-export default defineComponent({
+interface IslandRendererProps {
+  context: { name: string, props?: Record<string, any> }
+}
+
+const IslandRenderer = defineComponent({
   name: 'IslandRenderer',
   props: {
     context: {
@@ -30,4 +34,6 @@ export default defineComponent({
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })
   },
-})
+}) as unknown as DefineSetupFnComponent<IslandRendererProps>
+
+export default IslandRenderer

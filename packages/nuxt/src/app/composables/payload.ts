@@ -131,7 +131,7 @@ async function _isPrerenderedInManifest (url: string) {
 /**
  * @internal
  */
-export async function shouldLoadPayload (url = useRoute().path) {
+export async function shouldLoadPayload (url: string = useRoute().path): Promise<boolean> {
   const rules = getRouteRules({ path: url })
   if (rules.ssr === false) {
     return false
@@ -150,7 +150,7 @@ export async function shouldLoadPayload (url = useRoute().path) {
 }
 
 /** @since 3.0.0 */
-export async function isPrerendered (url = useRoute().path) {
+export async function isPrerendered (url: string = useRoute().path): Promise<boolean> {
   const res = _shouldLoadPrerenderedPayload(getRouteRules({ path: url }))
   if (res !== undefined) {
     return res
@@ -163,7 +163,7 @@ export async function isPrerendered (url = useRoute().path) {
 let payloadCache: NuxtPayload | null = null
 
 /** @since 3.4.0 */
-export async function getNuxtClientPayload () {
+export async function getNuxtClientPayload (): Promise<NuxtPayload | Partial<NuxtPayload> | null> {
   if (import.meta.server) {
     return null
   }
@@ -193,7 +193,7 @@ export async function getNuxtClientPayload () {
   return payloadCache
 }
 
-export async function parsePayload (payload: string) {
+export async function parsePayload (payload: string): Promise<any> {
   return await parse(payload, useNuxtApp()._payloadRevivers)
 }
 
@@ -204,7 +204,7 @@ export async function parsePayload (payload: string) {
 export function definePayloadReducer (
   name: string,
   reduce: (data: any) => any,
-) {
+): void {
   if (import.meta.server) {
     useNuxtApp().ssrContext!['~payloadReducers'][name] = reduce
   }
@@ -219,7 +219,7 @@ export function definePayloadReducer (
 export function definePayloadReviver (
   name: string,
   revive: (data: any) => any | undefined,
-) {
+): void {
   if (import.meta.dev && getCurrentInstance()) {
     console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')
   }

@@ -3,6 +3,7 @@ import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from '@nuxt/nitro-server/h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
@@ -98,7 +99,7 @@ interface Router {
   removeRoute: (name: string) => void
 }
 
-export default defineNuxtPlugin<{ route: Route, router: Router }>({
+const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: Route, router: Router }> = defineNuxtPlugin<{ route: Route, router: Router }>({
   name: 'nuxt:router',
   enforce: 'pre',
   setup (nuxtApp) {
@@ -303,3 +304,5 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     }
   },
 })
+
+export default plugin

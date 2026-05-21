@@ -1,4 +1,10 @@
-import '../../dist/app/types/augments'
+// Reference the dist copy so the source `src/app/types/augments.ts` isn't
+// also loaded at typecheck time. Both copies define identical `declare global`
+// blocks but resolve `NuxtApp` from different module paths (src vs dist), so
+// loading both triggers TS2717.
+import type { _NuxtAugmentsAnchor } from '../../dist/app/types/augments'
+// re-export so the side-effect import survives tree-shaking.
+export type { _NuxtAugmentsAnchor as _NuxtAugments }
 
 export { applyPlugin, applyPlugins, callWithNuxt, createNuxtApp, defineAppConfig, defineNuxtPlugin, definePayloadPlugin, isNuxtPlugin, registerPluginHooks, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from './nuxt'
 export type { CreateOptions, NuxtApp, NuxtPayload, NuxtPluginIndicator, NuxtSSRContext, ObjectPlugin, Plugin, PluginEnvContext, PluginMeta, ResolvedPluginMeta, RuntimeNuxtHooks } from './nuxt'
