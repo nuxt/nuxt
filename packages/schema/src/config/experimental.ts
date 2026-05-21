@@ -247,17 +247,25 @@ export default defineResolvers({
     },
     ssrStreaming: {
       $resolve (val) {
+        // Indexing crawlers only — `chrome-lighthouse` is intentionally absent
+        // so audit tools measure the same streamed response real users get.
+        const defaultBotRegex = 'bot\\b|crawl|spider|slurp|facebookexternalhit|google\\b|bing\\b|yandex\\b|baidu\\b|duckduck'
         if (val && (val === true || (typeof val === 'object' && (!('enabled' in val) || val.enabled !== false)))) {
-          return {
-            botRegex: val !== true && 'botRegex' in val && typeof val.botRegex === 'string'
-              ? val.botRegex
-              : 'bot\\b|crawl|spider|slurp|chrome-lighthouse|facebookexternalhit|google\\b|bing\\b|yandex\\b|baidu\\b|duckduck',
-            enabled: true,
+          let botRegex = defaultBotRegex
+          if (val !== true && 'botRegex' in val && typeof val.botRegex === 'string') {
+            // Validate the user-supplied pattern at config time — a typo like
+            // `'('` would otherwise crash Nitro at module init when the
+            // renderer compiles `new RegExp(NUXT_SSR_STREAMING_BOT_RE, 'i')`.
+            try {
+              new RegExp(val.botRegex, 'i')
+              botRegex = val.botRegex
+            } catch (error) {
+              console.warn(`[nuxt] [experimental.ssrStreaming.botRegex] Invalid regex pattern ${JSON.stringify(val.botRegex)}, falling back to default. ${(error as Error).message}`)
+            }
           }
+          return { botRegex, enabled: true }
         }
-        return {
-          enabled: false,
-        }
+        return { enabled: false }
       },
     },
     asyncCallHook: {

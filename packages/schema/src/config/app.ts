@@ -186,7 +186,9 @@ export default defineResolvers({
       },
     },
     vite: {},
-    templateParams: false,
+    // `%s` / `%siteName` / `%separator` title interpolation is a core Nuxt SEO
+    // idiom — opt out by setting `templateParams: false`.
+    templateParams: true,
     renderSSRHeadOptions: {
       $resolve: (val: unknown) => ({
         omitLineBreaks: true,

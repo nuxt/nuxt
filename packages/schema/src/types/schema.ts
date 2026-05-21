@@ -1635,7 +1635,7 @@ export interface ConfigSchema {
        * Requests matching this pattern will receive fully-buffered (non-streamed)
        * responses for SEO safety.
        *
-       * @default 'bot\\b|crawl|spider|slurp|chrome-lighthouse|facebookexternalhit|google\\b|bing\\b|yandex\\b|baidu\\b|duckduck'
+       * @default 'bot\\b|crawl|spider|slurp|facebookexternalhit|google\\b|bing\\b|yandex\\b|baidu\\b|duckduck'
        */
       botRegex?: string
     }
