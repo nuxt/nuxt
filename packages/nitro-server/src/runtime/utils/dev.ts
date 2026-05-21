@@ -11,7 +11,7 @@ const iframeStorageBridge = (nonce: string) => /* js */ `
 
   const mockStorage = {
     getItem(key) {
-      return Object.hasOwn(memoryStore, key)
+      return Object.prototype.hasOwnProperty.call(memoryStore, key)
         ? memoryStore[key]
         : null;
     },
