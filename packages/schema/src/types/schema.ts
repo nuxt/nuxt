@@ -1518,7 +1518,7 @@ export interface ConfigSchema {
     purgeCachedData: boolean
 
     /**
-     * When a `<NuxtLink>` is prefetched and the destination route has a `_payload.json`, forward any `<link rel="preload">` hints that the destination set via `useHead` (or via modules like `@nuxt/image`'s `<NuxtImg preload>`) into the current document.
+     * When a `<NuxtLink>` is prefetched and the destination route has payload extraction enabled (the default for prerendered and cached routes), forward any `<link rel="preload">` hints that the destination set via `useHead` (or via modules like `@nuxt/image`'s `<NuxtImg preload>`) into the current document.
      *
      * The forwarded links are downgraded from `rel="preload"` to `rel="prefetch"` so they don't compete with the current page's critical resources. Only user-defined head tags are forwarded; build-time JS/CSS chunk preloads are not.
      *
