@@ -165,54 +165,57 @@ export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncDat
 
 // Type of the public-facing `useAsyncData` returned by the factory below.
 // Expressed as a callable interface so we can spell out all eight overloads
-// without losing them in an inline function expression — oxc's isolated
+// without losing them in an inline function expression: oxc's isolated
 // declarations dts pipeline can't infer them otherwise.
 type NuxtErrorFor<NuxtErrorDataT> = NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>
-export interface UseAsyncData {
+type FactoryDataT<FDataT, ResT> = [unknown] extends [FDataT] ? ResT : FDataT
+type FactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
+type FactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
+export interface UseAsyncData<FResT = unknown, FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined> {
   // Auto-key, opts with transform, default = undefined
-  <ResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = undefined>(
+  <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     handler: AsyncDataHandler<ResT>,
     opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
   // Auto-key, opts with transform, default = DataT
-  <ResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = DataT>(
+  <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, DataT>>(
     handler: AsyncDataHandler<ResT>,
     opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
   // Auto-key, plain opts, default = undefined
-  <ResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = undefined>(
+  <ResT = FResT, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     handler: AsyncDataHandler<ResT>,
     opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+  ): AsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
   // Auto-key, plain opts, default = DataT
-  <ResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = DataT>(
+  <ResT = FResT, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, DataT>>(
     handler: AsyncDataHandler<ResT>,
     opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+  ): AsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
   // Explicit key, opts with transform, default = undefined
-  <ResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = undefined>(
+  <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     key: MaybeRefOrGetter<string>,
     handler: AsyncDataHandler<ResT>,
     opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
   // Explicit key, opts with transform, default = DataT
-  <ResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = DataT>(
+  <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, DataT>>(
     key: MaybeRefOrGetter<string>,
     handler: AsyncDataHandler<ResT>,
     opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
   // Explicit key, plain opts, default = undefined
-  <ResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = undefined>(
+  <ResT = FResT, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     key: MaybeRefOrGetter<string>,
     handler: AsyncDataHandler<ResT>,
     opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+  ): AsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
   // Explicit key, plain opts, default = DataT
-  <ResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = DataT>(
+  <ResT = FResT, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, DataT>>(
     key: MaybeRefOrGetter<string>,
     handler: AsyncDataHandler<ResT>,
     opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+  ): AsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
 }
 
 export interface CreateUseAsyncData {
@@ -220,7 +223,7 @@ export interface CreateUseAsyncData {
     options?:
       | Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>
       | ((callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>),
-  ): UseAsyncData
+  ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
 }
 
 export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory<CreateUseAsyncData>({
@@ -233,7 +236,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
   >(options:
     Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>
     | ((callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>) = {},
-  ): UseAsyncData {
+  ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT> {
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
      * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
@@ -619,7 +622,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
     }
 
-    return useAsyncData
+    return useAsyncData as unknown as UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
   },
 })
 
