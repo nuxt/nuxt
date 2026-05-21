@@ -731,13 +731,8 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
 }
 
 function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
-  if (key in nuxtApp.payload.data) {
-    nuxtApp.payload.data[key] = undefined
-  }
-
-  if (key in nuxtApp.payload._errors) {
-    nuxtApp.payload._errors[key] = undefined
-  }
+  delete nuxtApp.payload.data[key]
+  delete nuxtApp.payload._errors[key]
 
   if (nuxtApp._asyncData[key]) {
     nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
@@ -749,9 +744,7 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
     nuxtApp._asyncData[key]!._initialCachedData = undefined
   }
 
-  if (key in nuxtApp._asyncDataPromises) {
-    nuxtApp._asyncDataPromises[key] = undefined
-  }
+  delete nuxtApp._asyncDataPromises[key]
 }
 
 function pick (obj: Record<string, any>, keys: string[]) {
