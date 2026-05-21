@@ -1,5 +1,5 @@
 import { defineComponent, getCurrentInstance, inject, onUnmounted, provide, reactive } from 'vue'
-import type { PropType, VNodeNormalizedChildren } from 'vue'
+import type { DefineSetupFnComponent, PropType, SlotsType, VNode, VNodeNormalizedChildren } from 'vue'
 import type {
   BodyAttributes,
   HtmlAttributes,
@@ -132,8 +132,57 @@ const globalProps = {
   tagPriority: { type: [String, Number] as PropType<UnheadStyle['tagPriority']> },
 }
 
+interface GlobalProps {
+  accesskey?: string
+  autocapitalize?: string
+  autofocus?: boolean
+  class?: string | Record<string, any> | Array<any>
+  contenteditable?: boolean
+  contextmenu?: string
+  dir?: string
+  draggable?: boolean
+  enterkeyhint?: string
+  exportparts?: string
+  hidden?: boolean
+  id?: string
+  inputmode?: string
+  is?: string
+  itemid?: string
+  itemprop?: string
+  itemref?: string
+  itemscope?: string
+  itemtype?: string
+  lang?: string
+  nonce?: string
+  part?: string
+  slot?: string
+  spellcheck?: boolean
+  style?: string | Record<string, any> | Array<any>
+  tabindex?: string
+  title?: string
+  translate?: string
+  /**
+   * @deprecated Use tagPriority
+   */
+  renderPriority?: string | number
+  /**
+   * Unhead prop to modify the priority of the tag.
+   */
+  tagPriority?: UnheadStyle['tagPriority']
+}
+
+interface TagPositionPropsType {
+  /**
+   * @deprecated Use tagPosition
+   */
+  body?: boolean
+  tagPosition?: UnheadStyle['tagPosition']
+}
+
+type SlotWithDefault = SlotsType<{ default?: () => VNode[] }>
+
 // <noscript>
-export const NoScript = defineComponent({
+export const NoScript: DefineSetupFnComponent<GlobalProps & TagPositionPropsType & { title?: string }, {}, SlotWithDefault> = defineComponent({
   name: 'NoScript',
   inheritAttrs: false,
   props: {
@@ -169,10 +218,33 @@ export const NoScript = defineComponent({
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<GlobalProps & TagPositionPropsType & { title?: string }, {}, SlotWithDefault>
+
+interface LinkComponentProps extends GlobalProps, TagPositionPropsType {
+  as?: string
+  crossorigin?: CrossOrigin
+  disabled?: boolean
+  fetchpriority?: FetchPriority
+  href?: string
+  hreflang?: string
+  imagesizes?: string
+  imagesrcset?: string
+  integrity?: string
+  media?: string
+  prefetch?: boolean
+  referrerpolicy?: ReferrerPolicy
+  rel?: LinkRelationship
+  sizes?: string
+  title?: string
+  type?: string
+  /** @deprecated **/
+  methods?: string
+  /** @deprecated **/
+  target?: Target
+}
 
 // <link>
-export const Link = defineComponent({
+export const Link: DefineSetupFnComponent<LinkComponentProps> = defineComponent({
   name: 'Link',
   inheritAttrs: false,
   props: {
@@ -219,10 +291,15 @@ export const Link = defineComponent({
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<LinkComponentProps>
+
+interface BaseComponentProps extends GlobalProps {
+  href?: string
+  target?: Target
+}
 
 // <base>
-export const Base = defineComponent({
+export const Base: DefineSetupFnComponent<BaseComponentProps> = defineComponent({
   name: 'Base',
   inheritAttrs: false,
   props: {
@@ -243,10 +320,10 @@ export const Base = defineComponent({
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<BaseComponentProps>
 
 // <title>
-export const Title = defineComponent({
+export const Title: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComponent({
   name: 'Title',
   inheritAttrs: false,
   setup (_, { slots }) {
@@ -267,10 +344,18 @@ export const Title = defineComponent({
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<{}, {}, SlotWithDefault>
+
+interface MetaComponentProps extends GlobalProps {
+  charset?: string
+  content?: string
+  httpEquiv?: HTTPEquiv
+  name?: string
+  property?: string
+}
 
 // <meta>
-export const Meta = defineComponent({
+export const Meta: DefineSetupFnComponent<MetaComponentProps> = defineComponent({
   name: 'Meta',
   inheritAttrs: false,
   props: {
@@ -301,10 +386,19 @@ export const Meta = defineComponent({
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<MetaComponentProps>
+
+interface StyleComponentProps extends GlobalProps, TagPositionPropsType {
+  type?: string
+  media?: string
+  nonce?: string
+  title?: string
+  /** @deprecated **/
+  scoped?: boolean
+}
 
 // <style>
-export const Style = defineComponent({
+export const Style: DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefault> = defineComponent({
   name: 'Style',
   inheritAttrs: false,
   props: {
@@ -343,20 +437,26 @@ export const Style = defineComponent({
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefault>
 
 // <head>
-export const Head = defineComponent({
+export const Head: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComponent({
   name: 'Head',
   inheritAttrs: false,
   setup: (_props, ctx) => {
     createHeadComponentCtx()
     return () => ctx.slots.default?.()
   },
-})
+}) as unknown as DefineSetupFnComponent<{}, {}, SlotWithDefault>
+
+interface HtmlComponentProps extends GlobalProps {
+  manifest?: string
+  version?: string
+  xmlns?: string
+}
 
 // <html>
-export const Html = defineComponent({
+export const Html: DefineSetupFnComponent<HtmlComponentProps, {}, SlotWithDefault> = defineComponent({
   name: 'Html',
   inheritAttrs: false,
   props: {
@@ -377,10 +477,10 @@ export const Html = defineComponent({
       return ctx.slots.default?.()
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<HtmlComponentProps, {}, SlotWithDefault>
 
 // <body>
-export const Body = defineComponent({
+export const Body: DefineSetupFnComponent<GlobalProps, {}, SlotWithDefault> = defineComponent({
   name: 'Body',
   inheritAttrs: false,
   props: globalProps,
@@ -396,4 +496,4 @@ export const Body = defineComponent({
       return ctx.slots.default?.()
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<GlobalProps, {}, SlotWithDefault>

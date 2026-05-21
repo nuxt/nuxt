@@ -6,7 +6,7 @@ import type { AppConfig } from '@nuxt/schema'
 import _inlineAppConfig from '#internal/nuxt/app-config'
 
 // App config
-const _sharedAppConfig = _deepFreeze(klona(_inlineAppConfig))
+const _sharedAppConfig = _deepFreeze(klona(_inlineAppConfig)) as AppConfig
 export function useAppConfig (event?: H3Event): AppConfig {
   // Backwards compatibility with ambient context
   if (!event) {

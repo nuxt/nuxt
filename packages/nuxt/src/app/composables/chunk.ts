@@ -28,7 +28,7 @@ export interface ReloadNuxtAppOptions {
 }
 
 /** @since 3.3.0 */
-export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
+export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}): void {
   if (import.meta.server) { return }
   const path = options.path || window.location.pathname
 

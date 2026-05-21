@@ -1,8 +1,18 @@
 import { computed, defineComponent, h } from 'vue'
+import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 import type { AnnouncerPoliteness } from '../composables/announcer'
 import { useAnnouncer } from '../composables/announcer'
 
-export default defineComponent({
+interface NuxtAnnouncerProps {
+  atomic?: boolean
+  politeness?: AnnouncerPoliteness
+}
+
+type NuxtAnnouncerSlots = SlotsType<{
+  default?: (props: { message: string }) => VNode[]
+}>
+
+const NuxtAnnouncer = defineComponent({
   name: 'NuxtAnnouncer',
   props: {
     atomic: {
@@ -61,4 +71,6 @@ export default defineComponent({
       },
     }, slots.default ? slots.default({ message: message.value }) : message.value))
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtAnnouncerProps, {}, NuxtAnnouncerSlots>
+
+export default NuxtAnnouncer

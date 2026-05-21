@@ -1,4 +1,5 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured, shallowRef, useId } from 'vue'
+import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
 
 import { isPromise } from '@vue/shared'
@@ -9,6 +10,24 @@ const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
 function sanitizeTag (tag: string, fallback: string): string {
   return VALID_TAG_RE.test(tag) ? tag : fallback
 }
+
+interface NuxtClientFallbackProps {
+  fallbackTag?: string
+  fallback?: string
+  placeholder?: string
+  placeholderTag?: string
+  keepFallback?: boolean
+}
+
+type NuxtClientFallbackEmits = {
+  'ssr-error': (error: unknown) => void
+}
+
+type NuxtClientFallbackSlots = SlotsType<{
+  default?: () => VNode[]
+  fallback?: () => VNode[]
+  placeholder?: () => VNode[]
+}>
 
 const NuxtClientFallbackServer = defineComponent({
   name: 'NuxtClientFallback',
@@ -90,6 +109,6 @@ const NuxtClientFallbackServer = defineComponent({
       push('<!--]-->')
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtClientFallbackProps, NuxtClientFallbackEmits, NuxtClientFallbackSlots>
 
 export default NuxtClientFallbackServer

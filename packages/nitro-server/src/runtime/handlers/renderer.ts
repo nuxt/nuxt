@@ -27,8 +27,7 @@ import { appHead, appTeleportAttrs, appTeleportTag, componentIslands } from '#in
 import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
 import { entryFileName } from '#internal/entry-chunk.mjs'
-// @ts-expect-error virtual file
-import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { buildAssetsURL, publicAssetsURL } from '../utils/paths'
 import { relative } from 'pathe'
 
 // @ts-expect-error private property consumed by vite-generated url helpers

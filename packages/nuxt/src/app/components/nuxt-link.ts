@@ -155,8 +155,16 @@ type NuxtLinkSlots<CustomProp extends boolean = false> = {
   default?: (props: NuxtLinkDefaultSlotProps<CustomProp>) => VNode[]
 }
 
+export type NuxtLinkComponent = new<CustomProp extends boolean = false>(
+  props: NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
+) => InstanceType<DefineSetupFnComponent<
+  NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
+  [],
+  SlotsType<NuxtLinkSlots<CustomProp>>
+>>
+
 /* @__NO_SIDE_EFFECTS__ */
-export function defineNuxtLink (options: NuxtLinkOptions) {
+export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & Record<string, any> {
   const componentName = options.componentName || 'NuxtLink'
 
   function checkPropConflicts (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void {
@@ -575,14 +583,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         }, slots.default?.())
       }
     },
-  }) as unknown as (new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>) => InstanceType<DefineSetupFnComponent<
-    NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
-    [],
-    SlotsType<NuxtLinkSlots<CustomProp>>
-  >>) & Record<string, any>
+  }) as unknown as NuxtLinkComponent & Record<string, any>
 }
 
-export default defineNuxtLink(nuxtLinkDefaults)
+const NuxtLink: NuxtLinkComponent & Record<string, any> = defineNuxtLink(nuxtLinkDefaults)
+export default NuxtLink
 
 // -- NuxtLink utils --
 function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {

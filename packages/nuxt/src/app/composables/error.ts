@@ -6,7 +6,7 @@ import { useNuxtApp } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 import { useRouter } from './router'
 
-export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
+export const NUXT_ERROR_SIGNATURE = '__nuxt_error' as const
 
 /** @since 3.0.0 */
 /* @__NO_SIDE_EFFECTS__ */
@@ -30,7 +30,7 @@ export const showError = <DataT = unknown>(
     status?: number
     statusText?: string
   }),
-) => {
+): NuxtError<DataT> => {
   const nuxtError = createError<DataT>(error)
 
   try {
@@ -50,7 +50,7 @@ export const showError = <DataT = unknown>(
 }
 
 /** @since 3.0.0 */
-export const clearError = async (options: { redirect?: string } = {}) => {
+export const clearError = async (options: { redirect?: string } = {}): Promise<void> => {
   const nuxtApp = useNuxtApp()
   const error = useError()
 
@@ -69,7 +69,7 @@ export const isNuxtError = <DataT = unknown>(
 ): error is NuxtError<DataT> => !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 
 /** @since 3.0.0 */
-export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>) => {
+export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>): NuxtError<DataT> => {
   if (typeof error !== 'string' && (error as Partial<NuxtError<DataT>>).statusText) {
     error.message ??= (error as Partial<NuxtError<DataT>>).statusText
   }

@@ -1,4 +1,5 @@
 import { defineNuxtPlugin } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 import { loadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
@@ -7,7 +8,7 @@ import { getAppManifest } from '../composables/manifest'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled, purgeCachedData } from '#build/nuxt.config.mjs'
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:payload',
   setup (nuxtApp) {
     // Load payload after middleware & once final route is resolved
@@ -46,3 +47,5 @@ export default defineNuxtPlugin({
     })
   },
 })
+
+export default plugin

@@ -1,9 +1,10 @@
 import { nextTick } from 'vue'
 import { defineNuxtPlugin } from '#app/nuxt'
+import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { onNuxtReady } from '#app/composables/ready'
 import { useError } from '#app/composables/error'
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:checkIfPageUnused',
   setup (nuxtApp) {
     const error = useError()
@@ -33,3 +34,5 @@ export default defineNuxtPlugin({
     islands: false,
   },
 })
+
+export default plugin
