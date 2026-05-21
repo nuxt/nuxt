@@ -299,6 +299,7 @@ async function handleEnvironments (nuxt: Nuxt, config: vite.InlineConfig) {
 
   await withLogs(async () => {
     const server = await createServer(config)
+    nuxt.hook('close', () => server.close())
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
 }
