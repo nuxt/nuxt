@@ -2,6 +2,8 @@ import type { Import } from 'unimport'
 import { normalize } from 'pathe'
 
 import { useNuxt } from './context.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
+import * as ErrorCodes from './error-codes.ts'
 import type { Nitro, NitroDevEventHandler, NitroEventHandler } from './nitro-types.ts'
 import { toArray } from './utils.ts'
 
@@ -80,7 +82,7 @@ export function addPrerenderRoutes (routes: string | string[]): void {
 export function useNitro (): Nitro {
   const nuxt = useNuxt()
   if (!(nuxt as any)._nitro) {
-    throw new Error('Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.')
+    buildErrorUtils.throw({ message: 'Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.', code: ErrorCodes.B8003, fix: 'Move your `useNitro()` call inside a hook that runs after initialization, such as `nuxt.hook(\'ready\', () => { ... })`.' })
   }
   return (nuxt as any)._nitro
 }

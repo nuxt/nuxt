@@ -152,7 +152,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
     // We use error to bypass full render if we have an early response we can make
-    if (ssrContext['~renderResponse'] && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
+    if (ssrContext['~renderResponse'] && error.code === 'E1008') { return {} as ReturnType<typeof renderer['renderToString']> }
 
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error

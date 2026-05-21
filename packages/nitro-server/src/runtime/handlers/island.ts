@@ -39,10 +39,11 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   const renderer = await getSSRRenderer()
 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
-    if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
+    if (ssrContext['~renderResponse'] && (err as Error & { code?: string })?.code === 'E1008') {
       return {} as Awaited<ReturnType<typeof renderer.renderToString>>
     }
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
+    err.message = `[nuxt] Failed to render island component \`${islandContext.name}\`: ${err.message}`
     throw err
   })
 

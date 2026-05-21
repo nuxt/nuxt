@@ -4,11 +4,12 @@
  */
 
 import { logger } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../nuxt-errors.ts'
 import type { Compiler } from 'webpack'
 
 export const validate = (compiler: Compiler) => {
   if (compiler.options.target !== 'node') {
-    logger.warn('webpack config `target` should be "node".')
+    buildErrorUtils.warn({ message: 'webpack config `target` should be "node".', code: ErrorCodes.B5007, fix: 'Set `target: "node"` in your webpack server configuration.' })
   }
 
   if (!compiler.options.externals) {

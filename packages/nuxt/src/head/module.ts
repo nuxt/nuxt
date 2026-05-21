@@ -1,10 +1,11 @@
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, useLogger } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
+import { ErrorCodes, buildErrorUtils } from '../core/utils/error-format.ts'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 
@@ -14,7 +15,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     configKey: 'unhead',
   },
   setup (options, nuxt) {
-    const logger = useLogger('nuxt:unhead')
     const runtimeDir = resolve(distDir, 'head/runtime')
 
     /* eslint-disable @typescript-eslint/no-deprecated */
@@ -104,11 +104,11 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
         // legacy is forced false on v5 by the schema resolver (which warns there), so only v4 reaches this
         if (legacy) {
-          logger.warn('`unhead.legacy` is deprecated and will be removed. Remove deprecated head patterns (hid, vmid, children, body:true) and migrate promise values to resolved values before passing to useHead.')
+          buildErrorUtils.warn({ message: '`unhead.legacy` is deprecated and will be removed.', code: ErrorCodes.B6003, fix: 'Remove deprecated head patterns (`hid`, `vmid`, `children`, `body: true`) and migrate promise values to resolved values before passing to `useHead`.' })
         }
 
         if (headNext === false) {
-          logger.warn('`experimental.headNext` is deprecated. CAPO sorting is now the default; set `unhead.legacy: true` to opt out temporarily.')
+          buildErrorUtils.warn({ message: '`experimental.headNext` is deprecated.', code: ErrorCodes.B6004, fix: 'CAPO sorting is now the default; set `unhead.legacy: true` to opt out temporarily.' })
         }
 
         const disableCapoSorting = !isV5 && (legacy || headNext === false)

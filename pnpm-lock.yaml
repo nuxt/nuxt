@@ -281,6 +281,9 @@ importers:
       semver:
         specifier: ^7.8.0
         version: 7.8.0
+      std-env:
+        specifier: ^4.0.0
+        version: 4.1.0
       tinyglobby:
         specifier: ^0.2.16
         version: 0.2.16

@@ -2,7 +2,8 @@ import type { NuxtTemplate } from '@nuxt/schema'
 import { join, parse } from 'pathe'
 import { kebabCase } from 'scule'
 import { useNuxt } from './context.ts'
-import { logger } from './logger.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
+import * as ErrorCodes from './error-codes.ts'
 import { addTemplate } from './template.ts'
 import { reverseResolveAlias } from 'pathe/utils'
 
@@ -16,9 +17,11 @@ export function addLayout (template: NuxtTemplate | string, name?: string): void
   nuxt.hook('app:templates', (app) => {
     if (layoutName in app.layouts) {
       const relativePath = reverseResolveAlias(app.layouts[layoutName]!.file, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || app.layouts[layoutName]!.file
-      return logger.warn(
-        `Not overriding \`${layoutName}\` (provided by \`${relativePath}\`) with \`${src || filename}\`.`,
-      )
+      return buildErrorUtils.warn({
+        message: `Not overriding \`${layoutName}\` (provided by \`${relativePath}\`) with \`${src || filename}\`.`,
+        code: ErrorCodes.B4014,
+        fix: 'Rename one of the layouts, or remove the duplicate layout registration.',
+      })
     }
     app.layouts[layoutName] = {
       file: join('#build', filename),

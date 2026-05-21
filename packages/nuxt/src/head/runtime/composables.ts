@@ -9,6 +9,8 @@ import {
 } from '@unhead/vue'
 import { useNuxtApp } from '#app/nuxt'
 import type { NuxtApp } from '#app/nuxt'
+import { runtimeErrorUtils } from '#app/utils'
+import { E6001 } from '#app/error-codes'
 
 /**
  * Injects the head client from the Nuxt context or Vue inject.
@@ -21,7 +23,10 @@ export function injectHead (nuxtApp?: NuxtApp): VueHeadClient {
       const head = inject<VueHeadClient>(headSymbol)
       // should not be possible
       if (!head) {
-        throw new Error('[nuxt] [unhead] Missing Unhead instance.')
+        runtimeErrorUtils.throw({ message: '[unhead] Missing Unhead instance.',
+          code: E6001,
+          fix: 'Ensure `useHead()` is called inside a component `setup()` function, a Nuxt plugin, or Nuxt middleware.',
+        })
       }
       return head
     }
