@@ -56,7 +56,7 @@ export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError
 }
 
 export class NuxtError<DataT = unknown> extends HTTPError<DataT> {
-  readonly __nuxt_error: true = true
+  readonly __nuxt_error = true as const
   readonly fatal: boolean
 
   constructor (message = '', opts: Partial<NuxtError<DataT>> = {}) {
