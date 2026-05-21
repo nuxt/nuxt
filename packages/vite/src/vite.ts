@@ -269,6 +269,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
+    nuxt.hook('close', () => server.close())
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
   nuxt._perf?.endPhase('vite:dev-server')
