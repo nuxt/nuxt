@@ -700,11 +700,10 @@ export interface ConfigSchema {
   test: boolean
 
   /**
-   * The active Nuxt environment name, matching the value used by `c12` when loading
-   * configuration overrides (e.g. `$env.staging`). Resolved from (in order):
-   * the explicit `envName` passed to `loadNuxtConfig` (e.g. `nuxt --envName`),
-   * `process.env.NODE_ENV`, then `'development'` in dev mode and `'production'`
-   * otherwise.
+   * The active Nuxt environment name, used by `c12` to select configuration
+   * overrides (e.g. `$env.staging`). Defaults to the explicit `envName` passed to
+   * `loadNuxtConfig` (e.g. via `nuxt --envName`), falling back to `'development'`
+   * in dev mode and `'production'` otherwise.
    *
    * Exposed to runtime app code as `import.meta.envName`.
    *

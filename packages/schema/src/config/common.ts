@@ -120,9 +120,6 @@ export default defineResolvers({
       if (typeof val === 'string') {
         return val
       }
-      if (process.env.NODE_ENV) {
-        return process.env.NODE_ENV
-      }
       const isDev = await get('dev') as boolean
       return isDev ? 'development' : 'production'
     },
