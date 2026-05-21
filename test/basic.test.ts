@@ -2135,6 +2135,28 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
+  it.skipIf(!isTestingAppManifest)('should forward destination preload tags as prefetch hints on link prefetch', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    // The NuxtLink to /prefetch/server-components is in view, so visibility-based
+    // prefetching should trigger loading its _payload.json, which includes the
+    // forwarded preload links registered via `useHead` on that page.
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/preload-target.png')),
+    )
+
+    // Confirm the rel was downgraded from preload to prefetch (we don't want to
+    // compete with the current page's critical resources).
+    const preloadCount = await page.evaluate(
+      () => document.head.querySelectorAll('link[rel="preload"][href$="/preload-target.png"]').length,
+    )
+    expect(preloadCount).toBe(0)
+
+    await page.close()
+  })
+
   it('should not prefetch certain dynamic imports by default', async () => {
     const html = await $fetch<string>('/auth')
     // should not prefetch global components

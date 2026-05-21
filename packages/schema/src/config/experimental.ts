@@ -213,6 +213,11 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    prefetchPreloadTags: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
     granularCachedData: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
