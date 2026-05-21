@@ -10,12 +10,8 @@ const require = createRequire(import.meta.url)
 const repoRoot = resolve(import.meta.dirname, '../../..')
 const fixtureSrc = resolve(repoRoot, 'test/fixtures/sibling-layer-types')
 
-/**
- * The fixture's `package.json` files reference the in-repo Nuxt packages via
- * `link:__NUXT__` etc. placeholders so the same fixture works regardless of
- * where the repo is checked out. We substitute the placeholders for absolute
- * paths when copying the fixture to its temp directory.
- */
+// `link:__NUXT__` etc. placeholders in the fixture's package.json get
+// rewritten to absolute paths when we copy it to the temp directory.
 const linkMap: Record<string, string> = {
   __NUXT__: resolve(repoRoot, 'packages/nuxt'),
   __KIT__: resolve(repoRoot, 'packages/kit'),
@@ -41,28 +37,45 @@ function substituteLinks (dir: string) {
   }
 }
 
+// resolve `pnpm` against the workspace, not the tmp dir. tool-version
+// shims (mise, asdf) can otherwise resolve a different pnpm when invoked
+// from `/tmp` and pnpm's own lifecycle scripts inherit whatever they find
+// on `PATH`, including for postinstall.
+function resolvePnpm (): string {
+  const r = spawnSync('mise', ['which', 'pnpm'], { cwd: repoRoot, encoding: 'utf8' })
+  if (r.status === 0 && r.stdout?.trim()) { return r.stdout.trim() }
+  return 'pnpm'
+}
+const PNPM = resolvePnpm()
+const PNPM_DIR = dirname(PNPM)
+
 function run (cmd: string, args: string[], cwd: string) {
-  const result = spawnSync(cmd, args, {
-    cwd,
-    stdio: 'pipe',
-    encoding: 'utf8',
-    env: { ...process.env, NODE_ENV: 'development' },
-  })
-  if (result.status !== 0) {
-    throw new Error(`\`${cmd} ${args.join(' ')}\` in ${cwd} exited ${result.status}:\n${result.stdout}\n${result.stderr}`)
+  // prepend the resolved pnpm's directory to `PATH` so lifecycle scripts
+  // invoke the same pnpm as the test (not a shim's default version).
+  // `CI=true` keeps pnpm non-interactive when invoked from a tmp dir whose
+  // ancestor workspace has `verifyDepsBeforeRun: install`.
+  const env = {
+    ...process.env,
+    NODE_ENV: 'development',
+    CI: 'true',
+    PATH: `${PNPM_DIR}:${process.env.PATH ?? ''}`,
+  }
+  const result = spawnSync(cmd, args, { cwd, stdio: 'pipe', encoding: 'utf8', env })
+  // pnpm 11+ exits 1 on `ERR_PNPM_IGNORED_BUILDS` even when the install
+  // itself completed and `postinstall` ran. We don't need to actually build
+  // the optional native deps for type inference, so treat that as success.
+  const ok = result.status === 0 || /ERR_PNPM_IGNORED_BUILDS/.test(result.stdout + result.stderr)
+  if (!ok) {
+    throw new Error(`\`${cmd} ${args.join(' ')}\` in ${cwd} exited ${result.status}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`)
   }
   return result
 }
 
-/**
- * Drives `tsserver` directly the way VS Code's Volar extension does, with
- * `@vue/typescript-plugin` loaded as a global plugin, so the tests assert
- * against the actual inferred types in the project, not just the shape of
- * the generated tsconfig. CLI tools like `vue-tsc -b` walk from the consumer
- * down through references and never hit the disagreement that breaks
- * tsserver's nearest-tsconfig walk; only this kind of driver can catch the
- * IDE-only regression from #34763.
- */
+// drives tsserver the way the volar vs code extension does (loading
+// `@vue/typescript-plugin` as a global plugin) so the tests can assert
+// against inferred types. `vue-tsc -b` walks from the consumer down through
+// references and never hits the disagreement that breaks the editor, so only
+// a driver like this catches the failure mode from #34763.
 class TsServer {
   child: ReturnType<typeof spawn>
   seq = 0
@@ -97,9 +110,7 @@ class TsServer {
         } else if (msg.type === 'event') {
           this.events.push(msg)
         }
-      } catch {
-        // ignore non-JSON banners
-      }
+      } catch {}
     }
   }
 
@@ -145,16 +156,13 @@ describe.sequential('external sibling layer typescript inference', () => {
     const layerDir = resolve(tmpRoot, 'base')
     consumerPage = resolve(consumerDir, 'app/pages/index.vue')
 
-    // Install each project separately with `--ignore-workspace` so the layer
-    // and consumer get distinct `node_modules` stores (in particular, distinct
-    // physical paths for `vue`, `@nuxt/ui`, etc.). This is the precondition
-    // that triggers the IDE-only failure mode from #34763 in real-world
-    // setups.
-    run('pnpm', ['install', '--ignore-workspace', '--no-frozen-lockfile'], layerDir)
-    run('pnpm', ['install', '--ignore-workspace', '--no-frozen-lockfile'], consumerDir)
-    // `postinstall: nuxt prepare` should have run, but be explicit.
-    run('pnpm', ['exec', 'nuxt', 'prepare'], layerDir)
-    run('pnpm', ['exec', 'nuxt', 'prepare'], consumerDir)
+    // separate installs so the layer and consumer end up with distinct
+    // physical paths for `vue`, `@nuxt/ui` etc., which is what triggers
+    // #34763 in the wild.
+    run(PNPM, ['install', '--ignore-workspace', '--no-frozen-lockfile'], layerDir)
+    run(PNPM, ['install', '--ignore-workspace', '--no-frozen-lockfile'], consumerDir)
+    run(PNPM, ['exec', 'nuxt', 'prepare'], layerDir)
+    run(PNPM, ['exec', 'nuxt', 'prepare'], consumerDir)
 
     const tsserverPath = require.resolve('typescript/lib/tsserver.js', { paths: [consumerDir] })
     const pluginPkgJson = require.resolve('@vue/typescript-plugin/package.json', { paths: [consumerDir] })
@@ -170,13 +178,15 @@ describe.sequential('external sibling layer typescript inference', () => {
       fileContent: readFileSync(consumerPage, 'utf8'),
       projectRootPath: consumerDir,
     })
-    // give tsserver a beat to load projects + Volar virtual files
+    // give tsserver a beat to load projects and volar virtual files
     await new Promise(r => setTimeout(r, 2000))
   }, 240_000)
 
   afterAll(async () => {
     await server?.close()
-    writeFileSync('/tmp/sibling-tmproot.txt', tmpRoot)
+    if (tmpRoot) {
+      try { rmSync(tmpRoot, { recursive: true, force: true }) } catch {}
+    }
   })
 
   it('resolves `<AppButton>` (re-exported from a sibling layer) to a typed `DefineComponent`, not `any`', async () => {
@@ -184,25 +194,17 @@ describe.sequential('external sibling layer typescript inference', () => {
     const pos = findPosition(src, 'AppButton', 1)
     const qi = await server!.send('quickinfo', { file: consumerPage, ...pos })
     const display = qi.body?.displayString ?? ''
+    // the broken state from #34763 shows up as `(property) AppButton: any`
+    // or `DefineComponent<any, ...>`.
     expect(display, 'expected typed DefineComponent, got: ' + display).toMatch(/DefineComponent</)
-    // The user-reported failure mode from #34763 shows up as
-    // `(property) AppButton: any` or `DefineComponent<any, ...>`.
     expect(display).not.toMatch(/AppButton:\s*any\b/)
     expect(display).not.toMatch(/DefineComponent<\s*any\s*,/)
-    // `ButtonProps` is the prop type the layer SFC imported from `@nuxt/ui`.
-    // If the consumer's project sees `@nuxt/ui` at a different physical path
-    // than the layer (separate `node_modules` stores), `ButtonProps`
-    // collapses and the displayed component type drops it.
     expect(display, 'expected ButtonProps in component type, got: ' + display).toMatch(/ButtonProps/)
   })
 
   it('flags an invalid prop value on `<AppButton size="not-a-valid-size" />`', async () => {
-    // This is the stronger check: even if `<AppButton>` resolves to a
-    // `DefineComponent<ButtonProps, ...>`, the consumer's view of
-    // `ButtonProps.size` could still degrade to `any` (or to `string`
-    // without the literal union) when the consumer and layer disagree on
-    // the identity of `@nuxt/ui`. Asserting that an invalid literal raises
-    // a diagnostic proves the prop union is fully resolved.
+    // a diagnostic on the literal value proves the prop union from
+    // `@nuxt/ui`'s `ButtonProps` is fully resolved, not just present by name.
     server!.events.length = 0
     server!.notify('geterr', { files: [consumerPage], delay: 0 })
     const start = Date.now()
