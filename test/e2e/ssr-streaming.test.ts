@@ -506,7 +506,8 @@ test.describe('SSR Streaming', () => {
   // component is teleported via the `uid;client` marker — a distinct path
   // from slot teleports. Streaming relocates it client-side, and it must
   // hydrate into a live, interactive component.
-  test('selective-client island hydrates and stays interactive', async ({ fetch, page, goto }) => {
+  test('selective-client island hydrates and stays interactive', async ({ fetch, page, goto, builder }) => {
+    test.skip(builder !== 'vite', 'selective-client islands ship a per-component client chunk only on the vite builder')
     const res = await fetch('/islands')
     const html = await res.text()
 
