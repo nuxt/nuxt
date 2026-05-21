@@ -289,8 +289,10 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
       script: _PAYLOAD_INLINE
         // Inline full payload in HTML (payloadExtraction: 'client' | false, or non-cached route)
         ? NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
-          : renderPayloadScript({ ssrContext, data: ssrContext.payload, routeOptions })
+          // `prefetchLinks` is only consumed when *another* page prefetches this URL via
+          // _payload.json, so we drop it from the inline payload to avoid the duplication.
+          ? renderPayloadJsonScript({ ssrContext, data: stripInlineOnlyPayloadFields(ssrContext.payload) })
+          : renderPayloadScript({ ssrContext, data: stripInlineOnlyPayloadFields(ssrContext.payload), routeOptions })
         // Split payload: inline initial data, reference external _payload.json via src (payloadExtraction: true)
         : NUXT_JSON_PAYLOADS
           ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
@@ -379,4 +381,10 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
     `<head>${joinTags(html.head)}</head>` +
     `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>` +
     '</html>'
+}
+
+function stripInlineOnlyPayloadFields (payload: NuxtSSRContext['payload']): NuxtSSRContext['payload'] {
+  if (!payload.prefetchLinks) { return payload }
+  const { prefetchLinks: _, ...rest } = payload
+  return rest
 }

@@ -163,6 +163,7 @@ export default withMatrix({
       selectiveClient: 'deep',
     },
     inlineRouteRules: true,
+    prefetchPreloadTags: true,
   },
   nitro: {
     publicAssets: [
