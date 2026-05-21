@@ -79,6 +79,15 @@ export interface DefineNuxtConfig<Config extends UserInputConfig = NuxtConfig> e
 
 export interface NuxtBuilder {
   bundle: (nuxt: Nuxt) => Promise<void>
+  /**
+   * Optional. If provided and the user opts in via `experimental.watcher: 'builder'`,
+   * Nuxt will call this instead of starting its own file watcher in dev mode,
+   * allowing the builder to reuse its own watcher.
+   *
+   * The builder is expected to register its own `nuxt.hook('close', ...)` to
+   * clean up any resources it allocates.
+   */
+  setupWatcher?: (nuxt: Nuxt) => Promise<void> | void
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`

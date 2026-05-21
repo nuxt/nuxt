@@ -54,4 +54,45 @@ describe('builder:watch', { sequential: true }, async () => {
       'test',
     ])
   })
+
+  it('should restart Nuxt when a file is added with builder strategy', async () => {
+    const rootDir = join(tmpDir, 'project')
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        experimental: { watcher: 'builder' },
+        dev: true,
+        watch: ['test', join(rootDir, 'other'), resolve(rootDir, '../higher')],
+      },
+    })
+    const targets = new Set(['../higher', 'other', 'test'])
+    const seenAdds = new Set<string>()
+    let resolveAll: () => void
+    const allSeen = new Promise<void>((resolve) => { resolveAll = resolve })
+
+    nuxt.hook('builder:watch', (event, path) => {
+      if (event !== 'add') { return }
+      const rel = relative(rootDir, path)
+      if (targets.has(rel) && !seenAdds.has(rel)) {
+        seenAdds.add(rel)
+        if (seenAdds.size === targets.size) { resolveAll() }
+      }
+    })
+
+    await build(nuxt)
+
+    writeFileSync(resolve(rootDir, '../higher'), 'something')
+    writeFileSync(join(rootDir, 'test'), 'something')
+    writeFileSync(join(rootDir, 'other'), 'something')
+    await allSeen
+
+    await nuxt.close()
+
+    expect.soft([...seenAdds].sort()).toStrictEqual([
+      '../higher',
+      'other',
+      'test',
+    ])
+  })
 })
