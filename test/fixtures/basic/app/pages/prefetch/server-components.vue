@@ -1,7 +1,7 @@
 <script setup lang="ts">
 useHead({
   link: [
-    { rel: 'preload', as: 'image', href: '/preload-target.png' },
+    { rel: 'preload', as: 'image', href: '/public.svg' },
   ],
 })
 </script>

@@ -2140,17 +2140,16 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
 
     await gotoPath(page, '/prefetch')
     // The NuxtLink to /prefetch/server-components is in view, so visibility-based
-    // prefetching should trigger loading its _payload.json, which includes the
+    // prefetching should trigger loading its payload, which includes the
     // forwarded preload links registered via `useHead` on that page.
     await page.waitForFunction(
       () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/preload-target.png')),
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
     )
 
-    // Confirm the rel was downgraded from preload to prefetch (we don't want to
-    // compete with the current page's critical resources).
+    // Confirm the rel was downgraded from preload to prefetch.
     const preloadCount = await page.evaluate(
-      () => document.head.querySelectorAll('link[rel="preload"][href$="/preload-target.png"]').length,
+      () => document.head.querySelectorAll('link[rel="preload"][href$="/public.svg"]').length,
     )
     expect(preloadCount).toBe(0)
 
