@@ -95,11 +95,76 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
   return segments
 }
 
+// Type of the public-facing `useFetch` returned by the factory below.
+// Expressed as a callable interface so that all three overloads survive
+// oxc's isolated-declarations dts pipeline.
+export interface UseFetch {
+  // Auto-key, default = undefined
+  <
+    ResT = void,
+    ErrorT = FetchError,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = undefined,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Auto-key, default = DataT
+  <
+    ResT = void,
+    ErrorT = FetchError,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = DataT,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Explicit auto-key as positional arg
+  <
+    ResT = void,
+    ErrorT = FetchError,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = undefined,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    arg2?: string,
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+}
+
+export interface CreateUseFetch {
+  <
+    FResT = void,
+    FReqT extends NitroFetchRequest = NitroFetchRequest,
+    FMethod extends AvailableRouterMethod<FReqT> = FResT extends void ? 'get' extends AvailableRouterMethod<FReqT> ? 'get' : AvailableRouterMethod<FReqT> : AvailableRouterMethod<FReqT>,
+    F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
+    FDataT = F_ResT,
+    FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+    FDefaultT = undefined,
+  >(
+    options?:
+      | Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
+      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>),
+  ): UseFetch
+}
+
 /**
  * A factory function to create a custom `useFetch` composable with pre-defined default options.
  * @since 4.2.0
  */
-export const createUseFetch = defineKeyedFunctionFactory({
+export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateUseFetch>({
   name: 'createUseFetch',
   factory<
     FResT = void,
@@ -112,7 +177,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
   >(options:
       Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
       | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>) = {},
-  ) {
+  ): UseFetch {
     /**
      * Fetch data from an API endpoint with an SSR-friendly composable.
      * See {@link https://nuxt.com/docs/4.x/api/composables/use-fetch}
@@ -268,13 +333,13 @@ export const createUseFetch = defineKeyedFunctionFactory({
       return asyncData
     }
 
-    return useFetch
+    return useFetch as UseFetch
   },
 })
 
-export const useFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory()
+export const useFetch: UseFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory()
 
-export const useLazyFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory({
+export const useLazyFetch: UseFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory({
   lazy: true,
   // @ts-expect-error private property
   _functionName: 'useLazyFetch',

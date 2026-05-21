@@ -1,8 +1,13 @@
 import { defineComponent } from 'vue'
+import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 // @ts-expect-error virtual file
 import { devPagesDir } from '#build/nuxt.config.mjs'
 
-export default defineComponent({
+type PagePlaceholderSlots = SlotsType<{
+  default?: () => VNode[]
+}>
+
+const PagePlaceholder = defineComponent({
   name: 'NuxtPage',
   setup (_, props) {
     if (import.meta.dev) {
@@ -10,4 +15,6 @@ export default defineComponent({
     }
     return () => props.slots.default?.()
   },
-})
+}) as unknown as DefineSetupFnComponent<{}, {}, PagePlaceholderSlots>
+
+export default PagePlaceholder

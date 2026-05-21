@@ -58,3 +58,5 @@ declare module 'vue' {
     head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
+
+export type _NuxtAugmentsAnchor = NuxtApp

@@ -64,7 +64,7 @@ export default defineComponent({
     expose({ pageRef })
 
     const _layoutMeta = inject(LayoutMetaSymbol, null)
-    let vnode: VNode
+    let vnode: VNode | undefined
 
     const done = nuxtApp.deferHydration()
     let isSuspensePending = false

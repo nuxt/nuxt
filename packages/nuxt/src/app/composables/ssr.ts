@@ -8,7 +8,7 @@ import { toArray } from '../utils'
 import { useHead } from './head'
 
 /** @since 3.0.0 */
-export function useRequestEvent (nuxtApp?: NuxtApp) {
+export function useRequestEvent (nuxtApp?: NuxtApp): H3Event | undefined {
   if (import.meta.client) { return }
   nuxtApp ||= useNuxtApp()
   return nuxtApp.ssrContext?.event
@@ -20,7 +20,7 @@ export function useRequestEvent (nuxtApp?: NuxtApp) {
  */
 export function useRequestHeaders<K extends string = string> (include: K[]): { [key in Lowercase<K>]?: string }
 export function useRequestHeaders (): Readonly<Record<string, string>>
-export function useRequestHeaders (include?: any[]) {
+export function useRequestHeaders (include?: any[]): Readonly<Record<string, string>> {
   if (import.meta.client) { return {} }
   const event = useRequestEvent()
   const _headers = event ? Object.fromEntries(event.req.headers.entries()) : {}
@@ -37,7 +37,7 @@ export function useRequestHeaders (include?: any[]) {
 }
 
 /** @since 3.9.0 */
-export function useRequestHeader (header: string) {
+export function useRequestHeader (header: string): string | null | undefined {
   if (import.meta.client) { return undefined }
   const event = useRequestEvent()
   return event ? event.req.headers.get(header) : undefined
@@ -52,7 +52,7 @@ export function useRequestFetch (): $Fetch {
 export function setResponseStatus (event: H3Event, code?: number, message?: string): void
 /** @deprecated Pass `event` as first option. */
 export function setResponseStatus (code: number, message?: string): void
-export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: number | string, arg3?: string) {
+export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: number | string, arg3?: string): void {
   if (import.meta.client) { return }
   if (arg1 && typeof arg1 !== 'number') {
     arg1.res.status = arg2 as number | undefined
@@ -67,7 +67,7 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
 }
 
 /** @since 3.14.0 */
-export function useResponseHeader (header: string) {
+export function useResponseHeader (header: string): import('vue').WritableComputedRef<string | null | undefined> | import('vue').Ref<string | null | undefined> {
   if (import.meta.client) {
     if (import.meta.dev) {
       return computed({
@@ -95,7 +95,7 @@ export function useResponseHeader (header: string) {
 }
 
 /** @since 3.8.0 */
-export function prerenderRoutes (path: string | string[]) {
+export function prerenderRoutes (path: string | string[]): void {
   if (!import.meta.server || !import.meta.prerender) { return }
 
   const paths = toArray(path)

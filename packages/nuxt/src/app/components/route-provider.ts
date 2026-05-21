@@ -1,9 +1,19 @@
 import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
-import type { Ref, VNode } from 'vue'
+import type { DefineSetupFnComponent, Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
 
-export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
+interface RouteProviderProps {
+  route: RouteLocationNormalizedLoaded
+  vnode?: VNode
+  vnodeRef?: Ref<any>
+  renderKey?: string
+  trackRootNodes?: boolean
+}
+
+export type RouteProviderComponent = DefineSetupFnComponent<RouteProviderProps>
+
+export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderComponent => defineComponent({
   name,
   props: {
     route: {
@@ -55,6 +65,6 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
       return h(props.vnode, { ref: props.vnodeRef })
     }
   },
-})
+}) as unknown as RouteProviderComponent
 
-export const RouteProvider = defineRouteProvider()
+export const RouteProvider: RouteProviderComponent = defineRouteProvider()

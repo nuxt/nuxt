@@ -1,10 +1,11 @@
 import { defineComponent, h } from 'vue'
+import type { DefineSetupFnComponent } from 'vue'
 import { parseQuery } from 'vue-router'
 import { isAbsolute, relative, resolve } from 'pathe'
 // @ts-expect-error virtual file
 import { devRootDir } from '#build/nuxt.config.mjs'
 
-export default (url: string) => defineComponent({
+const testComponentWrapper = (url: string): DefineSetupFnComponent<{}> => defineComponent({
   name: 'NuxtTestComponentWrapper',
   inheritAttrs: false,
   async setup (props, { attrs }) {
@@ -33,4 +34,6 @@ export default (url: string) => defineComponent({
       ]),
     ]
   },
-})
+}) as unknown as DefineSetupFnComponent<{}>
+
+export default testComponentWrapper
