@@ -663,6 +663,103 @@ describe('composables', () => {
 
     expectTypeOf(asyncData.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
   })
+
+  it('propagates factory transform type through createUseAsyncData (#35128)', () => {
+    interface Foo { a: number, b: string }
+
+    // defaults mode
+    const useFooData = createUseAsyncData({
+      transform: (res: Foo) => ({ count: res.a }),
+    })
+    const r1 = useFooData('key', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(r1.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    const r1NoKey = useFooData(() => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(r1NoKey.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    // override mode (function form)
+    const useFooDataOverride = createUseAsyncData(() => ({
+      transform: (res: Foo) => ({ count: res.a }),
+    }))
+    const r2 = useFooDataOverride('key', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(r2.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    // no factory transform: falls back to handler return type
+    const useBareData = createUseAsyncData({})
+    const r3 = useBareData('key', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(r3.data).toEqualTypeOf<Ref<Foo | DefaultAsyncDataValue>>()
+
+    // caller transform still wins over factory transform default
+    const r4 = useFooData('key', () => Promise.resolve({ a: 1, b: 'x' } as Foo), {
+      transform: res => res.b,
+    })
+    expectTypeOf(r4.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
+
+  it('propagates factory transform type through createUseFetch (#35128)', () => {
+    interface Foo { a: number, b: string }
+
+    // defaults mode
+    const useFooFetch = createUseFetch({
+      transform: (res: Foo) => ({ count: res.a }),
+    })
+    const r1 = useFooFetch<Foo>('/api/foo')
+    expectTypeOf(r1.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    // override mode (function form)
+    const useFooFetchOverride = createUseFetch(() => ({
+      transform: (res: Foo) => ({ count: res.a }),
+    }))
+    const r2 = useFooFetchOverride<Foo>('/api/foo')
+    expectTypeOf(r2.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    // no factory transform: falls back to fetch result type
+    const useBareFetch = createUseFetch({})
+    const r3 = useBareFetch<Foo>('/api/foo')
+    expectTypeOf(r3.data).toEqualTypeOf<Ref<Foo | DefaultAsyncDataValue>>()
+
+    // caller transform overrides factory transform default
+    // (only works without an explicit `ResT` generic, due to microsoft/TypeScript#14400)
+    const r4 = useFooFetch('/api/foo', { transform: (res: Foo) => res.b })
+    expectTypeOf(r4.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
+
+  it('propagates factory `default` / `pick` types through createUseAsyncData / createUseFetch (#35128)', () => {
+    interface Foo { a: number, b: string }
+
+    // createUseAsyncData: factory `default` widens the returned data type
+    const useWithDefault = createUseAsyncData({ default: () => 'fallback' as const })
+    const d1 = useWithDefault('k', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(d1.data.value).toEqualTypeOf<Foo | 'fallback'>()
+
+    // factory transform + default together: data is the transform output (or factory default)
+    const useWithBoth = createUseAsyncData({
+      transform: (res: Foo) => ({ count: res.a }),
+      default: () => ({ count: 0 }),
+    })
+    const d2 = useWithBoth('k', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(d2.data.value).toEqualTypeOf<{ count: number }>()
+
+    // factory pick narrows the returned data type.
+    // The factory `pick` option doesn't infer FPickKeys (array literals widen to `string[]`),
+    // so the user passes it explicitly as a generic.
+    const useWithPick = createUseAsyncData<Foo, Foo, ['a']>({ pick: ['a'] })
+    const d3 = useWithPick('k', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(d3.data.value).toEqualTypeOf<Pick<Foo, 'a'> | undefined>()
+
+    // createUseFetch: factory `default` widens the returned data type
+    const useFetchWithDefault = createUseFetch({ default: () => 'fallback' as const })
+    const f1 = useFetchWithDefault<Foo>('/api/foo')
+    expectTypeOf(f1.data.value).toEqualTypeOf<Foo | 'fallback'>()
+
+    // createUseFetch: factory transform + default
+    const useFetchBoth = createUseFetch({
+      transform: (res: Foo) => ({ count: res.a }),
+      default: () => ({ count: 0 }),
+    })
+    const f2 = useFetchBoth<Foo>('/api/foo')
+    expectTypeOf(f2.data.value).toEqualTypeOf<{ count: number }>()
+  })
 })
 
 describe('app config', () => {
