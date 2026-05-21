@@ -37,7 +37,14 @@ export async function build (nuxt: Nuxt): Promise<void> {
       await Promise.allSettled(writes)
     })
     if (!nuxt.options._prepare) {
-      watch(nuxt)
+      if (nuxt.options.experimental.watcher === 'builder' && builder?.setupWatcher) {
+        await builder.setupWatcher(nuxt)
+      } else {
+        if (nuxt.options.experimental.watcher === 'builder') {
+          logger.warn('`experimental.watcher: "builder"` is set but the active builder does not implement `setupWatcher`. Falling back to the default file watcher.')
+        }
+        watch(nuxt)
+      }
       nuxt.hook('builder:watch', async (event, relativePath) => {
         // Unset mainComponent and errorComponent if app or error component is changed
         if (event === 'add' || event === 'unlink') {
