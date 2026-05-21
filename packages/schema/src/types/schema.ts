@@ -700,6 +700,17 @@ export interface ConfigSchema {
   test: boolean
 
   /**
+   * The active Nuxt environment name, used by `c12` to select configuration
+   * overrides (e.g. `$env.staging`). Defaults to the explicit `envName` passed to
+   * `loadNuxtConfig` (e.g. via `nuxt --envName`), falling back to `'development'`
+   * in dev mode and `'production'` otherwise.
+   *
+   * Exposed to runtime app code as `import.meta.envName`.
+   *
+   */
+  envName: string
+
+  /**
    * Set to `true` to enable debug mode.
    *
    * At the moment, it prints out hook names and timings on the server, and logs hook arguments as well in the browser.
@@ -1657,7 +1668,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | DotenvOptions }
+  _loadOptions: { dotenv?: boolean | DotenvOptions, envName?: string | false }
 
   /**
    *
