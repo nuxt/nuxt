@@ -362,6 +362,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   hasTypescriptVersionWithModulePreserve ??= true
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
+  const userTsConfigExclude = [...(nuxt.options.typescript?.tsConfig?.exclude ?? [])]
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
@@ -564,7 +565,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
     include: [...tsConfig.include, ...legacyInclude],
-    exclude: [...tsConfig.exclude, ...legacyExclude],
+    exclude: [...userTsConfigExclude, ...legacyExclude],
   })
 
   async function resolveConfig (tsConfig: TSConfig) {
