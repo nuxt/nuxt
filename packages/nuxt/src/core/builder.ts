@@ -23,29 +23,34 @@ export async function build (nuxt: Nuxt): Promise<void> {
   const builder = nuxt.options._prepare ? undefined : await resolveBuilder(nuxt)
 
   if (nuxt.options.dev) {
-    if (!nuxt.options._prepare) {
+    if (nuxt.options.experimental.watcher === 'builder' && builder?.setupWatcher) {
+      await builder.setupWatcher(nuxt)
+    } else {
+      if (nuxt.options.experimental.watcher === 'builder') {
+        logger.warn('`experimental.watcher: "builder"` is set but the active builder does not implement `setupWatcher`. Falling back to the default file watcher.')
+      }
       watch(nuxt)
-      nuxt.hook('builder:watch', async (event, relativePath) => {
-        // Unset mainComponent and errorComponent if app or error component is changed
-        if (event === 'add' || event === 'unlink') {
-          const path = resolve(nuxt.options.srcDir, relativePath)
-          for (const dirs of getLayerDirectories(nuxt)) {
-            const relativePath = relative(dirs.app, path)
-            if (/^app\./i.test(relativePath)) {
-              app.mainComponent = undefined
-              break
-            }
-            if (/^error\./i.test(relativePath)) {
-              app.errorComponent = undefined
-              break
-            }
+    }
+    nuxt.hook('builder:watch', async (event, relativePath) => {
+      // Unset mainComponent and errorComponent if app or error component is changed
+      if (event === 'add' || event === 'unlink') {
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        for (const dirs of getLayerDirectories(nuxt)) {
+          const relativePath = relative(dirs.app, path)
+          if (/^app\./i.test(relativePath)) {
+            app.mainComponent = undefined
+            break
+          }
+          if (/^error\./i.test(relativePath)) {
+            app.errorComponent = undefined
+            break
           }
         }
+      }
 
-        // Recompile app templates
-        await generateApp()
-      })
-    }
+      // Recompile app templates
+      await generateApp()
+    })
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
       if (options) { return _generateApp(nuxt, app, options) }
