@@ -2,7 +2,7 @@ import { basename, normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
-import { getNuxtEnvName, logger } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
@@ -247,7 +247,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'import.meta.test': ctx.nuxt.options.test,
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
-    'import.meta.envName': JSON.stringify(getNuxtEnvName(ctx.options)),
+    'import.meta.envName': JSON.stringify(ctx.options.envName),
     'import.meta.server': ctx.isServer,
   }
 

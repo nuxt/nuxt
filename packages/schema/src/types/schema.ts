@@ -700,6 +700,18 @@ export interface ConfigSchema {
   test: boolean
 
   /**
+   * The active Nuxt environment name, matching the value used by `c12` when loading
+   * configuration overrides (e.g. `$env.staging`). Resolved from (in order):
+   * the explicit `envName` passed to `loadNuxtConfig` (e.g. `nuxt --envName`),
+   * `process.env.NODE_ENV`, then `'development'` in dev mode and `'production'`
+   * otherwise.
+   *
+   * Exposed to runtime app code as `import.meta.envName`.
+   *
+   */
+  envName: string
+
+  /**
    * Set to `true` to enable debug mode.
    *
    * At the moment, it prints out hook names and timings on the server, and logs hook arguments as well in the browser.

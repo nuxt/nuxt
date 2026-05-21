@@ -115,6 +115,18 @@ export default defineResolvers({
   test: {
     $resolve: val => typeof val === 'boolean' ? val : Boolean(isTest),
   },
+  envName: {
+    $resolve: async (val, get) => {
+      if (typeof val === 'string') {
+        return val
+      }
+      if (process.env.NODE_ENV) {
+        return process.env.NODE_ENV
+      }
+      const isDev = await get('dev') as boolean
+      return isDev ? 'development' : 'production'
+    },
+  },
   debug: {
     $resolve: (val) => {
       val ??= isDebug
