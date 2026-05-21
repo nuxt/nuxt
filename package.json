@@ -8,7 +8,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter './packages/**' prepack",
+    "build": "pnpm --filter './packages/**' build",
     "build:stub": "pnpm dev:prepare",
     "dev": "pnpm play",
     "dev:prepare": "pnpm --filter './packages/**' build && nuxt prepare",
