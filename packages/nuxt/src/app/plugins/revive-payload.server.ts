@@ -2,6 +2,7 @@ import { isReactive, isRef, isShallow, toRaw } from 'vue'
 import { definePayloadReducer } from '../composables/payload'
 import { isNuxtError } from '../composables/error'
 import { defineNuxtPlugin } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
@@ -21,7 +22,7 @@ if (componentIslands) {
   reducers.push(['Island', data => data && data?.__nuxt_island && isValidIslandKey(data.__nuxt_island.key) && data.__nuxt_island])
 }
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:revive-payload:server',
   setup () {
     for (const [reducer, fn] of reducers) {
@@ -29,3 +30,5 @@ export default defineNuxtPlugin({
     }
   },
 })
+
+export default plugin

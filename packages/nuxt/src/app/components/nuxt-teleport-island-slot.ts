@@ -1,4 +1,4 @@
-import type { VNode } from 'vue'
+import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 import { Teleport, createVNode, defineComponent, h, inject } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { NuxtTeleportIslandSymbol } from './nuxt-teleport-island-component'
@@ -6,8 +6,21 @@ import { NuxtTeleportIslandSymbol } from './nuxt-teleport-island-component'
 /**
  * component only used within islands for slot teleport
  */
+interface NuxtTeleportIslandSlotProps {
+  name: string
+  /**
+   * must be an array to handle v-for
+   */
+  props?: Array<any>
+}
+
+type NuxtTeleportIslandSlotSlots = SlotsType<{
+  default?: () => VNode[]
+  fallback?: () => VNode[]
+}>
+
 /* @__PURE__ */
-export default defineComponent({
+const NuxtTeleportIslandSlot = defineComponent({
   name: 'NuxtTeleportIslandSlot',
   inheritAttrs: false,
   props: {
@@ -61,4 +74,6 @@ export default defineComponent({
       return vnodes
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtTeleportIslandSlotProps, {}, NuxtTeleportIslandSlotSlots>
+
+export default NuxtTeleportIslandSlot
