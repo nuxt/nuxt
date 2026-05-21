@@ -336,10 +336,8 @@ export const Style = defineComponent({
         if (import.meta.dev && typeof textContent !== 'string') {
           console.error('<Style> can only take a string in its default slot.')
         }
-        if (typeof textContent === 'string') {
-          input.style![idx] = style
-          style.textContent = textContent as string
-        }
+        input.style![idx] = style
+        style.textContent = textContent as string
       }
       update()
       return null

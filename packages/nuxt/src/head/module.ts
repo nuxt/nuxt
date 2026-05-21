@@ -118,13 +118,12 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         const lines: string[] = []
         // v4 parity with v2 defaults: restore the plugin set that unhead v3 no
         // longer auto-loads (DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin,
-        // AliasSortingPlugin). v5 keeps TemplateParamsPlugin by default because
-        // `%s` / `%siteName` / `%separator` title interpolation is a core Nuxt
-        // SEO idiom; users can opt out via `unhead.templateParams: false`.
-        const templateParamsEnabled = options.templateParams !== false
+        // AliasSortingPlugin). v5 keeps TemplateParamsPlugin because %s / %siteName
+        // / %separator title interpolation is a core Nuxt SEO idiom; other plugins
+        // must be registered explicitly.
         if (!isV5) {
           lines.push(`import { legacyPlugins } from ${JSON.stringify(unheadLegacy)};`)
-        } else if (templateParamsEnabled) {
+        } else {
           lines.push(`import { TemplateParamsPlugin } from ${JSON.stringify(unheadPlugins)};`)
         }
         lines.push(`export default {`)
@@ -132,8 +131,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         if (disableCapoSorting) {
           lines.push(`  disableCapoSorting: true,`)
         }
-        const v5Plugins = templateParamsEnabled ? '[TemplateParamsPlugin]' : '[]'
-        lines.push(`  plugins: ${isV5 ? v5Plugins : 'legacyPlugins'},`)
+        lines.push(`  plugins: ${isV5 ? '[TemplateParamsPlugin]' : 'legacyPlugins'},`)
         lines.push(`}`)
         return lines.join('\n')
       },

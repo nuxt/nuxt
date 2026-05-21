@@ -421,24 +421,6 @@ export interface ConfigSchema {
     renderSSRHeadOptions: RenderSSRHeadOptions
 
     /**
-     * Enable the `TemplateParamsPlugin` to resolve template params like `%s`, `%separator`, and `%site.name` in head tags.
-     *
-     * @default false
-     *
-     * @example
-     * ```ts
-     * export default defineNuxtConfig({
-     *  unhead: {
-     *   templateParams: true,
-     *  },
-     * })
-     * ```
-     *
-     * @see https://unhead.unjs.io/docs/head/guides/plugins/template-params
-     */
-    templateParams: boolean
-
-    /**
      * Options for the `@unhead/vue/vite` build plugin. Provides tree-shaking, `useSeoMeta` transform,
      * minification, and validation.
      *
