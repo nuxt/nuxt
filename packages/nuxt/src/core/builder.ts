@@ -20,8 +20,17 @@ export async function build (nuxt: Nuxt): Promise<void> {
   await generateApp()
   nuxt._perf?.endPhase('app:generate')
 
+  const builder = nuxt.options._prepare ? undefined : await resolveBuilder(nuxt)
+
   if (nuxt.options.dev) {
-    watch(nuxt)
+    if (nuxt.options.experimental.watcher === 'builder' && builder?.setupWatcher) {
+      await builder.setupWatcher(nuxt)
+    } else {
+      if (nuxt.options.experimental.watcher === 'builder') {
+        logger.warn('`experimental.watcher: "builder"` is set but the active builder does not implement `setupWatcher`. Falling back to the default file watcher.')
+      }
+      watch(nuxt)
+    }
     nuxt.hook('builder:watch', async (event, relativePath) => {
       // Unset mainComponent and errorComponent if app or error component is changed
       if (event === 'add' || event === 'unlink') {
@@ -74,7 +83,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
   }
 
   nuxt._perf?.startPhase('build:bundle')
-  await bundle(nuxt)
+  await builder?.bundle(nuxt)
   nuxt._perf?.endPhase('build:bundle')
 
   // release hooks that will never fire again.
@@ -244,21 +253,23 @@ async function createParcelWatcher () {
   }
 }
 
-async function bundle (nuxt: Nuxt) {
-  try {
-    const { bundle } = typeof nuxt.options.builder === 'string'
-      ? await loadBuilder(nuxt, nuxt.options.builder)
-      : nuxt.options.builder
+async function resolveBuilder (nuxt: Nuxt): Promise<NuxtBuilder> {
+  const source = typeof nuxt.options.builder === 'string'
+    ? await loadBuilder(nuxt, nuxt.options.builder)
+    : nuxt.options.builder
 
-    await bundle(nuxt)
-  } catch (error: any) {
-    await nuxt.callHook('build:error', error)
-
-    if (error.toString().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
-      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.')
-    }
-
-    throw error
+  // Wrap `bundle` so the `build:error` hook fires for any builder, including
+  // user-supplied ones, without each caller having to remember to do it.
+  return {
+    ...source,
+    async bundle (nuxt) {
+      try {
+        await source.bundle(nuxt)
+      } catch (error: any) {
+        await nuxt.callHook('build:error', error)
+        throw error
+      }
+    },
   }
 }
 
@@ -269,7 +280,10 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
       return await import(builder)
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
-  } catch (err) {
+  } catch (err: any) {
+    if (builder === '@nuxt/webpack-builder' && err?.toString?.().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
+      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.', { cause: err })
+    }
     throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder\``, { cause: err })
   }
 }

@@ -1209,13 +1209,15 @@ export interface ConfigSchema {
      * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve performance in large projects or on Windows platforms.
      * You can also set this to `chokidar` to watch all files in your source directory.
      *
+     * Set to `'builder'` to reuse the active builder's own file watcher (e.g. Vite's `server.watcher`) instead of starting a second one. If the active builder does not provide a watcher, Nuxt falls back to its default selection.
+     *
      * @see [chokidar](https://github.com/paulmillr/chokidar)
      *
      * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      *
-     * @default 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
+     * @default 'builder' if `future.compatibilityVersion` >= 5, otherwise 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
      */
-    watcher: 'chokidar' | 'parcel' | 'chokidar-granular'
+    watcher: 'chokidar' | 'parcel' | 'chokidar-granular' | 'builder'
 
     /**
      * Enable native async context to be accessible for nested composables
