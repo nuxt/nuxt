@@ -1602,8 +1602,8 @@ export interface ConfigSchema {
      * immediately and streams the rendered body content progressively.
      *
      * Streaming is automatically disabled for bot/crawler user agents to ensure
-     * search engines receive fully-rendered HTML. You can also control streaming
-     * per-route via `routeRules` with the `streaming` property.
+     * search engines receive fully-rendered HTML. You can opt a route out of
+     * streaming via `routeRules` with `buffered: true`.
      *
      * Set to `true` to enable with defaults, or pass an object to configure options.
      *

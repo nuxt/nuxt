@@ -159,29 +159,19 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     }
   }
 
-  // === Render route hook + SSR streaming decision ===
-  // `render:route` fires once per request before rendering begins — for
-  // every render, streaming enabled or not — so modules can inspect and
-  // influence how this route renders. Streaming is the first facet exposed:
-  //  - `canStream` (read-only) reports whether streaming is even possible.
-  //    Streaming cannot rewrite/buffer the response after render, so ISR/SWR
-  //    cache, `noScripts`, and redirects are never streamable. Island teleports
-  //    are the exception — they are relocated client-side during streaming.
-  //  - `prefersStream` (mutable) is the soft preference, pre-computed from the
-  //    route's `streaming` rule and bot detection. A module may flip it (e.g.
-  //    disable streaming for authenticated users or A/B buckets).
-  // The renderer streams only when both hold; the final `if` uses the trusted
-  // local `canStream`, so a hook cannot escalate past the hard gates.
+  // `render:route` lets modules influence streaming via `canStream` (read-only
+  // hard gate) and `prefersStream` (mutable soft preference); streaming happens
+  // only when both hold.
   const canStream = NUXT_SSR_STREAMING
     && !ssrContext.noSSR
     && !ssrError
     && !isRenderingPayload
     && !import.meta.prerender
-    // Island teleports are relocated client-side during streaming (see
-    // `renderStreamedIslandTeleports`). Without scripts there is no relocation,
-    // so island apps must fall back to the buffered post-render stitch.
+    // Island teleports relocate client-side; without scripts there is no
+    // relocation, so island apps must fall back to buffered rendering.
     && !(NUXT_NO_SCRIPTS && componentIslandsActive)
     && !routeOptions.noScripts
+    && !routeOptions.buffered
     && !routeOptions.cache
     && !routeOptions.isr
     && !routeOptions.redirect
@@ -189,7 +179,6 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   const renderRouteContext = {
     canStream,
     prefersStream: !!(NUXT_SSR_STREAMING
-      && routeOptions.streaming
       && !SSR_BOT_RE!.test(event.req.headers.get('user-agent') || '')),
   }
   await useNitroHooks().callHook('render:route', renderRouteContext, { event })
@@ -761,7 +750,7 @@ async function renderStreamedResponse (ctx: {
           }
           if (lateMutations.length) {
             console.warn(
-              `[nuxt] SSR streaming committed the response before render completed. The following mutations did not reach the client and were dropped:\n  - ${lateMutations.join('\n  - ')}\n  Path: ${event.url.pathname}\n  Move the mutation into a plugin (which runs before the shell is flushed), or opt this route out of streaming with \`routeRules: { '${event.url.pathname}': { streaming: false } }\` or the \`render:route\` hook.`,
+              `[nuxt] SSR streaming committed the response before render completed. The following mutations did not reach the client and were dropped:\n  - ${lateMutations.join('\n  - ')}\n  Path: ${event.url.pathname}\n  Move the mutation into a plugin (which runs before the shell is flushed), or opt this route out of streaming with \`routeRules: { '${event.url.pathname}': { buffered: true } }\` or the \`render:route\` hook.`,
             )
           }
         }
@@ -771,7 +760,7 @@ async function renderStreamedResponse (ctx: {
         // error via hydration — set `payload.error` so the client renders
         // the error page once it picks up the SSR data, then emit a
         // well-formed closing so HTML parsing doesn't choke.
-        await ssrContext.nuxt?.hooks.callHook('app:error', error).catch(() => {})
+        await Promise.resolve(ssrContext.nuxt?.hooks.callHook('app:error', error)).catch(() => {})
         ssrContext.payload ||= {} as NuxtPayload
         ssrContext.payload.error ||= error as any
         try {

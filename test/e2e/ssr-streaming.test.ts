@@ -129,12 +129,7 @@ test.describe('SSR Streaming', () => {
     await expect(page.locator('head meta[name="child-b"]')).toHaveAttribute('content', 'b-meta')
   })
 
-  // Nitro's route-rule merge only deletes a rule when the merge sees an existing
-  // rule with the same `name` and the next layer's `options === false`. So a
-  // user-defined `{ streaming: false }` only takes effect when there is a default
-  // `{ streaming: true }` rule to delete. That default is registered alongside
-  // `'/**': { ssr: true }` in `packages/nitro-server/src/index.ts` whenever
-  // `experimental.ssrStreaming` is enabled.
+  // Streaming is on by default; `routeRules: { buffered: true }` opts a route out.
   test('per-route streaming opt-out via routeRules', async ({ fetch }) => {
     const bufferedRes = await fetch('/buffered')
     const bufferedHtml = await bufferedRes.text()

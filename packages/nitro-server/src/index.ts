@@ -219,14 +219,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
     },
     routeRules: {
-      // The `streaming: true` default makes per-route `streaming: false` opt-out work:
-      // Nitro's route-rule merge logic only deletes an existing rule when a later
-      // layer sets `false`. Without this default there is no rule to delete, so a
-      // user-defined `{ streaming: false }` is silently dropped during route-rule
-      // resolution.
-      '/**': typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
-        ? { ssr: true, streaming: true }
-        : { ssr: true },
+      '/**': { ssr: true },
       '/__nuxt_error': { cache: false },
     },
     typescript: {
