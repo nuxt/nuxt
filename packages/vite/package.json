@@ -12,7 +12,8 @@
   "type": "module",
   "types": "./dist/index.d.mts",
   "exports": {
-    ".": "./dist/index.mjs"
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
   },
   "imports": {
     "#vite-node": "./dist/vite-node.mjs",
@@ -23,8 +24,8 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "obuild",
-    "build:stub": "obuild --stub",
+    "prepack": "tsdown",
+    "build": "tsdown",
     "test:attw": "attw --pack"
   },
   "dependencies": {
@@ -61,11 +62,11 @@
     "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.22",
     "nitropack": "2.13.4",
-    "obuild": "0.4.36",
     "postcss": "8.5.14",
     "rolldown": "1.0.2",
     "rollup": "4.60.4",
     "rollup-plugin-visualizer": "7.0.1",
+    "tsdown": "0.22.0",
     "vue": "3.5.34"
   },
   "peerDependencies": {
@@ -100,5 +101,11 @@
   },
   "engines": {
     "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./package.json": "./package.json"
+    }
   }
 }
