@@ -430,6 +430,22 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
         : normalizeComponent(page, pageImport, route.name, islandKey)
 
+      // Named views from the `name@view.vue` filename convention. The scanner
+      // emits `components: { default: <file>, <view>: <file> }`.
+      // https://router.vuejs.org/guide/essentials/named-views.html
+      let componentsObject: string | undefined
+      if (page.components) {
+        const viewEntries: string[] = []
+        for (const viewName in page.components) {
+          if (viewName === 'default') { continue }
+          const viewFile = normalize(page.components[viewName]!)
+          viewEntries.push(`${JSON.stringify(viewName)}: ${genDynamicImport(viewFile)}`)
+        }
+        if (viewEntries.length > 0) {
+          componentsObject = `{ default: ${component}, ${viewEntries.join(', ')} }`
+        }
+      }
+
       const metaRoute: NormalizedRoute = {
         name: metaRouteName,
         path: `${metaImportName}?.path ?? ${route.path}`,
@@ -438,6 +454,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
         component,
+      }
+      if (componentsObject) {
+        metaRoute.components = componentsObject
       }
 
       if (page.mode === 'server') {

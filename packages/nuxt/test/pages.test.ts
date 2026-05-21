@@ -238,6 +238,58 @@ describe('pages:generateRoutesFromFiles', () => {
     })
   })
 
+  describe('pages:namedViews', () => {
+    it('emits a `components` map alongside `component` when the scanner reports named views', () => {
+      const pages: NuxtPage[] = [
+        {
+          name: 'foo-bar',
+          path: 'bar',
+          file: '/pages/foo/bar.vue',
+          components: {
+            default: '/pages/foo/bar.vue',
+            left: '/pages/foo/bar@left.vue',
+          },
+        } as unknown as NuxtPage,
+      ]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+        overrideMeta: false,
+      })
+
+      const r0: any = (routes as any)[0]
+      expect(r0.component).toBeTruthy()
+      expect(r0.components).toBeTruthy()
+      expect(r0.components).toContain('default:')
+      expect(r0.components).toContain('"left":')
+      expect(r0.components).toContain('/pages/foo/bar@left.vue')
+    })
+
+    it('does not emit `components` when only the default view is present', () => {
+      const pages: NuxtPage[] = [
+        {
+          name: 'foo-bar',
+          path: 'bar',
+          file: '/pages/foo/bar.vue',
+          components: {
+            default: '/pages/foo/bar.vue',
+          },
+        } as unknown as NuxtPage,
+      ]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+        overrideMeta: false,
+      })
+
+      const r0: any = (routes as any)[0]
+      expect(r0.component).toBeTruthy()
+      expect(r0.components).toBeUndefined()
+    })
+  })
+
   it('should consistently normalize routes when overriding meta', async () => {
     const sorted = sortNormalizedResults(normalizedOverrideMetaResults)
     await expect(sorted).toMatchFileSnapshot('./__snapshots__/pages-override-meta-enabled.test.ts.snap')
@@ -1174,6 +1226,33 @@ export const pageTests: Array<{
                 children: [],
               },
             ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    description: 'should preserve named views from the `name@view.vue` filename convention',
+    files: [
+      { path: `${pagesDir}/foo.vue` },
+      { path: `${pagesDir}/foo/bar.vue` },
+      { path: `${pagesDir}/foo/bar@left.vue` },
+    ],
+    output: [
+      {
+        name: 'foo',
+        path: '/foo',
+        file: `${pagesDir}/foo.vue`,
+        children: [
+          {
+            name: 'foo-bar',
+            path: 'bar',
+            file: `${pagesDir}/foo/bar.vue`,
+            children: [],
+            components: {
+              default: `${pagesDir}/foo/bar.vue`,
+              left: `${pagesDir}/foo/bar@left.vue`,
+            },
           },
         ],
       },
