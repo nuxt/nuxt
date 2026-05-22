@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
 
+import type { FSWatcher } from 'vite'
 import { join, relative, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
@@ -80,7 +81,19 @@ describe('builder:watch', { sequential: true }, async () => {
       }
     })
 
+    let viteWatcher: FSWatcher | undefined
+    nuxt.hook('vite:serverCreated', (server, { isClient }) => {
+      if (isClient) {
+        viteWatcher = server.watcher
+      }
+    })
+
     await build(nuxt)
+
+    const watcher = viteWatcher!
+    if (!(watcher as FSWatcher & { _readyEmitted?: boolean })._readyEmitted) {
+      await new Promise<void>(r => watcher.once('ready', r))
+    }
 
     writeFileSync(resolve(rootDir, '../higher'), 'something')
     writeFileSync(join(rootDir, 'test'), 'something')
