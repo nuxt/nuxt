@@ -557,6 +557,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   }))
 
   const declarations: string[] = []
+  const userTsConfigExclude = [...nuxt.options.typescript?.tsConfig?.exclude ?? []]
 
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig, nodeTsConfig, nodeReferences, sharedTsConfig, sharedReferences })
 
@@ -564,7 +565,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
     include: [...tsConfig.include, ...legacyInclude],
-    exclude: [...tsConfig.exclude, ...legacyExclude],
+    exclude: [...userTsConfigExclude, ...legacyExclude],
   })
 
   async function resolveConfig (tsConfig: TSConfig) {

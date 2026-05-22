@@ -70,6 +70,21 @@ describe('tsConfig generation', () => {
     `)
   })
 
+  it('should only add explicit user excludes to legacy tsconfig', async () => {
+    const { legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: {
+          exclude: ['../generated/**/*'],
+        },
+      },
+    }))
+
+    expect(legacyTsConfig.exclude).toContain('../generated/**/*')
+    expect(legacyTsConfig.exclude).not.toContain('../nuxt.config.*')
+    expect(legacyTsConfig.exclude).not.toContain('../modules/*.*')
+    expect(legacyTsConfig.exclude).not.toContain('../layers/*/modules/**/*')
+  })
+
   it('should add #build after #components to paths', async () => {
     const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
       alias: {
