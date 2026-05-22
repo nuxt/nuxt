@@ -28,7 +28,7 @@ export const setupWatcher: NonNullable<NuxtBuilder['setupWatcher']> = (nuxt: Nux
     }
   }
 
-  nuxt.hook('vite:serverCreated', async (server, { isClient }) => {
+  nuxt.hook('vite:serverCreated', (server, { isClient }) => {
     // remove in nuxt v5
     if (!isClient) { return }
 
@@ -41,11 +41,7 @@ export const setupWatcher: NonNullable<NuxtBuilder['setupWatcher']> = (nuxt: Nux
     })
 
     if (extraPaths.size) {
-      // Wait for chokidar to finish enumerating the extra paths so that file
-      // events arrive reliably once the dev server is up.
-      const ready = new Promise<void>(resolve => watcher.once('ready', resolve))
       watcher.add([...extraPaths])
-      await ready
     }
   })
 }
