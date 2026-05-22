@@ -32,7 +32,7 @@ async function promptToInstall (name: string, installCommand: () => Promise<unkn
       initial: true,
     })
 
-    if (!confirm) {
+    if (confirm !== true) {
       return false
     }
   }
