@@ -292,6 +292,18 @@ export default {
     const result = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
     expect(result.join('\n')).toContain(component)
   })
+
+  it('should correctly resolve lazy hydration components in templates with attributes', async () => {
+    const sfc = `
+    <template data-test="lazy-hydration">
+      <LazyMyComponent hydrate-on-visible />
+    </template>
+    `
+
+    const result = await transform(sfc, '/pages/index.vue')
+
+    expect(result).toContain('createLazyVisibleComponent')
+  })
 })
 const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
   export: opts.export || 'default',

@@ -15,7 +15,7 @@ interface LoaderOptions {
 }
 
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/gi
-const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
+const TEMPLATE_RE = /<template\b[^>]*>([\s\S]*?)<\/template>/
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',
   hydrateOnVisible: 'Visible',
@@ -26,7 +26,7 @@ const hydrationStrategyMap = {
   hydrateNever: 'Never',
 }
 
-const TEMPLATE_WITH_LAZY_HYDRATION_RE = /<template>[\s\S]*\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)\b[\s\S]*<\/template>/
+const TEMPLATE_WITH_LAZY_HYDRATION_RE = /<template\b[^>]*>[\s\S]*?(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)[\s\S]*?<\/template>/
 
 export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
