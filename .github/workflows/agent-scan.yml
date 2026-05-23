@@ -92,6 +92,7 @@ jobs:
                 repo: context.repo.repo,
                 pull_number: prNumber,
                 state: 'closed',
+                title: '🚨 unwelcome pr from bot 🚨',
               })
             }
 
