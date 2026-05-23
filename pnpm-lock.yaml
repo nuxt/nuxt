@@ -1274,19 +1274,19 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       '@vue/devtools-api':
-        specifier: ^8.1.2
+        specifier: 8.1.2
         version: 8.1.2
       defu:
-        specifier: ^6.1.7
+        specifier: 6.1.7
         version: 6.1.7
       postcss:
-        specifier: ^8.5.14
+        specifier: 8.5.14
         version: 8.5.14
       ufo:
-        specifier: ^1.6.4
+        specifier: 1.6.4
         version: 1.6.4
       unplugin:
-        specifier: ^3.0.0
+        specifier: 3.0.0
         version: 3.0.0
       vue:
         specifier: 3.5.34
