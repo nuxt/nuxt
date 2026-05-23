@@ -218,6 +218,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '/**': { ssr: true },
       '/__nuxt_error': { cache: false },
     },
+    rolldownConfig: {
+      // don't try to resolve rolldown options from the tsconfig we generate
+      tsconfig: false,
+    },
     typescript: {
       generateTsConfig: true,
       tsconfigPath: join(nuxt.options.buildDir, 'tsconfig.server.json'),
