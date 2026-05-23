@@ -70,6 +70,23 @@ describe('tsConfig generation', () => {
     `)
   })
 
+  it('should not exclude node-context paths from legacy tsconfig', async () => {
+    const { legacyTsConfig } = await _generateTypes(mockNuxt)
+    // nuxt.config.* and .config/nuxt.* are intentionally in legacyInclude (node context)
+    // and must NOT be excluded by the legacy tsconfig
+    expect(legacyTsConfig.include).toEqual(expect.arrayContaining(['../nuxt.config.*', '../.config/nuxt.*']))
+    expect(legacyTsConfig.exclude).not.toEqual(expect.arrayContaining(['../nuxt.config.*', '../.config/nuxt.*']))
+  })
+
+  it('should propagate user-defined excludes to legacy tsconfig', async () => {
+    const { legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { tsConfig: { exclude: ['my-custom-exclude'] } },
+    }))
+    expect(legacyTsConfig.exclude).toContain('my-custom-exclude')
+    // but computed app-only paths must still be absent
+    expect(legacyTsConfig.exclude).not.toContain('../nuxt.config.*')
+  })
+
   it('should add #build after #components to paths', async () => {
     const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
       alias: {
