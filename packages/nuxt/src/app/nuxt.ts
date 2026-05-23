@@ -415,8 +415,10 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     // Listen to chunk load errors
     if (chunkErrorEvent) {
       window.addEventListener(chunkErrorEvent, (event) => {
-        nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-        if (event.payload.message.includes('Unable to preload CSS')) {
+        const payload = (event as Event & { payload?: Error }).payload
+        if (!payload) return
+        nuxtApp.callHook('app:chunkError', { error: payload })
+        if (payload.message.includes('Unable to preload CSS')) {
           event.preventDefault()
         }
       })
