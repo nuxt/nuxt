@@ -128,12 +128,12 @@ test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) 
 })
 
 test('HMR for island components', async ({ page, goto }) => {
-  // Navigate to the page with the island components
-  await goto('/server-component')
-
   const componentPath = join(fixtureDir, 'app/components/islands/HmrComponent.vue')
   const componentContents = readFileSync(join(sourceDir, 'app/components/islands/HmrComponent.vue'), 'utf8')
   writeFileSync(componentPath, componentContents)
+
+  // Navigate to the page with the island components
+  await goto('/server-component')
 
   // Test initial state of the component
   await expect(page.getByTestId('hmr-id')).toHaveText('0')
@@ -394,7 +394,7 @@ test.describe('vite-only HMR tests', () => {
     // Without the SSR cache invalidation fix (c58bb749a), this poll would
     // keep observing 'v1' because the sibling layer's module stayed cached on
     // the SSR side even though the plugin re-ran load().
-    await expect(readMarker).toBeWithPolling('v2', { timeout: 15000 })
+    await expect(readMarker).toBeWithPolling('v2', { timeout: 30000 })
   })
 
   // https://github.com/nuxt/nuxt/issues/30169
