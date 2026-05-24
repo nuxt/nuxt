@@ -1,0 +1,20 @@
+{
+  "name": "tr-frontend-common",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^4.6.0",
+    "@nuxt/icon": "^2.0.0",
+    "@nuxt/fonts": "^0.14.0",
+    "@nuxtjs/color-mode": "^3.5.2",
+    "reka-ui": "^2.9.3",
+    "nuxt": "link:__NUXT__",
+    "@nuxt/kit": "link:__KIT__",
+    "@nuxt/schema": "link:__SCHEMA__",
+    "@nuxt/vite-builder": "link:__VITE__",
+    "@nuxt/nitro-server": "link:__NITRO_SERVER__"
+  }
+}

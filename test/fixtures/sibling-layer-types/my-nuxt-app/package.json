@@ -1,0 +1,21 @@
+{
+  "name": "parcel-one",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxt/ui": "4.6.0",
+    "vue": "3.5.30",
+    "nuxt": "link:__NUXT__",
+    "@nuxt/kit": "link:__KIT__",
+    "@nuxt/schema": "link:__SCHEMA__",
+    "@nuxt/vite-builder": "link:__VITE__",
+    "@nuxt/nitro-server": "link:__NITRO_SERVER__"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@vue/typescript-plugin": "3.2.9"
+  }
+}

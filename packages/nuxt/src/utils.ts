@@ -1,5 +1,6 @@
 import { promises as fsp, statSync } from 'node:fs'
-import { tryUseNuxt, useLogger } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
+import { getLayerDirectories, tryUseNuxt, useLogger } from '@nuxt/kit'
 import { reverseResolveAlias } from 'pathe/utils'
 
 /** @since 3.9.0 */
@@ -62,4 +63,22 @@ export function resolveToAlias (path: string, nuxt = tryUseNuxt()) {
 const strippedAtAliases = {
   '@': '',
   '@@': '',
+}
+
+/**
+ * Returns true when the project extends at least one layer whose source lives
+ * outside the consumer's `rootDir` and outside any `node_modules` directory
+ * (a "sibling" layer). In that situation the layer's own `nuxt prepare`
+ * produces tsconfig/imports declarations with absolute paths for hoisted
+ * packages such as `vue`; the consumer must do the same so that both projects
+ * agree on package identities, otherwise Volar resolves the layer SFC's
+ * default export to `any` in the editor (CLI builds are unaffected).
+ */
+export function hasExternalSiblingLayer (nuxt: Nuxt): boolean {
+  const rootDirWithSlash = nuxt.options.rootDir.replace(/[^/]$/, '$&/')
+  for (const dirs of getLayerDirectories(nuxt)) {
+    if (dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) { continue }
+    if (!dirs.app.startsWith(rootDirWithSlash)) { return true }
+  }
+  return false
 }

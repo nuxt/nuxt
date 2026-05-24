@@ -6,6 +6,7 @@ packages:
   - '!packages/nuxt/test/package-fixture/pkg'
   - playground
   - test/fixtures/*
+  - '!test/fixtures/sibling-layer-types/**'
   - test/fixtures/*/_local-modules/*
 
 patchedDependencies:

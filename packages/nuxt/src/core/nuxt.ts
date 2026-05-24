@@ -38,7 +38,7 @@ import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
-import { logger } from '../utils.ts'
+import { hasExternalSiblingLayer, logger } from '../utils.ts'
 import { resolveTypePaths } from './utils/types.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
@@ -1072,12 +1072,15 @@ async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [stri
 
   const packagesToResolve: string[] = []
   const nightlyAliases = new Map<string, string>() // nightly -> original
+  const skipPackageJsonShortcut = hasExternalSiblingLayer(nuxt)
 
   for (const pkg of nuxt.options.typescript.hoist) {
     const [_pkg = pkg] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
 
-    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { continue }
+    // When there's an external sibling layer, the layer emits an absolute `paths` mapping
+    // for the same package and we must do the same here, otherwise the two projects end
+    // up with different identities for the package and types leak as `any` in the editor.
+    if (!skipPackageJsonShortcut && nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { continue }
 
     // deduplicate types for nightly releases
     if (_pkg in nightlies) {
