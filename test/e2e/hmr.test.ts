@@ -126,11 +126,12 @@ test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) 
 })
 
 test('HMR for island components', async ({ page, goto }) => {
+  const componentPath = join(fixtureDir, 'components/islands/HmrComponent.vue')
+  const componentContents = readFileSync(join(sourceDir, 'components/islands/HmrComponent.vue'), 'utf8')
+  writeFileSync(componentPath, componentContents)
+
   // Navigate to the page with the island components
   await goto('/server-component')
-
-  const componentPath = join(fixtureDir, 'components/islands/HmrComponent.vue')
-  const componentContents = readFileSync(componentPath, 'utf8')
 
   // Test initial state of the component
   await expect(page.getByTestId('hmr-id')).toHaveText('0')
