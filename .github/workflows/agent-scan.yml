@@ -26,15 +26,18 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-members: "dependabot[bot],renovate[bot]"
           agent-scan-comment: false
-      - name: Label flagged PR
-        if: contains(fromJSON('["automation","suspicious"]'), steps.agentscan.outputs.classification) && !contains(steps.agentscan.outputs.community-flagged, 'true')
+      - name: Handle flagged PR
+        if: contains(fromJSON('["automation","mixed"]'), steps.agentscan.outputs.classification) || steps.agentscan.outputs.community-flagged == 'true'
         env:
           CLASSIFICATION: ${{ steps.agentscan.outputs.classification }}
+          COMMUNITY_FLAGGED: ${{ steps.agentscan.outputs.community-flagged }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
             const classification = process.env.CLASSIFICATION;
+            const communityFlagged = process.env.COMMUNITY_FLAGGED === 'true';
+            const shouldClose = classification === 'automation' || communityFlagged;
 
             const issue = context.payload.pull_request
             const labels = issue.labels?.map(l => l.name) || []
@@ -48,37 +51,56 @@ jobs:
               })
             }
 
-            const comments = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
-              per_page: 30,
+              per_page: 100,
             })
 
-            const alreadyCommented = comments.data.some(
+            const alreadyCommented = comments.some(
               c => c.user.type === 'Bot' && c.body.includes('AI-assisted contribution guidelines')
             )
 
-            if (alreadyCommented) {
-              core.info('Possible-bot comment already exists - skipping.')
-              return
+            if (!alreadyCommented) {
+              const closingNote = shouldClose
+                ? "We're closing this for now as the account looks automated. If we got that wrong, please just reopen the PR and we'll take another look."
+                : 'If this was flagged in error, we apologise! 😳 Just let us know. 🙏'
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: [
+                  "We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing to Nuxt, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):",
+                  '',
+                  '1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.',
+                  '2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.',
+                  '',
+                  'Please review our [AI-assisted contribution guidelines](https://nuxt.com/docs/community/contribution#ai-assisted-contributions) and update this contribution if needed.',
+                  '',
+                  closingNote,
+                ].join('\n'),
+              })
+            } else {
+              core.info('Possible-bot comment already exists - skipping comment.')
             }
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: [
-                "We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing to Nuxt, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):",
-                '',
-                '1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.',
-                '2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.',
-                '',
-                'Please review our [AI-assisted contribution guidelines](https://nuxt.com/docs/community/contribution#ai-assisted-contributions) and update this contribution if needed.',
-                '',
-                'If this was flagged in error, we apologise! 😳 Just let us know. 🙏',
-              ].join('\n'),
-            })
+            if (shouldClose && issue.state === 'open' && !alreadyCommented) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                state: 'closed',
+                title: '🚨 unwelcome pr from bot 🚨',
+              })
+            }
+
+            const actionTaken = [
+              'Added `possible bot` label',
+              alreadyCommented ? null : 'posted policy comment',
+              shouldClose && !alreadyCommented ? 'closed PR' : null,
+            ].filter(Boolean).join(', ')
 
             core.summary
               .addHeading('AgentScan: Possible Bot Flag', 2)
@@ -86,20 +108,8 @@ jobs:
                 [{ data: 'Property', header: true }, { data: 'Value', header: true }],
                 ['Pull Request', `#${prNumber}`],
                 ['Classification', classification],
-                ['Action', 'Added `possible bot` label and posted policy comment'],
+                ['Community flagged', String(communityFlagged)],
+                ['Action', actionTaken || 'No action (already handled)'],
               ])
 
             await core.summary.write()
-      - name: Close community flagged accounts
-        if: steps.agentscan.outputs.community-flagged == 'true'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              state: 'closed',
-            });
