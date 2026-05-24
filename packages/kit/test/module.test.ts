@@ -260,6 +260,33 @@ export default Object.assign((options) => {
     })
   })
 
+  it('should resolve moduleDependencies by meta.name for scanned local modules', async () => {
+    const localTempDir = join(tempDir, 'scanned')
+    const modulesDir = join(localTempDir, 'modules')
+    await mkdir(modulesDir, { recursive: true })
+
+    await writeFile(join(modulesDir, 'local-dep.mjs'), `
+export default Object.assign(() => {}, {
+  getMeta: () => ({ name: 'local-dep' }),
+})
+    `)
+
+    await writeFile(join(modulesDir, 'consumer.mjs'), `
+export default Object.assign(() => {}, {
+  getMeta: () => ({ name: 'consumer' }),
+  getModuleDependencies: () => ({ 'local-dep': {} }),
+})
+    `)
+
+    try {
+      nuxt = await loadNuxt({ cwd: localTempDir })
+      const installed = nuxt.options._installedModules?.filter(m => m.meta?.name === 'local-dep') ?? []
+      expect(installed).toHaveLength(1)
+    } finally {
+      await rm(localTempDir, { recursive: true, force: true })
+    }
+  })
+
   it('should not load a module from disk if it is present inline', async () => {
     nuxt = await loadNuxt({
       cwd: tempDir,

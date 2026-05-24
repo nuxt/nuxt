@@ -57,12 +57,19 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
 
   const inlineConfigKeys = new Set(
     await Promise.all([...modulesToInstall].map(async ([mod]) => {
-      if (typeof mod === 'string') { return }
-      const meta = await Promise.resolve(mod.getMeta?.())
-      if (meta?.name) {
+      let meta: ModuleMeta | undefined
+      if (typeof mod === 'string') {
+        const loaded = await moduleLoadCache.get(mod)?.catch(() => undefined)
+        meta = await loaded?.nuxtModule.getMeta?.()
+      } else {
+        meta = await Promise.resolve(mod.getMeta?.())
+      }
+
+      if (!meta) { return }
+      if (meta.name) {
         modulesByMetaName.set(meta.name, mod)
       }
-      if (meta?.configKey) {
+      if (meta.configKey) {
         if (meta.configKey !== meta.name) {
           modulesByMetaName.set(meta.configKey, mod)
         }
