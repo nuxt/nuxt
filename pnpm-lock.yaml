@@ -80,7 +80,7 @@ importers:
         version: 8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3)
       '@unhead/vue':
         specifier: 3.1.0
-        version: 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
+        version: 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
       '@vitest/coverage-v8':
         specifier: 4.1.7
         version: 4.1.7(vitest@4.1.7)
@@ -176,7 +176,7 @@ importers:
         version: 1.60.0
       rolldown-string:
         specifier: 0.3.0
-        version: 0.3.0(rolldown@1.0.1)
+        version: 0.3.0(rolldown@1.0.2)
       rollup:
         specifier: 4.60.4
         version: 4.60.4
@@ -311,13 +311,13 @@ importers:
         version: 3.0.260311-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.5.0)(rollup@4.60.4)(vite@8.0.12)
       nitropack:
         specifier: 2.13.4
-        version: 2.13.4(oxc-parser@0.130.0)(rolldown@1.0.1)(srvx@0.11.15)
+        version: 2.13.4(oxc-parser@0.130.0)(rolldown@1.0.2)(srvx@0.11.15)
       obuild:
-        specifier: 0.4.35
-        version: 0.4.35(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
+        specifier: 0.4.36
+        version: 0.4.36(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
       unimport:
         specifier: 6.3.0
-        version: 6.3.0(oxc-parser@0.130.0)(rolldown@1.0.1)
+        version: 6.3.0(oxc-parser@0.130.0)(rolldown@1.0.2)
       vite:
         specifier: 8.0.12
         version: 8.0.12(@types/node@24.12.4)(@vitejs/devtools@0.1.24)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
@@ -335,7 +335,7 @@ importers:
         version: link:../kit
       '@unhead/vue':
         specifier: ^3.1.0
-        version: 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
+        version: 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
       '@vue/shared':
         specifier: 3.5.34
         version: 3.5.34
@@ -428,8 +428,8 @@ importers:
         specifier: workspace:*
         version: link:../nuxt
       obuild:
-        specifier: 0.4.35
-        version: 0.4.35(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
+        specifier: 0.4.36
+        version: 0.4.36(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
       vitest:
         specifier: 4.1.7
         version: 4.1.7(@types/node@24.12.4)(@vitest/coverage-v8@4.1.7)(happy-dom@20.9.0)(vite@8.0.12)
@@ -465,7 +465,7 @@ importers:
         version: 24.12.4
       '@unhead/vue':
         specifier: ^3.1.0
-        version: 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
+        version: 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
       '@vue/shared':
         specifier: ^3.5.34
         version: 3.5.34
@@ -534,7 +534,7 @@ importers:
         version: 6.0.2
       oxc-walker:
         specifier: ^1.0.0
-        version: 1.0.0(oxc-parser@0.130.0)(rolldown@1.0.1)
+        version: 1.0.0(oxc-parser@0.130.0)(rolldown@1.0.2)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -548,11 +548,11 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       rolldown:
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.2
+        version: 1.0.2
       rolldown-string:
         specifier: ^0.3.0
-        version: 0.3.0(rolldown@1.0.1)
+        version: 0.3.0(rolldown@1.0.2)
       scule:
         specifier: ^1.3.0
         version: 1.3.0
@@ -582,7 +582,7 @@ importers:
         version: 3.1.0(vite@8.0.12)
       unimport:
         specifier: ^6.3.0
-        version: 6.3.0(oxc-parser@0.130.0)(rolldown@1.0.1)
+        version: 6.3.0(oxc-parser@0.130.0)(rolldown@1.0.2)
       unplugin:
         specifier: ^3.0.0
         version: 3.0.0
@@ -601,7 +601,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 1.1.0
-        version: 1.1.0(@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14)))(db0@0.3.4)(ioredis@5.10.1)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))
+        version: 1.1.0(@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14)))(db0@0.3.4)(ioredis@5.10.1)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))
       '@oxc-project/types':
         specifier: 0.131.0
         version: 0.131.0
@@ -724,7 +724,7 @@ importers:
         version: 1.1.0(pug@3.0.4)
       rolldown-string:
         specifier: ^0.3.0
-        version: 0.3.0(rolldown@1.0.1)
+        version: 0.3.0(rolldown@1.0.2)
       seroval:
         specifier: ^1.5.4
         version: 1.5.4
@@ -784,8 +784,8 @@ importers:
         specifier: npm:h3@2.0.1-rc.22
         version: h3@2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
       obuild:
-        specifier: 0.4.35
-        version: 0.4.35(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
+        specifier: 0.4.36
+        version: 0.4.36(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
       rollup:
         specifier: 4.60.4
         version: 4.60.4
@@ -822,7 +822,7 @@ importers:
         version: 2.25.12(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14)
       '@unhead/vue':
         specifier: 3.1.0
-        version: 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
+        version: 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
       '@vitejs/plugin-vue':
         specifier: 6.0.7
         version: 6.0.7(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))
@@ -881,8 +881,8 @@ importers:
         specifier: 3.0.260311-beta
         version: 3.0.260311-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.5.0)(rollup@4.60.4)(vite@8.0.12)
       obuild:
-        specifier: 0.4.35
-        version: 0.4.35(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
+        specifier: 0.4.36
+        version: 0.4.36(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
       ofetch:
         specifier: 2.0.0-alpha.3
         version: 2.0.0-alpha.3
@@ -894,7 +894,7 @@ importers:
         version: 8.5.14
       rollup-plugin-visualizer:
         specifier: 7.0.1
-        version: 7.0.1(rolldown@1.0.1)(rollup@4.60.4)
+        version: 7.0.1(rolldown@1.0.2)(rollup@4.60.4)
       sass-loader:
         specifier: 16.0.8
         version: 16.0.8(@rspack/core@2.0.3)(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
@@ -906,7 +906,7 @@ importers:
         version: 2.5.0
       unimport:
         specifier: 6.3.0
-        version: 6.3.0(oxc-parser@0.130.0)(rolldown@1.0.1)
+        version: 6.3.0(oxc-parser@0.130.0)(rolldown@1.0.2)
       untyped:
         specifier: 2.0.0
         version: 2.0.0
@@ -1023,7 +1023,7 @@ importers:
         version: 2.3.1
       rolldown-string:
         specifier: ^0.3.0
-        version: 0.3.0(rolldown@1.0.1)
+        version: 0.3.0(rolldown@1.0.2)
       seroval:
         specifier: ^1.5.4
         version: 1.5.4
@@ -1075,22 +1075,22 @@ importers:
         version: h3@2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
       nitropack:
         specifier: 2.13.4
-        version: 2.13.4(oxc-parser@0.130.0)(rolldown@1.0.1)(srvx@0.11.15)
+        version: 2.13.4(oxc-parser@0.130.0)(rolldown@1.0.2)(srvx@0.11.15)
       obuild:
-        specifier: 0.4.35
-        version: 0.4.35(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
+        specifier: 0.4.36
+        version: 0.4.36(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
       postcss:
         specifier: 8.5.14
         version: 8.5.14
       rolldown:
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: 1.0.2
+        version: 1.0.2
       rollup:
         specifier: 4.60.4
         version: 4.60.4
       rollup-plugin-visualizer:
         specifier: 7.0.1
-        version: 7.0.1(rolldown@1.0.1)(rollup@4.60.4)
+        version: 7.0.1(rolldown@1.0.2)(rollup@4.60.4)
       vue:
         specifier: 3.5.34
         version: 3.5.34(typescript@6.0.3)
@@ -1183,7 +1183,7 @@ importers:
         version: 1.1.0(pug@3.0.4)
       rolldown-string:
         specifier: ^0.3.0
-        version: 0.3.0(rolldown@1.0.1)
+        version: 0.3.0(rolldown@1.0.2)
       seroval:
         specifier: ^1.5.4
         version: 1.5.4
@@ -1246,8 +1246,8 @@ importers:
         specifier: npm:h3@2.0.1-rc.22
         version: h3@2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
       obuild:
-        specifier: 0.4.35
-        version: 0.4.35(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
+        specifier: 0.4.36
+        version: 0.4.36(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
       rollup:
         specifier: 4.60.4
         version: 4.60.4
@@ -3111,6 +3111,9 @@ packages:
   '@oxc-project/types@0.131.0':
     resolution: {integrity: sha512-PgnWDfV0h+b16XNKbXU7Daib/BFSt/J2mEzfYIBu6JB/wNdlU+kVYXCkGA1A9fWkTbOgbjh4e6NhPeQOYvFhEA==}
 
+  '@oxc-project/types@0.132.0':
+    resolution: {integrity: sha512-FESMOxil5Se014ui/Eq8fT5uHJo6nIRwH0PfJrZJXs6Gek3ZVFOrpUv3YIZT20m+extU98Hg1Ym72U58rlsxUQ==}
+
   '@oxc-resolver/binding-android-arm-eabi@11.19.1':
     resolution: {integrity: sha512-aUs47y+xyXHUKlbhqHUjBABjvycq6YSD7bpxSW7vplUmdzAlJ93yXY6ZR0c1o1x5A/QKbENCvs3+NlY8IpIVzg==}
     cpu: [arm]
@@ -3539,8 +3542,8 @@ packages:
     cpu: [arm64]
     os: [android]
 
-  '@rolldown/binding-android-arm64@1.0.1':
-    resolution: {integrity: sha512-fJI3I0r3C3Oj/zdBCpaCmBRZYf07xpaq4yCfDDoSFm+beWNzbIl26puW8RraUdugoJw/95zerNOn6jasAhzSmg==}
+  '@rolldown/binding-android-arm64@1.0.2':
+    resolution: {integrity: sha512-ZS4D1JPGn/MYQN/SYDWftIE/nVsM8j/AFOYEzAoOE2O3NktQOZru+/vYXGbR/qtdLdIfGCP0lcoJiYVzsEz+iQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [android]
@@ -3551,8 +3554,8 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
-  '@rolldown/binding-darwin-arm64@1.0.1':
-    resolution: {integrity: sha512-cKnAhWEsV7TPcA/5EAteDp6KcJZBQ2G+BqE7zayMMi7kMvwRsbv7WT9aOnn0WNl4SKEIf43vjS31iUPu80nzXg==}
+  '@rolldown/binding-darwin-arm64@1.0.2':
+    resolution: {integrity: sha512-vdFA9+C/rekyGce7WqHs/xoT0ioZEWaOFyZLIV1mEeNFaFDUQrPIo8Vs2GvJ6eetb3rzDUtUBgzto3ExpXJB3w==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [darwin]
@@ -3563,8 +3566,8 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@rolldown/binding-darwin-x64@1.0.1':
-    resolution: {integrity: sha512-YKrVwQjIRBPo+5G/u03wGjbdy4q7pyzCe93DK9VJ7zkVmeg8LJ7GbgsiHWdR4xSoe4CAXRD7Bcjgbtr64bkXNg==}
+  '@rolldown/binding-darwin-x64@1.0.2':
+    resolution: {integrity: sha512-BewSOwTHazv77DTYiAZXSqqKZ4KP/KonFisDMVU7PImxoWfB2aepnPhd2E4SWz3zDzYgDNbs6jBmTdgNnF02GA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [darwin]
@@ -3575,8 +3578,8 @@ packages:
     cpu: [x64]
     os: [freebsd]
 
-  '@rolldown/binding-freebsd-x64@1.0.1':
-    resolution: {integrity: sha512-z/oBsREo46SsFqBwYtFe0kpJeBijAT48O/WXLI4suiCLBkr03RTtTJMCzSdDd2znlh8VJizL09XVkQgk8IZonw==}
+  '@rolldown/binding-freebsd-x64@1.0.2':
+    resolution: {integrity: sha512-m41o7M0YWtUdqk61Tb+jnKb2rN++iRdIASlExkUoKfIAH30DOHCB8fVLzSUpbWHHU8esmEioY62PxzexE8MBuA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [freebsd]
@@ -3587,8 +3590,8 @@ packages:
     cpu: [arm]
     os: [linux]
 
-  '@rolldown/binding-linux-arm-gnueabihf@1.0.1':
-    resolution: {integrity: sha512-ik8q7GM11zxvYxFc2PeDcT6TBvhCQMaUxfph/M5l9sKuTs/Sjg3L+Byw0F7w0ZVLBZmx30P+gG0ECzzN+MFcmQ==}
+  '@rolldown/binding-linux-arm-gnueabihf@1.0.2':
+    resolution: {integrity: sha512-jcojB9H7W/jS29pMKWAK1N+fU99vXodHDTatS3b3y/XSOCiHo0kkA74pL3jJmkoQtYpOCxDvaKs1fo2Ij/1X5w==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm]
     os: [linux]
@@ -3600,8 +3603,8 @@ packages:
     os: [linux]
     libc: [glibc]
 
-  '@rolldown/binding-linux-arm64-gnu@1.0.1':
-    resolution: {integrity: sha512-QoSx2EkyrrdZ6kcyE8stqZ62t0Yra8Fs5ia9lOxJrh6TMQJK7gQKmscdTHf7pOXKREKrVwOtJcQG3qVSfc866A==}
+  '@rolldown/binding-linux-arm64-gnu@1.0.2':
+    resolution: {integrity: sha512-1jn6qDU5iiOgFgygDzKUuKP0maTi0/f1+sBLgvij/76C77Nm3ts6ufz9Bjg5q5dduxiUIxtq86JIoBvo1xQ4Ig==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
@@ -3614,8 +3617,8 @@ packages:
     os: [linux]
     libc: [musl]
 
-  '@rolldown/binding-linux-arm64-musl@1.0.1':
-    resolution: {integrity: sha512-uwNwFpwKeNiZawfAWBgg0VIztPTV3ihhh1vV334h9ivnNLorxnQMU6Fz8wG1Zb4Qh9LC1/MkcyT3YlDXG3Rsgg==}
+  '@rolldown/binding-linux-arm64-musl@1.0.2':
+    resolution: {integrity: sha512-QVLO/czFMdoMFSqlX3bcswcJNm/23r+qoa/jgtmFc/qEp6/jXmIkDjF/XIo8dPfGaiwy1xfQn8o77L79GeXFgw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
@@ -3628,8 +3631,8 @@ packages:
     os: [linux]
     libc: [glibc]
 
-  '@rolldown/binding-linux-ppc64-gnu@1.0.1':
-    resolution: {integrity: sha512-zY1bul7OWr7DFBiJ++wofXvnr8B45ce3QsQUhKrIhXsygAh7bTkwyeM1bi1a2g5C/yC/N8TZyGDEoMfm/l9mpg==}
+  '@rolldown/binding-linux-ppc64-gnu@1.0.2':
+    resolution: {integrity: sha512-hgO5Abm0w5UL6FEa2iFnZqo2KlK7TQ5QhV5x09hujBf7t5KzHQ1VmfPuTpqRy/rNlSxua3eWH374xxiVrP+lcA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [ppc64]
     os: [linux]
@@ -3642,8 +3645,8 @@ packages:
     os: [linux]
     libc: [glibc]
 
-  '@rolldown/binding-linux-s390x-gnu@1.0.1':
-    resolution: {integrity: sha512-0frlsT/f4Ft6I7SMESTKnF3cZsdicQn1dCMkF/jT9wDLE+gGoiQfv1nmT9e+s7s/fekvvy6tZM2jHvI2tkbJDQ==}
+  '@rolldown/binding-linux-s390x-gnu@1.0.2':
+    resolution: {integrity: sha512-fy8rXxuYEu602abC8MUNaPjYLIFzReOaEIEMKMUa0rFEUxNpVXhs15KSSQ4qlqSaM7B6rcj9rDZgADh/IGDzLQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [s390x]
     os: [linux]
@@ -3656,8 +3659,8 @@ packages:
     os: [linux]
     libc: [glibc]
 
-  '@rolldown/binding-linux-x64-gnu@1.0.1':
-    resolution: {integrity: sha512-XABVmGp9Tg0WspTVvwduTc4fpqy6JnAUrSQe6OuyqD/03nI7r0O9OWUkMIwFrjKAIqolvqoA4ZrJppgwE0Gxmw==}
+  '@rolldown/binding-linux-x64-gnu@1.0.2':
+    resolution: {integrity: sha512-0+bOkiQ779+r1WpoHOWHqncvyySci0vKph+myNDYb+im6meJAzHQXay6oEgnkHuUGouM1LKTZwqKpBow6Kj7CQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [linux]
@@ -3670,8 +3673,8 @@ packages:
     os: [linux]
     libc: [musl]
 
-  '@rolldown/binding-linux-x64-musl@1.0.1':
-    resolution: {integrity: sha512-bV4fzswuzVcKD90o/VM6QqKxnxlDq0g2BISDLNVmxrnhpv1DDbyPhCIjYfvzYLV+MvkKKnQt2Q6AO86SEBULUQ==}
+  '@rolldown/binding-linux-x64-musl@1.0.2':
+    resolution: {integrity: sha512-mjSkrzZK5Qsl0a9d1JgILOiuZOSDTVdKENcSXBoqbzSrspLR/4/IRVDo5wd2GgZjNss/viBFJdeq+j7qH2nypw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [linux]
@@ -3683,8 +3686,8 @@ packages:
     cpu: [arm64]
     os: [openharmony]
 
-  '@rolldown/binding-openharmony-arm64@1.0.1':
-    resolution: {integrity: sha512-/Mh0Zhq3OP7fVs0kcQHZP6lZEthMGTaSf8UBQYSFEZDWGXXlEC+nJ6EqenaK2t4LBXMe3A+K/G2BVXXdtOr4PQ==}
+  '@rolldown/binding-openharmony-arm64@1.0.2':
+    resolution: {integrity: sha512-1v5vHasdfQAZoEHakBV72LIFAC9JjnymsiKxp+GEr/ma3+NJCPSaYK+qavInOovJkgwFrs7GccX2d6IgDA3Z5w==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [openharmony]
@@ -3694,8 +3697,8 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [wasm32]
 
-  '@rolldown/binding-wasm32-wasi@1.0.1':
-    resolution: {integrity: sha512-+1xc9X45l8ufsBAm6Gjvx2qDRIY9lTVt0cgWNcJ+1gdhXvkbxePA60yRTwSTuXL09CMhyJmjpV7E3NoyxbqFQQ==}
+  '@rolldown/binding-wasm32-wasi@1.0.2':
+    resolution: {integrity: sha512-mb1VobWn6NheziTk5/WEaR6AKVbrwT5sOi6C7zk3gy/pD1qtJfU1j4PgTo2NJnOtbL9Dl3Aeei8w9jJ7qC2jZQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [wasm32]
 
@@ -3705,8 +3708,8 @@ packages:
     cpu: [arm64]
     os: [win32]
 
-  '@rolldown/binding-win32-arm64-msvc@1.0.1':
-    resolution: {integrity: sha512-1D+UqZdfnuR+Jy1GgMJwi85bD40H21uNmOPRWQhw4oRSuolZ/B5rixZ45DK2KXOTCvmVCecauWgEhbw8bI7tOw==}
+  '@rolldown/binding-win32-arm64-msvc@1.0.2':
+    resolution: {integrity: sha512-SqKonF56vA/L2yHwHYcEp2P34URpOZ7d1fS635cTkpDnUtEGdUbhI6NzsPdqeSWvAAeGDrxjWjNmibDIdFf9/A==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [win32]
@@ -3717,8 +3720,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rolldown/binding-win32-x64-msvc@1.0.1':
-    resolution: {integrity: sha512-INAycaWuhlOK3wk4mRHGsdgwYWmd9cChdPdE9bwWmy6rn9VqVNYNFGhOdXrofXUxwHIncSiPNb8tNm8knDVIeQ==}
+  '@rolldown/binding-win32-x64-msvc@1.0.2':
+    resolution: {integrity: sha512-v7qRI7gXLRINcOGXt+7YmAZ6iFuyZVMIoXAxhd8oP+DR9dLfL9GfNIx7PLMxmhZdvq8waUJBQiWN9EKNy+TRBQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [win32]
@@ -7723,8 +7726,8 @@ packages:
   obug@2.1.1:
     resolution: {integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==}
 
-  obuild@0.4.35:
-    resolution: {integrity: sha512-TYyNiOUzhUIBipnSlsJKskPsV8JZs2QXXCQQ+VTMGJD/Ekl6HEGoECtC5T6bgSul9n6sT0vq+CN3EIl1MmuLFQ==}
+  obuild@0.4.36:
+    resolution: {integrity: sha512-1kenNV3u2Xo+hsP6RSugfmQWG9sspawGJMQ3zRG1ZcE+vaDCfiWYCR5J9O7ZRRu6t/b82nyDxbHo817ZI8OeJg==}
     hasBin: true
 
   ocache@0.1.4:
@@ -8705,8 +8708,8 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
-  rolldown@1.0.1:
-    resolution: {integrity: sha512-X0KQHljNnEkWNqqiz9zJrGunh1B0HgOxLXvnFpCOcadzcy5qohZ3tqMEUg00vncoRovXuK3ZqCT9KnnKzoInFQ==}
+  rolldown@1.0.2:
+    resolution: {integrity: sha512-oZx5zVDtVB44AW3eaifgDml1gWRDZGvjcfdxonE4swNPG98PrrXjaO/KrnUjzlMnztCCRVlUueA1kCXhARGk6g==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
@@ -11267,10 +11270,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14)
 
-  '@nuxt/scripts@1.1.0(@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14)))(db0@0.3.4)(ioredis@5.10.1)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))':
+  '@nuxt/scripts@1.1.0(@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14)))(db0@0.3.4)(ioredis@5.10.1)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))':
     dependencies:
       '@nuxt/devtools-kit': 3.2.4(vite@8.0.12)
-      '@unhead/vue': 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
+      '@unhead/vue': 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
       '@vueuse/core': 14.3.0(vue@3.5.34(typescript@6.0.3))
       '@vueuse/shared': 14.3.0(vue@3.5.34(typescript@6.0.3))
       consola: 3.4.2
@@ -11280,7 +11283,7 @@ snapshots:
       ofetch: 1.5.1
       ohash: 2.0.11
       oxc-parser: 0.130.0
-      oxc-walker: 1.0.0(oxc-parser@0.130.0)(rolldown@1.0.1)
+      oxc-walker: 1.0.0(oxc-parser@0.130.0)(rolldown@1.0.2)
       pathe: 2.0.3
       pkg-types: 2.3.1
       sirv: 3.0.2
@@ -11688,6 +11691,8 @@ snapshots:
 
   '@oxc-project/types@0.131.0': {}
 
+  '@oxc-project/types@0.132.0': {}
+
   '@oxc-resolver/binding-android-arm-eabi@11.19.1':
     optional: true
 
@@ -11990,73 +11995,73 @@ snapshots:
   '@rolldown/binding-android-arm64@1.0.0':
     optional: true
 
-  '@rolldown/binding-android-arm64@1.0.1':
+  '@rolldown/binding-android-arm64@1.0.2':
     optional: true
 
   '@rolldown/binding-darwin-arm64@1.0.0':
     optional: true
 
-  '@rolldown/binding-darwin-arm64@1.0.1':
+  '@rolldown/binding-darwin-arm64@1.0.2':
     optional: true
 
   '@rolldown/binding-darwin-x64@1.0.0':
     optional: true
 
-  '@rolldown/binding-darwin-x64@1.0.1':
+  '@rolldown/binding-darwin-x64@1.0.2':
     optional: true
 
   '@rolldown/binding-freebsd-x64@1.0.0':
     optional: true
 
-  '@rolldown/binding-freebsd-x64@1.0.1':
+  '@rolldown/binding-freebsd-x64@1.0.2':
     optional: true
 
   '@rolldown/binding-linux-arm-gnueabihf@1.0.0':
     optional: true
 
-  '@rolldown/binding-linux-arm-gnueabihf@1.0.1':
+  '@rolldown/binding-linux-arm-gnueabihf@1.0.2':
     optional: true
 
   '@rolldown/binding-linux-arm64-gnu@1.0.0':
     optional: true
 
-  '@rolldown/binding-linux-arm64-gnu@1.0.1':
+  '@rolldown/binding-linux-arm64-gnu@1.0.2':
     optional: true
 
   '@rolldown/binding-linux-arm64-musl@1.0.0':
     optional: true
 
-  '@rolldown/binding-linux-arm64-musl@1.0.1':
+  '@rolldown/binding-linux-arm64-musl@1.0.2':
     optional: true
 
   '@rolldown/binding-linux-ppc64-gnu@1.0.0':
     optional: true
 
-  '@rolldown/binding-linux-ppc64-gnu@1.0.1':
+  '@rolldown/binding-linux-ppc64-gnu@1.0.2':
     optional: true
 
   '@rolldown/binding-linux-s390x-gnu@1.0.0':
     optional: true
 
-  '@rolldown/binding-linux-s390x-gnu@1.0.1':
+  '@rolldown/binding-linux-s390x-gnu@1.0.2':
     optional: true
 
   '@rolldown/binding-linux-x64-gnu@1.0.0':
     optional: true
 
-  '@rolldown/binding-linux-x64-gnu@1.0.1':
+  '@rolldown/binding-linux-x64-gnu@1.0.2':
     optional: true
 
   '@rolldown/binding-linux-x64-musl@1.0.0':
     optional: true
 
-  '@rolldown/binding-linux-x64-musl@1.0.1':
+  '@rolldown/binding-linux-x64-musl@1.0.2':
     optional: true
 
   '@rolldown/binding-openharmony-arm64@1.0.0':
     optional: true
 
-  '@rolldown/binding-openharmony-arm64@1.0.1':
+  '@rolldown/binding-openharmony-arm64@1.0.2':
     optional: true
 
   '@rolldown/binding-wasm32-wasi@1.0.0':
@@ -12066,7 +12071,7 @@ snapshots:
       '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     optional: true
 
-  '@rolldown/binding-wasm32-wasi@1.0.1':
+  '@rolldown/binding-wasm32-wasi@1.0.2':
     dependencies:
       '@emnapi/core': 1.10.0
       '@emnapi/runtime': 1.10.0
@@ -12076,13 +12081,13 @@ snapshots:
   '@rolldown/binding-win32-arm64-msvc@1.0.0':
     optional: true
 
-  '@rolldown/binding-win32-arm64-msvc@1.0.1':
+  '@rolldown/binding-win32-arm64-msvc@1.0.2':
     optional: true
 
   '@rolldown/binding-win32-x64-msvc@1.0.0':
     optional: true
 
-  '@rolldown/binding-win32-x64-msvc@1.0.1':
+  '@rolldown/binding-win32-x64-msvc@1.0.2':
     optional: true
 
   '@rolldown/debug@1.0.2': {}
@@ -12737,7 +12742,7 @@ snapshots:
 
   '@ungap/structured-clone@1.3.1': {}
 
-  '@unhead/bundler@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))':
+  '@unhead/bundler@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))':
     dependencies:
       '@vitejs/devtools-kit': 0.1.24(crossws@0.4.5(srvx@0.11.15))(typescript@6.0.3)(vite@8.0.12)
       magic-string: 0.30.21
@@ -12749,7 +12754,7 @@ snapshots:
     optionalDependencies:
       esbuild: 0.28.0
       lightningcss: 1.32.0
-      rolldown: 1.0.1
+      rolldown: 1.0.2
       vite: 8.0.12(@types/node@24.12.4)(@vitejs/devtools@0.1.24)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       webpack: 5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14)
     transitivePeerDependencies:
@@ -12759,7 +12764,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@unhead/bundler@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))':
+  '@unhead/bundler@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))':
     dependencies:
       '@vitejs/devtools-kit': 0.1.24(crossws@0.4.5(srvx@0.11.15))(typescript@6.0.3)(vite@8.0.12)
       magic-string: 0.30.21
@@ -12771,7 +12776,7 @@ snapshots:
     optionalDependencies:
       esbuild: 0.28.0
       lightningcss: 1.32.0
-      rolldown: 1.0.1
+      rolldown: 1.0.2
       vite: 8.0.12(@types/node@24.12.4)(@vitejs/devtools@0.1.24)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       webpack: 5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14)
     transitivePeerDependencies:
@@ -12781,7 +12786,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@unhead/bundler@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))':
+  '@unhead/bundler@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))':
     dependencies:
       '@vitejs/devtools-kit': 0.1.24(crossws@0.4.5(srvx@0.11.15))(typescript@6.0.3)(vite@8.0.12)
       magic-string: 0.30.21
@@ -12793,7 +12798,7 @@ snapshots:
     optionalDependencies:
       esbuild: 0.28.0
       lightningcss: 1.32.0
-      rolldown: 1.0.1
+      rolldown: 1.0.2
       vite: 8.0.12(@types/node@24.12.4)(@vitejs/devtools@0.1.24)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       webpack: 5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)
     transitivePeerDependencies:
@@ -12803,9 +12808,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))':
+  '@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))':
     dependencies:
-      '@unhead/bundler': 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
+      '@unhead/bundler': 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(cssnano@8.0.1(postcss@8.5.14))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
       hookable: 6.1.1
       unhead: 3.1.0(vite@8.0.12)
       unplugin: 3.0.0
@@ -12824,9 +12829,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))':
+  '@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))':
     dependencies:
-      '@unhead/bundler': 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
+      '@unhead/bundler': 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.14))
       hookable: 6.1.1
       unhead: 3.1.0(vite@8.0.12)
       unplugin: 3.0.0
@@ -12845,9 +12850,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))':
+  '@unhead/vue@3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(vite@8.0.12)(vue@3.5.34(typescript@6.0.3))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))':
     dependencies:
-      '@unhead/bundler': 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
+      '@unhead/bundler': 3.1.0(crossws@0.4.5(srvx@0.11.15))(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.2)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.12))(vite@8.0.12)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
       hookable: 6.1.1
       unhead: 3.1.0(vite@8.0.12)
       unplugin: 3.0.0
@@ -16682,7 +16687,7 @@ snapshots:
       ocache: 0.1.4
       ofetch: 2.0.0-alpha.3
       ohash: 2.0.11
-      rolldown: 1.0.1
+      rolldown: 1.0.2
       srvx: 0.11.15
       unenv: 2.0.0-rc.24
       unstorage: 2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1)(lru-cache@11.5.0)(ofetch@2.0.0-alpha.3)
@@ -16724,7 +16729,7 @@ snapshots:
       - sqlite3
       - uploadthing
 
-  nitropack@2.13.4(oxc-parser@0.130.0)(rolldown@1.0.1)(srvx@0.11.15):
+  nitropack@2.13.4(oxc-parser@0.130.0)(rolldown@1.0.2)(srvx@0.11.15):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@rollup/plugin-alias': 6.0.0(rollup@4.60.4)
@@ -16777,7 +16782,7 @@ snapshots:
       pretty-bytes: 7.1.0
       radix3: 1.1.2
       rollup: 4.60.4
-      rollup-plugin-visualizer: 7.0.1(rolldown@1.0.1)(rollup@4.60.4)
+      rollup-plugin-visualizer: 7.0.1(rolldown@1.0.2)(rollup@4.60.4)
       scule: 1.3.0
       semver: 7.8.0
       serve-placeholder: 2.0.2
@@ -16789,7 +16794,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.5.0
       unenv: 2.0.0-rc.24
-      unimport: 6.3.0(oxc-parser@0.130.0)(rolldown@1.0.1)
+      unimport: 6.3.0(oxc-parser@0.130.0)(rolldown@1.0.2)
       unplugin-utils: 0.3.1
       unstorage: 1.17.5(db0@0.3.4)(ioredis@5.10.1)
       untyped: 2.0.0
@@ -16935,7 +16940,7 @@ snapshots:
 
   obug@2.1.1: {}
 
-  obuild@0.4.35(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3)):
+  obuild@0.4.36(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3)):
     dependencies:
       c12: 4.0.0-beta.5(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(jiti@2.7.0)(magicast@0.5.3)
       consola: 3.4.2
@@ -16943,8 +16948,8 @@ snapshots:
       exsolve: 1.0.8
       magic-string: 0.30.21
       pathe: 2.0.3
-      rolldown: 1.0.1
-      rolldown-plugin-dts: 0.25.1(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(rolldown@1.0.1)(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
+      rolldown: 1.0.2
+      rolldown-plugin-dts: 0.25.1(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(rolldown@1.0.2)(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3))
       tinyglobby: 0.2.16
     transitivePeerDependencies:
       - '@ts-macro/tsc'
@@ -17179,12 +17184,12 @@ snapshots:
       magic-regexp: 0.10.0
       oxc-parser: 0.127.0
 
-  oxc-walker@1.0.0(oxc-parser@0.130.0)(rolldown@1.0.1):
+  oxc-walker@1.0.0(oxc-parser@0.130.0)(rolldown@1.0.2):
     dependencies:
       magic-regexp: 0.11.0
     optionalDependencies:
       oxc-parser: 0.130.0
-      rolldown: 1.0.1
+      rolldown: 1.0.2
 
   p-limit@3.1.0:
     dependencies:
@@ -18094,7 +18099,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rolldown-plugin-dts@0.25.1(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(rolldown@1.0.1)(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3)):
+  rolldown-plugin-dts@0.25.1(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(rolldown@1.0.2)(typescript@6.0.3)(vue-tsc@3.2.9(typescript@6.0.3)):
     dependencies:
       '@babel/generator': 8.0.0-rc.5
       '@babel/helper-validator-identifier': 8.0.0-rc.5
@@ -18104,18 +18109,18 @@ snapshots:
       dts-resolver: 3.0.0(oxc-resolver@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))
       get-tsconfig: 5.0.0-beta.5
       obug: 2.1.1
-      rolldown: 1.0.1
+      rolldown: 1.0.2
     optionalDependencies:
       typescript: 6.0.3
       vue-tsc: 3.2.9(typescript@6.0.3)
     transitivePeerDependencies:
       - oxc-resolver
 
-  rolldown-string@0.3.0(rolldown@1.0.1):
+  rolldown-string@0.3.0(rolldown@1.0.2):
     dependencies:
       magic-string: 0.30.21
     optionalDependencies:
-      rolldown: 1.0.1
+      rolldown: 1.0.2
 
   rolldown@1.0.0:
     dependencies:
@@ -18138,26 +18143,26 @@ snapshots:
       '@rolldown/binding-win32-arm64-msvc': 1.0.0
       '@rolldown/binding-win32-x64-msvc': 1.0.0
 
-  rolldown@1.0.1:
+  rolldown@1.0.2:
     dependencies:
-      '@oxc-project/types': 0.130.0
+      '@oxc-project/types': 0.132.0
       '@rolldown/pluginutils': 1.0.1
     optionalDependencies:
-      '@rolldown/binding-android-arm64': 1.0.1
-      '@rolldown/binding-darwin-arm64': 1.0.1
-      '@rolldown/binding-darwin-x64': 1.0.1
-      '@rolldown/binding-freebsd-x64': 1.0.1
-      '@rolldown/binding-linux-arm-gnueabihf': 1.0.1
-      '@rolldown/binding-linux-arm64-gnu': 1.0.1
-      '@rolldown/binding-linux-arm64-musl': 1.0.1
-      '@rolldown/binding-linux-ppc64-gnu': 1.0.1
-      '@rolldown/binding-linux-s390x-gnu': 1.0.1
-      '@rolldown/binding-linux-x64-gnu': 1.0.1
-      '@rolldown/binding-linux-x64-musl': 1.0.1
-      '@rolldown/binding-openharmony-arm64': 1.0.1
-      '@rolldown/binding-wasm32-wasi': 1.0.1
-      '@rolldown/binding-win32-arm64-msvc': 1.0.1
-      '@rolldown/binding-win32-x64-msvc': 1.0.1
+      '@rolldown/binding-android-arm64': 1.0.2
+      '@rolldown/binding-darwin-arm64': 1.0.2
+      '@rolldown/binding-darwin-x64': 1.0.2
+      '@rolldown/binding-freebsd-x64': 1.0.2
+      '@rolldown/binding-linux-arm-gnueabihf': 1.0.2
+      '@rolldown/binding-linux-arm64-gnu': 1.0.2
+      '@rolldown/binding-linux-arm64-musl': 1.0.2
+      '@rolldown/binding-linux-ppc64-gnu': 1.0.2
+      '@rolldown/binding-linux-s390x-gnu': 1.0.2
+      '@rolldown/binding-linux-x64-gnu': 1.0.2
+      '@rolldown/binding-linux-x64-musl': 1.0.2
+      '@rolldown/binding-openharmony-arm64': 1.0.2
+      '@rolldown/binding-wasm32-wasi': 1.0.2
+      '@rolldown/binding-win32-arm64-msvc': 1.0.2
+      '@rolldown/binding-win32-x64-msvc': 1.0.2
 
   rollup-plugin-dts@6.4.1(rollup@4.60.4)(typescript@6.0.3):
     dependencies:
@@ -18170,14 +18175,14 @@ snapshots:
     optionalDependencies:
       '@babel/code-frame': 7.29.0
 
-  rollup-plugin-visualizer@7.0.1(rolldown@1.0.1)(rollup@4.60.4):
+  rollup-plugin-visualizer@7.0.1(rolldown@1.0.2)(rollup@4.60.4):
     dependencies:
       open: 11.0.0
       picomatch: 4.0.4
       source-map: 0.7.6
       yargs: 18.0.0
     optionalDependencies:
-      rolldown: 1.0.1
+      rolldown: 1.0.2
       rollup: 4.60.4
 
   rollup@4.60.4:
@@ -18894,7 +18899,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@6.3.0(oxc-parser@0.130.0)(rolldown@1.0.1):
+  unimport@6.3.0(oxc-parser@0.130.0)(rolldown@1.0.2):
     dependencies:
       acorn: 8.16.0
       escape-string-regexp: 5.0.0
@@ -18912,7 +18917,7 @@ snapshots:
       unplugin-utils: 0.3.1
     optionalDependencies:
       oxc-parser: 0.130.0
-      rolldown: 1.0.1
+      rolldown: 1.0.2
 
   unist-builder@4.0.0:
     dependencies:
