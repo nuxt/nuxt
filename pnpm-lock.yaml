@@ -585,6 +585,9 @@ importers:
       unctx:
         specifier: ^2.5.0
         version: 2.5.0
+      undici:
+        specifier: ^8.3.0
+        version: 8.3.0
       unhead:
         specifier: ^2.1.15
         version: 2.1.15
@@ -9176,6 +9179,10 @@ packages:
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+
+  undici@8.3.0:
+    resolution: {integrity: sha512-TkUDgb6tl7KOGZ+7e8E3d2FYgUQgF6z5YypqjWmixVQSQERFcVrVg0ySADm2LVLRh5ljAaHTCR5Fmz3Q34rB7Q==}
+    engines: {node: '>=22.19.0'}
 
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
@@ -18301,6 +18308,8 @@ snapshots:
       unplugin: 2.3.11
 
   undici-types@7.16.0: {}
+
+  undici@8.3.0: {}
 
   unenv@2.0.0-rc.24:
     dependencies:
