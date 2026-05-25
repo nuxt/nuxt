@@ -2355,7 +2355,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
 
 describe.skipIf(isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
-    const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(typeof data.prerenderedAt).toEqual('number')
 
@@ -2417,14 +2417,14 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   it('should not include server-component HTML in payload', async () => {
-    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
   })
 
   it('should render payload for ISR routes', async () => {
-    const payload = await $fetch('/isr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['isr-data']).toBeDefined()
@@ -2432,7 +2432,7 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   it('should render payload for SWR routes', async () => {
-    const payload = await $fetch('/swr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-data']).toBeDefined()
@@ -2441,7 +2441,7 @@ describe.skipIf(isWindows)('payload rendering', () => {
 
   // https://github.com/nuxt/nuxt/issues/34856
   it('should render payload for SSR+SWR routes that opt out of a catch-all `ssr: false` rule', async () => {
-    const payload = await $fetch('/route-rules/swr-in-spa/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/route-rules/swr-in-spa/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-in-spa-data']).toEqual({ ok: true })
