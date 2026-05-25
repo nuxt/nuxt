@@ -72,6 +72,9 @@ export default defineConfig([
       vueSfcPlugin({
         srcDir: 'src',
         cwd: import.meta.dirname,
+        // Subpath path mappings relative to this package so vue-tsc can resolve
+        // `#app`, `nuxt/app`, etc. when emitting declarations on a cold cache.
+        tsconfig: './tsconfig.build.json',
         // Type-augmentation side-effect import from `src/app/index.ts`:
         // `./types/augments.ts` contains only `declare global` blocks and
         // would otherwise be tree-shaken out of the built JS.
