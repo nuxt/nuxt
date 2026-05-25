@@ -355,16 +355,24 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
     '</html>'
 }
 
+interface NuxtRequestContext {
+  'appConfig'?: AppConfig
+  'noSSR'?: boolean
+  /** @internal */
+  '~internal'?: boolean
+  /** @internal */
+  '~rendering-error'?: boolean
+}
+
 declare module 'srvx' {
   interface ServerRequestContext {
-    nuxt?: {
-      'appConfig'?: AppConfig
-      'noSSR'?: boolean
-      /** @internal */
-      '~internal'?: boolean
-      /** @internal */
-      '~rendering-error'?: boolean
-    }
+    nuxt?: NuxtRequestContext
+  }
+}
+
+declare module 'h3' {
+  interface H3EventContext {
+    nuxt?: NuxtRequestContext
   }
 }
 
