@@ -15,11 +15,24 @@ export async function build (nuxt: Nuxt): Promise<void> {
   const app = createApp(nuxt)
   nuxt.apps.default = app
 
+  let closing = false
+  const writes = new Set<Promise<unknown>>()
+  const track = async <T> (run: () => Promise<T>) => {
+    if (closing) { return }
+    const p = run()
+    writes.add(p)
+    try { await p } finally { writes.delete(p) }
+  }
   const generateApp = debounce(() => _generateApp(nuxt, app), undefined, { leading: true })
   await generateApp()
 
   if (nuxt.options.dev) {
     watch(nuxt)
+    nuxt.hook('close', async () => {
+      closing = true
+      generateApp.cancel()
+      await Promise.allSettled(writes)
+    })
     nuxt.hook('builder:watch', async (event, relativePath) => {
       // Unset mainComponent and errorComponent if app or error component is changed
       if (event === 'add' || event === 'unlink') {
@@ -38,12 +51,12 @@ export async function build (nuxt: Nuxt): Promise<void> {
       }
 
       // Recompile app templates
-      await generateApp()
+      await track(() => generateApp())
     })
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
-      if (options) { return _generateApp(nuxt, app, options) }
-      return generateApp()
+      if (options) { return track(() => _generateApp(nuxt, app, options)) }
+      return track(() => generateApp())
     })
   }
 
