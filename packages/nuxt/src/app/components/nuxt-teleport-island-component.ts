@@ -25,8 +25,7 @@ type NuxtTeleportIslandComponentSlots = SlotsType<{
   default?: () => VNode[]
 }>
 
-/* @__PURE__ */
-const NuxtTeleportIslandComponent = defineComponent({
+const NuxtTeleportIslandComponent = /* @__PURE__ */ defineComponent({
   name: 'NuxtTeleportIslandComponent',
   inheritAttrs: false,
   props: {

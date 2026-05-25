@@ -8,10 +8,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter './packages/**' prepack",
+    "build": "pnpm --filter './packages/**' build",
     "build:stub": "pnpm dev:prepare",
     "dev": "pnpm play",
-    "dev:prepare": "pnpm --filter './packages/**' build:stub && nuxt prepare",
+    "dev:prepare": "pnpm --filter './packages/**' build && nuxt prepare",
     "debug:dev": "rm -rf **/node_modules/.cache/jiti && pnpm nuxt dev",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",

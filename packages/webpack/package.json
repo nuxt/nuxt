@@ -16,16 +16,16 @@
     "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
   },
   "exports": {
-    ".": "./dist/index.mjs",
-    "./dist/*": "./dist/*"
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "builder.mjs"
   ],
   "scripts": {
-    "prepack": "obuild",
-    "build:stub": "obuild --stub",
+    "prepack": "tsdown",
+    "build": "tsdown",
     "test:attw": "attw --pack"
   },
   "dependencies": {
@@ -79,8 +79,8 @@
     "@types/webpack-hot-middleware": "2.25.12",
     "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.22",
-    "obuild": "0.4.36",
     "rollup": "4.60.4",
+    "tsdown": "0.22.0",
     "vue": "3.5.34"
   },
   "peerDependencies": {
@@ -89,5 +89,12 @@
   },
   "engines": {
     "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./dist/*": "./dist/*",
+      "./package.json": "./package.json"
+    }
   }
 }
