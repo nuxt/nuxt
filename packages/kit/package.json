@@ -51,7 +51,7 @@
     "@rspack/core": "2.0.3",
     "@types/semver": "7.7.1",
     "hookable": "6.1.1",
-    "nitro": "3.0.260311-beta",
+    "nitro": "3.0.260522-beta",
     "nitropack": "2.13.4",
     "obuild": "0.4.36",
     "unimport": "6.3.0",
