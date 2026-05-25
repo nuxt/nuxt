@@ -1,5 +1,4 @@
 import process from 'node:process'
-import { Agent, EnvHttpProxyAgent, getGlobalDispatcher, setGlobalDispatcher } from 'undici'
 
 // Node's built-in `fetch` (undici) ignores `HTTPS_PROXY` / `HTTP_PROXY` / `NO_PROXY` unless
 // the process was started with `node --use-env-proxy` (Node 24+, experimental).
@@ -9,13 +8,15 @@ import { Agent, EnvHttpProxyAgent, getGlobalDispatcher, setGlobalDispatcher } fr
 // Refs:
 //   https://nodejs.org/api/cli.html#--use-env-proxy
 //   https://undici.nodejs.org/#/docs/api/EnvHttpProxyAgent
-export function installProxyDispatcher (): void {
+export async function installProxyDispatcher (): Promise<void> {
   const proxyUrl
-    = process.env.HTTPS_PROXY
-      || process.env.https_proxy
-      || process.env.HTTP_PROXY
+    = process.env.https_proxy
+      || process.env.HTTPS_PROXY
       || process.env.http_proxy
+      || process.env.HTTP_PROXY
   if (!proxyUrl) { return }
+
+  const { Agent, EnvHttpProxyAgent, getGlobalDispatcher, setGlobalDispatcher } = await import('undici')
 
   const current = getGlobalDispatcher()
   if (current instanceof EnvHttpProxyAgent) { return }
