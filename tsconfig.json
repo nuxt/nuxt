@@ -36,6 +36,12 @@
       ],
       "#unhead/composables": [
         "./packages/nuxt/src/head/runtime/composables"
+      ],
+      "nuxt/app": [
+        "./packages/nuxt/src/app/index"
+      ],
+      "nuxt/app/*": [
+        "./packages/nuxt/src/app/*"
       ]
     }
   },

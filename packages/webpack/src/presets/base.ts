@@ -247,6 +247,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'import.meta.test': ctx.nuxt.options.test,
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
+    'import.meta.envName': JSON.stringify(ctx.options.envName),
     'import.meta.server': ctx.isServer,
   }
 

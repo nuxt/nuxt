@@ -1,11 +1,12 @@
 import type { RouteLocationNormalized } from 'vue-router'
 import { joinURL } from 'ufo'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 import { reloadNuxtApp } from '../composables/chunk'
 import { addRouteMiddleware } from '../composables/router'
 
 // See https://github.com/nuxt/nuxt/issues/23612 for more context
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:chunk-reload-immediate',
   setup (nuxtApp) {
     // Remember `to.path` when navigating to a new path: A `chunkError` may occur during navigation, we then want to then reload at `to.path`
@@ -30,3 +31,5 @@ export default defineNuxtPlugin({
     nuxtApp.hook('app:manifest:update', () => reloadAppAtPath(nuxtApp._route))
   },
 })
+
+export default plugin

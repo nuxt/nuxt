@@ -39,6 +39,7 @@ import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
+import { installProxyDispatcher } from './utils/proxy.ts'
 import { resolveTypePaths } from './utils/types.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
@@ -775,6 +776,9 @@ export default defineNuxtPlugin({
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    if (nuxt.options.experimental.prefetchPreloadTags) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/prefetch-preload-tags.server'))
+    }
   }
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
@@ -788,6 +792,8 @@ export default defineNuxtPlugin({
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+  await installProxyDispatcher()
+
   // Early-init profiler when CLI passes perf overrides (captures config loading).
   // Otherwise, create after config resolves from nuxt.config / env vars.
   let perf: NuxtPerfProfiler | undefined

@@ -1,3 +1,5 @@
+import './types/augments'
+
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
@@ -99,6 +101,11 @@ export interface NuxtPayload {
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: NuxtError | undefined
   _errors: Record<string, NuxtError | undefined>
+  /**
+   * Forwarded `<link rel="preload">` / `<link rel="modulepreload">` hints from the destination route, populated when `experimental.prefetchPreloadTags` is enabled.
+   * @internal
+   */
+  prefetchLinks?: Array<Record<string, string | boolean>>
   [key: string]: unknown
 }
 
@@ -412,7 +419,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     if (chunkErrorEvent) {
       window.addEventListener(chunkErrorEvent, (event) => {
         nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-        if (event.payload.message.includes('Unable to preload CSS')) {
+        if (event.payload?.message?.includes('Unable to preload CSS')) {
           event.preventDefault()
         }
       })

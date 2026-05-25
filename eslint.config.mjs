@@ -233,6 +233,16 @@ export default createConfigForNuxt({
         'no-console': 'off',
       },
     },
+    {
+      // `DefineSetupFnComponent<Props, Emits, Slots>` uses
+      // `{}` as the default for `Emits`/`Slots` so we suppress
+      // the warning in our runtime/ dirs.
+      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/{components,head,imports,pages}/runtime/**'],
+      name: 'local/disables/empty-object-type',
+      rules: {
+        '@typescript-eslint/no-empty-object-type': ['error', { allowObjectTypes: 'always' }],
+      },
+    },
     // manually specify dependencies for nuxt browser app
     {
       files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/(components,head,imports,pages)/runtime/**'],
@@ -301,7 +311,6 @@ export default createConfigForNuxt({
         'vue/multi-word-component-names': 'off',
       },
     },
-    // @ts-expect-error type issues between @types/eslint and @eslint/core
     {
       files: ['**/*.md'],
       language: 'markdown/commonmark',

@@ -14,20 +14,21 @@
   "typesVersions": {
     "*": {
       "h3": [
-        "./dist/runtime/h3-compat.d.mts"
+        "./dist/h3.d.mts"
       ]
     }
   },
   "exports": {
-    ".": "./dist/index.mjs",
-    "./h3": "./dist/runtime/h3-compat.mjs"
+    ".": "./src/index.ts",
+    "./h3": "./src/h3.ts",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepack": "obuild",
-    "build:stub": "obuild --stub",
+    "prepack": "tsdown",
+    "build": "tsdown",
     "test:attw": "attw --pack"
   },
   "dependencies": {
@@ -43,13 +44,13 @@
     "exsolve": "^1.0.8",
     "impound": "^1.1.5",
     "klona": "^2.0.6",
-    "lru-cache": "^11.4.0",
+    "lru-cache": "^11.5.0",
     "mlly": "^1.8.2",
     "mocked-exports": "^0.1.1",
-    "nitro": "^3.0.260311-beta",
+    "nitro": "^3.0.260522-beta",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
-    "srvx": "^0.11.15",
+    "srvx": "^0.11.16",
     "std-env": "^4.1.0",
     "ufo": "^1.6.4",
     "unctx": "^2.5.0",
@@ -82,10 +83,17 @@
     "@rollup/plugin-babel": "7.0.0",
     "hookable": "6.1.1",
     "nuxt": "workspace:*",
-    "obuild": "0.4.35",
-    "vitest": "4.1.6"
+    "tsdown": "0.22.0",
+    "vitest": "4.1.7"
   },
   "engines": {
-    "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./h3": "./dist/h3.mjs",
+      "./package.json": "./package.json"
+    }
   }
 }

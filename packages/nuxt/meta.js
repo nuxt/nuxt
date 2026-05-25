@@ -2,6 +2,7 @@ export const runtimeDependencies = [
   // other deps
   'devalue',
   'klona',
+  'unhead',
   // deliberate exports from nitro builder
   '@nuxt/nitro-server/h3',
   // unjs ecosystem

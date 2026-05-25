@@ -1,5 +1,5 @@
 import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
-import type { ComponentInternalInstance, ComponentOptions, InjectionKey, RendererNode, SlotsType, VNode } from 'vue'
+import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetupFnComponent, InjectionKey, RendererNode, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import ServerPlaceholder from './server-placeholder'
@@ -23,20 +23,28 @@ function createPlaceholder (el?: RendererNode | null) {
   return clientNodePlaceholder ? createCommentVNode('placeholder') : h('div')
 }
 
-export default defineComponent({
+interface ClientOnlyProps {
+  fallback?: string
+  placeholder?: string
+  placeholderTag?: string
+  fallbackTag?: string
+}
+
+type ClientOnlySlots = SlotsType<{
+  default?: () => VNode[]
+  /**
+   * Specify a content to be rendered on the server and displayed until `<ClientOnly>` is mounted in the browser.
+   */
+  fallback?: () => VNode[]
+  placeholder?: () => VNode[]
+}>
+
+const ClientOnly = defineComponent({
   name: 'ClientOnly',
   inheritAttrs: false,
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
   ...(import.meta.dev && {
-    slots: Object as SlotsType<{
-      default?: () => VNode[]
-
-      /**
-       * Specify a content to be rendered on the server and displayed until `<ClientOnly>` is mounted in the browser.
-       */
-      fallback?: () => VNode[]
-      placeholder?: () => VNode[]
-    }>,
+    slots: Object as ClientOnlySlots,
   }),
   setup (props, { slots, attrs }) {
     const mounted = shallowRef(false)
@@ -67,12 +75,14 @@ export default defineComponent({
       return createElementBlock(fallbackTag, attrs, fallbackStr)
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<ClientOnlyProps, {}, ClientOnlySlots>
+
+export default ClientOnly
 
 const cache = new WeakMap()
 
 /* @__NO_SIDE_EFFECTS__ */
-export function createClientOnly<T extends ComponentOptions> (component: T) {
+export function createClientOnly<T extends ComponentOptions> (component: T): Component {
   if (import.meta.server) {
     return ServerPlaceholder
   }

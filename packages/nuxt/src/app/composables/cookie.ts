@@ -223,7 +223,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   return cookie as CookieRef<T>
 }
 /** @since 3.10.0 */
-export function refreshCookie (name: string) {
+export function refreshCookie (name: string): void {
   if (import.meta.server || store || typeof BroadcastChannel === 'undefined') { return }
 
   try {

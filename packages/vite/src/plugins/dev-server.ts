@@ -129,7 +129,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
 
       const viteMiddleware = defineEventHandler(async (event: H3V1Event | H3V2Event) => {
-        const url = 'url' in event ? event.url.pathname + event.url.search + event.url.hash : event.path
+        const url = 'url' in event ? event.url.pathname + event.url.search + event.url.hash : (event as H3V1Event).path
         const isBasePath = url.startsWith(viteServer.config.base!)
 
         // Check if this is a vite-handled route or proxy path
@@ -146,10 +146,9 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           isViteRoute ||= isProxyPath(url)
         }
 
-        const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+        const { req, res } = ('runtime' in event ? event.runtime?.node : (event as any).node) as { req: IncomingMessage, res: ServerResponse }
         if (!isViteRoute) {
-          // @ts-expect-error _skip_transform is a private property
-          req._skip_transform = true
+          (req as IncomingMessage & { _skip_transform?: boolean })._skip_transform = true
         }
 
         // Workaround: vite devmiddleware modifies req.url

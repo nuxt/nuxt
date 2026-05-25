@@ -113,7 +113,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
-    const h3Path = JSON.stringify(resolve(distDir, 'runtime/h3-compat'))
+    const h3Path = JSON.stringify(resolve(distDir, 'h3'))
     const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
 
     nuxt.options.nitro.virtual ||= {}
@@ -221,6 +221,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     routeRules: {
       '/**': { ssr: true },
       '/__nuxt_error': { cache: false },
+    },
+    rolldownConfig: {
+      // don't try to resolve rolldown options from the tsconfig we generate
+      tsconfig: false,
     },
     typescript: {
       generateTsConfig: true,

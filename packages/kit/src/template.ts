@@ -363,6 +363,8 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
+  const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
+
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -371,6 +373,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: true,
       target: 'ESNext',
       allowJs: true,
+      allowImportingTsExtensions: true,
       resolveJsonModule: true,
       moduleDetection: 'force',
       isolatedModules: true,
@@ -423,6 +426,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
       target: tsConfig.compilerOptions?.target,
       allowJs: tsConfig.compilerOptions?.allowJs,
+      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
       resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
@@ -458,6 +462,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
       target: tsConfig.compilerOptions?.target,
       allowJs: tsConfig.compilerOptions?.allowJs,
+      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
       resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
@@ -564,7 +569,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
     include: [...tsConfig.include, ...legacyInclude],
-    exclude: [...tsConfig.exclude, ...legacyExclude],
+    exclude: [...userExclude, ...legacyExclude],
   })
 
   async function resolveConfig (tsConfig: TSConfig) {

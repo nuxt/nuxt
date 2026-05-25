@@ -35,8 +35,7 @@ import entryIds from '#internal/nuxt/entry-ids.mjs'
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
 import { iifeChunkFileName } from '#internal/streaming-iife-chunk.mjs'
-// @ts-expect-error virtual file
-import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { buildAssetsURL, publicAssetsURL } from '../utils/paths'
 import type { AppConfig } from '@nuxt/schema'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
@@ -312,7 +311,9 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
         // Inline full payload in HTML (payloadExtraction: 'client' | false, or non-cached route)
-        ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
+        // `prefetchLinks` is only consumed when *another* page prefetches this URL via
+        // _payload.json, so we drop it from the inline payload to avoid the duplication.
+        ? renderPayloadJsonScript({ ssrContext, data: stripInlineOnlyPayloadFields(ssrContext.payload) })
         // Split payload: inline initial data, reference external _payload.json via src (payloadExtraction: true)
         : renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL }),
     }, {
@@ -836,17 +837,31 @@ function applyRenderOptions (payload: SSRHeadPayload, options: { omitLineBreaks?
   }
 }
 
+interface NuxtRequestContext {
+  'appConfig'?: AppConfig
+  'noSSR'?: boolean
+  /** @internal */
+  '~internal'?: boolean
+  /** @internal */
+  '~rendering-error'?: boolean
+}
+
 declare module 'srvx' {
   interface ServerRequestContext {
-    nuxt?: {
-      'appConfig'?: AppConfig
-      'noSSR'?: boolean
-      /** @internal */
-      '~internal'?: boolean
-      /** @internal */
-      '~rendering-error'?: boolean
-    }
+    nuxt?: NuxtRequestContext
   }
+}
+
+declare module 'h3' {
+  interface H3EventContext {
+    nuxt?: NuxtRequestContext
+  }
+}
+
+function stripInlineOnlyPayloadFields (payload: NuxtSSRContext['payload']): NuxtSSRContext['payload'] {
+  if (!payload.prefetchLinks) { return payload }
+  const { prefetchLinks: _, ...rest } = payload
+  return rest
 }
 
 function returnResponse (event: H3Event, response: Partial<RenderResponse>) {

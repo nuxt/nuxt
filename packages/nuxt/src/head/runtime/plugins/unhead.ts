@@ -2,6 +2,7 @@ import { createHead as createClientHead } from '@unhead/vue/client'
 import { createStreamableHead as createStreamableClientHead } from '@unhead/vue/stream/client'
 import type { ActiveHeadEntry } from '@unhead/vue'
 import { defineNuxtPlugin } from '#app/nuxt'
+import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { freezeHead } from '../island-head'
 
 // @ts-expect-error virtual file
@@ -9,7 +10,7 @@ import unheadOptions from '#build/unhead-options.mjs'
 // @ts-expect-error virtual file
 import { ssrStreaming } from '#build/unhead.config.mjs'
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:head',
   enforce: 'pre',
   setup (nuxtApp) {
@@ -71,3 +72,5 @@ export default defineNuxtPlugin({
     }
   },
 })
+
+export default plugin
