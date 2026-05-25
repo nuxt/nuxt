@@ -40,7 +40,7 @@
     "pkg-types": "^2.3.1",
     "rc9": "^3.0.1",
     "scule": "^1.3.0",
-    "semver": "^7.8.0",
+    "semver": "^7.8.1",
     "std-env": "^4.1.0",
     "tinyglobby": "^0.2.16",
     "ufo": "^1.6.4",
@@ -49,16 +49,16 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "2.0.3",
+    "@rspack/core": "2.0.4",
     "@types/semver": "7.7.1",
     "hookable": "6.1.1",
-    "nitro": "3.0.260311-beta",
+    "nitro": "3.0.260522-beta",
     "nitropack": "2.13.4",
     "tsdown": "0.22.0",
     "unimport": "6.3.0",
-    "vite": "8.0.12",
+    "vite": "8.0.14",
     "vitest": "4.1.7",
-    "webpack": "5.106.2"
+    "webpack": "5.107.1"
   },
   "engines": {
     "node": ">=18.12.0"
