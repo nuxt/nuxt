@@ -14,7 +14,7 @@
   "typesVersions": {
     "*": {
       "h3": [
-        "./dist/runtime/h3-compat.d.mts"
+        "./dist/h3.d.mts"
       ]
     }
   },
