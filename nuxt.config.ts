@@ -27,9 +27,10 @@ export default defineNuxtConfig({
         enforce: 'pre',
         transform (code, id) {
           let replaced = false
-          if (code.includes('export function onPrehydrate')) {
+          // Strip the early client return so `onPrehydrate` runs under test.
+          if (code.includes('export function onPrehydrate') || code.includes('function onPrehydrate(')) {
             replaced = true
-            code = code.replaceAll('if (import.meta.client) { return }', '')
+            code = code.replace(/if \(import\.meta\.client\)\s*(?:\{\s*return\s*\}|return;?)/g, '')
           }
           if (id.includes('nuxt-time.vue')) {
             replaced = true
