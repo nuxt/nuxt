@@ -28,9 +28,14 @@ export default defineNuxtConfig({
         transform (code, id) {
           let replaced = false
           // Strip the early client return so `onPrehydrate` runs under test.
-          if (code.includes('export function onPrehydrate') || code.includes('function onPrehydrate(')) {
+          // Scoped to the `onPrehydrate` function body so the same guard is
+          // left intact in sibling functions in `ssr.ts`.
+          const onPrehydrateStart = code.search(/(?:export\s+)?function onPrehydrate\s*\(/)
+          if (onPrehydrateStart !== -1) {
+            const head = code.slice(0, onPrehydrateStart)
+            const tail = code.slice(onPrehydrateStart).replace(/if \(import\.meta\.client\)\s*(?:\{\s*return\s*\}|return;?)/, '')
+            code = head + tail
             replaced = true
-            code = code.replace(/if \(import\.meta\.client\)\s*(?:\{\s*return\s*\}|return;?)/g, '')
           }
           if (id.includes('nuxt-time.vue')) {
             replaced = true
