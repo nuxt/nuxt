@@ -91,7 +91,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     name: 'nuxt:virtual-vsc',
     resolveId: {
       order: 'pre',
-      handler (id) {
+      handler(id) {
         if (id.startsWith('virtual:vsc:')) {
           return id.slice('virtual:vsc:'.length)
         }
@@ -140,7 +140,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const onigiriChunkCollectorPlugin: Plugin = {
     name: 'nuxt:vue-onigiri-chunk-collector',
     applyToEnvironment: environment => environment.name === 'client',
-    generateBundle (_outputOptions, bundle) {
+    generateBundle(_outputOptions, bundle) {
       const root = nuxt.options.srcDir.replaceAll('\\', '/').replace(/\/$/, '')
       for (const file in bundle) {
         const chunk = bundle[file]
@@ -154,6 +154,90 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     },
   }
 
+  const buildClientImportFnSource = () => {
+    const prefix = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
+    const entries: string[] = []
+    const seen = new Set<string>()
+    for (const [, entry] of onigiriComponentImports) {
+      if (!entry?.path) { continue }
+      if (entry.path.startsWith('/') || entry.path.startsWith('.') || /^[a-z]:[\\/]/i.test(entry.path)) { continue }
+      if (seen.has(entry.path)) { continue }
+      seen.add(entry.path)
+      const url = joinURL(prefix, entry.path)
+      entries.push(`  ${JSON.stringify(url)}: () => import(${JSON.stringify(entry.path)})`)
+    }
+    return `
+const __chunkMap = {
+${entries.join(',\n')}
+}
+export const manifest = {}
+export async function importFn(src, exportName = 'default') {
+  const loader = __chunkMap[src]
+  if (loader) {
+    const mod = await loader()
+    return mod[exportName] ?? mod.default ?? mod
+  }
+  if (src.startsWith('/')) {
+    const mod = await import(/* @vite-ignore */ src)
+    return mod[exportName] ?? mod.default ?? mod
+  }
+  throw new Error('[vue-onigiri] No loader registered for chunk "' + src + '"')
+}
+`
+  }
+
+  const buildServerImportFnSource = () => {
+    const prefix = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
+    const reverseMap: Record<string, string> = {}
+    for (const [src, url] of onigiriChunkMap) { reverseMap[url] = src }
+    return `
+export const manifest = {}
+const PREFIX = ${JSON.stringify(prefix)}
+const REVERSE = ${JSON.stringify(reverseMap)}
+export async function importFn(src, exportName = 'default') {
+  let spec = REVERSE[src] || (src.startsWith(PREFIX) ? src.slice(PREFIX.length) : src)
+  if (spec.startsWith('/')) spec = spec.slice(1)
+  const mod = await import(/* @vite-ignore */ spec)
+  return mod[exportName] ?? mod.default ?? mod
+}
+`
+  }
+
+  // `enforce: 'pre'` + `resolveId.order: 'pre'` beats the default
+  // `onigiriManifestPlugin` (registered as part of `onigiriPlugins` below),
+  // which also claims `virtual:onigiri/manifest` with `order: 'pre'`.
+  const onigiriClientManifestOverride: Plugin = {
+    name: 'nuxt:onigiri-client-manifest',
+    enforce: 'pre',
+    applyToEnvironment: env => env.name === 'client',
+    resolveId: {
+      order: 'pre',
+      handler(id) {
+        if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
+      },
+    },
+    load(id) {
+      if (id !== '\0virtual:onigiri/manifest') { return }
+      return buildClientImportFnSource()
+    },
+  }
+
+  const onigiriServerManifestOverride: Plugin = {
+    name: 'nuxt:onigiri-server-manifest',
+    enforce: 'pre',
+    applyToEnvironment: env => env.name !== 'client',
+    resolveId: {
+      order: 'pre',
+      handler(id) {
+        if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
+      },
+    },
+    load(id) {
+      if (id !== '\0virtual:onigiri/manifest') { return }
+      return buildServerImportFnSource()
+    },
+  }
+
   const onigiriPlugins: Plugin[] = [
     vscPlugin,
     onigiriCompilerPlugin(onigiriCompilerOptions),
@@ -164,6 +248,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // bake), so the runtime importFn does a direct `import(url)`.
     onigiriManifestPlugin(),
     onigiriChunkCollectorPlugin,
+    onigiriClientManifestOverride,
+    onigiriServerManifestOverride,
   ]
   const config: vite.InlineConfig = mergeConfig(
     {
@@ -193,7 +279,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       },
       builder: {
-        async buildApp (builder) {
+        async buildApp(builder) {
           // run serially to preserve the order of client, server builds
           const environments = Object.values(builder.environments)
           for (const environment of environments) {
@@ -320,18 +406,36 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     },
   )
 
+  // Same shape as the SSR-environment Vite override above, but registered
+  // with Nitro's rollup config — Nitro doesn't go through Vite plugins.
+  const onigiriNitroManifestOverride: RollupPlugin = {
+    name: 'nuxt:onigiri-nitro-manifest',
+    enforce: 'pre',
+    resolveId: {
+      order: 'pre',
+      handler(id) {
+        if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
+      },
+    },
+    load(id) {
+      if (id !== '\0virtual:onigiri/manifest') { return }
+      return buildServerImportFnSource()
+    },
+  }
+
   const onigiriNitroPlugins = (): RollupPlugin[] => [
     {
       name: 'nuxt:virtual-vsc',
       resolveId: {
         order: 'pre',
-        handler (id) {
+        handler(id) {
           if (id.startsWith('virtual:vsc:')) {
             return id.slice('virtual:vsc:'.length)
           }
         },
       },
     },
+    onigiriNitroManifestOverride,
     onigiriCompilerPlugin(onigiriCompilerOptions) as RollupPlugin,
     onigiriManifestPlugin({ stub: true }) as RollupPlugin,
   ]
@@ -382,7 +486,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt._perf?.endPhase('vite:dev-server')
 }
 
-async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
+async function withLogs(fn: () => Promise<unknown>, message: string, enabled = true) {
   if (!enabled) { return fn() }
 
   const start = performance.now()
