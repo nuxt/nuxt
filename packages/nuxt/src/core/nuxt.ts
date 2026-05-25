@@ -348,12 +348,11 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add transform for `onPrehydrate` lifecycle hook
-  addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+  addBuildPlugin(PrehydrateTransformPlugin())
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addBuildPlugin(LayerAliasingPlugin({
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
@@ -374,13 +373,11 @@ async function initNuxt (nuxt: Nuxt) {
     // Add composable tree-shaking optimisations
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
-        sourcemap: !!nuxt.options.sourcemap.server,
         composables: nuxt.options.optimization.treeShake.composables.server,
       }), { client: false })
     }
     if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
-        sourcemap: !!nuxt.options.sourcemap.client,
         composables: nuxt.options.optimization.treeShake.composables.client,
       }), { server: false })
     }
@@ -440,9 +437,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
-    addBuildPlugin(DevOnlyPlugin({
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    }))
+    addBuildPlugin(DevOnlyPlugin())
 
     // Extract async data handlers into separate chunks for better performance
     if (nuxt.options.experimental.extractAsyncDataHandlers) {
@@ -780,6 +775,9 @@ export default defineNuxtPlugin({
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    if (nuxt.options.experimental.prefetchPreloadTags) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/prefetch-preload-tags.server'))
+    }
   }
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
@@ -891,6 +889,14 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nitroOptions = options.nitro
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {
+    options.serverHandlers.unshift(...nitroOptions.handlers)
+  }
+  createPortalProperties(options.serverHandlers, options, ['nitro.handlers', 'serverHandlers'])
+  if (nitroOptions.devHandlers?.length && nitroOptions.devHandlers !== options.devServerHandlers) {
+    options.devServerHandlers.unshift(...nitroOptions.devHandlers)
+  }
+  createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {

@@ -1,5 +1,6 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import { genDynamicImport, genDynamicTypeImport, genObjectKey } from 'knitwork'
+import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
 import type { NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
@@ -79,7 +80,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
-      return 'export const islandComponents = {}'
+      return 'export const islandComponents = {}\nexport const pageIslandRoutes = {}'
     }
 
     const components = app.components
@@ -90,9 +91,14 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
     )
 
-    const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
+    const serverPages = pages?.filter(p => (p.mode === 'server' && p.file && p.name)) || []
+    const pageExports = serverPages.map((p) => {
       return `"page_${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
-    }) || []
+    })
+    // map each `page_<name>` to a stable, opaque marker derived from the page's file path.
+    const pageIslandRoutes = serverPages.map((p) => {
+      return `  "page_${p.name}": ${JSON.stringify(hash(relative(nuxt.options.rootDir, p.file!)))}`
+    })
 
     return [
       'import { defineAsyncComponent } from \'vue\'',
@@ -104,6 +110,9 @@ export const componentsIslandsTemplate: NuxtTemplate = {
           return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
         },
       ).concat(pageExports).join(',\n'),
+      '}',
+      'export const pageIslandRoutes = import.meta.client ? {} : {',
+      pageIslandRoutes.join(',\n'),
       '}',
     ].join('\n')
   },

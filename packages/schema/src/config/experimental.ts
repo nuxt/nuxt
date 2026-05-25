@@ -126,10 +126,13 @@ export default defineResolvers({
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
       $resolve: async (val, get) => {
-        const validOptions = new Set(['chokidar', 'parcel', 'chokidar-granular'] as const)
+        const validOptions = new Set(['chokidar', 'parcel', 'chokidar-granular', 'builder'] as const)
         type WatcherOption = typeof validOptions extends Set<infer Option> ? Option : never
         if (typeof val === 'string' && validOptions.has(val as WatcherOption)) {
           return val as WatcherOption
+        }
+        if ((await get('future.compatibilityVersion')) >= 5) {
+          return 'builder' as const
         }
         const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
         if (srcDir === rootDir) {
@@ -211,6 +214,11 @@ export default defineResolvers({
     purgeCachedData: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
+      },
+    },
+    prefetchPreloadTags: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
     granularCachedData: {

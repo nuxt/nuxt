@@ -22,7 +22,7 @@ import { runtimeDependencies } from 'nitro/meta'
 import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, toArray } from './utils.ts'
+import { distDir, getSsrResolveConditions, toArray } from './utils.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -103,6 +103,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  if (nuxt.options.experimental.runtimeBaseURL) {
+    nuxt.options.serverHandlers.unshift({
+      route: '',
+      middleware: true,
+      handler: resolve(distDir, 'runtime/middleware/base-url'),
+    })
+  }
+
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
     const h3Path = JSON.stringify(resolve(distDir, 'runtime/h3-compat'))
@@ -116,8 +124,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       }
       return `import { defineEventHandler } from ${h3Path}; export default defineEventHandler(() => {});`
     }
-    nuxt.options.nitro.handlers ||= []
-    nuxt.options.nitro.handlers.push({
+    nuxt.options.serverHandlers.push({
       route: '/__nuxt_island/**',
       handler: ISLAND_RENDERER_KEY,
     })
@@ -183,17 +190,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     renderer: {
       handler: resolve(distDir, 'runtime/handlers/renderer'),
     },
-    handlers: [
-      ...nuxt.options.experimental.runtimeBaseURL
-        ? [{
-            route: '',
-            middleware: true,
-            handler: resolve(distDir, 'runtime/middleware/base-url'),
-          }]
-        : [],
-      ...nuxt.options.serverHandlers,
-    ],
-    devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
@@ -221,6 +217,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     routeRules: {
       '/**': { ssr: true },
       '/__nuxt_error': { cache: false },
+    },
+    rolldownConfig: {
+      // don't try to resolve rolldown options from the tsconfig we generate
+      tsconfig: false,
     },
     typescript: {
       generateTsConfig: true,
@@ -423,8 +423,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
             if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
-              const payloadKey = route + '/_payload.json'
-              const defaults = {} as Record<string, any>
+              const payloadKey = (route === '/' ? '' : route) + '/_payload.json'
+              const defaults = { ssr: true } as Record<string, any>
               for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
                 if (key in value) {
                   defaults[key] = value[key as keyof typeof value]
@@ -540,7 +540,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Add decorator support via Babel when experimental.decorators is enabled.
   if (nuxt.options.experimental.decorators) {
-    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators']
+    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
     const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
       rootDir: nuxt.options.rootDir,
       searchPaths: nuxt.options.modulesDir,
@@ -782,9 +782,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     configEnvironment (name, config) {
       if (name === 'ssr') {
         config.resolve ||= {}
-        config.resolve.conditions = [...nitro.options.exportConditions || []]
-        // TODO: remove in v5
-        config.resolve.conditions = config.resolve.conditions.filter(c => c !== 'import')
+        config.resolve.conditions = getSsrResolveConditions(nitro.options.exportConditions)
       }
     },
   })

@@ -1,13 +1,16 @@
-import type { defineAsyncComponent } from 'vue'
+import type { DefineSetupFnComponent, defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 
-import { injectHead } from '../composables/head'
 import { createError } from '../composables/error'
 
 // @ts-expect-error virtual file
 import { islandComponents } from '#build/components.islands.mjs'
 
-export default defineComponent({
+interface IslandRendererProps {
+  context: { name: string, props?: Record<string, any> }
+}
+
+const IslandRenderer = defineComponent({
   name: 'IslandRenderer',
   props: {
     context: {
@@ -16,10 +19,6 @@ export default defineComponent({
     },
   },
   setup (props) {
-    // reset head - we don't want to have any head tags from plugin or anywhere else.
-    const head = injectHead()
-    head.entries.clear()
-
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
 
     if (!component) {
@@ -35,4 +34,6 @@ export default defineComponent({
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })
   },
-})
+}) as unknown as DefineSetupFnComponent<IslandRendererProps>
+
+export default IslandRenderer

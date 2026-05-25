@@ -98,6 +98,11 @@ export interface NuxtPayload {
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: NuxtError | undefined
   _errors: Record<string, NuxtError | undefined>
+  /**
+   * Forwarded `<link rel="preload">` / `<link rel="modulepreload">` hints from the destination route, populated when `experimental.prefetchPreloadTags` is enabled.
+   * @internal
+   */
+  prefetchLinks?: Array<Record<string, string | boolean>>
   [key: string]: unknown
 }
 
@@ -145,6 +150,8 @@ interface _NuxtApp {
     _hash?: Record<string, string | undefined>
     /** @internal */
     _abortController?: AbortController
+    /** @internal */
+    _initialCachedData?: unknown
   } | undefined>
 
   /** @internal */
@@ -409,7 +416,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     if (chunkErrorEvent) {
       window.addEventListener(chunkErrorEvent, (event) => {
         nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-        if (event.payload.message.includes('Unable to preload CSS')) {
+        if (event.payload?.message?.includes('Unable to preload CSS')) {
           event.preventDefault()
         }
       })

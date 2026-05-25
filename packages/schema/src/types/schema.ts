@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AssetURLTagConfig } from '@vue/compiler-sfc'
 import type { CompilerOptions } from '@vue/compiler-core'
 import type { RenderSSRHeadOptions } from '@unhead/vue/types'
+import type { UnheadVueViteOptions } from '@unhead/vue/vite'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
@@ -398,36 +399,38 @@ export interface ConfigSchema {
    * An object that allows us to configure the `unhead` nuxt module.
    */
   unhead: {
-  /**
-   * Enable the legacy compatibility mode for `unhead` module. This applies the following changes: - Disables Capo.js sorting - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body` - Adds the `PromisesPlugin`: supports promises as input
-   *
-   *
-   * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/typescript/head/guides/get-started/migration)
-   *
-   * @example
-   * ```ts
-   * export default defineNuxtConfig({
-   *  unhead: {
-   *   legacy: true
-   * })
-   * ```
-   */
+    /**
+     * Disables Capo.js head tag sorting.
+     *
+     * On compat v4, the unhead legacy plugin set (`DeprecationsPlugin`, `PromisesPlugin`,
+     * `TemplateParamsPlugin`, `AliasSortingPlugin`) is always loaded so existing head patterns
+     * (`hid`, `vmid`, `children`, `body: true`, promise values, `%s` template params)
+     * keep working.
+     *
+     * Forced to `false` when `future.compatibilityVersion` >= 5.
+     *
+     * @deprecated Will be removed. Migrate off the deprecated head patterns and resolve promise
+     * values before passing to `useHead`.
+     * @default false
+     */
     legacy: boolean
 
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
-     *
-     * @example
-     * ```ts
-     * export default defineNuxtConfig({
-     *  unhead: {
-     *   renderSSRHeadOptions: {
-     *    omitLineBreaks: true
-     *   }
-     * })
-     * ```
      */
     renderSSRHeadOptions: RenderSSRHeadOptions
+
+    /**
+     * Options for the `@unhead/vue/vite` build plugin. Provides tree-shaking, `useSeoMeta` transform,
+     * minification, and validation.
+     *
+     * Set to `false` to disable the plugin entirely.
+     *
+     * Only applies when `future.compatibilityVersion` >= 5.
+     *
+     * @default {}
+     */
+    vite: false | Omit<UnheadVueViteOptions, 'streaming' | '_framework'>
   }
 
   /**
@@ -695,6 +698,17 @@ export interface ConfigSchema {
    *
    */
   test: boolean
+
+  /**
+   * The active Nuxt environment name, used by `c12` to select configuration
+   * overrides (e.g. `$env.staging`). Defaults to the explicit `envName` passed to
+   * `loadNuxtConfig` (e.g. via `nuxt --envName`), falling back to `'development'`
+   * in dev mode and `'production'` otherwise.
+   *
+   * Exposed to runtime app code as `import.meta.envName`.
+   *
+   */
+  envName: string
 
   /**
    * Set to `true` to enable debug mode.
@@ -1206,13 +1220,15 @@ export interface ConfigSchema {
      * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve performance in large projects or on Windows platforms.
      * You can also set this to `chokidar` to watch all files in your source directory.
      *
+     * Set to `'builder'` to reuse the active builder's own file watcher (e.g. Vite's `server.watcher`) instead of starting a second one. If the active builder does not provide a watcher, Nuxt falls back to its default selection.
+     *
      * @see [chokidar](https://github.com/paulmillr/chokidar)
      *
      * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      *
-     * @default 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
+     * @default 'builder' if `future.compatibilityVersion` >= 5, otherwise 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
      */
-    watcher: 'chokidar' | 'parcel' | 'chokidar-granular'
+    watcher: 'chokidar' | 'parcel' | 'chokidar-granular' | 'builder'
 
     /**
      * Enable native async context to be accessible for nested composables
@@ -1227,6 +1243,8 @@ export interface ConfigSchema {
      *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way. - Uses the hash hydration plugin to reduce initial hydration
      *
+     * @deprecated CAPO sorting is now the default in unhead v3. Set `unhead.legacy: true` to opt out
+     * temporarily on compat v4.
      * @default true
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */
@@ -1513,6 +1531,16 @@ export interface ConfigSchema {
     purgeCachedData: boolean
 
     /**
+     * When a `<NuxtLink>` is prefetched and the destination route has payload extraction enabled (the default for prerendered and cached routes), forward any `<link rel="preload">` hints that the destination set via `useHead` (or via modules like `@nuxt/image`'s `<NuxtImg preload>`) into the current document.
+     *
+     * The forwarded links are downgraded from `rel="preload"` to `rel="prefetch"` so they don't compete with the current page's critical resources. Only user-defined head tags are forwarded; build-time JS/CSS chunk preloads are not.
+     *
+     * @default false
+     * @see [Issue #34953](https://github.com/nuxt/nuxt/issues/34953)
+     */
+    prefetchPreloadTags: boolean
+
+    /**
      * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
      *
      * @default true
@@ -1650,7 +1678,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | DotenvOptions }
+  _loadOptions: { dotenv?: boolean | DotenvOptions, envName?: string | false }
 
   /**
    *
