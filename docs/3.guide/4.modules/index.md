@@ -21,6 +21,9 @@ With modules, you can encapsulate, properly test, and share custom solutions as 
   ::card{icon="i-lucide-code" title="Add Plugins, Components & More" to="/docs/3.x/guide/modules/recipes-basics"}
   Learn how to inject plugins, components, composables and server routes from your module.
   ::
+  ::card{icon="i-lucide-link" title="Depend on Other Modules" to="/docs/3.x/guide/modules/module-dependencies"}
+  Declare dependencies on other modules with version constraints and configuration merging.
+  ::
   ::card{icon="i-lucide-layers" title="Use Hooks & Extend Types" to="/docs/3.x/guide/modules/recipes-advanced"}
   Master lifecycle hooks, virtual files and TypeScript declarations in your modules.
   ::
