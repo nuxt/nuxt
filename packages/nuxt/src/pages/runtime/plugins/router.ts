@@ -1,6 +1,6 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, RouteLocationRaw, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
@@ -42,6 +42,10 @@ function createCurrentLocation (
   const displayedPath = withoutBase(pathname, base)
   const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
+}
+
+function isRouteLocation (route: unknown): route is RouteLocationRaw {
+  return typeof route === 'string' || (route !== null && typeof route === 'object' && !isNuxtError(route) && !(route instanceof Error))
 }
 
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
@@ -260,9 +264,27 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return result
             }
             if (result) {
-              if (isNuxtError(result) && result.fatal) {
-                await nuxtApp.runWithContext(() => showError(result))
+              if (isNuxtError(result)) {
+                if (result.fatal) {
+                  await nuxtApp.runWithContext(() => showError(result))
+                }
+
+                return result
               }
+
+              if (isRouteLocation(result)) {
+                const resolved = router.resolve(result)
+
+                if (resolved.fullPath === to.fullPath) {
+                  // If the middleware returned the same route, we likely had a redirect loop
+                  throw createError({
+                    status: 500,
+                    fatal: true,
+                    statusMessage: `Infinite redirect detected to "${to.fullPath}"`,
+                  })
+                }
+              }
+
               return result
             }
           } catch (err: any) {
