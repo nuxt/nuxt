@@ -581,6 +581,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const alwaysRunFetchOnKeyChange = ${!!ctx.nuxt.options.experimental.alwaysRunFetchOnKeyChange}`,
       `export const asyncCallHook = ${!!ctx.nuxt.options.experimental.asyncCallHook}`,
       `export const clientNodePlaceholder = ${!!ctx.nuxt.options.experimental.clientNodePlaceholder}`,
+      `export const tracingChannelNuxt = ${!!(ctx.nuxt.options.tracingChannel && typeof ctx.nuxt.options.tracingChannel === 'object' && ctx.nuxt.options.tracingChannel.nuxt)}`,
     ].join('\n\n')
   },
 }

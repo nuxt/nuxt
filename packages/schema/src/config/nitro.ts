@@ -44,8 +44,37 @@ export default defineResolvers({
         }
       },
     },
+    tracingChannel: {
+      $resolve: async (val, get) => {
+        const topLevel = await get('tracingChannel')
+        if (!topLevel && !val) {
+          return undefined
+        }
+        return {
+          ...(typeof topLevel === 'object' ? topLevel : {}),
+          ...(val && typeof val === 'object' ? val : {}),
+        }
+      },
+    },
   },
   routeRules: {},
   serverHandlers: [],
   devServerHandlers: [],
+  tracingChannel: {
+    $resolve: (val) => {
+      if (val === true) {
+        return { nuxt: true, srvx: true, h3: true, unstorage: true }
+      }
+      if (val && typeof val === 'object') {
+        return {
+          nuxt: true,
+          srvx: true,
+          h3: true,
+          unstorage: true,
+          ...val,
+        }
+      }
+      return false
+    },
+  },
 })
