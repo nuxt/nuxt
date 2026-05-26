@@ -57,8 +57,8 @@ const PAYLOAD_FILENAME = '_payload.json'
 
 let entryPath: string
 
-// Bot detection regex for SSR streaming (compiled once, tree-shaken when streaming disabled)
-const SSR_BOT_RE = NUXT_SSR_STREAMING ? new RegExp(NUXT_SSR_STREAMING_BOT_RE, 'i') : null
+// Bot detection regex for SSR streaming.
+const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
 
 const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
   // Whether we're rendering an error page
@@ -170,7 +170,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     // relocation, so island apps must fall back to buffered rendering.
     && !(NUXT_NO_SCRIPTS && componentIslandsActive)
     && !routeOptions.noScripts
-    && !routeOptions.buffered
+    && !!routeOptions.streaming
     && !routeOptions.cache
     && !routeOptions.isr
     && !routeOptions.redirect
@@ -178,9 +178,11 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   const renderRouteContext = {
     canStream,
     prefersStream: !!(NUXT_SSR_STREAMING
-      && !SSR_BOT_RE!.test(event.req.headers.get('user-agent') || '')),
+      && !SSR_BOT_RE.test(event.req.headers.get('user-agent') || '')),
   }
-  await useNitroHooks().callHook('render:route', renderRouteContext, { event })
+  const nitroHooks = useNitroHooks()
+  const renderRouteResult = nitroHooks.callHook('render:route', renderRouteContext, { event })
+  if (renderRouteResult instanceof Promise) { await renderRouteResult }
 
   if (NUXT_SSR_STREAMING && canStream && renderRouteContext.prefersStream) {
     return renderStreamedResponse({ event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION: _PAYLOAD_EXTRACTION!, _PAYLOAD_INLINE, payloadURL })
@@ -192,7 +194,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
 
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
-    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    const r = ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    if (r instanceof Promise) { await r }
     throw _err
   })
 
@@ -201,7 +204,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
+  const appRenderedResult = ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
+  if (appRenderedResult instanceof Promise) { await appRenderedResult }
 
   if (ssrContext['~renderResponse']) {
     return returnResponse(event, ssrContext['~renderResponse'])
@@ -356,7 +360,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   }
 
   // Allow hooking into the rendered result
-  await useNitroHooks().callHook('render:html', htmlContext, { event })
+  const renderHtmlResult = nitroHooks.callHook('render:html', htmlContext, { event })
+  if (renderHtmlResult instanceof Promise) { await renderHtmlResult }
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
@@ -471,7 +476,7 @@ async function renderStreamedResponse (ctx: {
   // 4. Create the Vue app FIRST so plugins (which push critical resource
   // hints, fonts, etc. via `useHead`) get their entries into `ssrContext.head`
   // before we consume them for the shell. `createSSRApp` runs plugins and
-  // middleware — `navigateTo()` from plugins/middleware throws `skipping
+  // middleware: `navigateTo()` from plugins/middleware throws `skipping
   // render` here, which we catch before committing any bytes.
   const createSSRApp = await getServerApp()
   let vueApp
@@ -484,7 +489,8 @@ async function renderStreamedResponse (ctx: {
       event.res.headers.delete('link')
       return returnResponse(event, ssrContext['~renderResponse'])
     }
-    await ssrContext.nuxt?.hooks.callHook('app:error', error)
+    const r = ssrContext.nuxt?.hooks.callHook('app:error', error)
+    if (r instanceof Promise) { await r }
     throw error
   }
   if (ssrContext['~renderResponse']) {
@@ -526,15 +532,18 @@ async function renderStreamedResponse (ctx: {
     body: [],
     bodyAppend: [],
   }
+  const nitroHooks = useNitroHooks()
   if (import.meta.dev) {
     const initialBodyLen = shellContext.body.length
     const initialAppendLen = shellContext.bodyAppend.length
-    await useNitroHooks().callHook('render:html', shellContext, { event, streaming: true })
+    const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
+    if (r instanceof Promise) { await r }
     if (shellContext.body.length !== initialBodyLen || shellContext.bodyAppend.length !== initialAppendLen) {
       console.warn(`[nuxt] \`render:html\` mutated \`body\`/\`bodyAppend\` while streaming (${event.url.pathname}). These fields are silently dropped because the body is about to stream - use the \`render:html:close\` hook instead.`)
     }
   } else {
-    await useNitroHooks().callHook('render:html', shellContext, { event, streaming: true })
+    const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
+    if (r instanceof Promise) { await r }
   }
 
   const shellHtml = '<!DOCTYPE html>'
@@ -567,7 +576,8 @@ async function renderStreamedResponse (ctx: {
       return returnResponse(event, ssrContext['~renderResponse'])
     }
     const _err = (!ssrError && ssrContext.payload?.error) || error
-    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    const r = ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    if (r instanceof Promise) { await r }
     throw _err
   }
 
@@ -598,12 +608,15 @@ async function renderStreamedResponse (ctx: {
   // 8. Build the streaming response
   const encoder = new TextEncoder()
   let chunkIndex = 0
-  // Awaited per chunk so `render:html:chunk` can mutate bytes (e.g. CSP
-  // nonce injection). Hook implementations should be synchronous where
-  // possible.
-  const enqueueChunk = async (controller: ReadableStreamDefaultController<Uint8Array>, chunk: Uint8Array) => {
+  // `enqueueChunk` runs `render:html:chunk` per chunk so listeners can mutate
+  // bytes (e.g. CSP nonce injection). Hook implementations should stay
+  // synchronous to preserve the TTFB gains.
+  const enqueueChunk = (controller: ReadableStreamDefaultController<Uint8Array>, chunk: Uint8Array): void | Promise<void> => {
     const chunkContext = { chunk, index: chunkIndex++ }
-    await useNitroHooks().callHook('render:html:chunk', chunkContext, { event })
+    const result = nitroHooks.callHook('render:html:chunk', chunkContext, { event })
+    if (result instanceof Promise) {
+      return result.then(() => { controller.enqueue(chunkContext.chunk) })
+    }
     controller.enqueue(chunkContext.chunk)
   }
   // Route/layout styles. The shell was flushed before render, so it only
@@ -678,14 +691,16 @@ async function renderStreamedResponse (ctx: {
           }
         }
 
-        // Stream complete — build closing HTML
-        await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: {} as any })
+        // Stream complete: build closing HTML
+        const appRenderedResult = ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: {} as any })
+        if (appRenderedResult instanceof Promise) { await appRenderedResult }
 
         // The HTTP status is already committed (200), so an error here can
         // only reach the client via the payload - the client renders the
         // error page during hydration.
         if (ssrContext.payload?.error && !ssrError) {
-          await ssrContext.nuxt?.hooks.callHook('app:error', ssrContext.payload.error)
+          const r = ssrContext.nuxt?.hooks.callHook('app:error', ssrContext.payload.error)
+          if (r instanceof Promise) { await r }
         }
 
         // Build payload scripts (payload is now finalized)
@@ -705,7 +720,8 @@ async function renderStreamedResponse (ctx: {
         // bodyAppend content (analytics tags, end-of-body scripts, etc.).
         const closingHead = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
         const closeContext = { bodyAppend: normalizeChunks([bodyTags, closingHead.bodyTags]) }
-        await useNitroHooks().callHook('render:html:close', closeContext, { event })
+        const closeResult = nitroHooks.callHook('render:html:close', closeContext, { event })
+        if (closeResult instanceof Promise) { await closeResult }
 
         // Teleports + closing tags. `teleports.body` collects content from
         // `<Teleport to="body">` and must be appended before `</body>` -
@@ -750,7 +766,7 @@ async function renderStreamedResponse (ctx: {
           }
           if (lateMutations.length) {
             console.warn(
-              `[nuxt] SSR streaming committed the response before render completed. The following mutations did not reach the client and were dropped:\n  - ${lateMutations.join('\n  - ')}\n  Path: ${event.url.pathname}\n  Move the mutation into a plugin (which runs before the shell is flushed), or opt this route out of streaming with \`routeRules: { '${event.url.pathname}': { buffered: true } }\` or the \`render:route\` hook.`,
+              `[nuxt] SSR streaming committed the response before render completed. The following mutations did not reach the client and were dropped:\n  - ${lateMutations.join('\n  - ')}\n  Path: ${event.url.pathname}\n  Move the mutation into a plugin (which runs before the shell is flushed), or opt this route out of streaming with \`routeRules: { '${event.url.pathname}': { streaming: false } }\` or the \`render:route\` hook.`,
             )
           }
         }

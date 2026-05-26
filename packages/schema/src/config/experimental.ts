@@ -255,25 +255,16 @@ export default defineResolvers({
     },
     ssrStreaming: {
       $resolve (val) {
-        // Indexing crawlers only — `chrome-lighthouse` is intentionally absent
+        // Indexing crawlers only; `chrome-lighthouse` is intentionally absent
         // so audit tools measure the same streamed response real users get.
-        const defaultBotRegex = 'bot\\b|crawl|spider|slurp|facebookexternalhit|google\\b|bing\\b|yandex\\b|baidu\\b|duckduck'
-        if (val && (val === true || (typeof val === 'object' && (!('enabled' in val) || val.enabled !== false)))) {
-          let botRegex = defaultBotRegex
-          if (val !== true && 'botRegex' in val && typeof val.botRegex === 'string') {
-            // Validate the user-supplied pattern at config time — a typo like
-            // `'('` would otherwise crash Nitro at module init when the
-            // renderer compiles `new RegExp(NUXT_SSR_STREAMING_BOT_RE, 'i')`.
-            try {
-              new RegExp(val.botRegex, 'i')
-              botRegex = val.botRegex
-            } catch (error) {
-              console.warn(`[nuxt] [experimental.ssrStreaming.botRegex] Invalid regex pattern ${JSON.stringify(val.botRegex)}, falling back to default. ${(error as Error).message}`)
-            }
-          }
-          return { botRegex, enabled: true }
+        const defaultBotRegex = /bot\b|crawl|spider|slurp|facebookexternalhit|google\b|bing\b|yandex\b|baidu\b|duckduck/i
+        const obj = (val !== null && typeof val === 'object') ? val as { enabled?: boolean, botRegex?: RegExp } : null
+        const isEnabled = val === true || (obj !== null && obj.enabled !== false)
+        if (!isEnabled) {
+          return { enabled: false as const, botRegex: defaultBotRegex }
         }
-        return { enabled: false }
+        const botRegex = obj?.botRegex instanceof RegExp ? obj.botRegex : defaultBotRegex
+        return { enabled: true as const, botRegex }
       },
     },
     asyncCallHook: {

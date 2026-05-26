@@ -129,7 +129,7 @@ test.describe('SSR Streaming', () => {
     await expect(page.locator('head meta[name="child-b"]')).toHaveAttribute('content', 'b-meta')
   })
 
-  // Streaming is on by default; `routeRules: { buffered: true }` opts a route out.
+  // Streaming is on by default; `routeRules: { streaming: false }` opts a route out.
   test('per-route streaming opt-out via routeRules', async ({ fetch }) => {
     const bufferedRes = await fetch('/buffered')
     const bufferedHtml = await bufferedRes.text()

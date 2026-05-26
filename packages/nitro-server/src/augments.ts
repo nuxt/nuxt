@@ -12,7 +12,7 @@ declare module 'nitro/types' {
   }
   interface NitroRouteRules {
     ssr?: boolean
-    buffered?: boolean
+    streaming?: boolean
     noScripts?: boolean
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
@@ -26,7 +26,7 @@ declare module 'nitro/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
-    buffered?: boolean
+    streaming?: boolean
     noScripts?: boolean
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean

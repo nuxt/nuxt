@@ -4,15 +4,17 @@ import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
 import { useRuntimeConfig } from 'nitro/runtime-config'
+import type { App } from 'vue'
 
 import type { NuxtSSRContext } from 'nuxt/app'
-import type { Entry } from '#app/entry'
 
 // @ts-expect-error virtual file
 import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../paths'
+
+type Entry = (ssrContext?: NuxtSSRContext) => Promise<App>
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL

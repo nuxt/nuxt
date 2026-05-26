@@ -72,7 +72,7 @@ export interface NuxtRenderRouteContext {
   /**
    * Whether SSR streaming is possible for this route. `false` when a
    * buffered-only feature is in play (component islands, ISR/SWR cache,
-   * `noScripts`, redirects) or SSR streaming is disabled. Read-only — the
+   * `noScripts`, redirects) or SSR streaming is disabled. Read-only: the
    * renderer enforces this regardless of `prefersStream`.
    */
   readonly canStream: boolean
