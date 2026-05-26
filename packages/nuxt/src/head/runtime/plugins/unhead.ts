@@ -14,10 +14,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:head',
   enforce: 'pre',
   setup (nuxtApp) {
-    // When streaming is enabled, use createStreamableHead to consume the
-    // window.__unhead__ queue populated during SSR streaming. Falls back
-    // to createClientHead if no stream queue is found (e.g. bot requests
-    // that received a fully-buffered response).
+    // `createStreamableHead` consumes the `window.__unhead__` queue
+    // populated during SSR streaming, falling back to `createClientHead`
+    // when no queue is found (e.g. bot requests served buffered).
     const head = import.meta.server
       ? nuxtApp.ssrContext!.head
       : ssrStreaming

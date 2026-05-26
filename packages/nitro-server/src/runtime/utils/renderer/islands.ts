@@ -59,18 +59,17 @@ export function getComponentSlotTeleport (clientUid: string, teleports: Record<s
   return slots
 }
 
-// Inline script that runs synchronously during streaming before the deferred
-// entry module hydrates. It performs the same stitch as `replaceIslandTeleports`
-// (teleport content as the first child of its `data-island-uid` anchor), but in
-// the live DOM — the streamed body has already flushed the anchors, so a
-// post-render string pass is impossible.
+// Inline script that runs synchronously during streaming, before the
+// deferred entry module hydrates. It inserts the teleport content as the
+// first child of its `data-island-uid` anchor in the live DOM. The
+// streamed body has already flushed the anchors, so a post-render string
+// pass is not possible.
 const ISLAND_TELEPORT_RELOCATE_SCRIPT = `(()=>{for(const t of document.querySelectorAll('template[data-island-uid]')){const u=t.getAttribute('data-island-uid'),s=t.getAttribute('data-island-slot'),c=t.getAttribute('data-island-component'),a=document.querySelector('[data-island-uid="'+u+'"]'+(s!==null?'[data-island-slot="'+s+'"]':'[data-island-component="'+c+'"]'));if(a){a.insertBefore(t.content,a.firstChild)}t.remove()}})()`
 
 /**
- * Streaming counterpart to `replaceIslandTeleports`. Emits each island teleport
- * as an inert `<template>` keyed by its anchor, followed by a relocation script
- * that moves the content into place before hydration. Returns an empty string
- * when there are no island teleports.
+ * Emit each island teleport as an inert `<template>` keyed by its anchor,
+ * followed by a relocation script that moves the content into place before
+ * hydration. Returns an empty string when there are no island teleports.
  */
 export function renderStreamedIslandTeleports (ssrContext: NuxtSSRContext, nonceAttr = ''): string {
   const { teleports, islandContext } = ssrContext

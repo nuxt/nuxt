@@ -167,15 +167,16 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    // SSR streaming: emit the unhead streaming IIFE as a raw, content-hashed
-    // JS asset in production so the renderer can load it as a classic script
-    // (`<script async src>` without `type="module"`). The IIFE is a prebuilt,
-    // pre-minified self-invoking string; running it through the bundler's
-    // chunk graph would wrap it in ESM and break the loader.
-    // Note: we intentionally do NOT use unheadVuePlugin's SFC transform
-    // (HeadStream injection) because it causes hydration mismatches (server
-    // renders <script>, client renders null). The renderer injects head
-    // update scripts outside the Vue render tree.
+    // Emit the unhead streaming IIFE as a raw, content-hashed JS asset in
+    // production so the renderer can load it as a classic script
+    // (`<script async src>` without `type="module"`). The IIFE is a
+    // prebuilt, pre-minified self-invoking string; routing it through the
+    // bundler's chunk graph would wrap it in ESM and break the loader.
+    //
+    // We deliberately do not use unheadVuePlugin's SFC transform here
+    // (HeadStream injection): it causes hydration mismatches because the
+    // server renders <script> and the client renders null. The renderer
+    // injects head update scripts outside the Vue render tree instead.
     const ssrStreamingEnabled = typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
     if (ssrStreamingEnabled) {
       let iifeChunkFileName: string | undefined
@@ -203,10 +204,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         },
       })
 
-      // Webpack/rspack parity: emit the IIFE as a raw asset via
-      // `compilation.emitAsset` so it ships as a classic script alongside
-      // the chunk graph (no ESM wrapping). Runs only on the client compiler
-      // in production — in dev the renderer inlines the IIFE.
+      // For webpack/rspack we emit the IIFE via `compilation.emitAsset` so
+      // it ships as a classic script outside the chunk graph (no ESM
+      // wrapping). Client compiler, production only - dev inlines the IIFE.
       if (!nuxt.options.dev && nuxt.options.builder !== '@nuxt/vite-builder') {
         const makeIifeAssetPlugin = () => ({
           apply (compiler: any) {

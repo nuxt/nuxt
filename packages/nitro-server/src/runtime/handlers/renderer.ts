@@ -479,7 +479,7 @@ async function renderStreamedResponse (ctx: {
     vueApp = await createSSRApp(ssrContext)
   } catch (error: any) {
     if (ssrContext['~renderResponse'] && error?.message === 'skipping render') {
-      // Drop any preload `Link` header that targeted the streamed entry — the
+      // Drop any preload `Link` header that targeted the streamed entry - the
       // redirect/response we are about to send does not need them.
       event.res.headers.delete('link')
       return returnResponse(event, ssrContext['~renderResponse'])
@@ -531,7 +531,7 @@ async function renderStreamedResponse (ctx: {
     const initialAppendLen = shellContext.bodyAppend.length
     await useNitroHooks().callHook('render:html', shellContext, { event, streaming: true })
     if (shellContext.body.length !== initialBodyLen || shellContext.bodyAppend.length !== initialAppendLen) {
-      console.warn(`[nuxt] \`render:html\` mutated \`body\`/\`bodyAppend\` while streaming (${event.url.pathname}). These fields are silently dropped because the body is about to stream — use the \`render:html:close\` hook instead.`)
+      console.warn(`[nuxt] \`render:html\` mutated \`body\`/\`bodyAppend\` while streaming (${event.url.pathname}). These fields are silently dropped because the body is about to stream - use the \`render:html:close\` hook instead.`)
     }
   } else {
     await useNitroHooks().callHook('render:html', shellContext, { event, streaming: true })
@@ -551,11 +551,11 @@ async function renderStreamedResponse (ctx: {
   // surface here that must short-circuit streaming, since once the shell is
   // on the wire the response status is committed:
   //   1. `navigateTo()` from a page `<script setup>` sets `~renderResponse`
-  //      during Vue's setup phase — we must return that redirect instead.
-  //   2. Fatal errors thrown during initial render — fall through to the
+  //      during Vue's setup phase - we must return that redirect instead.
+  //   2. Fatal errors thrown during initial render - fall through to the
   //      buffered error renderer.
   //   3. `createError({ fatal: true })` populates `payload.error` without
-  //      throwing — same as above.
+  //      throwing - same as above.
   let firstChunk: Uint8Array | undefined
   try {
     const { done, value } = await reader.read()
@@ -586,7 +586,7 @@ async function renderStreamedResponse (ctx: {
   // Snapshot status + headers before shell commit so we can warn in dev when
   // composables like `useCookie`, `setResponseStatus`, or `useResponseHeader`
   // mutate the response after the wire is closed. These mutations are
-  // silently lost in production — the warning is dev-only diagnostic.
+  // silently lost in production - the warning is dev-only diagnostic.
   const committedSnapshot = import.meta.dev
     ? {
         status: event.res.status,
@@ -598,10 +598,9 @@ async function renderStreamedResponse (ctx: {
   // 8. Build the streaming response
   const encoder = new TextEncoder()
   let chunkIndex = 0
-  // Enqueue a chunk after running it through the `render:html:chunk` hook so
-  // modules can transform bytes (e.g. CSP nonce injection) or count chunks.
-  // The hook is awaited per chunk; this is the price of being able to mutate
-  // the stream — most hook implementations should be synchronous.
+  // Awaited per chunk so `render:html:chunk` can mutate bytes (e.g. CSP
+  // nonce injection). Hook implementations should be synchronous where
+  // possible.
   const enqueueChunk = async (controller: ReadableStreamDefaultController<Uint8Array>, chunk: Uint8Array) => {
     const chunkContext = { chunk, index: chunkIndex++ }
     await useNitroHooks().callHook('render:html:chunk', chunkContext, { event })
@@ -609,7 +608,7 @@ async function renderStreamedResponse (ctx: {
   }
   // Route/layout styles. The shell was flushed before render, so it only
   // carries entry-chunk styles; once render has registered the page, layout
-  // and (later) async-component modules we emit their styles too — inlined as
+  // and (later) async-component modules we emit their styles too - inlined as
   // `<style>` when `inlineStyles` is on (matching the buffered path), otherwise
   // as stylesheet links. They sit after the shell and outside `#__nuxt`, so the
   // browser applies them without a hydration mismatch. Deduped against the
@@ -639,7 +638,7 @@ async function renderStreamedResponse (ctx: {
   const outputStream = new ReadableStream<Uint8Array>({
     async start (controller) {
       try {
-        // Flush the shell immediately — fastest TTFB is the whole point. Route
+        // Flush the shell immediately - fastest TTFB is the whole point. Route
         // assets are computed *after* this enqueue so resolving inline styles
         // never delays the shell, then sent before the app root opens.
         await enqueueChunk(controller, encoder.encode(shellHtml))
@@ -669,7 +668,7 @@ async function renderStreamedResponse (ctx: {
           reader.releaseLock()
         }
 
-        // Final head flush — entries pushed after the last suspense boundary
+        // Final head flush - entries pushed after the last suspense boundary
         // resolves (e.g. `bodyClose` scripts via `onPrehydrate`) would otherwise
         // bypass the streaming push pipeline and land as static tags in `</body>`.
         if (!NO_SCRIPTS) {
@@ -682,9 +681,9 @@ async function renderStreamedResponse (ctx: {
         // Stream complete — build closing HTML
         await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: {} as any })
 
-        // Handle errors that occurred during streaming.
-        // Since the HTTP status is already committed (200), the error is
-        // injected into the payload so the client can render the error page.
+        // The HTTP status is already committed (200), so an error here can
+        // only reach the client via the payload - the client renders the
+        // error page during hydration.
         if (ssrContext.payload?.error && !ssrError) {
           await ssrContext.nuxt?.hooks.callHook('app:error', ssrContext.payload.error)
         }
@@ -709,7 +708,7 @@ async function renderStreamedResponse (ctx: {
         await useNitroHooks().callHook('render:html:close', closeContext, { event })
 
         // Teleports + closing tags. `teleports.body` collects content from
-        // `<Teleport to="body">` and must be appended before `</body>` —
+        // `<Teleport to="body">` and must be appended before `</body>` -
         // the buffered renderer places it at `bodyPrepend` but the body is
         // already streamed here, so the bottom-of-body position is the only
         // option for streaming.
@@ -718,7 +717,7 @@ async function renderStreamedResponse (ctx: {
           + APP_TELEPORT_CLOSE_TAG
 
         // Island teleports (slot content, selective-client components) cannot
-        // be stitched into the body string — it has already streamed. Emit them
+        // be stitched into the body string - it has already streamed. Emit them
         // as inert `<template>`s plus a relocation script that runs before the
         // deferred entry hydrates. Skipped under `NO_SCRIPTS` (the guard keeps
         // island apps buffered in that case).
@@ -726,7 +725,7 @@ async function renderStreamedResponse (ctx: {
 
         const closingHtml = APP_ROOT_CLOSE_TAG
           // Styles for modules registered after the first chunk (deeply nested
-          // async components) — emitted outside the app root.
+          // async components) - emitted outside the app root.
           + (await renderRouteStyles())
           + teleportHtml
           + (ssrContext.teleports?.body || '')
@@ -758,7 +757,7 @@ async function renderStreamedResponse (ctx: {
       } catch (error) {
         // Status code is already committed (200) because the shell flushed
         // before this error was thrown. The browser can only learn about the
-        // error via hydration — set `payload.error` so the client renders
+        // error via hydration - set `payload.error` so the client renders
         // the error page once it picks up the SSR data, then emit a
         // well-formed closing so HTML parsing doesn't choke.
         await Promise.resolve(ssrContext.nuxt?.hooks.callHook('app:error', error)).catch(() => {})
@@ -780,8 +779,8 @@ async function renderStreamedResponse (ctx: {
       }
     },
     cancel (reason) {
-      // Client disconnected (or downstream cancelled). Stop Vue from rendering
-      // — otherwise it keeps walking the component tree until completion,
+      // Client disconnected (or downstream cancelled). Stop Vue from rendering,
+      // otherwise it keeps walking the component tree until completion,
       // burning CPU/memory on abandoned requests.
       reader.cancel(reason).catch(() => {})
     },
