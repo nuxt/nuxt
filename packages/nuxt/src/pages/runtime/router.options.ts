@@ -31,6 +31,10 @@ export default <RouterConfig>{
 
     if (routeAllowsScrollToTop === false) { return false }
 
+    // When only nested route params change (same page components), don't scroll to top
+    // unless the browser is restoring a saved position (back/forward navigation)
+    if (!isChangingPage(to, from) && !savedPosition) { return false }
+
     if (from === START_LOCATION) {
       return _calculatePosition(to, from, savedPosition, hashScrollBehaviour)
     }
