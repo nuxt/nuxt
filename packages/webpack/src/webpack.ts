@@ -240,8 +240,14 @@ async function compile (compiler: Compiler) {
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
+    const formatted = stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true })
+    const compilationErrors = stats.compilation?.errors ?? []
+    logger.error(formatted || '(no formatted errors emitted; see compilation errors below)')
+    for (const err of compilationErrors) {
+      logger.error(err)
+    }
     const error = new Error('Nuxt build error')
-    error.stack = stats.toString('errors-only')
+    error.stack = formatted || compilationErrors.map(e => e.stack || e.message || String(e)).join('\n\n') || error.stack
     throw error
   }
 }
