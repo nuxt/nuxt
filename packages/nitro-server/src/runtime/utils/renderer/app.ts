@@ -8,7 +8,10 @@ import unheadOptions from '#internal/unhead-options.mjs'
 // @ts-expect-error virtual file
 import { NUXT_NO_SSR, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
-const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
+// `/404.html` is intentionally not noSSR - it goes through the normal SSR path
+// so `error.vue`'s `useHead` lands in the prerendered HTML. The synthetic 404
+// that drives this is injected in `handlers/renderer.ts`
+const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html'])
 
 export function createSSRContext (event: H3Event): NuxtSSRContext {
   const url = event.url.pathname + event.url.search + event.url.hash

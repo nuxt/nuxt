@@ -62,11 +62,22 @@ const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
 
 const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
   // Whether we're rendering an error page
-  const ssrError = event.url.pathname.startsWith('/__nuxt_error')
+  let ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery<NuxtPayload['error'] & { url: string }>(event)
     : null
 
-  if (ssrError && !event.context.nuxt?.['~internal'] /* allow internal fetch */) {
+  // `/404.html` has no real route - fake a 404 so error.vue renders
+  // and its `useHead` lands in the prerendered HTML
+  if (!ssrError && import.meta.prerender && event.url.pathname === '/404.html') {
+    ssrError = {
+      statusCode: 404,
+      statusMessage: 'Page Not Found',
+      message: 'Page Not Found',
+      url: event.url.toString(),
+    } as NuxtPayload['error'] & { url: string }
+  }
+
+  if (event.url.pathname.startsWith('/__nuxt_error') && !event.context.nuxt?.['~internal'] /* allow internal fetch */) {
     throw new HTTPError({
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',
@@ -121,7 +132,9 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   }
 
   // Whether we are prerendering route or using ISR/SWR caching
-  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
+  // Error pages skip payload extraction - `<route>/_payload.json` would
+  // collide with the static file output (e.g. `404.html`)
+  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && !ssrError && (
     (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
     || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
   )
@@ -343,7 +356,6 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   }
 
   // TODO: migrate to `ssrContext.head.render()` once `renderSSRHeadOptions` (e.g. `omitLineBreaks`) can be passed to `createServerHead` at construction time.
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
 
   // Create render context
