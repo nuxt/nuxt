@@ -122,7 +122,7 @@
     "vite": "7.3.3",
     "vitest": "4.1.7",
     "vue-bundle-renderer": "2.2.0",
-    "vue-sfc-transformer": "0.2.1"
+    "vue-sfc-transformer": "0.2.3"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",

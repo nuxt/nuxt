@@ -77,8 +77,8 @@
     }
   },
   "devDependencies": {
-    "@babel/plugin-proposal-decorators": "7.29.0",
-    "@babel/plugin-syntax-typescript": "7.28.6",
+    "@babel/plugin-proposal-decorators": "7.29.7",
+    "@babel/plugin-syntax-typescript": "7.29.7",
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "7.0.0",
     "nuxt": "workspace:*",
