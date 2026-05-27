@@ -356,6 +356,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   }
 
   // TODO: migrate to `ssrContext.head.render()` once `renderSSRHeadOptions` (e.g. `omitLineBreaks`) can be passed to `createServerHead` at construction time.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
 
   // Create render context
