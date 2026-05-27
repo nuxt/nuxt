@@ -8,23 +8,23 @@ function req (headers: Record<string, string | string[] | undefined>) {
 describe('isSameOriginRequest', () => {
   describe('with Sec-Fetch-Site present', () => {
     it('allows same-origin', () => {
-      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', host: 'localhost:3000' }))).toBe(true)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': 'localhost:3000' }))).toBe(true)
     })
 
     it('allows direct browser navigation (none)', () => {
-      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'none', host: 'localhost:3000' }))).toBe(true)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'none', 'host': 'localhost:3000' }))).toBe(true)
     })
 
     it('rejects cross-site', () => {
-      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'cross-site', host: 'localhost:3000' }))).toBe(false)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'cross-site', 'host': 'localhost:3000' }))).toBe(false)
     })
 
     it('rejects same-site (subdomain)', () => {
-      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-site', host: 'localhost:3000' }))).toBe(false)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-site', 'host': 'localhost:3000' }))).toBe(false)
     })
 
     it('handles array-form header values', () => {
-      expect(isSameOriginRequest(req({ 'sec-fetch-site': ['cross-site', 'same-origin'], host: 'localhost:3000' }))).toBe(false)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': ['cross-site', 'same-origin'], 'host': 'localhost:3000' }))).toBe(false)
     })
   })
 
