@@ -177,7 +177,7 @@ interface _NuxtApp {
   '_processingMiddleware'?: string | boolean
 
   /** @internal */
-  '_processingMiddlewareRoute'?: RouteLocationNormalizedLoaded
+  '_processingMiddlewareRoute'?: Pick<RouteLocationNormalizedLoaded, 'fullPath'>
 
   /** @internal */
   '_once': {
