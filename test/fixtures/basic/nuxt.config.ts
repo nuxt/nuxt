@@ -102,6 +102,7 @@ export default withMatrix({
     teleportId: 'nuxt-teleport',
     teleportTag: 'span',
     head: {
+      title: 'Nuxt Fixture App Title',
       charset: 'utf-8',
       link: [undefined],
       meta: [
@@ -197,6 +198,10 @@ export default withMatrix({
         '/random/b',
         '/random/c',
         '/prefetch/server-components',
+        // Force prerender of canonical static error page so we can verify that
+        // component-level `useHead` from `error.vue` lands in the generated
+        // `404.html` (regression coverage for nuxt/nuxt#34579).
+        '/404.html',
       ],
     },
   },

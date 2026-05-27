@@ -1,4 +1,4 @@
-import { readdir } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
@@ -1320,6 +1320,17 @@ describe('errors', () => {
     })
     expect(typeof res).toBe('string')
     expect(res).toContain('Hello Nuxt 3!')
+  })
+
+  // Regression coverage for https://github.com/nuxt/nuxt/issues/34579: the
+  // prerendered `/404.html` should reflect `useHead()` in `error.vue`, not
+  // the default `app.head.title` from the nuxt config
+  it.skipIf(isDev)('should reflect error.vue head in the prerendered `/404.html`', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    const html = await readFile(join(publicDir, '404.html'), 'utf-8')
+    expect(html).toContain('404 - Page Not Found | Basic Error Page')
+    expect(html).not.toContain('<title>Nuxt Fixture App Title</title>')
   })
 
   // TODO: need to create test for webpack
