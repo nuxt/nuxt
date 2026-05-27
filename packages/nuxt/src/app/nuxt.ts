@@ -177,6 +177,9 @@ interface _NuxtApp {
   '_processingMiddleware'?: string | boolean
 
   /** @internal */
+  '_processingMiddlewareRoute'?: RouteLocationNormalizedLoaded
+
+  /** @internal */
   '_once': {
     [key: string]: Promise<any>
   }

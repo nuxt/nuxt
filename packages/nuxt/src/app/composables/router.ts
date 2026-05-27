@@ -226,6 +226,14 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       // We wait to perform the redirect last in case any other middleware will intercept the redirect
       // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
+        if (nuxtApp._processingMiddlewareRoute?.fullPath === fullPath) {
+          throw createError({
+            statusCode: 500,
+            fatal: true,
+            statusMessage: `Infinite redirect detected to "${fullPath}"`,
+          })
+        }
+
         router.afterEach(final => final.fullPath === fullPath ? redirect(false) : undefined)
         return to
       }
