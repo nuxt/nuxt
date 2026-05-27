@@ -93,6 +93,15 @@ const isProcessingMiddleware = () => {
   return false
 }
 
+const isMiddlewareSelfRedirect = (fullPath: string) => {
+  try {
+    return useNuxtApp()._processingMiddlewareRoute?.fullPath === fullPath
+  } catch {
+    return false
+  }
+  return false
+}
+
 // Conditional types, either one or other
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
 type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
@@ -226,7 +235,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       // We wait to perform the redirect last in case any other middleware will intercept the redirect
       // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
-        if (nuxtApp._processingMiddlewareRoute?.fullPath === fullPath) {
+        if (isMiddlewareSelfRedirect(fullPath)) {
           throw createError({
             statusCode: 500,
             fatal: true,
