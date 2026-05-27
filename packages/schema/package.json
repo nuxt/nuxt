@@ -61,7 +61,7 @@
     "oxc-transform": "0.132.0",
     "postcss": "8.5.15",
     "rollup-plugin-visualizer": "7.0.1",
-    "sass-loader": "16.0.8",
+    "sass-loader": "17.0.0",
     "scule": "1.3.0",
     "unctx": "2.5.0",
     "unimport": "6.3.0",
