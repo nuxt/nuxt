@@ -892,8 +892,8 @@ importers:
         specifier: 7.0.1
         version: 7.0.1(rolldown@1.0.2)(rollup@4.60.4)
       sass-loader:
-        specifier: 16.0.8
-        version: 16.0.8(@rspack/core@2.0.4)(webpack@5.107.2(esbuild@0.28.0))
+        specifier: 17.0.0
+        version: 17.0.0(@rspack/core@2.0.4)(webpack@5.107.2(esbuild@0.28.0))
       scule:
         specifier: 1.3.0
         version: 1.3.0
@@ -8701,19 +8701,16 @@ packages:
     resolution: {integrity: sha512-x/+Cz4YrimQxQccJf5mKEbIa1NzeCRNI5Ecl/ekmlYaampdNLPalVyIcCZNNH3MvmqBugV5TMYZXv0ljslUlaw==}
     engines: {node: '>= 0.4'}
 
-  sass-loader@16.0.8:
-    resolution: {integrity: sha512-hcov4ZwZJIGbEuyNr9EmiTmZueyrxSToE6GOzoZnq5JM7ecRO7ttyvilPn+VmRsqiP16+VYZzVnGZj/hzZgKBA==}
-    engines: {node: '>= 18.12.0'}
+  sass-loader@17.0.0:
+    resolution: {integrity: sha512-0Ybm8ohBQ9LcrycVrFQp/KQBNX5a3Wda9/smS0mE/xLffzEnwvV8nykOzrbiSWNzTE3IB/jiXx8O4QmDPG2+Gw==}
+    engines: {node: '>= 22.11.0'}
     peerDependencies:
       '@rspack/core': 0.x || ^1.0.0 || ^2.0.0-0
-      node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
       sass: ^1.3.0
       sass-embedded: '*'
       webpack: ^5.0.0
     peerDependenciesMeta:
       '@rspack/core':
-        optional: true
-      node-sass:
         optional: true
       sass:
         optional: true
@@ -17934,9 +17931,7 @@ snapshots:
       es-errors: 1.3.0
       is-regex: 1.2.1
 
-  sass-loader@16.0.8(@rspack/core@2.0.4)(webpack@5.107.2(esbuild@0.28.0)):
-    dependencies:
-      neo-async: 2.6.2
+  sass-loader@17.0.0(@rspack/core@2.0.4)(webpack@5.107.2(esbuild@0.28.0)):
     optionalDependencies:
       '@rspack/core': 2.0.4
       webpack: 5.107.2(esbuild@0.28.0)
