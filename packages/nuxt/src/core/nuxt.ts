@@ -543,6 +543,13 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/dev-only'),
   })
 
+  // Add <PreviewOnly>
+  addComponent({
+    name: 'PreviewOnly',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/preview-only'),
+  })
+
   // Add <ServerPlaceholder>
   addComponent({
     name: 'ServerPlaceholder',
