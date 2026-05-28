@@ -630,6 +630,18 @@ describe('routing utilities: `encodeURL`', () => {
     expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
     expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
   })
+
+  it.each([
+    '/..//evil.com',
+    '/.//evil.com',
+    '/%2e%2e//evil.com',
+    '/app/..//evil.com',
+    '/..//evil.com/path?q=1#h',
+  ])('does not produce a protocol-relative URL for path-normalization bypass %s', (input) => {
+    const result = encode(input)
+    expect(result.startsWith('//')).toBe(false)
+    expect(new URL(result, 'http://app.test').origin).toBe('http://app.test')
+  })
 })
 
 describe('routing utilities: `encodeRoutePath`', () => {
