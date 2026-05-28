@@ -177,6 +177,19 @@ describe('server components/islands', () => {
     expect(await page.innerHTML('head')).toContain('<meta name="author" content="Nuxt">')
     await page.close()
   })
+
+  it('/server-page-with-nuxtpage/child renders the parent server page with the child route', async () => {
+    const html = await $fetch<string>('/server-page-with-nuxtpage/child')
+    expect(html).toContain('id="server-page-with-nuxtpage"')
+    expect(html).toContain('id="server-page-with-nuxtpage-child"')
+    expect(html).toContain('Child body')
+  })
+
+  it('/server-page-with-nuxtpage renders the parent without recursing into itself', async () => {
+    const html = await $fetch<string>('/server-page-with-nuxtpage')
+    expect(html).toContain('id="server-page-with-nuxtpage"')
+    expect(html).toContain('Parent body')
+  })
 })
 
 describe('component islands', () => {
