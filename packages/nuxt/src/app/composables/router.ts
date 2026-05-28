@@ -156,6 +156,11 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Early open handler
   if (import.meta.client && options?.open) {
+    const { protocol } = new URL(toPath, window.location.href)
+    if (protocol && isScriptProtocol(protocol)) {
+      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+    }
+
     const { target = '_blank', windowFeatures = {} } = options.open
 
     const features: string[] = []
