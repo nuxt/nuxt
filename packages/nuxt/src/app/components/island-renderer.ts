@@ -15,7 +15,10 @@ export default defineComponent({
     },
   },
   setup (props) {
-    const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
+    const name = props.context.name
+    const component = Object.hasOwn(islandComponents, name)
+      ? islandComponents[name] as ReturnType<typeof defineAsyncComponent>
+      : undefined
 
     if (!component) {
       throw createError({
