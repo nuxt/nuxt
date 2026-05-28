@@ -526,6 +526,32 @@ describe('routing utilities: `navigateTo`', () => {
       expect(() => navigateTo(url, { external: true })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
   })
+  it('navigateTo should disallow opening data/script URLs via the `open` option', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      const urls = [
+        ['javascript:alert("hi")', 'javascript'],
+        ['data:alert("hi")', 'data'],
+        ['vbscript:alert("hi")', 'vbscript'],
+        ['\0javascript:alert("hi")', 'javascript'],
+      ]
+      for (const [url, protocol] of urls) {
+        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+      }
+      expect(open).not.toHaveBeenCalled()
+    } finally {
+      open.mockRestore()
+    }
+  })
+  it('navigateTo should still allow opening safe URLs via the `open` option', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      expect(() => navigateTo('https://example.com', { open: { target: '_blank' } })).not.toThrow()
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+    } finally {
+      open.mockRestore()
+    }
+  })
   it('reloadNuxtApp should disallow paths with data/script URLs', () => {
     const urls = [
       ['javascript:alert("hi")', 'javascript'],
