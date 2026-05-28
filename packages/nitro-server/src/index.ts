@@ -17,7 +17,8 @@ import type { Nitro, NitroConfig, NitroRouteRules } from 'nitropack/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { defineEventHandler, dynamicEventHandler, handleCors, setHeader } from 'h3'
+import { defineEventHandler, dynamicEventHandler, getRequestHeader, handleCors, setHeader, setResponseStatus } from 'h3'
+import type { H3Event } from 'h3'
 import { addDependency } from 'nypm'
 import { hasTTY, isCI, isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
@@ -910,12 +911,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     nitro.options.devHandlers.push({
       route: '/.well-known/appspecific/com.chrome.devtools.json',
-      handler: defineEventHandler(() => ({
-        workspace: {
-          ...projectConfiguration,
-          root: nuxt.options.rootDir,
-        },
-      })),
+      handler: defineEventHandler((event) => {
+        if (!isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
+          setResponseStatus(event, 403)
+          return 'Forbidden'
+        }
+        return {
+          workspace: {
+            ...projectConfiguration,
+            root: nuxt.options.rootDir,
+          },
+        }
+      }),
     })
   }
 
@@ -1066,6 +1073,50 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
   const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
 
   return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
+}
+
+const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
+
+function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
+  const allowedHosts = nuxt.options.vite?.server?.allowedHosts
+  if (allowedHosts === true) {
+    return true
+  }
+  const hosts = new Set(LOOPBACK_HOSTS)
+  if (Array.isArray(allowedHosts)) {
+    for (const host of allowedHosts) {
+      if (typeof host === 'string' && host) {
+        hosts.add(host)
+      }
+    }
+  }
+  return hosts
+}
+
+function isLocalDevRequest (event: H3Event, allowedHosts: ReadonlySet<string> | true): boolean {
+  const hostHeader = getRequestHeader(event, 'host')
+  if (allowedHosts !== true) {
+    const host = hostHeader?.split(':')[0]
+    if (!host || !allowedHosts.has(host)) {
+      return false
+    }
+  }
+
+  const site = getRequestHeader(event, 'sec-fetch-site')
+  if (site !== undefined) {
+    return site === 'same-origin' || site === 'none'
+  }
+
+  const initiator = getRequestHeader(event, 'origin') || getRequestHeader(event, 'referer')
+  if (!initiator) {
+    return true
+  }
+
+  try {
+    return new URL(initiator).host === hostHeader
+  } catch {
+    return false
+  }
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {
