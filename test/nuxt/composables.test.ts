@@ -437,6 +437,15 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       }
     `)
   })
+  it('matches case-insensitively to mirror vue-router defaults', () => {
+    expect(getRouteRules({ path: '/Pre/spa/thing' })).toMatchObject({
+      prerender: true,
+      ssr: false,
+    })
+    expect(getRouteRules({ path: '/PRE/test' })).toMatchObject({
+      redirect: '/',
+    })
+  })
 })
 
 describe('compiled route rules', () => {
