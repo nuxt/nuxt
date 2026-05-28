@@ -162,7 +162,7 @@ export const NoScript = defineComponent({
         }
       }
       if (textContent.length > 0) {
-        noscript.innerHTML = textContent.join('')
+        noscript.textContent = textContent.join('')
       }
       input.noscript![idx] = noscript
       update()
