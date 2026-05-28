@@ -11,7 +11,8 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from '@nuxt/nitro-server/h3'
 import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
-import type { VueHeadClient } from '@unhead/vue/types'
+import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
+import type { SSRHeadPayload } from '@unhead/vue/server'
 
 import type { NuxtAppLiterals } from 'nuxt/app'
 
@@ -70,7 +71,7 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: Partial<NuxtPayload>
-  head: VueHeadClient
+  head: VueHeadClient<UseHeadInput, SSRHeadPayload>
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
