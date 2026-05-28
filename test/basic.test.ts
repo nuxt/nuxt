@@ -563,6 +563,12 @@ describe('pages', () => {
     expect(html).not.toContain('Sugar Counter 12 x 0 = 0')
     // ensure NuxtClientFallback is being rendered with its fallback tag and attributes
     expect(html).toContain('<span class="break-in-ssr">this failed to render</span>')
+
+    const xssHtml = await $fetch<string>('/client-fallback', {
+      query: { unsafe: '<script>alert(1)</script>' },
+    })
+    expect(xssHtml).not.toContain('<section class="escaped-fallback"><script>alert(1)</script></section>')
+    expect(xssHtml).toContain('<section class="escaped-fallback">&lt;script&gt;alert(1)&lt;/script&gt;</section>')
     // ensure Fallback slot is being rendered server side
     expect(html).toContain('Hello world !')
     // ensure fallback is rendered when an async component throws inside a wrapping component
