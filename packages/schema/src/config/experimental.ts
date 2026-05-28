@@ -253,6 +253,20 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
+    ssrStreaming: {
+      $resolve (val) {
+        // Indexing crawlers only; `chrome-lighthouse` is intentionally absent
+        // so audit tools measure the same streamed response real users get.
+        const defaultBotRegex = /bot\b|crawl|spider|slurp|facebookexternalhit|google\b|bing\b|yandex\b|baidu\b|duckduck/i
+        const obj = (val !== null && typeof val === 'object') ? val as { enabled?: boolean, botRegex?: RegExp } : null
+        const isEnabled = val === true || (obj !== null && obj.enabled !== false)
+        if (!isEnabled) {
+          return { enabled: false as const, botRegex: defaultBotRegex }
+        }
+        const botRegex = obj?.botRegex instanceof RegExp ? obj.botRegex : defaultBotRegex
+        return { enabled: true as const, botRegex }
+      },
+    },
     asyncCallHook: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
