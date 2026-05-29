@@ -53,7 +53,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
         const payload = await loadPayload(url).catch(() => { console.warn('[nuxt] Error preloading payload for', url) })
-        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(url)) {
+        // Normalise the key to a pathname so it matches the `to.path` key format
+        // used by the `beforeResolve` hook above — without this, entries were
+        // inserted under the full URL string but looked up under the pathname,
+        // so the disposal branch never fired and entries accumulated indefinitely.
+        const key = new URL(url, window.location.href).pathname
+        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(key)) {
           const entry = head.push({
             link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {
               // downgrade preload (and modulepreload) to prefetch
@@ -61,8 +66,18 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
               return { ...rest, rel: 'prefetch' }
             }),
           })
-          forwardedPrefetchEntries.set(url, entry)
+          forwardedPrefetchEntries.set(key, entry)
         }
+      })
+      // Dispose any prefetch hints that survived `beforeResolve` (e.g. routes
+      // that were prefetched on hover but never navigated to) so the Map does
+      // not grow unboundedly across the session lifetime.
+      useRouter().afterEach(() => {
+        if (!prefetchPreloadTags || forwardedPrefetchEntries.size === 0) { return }
+        for (const entry of forwardedPrefetchEntries.values()) {
+          entry.dispose()
+        }
+        forwardedPrefetchEntries.clear()
       })
       if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {
         setTimeout(getAppManifest, 1000)
