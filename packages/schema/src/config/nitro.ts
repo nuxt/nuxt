@@ -23,12 +23,6 @@ export default defineResolvers({
         const runtimeConfig = await get('runtimeConfig')
         return {
           ...runtimeConfig,
-          app: {
-            ...runtimeConfig.app,
-            baseURL: runtimeConfig.app.baseURL.startsWith('./')
-              ? runtimeConfig.app.baseURL.slice(1)
-              : runtimeConfig.app.baseURL,
-          },
           nitro: {
             envPrefix: 'NUXT_',
             ...runtimeConfig.nitro,
