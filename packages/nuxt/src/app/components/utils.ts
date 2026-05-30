@@ -18,6 +18,7 @@ export const _wrapInTransition = (props: any, children: any): { default: () => V
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
 const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
 const ROUTE_KEY_NORMAL_RE = /:\w+/g
+const ROUTE_RECORD_PARAM_RE = /:(\w+)(?:\([^)]*\))?[?+*]?/g
 // TODO: consider refactoring into single utility
 // See https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
 function generateRouteKey (route: RouteLocationNormalized) {
@@ -45,6 +46,49 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
     return false
   }
   return true
+}
+
+/**
+ * Utility used within router guards
+ * return true if navigation keeps the same parent page and only changes a nested page
+ */
+export function isChangingOnlyNestedPage (to: RouteLocationNormalized, from: RouteLocationNormalized): boolean {
+  if (to === from || from === START_LOCATION) { return false }
+
+  let commonDepth = 0
+  const maxDepth = Math.min(to.matched.length, from.matched.length)
+  for (let index = 0; index < maxDepth; index++) {
+    const toMatched = to.matched[index]
+    const fromMatched = from.matched[index]
+
+    if (toMatched !== fromMatched) { break }
+    if (hasRouteRecordParamChanged(toMatched.path, to.params, from.params)) { break }
+
+    commonDepth++
+  }
+
+  return commonDepth > 0 && (to.matched.length > commonDepth || from.matched.length > commonDepth)
+}
+
+function hasRouteRecordParamChanged (
+  path: string,
+  toParams: RouteLocationNormalized['params'],
+  fromParams: RouteLocationNormalized['params'],
+) {
+  for (const param of getRouteRecordParamKeys(path)) {
+    if (normalizeRouteParam(toParams[param]) !== normalizeRouteParam(fromParams[param])) {
+      return true
+    }
+  }
+  return false
+}
+
+function getRouteRecordParamKeys (path: string) {
+  return Array.from(path.matchAll(ROUTE_RECORD_PARAM_RE), match => match[1]!)
+}
+
+function normalizeRouteParam (value: RouteLocationNormalized['params'][string]) {
+  return Array.isArray(value) ? value.join('/') : value
 }
 
 export type SSRBuffer = SSRBufferItem[] & { hasAsync?: boolean }

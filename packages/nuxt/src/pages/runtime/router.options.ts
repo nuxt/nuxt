@@ -2,7 +2,7 @@ import { START_LOCATION } from 'vue-router'
 import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
-import { isChangingPage } from '#app/components/utils'
+import { isChangingOnlyNestedPage, isChangingPage } from '#app/components/utils'
 import { useRouter } from '#app/composables/router'
 
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
@@ -30,6 +30,10 @@ export default <RouterConfig>{
     const routeAllowsScrollToTop = typeof to.meta.scrollToTop === 'function' ? to.meta.scrollToTop(to, from) : to.meta.scrollToTop
 
     if (routeAllowsScrollToTop === false) { return false }
+
+    if (routeAllowsScrollToTop !== true && !savedPosition && !to.hash && isChangingOnlyNestedPage(to, from)) {
+      return false
+    }
 
     if (from === START_LOCATION) {
       return _calculatePosition(to, from, savedPosition, hashScrollBehaviour)

@@ -339,6 +339,108 @@ describe('scrollBehavior with scrollToTop and fixed page key', () => {
   })
 })
 
+describe('scrollBehavior with nested pages', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  let wrapper: VueWrapper<unknown>
+  let scrollTo: ReturnType<typeof vi.spyOn>
+  const cleanups: Array<() => void> = []
+
+  const pageLoadingEnd = vi.fn()
+
+  beforeAll(async () => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    cleanups.push(router.addRoute({
+      name: 'nested-scroll',
+      path: '/nested-scroll',
+      component: NestedPageParent,
+      children: [
+        { path: 'one', component: defineComponent({ setup: () => () => h('div', 'Nested one') }) },
+        { path: 'two', component: defineComponent({ setup: () => () => h('div', 'Nested two') }) },
+        {
+          path: 'force/:id',
+          meta: { scrollToTop: true },
+          component: defineComponent({ setup: () => () => h('div', 'Nested force') }),
+        },
+      ],
+    }))
+
+    cleanups.push(router.addRoute({
+      name: 'nested-scroll-param',
+      path: '/nested-scroll-param/:parentId',
+      component: NestedPageParent,
+      children: [
+        { path: ':childId', component: defineComponent({ setup: () => () => h('div', 'Nested param') }) },
+      ],
+    }))
+
+    cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEnd))
+
+    wrapper = await mountSuspended(defineComponent({
+      setup: () => () => h(NuxtPage),
+    }))
+    await flushPromises()
+  })
+
+  beforeEach(async () => {
+    await navigateTo('/')
+    await flushPromises()
+    vi.clearAllMocks()
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
+  })
+
+  afterAll(() => {
+    wrapper.unmount()
+    for (const cleanup of cleanups) {
+      cleanup()
+    }
+  })
+
+  async function waitForNavigation () {
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+  }
+
+  it('should keep window scroll when only the nested page changes', async () => {
+    await navigateTo('/nested-scroll/one')
+    await waitForNavigation()
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    vi.clearAllMocks()
+
+    await navigateTo('/nested-scroll/two')
+    await waitForNavigation()
+
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('should scroll to top when a parent page param changes', async () => {
+    await navigateTo('/nested-scroll-param/one/a')
+    await waitForNavigation()
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    vi.clearAllMocks()
+
+    await navigateTo('/nested-scroll-param/two/a')
+    await waitForNavigation()
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+
+  it('should scroll to top on nested page changes when explicitly enabled', async () => {
+    await navigateTo('/nested-scroll/force/one')
+    await waitForNavigation()
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    vi.clearAllMocks()
+
+    await navigateTo('/nested-scroll/force/two')
+    await waitForNavigation()
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+})
+
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 const NestedPageParent = defineComponent({
