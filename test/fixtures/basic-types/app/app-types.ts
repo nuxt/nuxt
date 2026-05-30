@@ -160,6 +160,25 @@ describe('API routes', () => {
       },
     })
   })
+
+  it('preserves constrained generic response fields', () => {
+    interface ApiResponse {
+      id: string
+    }
+
+    function assertUseFetchGeneric<T extends ApiResponse> () {
+      const { data } = useFetch<T>('/api/v1/users')
+      expectTypeOf(data.value!.id).toEqualTypeOf<string>()
+    }
+
+    function assertUseAsyncDataGeneric<T extends ApiResponse> () {
+      const { data } = useAsyncData<T>('api-generics', () => $fetch('/test'))
+      expectTypeOf(data.value!.id).toEqualTypeOf<string>()
+    }
+
+    assertUseFetchGeneric()
+    assertUseAsyncDataGeneric()
+  })
 })
 
 describe('nitro compatible APIs', () => {
