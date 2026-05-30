@@ -97,4 +97,8 @@ const { data } = await useAsyncData(() => requestFetch('/api/cookies'))
 </script>
 ```
 
+The same applies to request-scoped runtime context.
+For example, on Cloudflare Workers or Cloudflare Pages, server routes that read Cloudflare bindings from `event.context` need the current request context forwarded.
+Use `useRequestFetch` inside `useAsyncData`, or call the relative route with `useFetch`, instead of calling the route with `$fetch` directly.
+
 However, when calling `useFetch` with a relative URL on the server, Nuxt will use [`useRequestFetch`](/docs/4.x/api/composables/use-request-fetch) to proxy headers and cookies (with the exception of headers not meant to be forwarded, like `host`).

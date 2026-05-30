@@ -22,6 +22,11 @@ Headers that are **not meant to be forwarded** will **not be included** in the r
 The [`useFetch`](/docs/4.x/api/composables/use-fetch) composable uses `useRequestFetch` under the hood to automatically forward the request context and headers.
 ::
 
+::note
+This also applies to request-scoped runtime context on server presets such as Cloudflare Workers and Cloudflare Pages.
+For example, if an internal server route reads Cloudflare bindings from `event.context`, call it with `useRequestFetch` inside [`useAsyncData`](/docs/4.x/api/composables/use-async-data), or use [`useFetch`](/docs/4.x/api/composables/use-fetch) with a relative URL, so the route receives the current request event context.
+::
+
 ::code-group
 
 ```vue [app/pages/index.vue]
