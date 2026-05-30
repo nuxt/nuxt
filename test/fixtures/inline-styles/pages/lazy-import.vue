@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import { LazyWithLazyStyles } from '#components';
+import { LazyWithLazyStyles } from '#components'
 </script>
