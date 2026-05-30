@@ -19,7 +19,7 @@
  */
 
 type TracingChannel<C> = {
-  hasSubscribers: boolean
+  hasSubscribers: boolean | undefined
   tracePromise<T> (fn: (...args: any[]) => Promise<T> | T, context: C, ...args: unknown[]): Promise<T>
 }
 
@@ -55,7 +55,11 @@ export function traceAsync<T, C> (name: string, context: C, fn: () => Promise<T>
 export function traceAsync<T, C> (name: string, context: C, fn: () => Promise<T> | T): Promise<T> | T
 export function traceAsync<T, C> (name: string, context: C, fn: () => Promise<T> | T): Promise<T> | T {
   const channel = getChannel<C>(name)
-  if (!channel || !channel.hasSubscribers) {
+  // Skip only when we *know* there are zero subscribers. Bun's top-level
+  // `TracingChannel` reports `hasSubscribers` as `undefined` even when its
+  // sub-channels are subscribed (oven-sh/bun#27805), so treating `undefined`
+  // as "unsubscribed" would silently disable tracing on Bun.
+  if (!channel || channel.hasSubscribers === false) {
     return fn()
   }
   return channel.tracePromise(fn, context)
