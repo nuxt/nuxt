@@ -126,12 +126,12 @@ searchQuery.value = 'new search'
 ## Type
 
 ```ts [Signature]
-export function useFetch<DataT, ErrorT> (
+export function useFetch<ResT, DataT = ResT, ErrorT = FetchError> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
-  options?: UseFetchOptions<DataT>,
+  options?: UseFetchOptions<ResT, DataT>,
 ): Promise<AsyncData<DataT, ErrorT>>
 
-type UseFetchOptions<DataT> = {
+type UseFetchOptions<ResT, DataT = ResT> = {
   key?: MaybeRefOrGetter<string>
   method?: MaybeRefOrGetter<string>
   query?: MaybeRefOrGetter<SearchParams>
@@ -148,7 +148,7 @@ type UseFetchOptions<DataT> = {
   dedupe?: 'cancel' | 'defer'
   timeout?: number
   default?: () => DataT
-  transform?: (input: DataT) => DataT | Promise<DataT>
+  transform?: (input: ResT) => DataT | Promise<DataT>
   pick?: string[]
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
