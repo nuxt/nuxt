@@ -1,6 +1,7 @@
 import { KeepAlive, h } from 'vue'
 import type { VNode } from 'vue'
 import type { RouteLocationMatched, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
+import { isSamePath, withoutBase } from 'ufo'
 
 type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
 type RouterViewSlot = Exclude<InstanceOf<typeof RouterView>['$slots']['default'], undefined>
@@ -46,4 +47,27 @@ export const wrapInKeepAlive = (props: any, children: any): { default: () => VNo
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
+}
+
+// https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
+export function createCurrentLocation (
+  base: string,
+  location: Pick<Location, 'pathname' | 'search' | 'hash'>,
+  renderedPath?: string,
+): string {
+  const { pathname, search, hash } = location
+  // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
+  const hashPos = base.indexOf('#')
+  if (hashPos > -1) {
+    const slicePos = hash.includes(base.slice(hashPos))
+      ? base.slice(hashPos).length
+      : 1
+    let pathFromHash = hash.slice(slicePos)
+    // prepend the starting slash to hash so the url starts with /#
+    if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
+    return withoutBase(pathFromHash, '')
+  }
+  const displayedPath = withoutBase(pathname, base)
+  const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
+  return path + (path.includes('?') ? '' : search) + hash
 }

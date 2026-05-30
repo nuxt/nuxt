@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
-import { generateRouteKey } from '../src/pages/runtime/utils.ts'
+import { createCurrentLocation, generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
 import type { InputFile } from 'unrouting'
@@ -30,6 +30,18 @@ export function generateRoutesFromFiles (files: InputFile[], options: PagesConte
   ctx.rebuild(files)
   return ctx.emit()
 }
+
+describe('createCurrentLocation', () => {
+  const location = (pathname: string, search = '', hash = '') => ({ pathname, search, hash })
+
+  it('uses the server-rendered route when the browser URL differs from the payload route', () => {
+    expect(createCurrentLocation('/', location('/cached-url', '?tab=1', '#top'), '/rendered-url')).toBe('/rendered-url?tab=1#top')
+  })
+
+  it('preserves the browser URL when no payload route is provided', () => {
+    expect(createCurrentLocation('/', location('/cached-url', '?tab=1', '#top'))).toBe('/cached-url?tab=1#top')
+  })
+})
 
 describe('pages:generateRoutesFromFiles', () => {
   vi.mock('knitwork', async (original) => {

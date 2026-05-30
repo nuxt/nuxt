@@ -1124,6 +1124,16 @@ export interface ConfigSchema {
     restoreState: boolean
 
     /**
+     * Whether to restore the server-rendered payload route during hydration when it differs from the browser URL.
+     *
+     * This avoids hydration mismatches when a prerendered or cached page is loaded from another URL.
+     * You can disable it if your deployment intentionally serves the same Nuxt response from multiple external URLs.
+     *
+     * @default true
+     */
+    restorePayloadRoute: boolean
+
+    /**
      * Disable vue server renderer endpoint within nitro.
      *
      * @default false

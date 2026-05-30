@@ -2,12 +2,12 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { isSamePath, withoutBase } from 'ufo'
+import { isSamePath } from 'ufo'
 
 import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
-import { toArray } from '../utils'
+import { createCurrentLocation, toArray } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
@@ -20,29 +20,8 @@ import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 // @ts-expect-error virtual file
 import { pageIslandRoutes } from '#build/components.islands.mjs'
-
-// https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
-function createCurrentLocation (
-  base: string,
-  location: Location,
-  renderedPath?: string,
-): string {
-  const { pathname, search, hash } = location
-  // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
-  const hashPos = base.indexOf('#')
-  if (hashPos > -1) {
-    const slicePos = hash.includes(base.slice(hashPos))
-      ? base.slice(hashPos).length
-      : 1
-    let pathFromHash = hash.slice(slicePos)
-    // prepend the starting slash to hash so the url starts with /#
-    if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
-    return withoutBase(pathFromHash, '')
-  }
-  const displayedPath = withoutBase(pathname, base)
-  const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
-  return path + (path.includes('?') ? '' : search) + hash
-}
+// @ts-expect-error virtual file
+import { restorePayloadRoute } from '#build/nuxt.config.mjs'
 
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
@@ -106,7 +85,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const initialURL = import.meta.server
       ? nuxtApp.ssrContext!.url
-      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+      : createCurrentLocation(routerBase, window.location, restorePayloadRoute ? nuxtApp.payload.path : undefined)
 
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)

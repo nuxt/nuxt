@@ -91,6 +91,7 @@ export default defineResolvers({
     },
     templateRouteInjection: true,
     restoreState: false,
+    restorePayloadRoute: true,
     noVueServer: false,
     payloadExtraction: {
       $resolve: async (val, get) => {

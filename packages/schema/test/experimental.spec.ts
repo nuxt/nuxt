@@ -29,3 +29,15 @@ describe('experimental.watcher default', () => {
     expect((result as unknown as NuxtOptions).experimental.watcher).toBe('parcel')
   })
 })
+
+describe('experimental.restorePayloadRoute', () => {
+  it('defaults to enabled', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, {})
+    expect((result as unknown as NuxtOptions).experimental.restorePayloadRoute).toBe(true)
+  })
+
+  it('can be disabled', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { experimental: { restorePayloadRoute: false } })
+    expect((result as unknown as NuxtOptions).experimental.restorePayloadRoute).toBe(false)
+  })
+})
