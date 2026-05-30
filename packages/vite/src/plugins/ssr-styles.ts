@@ -49,27 +49,14 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       }
     }
 
-    // Build an index of manifest entries by their source path so we can look
-    // up chunks matched to the source paths tracked in `chunksWithInlinedCSS`.
-    const manifestBySrc = new Map<string, { chunk: (typeof manifest)[string], key: string }>()
-    for (const [key, chunk] of Object.entries(manifest)) {
-      if (chunk.src) {
-        manifestBySrc.set(chunk.src, { chunk, key })
-      }
-    }
-
     for (const id of chunksWithInlinedCSS) {
-      const entry = manifestBySrc.get(id)
-      if (!entry) {
+      const chunk = manifest[id]
+      if (!chunk) {
         continue
       }
-      const { chunk } = entry
       if (chunk.isEntry && chunk.src) {
         entryIds.add(chunk.src)
       } else {
-        if (chunk.src) {
-          entryIds.add(chunk.src)
-        }
         chunk.css &&= []
       }
       // Rolldown may split a component into a facade chunk (with no CSS) and
