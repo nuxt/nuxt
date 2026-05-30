@@ -39,8 +39,12 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
 
   // https://github.com/nuxt/nuxt/issues/35188
   it('inlines CSS for a lazy component explicitly imported from #components', async () => {
+    // Check the style is in the HTML
     const html = await readFile(join(outputDir, 'public', 'lazy-import/index.html'), 'utf-8')
     expect(html).toContain('--inline-lazy-import-token:lazy-import')
+    // Ensure there are no linked stylesheets
+    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    expect(cssLinks).toEqual([])
   })
 
   // https://github.com/nuxt/nuxt/issues/27417
