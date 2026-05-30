@@ -46,14 +46,16 @@ export default defineResolvers({
     },
     tracingChannel: {
       $resolve: async (val, get) => {
+        if (val === false) {
+          return false
+        }
         const topLevel = await get('tracingChannel')
-        if (!topLevel && !val) {
-          return undefined
+        const base = typeof topLevel === 'object' ? topLevel : null
+        const override = val && typeof val === 'object' ? val : null
+        if (!base && !override) {
+          return val === true ? {} : false
         }
-        return {
-          ...(typeof topLevel === 'object' ? topLevel : {}),
-          ...(val && typeof val === 'object' ? val : {}),
-        }
+        return { ...(base || {}), ...(override || {}) }
       },
     },
   },
