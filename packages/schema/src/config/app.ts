@@ -51,6 +51,13 @@ export default defineResolvers({
       },
     },
 
+    crossOrigin: {
+      $resolve: (val) => {
+        const crossOrigin = process.env.NUXT_APP_CROSS_ORIGIN || val
+        return crossOrigin === 'anonymous' || crossOrigin === 'use-credentials' ? crossOrigin : ''
+      },
+    },
+
     head: {
       $resolve: (_val) => {
         const val: Partial<NuxtAppConfig['head']> = _val && typeof _val === 'object' ? _val : {}

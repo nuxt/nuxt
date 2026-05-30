@@ -9,6 +9,7 @@ declare module 'nitro/types' {
     baseURL: string
     buildAssetsDir: string
     cdnURL: string
+    crossOrigin: '' | 'anonymous' | 'use-credentials'
   }
   interface NitroRouteRules {
     ssr?: boolean

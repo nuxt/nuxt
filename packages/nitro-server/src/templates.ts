@@ -27,6 +27,7 @@ declare module 'nitro/types' {
     baseURL: string
     buildAssetsDir: string
     cdnURL: string
+    crossOrigin: '' | 'anonymous' | 'use-credentials'
   }
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {

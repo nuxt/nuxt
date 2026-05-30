@@ -299,6 +299,7 @@ export default defineResolvers({
           baseURL: app.baseURL,
           buildAssetsDir: app.buildAssetsDir,
           cdnURL: app.cdnURL,
+          crossOrigin: app.crossOrigin,
         },
       })
     },

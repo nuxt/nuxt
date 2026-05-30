@@ -182,6 +182,15 @@ export interface ConfigSchema {
     cdnURL: string
 
     /**
+     * Set the default `crossorigin` attribute value for generated Nuxt build asset tags.
+     *
+     * This applies to server-rendered script, stylesheet, modulepreload and prefetch tags for build assets.
+     *
+     * @default ""
+     */
+    crossOrigin: '' | 'anonymous' | 'use-credentials'
+
+    /**
      * Set default configuration for `<head>` on every page.
      *
      * @example

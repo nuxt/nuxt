@@ -12,6 +12,7 @@ import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
+import { normalizeCrossOrigin } from '../utils/renderer/cross-origin'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
 
@@ -74,6 +75,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 
   if (import.meta.dev) {
     const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
+    const crossOrigin = normalizeCrossOrigin(ssrContext.runtimeConfig.app.crossOrigin)
 
     const link: Link[] = []
     for (const resource of Object.values(styles)) {
@@ -84,7 +86,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
       // Add CSS links in <head> for CSS files
       // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: crossOrigin })
       }
     }
     if (link.length) {
