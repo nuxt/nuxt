@@ -15,6 +15,7 @@ import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { ChunkErrorPlugin } from './plugins/chunk.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { createMFS } from './utils/mfs.ts'
+import { isSameOriginRequest } from './utils/same-origin.ts'
 import { client, server } from './configs/index.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
@@ -167,30 +168,6 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
   })
 }
 
-// `Sec-Fetch-Site` is not sent in every context, so fall back to comparing the
-// initiator (`Origin` / `Referer`) host against the request's `Host`.
-function isSameOriginRequest (req: { headers: Record<string, string | string[] | undefined> }): boolean {
-  const site = firstHeader(req.headers['sec-fetch-site'])
-  if (site !== undefined) {
-    return site === 'same-origin' || site === 'none'
-  }
-
-  const initiator = firstHeader(req.headers.origin) || firstHeader(req.headers.referer)
-  if (!initiator) {
-    return true
-  }
-
-  try {
-    return new URL(initiator).host === firstHeader(req.headers.host)
-  } catch {
-    return false
-  }
-}
-
-function firstHeader (value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value
-}
-
 async function compile (compiler: Compiler) {
   const nuxt = useNuxt()
 
@@ -238,8 +215,14 @@ async function compile (compiler: Compiler) {
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
+    const formatted = stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true })
+    const compilationErrors = stats.compilation?.errors ?? []
+    logger.error(formatted || '(no formatted errors emitted; see compilation errors below)')
+    for (const err of compilationErrors) {
+      logger.error(err)
+    }
     const error = new Error('Nuxt build error')
-    error.stack = stats.toString('errors-only')
+    error.stack = formatted || compilationErrors.map(e => e.stack || e.message || String(e)).join('\n\n') || error.stack
     throw error
   }
 }
