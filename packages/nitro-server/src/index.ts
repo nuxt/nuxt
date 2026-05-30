@@ -212,8 +212,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
           `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
           `export const NUXT_PAYLOAD_EXTRACTION = ${nuxt.options.experimental.payloadExtraction !== false}`,
+          `export const NUXT_PAYLOAD_EXTRACTION_ALWAYS = ${nuxt.options.experimental.payloadExtraction === 'always'}`,
           `export const NUXT_PAYLOAD_INLINE = ${nuxt.options.experimental.payloadExtraction !== true}`,
-          `export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${hasCachedRoutes}`,
+          `export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${hasCachedRoutes || nuxt.options.experimental.payloadExtraction === 'always'}`,
           `export const NUXT_SSR_STREAMING = ${!!(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled)}`,
           `export const NUXT_SSR_STREAMING_BOT_RE = ${typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.botRegex instanceof RegExp ? String(nuxt.options.experimental.ssrStreaming.botRegex) : '/^$/'}`,
         ].join('\n')
@@ -720,7 +721,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // For full-static output, ensure payload extraction is not disabled
   if (nuxt.options.ssr && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
-    logger.warn('Payload extraction is recommended for full-static output. You can enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.')
+    logger.warn('Payload extraction is recommended for full-static output. You can enable it by setting `experimental.payloadExtraction` to `true`, `\'client\'`, or `\'always\'`.')
   }
 
   // Trigger Nitro reload when SPA loading template changes

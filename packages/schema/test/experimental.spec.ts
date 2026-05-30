@@ -29,3 +29,10 @@ describe('experimental.watcher default', () => {
     expect((result as unknown as NuxtOptions).experimental.watcher).toBe('parcel')
   })
 })
+
+describe('experimental.payloadExtraction', () => {
+  it('allows enabling payloads for all server-rendered routes', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { experimental: { payloadExtraction: 'always' } })
+    expect((result as unknown as NuxtOptions).experimental.payloadExtraction).toBe('always')
+  })
+})

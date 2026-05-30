@@ -26,7 +26,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_EXTRACTION_ALWAYS, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -120,13 +120,13 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     ssrContext.noSSR = true
   }
 
-  // Whether we are prerendering route or using ISR/SWR caching
+  // Whether we are prerendering route, using ISR/SWR caching, or always extracting payloads
   const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
     (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
-    || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
+    || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (NUXT_PAYLOAD_EXTRACTION_ALWAYS || routeOptions.isr || routeOptions.cache))
   )
 
-  // When NUXT_PAYLOAD_INLINE is true (payloadExtraction: 'client'), we inline the full payload
+  // When NUXT_PAYLOAD_INLINE is true (payloadExtraction: 'client' | 'always'), we inline the full payload
   const _PAYLOAD_INLINE = !_PAYLOAD_EXTRACTION || NUXT_PAYLOAD_INLINE
 
   const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
@@ -314,7 +314,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     // 5. Payloads
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
-        // Inline full payload in HTML (payloadExtraction: 'client' | false, or non-cached route)
+        // Inline full payload in HTML (payloadExtraction: 'client' | 'always' | false, or non-cached route)
         // `prefetchLinks` is only consumed when *another* page prefetches this URL via
         // _payload.json, so we drop it from the inline payload to avoid the duplication.
         ? renderPayloadJsonScript({ ssrContext, data: stripInlineOnlyPayloadFields(ssrContext.payload) })

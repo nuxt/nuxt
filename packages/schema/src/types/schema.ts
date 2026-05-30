@@ -1131,19 +1131,21 @@ export interface ConfigSchema {
     noVueServer: boolean
 
     /**
-     * Controls how payload data is delivered for prerendered and cached (ISR/SWR) pages.
+     * Controls how payload data is delivered for prerendered, cached (ISR/SWR), and server-rendered pages.
      *
      * - `'client'` - Payload is inlined in HTML for the initial server render, and extracted to
      *   `_payload.json` files for client-side navigation. This avoids a separate request on
      *   initial load while still enabling efficient client-side navigation.
      * - `true` - Payload is extracted to a separate `_payload.json` file for both the initial
      *   server render and client-side navigation.
+     * - `'always'` - Payload is inlined in HTML for the initial server render, and `_payload.json`
+     *   files are available for all server-rendered routes during client-side navigation.
      * - `false` - Payload extraction is disabled entirely. Payload is always inlined in HTML and
      *   no `_payload.json` files are generated.
      *
      * `@default` true (or 'client' when compatibilityVersion >= 5)
      */
-    payloadExtraction: 'client' | boolean | undefined
+    payloadExtraction: 'client' | 'always' | boolean | undefined
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
