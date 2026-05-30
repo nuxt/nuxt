@@ -541,4 +541,60 @@ jobs:
           name: dist
           path: packages
 
-      - run: pnpm pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step
+      - id: pkg-pr-new
+        run: pnpm pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step
+
+      - name: Report minimal Nuxt install size
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        shell: bash
+        env:
+          PKG_PR_NEW_PACKAGES: ${{ steps.pkg-pr-new.outputs.packages }}
+        run: |
+          set -euo pipefail
+
+          nuxt_url=""
+          for package in ${PKG_PR_NEW_PACKAGES}; do
+            if [[ "${package}" == nuxt@* ]]; then
+              nuxt_url="${package#nuxt@}"
+              break
+            fi
+          done
+
+          if [[ -z "${nuxt_url}" ]]; then
+            echo "Could not find the Nuxt pkg.pr.new URL." >&2
+            exit 1
+          fi
+
+          project_dir="$(mktemp -d)"
+          trap 'rm -rf "${project_dir}"' EXIT
+          cd "${project_dir}"
+
+          cat > package.json <<JSON
+          {
+            "private": true,
+            "type": "module",
+            "dependencies": {
+              "nuxt": "${nuxt_url}"
+            }
+          }
+          JSON
+
+          pnpm install --prod --ignore-scripts --config.minimum-release-age=0
+
+          size_kib="$(du -sk node_modules | cut -f1)"
+          size_mib="$(awk "BEGIN { printf \"%.1f\", ${size_kib} / 1024 }")"
+          package_count="$(find node_modules/.pnpm -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
+
+          echo "Minimal Nuxt install size: ${size_mib} MiB (${size_kib} KiB)"
+
+          {
+            echo "### Minimal Nuxt install size"
+            echo
+            echo "| Metric | Value |"
+            echo "| --- | ---: |"
+            echo "| \`node_modules\` | ${size_mib} MiB |"
+            echo "| Packages | ${package_count} |"
+            echo
+            echo "Measured by installing the PR build from \`${nuxt_url}\` in an empty project with \`pnpm install --prod --ignore-scripts\`."
+          } >> "${GITHUB_STEP_SUMMARY}"
