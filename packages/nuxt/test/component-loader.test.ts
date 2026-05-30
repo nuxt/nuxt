@@ -292,6 +292,27 @@ export default {
     const result = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
     expect(result.join('\n')).toContain(component)
   })
+
+  it('should correctly resolve lazy hydration components in pug templates', async () => {
+    const sfc = `
+    <template lang="pug">
+      div
+        LazyMyComponent(:hydrate-on-visible="{ threshold: 0.2 }")
+        LazyMyComponent(hydrate-never)
+        LazyMyComponent(:hydrateAfter="3000")
+    </template>
+    `
+    const result = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
+    const imports = result.filter(l => l.startsWith('import'))
+    expect(imports.join('\n')).toContain('createLazyNeverComponent')
+    expect(imports.join('\n')).toContain('createLazyTimeComponent')
+    expect(imports.join('\n')).toContain('createLazyVisibleComponent')
+
+    const code = result.join('\n')
+    expect(code).toContain('__nuxt_component_0_lazy_visible')
+    expect(code).toContain('__nuxt_component_0_lazy_never')
+    expect(code).toContain('__nuxt_component_0_lazy_time')
+  })
 })
 const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
   export: opts.export || 'default',
@@ -324,7 +345,7 @@ function normalizeCode (code: string) {
 async function transform (code: string, filename: string) {
   const bundle = await rolldown({
     input: filename,
-    external: id => id !== filename,
+    external: id => id !== filename && !id.startsWith(filename + '?'),
     plugins: [
       {
         name: 'entry',
