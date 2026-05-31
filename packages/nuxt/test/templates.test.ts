@@ -40,16 +40,10 @@ describe('appConfigTemplate', () => {
 })
 
 describe('publicPathTemplate', () => {
-  it('emits an absolute path for `nitro/runtime-config` in production builds', async () => {
+  it('imports `useRuntimeConfig` from the bare `nitro/runtime-config` specifier in production builds', async () => {
     const contents = await publicPathTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
 
-    expect(contents).not.toMatch(/from ['"]nitro\/runtime-config['"]/)
-    const match = contents.match(/import \{ useRuntimeConfig \} from ["']([^"']+)["']/)
-    expect(match, 'expected resolved `useRuntimeConfig` import').toBeTruthy()
-    const resolved = match![1]!
-    expect(resolve(resolved)).toBe(resolved)
-    expect(existsSync(resolved)).toBe(true)
-    expect(resolved).toMatch(/runtime-config/)
+    expect(contents).toMatch(/import \{ useRuntimeConfig \} from ['"]nitro\/runtime-config['"]/)
   })
 
   it('omits the runtime-config import entirely in dev mode', async () => {
