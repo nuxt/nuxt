@@ -168,6 +168,27 @@ describe('loadNuxt', () => {
 
     await nuxt.close()
   })
+
+  it('syncs server tsconfig options with nitro tsconfig options', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: false,
+      overrides: {
+        typescript: {
+          tsConfig: { compilerOptions: { exactOptionalPropertyTypes: true } },
+          serverTsConfig: { compilerOptions: { noUnusedLocals: true } },
+        },
+      },
+    })
+
+    expect(nuxt.options.typescript.serverTsConfig).toBe(nuxt.options.nitro.typescript?.tsConfig)
+    expect(nuxt.options.nitro.typescript?.tsConfig?.compilerOptions).toMatchObject({
+      exactOptionalPropertyTypes: true,
+      noUnusedLocals: true,
+    })
+
+    await nuxt.close()
+  })
 })
 
 const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [

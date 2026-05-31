@@ -79,12 +79,47 @@ describe('tsConfig generation', () => {
   })
 
   it('should propagate user-defined excludes to legacy tsconfig', async () => {
-    const { legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+    const { legacyTsConfig: globalLegacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
       typescript: { tsConfig: { exclude: ['my-custom-exclude'] } },
     }))
-    expect(legacyTsConfig.exclude).toContain('my-custom-exclude')
+    expect(globalLegacyTsConfig.exclude).toContain('my-custom-exclude')
+    expect(globalLegacyTsConfig.exclude).not.toContain('../nuxt.config.*')
+
+    const { legacyTsConfig: appLegacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: { exclude: ['my-custom-exclude'] },
+        appTsConfig: { exclude: ['my-custom-app-exclude'] },
+      },
+    }))
+    expect(appLegacyTsConfig.exclude).toContain('my-custom-app-exclude')
+    expect(appLegacyTsConfig.exclude).not.toContain('my-custom-exclude')
     // but computed app-only paths must still be absent
-    expect(legacyTsConfig.exclude).not.toContain('../nuxt.config.*')
+    expect(appLegacyTsConfig.exclude).not.toContain('../nuxt.config.*')
+  })
+
+  it('should apply global and context-specific tsconfig options', async () => {
+    const { nodeTsConfig, sharedTsConfig, tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: { compilerOptions: { exactOptionalPropertyTypes: true, noUnusedLocals: true } },
+        appTsConfig: { compilerOptions: { noUnusedLocals: false } },
+        nodeTsConfig: { compilerOptions: { noUnusedParameters: true } },
+        sharedTsConfig: { compilerOptions: { noUnusedLocals: false } },
+      },
+    }))
+
+    expect(tsConfig.compilerOptions).toMatchObject({
+      exactOptionalPropertyTypes: true,
+      noUnusedLocals: false,
+    })
+    expect(nodeTsConfig.compilerOptions).toMatchObject({
+      exactOptionalPropertyTypes: true,
+      noUnusedLocals: true,
+      noUnusedParameters: true,
+    })
+    expect(sharedTsConfig.compilerOptions).toMatchObject({
+      exactOptionalPropertyTypes: true,
+      noUnusedLocals: false,
+    })
   })
 
   it('should add #build after #components to paths', async () => {

@@ -363,10 +363,10 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
-  const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
+  const userExclude = nuxt.options.typescript?.appTsConfig?.exclude ?? nuxt.options.typescript?.tsConfig?.exclude ?? []
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
-  const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: true,
@@ -419,7 +419,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   } satisfies TSConfig)
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
-  const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
+  const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
@@ -455,7 +455,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   } satisfies TSConfig)
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
-  const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, {
+  const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,

@@ -901,6 +901,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
   createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
 
+  nitroOptions.typescript ||= {}
+  createPortalProperties(defu(options.typescript.serverTsConfig, nitroOptions.typescript.tsConfig, options.typescript.tsConfig), options, ['nitro.typescript.tsConfig', 'typescript.serverTsConfig'])
+
   // prevent replacement of options.nitro
   Object.defineProperties(options, {
     nitro: {

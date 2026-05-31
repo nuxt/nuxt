@@ -4,6 +4,13 @@ import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from 'nuxt/app'
 import type { HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
 
+type NuxtNitroConfig = Omit<NitroConfig, 'typescript'> & {
+  typescript?: Omit<NonNullable<NitroConfig['typescript']>, 'tsConfig'> & {
+    /** @deprecated Use `typescript.serverTsConfig` instead. This option will be removed in Nuxt v5. */
+    tsConfig?: NonNullable<NitroConfig['typescript']>['tsConfig']
+  }
+}
+
 declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
     baseURL: string
@@ -129,7 +136,7 @@ declare module '@nuxt/schema' {
   }
 
   interface NuxtConfig {
-    nitro?: NitroConfig
+    nitro?: NuxtNitroConfig
   }
 
   interface RuntimeConfig {
@@ -236,7 +243,7 @@ declare module 'nuxt/schema' {
   }
 
   interface NuxtConfig {
-    nitro?: NitroConfig
+    nitro?: NuxtNitroConfig
   }
 
   interface RuntimeConfig {
