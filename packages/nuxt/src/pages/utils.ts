@@ -605,3 +605,139 @@ export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
   }
   return routes
 }
+
+export interface ServerRouteLike {
+  route?: string
+  method?: string
+  middleware?: boolean
+}
+
+export interface PageServerRouteCollision {
+  pageRoute: string
+  serverRoute: string
+  method: 'ALL' | 'GET' | 'HEAD'
+}
+
+const PAGE_BLOCKING_SERVER_ROUTE_METHODS = new Set(['', 'GET', 'HEAD'])
+
+export function findPageServerRouteCollisions (pages: NuxtPage[], serverRoutes: ServerRouteLike[]): PageServerRouteCollision[] {
+  const pageRoutes = toRou3Patterns(pages)
+    .filter(route => route && !route.startsWith('/**'))
+    .map(route => ({
+      route,
+      regexp: rou3PatternToRegExp(route),
+      sample: rou3PatternToSamplePath(route),
+    }))
+
+  const collisions: PageServerRouteCollision[] = []
+  const seen = new Set<string>()
+  for (const serverRoute of serverRoutes) {
+    if (serverRoute.middleware || !serverRoute.route) {
+      continue
+    }
+
+    const method = (serverRoute.method || '').toUpperCase()
+    if (!PAGE_BLOCKING_SERVER_ROUTE_METHODS.has(method)) {
+      continue
+    }
+
+    const server = {
+      route: serverRoute.route,
+      regexp: rou3PatternToRegExp(serverRoute.route),
+      sample: rou3PatternToSamplePath(serverRoute.route),
+    }
+
+    for (const page of pageRoutes) {
+      if (!page.regexp.test(server.sample) && !server.regexp.test(page.sample)) {
+        continue
+      }
+
+      const collision = {
+        pageRoute: page.route,
+        serverRoute: server.route,
+        method: method ? method as 'GET' | 'HEAD' : 'ALL' as const,
+      }
+      const key = `${collision.method}:${collision.serverRoute}:${collision.pageRoute}`
+      if (seen.has(key)) {
+        continue
+      }
+      seen.add(key)
+      collisions.push(collision)
+    }
+  }
+
+  return collisions
+}
+
+function rou3PatternToSamplePath (route: string) {
+  const segments = route.split('/').filter(Boolean).map((segment) => {
+    if (segment.startsWith('**')) {
+      return '__wildcard__'
+    }
+    return segment
+      .replace(/:[\w-]+(?:\([^)]*\))?[?+*]?/g, '__param__')
+      .replace(/\*/g, '__wildcard__')
+  })
+
+  return '/' + segments.join('/')
+}
+
+function rou3PatternToRegExp (route: string) {
+  const segments = route.split('/').filter(Boolean)
+  let source = '^'
+  for (const segment of segments) {
+    if (segment === '**') {
+      source += '(?:/.*)?'
+      continue
+    }
+    if (segment.startsWith('**')) {
+      source += '/.+'
+      continue
+    }
+
+    source += '/' + segmentToRegExp(segment)
+  }
+
+  return new RegExp(source + '/?$')
+}
+
+function segmentToRegExp (segment: string) {
+  let source = ''
+  for (let i = 0; i < segment.length; i++) {
+    const char = segment[i]!
+    if (char === ':') {
+      i++
+      while (i < segment.length && /[\w-]/.test(segment[i]!)) {
+        i++
+      }
+      if (segment[i] === '(') {
+        let depth = 1
+        i++
+        while (i < segment.length && depth > 0) {
+          if (segment[i] === '(') {
+            depth++
+          } else if (segment[i] === ')') {
+            depth--
+          }
+          i++
+        }
+      }
+      if (['?', '+', '*'].includes(segment[i]!)) {
+        i++
+      }
+      i--
+      source += '[^/]+'
+      continue
+    }
+    if (char === '*') {
+      source += '[^/]*'
+      continue
+    }
+    source += escapeRE(char)
+  }
+  return source
+}
+
+function escapeRE (value: string) {
+  return value.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
+}

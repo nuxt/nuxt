@@ -1,7 +1,7 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, findPageServerRouteCollisions, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -425,6 +425,46 @@ const pathToNitroGlobTests = {
 describe('pages:pathToNitroGlob', () => {
   it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
     expect(pathToNitroGlob(path)).to.equal(expected)
+  })
+})
+
+describe('pages:serverRouteCollisions', () => {
+  const pages = [
+    { path: '/', file: 'pages/index.vue' },
+    { path: '/about', file: 'pages/about.vue' },
+    { path: '/blog/:slug', file: 'pages/blog/[slug].vue' },
+    { path: '/docs/**:slug', file: 'pages/docs/[...slug].vue' },
+  ] as NuxtPage[]
+
+  it('detects GET, HEAD, and all-method server routes that overlap pages', () => {
+    expect(findPageServerRouteCollisions(pages, [
+      { route: '/about', method: 'GET' },
+      { route: '/blog/hello', method: 'HEAD' },
+      { route: '/docs/**' },
+    ])).toEqual([
+      { pageRoute: '/about', serverRoute: '/about', method: 'GET' },
+      { pageRoute: '/blog/:slug', serverRoute: '/blog/hello', method: 'HEAD' },
+      { pageRoute: '/docs/**:slug', serverRoute: '/docs/**', method: 'ALL' },
+    ])
+  })
+
+  it('detects dynamic server routes that overlap static pages', () => {
+    expect(findPageServerRouteCollisions(pages, [
+      { route: '/:slug', method: 'GET' },
+    ])).toEqual([
+      { pageRoute: '/about', serverRoute: '/:slug', method: 'GET' },
+    ])
+  })
+
+  it('ignores non-rendering methods, middleware, and global page catchalls', () => {
+    expect(findPageServerRouteCollisions([
+      { path: '/**:slug', file: 'pages/[...slug].vue' },
+      { path: '/about', file: 'pages/about.vue' },
+    ] as NuxtPage[], [
+      { route: '/about', method: 'POST' },
+      { route: '/about', method: 'GET', middleware: true },
+      { route: '/only-catchall', method: 'GET' },
+    ])).toEqual([])
   })
 })
 

@@ -13,7 +13,7 @@ import { distDir } from '../dirs.ts'
 import { resolveTypePaths } from '../core/utils/types.ts'
 import { logger } from '../utils.ts'
 import picomatch from 'picomatch'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, findPageServerRouteCollisions, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
@@ -455,6 +455,37 @@ export default defineNuxtModule({
 
       prerenderRoutes.clear()
       processPages(pages)
+    })
+
+    nuxt.hook('nitro:init', (nitro) => {
+      let lastWarningKey = ''
+      const warnPageServerRouteCollisions = (pages = nuxt.apps.default?.pages || []) => {
+        const serverRoutes = nitro.routing.routes.routes
+          .flatMap(route => Array.isArray(route.data) ? route.data : [route.data])
+          .filter(route => route.handler !== nitro.options.renderer?.handler)
+        const collisions = findPageServerRouteCollisions(pages, serverRoutes)
+        if (!collisions.length) {
+          lastWarningKey = ''
+          return
+        }
+
+        const warningKey = collisions
+          .map(collision => `${collision.method}:${collision.serverRoute}:${collision.pageRoute}`)
+          .join('\n')
+        if (warningKey === lastWarningKey) {
+          return
+        }
+        lastWarningKey = warningKey
+
+        const formattedCollisions = collisions.slice(0, 5)
+          .map(collision => `\`${collision.method} ${collision.serverRoute}\` -> \`${collision.pageRoute}\``)
+          .join(', ')
+        const remaining = collisions.length > 5 ? ` and ${collisions.length - 5} more` : ''
+        logger.warn(`[nuxt] Server routes overlap with page routes and will take precedence: ${formattedCollisions}${remaining}.`)
+      }
+
+      warnPageServerRouteCollisions()
+      nuxt.hook('pages:resolved', warnPageServerRouteCollisions)
     })
 
     nuxt.hook('nitro:build:before', (nitro) => {
