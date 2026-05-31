@@ -1,4 +1,6 @@
+import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+import { resolve } from 'pathe'
 
 // `templates.ts` re-imports `./app.ts`, which reads `defaultTemplates.*` at
 // module init. Pulling `app.ts` in first lets that cycle resolve the same way
@@ -39,8 +41,18 @@ describe('appConfigTemplate', () => {
   it('merges the layers it is given at runtime', async () => {
     const contents = await appConfigTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(['/app/app.config.ts']), options: {} })
 
-    expect(contents).toContain(`import { defuFn } from 'defu'`)
     expect(contents).toContain('export default /*@__PURE__*/ defuFn(cfg0, inlineConfig)')
+  })
+
+  it('emits an absolute path for the `defu` import so Nitro can resolve it under strict pnpm hoist', async () => {
+    const contents = await appConfigTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(['/app/app.config.ts']), options: {} })
+
+    expect(contents).not.toMatch(/from ['"]defu['"]/)
+    const match = contents.match(/import \{ defuFn \} from ["']([^"']+)["']/)
+    expect(match, 'expected resolved `defuFn` import').toBeTruthy()
+    const resolved = match![1]!
+    expect(resolve(resolved)).toBe(resolved)
+    expect(existsSync(resolved)).toBe(true)
   })
 })
 

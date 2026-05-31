@@ -20,6 +20,7 @@ import type { RouteRulesRouter } from './utils/route-rules.ts'
 import { findRouterOptionsFileDefining } from '../pages/utils.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
+const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
 const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
 
 export const vueShim: NuxtTemplate = {
@@ -569,7 +570,7 @@ export const appConfigTemplate: NuxtTemplate = {
   getContents ({ app, nuxt }) {
     return `${app.configs.length
       ? `
-import { defuFn } from 'defu'
+import { defuFn } from ${JSON.stringify(defuPath)}
 `
       : ''}
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
