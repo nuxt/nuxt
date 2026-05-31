@@ -18,6 +18,15 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   setup (nuxtApp) {
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
+    useRouter().afterEach(() => {
+      // Evict all stale prefetch entries after navigation commits.
+      // Prefetch hints for other routes are no longer needed once a navigation has committed.
+      for (const entry of forwardedPrefetchEntries.values()) {
+        entry.dispose()
+      }
+      forwardedPrefetchEntries.clear()
+    })
+
     useRouter().beforeResolve(async (to, from) => {
       if (to.path === from.path) { return }
       if (prefetchPreloadTags) {
@@ -53,7 +62,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
         const payload = await loadPayload(url).catch(() => { console.warn('[nuxt] Error preloading payload for', url) })
-        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(url)) {
+        if (head && payload?.prefetchLinks?.length) {
+          const urlPath = new URL(url, window.location.href).pathname
+          if (forwardedPrefetchEntries.has(urlPath)) { return }
           const entry = head.push({
             link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {
               // downgrade preload (and modulepreload) to prefetch
@@ -61,7 +72,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
               return { ...rest, rel: 'prefetch' }
             }),
           })
-          forwardedPrefetchEntries.set(url, entry)
+          forwardedPrefetchEntries.set(urlPath, entry)
         }
       })
       if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {
