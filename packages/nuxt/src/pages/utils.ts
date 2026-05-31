@@ -136,6 +136,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
       ...extraPageMetaExtractionKeys,
     ]),
     fullyResolvedPaths: trackedFiles,
+    warnAboutMissingNuxtPage: nuxt.options.dev,
   }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
@@ -157,13 +158,27 @@ interface AugmentPagesContext {
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
   extraExtractionKeys?: Set<string>
+  warnAboutMissingNuxtPage?: boolean
+  warnedMissingNuxtPage?: Set<string>
 }
+
+const NUXT_PAGE_RE = /<(?:NuxtPage|nuxt-page)(?=[\s/>])/i
 
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
   ctx.augmentedPages ??= new Set()
+  ctx.warnedMissingNuxtPage ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
+      if (
+        ctx.warnAboutMissingNuxtPage
+        && route.children?.length
+        && !NUXT_PAGE_RE.test(fileContent)
+        && !ctx.warnedMissingNuxtPage.has(route.file)
+      ) {
+        logger.warn(`[nuxt] \`${route.file}\` has child routes but does not use \`<NuxtPage />\`. Add \`<NuxtPage />\` to the parent page to render child routes.`)
+        ctx.warnedMissingNuxtPage.add(route.file)
+      }
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)

@@ -7,6 +7,7 @@ import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
 import type { InputFile } from 'unrouting'
+import { logger } from '../src/utils.ts'
 
 vi.mock('@nuxt/kit', async (original) => {
   const mod = await original<typeof import('@nuxt/kit')>()
@@ -119,6 +120,56 @@ describe('pages:generateRoutesFromFiles', () => {
       }
     })
   }
+
+  describe('pages:missing NuxtPage warning', () => {
+    it('warns when a parent page has child routes but does not render NuxtPage', async () => {
+      const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined)
+      const routes = generateRoutesFromFiles([
+        { path: `${pagesDir}/parent.vue` },
+        { path: `${pagesDir}/parent/child.vue` },
+      ])
+
+      await augmentPages(routes, {
+        [`${pagesDir}/parent.vue`]: '<template><div>Parent</div></template>',
+        [`${pagesDir}/parent/child.vue`]: '<template><div>Child</div></template>',
+      }, { warnAboutMissingNuxtPage: true })
+
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('`pages/parent.vue` has child routes but does not use `<NuxtPage />`'))
+      warn.mockRestore()
+    })
+
+    it('does not warn when a parent page renders NuxtPage', async () => {
+      const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined)
+      const routes = generateRoutesFromFiles([
+        { path: `${pagesDir}/parent.vue` },
+        { path: `${pagesDir}/parent/child.vue` },
+      ])
+
+      await augmentPages(routes, {
+        [`${pagesDir}/parent.vue`]: '<template><div><NuxtPage /></div></template>',
+        [`${pagesDir}/parent/child.vue`]: '<template><div>Child</div></template>',
+      }, { warnAboutMissingNuxtPage: true })
+
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('does not warn when a parent page renders nuxt-page in kebab-case', async () => {
+      const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined)
+      const routes = generateRoutesFromFiles([
+        { path: `${pagesDir}/parent.vue` },
+        { path: `${pagesDir}/parent/child.vue` },
+      ])
+
+      await augmentPages(routes, {
+        [`${pagesDir}/parent.vue`]: '<template><div><nuxt-page /></div></template>',
+        [`${pagesDir}/parent/child.vue`]: '<template><div>Child</div></template>',
+      }, { warnAboutMissingNuxtPage: true })
+
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+  })
 
   it('should consistently normalize routes', async () => {
     // Sort each test case's routes array for order-independent comparison
