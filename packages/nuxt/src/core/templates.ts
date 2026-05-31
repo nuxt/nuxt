@@ -16,11 +16,6 @@ import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
-const nitroServerPath = resolveModulePath('@nuxt/nitro-server', { try: true, from: import.meta.url })
-const runtimeConfigPath = resolveModulePath('nitro/runtime-config', {
-  try: true,
-  from: nitroServerPath ? [nitroServerPath, import.meta.url] : import.meta.url,
-}) ?? 'nitro/runtime-config'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -465,7 +460,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && `import { useRuntimeConfig } from ${JSON.stringify(runtimeConfigPath)}`,
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime-config\'',
 
       nuxt.options.dev
         ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
