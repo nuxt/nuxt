@@ -51,6 +51,7 @@
   "exclude": [
     "**/dist/**",
     "**/.nuxt/**",
+    "packages/kit/test/types-fixture/**",
     "packages/nuxt/meta.d.ts",
     "**/nuxt.d.ts",
     "**/examples/**",
