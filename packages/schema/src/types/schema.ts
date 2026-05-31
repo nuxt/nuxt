@@ -1808,6 +1808,13 @@ export interface ConfigSchema {
     typeCheck: boolean | 'build'
 
     /**
+     * Glob patterns that should be type-checked in the Nuxt app project.
+     *
+     * This is useful for Nuxt runtime tests that need Nuxt auto-imports and aliases outside the default `test/nuxt/` and `tests/nuxt/` directories.
+     */
+    runtimeTestGlobs: Array<string>
+
+    /**
      * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
      */
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }

@@ -1,4 +1,4 @@
-import { existsSync, promises as fsp } from 'node:fs'
+import { existsSync, promises as fsp, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
@@ -180,17 +180,40 @@ interface LayerPaths {
   globalDeclarations: string[]
 }
 
-export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string): LayerPaths {
+const DEFAULT_RUNTIME_TEST_GLOBS = ['test/nuxt/**/*', 'tests/nuxt/**/*']
+const TOP_LEVEL_RUNTIME_TEST_GLOB_RE = /^tests?\/\*\*\/\*$/
+
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string, runtimeTestGlobs: string[] = DEFAULT_RUNTIME_TEST_GLOBS): LayerPaths {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
   const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
+  const normalizedRuntimeTestGlobs = runtimeTestGlobs
+    .map(pattern => pattern.replace(/^[./\\]+/, '').replaceAll('\\', '/'))
+  const runtimeTestRootDirs = new Set(normalizedRuntimeTestGlobs
+    .filter(pattern => TOP_LEVEL_RUNTIME_TEST_GLOB_RE.test(pattern))
+    .map(pattern => pattern.slice(0, pattern.indexOf('/'))))
+  const topLevelTestPaths = ['test', 'tests'].flatMap((dir) => {
+    const testDir = resolve(dirs.root, dir)
+    if (!existsSync(testDir) || runtimeTestRootDirs.has(dir)) {
+      return []
+    }
+
+    return readdirSync(testDir, { withFileTypes: true })
+      .filter((entry) => {
+        const entryPattern = `${dir}/${entry.name}`
+        return !normalizedRuntimeTestGlobs.some(pattern => pattern === entryPattern || pattern.startsWith(`${entryPattern}/`))
+      })
+      .map(entry => entry.isDirectory()
+        ? join(relativeRootDir, `${dir}/${entry.name}/**/*`)
+        : join(relativeRootDir, `${dir}/${entry.name}`))
+  })
+  const runtimeTestPaths = normalizedRuntimeTestGlobs.map(pattern => join(relativeRootDir, pattern))
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
       join(relativeModulesDir, `*/runtime/**/*`),
-      join(relativeRootDir, `test/nuxt/**/*`),
-      join(relativeRootDir, `tests/nuxt/**/*`),
+      ...runtimeTestPaths,
       join(relativeRootDir, `layers/*/app/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/**/*`),
     ],
@@ -200,6 +223,7 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `layers/*/modules/*/runtime/server/**/*`),
     ],
     node: [
+      ...topLevelTestPaths,
       join(relativeModulesDir, `*.*`),
       join(relativeRootDir, `nuxt.config.*`),
       join(relativeRootDir, `.config/nuxt.*`),
@@ -280,7 +304,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   for (const dirs of layerDirs) {
     if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
       const rootGlob = join(relativeWithDot(nuxt.options.buildDir, dirs.root), '**/*')
-      const paths = resolveLayerPaths(dirs, nuxt.options.buildDir)
+      const paths = resolveLayerPaths(dirs, nuxt.options.buildDir, nuxt.options.typescript.runtimeTestGlobs)
       for (const path of paths.nuxt) {
         include.add(path)
         legacyInclude.add(path)
