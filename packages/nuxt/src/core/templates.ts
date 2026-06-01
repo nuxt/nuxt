@@ -517,8 +517,16 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       baseURL: undefined,
       headers: undefined,
     }
+    // Whether island components are genuinely used by the app (server pages /
+    // server components, or islands explicitly enabled). This excludes the
+    // dev-only inflation below.
+    const componentIslandsActive = ctx.nuxt.options.experimental.componentIslands && (
+      ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
+    )
+    // In dev the islands handler is always wired up so Vite generates the
+    // islands module graph for HMR, regardless of actual island usage.
     const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
-      ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
+      ctx.nuxt.options.dev || componentIslandsActive
     )
     const nitro = useNitro()
     const hasCachedRoutes = Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
@@ -527,6 +535,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
       `export const componentIslands = ${shouldEnableComponentIslands}`,
+      `export const componentIslandsActive = ${componentIslandsActive}`,
       `export const payloadExtraction = ${payloadExtraction}`,
       `export const prefetchPreloadTags = ${!!ctx.nuxt.options.experimental.prefetchPreloadTags}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,

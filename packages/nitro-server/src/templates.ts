@@ -20,7 +20,7 @@ ${lines.join('\n')}
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from 'nuxt/app'
 
 declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
@@ -30,12 +30,14 @@ declare module 'nitropack' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    streaming?: boolean
     noScripts?: boolean
     /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    streaming?: boolean
     noScripts?: boolean
     /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
@@ -44,7 +46,10 @@ declare module 'nitropack' {
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
-    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
+    'render:html:chunk': (chunkContext: NuxtRenderChunkContext, context: { event: H3Event }) => void | Promise<void>
+    'render:html:close': (closeContext: NuxtRenderCloseContext, context: { event: H3Event }) => void | Promise<void>
+    'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }
@@ -56,12 +61,14 @@ declare module 'nitropack/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    streaming?: boolean
     noScripts?: boolean
     /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    streaming?: boolean
     noScripts?: boolean
     /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
@@ -70,7 +77,10 @@ declare module 'nitropack/types' {
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
-    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
+    'render:html:chunk': (chunkContext: NuxtRenderChunkContext, context: { event: H3Event }) => void | Promise<void>
+    'render:html:close': (closeContext: NuxtRenderCloseContext, context: { event: H3Event }) => void | Promise<void>
+    'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }

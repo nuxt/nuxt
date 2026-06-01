@@ -1,0 +1,34 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 720px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+}
+.stream-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: #eee;
+  z-index: 9999;
+}
+.stream-progress::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #00dc82;
+  transition: width 0.2s ease;
+}
+.skeleton,
+.block {
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+}
+.skeleton {
+  background: #f0f0f0;
+  color: #999;
+}
+.block {
+  border: 1px solid #36e4da;
+}
