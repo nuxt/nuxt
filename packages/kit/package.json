@@ -40,14 +40,14 @@
     "rc9": "^3.0.1",
     "scule": "^1.3.0",
     "semver": "^7.8.1",
-    "tinyglobby": "^0.2.16",
+    "tinyglobby": "^0.2.17",
     "ufo": "^1.6.4",
     "unctx": "^2.5.0",
     "untyped": "^2.0.0"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "2.0.4",
+    "@rspack/core": "2.0.5",
     "@types/semver": "7.7.1",
     "hookable": "6.1.1",
     "nitro": "3.0.260311-beta",
