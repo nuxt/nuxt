@@ -26,7 +26,7 @@
   "scripts": {
     "prepack": "tsdown",
     "build": "tsdown",
-    "test:attw": "attw --pack"
+    "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
     "@vue/shared": "^3.5.35",

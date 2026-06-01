@@ -26,7 +26,7 @@
   "scripts": {
     "prepack": "tsdown",
     "build": "tsdown",
-    "test:attw": "attw --pack"
+    "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
