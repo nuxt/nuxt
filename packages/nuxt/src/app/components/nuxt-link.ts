@@ -13,7 +13,7 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
-import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
@@ -27,6 +27,29 @@ import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 import { hashMode } from '#build/router.options.mjs'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
+
+/**
+ * Reject URL strings that would resolve to a script-capable protocol when used as the
+ * `href` of an anchor element. Returns the value unchanged when safe, or `null`.
+ *
+ * The denylist is delegated to `ufo`'s `isScriptProtocol` so it stays in sync with the
+ * check used by `navigateTo` (currently `javascript:`, `data:`, `vbscript:`, `blob:`).
+ * ASCII whitespace and control characters are stripped first because browser URL
+ * parsers tolerate them before the scheme, and `view-source:` is peeled recursively
+ * because Chromium resolves it transparently to the inner URL.
+ */
+function sanitizeExternalHref (value: string): string | null {
+  // eslint-disable-next-line no-control-regex, unicorn/escape-case -- intentional: strip leading control chars before scheme check
+  let candidate = value.replace(/[\u0000-\u001f\s]+/g, '')
+  while (candidate.toLowerCase().startsWith('view-source:')) {
+    candidate = candidate.slice('view-source:'.length)
+  }
+  const colon = candidate.indexOf(':')
+  if (colon > 0 && isScriptProtocol(candidate.slice(0, colon + 1))) {
+    return null
+  }
+  return value
+}
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
@@ -116,7 +139,7 @@ export interface NuxtLinkOptions extends
 
 type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
   ? {
-      href: string
+      href: string | null
       navigate: (e?: MouseEvent) => Promise<void>
       prefetch: (nuxtApp?: NuxtApp) => Promise<void>
       route: (RouteLocation & { href: string }) | undefined
@@ -215,14 +238,16 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const href = computed(() => {
       const effectiveTrailingSlash = unref(props.trailingSlash) ?? options.trailingSlash
       if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
-        return to.value as string
+        const raw = to.value as string
+        return typeof raw === 'string' ? sanitizeExternalHref(raw) : raw
       }
 
       if (isExternal.value) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
         // separately resolve route objects with a 'name' property and without 'path'
         const href = typeof path === 'object' ? router.resolve(path).href : path
-        return applyTrailingSlashBehavior(href, effectiveTrailingSlash)
+        const safe = typeof href === 'string' ? sanitizeExternalHref(href) : href
+        return safe === null ? null : applyTrailingSlashBehavior(safe, effectiveTrailingSlash)
       }
 
       if (typeof to.value === 'object') {
@@ -243,10 +268,17 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
       route: link?.route ?? computed(() => router.resolve(to.value)),
       async navigate (_e?: MouseEvent) {
+        if (href.value === null) {
+          if (import.meta.dev) {
+            console.warn(`[${componentName}] refused to navigate to a URL with a script-capable protocol.`)
+          }
+          return
+        }
         await navigateTo(href.value, { replace: unref(props.replace), external: isExternal.value || hasTarget.value })
       },
-    } satisfies ReturnType<typeof useLink> & {
+    } satisfies Omit<ReturnType<typeof useLink>, 'href'> & {
       to: ComputedRef<RouteLocationRaw>
+      href: ComputedRef<string | null>
       hasTarget: ComputedRef<boolean | null | undefined>
       isAbsoluteUrl: ComputedRef<boolean>
       isExternal: ComputedRef<boolean>
@@ -371,6 +403,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         if (import.meta.server) { return }
 
         if (prefetched.value) { return }
+
+        if (href.value === null) { return }
 
         prefetched.value = true
 
@@ -520,7 +554,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             event.preventDefault()
 
             try {
-              const encodedHref = encodeRoutePath(href.value)
+              const encodedHref = encodeRoutePath(href.value ?? '')
               return await (props.replace ? router.replace(encodedHref) : router.push(encodedHref))
             } finally {
               // Focus the target element for hash links to restore accessibility behavior
