@@ -143,7 +143,8 @@ export function pickSocketPath (platform: NodeJS.Platform): SocketPathInfo {
   // place the socket inside a freshly-created 0700 directory to gate access.
   // Fall back to /tmp when os.tmpdir() would push us past sockaddr_un.sun_path
   // (commonly hit on macOS where tmpdir is /var/folders/xx/.../T).
-  const tmpRoot = join(os.tmpdir(), `nvn-XXXXXX/${socketName}.sock`).length >= UNIX_SOCKET_PATH_LIMIT
+  const probePath = join(os.tmpdir(), `nvn-XXXXXX/${socketName}.sock`)
+  const tmpRoot = Buffer.byteLength(probePath, 'utf8') >= UNIX_SOCKET_PATH_LIMIT
     ? '/tmp'
     : os.tmpdir()
   const parentDir = fs.mkdtempSync(join(tmpRoot, 'nvn-'))
