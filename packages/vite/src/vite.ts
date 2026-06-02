@@ -124,12 +124,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const onigiriChunkMap = new Map<string, string>()
   const onigiriBuildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
-  const onigiriDevAssetsBase = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
+  const onigiriAssetsBase = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
   const onigiriCompilerOptions = {
     additionalImports: () => onigiriComponentImports,
     resolveChunkUrl: (sourcePath: string): string | undefined => {
       if (nuxt.options.dev) {
-        return joinURL(onigiriDevAssetsBase, sourcePath)
+        return joinURL(onigiriAssetsBase, sourcePath)
+      }
+      if (!sourcePath.startsWith('/') && !sourcePath.startsWith('.') && !/^[a-z]:[\\/]/i.test(sourcePath)) {
+        return joinURL(onigiriAssetsBase, sourcePath)
       }
       if (onigiriChunkMap.size === 0) { return undefined }
       const key = sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
