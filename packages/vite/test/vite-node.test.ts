@@ -51,6 +51,18 @@ describe('pickSocketPath', () => {
     const stat = fs.statSync(parentDir!)
     expect(stat.mode & 0o777).toBe(0o700)
   })
+
+  it.runIf(process.platform !== 'win32')('produces a socket path within the OS sun_path limit', () => {
+    const limit = process.platform === 'darwin' ? 104 : 108
+    const { socketPath } = trackedPick()
+    expect(socketPath.length).toBeLessThan(limit)
+  })
+
+  it('uses the short nvn- prefix for the socket filename', () => {
+    const { socketPath } = pickSocketPath('win32')
+    expect(socketPath).toMatch(/[\\/]nvn-/)
+    expect(socketPath).not.toMatch(/nuxt-vite-node-/)
+  })
 })
 
 describe('listenAndRestrict', () => {

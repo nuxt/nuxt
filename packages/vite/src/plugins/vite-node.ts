@@ -129,16 +129,24 @@ export interface SocketPathInfo {
   parentDir?: string
 }
 
+// sockaddr_un.sun_path limits (including null terminator)
+const UNIX_SOCKET_PATH_LIMIT = process.platform === 'darwin' ? 104 : 108
+
 // only exported for tests
 export function pickSocketPath (platform: NodeJS.Platform): SocketPathInfo {
   const uniqueSuffix = `${process.pid}-${Date.now()}`
-  const socketName = `nuxt-vite-node-${uniqueSuffix}`
+  const socketName = `nvn-${uniqueSuffix}`
 
   if (platform === 'win32') {
     return { socketPath: join(String.raw`\\.\pipe`, socketName) }
   }
   // place the socket inside a freshly-created 0700 directory to gate access.
-  const parentDir = fs.mkdtempSync(join(os.tmpdir(), 'nuxt-vite-node-'))
+  // Fall back to /tmp when os.tmpdir() would push us past sockaddr_un.sun_path
+  // (commonly hit on macOS where tmpdir is /var/folders/xx/.../T).
+  const tmpRoot = join(os.tmpdir(), `nvn-XXXXXX/${socketName}.sock`).length >= UNIX_SOCKET_PATH_LIMIT
+    ? '/tmp'
+    : os.tmpdir()
+  const parentDir = fs.mkdtempSync(join(tmpRoot, 'nvn-'))
   fs.chmodSync(parentDir, 0o700)
   return { socketPath: join(parentDir, `${socketName}.sock`), parentDir }
 }
