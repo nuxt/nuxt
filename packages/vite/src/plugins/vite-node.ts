@@ -132,7 +132,7 @@ export interface SocketPathInfo {
 
 // only exported for tests
 export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.tmpdir()): SocketPathInfo {
-  const socketName = 'nuxt-vite.sock'
+  const socketName = 'nuxt.sock'
   // The socket needs its own 0700 directory to gate access on macOS/BSD.
   // See https://github.com/advisories/GHSA-534h-c3cw-v3h9
   // enough randomness to avoid collisions between concurrent dev servers and
