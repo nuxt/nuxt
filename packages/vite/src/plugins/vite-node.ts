@@ -6,6 +6,7 @@ import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
+import { randomUUID } from 'node:crypto'
 import { dirname, isAbsolute, join, normalize } from 'pathe'
 import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
@@ -130,17 +131,33 @@ export interface SocketPathInfo {
 }
 
 // only exported for tests
-export function pickSocketPath (platform: NodeJS.Platform): SocketPathInfo {
-  const uniqueSuffix = `${process.pid}-${Date.now()}`
-  const socketName = `nuxt-vite-node-${uniqueSuffix}`
+export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.tmpdir()): SocketPathInfo {
+  const socketName = 'nuxt-vite.sock'
+  // The socket needs its own 0700 directory to gate access on macOS/BSD.
+  // See https://github.com/advisories/GHSA-534h-c3cw-v3h9
+  // enough randomness to avoid collisions between concurrent dev servers and
+  // short enough to avoid hitting the socket path length limit when combined
+  // with the temp directory path.
+  const socketDir = `nuxt-vite-${randomUUID().slice(0, 8)}`
 
   if (platform === 'win32') {
-    return { socketPath: join(String.raw`\\.\pipe`, socketName) }
+    return { socketPath: join(String.raw`\\.\pipe`, socketDir) }
   }
-  // place the socket inside a freshly-created 0700 directory to gate access.
-  const parentDir = fs.mkdtempSync(join(os.tmpdir(), 'nuxt-vite-node-'))
+
+  // macOS's per-user $TMPDIR can be too long so fall back to /tmp when the
+  // full path exceeds the limit
+  const base = Buffer.byteLength(join(tmpdir, socketDir, socketName)) >
+    (platform === 'linux' ? 108 : /* macOS */ 104)
+    ? '/tmp'
+    : tmpdir
+
+  // AF_UNIX connect needs +x on every parent; non-recursive mkdir never adopts
+  // a pre-existing directory.
+  const parentDir = join(base, socketDir)
+  fs.mkdirSync(parentDir, { mode: 0o700 })
   fs.chmodSync(parentDir, 0o700)
-  return { socketPath: join(parentDir, `${socketName}.sock`), parentDir }
+
+  return { socketPath: join(parentDir, socketName), parentDir }
 }
 
 function generateSocketPath (): SocketPathInfo {
@@ -350,7 +367,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                     errorData.frame = await ssrServer.environments.client.transformRequest(request.payload.moduleId)
                       .then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
                   } catch {
-                  // Ignore transform errors
+                    // Ignore transform errors
                   }
                 }
                 throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
@@ -464,7 +481,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
   listenAndRestrict(server, currentSocketPath)
 
-  server.on('error', () => {})
+  server.on('error', () => { })
 
   return server
 }
