@@ -133,28 +133,26 @@ export interface SocketPathInfo {
 // only exported for tests
 export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.tmpdir()): SocketPathInfo {
   const socketName = 'nuxt.sock'
-  // The socket needs its own 0700 directory to gate access on macOS/BSD.
-  // See https://github.com/advisories/GHSA-534h-c3cw-v3h9
-  // enough randomness to avoid collisions between concurrent dev servers and
-  // short enough to avoid hitting the socket path length limit when combined
-  // with the temp directory path.
-  const socketDir = `nuxt-vite-${randomUUID().slice(0, 8)}`
+  const socketDir = `nuxt-vite-`
 
   if (platform === 'win32') {
-    return { socketPath: join(String.raw`\\.\pipe`, socketDir) }
+  // enough randomness to avoid collisions and being predictable
+    return { socketPath: join(String.raw`\\.\pipe`, socketDir + randomUUID().slice(0, 8)) }
   }
+
+  // creates a random suffix and avoids collisions
+  let parentDir = fs.mkdtempSync(join(tmpdir, socketDir))
 
   // macOS's per-user $TMPDIR can be too long so fall back to /tmp when the
   // full path exceeds the limit
-  const base = Buffer.byteLength(join(tmpdir, socketDir, socketName)) >
-    (platform === 'linux' ? 108 : /* macOS */ 104)
-    ? '/tmp'
-    : tmpdir
+  if (Buffer.byteLength(join(parentDir, socketName)) >
+    (platform === 'linux' ? 108 : /* macOS */ 104)) {
+    parentDir = join('/tmp', socketDir + randomUUID().slice(0, 8))
+    // The socket needs its own 0700 directory to gate access on macOS/BSD.
+    // See https://github.com/advisories/GHSA-534h-c3cw-v3h9
+    fs.mkdirSync(parentDir, { mode: 0o700 })
+  }
 
-  // AF_UNIX connect needs +x on every parent; non-recursive mkdir never adopts
-  // a pre-existing directory.
-  const parentDir = join(base, socketDir)
-  fs.mkdirSync(parentDir, { mode: 0o700 })
   fs.chmodSync(parentDir, 0o700)
 
   return { socketPath: join(parentDir, socketName), parentDir }
