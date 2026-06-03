@@ -293,8 +293,10 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
       })
 
       clientServer.watcher.on('all', (_event, file) => {
+        const normalizedFile = normalize(file)
         invalidates.add(file)
-        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalize(file)))
+        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalizedFile))
+        markInvalidates(clientServer.environments.ssr.moduleGraph.getModulesByFile(normalizedFile))
       })
     },
     async buildEnd () {
