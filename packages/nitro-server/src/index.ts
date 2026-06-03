@@ -630,7 +630,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }
 
-  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.js')
+  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
   const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath
 
   // Use hash-based cache driver for runtime payload cache to avoid conflicts when
