@@ -630,7 +630,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }
 
-  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.js')
+  // Authored as `.mjs` so the extension matches `tsdown`'s output in both `src` (dev/tests)
+  // and `dist` (published). It is inlined verbatim into the `#nitro/virtual/storage` module,
+  // and a wrong extension is a fatal unresolved import when prerendering (rolldown).
+  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
   const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath
 
   // Use hash-based cache driver for runtime payload cache to avoid conflicts when
