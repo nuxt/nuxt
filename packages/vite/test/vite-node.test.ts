@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import net from 'node:net'
 import os from 'node:os'
+import { basename } from 'node:path'
 import process from 'node:process'
 import { afterEach, describe, expect, it } from 'vitest'
 import { listenAndRestrict, pickSocketPath } from '../src/plugins/vite-node.ts'
@@ -50,6 +51,11 @@ describe('pickSocketPath', () => {
     const { parentDir } = trackedPick()
     const stat = fs.statSync(parentDir!)
     expect(stat.mode & 0o777).toBe(0o700)
+  })
+
+  it('uses a short socket filename to stay within the AF_UNIX length limit', () => {
+    const { socketPath } = trackedPick('darwin')
+    expect(basename(socketPath).length).toBeLessThanOrEqual(16)
   })
 })
 
