@@ -55,7 +55,7 @@ describe('pickSocketPath', () => {
   it.runIf(process.platform !== 'win32')('produces a socket path within the OS sun_path limit', () => {
     const limit = process.platform === 'darwin' ? 104 : 108
     const { socketPath } = trackedPick()
-    expect(socketPath.length).toBeLessThan(limit)
+    expect(Buffer.byteLength(socketPath, 'utf8')).toBeLessThan(limit)
   })
 
   it('uses the short nvn- prefix for the socket filename', () => {
