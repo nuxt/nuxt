@@ -39,7 +39,8 @@ const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => a
  * because Chromium resolves it transparently to the inner URL.
  */
 function sanitizeExternalHref (value: string): string | null {
-  let candidate = value.replace(/[\u0000-\u001f\s]+/g, '')
+  // eslint-disable-next-line no-control-regex
+  let candidate = value.replace(/[\u0000-\u001F\s]+/g, '')
   while (candidate.toLowerCase().startsWith('view-source:')) {
     candidate = candidate.slice('view-source:'.length)
   }
