@@ -131,16 +131,14 @@ export interface SocketPathInfo {
 
 // only exported for tests
 export function pickSocketPath (platform: NodeJS.Platform): SocketPathInfo {
-  const uniqueSuffix = `${process.pid}-${Date.now()}`
-  const socketName = `nuxt-vite-node-${uniqueSuffix}`
-
   if (platform === 'win32') {
-    return { socketPath: join(String.raw`\\.\pipe`, socketName) }
+    return { socketPath: join(String.raw`\\.\pipe`, `nuxt-vite-node-${process.pid}-${Date.now()}`) }
   }
-  // place the socket inside a freshly-created 0700 directory to gate access.
+  // the unique 0700 mkdtemp directory gates access and guarantees uniqueness,
+  // so the socket file uses a short name - AF_UNIX paths are capped at 104 bytes on macOS.
   const parentDir = fs.mkdtempSync(join(os.tmpdir(), 'nuxt-vite-node-'))
   fs.chmodSync(parentDir, 0o700)
-  return { socketPath: join(parentDir, `${socketName}.sock`), parentDir }
+  return { socketPath: join(parentDir, 'node.sock'), parentDir }
 }
 
 function generateSocketPath (): SocketPathInfo {
