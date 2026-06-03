@@ -138,9 +138,9 @@ export function pickSocketPath (platform: NodeJS.Platform): SocketPathInfo {
     return { socketPath: join(String.raw`\\.\pipe`, socketName) }
   }
   // place the socket inside a freshly-created 0700 directory to gate access.
-  const parentDir = fs.mkdtempSync(join(os.tmpdir(), 'nuxt-vite-node-'))
+  const parentDir = fs.mkdtempSync(join(os.tmpdir(), 'nvn-'))
   fs.chmodSync(parentDir, 0o700)
-  return { socketPath: join(parentDir, `${socketName}.sock`), parentDir }
+  return { socketPath: join(parentDir, 's.sock'), parentDir }
 }
 
 function generateSocketPath (): SocketPathInfo {
