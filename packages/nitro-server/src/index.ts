@@ -406,7 +406,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       return `
       import { defu } from 'defu'
       const matcher = ${matcher}
-      export default (path) => defu({}, ...matcher('', path).map(r => r.data).reverse())
+      export default (path) => defu({}, ...matcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())
       `
     },
   })
@@ -630,7 +630,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }
 
-  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.js')
+  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
   const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath
 
   // Use hash-based cache driver for runtime payload cache to avoid conflicts when
