@@ -4,7 +4,7 @@ import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { EventHandler, H3Event } from 'h3'
 import { createError, defineEventHandler, getQuery, readBody, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
-import { resolveUnrefHeadInput } from '@unhead/vue'
+import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { computeIslandHash, filterIslandProps } from '#app/island-hash'
@@ -97,8 +97,7 @@ const handler: EventHandler = defineEventHandler(async (event) => {
 
   const islandHead: SerializableHead = {}
   for (const entry of ssrContext.head.entries.values()) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+    for (const [key, value] of Object.entries(walkResolver(entry.input, VueResolver) as SerializableHead)) {
       const currentValue = islandHead[key as keyof SerializableHead]
       if (Array.isArray(currentValue)) {
         currentValue.push(...value)
