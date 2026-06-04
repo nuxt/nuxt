@@ -6,7 +6,7 @@ import { genImport } from 'knitwork'
 import { isJS, isVue } from '../../core/utils/index.ts'
 import type { ComponentsOptions } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
-import type { Argument, Expression, FunctionBody, ImportExpression } from 'oxc-parser'
+import type { Argument, Expression, FunctionBody, ImportExpression, StringLiteral } from 'oxc-parser'
 
 interface LoaderOptions {
   srcDir: string
@@ -112,7 +112,7 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
   }
 })
 
-function isStringLiteral (node: Argument | undefined) {
+function isStringLiteral (node: Argument | undefined): node is StringLiteral {
   return !!node && node.type === 'Literal' && typeof node.value === 'string'
 }
 

@@ -173,7 +173,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     }
   }
 
-  function isHashLinkWithoutHashMode (link: unknown): boolean {
+  function isHashLinkWithoutHashMode (link: unknown): link is string {
     return !hashMode && typeof link === 'string' && link.startsWith('#')
   }
 
