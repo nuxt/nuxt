@@ -868,3 +868,156 @@ describe('NuxtPage should work with keepalive options', () => {
     el.unmount()
   })
 })
+
+// https://github.com/nuxt/nuxt/issues/35236
+describe('NuxtPage `stableContent` prop', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let resolveAlpha: undefined | (() => void)
+  let resolveBeta: undefined | (() => void)
+  let resolveGamma: undefined | (() => void)
+
+  const counts = {
+    alpha: { setup: 0, render: 0 },
+    beta: { setup: 0, render: 0 },
+    gamma: { setup: 0, render: 0 },
+  }
+
+  function resetCounts () {
+    Object.values(counts).forEach((c) => { c.setup = 0; c.render = 0 })
+  }
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+    resolveAlpha = undefined
+    resolveBeta = undefined
+    resolveGamma = undefined
+    resetCounts()
+
+    router.addRoute({
+      name: 'stable-alpha',
+      path: '/stable-alpha',
+      component: defineComponent({
+        name: 'stable-alpha',
+        async setup () {
+          counts.alpha.setup++
+          await new Promise<void>((r) => { resolveAlpha = r })
+          return () => {
+            counts.alpha.render++
+            return h('div', { 'data-testid': 'stable-alpha' }, 'Alpha Content')
+          }
+        },
+      }),
+    })
+    router.addRoute({
+      name: 'stable-beta',
+      path: '/stable-beta',
+      component: defineComponent({
+        name: 'stable-beta',
+        async setup () {
+          counts.beta.setup++
+          await new Promise<void>((r) => { resolveBeta = r })
+          return () => {
+            counts.beta.render++
+            return h('div', { 'data-testid': 'stable-beta' }, 'Beta Content')
+          }
+        },
+      }),
+    })
+    router.addRoute({
+      name: 'stable-gamma',
+      path: '/stable-gamma',
+      component: defineComponent({
+        name: 'stable-gamma',
+        async setup () {
+          counts.gamma.setup++
+          await new Promise<void>((r) => { resolveGamma = r })
+          return () => {
+            counts.gamma.render++
+            return h('div', { 'data-testid': 'stable-gamma' }, 'Gamma Content')
+          }
+        },
+      }),
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('stable-alpha')
+    router.removeRoute('stable-beta')
+    router.removeRoute('stable-gamma')
+  })
+
+  it('defaults to false and resolves to the final route after rapid concurrent navigation', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    // Resolve alpha first to establish hasResolvedOnce
+    await navigateTo('/stable-alpha')
+    resolveAlpha!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+    expect(el.html()).toContain('Alpha Content')
+
+    // Navigate to beta (still pending) then immediately to gamma
+    await navigateTo('/stable-beta')
+    await navigateTo('/stable-gamma')
+    resolveGamma!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(el.html()).toContain('Gamma Content')
+    expect(el.html()).not.toContain('Alpha Content')
+    expect(el.html()).not.toContain('Beta Content')
+
+    el.unmount()
+  })
+
+  it('with `stableContent` enabled, also resolves to the final route after rapid concurrent navigation', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage, { stableContent: true }) }),
+    })
+
+    // Resolve alpha first to establish hasResolvedOnce
+    await navigateTo('/stable-alpha')
+    resolveAlpha!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+    expect(el.html()).toContain('Alpha Content')
+
+    // Navigate to beta (still pending) then immediately to gamma
+    await navigateTo('/stable-beta')
+    await navigateTo('/stable-gamma')
+    resolveGamma!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    // Final state still settles on the most recent route
+    expect(el.html()).toContain('Gamma Content')
+    expect(el.html()).not.toContain('Alpha Content')
+
+    el.unmount()
+  })
+
+  it('with `stableContent` enabled, plain non-concurrent navigation still mounts the new route', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage, { stableContent: true }) }),
+    })
+
+    await navigateTo('/stable-alpha')
+    resolveAlpha!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+    expect(el.html()).toContain('Alpha Content')
+
+    await navigateTo('/stable-beta')
+    resolveBeta!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+    expect(el.html()).toContain('Beta Content')
+    expect(el.html()).not.toContain('Alpha Content')
+
+    el.unmount()
+  })
+})

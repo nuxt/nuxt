@@ -28,6 +28,14 @@ export interface NuxtPageProps extends RouterViewProps {
    * Control when the `NuxtPage` component is re-rendered.
    */
   pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
+
+  /**
+   * Keep the last successfully rendered page visible while a new page
+   * is still resolving during rapid/concurrent navigation, instead of
+   * tearing down the pending `<Suspense>` boundary and showing a blank
+   * frame. Default `false` preserves the existing behaviour.
+   */
+  stableContent?: boolean
 }
 
 const _routeProviders = import.meta.dev ? new Map<string, ReturnType<typeof defineRouteProvider> | undefined>() : new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
@@ -53,6 +61,10 @@ export default defineComponent({
     pageKey: {
       type: [Function, String] as unknown as () => string | ((route: RouteLocationNormalizedLoaded) => string),
       default: null,
+    },
+    stableContent: {
+      type: Boolean,
+      default: false,
     },
   },
   setup (props, { attrs, slots, expose }) {
@@ -157,7 +169,10 @@ export default defineComponent({
 
               // remount suspense on rapid navigation, but not before the first resolve:
               // tearing down a never-resolved suspensible Suspense strands its parent. See #28425, #34683.
-              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce) {
+              // When `stableContent` is opted in, skip the remount so Vue's <Suspense>
+              // keeps the previously-resolved content visible until the new page resolves
+              // (see #35236). Opt-in only: default `false` preserves existing behaviour.
+              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce && !props.stableContent) {
                 suspenseKey++
               }
 
