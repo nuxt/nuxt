@@ -267,7 +267,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promi
       } else {
         logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
       }
-      _plugins.push(plugin)
+      _plugins.push({ ...plugin, _metaUnknown: true })
     }
   }
 
@@ -335,29 +335,33 @@ export function sortPluginsByDependsOn<T extends AnnotatedPlugin> (plugins: T[])
   return result
 }
 
-export function hasPluginDependencies (plugins: Array<{ dependsOn?: string[] }>): boolean {
+export function hasPluginDependencies (plugins: Array<{ dependsOn?: string[], _metaUnknown?: boolean }>): boolean {
   for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
     if (plugin.dependsOn && plugin.dependsOn.length > 0) { return true }
   }
   return false
 }
 
-export function hasParallelPlugins (plugins: Array<{ parallel?: boolean }>): boolean {
+export function hasParallelPlugins (plugins: Array<{ parallel?: boolean, _metaUnknown?: boolean }>): boolean {
   for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
     if (plugin.parallel) { return true }
   }
   return false
 }
 
-export function hasPluginHooks (plugins: Array<{ hasHooks?: boolean }>): boolean {
+export function hasPluginHooks (plugins: Array<{ hasHooks?: boolean, _metaUnknown?: boolean }>): boolean {
   for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
     if (plugin.hasHooks) { return true }
   }
   return false
 }
 
-export function hasIslandOptOutPlugins (plugins: Array<{ hasEnv?: boolean }>): boolean {
+export function hasIslandOptOutPlugins (plugins: Array<{ hasEnv?: boolean, _metaUnknown?: boolean }>): boolean {
   for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
     if (plugin.hasEnv) { return true }
   }
   return false

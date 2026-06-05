@@ -38,17 +38,13 @@ export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
   post: internalOrderMap['user-post'],
 }
 
-export type ExtractedPluginMeta = PluginMeta & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean }
+export type ExtractedPluginMeta = PluginMeta & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean, _metaUnknown?: boolean }
 
 const metaCache: Record<string, ExtractedPluginMeta> = {}
 export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
   let meta: ExtractedPluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
-  }
-  // non-object syntax plugin
-  if (/defineNuxtPlugin\s*\([\w(]/.test(code)) {
-    return {}
   }
   parseAndWalk(code, `file.${loader}`, (node) => {
     if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
@@ -71,6 +67,13 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const plugin = node.arguments[0]
     if (plugin?.type === 'ObjectExpression') {
       meta = defu(extractMetaFromObject(plugin.properties), meta)
+    } else if (plugin && !isFunctionPluginExpression(plugin)) {
+      // Plugin argument is something we can't statically read (an imported
+      // identifier, a factory call, a member access, ...). It may declare
+      // hooks / env / dependsOn / parallel that we can't see, so flag the
+      // metadata as unknown and let the capability probes fall back to the
+      // full runtime resolver.
+      meta._metaUnknown = true
     }
 
     meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
@@ -78,6 +81,14 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
   })
   metaCache[code] = meta
   return meta
+}
+
+function isFunctionPluginExpression (node: ESTree.Expression | ESTree.SpreadElement): boolean {
+  // Function-syntax plugins (`defineNuxtPlugin(() => {...})` /
+  // `defineNuxtPlugin(function (n) {...})`) carry no capability metadata by
+  // construction, so emitting empty extracted meta is safe and lets the
+  // runtime keep its DCE paths.
+  return node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression'
 }
 
 type ExtractedMetaKey = keyof PluginMeta | 'parallel'
