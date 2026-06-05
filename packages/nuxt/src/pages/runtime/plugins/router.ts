@@ -219,6 +219,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
         const routeRules = getRouteRules({ path: to.path })
 
+        if (routeRules.appLayout && !to.meta.layout) {
+          to.meta.layout = routeRules.appLayout
+        }
+
         if (routeRules.appMiddleware) {
           for (const key in routeRules.appMiddleware) {
             if (routeRules.appMiddleware[key]) {
