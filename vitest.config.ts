@@ -79,7 +79,6 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_CONTEXT: entry.context,
     TEST_MANIFEST: entry.manifest,
     TEST_PAYLOAD: entry.payload,
-    SKIP_BUNDLE_SIZE: 'true',
   }
 }
 
@@ -112,14 +111,24 @@ export default defineConfig({
         test: {
           name: fixtureProjectName(entry),
           include: ['test/*.test.ts'],
+          exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           retry: isCI ? 2 : 0,
-          exclude: fixtureExclude,
           benchmark: { include: [] },
           env: fixtureProjectEnv(entry),
         },
       })),
+      {
+        test: {
+          name: 'bundle',
+          include: ['test/bundle.test.ts'],
+          setupFiles: ['./test/setup-env.ts'],
+          testTimeout: 180_000,
+          retry: isCI ? 2 : 0,
+          benchmark: { include: [] },
+        },
+      },
       {
         define: {
           'import.meta.dev': 'globalThis.__TEST_DEV__',
