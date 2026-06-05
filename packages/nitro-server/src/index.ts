@@ -939,7 +939,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.tsConfig.exclude ||= []
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
-    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
+    opts.references.push({ path: join(nitroConfig.typescript!.generatedTypesDir!, 'nitro.d.ts') })
 
     // ensure aliases shared between nuxt + nitro are included in shared tsconfig
     opts.sharedTsConfig.compilerOptions ||= {}
