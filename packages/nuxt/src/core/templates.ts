@@ -533,7 +533,7 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
   async getContents (ctx) {
-    const annotatedPlugins = ctx.nuxt.options.dev
+    const annotatedPlugins = ctx.nuxt.options.dev || ctx.nuxt.options.test
       ? null
       : await annotatePlugins(ctx.nuxt, ctx.app.plugins)
     const pluginsHaveDependencies = annotatedPlugins ? hasPluginDependencies(annotatedPlugins) : true

@@ -38,7 +38,7 @@ export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
   post: internalOrderMap['user-post'],
 }
 
-export type ExtractedPluginMeta = Omit<PluginMeta, 'enforce'> & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean }
+export type ExtractedPluginMeta = PluginMeta & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean }
 
 const metaCache: Record<string, ExtractedPluginMeta> = {}
 export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
