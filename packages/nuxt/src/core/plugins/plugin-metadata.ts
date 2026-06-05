@@ -38,9 +38,11 @@ export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
   post: internalOrderMap['user-post'],
 }
 
-const metaCache: Record<string, Omit<PluginMeta, 'enforce'>> = {}
+export type ExtractedPluginMeta = Omit<PluginMeta, 'enforce'> & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean }
+
+const metaCache: Record<string, ExtractedPluginMeta> = {}
 export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
-  let meta: PluginMeta = {}
+  let meta: ExtractedPluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
   }
@@ -75,27 +77,36 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     delete meta.enforce
   })
   metaCache[code] = meta
-  return meta as Omit<PluginMeta, 'enforce'>
+  return meta
 }
 
-type PluginMetaKey = keyof PluginMeta
-const keys: Record<PluginMetaKey, string> = {
+type ExtractedMetaKey = keyof PluginMeta | 'parallel'
+const keys: Record<ExtractedMetaKey, string> = {
   name: 'name',
   order: 'order',
   enforce: 'enforce',
   dependsOn: 'dependsOn',
+  parallel: 'parallel',
 }
-function isMetadataKey (key: string | ESTree.IdentifierName): key is PluginMetaKey {
+function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMetaKey {
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
 function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
-  const meta: PluginMeta = {}
+  const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
       throw new Error('Invalid plugin metadata')
     }
     const propertyKey = property.key.name
+    if (propertyKey === 'hooks') {
+      meta.hasHooks = true
+      continue
+    }
+    if (propertyKey === 'env') {
+      meta.hasEnv = true
+      continue
+    }
     if (!isMetadataKey(propertyKey)) { continue }
     if (property.value.type === 'Literal') {
       meta[propertyKey] = property.value.value as any

@@ -23,6 +23,7 @@ describe('plugin-metadata', () => {
     expect(meta).toEqual({
       'name': 'test',
       'order': 1,
+      'hasHooks': true,
     })
   })
 
