@@ -2,6 +2,8 @@ import fs from 'node:fs'
 import net from 'node:net'
 import os from 'node:os'
 import process from 'node:process'
+import { Buffer } from 'node:buffer'
+import { join } from 'pathe'
 import { afterEach, describe, expect, it } from 'vitest'
 import { listenAndRestrict, pickSocketPath } from '../src/plugins/vite-node.ts'
 
@@ -50,6 +52,20 @@ describe('pickSocketPath', () => {
     const { parentDir } = trackedPick()
     const stat = fs.statSync(parentDir!)
     expect(stat.mode & 0o777).toBe(0o700)
+  })
+
+  it('falls back to /tmp and stays within the `sun_path` limit when $TMPDIR is too long', { skip: process.platform === 'win32' }, () => {
+    const max = process.platform === 'linux' ? 108 : 104
+    const longTmpdir = fs.mkdtempSync(join(os.tmpdir(), 'x'.repeat(80)))
+    createdDirs.push(longTmpdir)
+
+    const { socketPath, parentDir } = pickSocketPath(process.platform, longTmpdir)
+    if (parentDir) {
+      createdDirs.push(parentDir)
+    }
+
+    expect(parentDir?.startsWith('/tmp/')).toBe(true)
+    expect(Buffer.byteLength(socketPath)).toBeLessThanOrEqual(max)
   })
 })
 
