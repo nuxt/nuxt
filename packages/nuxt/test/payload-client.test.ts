@@ -35,6 +35,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // ---------------------------------------------------------------------------
+// Import the plugin under test AFTER all vi.mock declarations so hoisting
+// applies correctly.
+// ---------------------------------------------------------------------------
+import pluginDefault from '../src/app/plugins/payload.client'
+import { loadPayload } from '../src/app/composables/payload'
+
+// ---------------------------------------------------------------------------
 // Mock: #build/nuxt.config.mjs
 // The unit vitest project already aliases this to test/mocks/nuxt-config.ts
 // which lacks the three fields used by payload.client.  We override via
@@ -42,7 +49,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // ---------------------------------------------------------------------------
 vi.mock('#build/nuxt.config.mjs', () => ({
   appManifest: false,
-  prefetchPreloadTags: true,   // enabled by default so head.push / Map paths run
+  prefetchPreloadTags: true, // enabled by default so head.push / Map paths run
   purgeCachedData: true,
   asyncCallHook: false,
   appId: 'nuxt-app',
@@ -96,10 +103,10 @@ function createMockRouter () {
   }
   return {
     _handlers: handlers,
-    beforeResolve: vi.fn((fn: (...a: any[]) => any) => { handlers.beforeResolve.push(fn) }),
-    afterEach: vi.fn((fn: (...a: any[]) => any) => { handlers.afterEach.push(fn) }),
+    beforeResolve: vi.fn((fn: (...a: any[]) => any) => { handlers.beforeResolve!.push(fn) }),
+    afterEach: vi.fn((fn: (...a: any[]) => any) => { handlers.afterEach!.push(fn) }),
     async fire (type: 'beforeResolve' | 'afterEach', ...args: any[]) {
-      for (const h of handlers[type]) { await h(...args) }
+      for (const h of handlers[type]!) { await h(...args) }
     },
   }
 }
@@ -150,13 +157,6 @@ function createMockNuxtApp () {
     },
   }
 }
-
-// ---------------------------------------------------------------------------
-// Import the plugin under test AFTER all vi.mock declarations so hoisting
-// applies correctly.
-// ---------------------------------------------------------------------------
-import pluginDefault from '../src/app/plugins/payload.client'
-import { loadPayload } from '../src/app/composables/payload'
 
 // ---------------------------------------------------------------------------
 // window.location stub — required for any test that fires link:prefetch
@@ -223,7 +223,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/about')
       expect(nuxtApp._mockHead.push).toHaveBeenCalledTimes(1)
 
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
       // Navigate to /about — derived key '/about' must match to.path '/about'
       await _mockRouter.fire('beforeResolve', { path: '/about' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -236,7 +236,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/products/42')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/products/42' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -249,7 +249,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/' }, { path: '/prev' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -262,7 +262,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/a/b/c/d')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/a/b/c/d' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -275,7 +275,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/search?q=nuxt')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // to.path is always the pathname; query is separate in vue-router
       await _mockRouter.fire('beforeResolve', { path: '/search' }, { path: '/' })
@@ -289,7 +289,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/docs#section')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/docs' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -302,7 +302,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/page?ref=nav#top')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/page' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -316,7 +316,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
 
       // URL constructor percent-encodes the é in /café
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/café')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // vue-router represents the route path with the percent-encoded form
       await _mockRouter.fire('beforeResolve', { path: '/caf%C3%A9' }, { path: '/' })
@@ -330,7 +330,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/caf%C3%A9')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // Key should still be /caf%C3%A9 (URL does not re-encode already-encoded)
       await _mockRouter.fire('beforeResolve', { path: '/caf%C3%A9' }, { path: '/' })
@@ -345,7 +345,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       // Insert via decoded form
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/café')
-      const entryDecoded = nuxtApp._mockHead._entries[0]
+      const entryDecoded = nuxtApp._mockHead._entries[0]!
 
       // The second prefetch for the same (normalised) key must NOT create a
       // second entry — idempotency guard
@@ -365,7 +365,7 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/about/')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // key is '/about/' — navigation to '/about/' matches
       await _mockRouter.fire('beforeResolve', { path: '/about/' }, { path: '/' })
@@ -385,12 +385,11 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
 
       // 'about' relative to 'http://localhost/app/' resolves to '/app/about'
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/app/about')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/app/about' }, { path: '/app/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
-    }
-    finally {
+    } finally {
       ;(globalThis as any).window = prev
     }
   })
@@ -406,12 +405,11 @@ describe('Group 1 — deriveKey: URL normalisation contract', () => {
 
       // Absolute URL — base is ignored, key is the URL's own pathname
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/other/page')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/other/page' }, { path: '/app/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
-    }
-    finally {
+    } finally {
       ;(globalThis as any).window = prev
     }
   })
@@ -430,7 +428,7 @@ describe('Group 2 — primary bug regression: full-URL key vs pathname key', () 
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/about')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // If the key were 'http://localhost/about', to.path='/about' would miss.
       // Post-fix: key is '/about' → disposal fires.
@@ -446,7 +444,7 @@ describe('Group 2 — primary bug regression: full-URL key vs pathname key', () 
 
       // Full URL inserted
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/products/detail?ref=hp')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // Navigation supplies only the path — must still match
       await _mockRouter.fire('beforeResolve', { path: '/products/detail' }, { path: '/products' })
@@ -460,7 +458,7 @@ describe('Group 2 — primary bug regression: full-URL key vs pathname key', () 
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/about')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // Simulate the pre-fix behaviour: navigate to the FULL URL string as path.
       // This should NOT match because to.path is a plain pathname in vue-router.
@@ -485,7 +483,7 @@ describe('Group 2 — primary bug regression: full-URL key vs pathname key', () 
       // Both normalise to '/about'; idempotency guard means only one entry
       expect(nuxtApp._mockHead.push).toHaveBeenCalledTimes(1)
 
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
       await _mockRouter.fire('beforeResolve', { path: '/about' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
     })
@@ -503,7 +501,7 @@ describe('Group 3 — trailing-slash variants', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/about/')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // key is '/about/', navigation supplies '/about' — no match
       await _mockRouter.fire('beforeResolve', { path: '/about' }, { path: '/' })
@@ -518,7 +516,7 @@ describe('Group 3 — trailing-slash variants', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/about/')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/about/' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -531,7 +529,7 @@ describe('Group 3 — trailing-slash variants', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/about')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // key is '/about', navigation supplies '/about/' — no match
       await _mockRouter.fire('beforeResolve', { path: '/about/' }, { path: '/' })
@@ -552,7 +550,7 @@ describe('Group 4 — percent-encoded characters in URL key', () => {
 
       // Already encoded
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/caf%C3%A9')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/caf%C3%A9' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -581,7 +579,7 @@ describe('Group 4 — percent-encoded characters in URL key', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/中文') // /中文
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // URL constructor encodes CJK characters
       await _mockRouter.fire('beforeResolve', { path: '/%E4%B8%AD%E6%96%87' }, { path: '/' })
@@ -595,7 +593,7 @@ describe('Group 4 — percent-encoded characters in URL key', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/path%20with%20spaces')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('beforeResolve', { path: '/path%20with%20spaces' }, { path: '/' })
       expect(entry.dispose).toHaveBeenCalledTimes(1)
@@ -614,7 +612,7 @@ describe('Group 5 — race: navigation fires before loadPayload resolves', () =>
 
       // loadPayload promise does not resolve until we manually resolve it
       let resolvePayload!: (v: any) => void
-      const lazyPayload = new Promise<any>(r => { resolvePayload = r })
+      const lazyPayload = new Promise<any>((r) => { resolvePayload = r })
       vi.mocked(loadPayload).mockReturnValueOnce(lazyPayload)
 
       // Start prefetch but do NOT await yet
@@ -631,7 +629,7 @@ describe('Group 5 — race: navigation fires before loadPayload resolves', () =>
 
       // Entry is now in the Map; afterEach will sweep it
       await _mockRouter.fire('afterEach')
-      expect(nuxtApp._mockHead._entries[0].dispose).toHaveBeenCalledTimes(1)
+      expect(nuxtApp._mockHead._entries[0]!.dispose).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -691,14 +689,14 @@ describe('Group 6 — dispose after Map.clear()', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/page-c')
-      const entry = nuxtApp._mockHead._entries[0]
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // Clear map via afterEach
       await _mockRouter.fire('afterEach')
       expect(entry.dispose).toHaveBeenCalledTimes(1)
 
       // Calling dispose on the locally held reference again must not throw
-      expect(() => entry.dispose()).not.toThrow()
+      expect(() => (entry.dispose as () => void)()).not.toThrow()
     })
   })
 
@@ -714,7 +712,9 @@ describe('Group 6 — dispose after Map.clear()', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/page-y')
 
-      const [entryTarget, entryX, entryY] = nuxtApp._mockHead._entries
+      const entryTarget = nuxtApp._mockHead._entries[0]!
+      const entryX = nuxtApp._mockHead._entries[1]!
+      const entryY = nuxtApp._mockHead._entries[2]!
 
       // Navigate to /nav-target — beforeResolve disposes that entry only
       await _mockRouter.fire('beforeResolve', { path: '/nav-target' }, { path: '/' })
@@ -769,11 +769,11 @@ describe('Group 7 — rapid back/forward: many prefetches, one navigation clears
 
       // Navigate to /multi-2
       await _mockRouter.fire('beforeResolve', { path: '/multi-2' }, { path: '/' })
-      expect(entries[2].dispose).toHaveBeenCalledTimes(1)
+      expect(entries[2]!.dispose).toHaveBeenCalledTimes(1)
       // others untouched
       for (let i = 0; i < 5; i++) {
         if (i !== 2) {
-          expect(entries[i].dispose).not.toHaveBeenCalled()
+          expect(entries[i]!.dispose).not.toHaveBeenCalled()
         }
       }
 
@@ -781,7 +781,7 @@ describe('Group 7 — rapid back/forward: many prefetches, one navigation clears
       await _mockRouter.fire('afterEach')
       for (let i = 0; i < 5; i++) {
         if (i !== 2) {
-          expect(entries[i].dispose).toHaveBeenCalledTimes(1)
+          expect(entries[i]!.dispose).toHaveBeenCalledTimes(1)
         }
       }
     })
@@ -794,7 +794,7 @@ describe('Group 7 — rapid back/forward: many prefetches, one navigation clears
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/idem')
 
-      const [entry] = nuxtApp._mockHead._entries
+      const entry = nuxtApp._mockHead._entries[0]!
 
       await _mockRouter.fire('afterEach')
       await _mockRouter.fire('afterEach')
@@ -817,7 +817,7 @@ describe('Group 8 — same-route guard: to.path === from.path', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/same')
-      const [entry] = nuxtApp._mockHead._entries
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // Same-route navigation — guard fires the `return` early in beforeResolve
       await _mockRouter.fire('beforeResolve', { path: '/same' }, { path: '/same' })
@@ -831,7 +831,7 @@ describe('Group 8 — same-route guard: to.path === from.path', () => {
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/same')
-      const [entry] = nuxtApp._mockHead._entries
+      const entry = nuxtApp._mockHead._entries[0]!
 
       // Same-route (no-op)
       await _mockRouter.fire('beforeResolve', { path: '/same' }, { path: '/same' })
@@ -845,7 +845,7 @@ describe('Group 8 — same-route guard: to.path === from.path', () => {
 
   it('8.3 guard does not block from===to when no entries are in the map', async () => {
     await withWindow(async () => {
-      const nuxtApp = setupPlugin()
+      setupPlugin()
       // No prefetch registered
 
       // Must not throw even with empty map
@@ -931,7 +931,7 @@ describe('Group 10 — idempotent insertion guard: no duplicate entries', () => 
 
       // Dispose via beforeResolve
       await _mockRouter.fire('beforeResolve', { path: '/reinsert' }, { path: '/' })
-      expect(nuxtApp._mockHead._entries[0].dispose).toHaveBeenCalledTimes(1)
+      expect(nuxtApp._mockHead._entries[0]!.dispose).toHaveBeenCalledTimes(1)
 
       // After disposal the key is removed — new prefetch creates a new entry
       vi.mocked(loadPayload).mockResolvedValueOnce(makePayload())
@@ -1037,8 +1037,8 @@ describe('Group 12 — purgeCachedData: static.data patching', () => {
 
       await _mockRouter.fire('beforeResolve', { path: '/data-route' }, { path: '/' })
 
-      expect(nuxtApp.static.data['key1']).toBe('value1')
-      expect(nuxtApp.static.data['key2']).toBe(42)
+      expect(nuxtApp.static.data.key1).toBe('value1')
+      expect(nuxtApp.static.data.key2).toBe(42)
     })
   })
 
@@ -1052,7 +1052,7 @@ describe('Group 12 — purgeCachedData: static.data patching', () => {
         prefetchLinks: [],
       })
       await _mockRouter.fire('beforeResolve', { path: '/first' }, { path: '/' })
-      expect(nuxtApp.static.data['oldKey']).toBe('old')
+      expect(nuxtApp.static.data.oldKey).toBe('old')
 
       // Second navigation — payload does NOT contain oldKey
       vi.mocked(loadPayload).mockResolvedValueOnce({
@@ -1062,20 +1062,20 @@ describe('Group 12 — purgeCachedData: static.data patching', () => {
       await _mockRouter.fire('beforeResolve', { path: '/second' }, { path: '/first' })
 
       // oldKey should have been purged (purgeCachedData=true)
-      expect(nuxtApp.static.data['oldKey']).toBeUndefined()
-      expect(nuxtApp.static.data['newKey']).toBe('new')
+      expect(nuxtApp.static.data.oldKey).toBeUndefined()
+      expect(nuxtApp.static.data.newKey).toBe('new')
     })
   })
 
   it('12.3 null payload — static.data unchanged', async () => {
     await withWindow(async () => {
       const nuxtApp = setupPlugin()
-      nuxtApp.static.data['preserved'] = 'yes'
+      nuxtApp.static.data.preserved = 'yes'
 
       // loadPayload returns null — no changes
       await _mockRouter.fire('beforeResolve', { path: '/null-data' }, { path: '/' })
 
-      expect(nuxtApp.static.data['preserved']).toBe('yes')
+      expect(nuxtApp.static.data.preserved).toBe('yes')
     })
   })
 })
@@ -1131,7 +1131,7 @@ describe('Group 13 — head.push link transformation', () => {
 
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/multi-link')
 
-      const pushArg = nuxtApp._mockHead.push.mock.calls[0][0]
+      const pushArg = nuxtApp._mockHead.push.mock.calls[0]![0]
       expect(pushArg.link).toHaveLength(3)
       for (const link of pushArg.link) {
         expect(link.rel).toBe('prefetch')
@@ -1168,8 +1168,7 @@ describe('Group 14 — appManifest disabled: getAppManifest not scheduled', () =
           call => call[0] === getAppManifest,
         )
         expect(getAppManifestTimers).toHaveLength(0)
-      }
-      finally {
+      } finally {
         // Restore the original navigator descriptor
         if (origDescriptor) {
           Object.defineProperty(globalThis, 'navigator', origDescriptor)
@@ -1269,7 +1268,7 @@ describe('Group 15 — plugin wiring smoke tests', () => {
       await nuxtApp.fireHook('link:prefetch', 'http://localhost/wiring')
 
       expect(nuxtApp._mockHead.push).toHaveBeenCalledOnce()
-      const pushArg = nuxtApp._mockHead.push.mock.calls[0][0]
+      const pushArg = nuxtApp._mockHead.push.mock.calls[0]![0]
       expect(pushArg).toMatchObject({
         link: [{ rel: 'prefetch', href: '/wiring.js', as: 'script', crossorigin: true }],
       })
