@@ -471,7 +471,14 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
+      const start = (import.meta.server && nuxtApp.$config.app.features.serverTiming) ? globalThis.performance.now() : 0
       const promise = applyPlugin(nuxtApp, plugin).then(async () => {
+        if (import.meta.server && start) {
+          const duration = globalThis.performance.now() - start
+          const name = plugin._name || 'anonymous'
+          nuxtApp.ssrContext!.event.context._nuxt_server_timings ||= []
+          nuxtApp.ssrContext!.event.context._nuxt_server_timings.push({ name: `plugin:${name}`, duration })
+        }
         if (plugin._name) {
           resolvedPlugins.add(plugin._name)
           await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {

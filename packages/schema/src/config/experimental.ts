@@ -59,6 +59,11 @@ export default defineResolvers({
             : (await (get('experimental')).then(e => e?.noScripts as boolean | undefined && 'production') ?? false)
       },
     },
+    serverTiming: {
+      async $resolve (val, get) {
+        return val ?? (await get('dev'))
+      },
+    },
   },
   experimental: {
     runtimeBaseURL: false,

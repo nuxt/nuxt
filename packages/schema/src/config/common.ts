@@ -290,7 +290,7 @@ export default defineResolvers({
   runtimeConfig: {
     $resolve: async (_val, get) => {
       const val = _val && typeof _val === 'object' ? _val : {}
-      const [app, buildId] = await Promise.all([get('app'), get('buildId')])
+      const [app, buildId, features] = await Promise.all([get('app'), get('buildId'), get('features')])
       provideFallbackValues(val)
       return defu(val, {
         public: {},
@@ -299,6 +299,9 @@ export default defineResolvers({
           baseURL: app.baseURL,
           buildAssetsDir: app.buildAssetsDir,
           cdnURL: app.cdnURL,
+          features: {
+            serverTiming: features.serverTiming,
+          },
         },
       })
     },

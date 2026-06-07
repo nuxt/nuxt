@@ -1066,6 +1066,13 @@ export interface ConfigSchema {
      * If set to 'production' or `true`, JS will be disabled in production mode only.
      */
     noScripts: 'production' | 'all' | boolean
+
+    /**
+     * Enables Server-Timing header for Nuxt plugins and middlewares.
+     *
+     * @default false
+     */
+    serverTiming: boolean
   }
 
   experimental: {
