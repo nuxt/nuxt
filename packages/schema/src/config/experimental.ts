@@ -61,7 +61,7 @@ export default defineResolvers({
     },
     serverTiming: {
       async $resolve (val, get) {
-        return val ?? (await get('dev'))
+        return (val as boolean | undefined) ?? (await get('dev'))
       },
     },
   },
