@@ -216,6 +216,35 @@ onLoaded((gtag) => {
 
 To improve performance, we need to first know how to measure it, starting with measuring performance during development - on local environment, and then moving to auditing application that are deployed on production.
 
+### Server Timing
+
+Nuxt provides native support for `Server-Timing` headers during SSR to help you profile performance bottlenecks in your plugins and middleware.
+
+When enabled, Nuxt measures the execution time of each plugin and route middleware and exposes these metrics in the browser's DevTools via the `Server-Timing` HTTP header.
+
+#### Enabling Server Timing
+
+This feature is enabled by default in development mode. To enable it in production, or to configure it explicitly, update your `nuxt.config.ts`:
+
+```ts twoslash
+export default defineNuxtConfig({
+  features: {
+    serverTiming: true,
+  },
+})
+```
+
+You can also control this feature via environment variables, which is useful for enabling profiling in deployed environments without a rebuild:
+
+```bash
+NUXT_APP_FEATURES_SERVER_TIMING=true
+```
+
+#### Viewing Metrics
+
+Once enabled, open your browser's **Network** tab in DevTools, select your main document request, and look at the **Timing** tab. You will see entries prefixed with `plugin:` or `middleware:`, indicating their individual execution duration in milliseconds.
+
+
 ### Nuxi Analyze
 
 [This](/docs/4.x/api/commands/analyze) command of `nuxi` allows you to analyze the production bundle of your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
