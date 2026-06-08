@@ -26,7 +26,7 @@
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "^2.1.15",
-    "@vue/shared": "^3.5.34",
+    "@vue/shared": "^3.5.35",
     "consola": "^3.4.2",
     "defu": "^6.1.7",
     "destr": "^2.0.5",
@@ -47,7 +47,7 @@
     "ufo": "^1.6.4",
     "unctx": "^2.5.0",
     "unstorage": "^1.17.5",
-    "vue": "^3.5.34",
+    "vue": "^3.5.35",
     "vue-bundle-renderer": "^2.2.0",
     "vue-devtools-stub": "^0.1.0"
   },
@@ -58,7 +58,7 @@
     "@nuxt/schema": "workspace:*",
     "nuxt": "workspace:*",
     "obuild": "0.4.36",
-    "vitest": "4.1.6"
+    "vitest": "4.1.8"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
