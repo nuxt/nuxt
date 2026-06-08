@@ -99,11 +99,7 @@ export function useScriptVimeoPlayer (...args: unknown[]) {
   renderStubMessage('useScriptVimeoPlayer')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptYouTubeIframe (...args: unknown[]) {
-  renderStubMessage('useScriptYouTubeIframe')
-}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptGoogleMaps (...args: unknown[]) {
+export function useScriptGoogleMaps (...args: unknown[]): void {
   renderStubMessage('useScriptGoogleMaps')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -195,4 +191,8 @@ export function useScriptCalendly (...args: unknown[]) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptUsercentrics (...args: unknown[]) {
   renderStubMessage('useScriptUsercentrics')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptSpeedCurve (...args: unknown[]): void {
+  renderStubMessage('useScriptSpeedCurve')
 }
