@@ -57,7 +57,7 @@
     "tsdown": "0.22.1",
     "unimport": "6.3.0",
     "vite": "8.0.14",
-    "vitest": "4.1.7",
+    "vitest": "4.1.8",
     "webpack": "5.107.2"
   },
   "engines": {
