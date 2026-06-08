@@ -14,7 +14,7 @@ This composable is available in Nuxt v4.4.2+.
 
 ## Description
 
-A composable for announcing dynamic content changes to screen readers. Unlike [`useRouteAnnouncer`](/docs/api/composables/use-route-announcer) which automatically announces route changes, `useAnnouncer` gives you manual control over what and when to announce.
+A composable for announcing dynamic content changes to screen readers. Unlike [`useRouteAnnouncer`](/docs/4.x/api/composables/use-route-announcer) which automatically announces route changes, `useAnnouncer` gives you manual control over what and when to announce.
 
 Use this for in-page updates like form validation, async operations, toast notifications, and live content changes.
 
