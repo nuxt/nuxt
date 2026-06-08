@@ -43,11 +43,11 @@
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxt prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "0.18.2",
+    "@arethetypeswrong/cli": "0.18.3",
     "@babel/core": "7.29.0",
     "@babel/helper-plugin-utils": "7.28.6",
     "@codspeed/core": "5.4.0",
-    "@codspeed/vitest-plugin": "5.4.0",
+    "@codspeed/vitest-plugin": "5.5.0",
     "@eslint/markdown": "8.0.1",
     "@nuxt/cli": "3.35.2",
     "@nuxt/eslint-config": "1.15.2",
@@ -64,7 +64,7 @@
     "@types/semver": "7.7.1",
     "@typescript-eslint/parser": "8.59.3",
     "@unhead/vue": "2.1.15",
-    "@vitest/coverage-v8": "4.1.6",
+    "@vitest/coverage-v8": "4.1.8",
     "@vue/test-utils": "2.4.10",
     "acorn": "8.16.0",
     "autoprefixer": "10.5.0",
@@ -107,12 +107,12 @@
     "ts-blank-space": "0.9.0",
     "typescript": "5.9.3",
     "ufo": "1.6.4",
-    "vite": "7.3.3",
-    "vitest": "4.1.6",
+    "vite": "7.3.5",
+    "vitest": "4.1.8",
     "vitest-environment-nuxt": "2.0.0",
     "vue": "3.5.34",
     "vue-tsc": "3.3.0",
-    "webpack": "5.106.2"
+    "webpack": "5.107.2"
   },
   "packageManager": "pnpm@11.1.2",
   "version": ""
