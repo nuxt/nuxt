@@ -34,8 +34,8 @@ if (import.meta.server) {
     const isErrorRender = !!(
       ssrContext?.payload?.error ||
       ssrContext?.error
-    );
-    
+    )
+
     try {
       if (!isErrorRender) {
         await applyPlugins(nuxt, plugins)
