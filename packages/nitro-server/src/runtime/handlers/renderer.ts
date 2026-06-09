@@ -366,10 +366,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  if (NUXT_SERVER_TIMING && event.context._nuxt_server_timings) {
-    for (const timing of event.context._nuxt_server_timings) {
-      event.res.headers.append('Server-Timing', `${timing.name};dur=${timing.duration.toFixed(3)}`)
-    }
+  if (NUXT_SERVER_TIMING && event.context._nuxt_server_timings?.length) {
+    event.res.headers.append('Server-Timing', event.context._nuxt_server_timings.map(timing => `${timing.name.replace(/[^\w.:-]/g, '_')};dur=${timing.duration.toFixed(3)}`).join(', '))
   }
 
   return renderHTMLDocument(htmlContext)
@@ -811,10 +809,8 @@ async function renderStreamedResponse (ctx: {
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  if (NUXT_SERVER_TIMING && event.context._nuxt_server_timings) {
-    for (const timing of event.context._nuxt_server_timings) {
-      event.res.headers.append('Server-Timing', `${timing.name};dur=${timing.duration.toFixed(3)}`)
-    }
+  if (NUXT_SERVER_TIMING && event.context._nuxt_server_timings?.length) {
+    event.res.headers.append('Server-Timing', event.context._nuxt_server_timings.map(timing => `${timing.name.replace(/[^\w.:-]/g, '_')};dur=${timing.duration.toFixed(3)}`).join(', '))
   }
 
   return outputStream
@@ -882,7 +878,6 @@ declare module 'srvx' {
 declare module 'h3' {
   interface H3EventContext {
     nuxt?: NuxtRequestContext
-    _nuxt_server_timings?: { name: string, duration: number }[]
   }
 }
 
