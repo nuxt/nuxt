@@ -12,7 +12,7 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "//#region virtual:nuxt:%2F.nuxt%2Ffoo
+      "//#region virtual:nuxt:.nuxt%2Ffoo
       const foo = "hello world";
       //#endregion
       export { foo };"
@@ -28,7 +28,7 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "//#region virtual:nuxt:%2F.nuxt%2Ffoo.client.ts
+      "//#region virtual:nuxt:.nuxt%2Ffoo.client.ts
       const foo = "foo client file";
       //#endregion
       export { foo };"
@@ -43,7 +43,7 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "//#region virtual:nuxt:%2F.nuxt%2Fbar
+      "//#region virtual:nuxt:.nuxt%2Fbar
       const foo = "relative import";
       //#endregion
       export { foo };"
@@ -55,6 +55,7 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
   const stubNuxt = {
     options: {
       extensions: ['.ts', '.js'],
+      rootDir: '/',
       buildDir: '/.nuxt',
       alias: {
         '~': '/',
