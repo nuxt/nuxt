@@ -17,6 +17,7 @@ declare global {
 
   var __NUXT_VERSION__: string
   var __NUXT_ASYNC_CONTEXT__: boolean
+  var __NUXT_SERVER_TIMING__: boolean
 }
 
 export {}

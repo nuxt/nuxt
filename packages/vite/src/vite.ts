@@ -159,6 +159,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       define: {
         __NUXT_VERSION__: JSON.stringify(nuxt._version),
         __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext,
+        __NUXT_SERVER_TIMING__: !!nuxt.options.features.serverTiming,
       },
       build: {
         copyPublicDir: false,

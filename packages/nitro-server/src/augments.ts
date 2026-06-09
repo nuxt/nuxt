@@ -4,6 +4,12 @@ import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from 'nuxt/app'
 import type { HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
 
+declare module 'h3' {
+  interface H3EventContext {
+    _nuxt_server_timings?: { name: string, duration: number }[]
+  }
+}
+
 declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
     baseURL: string
