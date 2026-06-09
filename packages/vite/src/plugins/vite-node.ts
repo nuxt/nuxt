@@ -235,9 +235,27 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
     nitro.options._config.virtual[filename] = vfs[key as keyof typeof vfs]
   }
 
+  // The SSR dev server runs with `hmr: false`, so Vite never fires
+  // `handleHotUpdate` on it and user-plugin invalidations of SSR modules
+  // (e.g. virtual modules via `server.moduleGraph.invalidateModule`) are
+  // lost. Captured below for the legacy two-server path and mirrored from
+  // the client server's `handleHotUpdate`. See nuxt/nuxt#30169.
+  let legacySsrServer: ViteDevServer | undefined
+
   return {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
+    handleHotUpdate ({ server: clientServer, timestamp }) {
+      if (!legacySsrServer) { return }
+      const ssrGraph = legacySsrServer.moduleGraph
+      for (const mod of clientServer.moduleGraph.idToModuleMap.values()) {
+        if (!mod.id || mod.lastInvalidationTimestamp < timestamp) { continue }
+        const ssrMod = ssrGraph.getModuleById(mod.id)
+        if (ssrMod) {
+          ssrGraph.invalidateModule(ssrMod, undefined, timestamp)
+        }
+      }
+    },
     async configureServer (clientServer) {
       // early return if plugins are 'borrowed' for testing/storybook
       if (!tryUseNuxt()) {
@@ -297,7 +315,11 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
       if (nuxt.options.experimental.viteEnvironmentApi || !nuxt.options.ssr) {
         resolveServer(clientServer)
       } else {
-        nuxt.hook('vite:serverCreated', (ssrServer, ctx) => ctx.isServer ? resolveServer(ssrServer) : undefined)
+        nuxt.hook('vite:serverCreated', (ssrServer, ctx) => {
+          if (!ctx.isServer) { return }
+          legacySsrServer = ssrServer
+          resolveServer(ssrServer)
+        })
       }
 
       nuxt.hook('close', cleanupSocket)
