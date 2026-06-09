@@ -6,6 +6,9 @@
     "url": "git+https://github.com/nuxt/nuxt.git",
     "directory": "packages/kit"
   },
+  "bugs": {
+    "url": "https://github.com/nuxt/nuxt/issues"
+  },
   "homepage": "https://nuxt.com/docs/4.x/api/kit",
   "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",

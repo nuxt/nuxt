@@ -6,6 +6,9 @@
     "url": "git+https://github.com/nuxt/nuxt.git",
     "directory": "packages/schema"
   },
+  "bugs": {
+    "url": "https://github.com/nuxt/nuxt/issues"
+  },
   "description": "Nuxt types and default configuration",
   "homepage": "https://nuxt.com",
   "license": "MIT",
