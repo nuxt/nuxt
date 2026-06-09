@@ -21,7 +21,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   }, 120 * 1000)
 
   it('default client bundle size', async () => {
-    const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'))
+    const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
     expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"116k"`)
 
@@ -35,7 +35,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   })
 
   it('default client bundle size (pages)', async () => {
-    const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'))
+    const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
     expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"175k"`)
 
@@ -57,10 +57,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"69.9k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, rootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"69.8k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
+    const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"480k"`)
 
     const packages = modules.files
@@ -91,10 +91,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
+    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, pagesRootDir)
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"279k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
+    const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"489k"`)
 
     const packages = modules.files
@@ -126,19 +126,38 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   })
 })
 
-async function analyzeSizes (pattern: string[], rootDir: string) {
+async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })
+  const hostPathForms = getHostPathForms(projectDir)
   let totalBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)
     const isSymlink = (await fsp.lstat(path).catch(() => null))?.isSymbolicLink()
 
     if (!isSymlink) {
-      const bytes = Buffer.byteLength(await fsp.readFile(path))
-      totalBytes += bytes
+      const contents = await fsp.readFile(path, 'utf8')
+      let normalized = contents
+      for (const form of hostPathForms) {
+        normalized = normalized.replaceAll(form, '')
+      }
+      totalBytes += Buffer.byteLength(normalized)
     }
   }
   return { files, totalBytes }
+}
+
+// Rolldown encodes a virtual module's absolute path into the JS identifier name as
+// `encodeURIComponent(path).replace(/\W/g, '_')`, which leaks the host workspace path
+// into `.output/server/_build/server.mjs` and makes byte totals drift between
+// `/Users/<me>/...` and `/home/runner/work/nuxt/nuxt`. Strip every form we know can appear
+// before measuring so the size is platform-independent.
+function getHostPathForms (projectDir: string) {
+  const encoded = encodeURIComponent(projectDir)
+  return [
+    projectDir,
+    encoded,
+    encoded.replace(/\W/g, '_'),
+  ]
 }
 
 function roundToKilobytes (bytes: number) {
