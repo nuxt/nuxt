@@ -58,7 +58,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"69.8k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"69.7k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"480k"`)
@@ -92,7 +92,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"279k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"278k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"489k"`)
@@ -128,7 +128,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
 
 async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })
-  const hostPathForms = getHostPathForms(projectDir)
+  const stripPatterns = getStripPatterns(projectDir)
   let totalBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)
@@ -137,8 +137,8 @@ async function analyzeSizes (pattern: string[], rootDir: string, projectDir: str
     if (!isSymlink) {
       const contents = await fsp.readFile(path, 'utf8')
       let normalized = contents
-      for (const form of hostPathForms) {
-        normalized = normalized.replaceAll(form, '')
+      for (const pattern of stripPatterns) {
+        normalized = normalized.replaceAll(pattern, '')
       }
       totalBytes += Buffer.byteLength(normalized)
     }
@@ -146,18 +146,30 @@ async function analyzeSizes (pattern: string[], rootDir: string, projectDir: str
   return { files, totalBytes }
 }
 
-// Rolldown encodes a virtual module's absolute path into the JS identifier name as
-// `encodeURIComponent(path).replace(/\W/g, '_')`, which leaks the host workspace path
-// into `.output/server/_build/server.mjs` and makes byte totals drift between
-// `/Users/<me>/...` and `/home/runner/work/nuxt/nuxt`. Strip every form we know can appear
-// before measuring so the size is platform-independent.
-function getHostPathForms (projectDir: string) {
-  const encoded = encodeURIComponent(projectDir)
+// Strip strings that vary by host or by build invocation but don't represent real bundle
+// content, so the byte count is stable across machines and consecutive builds.
+//
+// 1. `projectDir`: leaks into rolldown-generated identifier names. Rolldown turns a virtual
+//    module's absolute path into a JS identifier as
+//    `encodeURIComponent(path).replace(/\W/g, '_')`, so the raw, URL-encoded, and mangled
+//    forms can all appear in `.output/server/_build/server.mjs`.
+//
+// 2. `node_modules/.cache/nuxt/`: `@nuxt/kit` config loader flips `buildDir` from
+//    `<rootDir>/.nuxt` to `<rootDir>/node_modules/.cache/nuxt/.nuxt` when `.nuxt/` already
+//    exists at config-load time (the production-build-after-prior-build case), so the same
+//    fixture produces different bytes on first build vs second build on the same machine.
+//    The prefix shows up both in `//#region` chunk comments and inside mangled virtual-
+//    module identifiers.
+function getStripPatterns (projectDir: string) {
   return [
-    projectDir,
-    encoded,
-    encoded.replace(/\W/g, '_'),
+    ...allForms(projectDir),
+    ...allForms('node_modules/.cache/nuxt/'),
   ]
+}
+
+function allForms (value: string) {
+  const encoded = encodeURIComponent(value)
+  return [value, encoded, encoded.replace(/\W/g, '_')]
 }
 
 function roundToKilobytes (bytes: number) {
