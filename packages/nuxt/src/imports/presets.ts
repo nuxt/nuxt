@@ -159,6 +159,7 @@ export const scriptsStubsPreset = {
     'useScriptLinkedInInsight',
     'useScriptCalendly',
     'useScriptUsercentrics',
+    'useScriptSpeedCurve',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',
