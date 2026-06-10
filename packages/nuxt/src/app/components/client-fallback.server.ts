@@ -3,12 +3,7 @@ import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'v
 
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
-import { createBuffer } from './utils'
-
-const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
-function sanitizeTag (tag: string, fallback: string): string {
-  return VALID_TAG_RE.test(tag) ? tag : fallback
-}
+import { createBuffer, sanitizeTag } from './utils'
 
 const NuxtClientFallbackServer = defineComponent({
   name: 'NuxtClientFallback',
