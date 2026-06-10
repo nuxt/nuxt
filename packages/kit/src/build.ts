@@ -179,10 +179,10 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     if (options.worker) {
       // Also add to worker.plugins for production builds (not applied automatically by Vite)
       const prev = (config.worker ??= {}).plugins
-      config.worker.plugins = () => [
-        ...(typeof prev === 'function' ? prev() : (prev ?? [])),
-        ...plugin,
-      ]
+      config.worker.plugins = () => {
+        const prevPlugins = typeof prev === 'function' ? prev() : (prev ?? [])
+        return options?.prepend ? [...plugin, ...prevPlugins] : [...prevPlugins, ...plugin]
+      }
     }
 
     if (options.server !== false && options.client !== false) {
