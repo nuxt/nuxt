@@ -9,6 +9,8 @@ import { expect, test } from './test-utils'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/suspense', import.meta.url))
 
+test.describe.configure({ mode: 'serial' })
+
 test.use({
   nuxt: {
     rootDir: fixtureDir,
