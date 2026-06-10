@@ -170,11 +170,14 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     return
   }
 
+  const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+  const resolvePlugin = async () => toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
+
   let needsEnvInjection = false
   nuxt.hook('vite:extend', async ({ config }) => {
     config.plugins ||= []
 
-    const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
+    const plugin = await resolvePlugin()
 
     if (options.worker) {
       // Also add to worker.plugins for production builds (not applied automatically by Vite)
@@ -186,7 +189,6 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     }
 
     if (options.server !== false && options.client !== false) {
-      const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
       config.plugins[method](...plugin)
       return
     }
@@ -213,8 +215,7 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     if (!needsEnvInjection) {
       return
     }
-    const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
-    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    const plugin = await resolvePlugin()
     if (env.isClient && options.server === false) {
       config.plugins![method](...plugin)
     }
