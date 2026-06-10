@@ -35,7 +35,13 @@ export interface ExtendConfigOptions {
    */
   prepend?: boolean
   /**
-   * Also install plugin for web worker builds (Vite only).
+   * Also install the plugin for Vite worker bundles. Required for plugins that need to
+   * transform code imported from `new Worker(new URL(...), { type: 'module' })` in production,
+   * because Vite uses a separate plugin pipeline for worker bundles outside of dev.
+   *
+   * The same plugin instance is reused across worker bundles, so prefer stateless plugins
+   * when opting in.
+   *
    * @see https://vite.dev/config/worker-options#worker-plugins
    * @default false
    */
@@ -180,7 +186,10 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     const plugin = await resolvePlugin()
 
     if (options.worker) {
-      // Also add to worker.plugins for production builds (not applied automatically by Vite)
+      // `config.plugins` only applies to workers in dev; production worker bundles use a
+      // separate pipeline (see https://vite.dev/config/worker-options#worker-plugins).
+      // Vite expects this getter to be synchronous, so the plugin instances are captured
+      // here and reused across worker bundles.
       const prev = (config.worker ??= {}).plugins
       config.worker.plugins = () => {
         const prevPlugins = typeof prev === 'function' ? prev() : (prev ?? [])
