@@ -275,7 +275,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
             const relativePath = relativeToSrcDir(stripQuery(moduleId))
             if (relativePath in cssMap) {
-              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativePath) || isEntry)
+              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(stripQuery(moduleId)) && !!relativePath) || isEntry)
             }
           }
 
