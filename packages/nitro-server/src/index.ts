@@ -25,7 +25,7 @@ import { runtimeDependencies } from 'nitropack/runtime/meta'
 import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, toArray } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, toArray } from './utils.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -37,23 +37,10 @@ const logLevelMapReverse = {
   verbose: 3,
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
-const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
-const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
-  const excludePaths: string[] = []
-  for (const dirs of layerDirs) {
-    const paths = [
-      dirs.root.match(NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
-      dirs.root.match(PNPM_NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
-    ]
-    for (const dir of paths) {
-      if (dir) {
-        excludePaths.push(escapeRE(dir))
-      }
-    }
-  }
+  const excludePattern = [getLayerNodeModulesExcludePattern(layerDirs.map(dirs => dirs.root))]
 
   const layerPublicAssetsDirs: Array<{ dir: string }> = []
   for (const dirs of layerDirs) {
@@ -61,10 +48,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       layerPublicAssetsDirs.push({ dir: dirs.public })
     }
   }
-
-  const excludePattern = excludePaths.length
-    ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
-    : [/node_modules/]
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
