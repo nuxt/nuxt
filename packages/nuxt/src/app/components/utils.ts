@@ -11,7 +11,7 @@ import { START_LOCATION } from '#build/pages'
  * Internal utility
  * @private
  */
-export const _wrapInTransition = (props: any, children: any) => {
+export const _wrapInTransition = (props: any, children: any): { default: () => VNode | undefined } => {
   return { default: () => import.meta.client && props ? h(Transition, props === true ? {} : props, children) : children.default?.() }
 }
 
@@ -32,7 +32,7 @@ function generateRouteKey (route: RouteLocationNormalized) {
  * Utility used within router guards
  * return true if the route has been changed with a page change during navigation
  */
-export function isChangingPage (to: RouteLocationNormalized, from: RouteLocationNormalized) {
+export function isChangingPage (to: RouteLocationNormalized, from: RouteLocationNormalized): boolean {
   if (to === from || from === START_LOCATION) { return false }
 
   // If route keys are different then it will result in a rerender
@@ -47,6 +47,12 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   return true
 }
 
+const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
+/** Return `tag` if it is a safe HTML tag name, otherwise `fallback`. */
+export function sanitizeTag (tag: string | undefined, fallback: string): string {
+  return tag && VALID_TAG_RE.test(tag) ? tag : fallback
+}
+
 export type SSRBuffer = SSRBufferItem[] & { hasAsync?: boolean }
 export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
 
@@ -55,7 +61,7 @@ export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
  * @see https://github.com/vuejs/core/blob/9617dd4b2abc07a5dc40de6e5b759e851b4d0da1/packages/server-renderer/src/render.ts#L57
  * @private
  */
-export function createBuffer () {
+export function createBuffer (): { getBuffer: () => SSRBuffer, push: (item: SSRBufferItem) => void } {
   let appendable = false
   const buffer: SSRBuffer = []
   return {
@@ -164,11 +170,11 @@ export function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: s
   return h('div')
 }
 
-export function isStartFragment (element: RendererNode) {
+export function isStartFragment (element: RendererNode): boolean {
   return element.nodeName === '#comment' && element.nodeValue === '['
 }
 
-export function isEndFragment (element: RendererNode) {
+export function isEndFragment (element: RendererNode): boolean {
   return element.nodeName === '#comment' && element.nodeValue === ']'
 }
 

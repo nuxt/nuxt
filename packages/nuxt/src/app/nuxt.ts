@@ -1,3 +1,5 @@
+import './types/augments'
+
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
@@ -9,7 +11,8 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from '@nuxt/nitro-server/h3'
 import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
-import type { VueHeadClient } from '@unhead/vue/types'
+import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
+import type { SSRHeadPayload } from '@unhead/vue/server'
 
 import type { NuxtAppLiterals } from 'nuxt/app'
 
@@ -68,7 +71,7 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: Partial<NuxtPayload>
-  head: VueHeadClient
+  head: VueHeadClient<UseHeadInput, SSRHeadPayload>
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
@@ -98,6 +101,11 @@ export interface NuxtPayload {
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: NuxtError | undefined
   _errors: Record<string, NuxtError | undefined>
+  /**
+   * Forwarded `<link rel="preload">` / `<link rel="modulepreload">` hints from the destination route, populated when `experimental.prefetchPreloadTags` is enabled.
+   * @internal
+   */
+  prefetchLinks?: Array<Record<string, string | boolean>>
   [key: string]: unknown
 }
 
@@ -145,6 +153,8 @@ interface _NuxtApp {
     _hash?: Record<string, string | undefined>
     /** @internal */
     _abortController?: AbortController
+    /** @internal */
+    _initialCachedData?: unknown
   } | undefined>
 
   /** @internal */
@@ -409,7 +419,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     if (chunkErrorEvent) {
       window.addEventListener(chunkErrorEvent, (event) => {
         nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-        if (event.payload.message.includes('Unable to preload CSS')) {
+        if (event.payload?.message?.includes('Unable to preload CSS')) {
           event.preventDefault()
         }
       })

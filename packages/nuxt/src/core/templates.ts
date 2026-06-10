@@ -4,6 +4,7 @@ import { join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
+import { resolveModulePath } from 'exsolve'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
@@ -13,6 +14,8 @@ import { annotatePlugins, checkForCircularDependencies } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
+
+const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -430,7 +433,7 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents ({ app, nuxt }) {
     return `
-import { defuFn } from 'defu'
+import { defuFn } from ${JSON.stringify(defuPath)}
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
@@ -535,8 +538,16 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       baseURL: undefined,
       headers: undefined,
     }
+    // Whether island components are genuinely used by the app (server pages /
+    // server components, or islands explicitly enabled). This excludes the
+    // dev-only inflation below.
+    const componentIslandsActive = ctx.nuxt.options.experimental.componentIslands && (
+      ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
+    )
+    // In dev the islands handler is always wired up so Vite generates the
+    // islands module graph for HMR, regardless of actual island usage.
     const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
-      ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
+      ctx.nuxt.options.dev || componentIslandsActive
     )
     const nitro = useNitro() as Nitro
 
@@ -545,7 +556,9 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const componentIslands = ${shouldEnableComponentIslands}`,
+      `export const componentIslandsActive = ${componentIslandsActive}`,
       `export const payloadExtraction = ${payloadExtraction}`,
+      `export const prefetchPreloadTags = ${!!ctx.nuxt.options.experimental.prefetchPreloadTags}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
       `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}`,

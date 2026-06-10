@@ -45,11 +45,13 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // and content-security-policy (would disable JS execution in the error page)
   mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
 
-  // Detect to avoid recursion in SSR rendering of errors
-  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!event.req.headers.get('x-nuxt-error')
+  // Skip SSR error rendering if we're already inside one, to avoid recursion.
+  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!(event as H3Event).context.nuxt?.['~rendering-error']
 
   if (!isRenderingError) {
-    event.req.headers.set('x-nuxt-error', 'true')
+    const eventContext = (event as H3Event).context
+    eventContext.nuxt ||= {}
+    eventContext.nuxt['~rendering-error'] = true
   }
 
   // HTML response (via SSR)
@@ -62,6 +64,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     {
       nuxt: {
         '~internal': true,
+        '~rendering-error': true,
       },
     },
   ).catch(() => null)

@@ -1,8 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
-import { join } from 'pathe'
 import { expect, test } from './test-utils'
-import { isDev } from '../matrix'
 
 /**
  * This test suite verifies that Vue's runtime compiler works correctly within Nuxt,
@@ -11,20 +9,12 @@ import { isDev } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/runtime-compiler', import.meta.url))
 
-// Run tests in parallel in production mode, but serially in dev mode
-// to avoid interference between HMR and test execution
-test.describe.configure({ mode: isDev ? 'serial' : 'parallel' })
-
 test.use({
   nuxt: {
     rootDir: fixtureDir,
-    dev: isDev,
     server: true,
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
-    nuxtConfig: {
-      buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
-    },
   },
 })
 

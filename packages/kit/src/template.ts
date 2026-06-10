@@ -224,7 +224,37 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   }
 }
 
-const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
+// TS's `paths` substitution has two branches: an extension on the substitution
+// goes straight to `tryFile` on the literal path (no sibling lookup), while an
+// extensionless substitution goes through `tryAddingExtensions` whose
+// extensionless arm only retries `.ts / .tsx / .d.ts / .js / .jsx`. To make
+// `paths` aliases resolve to the right declarations:
+//   - extensions in that retry list are stripped (TS retries them itself);
+//   - `.d.mts` / `.d.cts` are preserved (the literal-file branch loads them);
+//   - `.mjs` / `.cjs` / `.mts` / `.cts` are checked against their on-disk
+//     siblings (see `getPathSubstitution`).
+// https://github.com/microsoft/TypeScript/blob/v5.6.3/src/compiler/moduleNameResolver.ts
+const STRIPPABLE_EXT_RE = /\b\.(?:d\.ts|tsx?|jsx?)$/
+const RUNTIME_EXT_RE = /\.([cm])(?:ts|js)$/
+
+async function getPathSubstitution (absolutePath: string, buildDir: string): Promise<string> {
+  const stripped = absolutePath.replace(STRIPPABLE_EXT_RE, '')
+  if (stripped !== absolutePath) {
+    return relativeWithDot(buildDir, stripped)
+  }
+  const runtimeMatch = absolutePath.match(RUNTIME_EXT_RE)
+  if (runtimeMatch) {
+    const base = absolutePath.slice(0, -runtimeMatch[0]!.length)
+    if (await fsp.stat(`${base}.d.ts`).then(s => s.isFile(), () => false)) {
+      return relativeWithDot(buildDir, base)
+    }
+    const declaration = `${base}.d.${runtimeMatch[1]}ts`
+    if (await fsp.stat(declaration).then(s => s.isFile(), () => false)) {
+      return relativeWithDot(buildDir, declaration)
+    }
+  }
+  return relativeWithDot(buildDir, absolutePath)
+}
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
@@ -346,7 +376,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   }
 
   const nestedModulesDirs: string[] = []
-  for (const dir of [...nuxt.options.modulesDir].sort()) {
+  for (const dir of nuxt.options.modulesDir.toSorted()) {
     const withSlash = withTrailingSlash(dir)
     if (nestedModulesDirs.every(d => !d.startsWith(withSlash))) {
       nestedModulesDirs.push(withSlash)
@@ -363,6 +393,8 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
+  const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
+
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -371,6 +403,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: true,
       target: 'ESNext',
       allowJs: true,
+      allowImportingTsExtensions: true,
       resolveJsonModule: true,
       moduleDetection: 'force',
       isolatedModules: true,
@@ -423,6 +456,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
       target: tsConfig.compilerOptions?.target,
       allowJs: tsConfig.compilerOptions?.allowJs,
+      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
       resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
@@ -458,6 +492,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
       target: tsConfig.compilerOptions?.target,
       allowJs: tsConfig.compilerOptions?.allowJs,
+      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
       resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
@@ -487,13 +522,18 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const aliases: Record<string, string> = nuxt.options.alias
 
+  // TODO: remove support for baseUrl in nuxt v5
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = tsConfig.compilerOptions!.baseUrl
+    // TODO: remove support for baseUrl in nuxt v5
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
+  tsConfig.exclude ||= []
 
   const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
@@ -521,8 +561,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
     } else {
       const path = stats?.isFile()
-        // remove extension
-        ? relativePath.replace(EXTENSION_RE, '')
+        ? await getPathSubstitution(absolutePath, nuxt.options.buildDir)
         // non-existent file probably shouldn't be resolved
         : aliases[alias]!
 
@@ -559,7 +598,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
     include: [...tsConfig.include, ...legacyInclude],
-    exclude: [...legacyExclude],
+    exclude: [...userExclude, ...legacyExclude],
   })
 
   async function resolveConfig (tsConfig: TSConfig) {
@@ -568,7 +607,9 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
         if (!isAbsolute(path)) { return path }
         const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-        return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(EXTENSION_RE, '') /* remove extension */ : path)
+        return stats?.isFile()
+          ? getPathSubstitution(path, nuxt.options.buildDir)
+          : relativeWithDot(nuxt.options.buildDir, path)
       })))]
     }
 

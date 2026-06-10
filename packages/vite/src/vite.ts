@@ -34,7 +34,7 @@ import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
-import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
+import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
@@ -70,9 +70,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ]),
   ].filter(d => d && existsSync(d))
 
-  for (const dir of allowDirs) {
-    allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
-  }
+  allowDirs = allowDirs.filter(d =>
+    !allowDirs.some(other => other !== d && d.startsWith(other + '/')),
+  )
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
@@ -269,11 +269,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
+    nuxt.hook('close', () => server.close())
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
   nuxt._perf?.endPhase('vite:dev-server')
-
-  await writeDevServer(nuxt)
 }
 
 async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {

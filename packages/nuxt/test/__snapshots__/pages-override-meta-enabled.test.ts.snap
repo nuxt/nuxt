@@ -415,6 +415,21 @@
       "path": ""/:a1_1a()"",
     },
   ],
+  "should preserve named views from the `name@view.vue` filename convention": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/foo/bar.vue")",
+          "components": "{ default: () => import("pages/foo/bar.vue"), "left": () => import("pages/foo/bar@left.vue") }",
+          "name": ""foo-bar"",
+          "path": ""bar"",
+        },
+      ],
+      "component": "() => import("pages/foo.vue")",
+      "name": ""foo"",
+      "path": ""/foo"",
+    },
+  ],
   "should properly override route name if definePageMeta name override is defined.": [
     {
       "component": "() => import("pages/index.vue")",

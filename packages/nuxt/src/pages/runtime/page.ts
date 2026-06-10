@@ -64,10 +64,11 @@ export default defineComponent({
     expose({ pageRef })
 
     const _layoutMeta = inject(LayoutMetaSymbol, null)
-    let vnode: VNode
+    let vnode: VNode | undefined
 
     const done = nuxtApp.deferHydration()
     let isSuspensePending = false
+    let hasResolvedOnce = false
     let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
@@ -121,7 +122,7 @@ export default defineComponent({
               if (!routeProps.Component) {
               // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
               // we'll render the old vnode until the new route finishes resolving
-                if (vnode && !hasSameChildren) {
+                if (vnode && !hasSameChildren && !isStaleVNode(vnode)) {
                   return vnode
                 }
                 done()
@@ -129,13 +130,13 @@ export default defineComponent({
               }
 
               // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
-              if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+              if (vnode && _layoutMeta && !isStaleVNode(vnode) && !_layoutMeta.isCurrent(routeProps.route)) {
                 return vnode
               }
 
               if (isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
               // if leaving a route with an existing child route, render the old vnode
-                if (hasSameChildren || vnode) {
+                if ((hasSameChildren || vnode) && !isStaleVNode(vnode)) {
                   return vnode
                 }
                 // If _leaving_ null child route, return null vnode
@@ -154,9 +155,9 @@ export default defineComponent({
                 })
               }
 
-              // force suspense remount and restart async tracking
-              // if suspense is already pending and page key changed
-              if (isSuspensePending && previousPageKey !== key) {
+              // remount suspense on rapid navigation, but not before the first resolve:
+              // tearing down a never-resolved suspensible Suspense strands its parent. See #28425, #34683.
+              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce) {
                 suspenseKey++
               }
 
@@ -193,6 +194,7 @@ export default defineComponent({
                   },
                   onResolve: async () => {
                     isSuspensePending = false
+                    hasResolvedOnce = true
                     try {
                       await nextTick()
                       nuxtApp._route.sync?.()
@@ -262,12 +264,16 @@ function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, n
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
-  if (!index || index === -1) { return false }
+  if (index === -1) { return false }
+
+  // Parent routes without a component are transparent — Vue Router renders the child directly
+  // at the parent's depth (see #34967), so they don't contribute a "parent render" above us.
+  const newParents = newRoute.matched.slice(0, index).filter(m => m.components?.default)
+  if (!newParents.length) { return false }
+  const forkParents = fork.matched.filter(m => m.components?.default)
 
   // we only care whether the parent route components have had to rerender
-  return newRoute.matched.slice(0, index)
-    .some(
-      (c, i) => c.components?.default !== fork.matched[i]?.components?.default) ||
+  return newParents.some((c, i) => c.components?.default !== forkParents[i]?.components?.default) ||
     (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
 }
 
@@ -281,4 +287,11 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
 function normalizeSlot (slot: Slot, data: RouterViewSlotProps) {
   const slotContent = slot(data)
   return slotContent.length === 1 ? h(slotContent[0]!) : h(Fragment, undefined, slotContent)
+}
+
+// A previously-stored Suspense vnode whose boundary has already been unmounted carries a stale
+// `el` reference; returning it would put Vue on the hydration code path during a fresh mount and
+// throw `Cannot read properties of null (reading 'nodeType' / 'exposed')`. See nuxt/nuxt#23232.
+function isStaleVNode (vnode: VNode | undefined): boolean {
+  return !!vnode && (!!vnode.suspense?.isUnmounted || !!vnode.component?.isUnmounted)
 }

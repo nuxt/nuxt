@@ -15,6 +15,7 @@ import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependenc
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
+import type { H3Event } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
@@ -22,7 +23,7 @@ import { runtimeDependencies } from 'nitro/meta'
 import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, toArray } from './utils.ts'
+import { distDir, getSsrResolveConditions, toArray } from './utils.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -103,9 +104,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  if (nuxt.options.experimental.runtimeBaseURL) {
+    nuxt.options.serverHandlers.unshift({
+      route: '',
+      middleware: true,
+      handler: resolve(distDir, 'runtime/middleware/base-url'),
+    })
+  }
+
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
-    const h3Path = JSON.stringify(resolve(distDir, 'runtime/h3-compat'))
+    const h3Path = JSON.stringify(resolve(distDir, 'h3'))
     const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
 
     nuxt.options.nitro.virtual ||= {}
@@ -116,8 +125,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       }
       return `import { defineEventHandler } from ${h3Path}; export default defineEventHandler(() => {});`
     }
-    nuxt.options.nitro.handlers ||= []
-    nuxt.options.nitro.handlers.push({
+    nuxt.options.serverHandlers.push({
       route: '/__nuxt_island/**',
       handler: ISLAND_RENDERER_KEY,
     })
@@ -183,17 +191,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     renderer: {
       handler: resolve(distDir, 'runtime/handlers/renderer'),
     },
-    handlers: [
-      ...nuxt.options.experimental.runtimeBaseURL
-        ? [{
-            route: '',
-            middleware: true,
-            handler: resolve(distDir, 'runtime/middleware/base-url'),
-          }]
-        : [],
-      ...nuxt.options.serverHandlers,
-    ],
-    devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
@@ -201,6 +198,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
       // this will be overridden in vite plugin
       '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
+      // overridden by head module when SSR streaming is enabled
+      '#internal/streaming-iife-chunk.mjs': () => `export const iifeChunkFileName = undefined`,
       '#internal/nuxt/entry-ids.mjs': () => `export default []`,
       '#internal/nuxt/nitro-config.mjs': () => {
         const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)
@@ -215,12 +214,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_PAYLOAD_EXTRACTION = ${nuxt.options.experimental.payloadExtraction !== false}`,
           `export const NUXT_PAYLOAD_INLINE = ${nuxt.options.experimental.payloadExtraction !== true}`,
           `export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${hasCachedRoutes}`,
+          `export const NUXT_SSR_STREAMING = ${!!(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled)}`,
+          `export const NUXT_SSR_STREAMING_BOT_RE = ${typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.botRegex instanceof RegExp ? String(nuxt.options.experimental.ssrStreaming.botRegex) : '/^$/'}`,
         ].join('\n')
       },
     },
     routeRules: {
-      '/**': { ssr: true },
+      '/**': typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
+        ? { ssr: true, streaming: true }
+        : { ssr: true },
       '/__nuxt_error': { cache: false },
+    },
+    rolldownConfig: {
+      // don't try to resolve rolldown options from the tsconfig we generate
+      tsconfig: false,
     },
     typescript: {
       generateTsConfig: true,
@@ -399,7 +406,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       return `
       import { defu } from 'defu'
       const matcher = ${matcher}
-      export default (path) => defu({}, ...matcher('', path).map(r => r.data).reverse())
+      export default (path) => defu({}, ...matcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())
       `
     },
   })
@@ -423,8 +430,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
             if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
-              const payloadKey = route + '/_payload.json'
-              const defaults = {} as Record<string, any>
+              const payloadKey = (route === '/' ? '' : route) + '/_payload.json'
+              const defaults = { ssr: true } as Record<string, any>
               for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
                 if (key in value) {
                   defaults[key] = value[key as keyof typeof value]
@@ -540,7 +547,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Add decorator support via Babel when experimental.decorators is enabled.
   if (nuxt.options.experimental.decorators) {
-    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators']
+    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
     const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
       rootDir: nuxt.options.rootDir,
       searchPaths: nuxt.options.modulesDir,
@@ -623,7 +630,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }
 
-  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.js')
+  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
   const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath
 
   // Use hash-based cache driver for runtime payload cache to avoid conflicts when
@@ -674,6 +681,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // TODO: extract to shared utility?
   const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+  // TODO: remove support for baseUrl in nuxt v5
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
   const tsConfig = nitroConfig.typescript!.tsConfig!
@@ -710,7 +719,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitro.storage ||= { watch: () => {}, getMount: () => ({}) }
 
   // For full-static output, ensure payload extraction is not disabled
-  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
+  if (nuxt.options.ssr && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
     logger.warn('Payload extraction is recommended for full-static output. You can enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.')
   }
 
@@ -780,7 +789,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     configEnvironment (name, config) {
       if (name === 'ssr') {
         config.resolve ||= {}
-        config.resolve.conditions = [...nitro.options.exportConditions || [], 'import']
+        config.resolve.conditions = getSsrResolveConditions(nitro.options.exportConditions)
       }
     },
   })
@@ -884,12 +893,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     nitro.options.devHandlers.push({
       route: '/.well-known/appspecific/com.chrome.devtools.json',
-      handler: defineEventHandler(() => ({
-        workspace: {
-          ...projectConfiguration,
-          root: nuxt.options.rootDir,
-        },
-      })),
+      handler: defineEventHandler((event) => {
+        if (!isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
+          event.res.status = 403
+          return 'Forbidden'
+        }
+        return {
+          workspace: {
+            ...projectConfiguration,
+            root: nuxt.options.rootDir,
+          },
+        }
+      }),
     })
   }
 
@@ -924,7 +939,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.tsConfig.exclude ||= []
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
-    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
+    opts.references.push({ path: resolve(nuxt.options.rootDir, nitroConfig.typescript!.generatedTypesDir!, 'nitro.d.ts') })
 
     // ensure aliases shared between nuxt + nitro are included in shared tsconfig
     opts.sharedTsConfig.compilerOptions ||= {}
@@ -1039,6 +1054,50 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
   const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
 
   return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
+}
+
+const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
+
+function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
+  const allowedHosts = nuxt.options.vite?.server?.allowedHosts
+  if (allowedHosts === true) {
+    return true
+  }
+  const hosts = new Set(LOOPBACK_HOSTS)
+  if (Array.isArray(allowedHosts)) {
+    for (const host of allowedHosts) {
+      if (typeof host === 'string' && host) {
+        hosts.add(host)
+      }
+    }
+  }
+  return hosts
+}
+
+function isLocalDevRequest (event: H3Event, allowedHosts: ReadonlySet<string> | true): boolean {
+  const hostHeader = event.req.headers.get('host')
+  if (allowedHosts !== true) {
+    const host = hostHeader?.split(':')[0]
+    if (!host || !allowedHosts.has(host)) {
+      return false
+    }
+  }
+
+  const site = event.req.headers.get('sec-fetch-site')
+  if (site !== null) {
+    return site === 'same-origin' || site === 'none'
+  }
+
+  const initiator = event.req.headers.get('origin') || event.req.headers.get('referer')
+  if (!initiator) {
+    return true
+  }
+
+  try {
+    return new URL(initiator).host === hostHeader
+  } catch {
+    return false
+  }
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {

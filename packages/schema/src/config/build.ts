@@ -1,6 +1,5 @@
 import { defu } from 'defu'
 import { join } from 'pathe'
-import { isTest } from 'std-env'
 import type { Nuxt } from '../types/nuxt.ts'
 import { defineResolvers } from '../utils/definition.ts'
 
@@ -36,11 +35,11 @@ export default defineResolvers({
     },
   },
   logLevel: {
-    $resolve: (val) => {
+    $resolve: async (val, get) => {
       if (val && typeof val === 'string' && !['silent', 'info', 'verbose'].includes(val)) {
         console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
-      return val && typeof val === 'string' ? val as 'silent' | 'info' | 'verbose' : (isTest ? 'silent' : 'info')
+      return val && typeof val === 'string' ? val as 'silent' | 'info' | 'verbose' : (await get('test') ? 'silent' : 'info')
     },
   },
   build: {
