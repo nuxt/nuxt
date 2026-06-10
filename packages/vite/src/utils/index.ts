@@ -1,6 +1,7 @@
 import { hash } from 'ohash'
 
 export { isVue, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
+export { toVirtualId } from '../../../nuxt/src/core/plugins/virtual.ts'
 
 export function uniq<T> (arr: T[]): T[] {
   return Array.from(new Set(arr))

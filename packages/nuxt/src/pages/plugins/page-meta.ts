@@ -14,7 +14,7 @@ interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
   isPage?: (file: string) => boolean
-  routesPath?: string
+  routesId?: string
   extractedKeys?: string[]
 }
 
@@ -326,9 +326,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       handleHotUpdate: {
         order: 'post',
         handler: ({ file, modules, server }) => {
-          if (options.routesPath && options.isPage?.(file)) {
+          if (options.routesId && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
-            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + encodeURIComponent(options.routesPath))
+            const routesModule = server.moduleGraph.getModuleById(options.routesId)
             return [
               ...modules,
               ...macroModule ? [macroModule] : [],
