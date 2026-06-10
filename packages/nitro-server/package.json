@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
-    "@unhead/vue": "^3.1.1",
+    "@unhead/vue": "^3.1.3",
     "@vue/shared": "3.5.35",
     "consola": "^3.4.2",
     "defu": "^6.1.7",
@@ -83,8 +83,8 @@
     "@rollup/plugin-babel": "7.1.0",
     "hookable": "6.1.1",
     "nuxt": "workspace:*",
-    "tsdown": "0.22.1",
-    "vitest": "4.1.7"
+    "tsdown": "0.22.2",
+    "vitest": "4.1.8"
   },
   "engines": {
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"

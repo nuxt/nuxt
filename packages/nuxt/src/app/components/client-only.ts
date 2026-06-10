@@ -3,7 +3,7 @@ import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetu
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import ServerPlaceholder from './server-placeholder'
-import { elToStaticVNode } from './utils'
+import { elToStaticVNode, sanitizeTag } from './utils'
 
 // @ts-expect-error virtual file
 import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
@@ -71,7 +71,7 @@ const ClientOnly = defineComponent({
       const slot = slots.fallback || slots.placeholder
       if (slot) { return h(slot) }
       const fallbackStr = props.fallback || props.placeholder || ''
-      const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
+      const fallbackTag = sanitizeTag(props.fallbackTag || props.placeholderTag, 'span')
       return createElementBlock(fallbackTag, attrs, fallbackStr)
     }
   },

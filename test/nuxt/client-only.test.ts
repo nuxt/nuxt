@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ComponentOptions } from 'vue'
-import { Suspense, defineComponent, h, toDisplayString, useAttrs } from 'vue'
+import { Suspense, createSSRApp, defineComponent, h, toDisplayString, useAttrs } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises, mount } from '@vue/test-utils'
 
@@ -79,6 +80,36 @@ describe('client-only', () => {
     })
     const wrapper = await mountSuspended(component)
     expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="test" id="test">client-only</div>"`)
+  })
+})
+
+describe('client-only SSR fallback tag', () => {
+  const renderFallback = (props: Record<string, unknown>) => {
+    const app = createSSRApp(defineComponent({
+      setup: () => () => h(ClientOnly, props, { default: () => [] }),
+    }))
+    return renderToString(app)
+  }
+
+  it('renders a valid `fallbackTag` verbatim', async () => {
+    expect(await renderFallback({ fallbackTag: 'div', fallback: 'x' })).toBe('<div>x</div>')
+    expect(await renderFallback({ fallbackTag: 'section', fallback: 'x' })).toBe('<section>x</section>')
+    expect(await renderFallback({ fallbackTag: 'my-element', fallback: 'x' })).toBe('<my-element>x</my-element>')
+  })
+
+  it('replaces a malicious `fallbackTag` with `span`', async () => {
+    expect(await renderFallback({ fallbackTag: 'img src=x onerror=alert(1)', fallback: 'x' })).toBe('<span>x</span>')
+    expect(await renderFallback({ fallbackTag: '<script>', fallback: 'x' })).toBe('<span>x</span>')
+  })
+
+  it('falls back to `span` when `fallbackTag` is empty or undefined', async () => {
+    expect(await renderFallback({ fallback: 'x' })).toBe('<span>x</span>')
+    expect(await renderFallback({ fallbackTag: '', fallback: 'x' })).toBe('<span>x</span>')
+  })
+
+  it('also sanitises `placeholderTag`', async () => {
+    expect(await renderFallback({ placeholderTag: 'aside', placeholder: 'x' })).toBe('<aside>x</aside>')
+    expect(await renderFallback({ placeholderTag: 'img src=x onerror=alert(1)', placeholder: 'x' })).toBe('<span>x</span>')
   })
 })
 
