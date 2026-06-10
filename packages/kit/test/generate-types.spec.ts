@@ -68,9 +68,19 @@ describe('tsConfig generation', () => {
         "../.config/nuxt.*",
         "../layers/*/nuxt.config.*",
         "../layers/*/.config/nuxt.*",
-        "../layers/*/modules/**/*",
+        "../layers/*/modules/*.*",
+        "../layers/*/modules/*/*.*",
       ]
     `)
+  })
+
+  it('should not exclude layer module runtime files from app tsconfig', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxt)
+    // a module living in `layers/*/modules/<name>/runtime/**` is part of the app/runtime
+    // context; the node-context glob must not be broad enough to exclude it
+    // https://github.com/nuxt/nuxt/issues/35310
+    expect(tsConfig.include).toEqual(expect.arrayContaining(['../layers/*/modules/*/runtime/**/*']))
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining(['../layers/*/modules/**/*']))
   })
 
   it('should not exclude node-context paths from legacy tsconfig', async () => {
@@ -209,7 +219,8 @@ describe('resolveLayerPaths', async () => {
           "../.config/nuxt.*",
           "../layers/*/nuxt.config.*",
           "../layers/*/.config/nuxt.*",
-          "../layers/*/modules/**/*",
+          "../layers/*/modules/*.*",
+          "../layers/*/modules/*/*.*",
         ],
         "nuxt": [
           "../app/**/*",
