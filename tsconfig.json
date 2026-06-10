@@ -37,6 +37,15 @@
       "#unhead/composables": [
         "./packages/nuxt/src/head/runtime/composables"
       ],
+      "#vite-node": [
+        "./packages/vite/src/vite-node"
+      ],
+      "#vite-node-entry": [
+        "./packages/vite/src/vite-node-entry"
+      ],
+      "#vite-node-runner": [
+        "./packages/vite/src/vite-node-runner"
+      ],
       "nuxt/app": [
         "./packages/nuxt/src/app/index"
       ],

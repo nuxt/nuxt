@@ -39,7 +39,15 @@ function createRunner () {
   })
 }
 
-function buildViteError (errorData: any, id: string): Error {
+interface ViteNodeErrorData {
+  code?: string
+  id?: string
+  message?: string
+  stack?: string
+  frame?: string
+}
+
+function buildViteError (errorData: ViteNodeErrorData, id: string): Error {
   const loc = (errorData.id || id || '').replace(process.cwd(), '.')
 
   // `err.message` from some compilers (notably @vue/compiler-sfc) embeds a
