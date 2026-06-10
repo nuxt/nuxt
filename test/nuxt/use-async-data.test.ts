@@ -744,6 +744,50 @@ describe('useAsyncData', () => {
     expect(comp2.html()).toMatchInlineSnapshot(`"<div>second</div>"`)
   })
 
+  // https://github.com/nuxt/nuxt/issues/35322
+  it('should not leave a new subscriber stuck at idle when the previous subscriber unregisters during an in-flight deferred request', async () => {
+    const key = `stranded-idle-${++counter}`
+
+    let resolveHandler: ((value: string) => void) | undefined
+    const promiseFn = vi.fn(() => new Promise<string>((resolve) => {
+      resolveHandler = resolve
+    }))
+
+    const scopeA = effectScope()
+    let resultA!: ReturnType<typeof useAsyncData>
+    scopeA.run(() => {
+      resultA = useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    const nuxtApp = useNuxtApp()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(nuxtApp._asyncDataPromises[key]).toBeDefined()
+    expect(nuxtApp._asyncData[key]!.status.value).toBe('pending')
+
+    scopeA.stop()
+
+    const scopeB = effectScope()
+    let resultB!: ReturnType<typeof useAsyncData>
+    scopeB.run(() => {
+      resultB = useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    expect(nuxtApp._asyncData[key]!._init).toBe(true)
+
+    resolveHandler!('resolved')
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(nuxtApp._asyncData[key]!.status.value).toBe('success')
+    expect(nuxtApp._asyncData[key]!.data.value).toBe('resolved')
+    expect(resultB.status.value).toBe('success')
+    expect(resultB.data.value).toBe('resolved')
+
+    resultA.clear()
+    scopeB.stop()
+  })
+
   it('should be synced with useNuxtData', async () => {
     const { data: nuxtData } = useNuxtData('nuxtdata-sync')
     const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
