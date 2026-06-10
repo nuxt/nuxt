@@ -53,4 +53,8 @@ describe('findPath', () => {
   it('should find paths correctly', async () => {
     expect(await findPath(resolve(nuxt.options.buildDir, 'my-template'), { virtual: true })).toBe(resolve(nuxt.options.buildDir, 'my-template.mjs'))
   })
+
+  it('should resolve a directory with the dir type option', async () => {
+    expect(await findPath(nuxt.options.rootDir, { type: 'dir' })).toBe(resolve(nuxt.options.rootDir))
+  })
 })

@@ -1,4 +1,3 @@
-import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 
 import { normalize, relative } from 'pathe'
@@ -538,51 +537,61 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
 }
 
 export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {
-  if (node.type === 'ObjectExpression') {
-    const valueString = code.slice(node.start, node.end)
-    try {
-      return {
-        value: JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {})),
-        serializable: true,
-      }
-    } catch {
-      return {
-        serializable: false,
-      }
+  if (node.type === 'Literal') {
+    if (typeof node.value === 'string' || typeof node.value === 'number' || typeof node.value === 'boolean' || node.value === null) {
+      return { value: node.value, serializable: true }
     }
+    return { serializable: false }
+  }
+
+  if (node.type === 'UnaryExpression' && (node.operator === '-' || node.operator === '+')) {
+    const arg = node.argument
+    if (arg.type === 'Literal' && typeof arg.value === 'number') {
+      return { value: node.operator === '-' ? -arg.value : arg.value, serializable: true }
+    }
+    return { serializable: false }
   }
 
   if (node.type === 'ArrayExpression') {
-    const values: string[] = []
+    const values: any[] = []
     for (const element of node.elements) {
-      if (!element) {
-        continue
+      // `null` element is a sparse-array hole.
+      if (!element || element.type === 'SpreadElement') {
+        return { serializable: false }
       }
       const { serializable, value } = isSerializable(code, element)
       if (!serializable) {
-        return {
-          serializable: false,
-        }
+        return { serializable: false }
       }
       values.push(value)
     }
+    return { value: values, serializable: true }
+  }
 
-    return {
-      value: values,
-      serializable: true,
+  if (node.type === 'ObjectExpression') {
+    const value: Record<string, any> = {}
+    for (const property of node.properties) {
+      if (property.type !== 'Property' || property.computed || property.kind !== 'init' || property.method) {
+        return { serializable: false }
+      }
+      let key: string
+      if (property.key.type === 'Identifier') {
+        key = property.key.name
+      } else if (property.key.type === 'Literal' && (typeof property.key.value === 'string' || typeof property.key.value === 'number')) {
+        key = String(property.key.value)
+      } else {
+        return { serializable: false }
+      }
+      const { serializable, value: propertyValue } = isSerializable(code, property.value)
+      if (!serializable) {
+        return { serializable: false }
+      }
+      value[key] = propertyValue
     }
+    return { value, serializable: true }
   }
 
-  if (node.type === 'Literal' && (typeof node.value === 'string' || typeof node.value === 'boolean' || typeof node.value === 'number' || node.value === null)) {
-    return {
-      value: node.value,
-      serializable: true,
-    }
-  }
-
-  return {
-    serializable: false,
-  }
+  return { serializable: false }
 }
 
 export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {

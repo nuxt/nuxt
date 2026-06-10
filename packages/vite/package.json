@@ -26,7 +26,7 @@
   "scripts": {
     "prepack": "tsdown",
     "build": "tsdown",
-    "test:attw": "attw --pack"
+    "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -47,14 +47,14 @@
     "std-env": "^4.1.0",
     "ufo": "^1.6.4",
     "unenv": "^2.0.0-rc.24",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "vite-node": "^6.0.0",
-    "vite-plugin-checker": "^0.13.0",
+    "vite-plugin-checker": "^0.14.1",
     "vue-bundle-renderer": "^2.2.0"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-decorators": "7.29.0",
-    "@babel/plugin-syntax-jsx": "7.28.6",
+    "@babel/plugin-proposal-decorators": "7.29.7",
+    "@babel/plugin-syntax-jsx": "7.29.7",
     "@nuxt/schema": "workspace:*",
     "@vitejs/plugin-vue-jsx": "5.1.5",
     "autoprefixer": "10.5.0",
@@ -63,11 +63,11 @@
     "h3-next": "npm:h3@2.0.1-rc.22",
     "nitropack": "2.13.4",
     "postcss": "8.5.15",
-    "rolldown": "1.0.2",
-    "rollup": "4.60.4",
+    "rolldown": "1.1.0",
+    "rollup": "4.61.1",
     "rollup-plugin-visualizer": "7.0.1",
-    "tsdown": "0.22.0",
-    "vue": "3.5.34"
+    "tsdown": "0.22.2",
+    "vue": "3.5.35"
   },
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0",

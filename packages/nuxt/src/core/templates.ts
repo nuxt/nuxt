@@ -4,6 +4,7 @@ import { join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
+import { resolveModulePath } from 'exsolve'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
@@ -13,6 +14,8 @@ import { annotatePlugins, checkForCircularDependencies } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
+
+const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -430,7 +433,7 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents ({ app, nuxt }) {
     return `
-import { defuFn } from 'defu'
+import { defuFn } from ${JSON.stringify(defuPath)}
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
