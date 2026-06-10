@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { dirname, isAbsolute, join, normalize } from 'pathe'
-import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { directoryToURL, resolveAlias, resolvePath, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -238,17 +238,23 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   return {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
-    configureServer (clientServer) {
+    async configureServer (clientServer) {
       // early return if plugins are 'borrowed' for testing/storybook
       if (!tryUseNuxt()) {
         return
       }
 
+      // When `ssr: false` without the vite environment API, the client dev server's
+      // config only carries the client entry, so we resolve the SPA entry up front.
+      const spaEntryPath = !nuxt.options.ssr && !nuxt.options.experimental.viteEnvironmentApi
+        ? await resolvePath(join(nuxt.options.appDir, 'entry-spa'))
+        : undefined
+
       function resolveServer (ssrServer: ViteDevServer) {
         const viteNodeServerOptions = {
           socketPath,
           root: nuxt.options.srcDir,
-          entryPath: resolveServerEntry(ssrServer.config),
+          entryPath: spaEntryPath ?? resolveServerEntry(ssrServer.config),
           base: '/',
           maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
           baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
