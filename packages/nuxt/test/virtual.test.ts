@@ -52,6 +52,7 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
   const stubNuxt = {
     options: {
       extensions: ['.ts', '.js'],
+      rootDir: '/',
       buildDir: '/.nuxt',
       alias: {
         '~': '/',

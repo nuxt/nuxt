@@ -18,7 +18,7 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 
-import { isCSS } from '../utils/index.ts'
+import { isCSS, toVirtualId } from '../utils/index.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 import type { ErrorPartial } from '../types.ts'
 
@@ -327,7 +327,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
       const client = nuxt.options.experimental.viteEnvironmentApi ? clientServer.environments.client : clientServer
       nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
         for (const template of changedTemplates) {
-          const mods = client.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
+          const mods = client.moduleGraph.getModulesByFile(toVirtualId(template.dst, nuxt))
           for (const mod of mods || []) {
             markInvalidate(mod)
           }

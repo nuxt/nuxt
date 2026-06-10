@@ -19,6 +19,7 @@ import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPag
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
+import { toVirtualId } from '../core/plugins/virtual.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
@@ -544,7 +545,7 @@ export default defineNuxtModule({
         dev: nuxt.options.dev,
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         isPage,
-        routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
+        routesId: toVirtualId(resolve(nuxt.options.buildDir, 'routes.mjs'), nuxt),
         extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],
       }))
     })
