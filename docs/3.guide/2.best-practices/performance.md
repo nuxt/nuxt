@@ -216,6 +216,36 @@ onLoaded((gtag) => {
 
 To improve performance, we need to first know how to measure it, starting with measuring performance during development - on local environment, and then moving to auditing application that are deployed on production.
 
+### Server Timing
+
+Nuxt provides native support for `Server-Timing` headers during SSR to help you profile performance bottlenecks in your plugins and middleware.
+
+When enabled, Nuxt measures the execution time of each plugin and route middleware and exposes these metrics in the browser's DevTools via the `Server-Timing` HTTP header.
+
+#### Enabling Server Timing
+
+This feature is enabled by default in development mode. To enable it in production, update your `nuxt.config.ts`:
+
+```ts twoslash
+export default defineNuxtConfig({
+  features: {
+    serverTiming: true,
+  },
+})
+```
+
+::warning
+`serverTiming` is a **build-time** flag. When it is disabled (the default in production), the timing code is tree-shaken out of your bundle entirely — so it cannot be toggled at runtime via an environment variable. Changing it requires a rebuild.
+::
+
+::warning
+Enabling `serverTiming` in production exposes the **names** of your plugins and route middleware to anyone via the `Server-Timing` response header. This reveals which middleware and plugins run on a given page and can serve as a reconnaissance surface (e.g. for supply-chain attacks). Enable it in production deliberately, and prefer keeping it limited to development or trusted/internal environments.
+::
+
+#### Viewing Metrics
+
+Once enabled, open your browser's **Network** tab in DevTools, select your main document request, and look at the **Timing** tab. You will see entries prefixed with `plugin:` or `middleware:`, indicating their individual execution duration in milliseconds.
+
 ### Nuxi Analyze
 
 [This](/docs/4.x/api/commands/analyze) command of `nuxi` allows you to analyze the production bundle of your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.

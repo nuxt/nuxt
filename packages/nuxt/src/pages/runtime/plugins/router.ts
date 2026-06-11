@@ -243,7 +243,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
             }
+            const start = (import.meta.server && __NUXT_SERVER_TIMING__) ? globalThis.performance.now() : 0
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            if (import.meta.server && start) {
+              const duration = globalThis.performance.now() - start
+              const name = typeof entry === 'string' ? entry : (middleware as any)._name || (middleware as any).name || 'anonymous'
+              const timings = nuxtApp.ssrContext!.event.context._nuxt_server_timings ??= []
+              timings.push({ name: `middleware:${name}`, duration })
+            }
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({

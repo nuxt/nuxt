@@ -26,7 +26,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SERVER_TIMING, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -365,6 +365,10 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
+
+  if (NUXT_SERVER_TIMING && event.context._nuxt_server_timings?.length) {
+    event.res.headers.append('Server-Timing', event.context._nuxt_server_timings.map(timing => `${timing.name.replace(/[^\w.:-]/g, '_')};dur=${timing.duration.toFixed(3)}`).join(', '))
+  }
 
   return renderHTMLDocument(htmlContext)
 }
@@ -804,6 +808,10 @@ async function renderStreamedResponse (ctx: {
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
+
+  if (NUXT_SERVER_TIMING && event.context._nuxt_server_timings?.length) {
+    event.res.headers.append('Server-Timing', event.context._nuxt_server_timings.map(timing => `${timing.name.replace(/[^\w.:-]/g, '_')};dur=${timing.duration.toFixed(3)}`).join(', '))
+  }
 
   return outputStream
 }
