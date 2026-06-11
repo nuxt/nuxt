@@ -867,4 +867,37 @@ describe('NuxtPage should work with keepalive options', () => {
     expect(visits).toBe(1)
     el.unmount()
   })
+
+  // https://github.com/nuxt/nuxt/issues/33610
+  it('should keep a page alive when only that page sets keepalive in its route meta', async () => {
+    let otherVisits = 0
+    router.addRoute({
+      name: 'other',
+      path: '/other',
+      component: defineComponent({
+        name: 'other',
+        setup () {
+          otherVisits++
+          return () => h('div', 'other')
+        },
+      }),
+    })
+    const homeRoute = router.getRoutes().find(r => r.name === 'home')!
+    homeRoute.meta.keepalive = true
+
+    const el = await mountSuspended({
+      setup () {
+        return () => h(NuxtLayout, {}, { default: () => h(NuxtPage) })
+      },
+    })
+    await navigateTo('/home')
+    await navigateTo('/other')
+    await navigateTo('/home')
+    expect(visits).toBe(1)
+    expect(otherVisits).toBe(1)
+
+    delete homeRoute.meta.keepalive
+    router.removeRoute('other')
+    el.unmount()
+  })
 })
