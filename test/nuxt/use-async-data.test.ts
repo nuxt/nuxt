@@ -788,7 +788,7 @@ describe('useAsyncData', () => {
     scopeB.stop()
   })
 
-  it('should abort the in-flight request when the last subscriber unmounts', async () => {
+  it('should abort the in-flight request when the last subscriber unmounts', () => {
     const key = `abort-on-unmount-${++counter}`
 
     let capturedSignal: AbortSignal | undefined
