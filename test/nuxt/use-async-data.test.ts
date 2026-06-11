@@ -788,6 +788,32 @@ describe('useAsyncData', () => {
     scopeB.stop()
   })
 
+  it('should abort the in-flight request when the last subscriber unmounts', async () => {
+    const key = `abort-on-unmount-${++counter}`
+
+    let capturedSignal: AbortSignal | undefined
+    const promiseFn = vi.fn((_nuxtApp, { signal }: { signal: AbortSignal }) => {
+      capturedSignal = signal
+      return new Promise<string>(() => {})
+    })
+
+    const scope = effectScope()
+    scope.run(() => {
+      useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    const nuxtApp = useNuxtApp()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(capturedSignal).toBeDefined()
+    expect(capturedSignal!.aborted).toBe(false)
+    expect(nuxtApp._asyncDataPromises[key]).toBeDefined()
+
+    scope.stop()
+
+    expect(capturedSignal!.aborted).toBe(true)
+    expect(nuxtApp._asyncDataPromises[key]).toBeUndefined()
+  })
+
   it('should be synced with useNuxtData', async () => {
     const { data: nuxtData } = useNuxtData('nuxtdata-sync')
     const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
