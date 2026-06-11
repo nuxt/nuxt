@@ -1,4 +1,4 @@
-import { Fragment, Suspense, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { Fragment, Suspense, createCommentVNode, defineComponent, h, inject, isVNode, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
@@ -103,7 +103,7 @@ export default defineComponent({
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
-        default: import.meta.server
+        default: markStableSlot(import.meta.server
           ? (routeProps: RouterViewSlotProps) => {
               return h(Suspense, { suspensible: true }, {
                 default () {
@@ -237,7 +237,7 @@ export default defineComponent({
                 )).default()
 
               return vnode
-            },
+            }),
       })
     }
   },
@@ -282,6 +282,22 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
   return index < newRoute.matched.length - 1
+}
+
+// Flag the slot as precompiled (`_n`) so Vue skips its slot wrapper, which is what emits the
+// dev-only "slot invoked outside render" warning. The warning otherwise misfires when a page
+// using top-level `await` (e.g. `navigateTo()`) re-renders before Vue's `withAsyncContext`
+// cleanup clears `currentInstance`. We replicate Vue's array coercion here so vue-router's
+// `slotContent.length` path still works. See #34683.
+function markStableSlot<T extends (routeProps: RouterViewSlotProps) => VNode | VNode[] | null | undefined> (fn: T): T {
+  const wrapped = ((routeProps: RouterViewSlotProps) => {
+    const result = fn(routeProps)
+    if (Array.isArray(result)) { return result }
+    if (result == null || !isVNode(result)) { return [createCommentVNode()] }
+    return [result]
+  }) as unknown as T
+  ;(wrapped as any)._n = true
+  return wrapped
 }
 
 function normalizeSlot (slot: Slot, data: RouterViewSlotProps) {
