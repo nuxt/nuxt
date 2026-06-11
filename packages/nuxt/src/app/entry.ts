@@ -38,8 +38,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
-    // TODO: remove _renderResponse in nuxt v5
-    if (ssrContext && (ssrContext['~renderResponse'] || ssrContext._renderResponse)) { throw new Error('skipping render') }
+    if (ssrContext?.['~renderResponse']) { throw new Error('skipping render') }
 
     return vueApp
   }
@@ -70,6 +69,9 @@ if (import.meta.client) {
       await nuxt.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
+    // marker so nuxt-root.vue can skip re-invoking the default handler from
+    // its onErrorCaptured (which already calls `app:error` via showError)
+    ;(handleVueError as any).__nuxt_default = true
 
     vueApp.config.errorHandler = handleVueError
     // If the errorHandler is not overridden by the user, we unset it after the app is hydrated

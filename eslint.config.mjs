@@ -25,10 +25,12 @@ export default createConfigForNuxt({
       ignores: [
         '.goff/**',
         'packages/schema/schema/**',
+        'packages/nuxt/stubs/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
         'packages/nitro-server/src/runtime/templates/error-*',
+        'packages/kit/test/types-fixture/**',
       ],
     },
     {
@@ -164,7 +166,6 @@ export default createConfigForNuxt({
         ],
       },
     },
-    // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
@@ -231,6 +232,16 @@ export default createConfigForNuxt({
       name: 'local/disables/client-console',
       rules: {
         'no-console': 'off',
+      },
+    },
+    {
+      // `DefineSetupFnComponent<Props, Emits, Slots>` uses
+      // `{}` as the default for `Emits`/`Slots` so we suppress
+      // the warning in our runtime/ dirs.
+      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/{components,head,imports,pages}/runtime/**'],
+      name: 'local/disables/empty-object-type',
+      rules: {
+        '@typescript-eslint/no-empty-object-type': ['error', { allowObjectTypes: 'always' }],
       },
     },
     // manually specify dependencies for nuxt browser app

@@ -21,6 +21,7 @@ import { appId } from '#internal/nuxt.config.mjs'
 const devReducers: Record<string, (data: any) => any> = {
   VNode: data => isVNode(data) ? { type: data.type, props: data.props } : undefined,
   URL: data => data instanceof URL ? data.toString() : undefined,
+  Symbol: data => typeof data === 'symbol' ? data.description ?? '' : undefined,
 }
 
 interface NuxtDevAsyncContext {

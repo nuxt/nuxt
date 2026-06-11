@@ -15,11 +15,11 @@ export function getUserTrace (): Trace[] {
 
   const trace = captureStackTrace()
   const start = trace.findIndex(entry => !entry.source.startsWith(distURL))
-  const end = [...trace].reverse().findIndex(entry => !entry.source.includes('node_modules') && !entry.source.startsWith(distURL))
+  const end = trace.toReversed().findIndex(entry => !entry.source.includes('node_modules') && !entry.source.startsWith(distURL))
   if (start === -1 || end === -1) {
     return []
   }
-  return trace.slice(start, -end).map(i => ({
+  return trace.slice(start, end > 0 ? -end : undefined).map(i => ({
     ...i,
     source: i.source.replace(/^file:\/\//, ''),
   }))

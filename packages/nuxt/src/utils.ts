@@ -12,7 +12,13 @@ export async function isDirectory (path: string) {
 }
 
 export function isDirectorySync (path: string) {
-  try { return statSync(path).isDirectory() } catch { return false }
+  try {
+    return statSync(path, { throwIfNoEntry: false })?.isDirectory() ?? false
+  } catch (err) {
+    // ENOTDIR should be treated as "not a directory" instead of an error
+    if ((err as NodeJS.ErrnoException).code === 'ENOTDIR') { return false }
+    throw err
+  }
 }
 
 const LEADING_DOT_RE = /^\.+/g

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { DevOnlyPlugin } from '../src/core/plugins/dev-only.ts'
 import { normalizeLineEndings } from './utils.ts'
 
-const pluginVite = DevOnlyPlugin({}).raw({}, { framework: 'vite' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+const pluginVite = DevOnlyPlugin().raw({}, { framework: 'vite' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
 const viteTransform = async (source: string, id: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

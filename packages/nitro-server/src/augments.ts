@@ -1,8 +1,22 @@
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from 'nuxt/app'
 import type { HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
+
+/**
+ * Per-channel toggles for `tracingChannel`. Extends Nitro's own
+ * {@link TracingOptions} with a `nuxt` key for Nuxt-owned channels
+ * (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). Channel names
+ * follow the [untracing](https://github.com/unjs/untracing) naming convention
+ * (`{namespace}.{operation}`).
+ *
+ * @experimental Channel names, payload shapes, and option keys may change.
+ */
+export interface NuxtTracingChannelOptions extends TracingOptions {
+  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). */
+  nuxt?: boolean
+}
 
 declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
@@ -12,11 +26,11 @@ declare module 'nitro/types' {
   }
   interface NitroRouteRules {
     ssr?: boolean
+    streaming?: boolean
     noScripts?: boolean
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
-    appLayout?: string | false
   }
 }
 
@@ -26,13 +40,17 @@ declare module 'nitro/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    streaming?: boolean
     noScripts?: boolean
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
-    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
+    'render:html:chunk': (chunkContext: NuxtRenderChunkContext, context: { event: H3Event }) => void | Promise<void>
+    'render:html:close': (closeContext: NuxtRenderCloseContext, context: { event: H3Event }) => void | Promise<void>
+    'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }
@@ -49,6 +67,8 @@ declare module '@nuxt/schema' {
     /**
      * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
      * @param options Objects containing `references`, `declarations`
+     * @param options.references Array of TypeScript references to add
+     * @param options.declarations Array of declaration strings to add
      * @returns Promise
      */
     'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
@@ -120,6 +140,17 @@ declare module '@nuxt/schema' {
      * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
      */
     devServerHandlers: NitroDevEventHandler[]
+
+    /**
+     * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
+     * tracing for Nuxt-owned subsystems and forward the corresponding Nitro-level
+     * channels (`srvx.request`, `h3.request`, `unstorage.*`).
+     *
+     * @experimental Channel names, payload shapes, and option keys may change.
+     *
+     * @see [Untracing naming registry](https://github.com/unjs/untracing)
+     */
+    tracingChannel: boolean | NuxtTracingChannelOptions
   }
 
   interface NuxtConfig {
@@ -154,6 +185,8 @@ declare module 'nuxt/schema' {
     /**
      * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
      * @param options Objects containing `references`, `declarations`
+     * @param options.references Array of TypeScript references to add
+     * @param options.declarations Array of declaration strings to add
      * @returns Promise
      */
     'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
@@ -225,6 +258,17 @@ declare module 'nuxt/schema' {
      * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
      */
     devServerHandlers: NitroDevEventHandler[]
+
+    /**
+     * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
+     * tracing for Nuxt-owned subsystems and forward the corresponding Nitro-level
+     * channels (`srvx.request`, `h3.request`, `unstorage.*`).
+     *
+     * @experimental Channel names, payload shapes, and option keys may change.
+     *
+     * @see [Untracing naming registry](https://github.com/unjs/untracing)
+     */
+    tracingChannel: boolean | NuxtTracingChannelOptions
   }
 
   interface NuxtConfig {

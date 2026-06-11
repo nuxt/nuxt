@@ -1,6 +1,6 @@
 import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { pascalCase } from 'scule'
 import { relative } from 'pathe'
 
@@ -16,15 +16,18 @@ interface LoaderOptions {
   srcDir: string
   serverComponentRuntime: string
   clientDelayedComponentRuntime: string
-  sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
 }
 
 // Match both:
-// 1. _resolveComponent("ComponentName") - Vue's component resolution
+// 1. _resolveComponent("ComponentName") - Vue's component resolution.
+//    `\d*` allows for deduplicated forms (e.g. `_resolveComponent2`) emitted by
+//    `@vue/compiler-sfc` when the same helper is imported more than once in a
+//    single SFC, which happens when a `<script setup lang="[jt]sx">` block
+//    references components from the template (nuxt/nuxt#30929).
 // 2. h(ComponentName, ...) - JSX h() calls with PascalCase component identifiers
-const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b/g
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\d*\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b/g
 
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
@@ -43,20 +46,20 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       }
       return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
     },
-    transform (code, id) {
+    transform (code, id, meta?: unknown) {
       const components = options.getComponents()
 
       let num = 0
       const imports = new Set<string>()
       const map = new Map<Component, string>()
-      const s = new MagicString(code)
+      const s = rolldownString(code, id, meta)
       // replace `_resolveComponent("...")` to direct import
-      s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, ...args) => {
-        const groups = args.pop()
+      for (const match of code.matchAll(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE)) {
+        const groups = match.groups!
         const lazy = groups.hLazy || groups.lazy
         const modifier = groups.hModifier || groups.modifier
         const name = groups.hName || groups.name
-        const normalComponent = findComponent(components, name, options.mode)
+        const normalComponent = findComponent(components, name!, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent
 
@@ -80,7 +83,8 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
-            return identifier
+            s.overwrite(match.index, match.index + match[0].length, identifier)
+            continue
           }
 
           const isClientOnly = !component._raw && component.mode === 'client'
@@ -151,24 +155,15 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             }
           }
 
-          return identifier
+          s.overwrite(match.index, match.index + match[0].length, identifier)
         }
-        // no matched
-        return full
-      })
+      }
 
       if (imports.size) {
         s.prepend([...imports, ''].join('\n'))
       }
 
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap
-            ? s.generateMap({ hires: true })
-            : undefined,
-        }
-      }
+      return generateTransform(s, id)
     },
   }
 })
@@ -182,7 +177,7 @@ function findComponent (components: Component[], name: string, mode: LoaderOptio
 
   const otherModeComponent = components.find(component => id === component.pascalName)
 
-  // Render client-only components on the server with <ServerPlaceholder> (a simple div)
+  // Render client-only components on the server with <ServerPlaceholder>
   if (mode === 'server' && otherModeComponent) {
     return components.find(c => c.pascalName === 'ServerPlaceholder')
   }

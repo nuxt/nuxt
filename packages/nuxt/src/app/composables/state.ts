@@ -68,6 +68,7 @@ export function clearNuxtState (
 
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)
+    .filter(key => key.startsWith(useStateKeyPrefix))
     .map(key => key.substring(useStateKeyPrefix.length))
 
   const _keys: string[] = !keys
@@ -82,7 +83,7 @@ export function clearNuxtState (
       if (reset && nuxtApp._state[key]) {
         nuxtApp.payload.state[key] = nuxtApp._state[key]._default()
       } else {
-        nuxtApp.payload.state[key] = undefined
+        delete nuxtApp.payload.state[key]
       }
     }
   }

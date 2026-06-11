@@ -9,7 +9,7 @@ import {
 import { createScanPluginContext } from '../src/compiler/utils.ts'
 import * as oxcWalker from 'oxc-walker'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
-import type { Node } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 
 vi.mock('oxc-walker', async importOriginal => ({ ...await importOriginal() }))
 
@@ -31,7 +31,7 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/guide/going-further/compiler\`]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/4.x/api/composables/create-use-fetch\`]`)
 
     vi.unstubAllGlobals()
   })
@@ -89,7 +89,7 @@ describe('defineKeyedFunctionFactory', () => {
 
     const transformedFactory = transformFactory(factory)
 
-    expect(() => transformedFactory()).toThrowError('Factory error')
+    expect(() => transformedFactory()).toThrow('Factory error')
   })
 
   it('should preserve parameter and return types', () => {
@@ -194,7 +194,7 @@ describe('createScanPluginContext', () => {
 
   it('should parse and walk the AST and track variables', () => {
     const code = `const a: number = 1`
-    const nodes: Node[] = []
+    const nodes: ESTree.Node[] = []
     const context = createScanPluginContext(code, 'file.ts')
 
     const scopeTracker = new ScopeTracker()
@@ -361,6 +361,12 @@ describe('parseFunctionCall', () => {
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })
 
+  it('should handle a TS as-cast wrapping a member expression callee', () => {
+    const code = `const x = (factories.createUseFetch as any)()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
   it('should handle a TS non-null assertion callee', () => {
     const code = `const x = (createUseFetch!)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
@@ -373,6 +379,12 @@ describe('parseFunctionCall', () => {
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })
 
+  it('should handle a TS non-null assertion wrapping a member expression callee', () => {
+    const code = `const x = (factories.createUseFetch!)()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
   it('should handle a TS type-assertion in parenthesized expression callee', () => {
     const code = `const x = (<any>createUseFetch)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
@@ -381,6 +393,12 @@ describe('parseFunctionCall', () => {
 
   it('should handle a TS type-assertion in member expression object', () => {
     const code = `const x = (<any>factories).createUseFetch()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
+  it('should handle a TS type-assertion wrapping a member expression callee', () => {
+    const code = `const x = (<any>factories.createUseFetch)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })

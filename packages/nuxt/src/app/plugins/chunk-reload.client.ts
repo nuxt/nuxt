@@ -1,10 +1,11 @@
 import { joinURL } from 'ufo'
 import type { RouteLocationNormalized } from 'vue-router'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 import { useRouter } from '../composables/router'
 import { reloadNuxtApp } from '../composables/chunk'
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:chunk-reload',
   setup (nuxtApp) {
     const router = useRouter()
@@ -33,3 +34,5 @@ export default defineNuxtPlugin({
     })
   },
 })
+
+export default plugin

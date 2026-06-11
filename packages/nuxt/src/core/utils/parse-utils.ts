@@ -1,4 +1,4 @@
-import type { CallExpression, ChainExpression, ExportDefaultDeclaration, ExportNamedDeclaration, IdentifierReference, MemberExpression, ParenthesizedExpression, TSExportAssignment } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 import type { ParsedStaticImport } from 'mlly'
 import { resolveAlias } from '@nuxt/kit'
 
@@ -91,8 +91,8 @@ export interface FunctionCallMetadata {
    * (foo.bar)()  //-> Parenthesized Expression node for `foo.bar`
    * foo['bar']() //-> Member Expression node for `foo['bar']`
    */
-  node: IdentifierReference | MemberExpression | ParenthesizedExpression
-  callExpression: CallExpression
+  node: ESTree.IdentifierReference | ESTree.MemberExpression | ESTree.ParenthesizedExpression
+  callExpression: ESTree.CallExpression
 }
 
 /**
@@ -103,7 +103,7 @@ export interface FunctionCallMetadata {
  * @param filter A regular expression to match the function name.
  * @returns An object containing the metadata about the function call, or null if it doesn't match.
  */
-export function parseStaticFunctionCall (node: CallExpression | ChainExpression, filter: RegExp): FunctionCallMetadata | null {
+export function parseStaticFunctionCall (node: ESTree.CallExpression | ESTree.ChainExpression, filter: RegExp): FunctionCallMetadata | null {
   // unwrap call expression
   const callExpression = node.type === 'CallExpression'
     ? node
@@ -151,7 +151,7 @@ export function parseStaticFunctionCall (node: CallExpression | ChainExpression,
     }
   }
 
-  function getParsedMemberExpression (memberExpression: MemberExpression): Omit<FunctionCallMetadata, 'callExpression'> | null {
+  function getParsedMemberExpression (memberExpression: ESTree.MemberExpression): Omit<FunctionCallMetadata, 'callExpression'> | null {
     // <object name>
     let memberObjectName: string | undefined
     // foo.bar()
@@ -200,7 +200,6 @@ export function parseStaticFunctionCall (node: CallExpression | ChainExpression,
     return null
   }
 
-  // TODO: handle optional chaining, type assertions, non-null assertions, etc.
   // Member Expressions
   // foo.bar()
   if (callExpression.callee.type === 'MemberExpression') {
@@ -211,14 +210,31 @@ export function parseStaticFunctionCall (node: CallExpression | ChainExpression,
         callExpression,
       }
     }
-  // (foo.bar)()
-  } else if (callExpression.callee.type === 'ParenthesizedExpression' && callExpression.callee.expression.type === 'MemberExpression') {
-    const val = getParsedMemberExpression(callExpression.callee.expression)
-    if (val) {
-      return {
-        ...val,
-        node: callExpression.callee,
-        callExpression,
+  } else if (callExpression.callee.type === 'ParenthesizedExpression') {
+    let innerExpression = callExpression.callee.expression
+
+    // (foo.bar as any)()
+    // (<any>foo.bar)()
+    // (foo.bar!)()
+    if (
+      (
+        innerExpression.type === 'TSAsExpression'
+        || innerExpression.type === 'TSTypeAssertion'
+        || innerExpression.type === 'TSNonNullExpression'
+      )
+    ) {
+      innerExpression = innerExpression.expression
+    }
+
+    // (foo.bar)()
+    if (innerExpression.type === 'MemberExpression') {
+      const val = getParsedMemberExpression(innerExpression)
+      if (val) {
+        return {
+          ...val,
+          node: callExpression.callee,
+          callExpression,
+        }
       }
     }
   }
@@ -250,7 +266,7 @@ export interface ExportMetadata {
  * @param node the export declaration node to parse
  * @param filter optional regex to filter based on exported names
  */
-export function parseStaticExportIdentifiers (node: ExportNamedDeclaration | ExportDefaultDeclaration | TSExportAssignment, filter?: RegExp): ExportMetadata[] {
+export function parseStaticExportIdentifiers (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration | ESTree.TSExportAssignment, filter?: RegExp): ExportMetadata[] {
   // NAMED EXPORT -------------------------
   if (node.type === 'ExportNamedDeclaration' && node.exportKind !== 'type') {
     // export const, let, var

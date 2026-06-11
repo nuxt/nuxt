@@ -87,10 +87,15 @@ This is useful for enforcing settings like authentication headers or a specific 
 You can pass a custom `$fetch` instance to `createUseFetch`:
 
 ```ts [app/composables/useAPI.ts]
-export const useAPI = createUseFetch({
+export const useAPI = createUseFetch(callerOptions => ({
   $fetch: useNuxtApp().$api as typeof $fetch,
-})
+  ...callerOptions,
+}))
 ```
+
+::important
+The **function signature** (override mode) is required here so that [`useNuxtApp()`](/docs/4.x/api/composables/use-nuxt-app) is called in the setup context (at the composable call site) rather than in the module scope, where no Nuxt instance is available.
+::
 
 :read-more{to="/docs/4.x/guide/recipes/custom-usefetch"}
 
