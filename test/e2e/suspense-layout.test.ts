@@ -25,8 +25,7 @@ test.use({
 })
 
 test.describe('Suspense navigation with layout change', () => {
-  test('completes when redirect crosses layout boundary (#34683)', async ({ page, goto, isDev }) => {
-    test.fixme(isDev, 'Vue dev-only warning surfaces a separate suspense/layout bug; passes in built mode')
+  test('completes when redirect crosses layout boundary (#34683)', async ({ page, goto }) => {
     await goto('/')
 
     await expect(page.getByTestId('index-title')).toBeVisible()
