@@ -29,4 +29,18 @@ test.describe('lazy hydration styles', () => {
     const css = await cssResponse.text()
     expect(css).toContain('.hydrate-never-component')
   })
+
+  // https://github.com/nuxt/nuxt/issues/35145
+  test.fail('should not preload JS chunk for hydrate-on-visible component', async ({ page }) => {
+    await page.goto('/')
+
+    const links = await page.locator('link').all()
+    for (const link of links) {
+      if (await link.getAttribute('rel') !== 'modulepreload') { continue }
+      const href = await link.getAttribute('href')
+      if (!href) { continue }
+      const js = await page.request.get(href).then(r => r.text())
+      expect(js).not.toContain('hydrate-on-visible-component')
+    }
+  })
 })
