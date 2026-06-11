@@ -22,6 +22,7 @@ import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { shouldLoadPayload } from '#app/composables/payload'
+import { requestIdleCallback } from '#app/compat/idle-callback'
 import { NuxtPage } from '#components'
 
 import { isTestingAppManifest } from '../matrix'
@@ -999,6 +1000,29 @@ describe('defineNuxtComponent', () => {
     await refreshNuxtData()
 
     expect(wrapper.html()).toMatchInlineSnapshot(`"<div>1</div>"`)
+  })
+
+  it('should refresh data without waiting for idle time after hydration', async () => {
+    const idleCallback = vi.mocked(requestIdleCallback)
+    const idleImplementation = idleCallback.getMockImplementation()
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const refresh = vi.fn()
+    const removeHook = nuxtApp.hooks.hook('app:data:refresh', refresh)
+
+    idleCallback.mockImplementation(() => 0)
+    idleCallback.mockClear()
+    nuxtApp.isHydrating = false
+
+    try {
+      await refreshNuxtData('test-key')
+      expect(refresh).toHaveBeenCalledWith(['test-key'])
+      expect(idleCallback).not.toHaveBeenCalled()
+    } finally {
+      removeHook()
+      nuxtApp.isHydrating = isHydrating
+      idleCallback.mockImplementation(idleImplementation!)
+    }
   })
 
   it.todo('should support Options API head')
