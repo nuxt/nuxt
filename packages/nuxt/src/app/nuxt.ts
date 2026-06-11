@@ -21,13 +21,14 @@ import type { RouteMiddleware } from './composables/router'
 import type { NuxtError } from './composables/error'
 import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
+import { traceAsync } from './internal/tracing'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
-import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp } from '#build/nuxt.config.mjs'
+import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
 export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
@@ -449,7 +450,15 @@ export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPl
 /** @since 3.0.0 */
 export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>): Promise<void> {
   if (typeof plugin === 'function') {
-    const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
+    const run = () => nuxtApp.runWithContext(() => plugin(nuxtApp))
+    const { provide } = await (import.meta.server && tracingChannelNuxt
+      ? traceAsync(
+          'nuxt.plugin',
+          { plugin: { name: plugin._name, parallel: plugin.parallel, dependsOn: plugin.dependsOn } },
+          run,
+        )
+      : run()
+    ) || {}
     if (provide && typeof provide === 'object') {
       for (const key in provide) {
         nuxtApp.provide(key, provide[key])
