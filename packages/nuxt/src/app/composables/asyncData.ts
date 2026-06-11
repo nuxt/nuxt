@@ -924,6 +924,10 @@ function buildAsyncData<
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
       }
+      if (nuxtApp._asyncDataPromises[key]) {
+        asyncData._abortController?.abort(new DOMException('AsyncData request cancelled by unmount', 'AbortError'))
+        delete nuxtApp._asyncDataPromises[key]
+      }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
         nextTick(() => {
