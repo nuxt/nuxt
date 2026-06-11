@@ -306,11 +306,15 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   if (!NO_SCRIPTS) {
     // 4. Resource Hints
     // Remove lazy hydrated modules from ssrContext.modules so they don't get preloaded
-    // (CSS links are already added above, this only affects JS preloads)
-    if (ssrContext['~lazyHydratedModules']) {
+    // (CSS links are already added above, this only affects JS preloads).
+    // `_requestDependencies` is the per-request cache used by `getRequestDependencies`
+    // in vue-bundle-renderer; we drop it here to force the preload/prefetch calls below
+    // to recompute against the pruned modules.
+    if (ssrContext['~lazyHydratedModules']?.size) {
       for (const id of ssrContext['~lazyHydratedModules']) {
         ssrContext.modules?.delete(id)
       }
+      ssrContext._requestDependencies = undefined
     }
     ssrContext.head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
