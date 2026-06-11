@@ -39,7 +39,8 @@ import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
-import { resolveTypePath } from './utils/types.ts'
+import { installProxyDispatcher } from './utils/proxy.ts'
+import { resolveTypePaths } from './utils/types.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
@@ -339,7 +340,7 @@ async function initNuxt (nuxt: Nuxt) {
     mode: 'client',
     alias: {
       '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
-      'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+      'nitro/runtime-config': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
     },
   }), { server: false })
@@ -348,12 +349,11 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add transform for `onPrehydrate` lifecycle hook
-  addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+  addBuildPlugin(PrehydrateTransformPlugin())
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addBuildPlugin(LayerAliasingPlugin({
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
@@ -374,13 +374,11 @@ async function initNuxt (nuxt: Nuxt) {
     // Add composable tree-shaking optimisations
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
-        sourcemap: !!nuxt.options.sourcemap.server,
         composables: nuxt.options.optimization.treeShake.composables.server,
       }), { client: false })
     }
     if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
-        sourcemap: !!nuxt.options.sourcemap.client,
         composables: nuxt.options.optimization.treeShake.composables.client,
       }), { server: false })
     }
@@ -440,9 +438,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
-    addBuildPlugin(DevOnlyPlugin({
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    }))
+    addBuildPlugin(DevOnlyPlugin())
 
     // Extract async data handlers into separate chunks for better performance
     if (nuxt.options.experimental.extractAsyncDataHandlers) {
@@ -780,6 +776,9 @@ export default defineNuxtPlugin({
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    if (nuxt.options.experimental.prefetchPreloadTags) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/prefetch-preload-tags.server'))
+    }
   }
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
@@ -793,6 +792,8 @@ export default defineNuxtPlugin({
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+  await installProxyDispatcher()
+
   // Early-init profiler when CLI passes perf overrides (captures config loading).
   // Otherwise, create after config resolves from nuxt.config / env vars.
   let perf: NuxtPerfProfiler | undefined
@@ -891,6 +892,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nitroOptions = options.nitro
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {
+    options.serverHandlers.unshift(...nitroOptions.handlers)
+  }
+  createPortalProperties(options.serverHandlers, options, ['nitro.handlers', 'serverHandlers'])
+  if (nitroOptions.devHandlers?.length && nitroOptions.devHandlers !== options.devServerHandlers) {
+    options.devServerHandlers.unshift(...nitroOptions.devHandlers)
+  }
+  createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
+  createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {
@@ -1063,29 +1073,44 @@ async function resolveModules (nuxt: Nuxt) {
 const NESTED_PKG_RE = /^[^@]+\//
 async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [string]>> {
   nuxt.options.typescript.hoist ||= []
-  const paths = Object.fromEntries(await Promise.all(nuxt.options.typescript.hoist.map(async (pkg) => {
-    const [_pkg = pkg, _subpath] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
-    const subpath = _subpath ? '/' + _subpath : ''
+
+  const packagesToResolve: string[] = []
+  const nightlyAliases = new Map<string, string>() // nightly -> original
+
+  for (const pkg of nuxt.options.typescript.hoist) {
+    const [_pkg = pkg] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
 
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { return [] }
+    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { continue }
 
     // deduplicate types for nightly releases
     if (_pkg in nightlies) {
       const nightly = nightlies[_pkg as keyof typeof nightlies]
-      const path = await resolveTypePath(nightly + subpath, subpath, nuxt.options.modulesDir)
-      if (path) {
-        return [[pkg, [path]], [nightly + subpath, [path]]]
-      }
+      const nightlyPkg = pkg.replace(_pkg, nightly)
+      packagesToResolve.push(nightlyPkg)
+      nightlyAliases.set(nightlyPkg, pkg)
     }
 
-    const path = await resolveTypePath(_pkg + subpath, subpath, nuxt.options.modulesDir)
-    if (path) {
-      return [[pkg, [path]]]
-    }
+    packagesToResolve.push(pkg)
+  }
 
-    return []
-  })).then(r => r.flat()))
+  const resolved = await resolveTypePaths(packagesToResolve, nuxt.options.modulesDir)
+
+  const paths: Record<string, [string]> = {}
+  const nightlyResolved = new Set<string>() // track which originals were resolved via nightly
+
+  for (const [pkg, path] of resolved) {
+    if (nightlyAliases.has(pkg)) {
+      // This is a nightly resolution - map to both the original and nightly name
+      const original = nightlyAliases.get(pkg)!
+      paths[original] = [path]
+      paths[pkg] = [path]
+      nightlyResolved.add(original)
+    } else if (!nightlyResolved.has(pkg)) {
+      // Only use direct resolution if nightly didn't already resolve
+      paths[pkg] = [path]
+    }
+  }
 
   return paths
 }

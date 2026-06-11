@@ -108,7 +108,7 @@ if (import.meta.server) {
   for (const prop in props) {
     if (prop !== 'datetime') {
       const value = props?.[prop as keyof typeof props]
-      if (value) {
+      if (value !== undefined && value !== null) {
         const propInKebabCase = prop.split(/(?=[A-Z])/).join('-')
         dataset[`data-${propInKebabCase}`] = props?.[prop as keyof typeof props]
       }
@@ -141,7 +141,8 @@ if (import.meta.server) {
           optionName = 'style'
         }
 
-        options[optionName] = el.getAttribute(name) as any
+        const attrValue = el.getAttribute(name)
+        options[optionName] = (attrValue === 'true' ? true : attrValue === 'false' ? false : attrValue) as any
       }
     }
 

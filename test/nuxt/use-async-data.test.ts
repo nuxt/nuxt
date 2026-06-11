@@ -77,6 +77,10 @@ describe('useAsyncData', () => {
     expect(res.data.value).toBe('test')
   })
 
+  it('should throw TypeError when key is empty', () => {
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[TypeError: [nuxt] [useAsyncData] key must be a non-empty string.]')
+  })
+
   it('should keep promise methods after destructuring', async () => {
     const asyncData = useAsyncData(() => Promise.resolve('test'))
     const destructured = { ...asyncData, foo: 'foo' }
@@ -272,6 +276,18 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('idle')
 
     vi.useRealTimers()
+  })
+
+  it('removes the key from payload.data and _asyncDataPromises on clear', async () => {
+    const nuxtApp = useNuxtApp()
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+
+    expect(uniqueKey in nuxtApp.payload.data).toBe(true)
+
+    clearNuxtData(uniqueKey)
+
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+    expect(uniqueKey in nuxtApp._asyncDataPromises).toBe(false)
   })
 
   it('should have correct status for previously fetched requests', async () => {
@@ -636,6 +652,37 @@ describe('useAsyncData', () => {
 
     expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(undefined)
     expect(useNuxtApp()._asyncData[secondKey]!.data.value).toBe(secondKey)
+
+    comp.unmount()
+  })
+
+  it('should work with static string key and sync data with useNuxtData', async () => {
+    const staticKey = 'static-key-no-watcher'
+    const promiseFn = vi.fn(() => Promise.resolve('ok'))
+    const { data } = await useAsyncData(staticKey, promiseFn)
+    expect(data.value).toBe('ok')
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(useNuxtData(staticKey).data.value).toBe('ok')
+  })
+
+  it('should migrate container and re-fetch when reactive key changes', async () => {
+    const keyRef = ref('reactive-a')
+    const promiseFn = vi.fn(() => Promise.resolve(keyRef.value))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(keyRef, promiseFn)
+        return () => h('div', [data.value])
+      },
+    })
+    const comp = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(comp.text()).toBe('reactive-a')
+
+    keyRef.value = 'reactive-b'
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(comp.text()).toBe('reactive-b')
+    expect(useNuxtApp()._asyncData['reactive-b']!.data.value).toBe('reactive-b')
 
     comp.unmount()
   })
@@ -1048,7 +1095,7 @@ describe('useAsyncData', () => {
     // Manual implementation of Promise.withResolvers for compatibility
     let resolve: (value: boolean) => void
     const promise = new Promise<boolean>((res) => { resolve = res })
-    const { clear } = useAsyncData('', () => promise)
+    const { clear } = useAsyncData('clear', () => promise)
     expect(aborted).toBe(false)
     clear()
     resolve!(true)
@@ -1417,5 +1464,82 @@ describe('useAsyncData', () => {
       router.removeRoute('v-once-home')
       router.removeRoute('v-once-other')
     }
+  })
+
+  // https://github.com/nuxt/nuxt/issues/31576
+  it('should call getCachedData only once when concurrent useAsyncData calls share a key', async () => {
+    const key = `dedupe-getCachedData-${++counter}`
+    const getCachedData = vi.fn((_key: string, nuxtApp: NuxtApp) => nuxtApp.payload.data[_key])
+    const promiseFn = vi.fn(() => Promise.resolve('value'))
+
+    const promises = Array.from({ length: 10 }, () =>
+      useAsyncData(key, promiseFn, { getCachedData, dedupe: 'defer' }),
+    )
+    await Promise.all(promises)
+
+    expect(getCachedData).toHaveBeenCalledTimes(1)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    for (const p of promises) {
+      expect((await p).data.value).toBe('value')
+    }
+  })
+
+  it('should re-fetch after clearNuxtData rather than serving the cached lookup from a previous call', async () => {
+    const key = `clear-getCachedData-${++counter}`
+    const nuxtApp = useNuxtApp()
+    nuxtApp.payload.data[key] = 'initial-payload'
+
+    let fetchCount = 0
+    const handler = () => {
+      fetchCount++
+      return Promise.resolve(`fresh-${fetchCount}`)
+    }
+    const getCachedData = (k: string, app: NuxtApp) => app.payload.data[k]
+
+    const { data: first } = await useAsyncData(key, handler, { getCachedData })
+    expect(first.value).toBe('initial-payload')
+    expect(fetchCount).toBe(0)
+
+    clearNuxtData(key)
+
+    const { data: second } = await useAsyncData(key, handler, { getCachedData })
+    expect(fetchCount).toBe(1)
+    expect(second.value).toBe('fresh-1')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35116
+  it('should call getCachedData for a useLazyAsyncData subscriber that mounts after the initial fetch settled', async () => {
+    const key = `late-subscriber-getCachedData-lazy-${++counter}`
+    const getCachedData = vi.fn((_key: string, nuxtApp: NuxtApp) => nuxtApp.payload.data[_key])
+    const promiseFn = vi.fn(() => Promise.resolve('value'))
+
+    const persistentComponent = defineComponent({
+      setup () {
+        useLazyAsyncData(key, promiseFn, { getCachedData })
+        return () => h('div')
+      },
+    })
+    const lateComponent = defineComponent({
+      setup () {
+        useLazyAsyncData(key, promiseFn, { getCachedData })
+        return () => h('div')
+      },
+    })
+
+    const persistent = await mountSuspended(persistentComponent)
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    const callsAfterFirst = getCachedData.mock.calls.length
+
+    const late = await mountSuspended(lateComponent)
+    await flushPromises()
+
+    // the late subscriber must consult getCachedData...
+    expect(getCachedData.mock.calls.length).toBeGreaterThan(callsAfterFirst)
+    // ...and must reuse the cached payload rather than re-running the handler
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    late.unmount()
+    persistent.unmount()
   })
 })

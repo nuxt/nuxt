@@ -9,7 +9,7 @@ import {
 import { createScanPluginContext } from '../src/compiler/utils.ts'
 import * as oxcWalker from 'oxc-walker'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
-import type { Node } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 
 vi.mock('oxc-walker', async importOriginal => ({ ...await importOriginal() }))
 
@@ -31,7 +31,7 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/guide/going-further/compiler\`]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/4.x/api/composables/create-use-fetch\`]`)
 
     vi.unstubAllGlobals()
   })
@@ -89,7 +89,7 @@ describe('defineKeyedFunctionFactory', () => {
 
     const transformedFactory = transformFactory(factory)
 
-    expect(() => transformedFactory()).toThrowError('Factory error')
+    expect(() => transformedFactory()).toThrow('Factory error')
   })
 
   it('should preserve parameter and return types', () => {
@@ -194,7 +194,7 @@ describe('createScanPluginContext', () => {
 
   it('should parse and walk the AST and track variables', () => {
     const code = `const a: number = 1`
-    const nodes: Node[] = []
+    const nodes: ESTree.Node[] = []
     const context = createScanPluginContext(code, 'file.ts')
 
     const scopeTracker = new ScopeTracker()

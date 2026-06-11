@@ -1,17 +1,13 @@
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { createUnplugin } from 'unplugin'
 import { parse } from 'ultrahtml'
 import type { Node } from 'ultrahtml'
 import { isVue } from '../utils/index.ts'
 
-interface DevOnlyPluginOptions {
-  sourcemap?: boolean
-}
-
 const DEVONLY_COMP_SINGLE_RE = /<(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)(?:\s(?:[^>"']|"[^"]*"|'[^']*')*)?>[\s\S]*?<\/(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)>/
 const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)(?:\s(?:[^>"']|"[^"]*"|'[^']*')*)?>[\s\S]*?<\/(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)>/g
 
-export const DevOnlyPlugin = (options: DevOnlyPluginOptions) => createUnplugin(() => {
+export const DevOnlyPlugin = () => createUnplugin(() => {
   return {
     name: 'nuxt:server-devonly:transform',
     enforce: 'pre',
@@ -22,8 +18,8 @@ export const DevOnlyPlugin = (options: DevOnlyPluginOptions) => createUnplugin((
       filter: {
         code: { include: DEVONLY_COMP_SINGLE_RE },
       },
-      handler (code) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         for (const match of code.matchAll(DEVONLY_COMP_RE)) {
           const ast: Node = parse(match[0]).children[0]
           const fallback: Node | undefined = ast.children?.find((n: Node) => {
@@ -34,14 +30,7 @@ export const DevOnlyPlugin = (options: DevOnlyPluginOptions) => createUnplugin((
           s.overwrite(match.index!, match.index! + match[0].length, replacement)
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

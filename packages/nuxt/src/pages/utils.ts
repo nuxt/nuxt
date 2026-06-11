@@ -1,20 +1,19 @@
-import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
-import { normalize } from 'pathe'
+
+import { normalize, relative } from 'pathe'
 import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-
 import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
-import { parseSync } from 'oxc-parser'
-import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
-import { transformSync } from 'oxc-transform'
+import { parseSync, transformSync } from 'rolldown/utils'
+import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
+
 import { getLoader } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -253,16 +252,16 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // TODO: always true because `extractScriptContent` only detects ts/tsx loader
       if (/tsx?/.test(script.loader)) {
         // slice, transform and parse the `define...` macro node to avoid parsing the whole file
-        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
+        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader, tsconfig: false })
         if (transformed.errors.length) {
           for (const error of transformed.errors) {
-            logger.warn(`Error while transforming \`${fnName}()\`` + error.codeframe)
+            logger.warn(`Error while transforming \`${fnName}()\`\n` + error.message)
           }
           return
         }
 
         // we already know that the first statement is a call expression
-        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]
+        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ESTree.ExpressionStatement).expression as ESTree.CallExpression).arguments[0]
         code = transformed.code
       }
 
@@ -284,7 +283,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
       if (fnName === 'definePageMeta') {
         for (const key of extractionKeys) {
-          const property = pageExtractArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+          const property = pageExtractArgument.properties.find((property): property is ESTree.ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
           if (!property) { continue }
 
           const { value, serializable } = isSerializable(code, property.value)
@@ -342,9 +341,9 @@ interface NormalizeRoutesOptions {
   clientComponentRuntime: string
 }
 
-function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined): string {
+function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined, islandKey: string | undefined): string {
   if (page.mode === 'server') {
-    return `() => createIslandPage(${routeName})`
+    return `() => createIslandPage(${routeName}, import.meta.server ? ${islandKey} : undefined)`
   }
   if (page.mode === 'client') {
     return `() => createClientPage(${pageImport})`
@@ -352,13 +351,13 @@ function normalizeComponent (page: NuxtPage, pageImport: string, routeName: stri
   return pageImport
 }
 
-function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | undefined, pageImportName: string, pageImport: string, routeName: string | undefined, metaRouteName: string): string {
+function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | undefined, pageImportName: string, pageImport: string, routeName: string | undefined, metaRouteName: string, islandKey: string | undefined): string {
   if (isSyncImport) {
     return `Object.assign(${pageImportName}, { __name: ${metaRouteName} })`
   }
   // Server components already receive the name via createIslandPage(name)
   if (page.mode === 'server') {
-    return `() => createIslandPage(${routeName})`
+    return `() => createIslandPage(${routeName}, import.meta.server ? ${islandKey} : undefined)`
   }
   // Client components return a processed component (not a module with .default)
   if (page.mode === 'client') {
@@ -381,6 +380,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
           metaFiltered[key] = page.meta![key]
         }
       }
+
       const skipAlias = toArray(page.alias).every(val => !val)
 
       const route: NormalizedRoute = {
@@ -420,9 +420,30 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
       const metaRouteName = `${metaImportName}?.name ?? ${route.name}`
 
+      // we use this to validate that a server page is rendering the correct url
+      const islandKey = page.mode === 'server' && page.file
+        ? JSON.stringify(hash(relative(nuxt.options.rootDir, page.file)))
+        : undefined
+
       const component = nuxt.options.experimental.normalizePageNames
-        ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName)
-        : normalizeComponent(page, pageImport, route.name)
+        ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
+        : normalizeComponent(page, pageImport, route.name, islandKey)
+
+      // Named views from the `name@view.vue` filename convention. The scanner
+      // emits `components: { default: <file>, <view>: <file> }`.
+      // https://router.vuejs.org/guide/essentials/named-views.html
+      let componentsObject: string | undefined
+      if (page.components) {
+        const viewEntries: string[] = []
+        for (const viewName in page.components) {
+          if (viewName === 'default') { continue }
+          const viewFile = normalize(page.components[viewName]!)
+          viewEntries.push(`${JSON.stringify(viewName)}: ${genDynamicImport(viewFile)}`)
+        }
+        if (viewEntries.length > 0) {
+          componentsObject = `{ default: ${component}, ${viewEntries.join(', ')} }`
+        }
+      }
 
       const metaRoute: NormalizedRoute = {
         name: metaRouteName,
@@ -433,13 +454,16 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         redirect: `${metaImportName}?.redirect`,
         component,
       }
+      if (componentsObject) {
+        metaRoute.components = componentsObject
+      }
 
       if (page.mode === 'server') {
         metaImports.add(`
 let _createIslandPage
-async function createIslandPage (name) {
+async function createIslandPage (name, islandKey) {
   _createIslandPage ||= await import(${JSON.stringify(options?.serverComponentRuntime)}).then(r => r.createIslandPage)
-  return _createIslandPage(name)
+  return _createIslandPage(name, islandKey)
 };`)
       } else if (page.mode === 'client') {
         metaImports.add(`
@@ -512,52 +536,62 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
   ]
 }
 
-export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
-  if (node.type === 'ObjectExpression') {
-    const valueString = code.slice(node.start, node.end)
-    try {
-      return {
-        value: JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {})),
-        serializable: true,
-      }
-    } catch {
-      return {
-        serializable: false,
-      }
+export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {
+  if (node.type === 'Literal') {
+    if (typeof node.value === 'string' || typeof node.value === 'number' || typeof node.value === 'boolean' || node.value === null) {
+      return { value: node.value, serializable: true }
     }
+    return { serializable: false }
+  }
+
+  if (node.type === 'UnaryExpression' && (node.operator === '-' || node.operator === '+')) {
+    const arg = node.argument
+    if (arg.type === 'Literal' && typeof arg.value === 'number') {
+      return { value: node.operator === '-' ? -arg.value : arg.value, serializable: true }
+    }
+    return { serializable: false }
   }
 
   if (node.type === 'ArrayExpression') {
-    const values: string[] = []
+    const values: any[] = []
     for (const element of node.elements) {
-      if (!element) {
-        continue
+      // `null` element is a sparse-array hole.
+      if (!element || element.type === 'SpreadElement') {
+        return { serializable: false }
       }
       const { serializable, value } = isSerializable(code, element)
       if (!serializable) {
-        return {
-          serializable: false,
-        }
+        return { serializable: false }
       }
       values.push(value)
     }
+    return { value: values, serializable: true }
+  }
 
-    return {
-      value: values,
-      serializable: true,
+  if (node.type === 'ObjectExpression') {
+    const value: Record<string, any> = {}
+    for (const property of node.properties) {
+      if (property.type !== 'Property' || property.computed || property.kind !== 'init' || property.method) {
+        return { serializable: false }
+      }
+      let key: string
+      if (property.key.type === 'Identifier') {
+        key = property.key.name
+      } else if (property.key.type === 'Literal' && (typeof property.key.value === 'string' || typeof property.key.value === 'number')) {
+        key = String(property.key.value)
+      } else {
+        return { serializable: false }
+      }
+      const { serializable, value: propertyValue } = isSerializable(code, property.value)
+      if (!serializable) {
+        return { serializable: false }
+      }
+      value[key] = propertyValue
     }
+    return { value, serializable: true }
   }
 
-  if (node.type === 'Literal' && (typeof node.value === 'string' || typeof node.value === 'boolean' || typeof node.value === 'number' || node.value === null)) {
-    return {
-      value: node.value,
-      serializable: true,
-    }
-  }
-
-  return {
-    serializable: false,
-  }
+  return { serializable: false }
 }
 
 export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {

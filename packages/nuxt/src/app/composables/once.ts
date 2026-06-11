@@ -30,14 +30,10 @@ export async function callOnce (...args: any[]): Promise<void> {
   const nuxtApp = useNuxtApp()
 
   if (options?.mode === 'navigation') {
-    const cleanups: Array<() => void> = []
-    function callback () {
+    const removeGuard = useRouter().beforeResolve(() => {
       nuxtApp.payload.once.delete(_key)
-      for (const cleanup of cleanups) {
-        cleanup()
-      }
-    }
-    cleanups.push(nuxtApp.hooks.hook('page:start', callback), useRouter().beforeResolve(callback))
+      removeGuard()
+    })
   }
 
   // If key already ran
@@ -50,7 +46,12 @@ export async function callOnce (...args: any[]): Promise<void> {
 
   nuxtApp._once ||= {}
   nuxtApp._once[_key] ||= fn() || true
-  await nuxtApp._once[_key]
+  try {
+    await nuxtApp._once[_key]
+  } catch (e) {
+    delete nuxtApp._once[_key]
+    throw e
+  }
   nuxtApp.payload.once.add(_key)
   delete nuxtApp._once[_key]
 }

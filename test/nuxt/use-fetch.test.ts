@@ -181,6 +181,44 @@ describe('useFetch', () => {
     }
   })
 
+  it('should produce different keys for FormData with duplicate keys or different files', async () => {
+    registerEndpoint('/api/formdata-keys', defineEventHandler(() => ({ ok: true })))
+
+    const nuxtApp = useNuxtApp()
+    const getAsyncDataKeys = () => Object.keys(nuxtApp._asyncData).length
+    const baseCount = getAsyncDataKeys()
+
+    // FormData with multiple entries under the same key
+    const fd1 = new FormData()
+    fd1.append('files', new File([new Uint8Array(10)], 'a.txt'))
+    fd1.append('files', new File([new Uint8Array(20)], 'b.txt'))
+
+    // FormData with a single entry
+    const fd2 = new FormData()
+    fd2.append('files', new File([new Uint8Array(10)], 'a.txt'))
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd1, method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd2, method: 'POST' }, '')
+    // Different number of entries should produce different keys
+    expect.soft(getAsyncDataKeys()).toBe(baseCount + 2)
+
+    // Same filename but different file sizes
+    const fd3 = new FormData()
+    fd3.append('file', new File([new Uint8Array(100)], 'doc.pdf'))
+
+    const fd4 = new FormData()
+    fd4.append('file', new File([new Uint8Array(200)], 'doc.pdf'))
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd3, method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd4, method: 'POST' }, '')
+    // Different file sizes should produce different keys
+    expect.soft(getAsyncDataKeys()).toBe(baseCount + 4)
+  })
+
   it('should timeout', async () => {
     vi.useFakeTimers()
 
@@ -284,6 +322,71 @@ describe('useFetch', () => {
     expect(aborted).toBe(false)
     clear()
     expect(aborted).toBe(true)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/32102
+  it('passes the current key to getCachedData with watch:false and a reactive key', async () => {
+    registerEndpoint('/api/stale-key', defineEventHandler(() => ({ ok: true })))
+
+    const query = ref('a')
+    const seenKeys: string[] = []
+
+    const { execute } = useFetch('/api/stale-key', {
+      key: computed(() => `search-${query.value}`),
+      getCachedData: (key) => {
+        seenKeys.push(key)
+        return undefined
+      },
+      watch: false,
+    })
+
+    await flushPromises()
+
+    query.value = 'b'
+    await nextTick()
+    await execute()
+    await flushPromises()
+
+    // expected: the second invocation of getCachedData receives the current key
+    expect(seenKeys.at(-1)).toBe('search-b')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/32437
+  // two useFetch calls with the same shape share an auto-key; with watch:false
+  // the key is frozen at first init, so a second instance reads the first's data.
+  it('does not leak data between instances sharing an auto-key with watch:false + execute()', async () => {
+    registerEndpoint('/api/key/1', defineEventHandler(event => ({ url: '/api/key/1', q: event.req.url })))
+    registerEndpoint('/api/key/2', defineEventHandler(event => ({ url: '/api/key/2', q: event.req.url })))
+
+    const createScope = () => () => {
+      const id = ref(1)
+      const query = ref({ someInput: '' })
+      const { data, execute } = useFetch(() => `/api/key/${toValue(id)}`, {
+        query,
+        watch: false,
+        immediate: false,
+      })
+      return { data, execute, id, query }
+    }
+
+    const scope1 = effectScope()
+    const { data: d1, id: i1, query: q1, execute: e1 } = scope1.run(createScope())!
+    const scope2 = effectScope()
+    const { data: d2 } = scope2.run(createScope())!
+
+    expect.soft(d1.value).toStrictEqual(undefined)
+    expect.soft(d2.value).toStrictEqual(undefined)
+
+    q1.value.someInput = 'test'
+    i1.value++
+    await e1()
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    // d1 should have data; d2 should remain untouched
+    expect.soft(d1.value).toMatchObject({ url: '/api/key/2' })
+    expect.soft(d2.value).toStrictEqual(undefined)
   })
 })
 

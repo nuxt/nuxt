@@ -9,7 +9,7 @@ import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts
 export function ssr (nuxt: Nuxt) {
   return {
     external: [
-      'nitro/runtime',
+      'nitro/runtime-config',
       // TODO: remove in v5
       '#internal/nitro',
       '#internal/nitro/utils',
@@ -35,7 +35,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       rolldownOptions: {
         input: { server: serverEntry },
         external: [
-          'nitro/runtime',
+          'nitro/runtime-config',
           // TODO: remove in v5
           '#internal/nitro',
           'nitropack/runtime',
@@ -64,6 +64,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       'import.meta.server': true,
       'import.meta.client': false,
       'import.meta.browser': false,
+      'import.meta.envName': JSON.stringify(nuxt.options.envName),
       'window': 'undefined',
       'document': 'undefined',
       'navigator': 'undefined',
