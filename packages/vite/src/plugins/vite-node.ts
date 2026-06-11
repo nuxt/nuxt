@@ -7,6 +7,7 @@ import fs from 'node:fs' // For sync operations like unlinkSync if needed during
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
+import { win32 as pathWin32 } from 'node:path'
 import { dirname, isAbsolute, join, normalize } from 'pathe'
 import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
@@ -136,8 +137,9 @@ export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.t
   const socketDir = `nuxt-vite-`
 
   if (platform === 'win32') {
-  // enough randomness to avoid collisions and being predictable
-    return { socketPath: join(String.raw`\\.\pipe`, socketDir + randomUUID().slice(0, 8)) }
+    // use `node:path/win32` so the `\\.\pipe\...` separators stay as backslashes
+    // (for deno compatibility) plus enough randomness to avoid collisions and being predictable
+    return { socketPath: pathWin32.join(String.raw`\\.\pipe`, socketDir + randomUUID().slice(0, 8)) }
   }
 
   // creates a random suffix and avoids collisions
