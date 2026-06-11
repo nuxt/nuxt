@@ -68,7 +68,7 @@ export function getRouteRules (url: string): Record<string, any>
 export function getRouteRules (arg: string | H3Event | { path: string }) {
   const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   try {
-    return routeRulesMatcher(path)
+    return routeRulesMatcher(path.toLowerCase())
   } catch (e) {
     console.error('[nuxt] Error matching route rules.', e)
     return {}

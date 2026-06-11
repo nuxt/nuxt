@@ -549,6 +549,15 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       }
     `)
   })
+  it('matches case-insensitively to mirror vue-router defaults', () => {
+    expect(getRouteRules({ path: '/Pre/spa/thing' })).toMatchObject({
+      prerender: true,
+      ssr: false,
+    })
+    expect(getRouteRules({ path: '/PRE/test' })).toMatchObject({
+      redirect: '/',
+    })
+  })
 })
 
 describe('compiled route rules', () => {
@@ -666,13 +675,26 @@ describe('routing utilities: `navigateTo`', () => {
   })
   it('reloadNuxtApp should disallow paths with data/script URLs', () => {
     const urls = [
-      ['javascript:alert("hi")', 'javascript'],
-      ['data:alert("hi")', 'data'],
-      ['\0data:alert("hi")', 'data'],
+      'javascript:alert("hi")',
+      'data:alert("hi")',
+      '\0data:alert("hi")',
     ]
-    for (const [url, protocol] of urls) {
-      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+    for (const url of urls) {
+      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with a different host: '${url}'.`)
     }
+  })
+  it('reloadNuxtApp should disallow cross-origin paths', () => {
+    const urls = [
+      '//evil.com',
+      'https://evil.com',
+      '\\\\evil.com',
+    ]
+    for (const url of urls) {
+      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with a different host: '${url}'.`)
+    }
+  })
+  it('reloadNuxtApp should allow same-origin paths', () => {
+    expect(() => reloadNuxtApp({ path: '/legit/path' })).not.toThrow()
   })
   it('navigateTo should replace current navigation state if called within middleware', () => {
     const nuxtApp = useNuxtApp()
@@ -732,6 +754,18 @@ describe('routing utilities: `encodeURL`', () => {
     expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
     expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
     expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
+  })
+
+  it.each([
+    '/..//evil.com',
+    '/.//evil.com',
+    '/%2e%2e//evil.com',
+    '/app/..//evil.com',
+    '/..//evil.com/path?q=1#h',
+  ])('does not produce a protocol-relative URL for path-normalization bypass %s', (input) => {
+    const result = encode(input)
+    expect(result.startsWith('//')).toBe(false)
+    expect(new URL(result, 'http://app.test').origin).toBe('http://app.test')
   })
 })
 

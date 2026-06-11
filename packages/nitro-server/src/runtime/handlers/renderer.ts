@@ -67,7 +67,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event
     ? getQuery<NuxtPayload['error'] & { url: string }>(event)
     : null
 
-  if (ssrError && !event.context.nuxt?.['~internal'] /* allow internal fetch */) {
+  if (ssrError && !event.context.nuxt?.['~rendering-error'] /* allow internal fetch from the error handler */) {
     throw new HTTPError({
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',

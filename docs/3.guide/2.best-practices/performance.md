@@ -218,7 +218,7 @@ To improve performance, we need to first know how to measure it, starting with m
 
 ### Nuxi Analyze
 
-[This](/docs/4.x/api/commands/analyze) command of `nuxi` allows to analyze the production bundle or your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
+[This](/docs/4.x/api/commands/analyze) command of `nuxi` allows you to analyze the production bundle of your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
 
 When you see a large block in the visualization, it often signals an opportunity for optimization—whether by splitting it into smaller parts, implementing lazy loading, or replacing it with a more efficient alternative, especially for third-party libraries.
 
