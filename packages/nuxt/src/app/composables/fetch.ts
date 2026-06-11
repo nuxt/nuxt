@@ -19,7 +19,7 @@ export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRoute
 
 type ComputedOptions<T extends Record<string, any>> = {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
+  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | MaybeRefOrGetter<T[K]>
 }
 
 interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>, DataT = any> extends Omit<FetchOptions<_ResponseType, DataT>, 'cache'> {
@@ -52,6 +52,8 @@ export interface UseFetchOptionsWithTransform<
 > extends Omit<UseFetchOptions<ResT, DataT, PickKeys, DefaultT, R, M>, 'transform'> {
   transform: _Transform<ResT, DataT>
 }
+
+const MAYBE_REF_OR_GETTER_OPTION_KEYS = ['method', 'baseURL', 'query', 'params', 'body', 'headers'] as const
 
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
@@ -359,8 +361,10 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         const _$fetch: $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || $fetch
 
         const resolvedOptions = { signal, ..._fetchOptions } as Record<string, unknown>
-        if (typeof resolvedOptions.body === 'function') {
-          resolvedOptions.body = toValue(resolvedOptions.body as () => unknown)
+        for (const key of MAYBE_REF_OR_GETTER_OPTION_KEYS) {
+          if (typeof resolvedOptions[key] === 'function') {
+            resolvedOptions[key] = toValue(resolvedOptions[key] as () => unknown)
+          }
         }
 
         return _$fetch(_request.value, resolvedOptions as any) as Promise<_ResT>

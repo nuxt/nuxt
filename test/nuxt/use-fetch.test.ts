@@ -182,15 +182,29 @@ describe('useFetch', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/35341
-  it('should send the unwrapped value when body is a getter', async () => {
-    registerEndpoint('/api/body-getter', defineEventHandler(async event => ({ body: await event.req.json() })))
+  it('should send unwrapped values when options are getters', async () => {
+    registerEndpoint('/api/getter-options', defineEventHandler(async event => ({
+      method: event.req.method,
+      url: event.req.url,
+      header: event.req.headers.get('x-test'),
+      body: event.req.method === 'POST' ? await event.req.json() : null,
+    })))
 
     const state = reactive({ name: 'userquin' })
-    const { data } = await useFetch<{ body: { name: string } }>('/api/body-getter', {
-      method: 'POST',
+    const method = ref<'POST'>('POST')
+    const search = ref('hello')
+
+    const { data } = await useFetch<{ method: string, url: string, header: string | null, body: { name: string } | null }>('/api/getter-options', {
+      method: () => method.value,
+      baseURL: () => '',
+      query: () => ({ q: search.value }),
+      headers: () => ({ 'x-test': 'yes' }),
       body: () => ({ ...state }),
     })
 
+    expect(data.value?.method).toBe('POST')
+    expect(data.value?.url).toContain('q=hello')
+    expect(data.value?.header).toBe('yes')
     expect(data.value?.body).toEqual({ name: 'userquin' })
   })
 
