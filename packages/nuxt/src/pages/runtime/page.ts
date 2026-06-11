@@ -182,7 +182,6 @@ export default defineComponent({
 
               const routeKeepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as boolean | KeepAliveProps)
 
-              // Track component names from pages that declare per-page keepalive via route meta
               const routerComponentType = routeProps.Component.type as any
               const componentName = routerComponentType.name || routerComponentType.__name
 
@@ -190,7 +189,10 @@ export default defineComponent({
                 keepAliveInclude.add(componentName)
               }
 
-              // Build effective keepalive config
+              // Pages that opt into keepalive via `definePageMeta` should stay cached when navigating to
+              // pages that don't (#33610). We accumulate their component names in `keepAliveInclude` and
+              // inject it into the effective `<KeepAlive>` config so the wrapper stays present across
+              // navigations and Vue's cache is preserved.
               let keepaliveConfig: boolean | KeepAliveProps
 
               const shouldAugmentInclude =
@@ -202,7 +204,6 @@ export default defineComponent({
                 )
 
               if (shouldAugmentInclude) {
-                // Per-page keepalive - always render KeepAlive with include list for selective caching
                 const baseConfig = typeof routeKeepaliveConfig === 'object' && routeKeepaliveConfig
                   ? { ...routeKeepaliveConfig }
                   : {}
