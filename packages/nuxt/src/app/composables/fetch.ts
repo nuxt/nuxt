@@ -358,7 +358,12 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
         const _$fetch: $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || $fetch
 
-        return _$fetch(_request.value, { signal, ..._fetchOptions } as any) as Promise<_ResT>
+        const resolvedOptions = { signal, ..._fetchOptions } as Record<string, unknown>
+        if (typeof resolvedOptions.body === 'function') {
+          resolvedOptions.body = toValue(resolvedOptions.body as () => unknown)
+        }
+
+        return _$fetch(_request.value, resolvedOptions as any) as Promise<_ResT>
       }, _asyncDataOptions)
 
       return asyncData

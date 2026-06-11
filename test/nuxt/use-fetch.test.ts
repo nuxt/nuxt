@@ -181,6 +181,19 @@ describe('useFetch', () => {
     }
   })
 
+  // https://github.com/nuxt/nuxt/issues/35341
+  it('should send the unwrapped value when body is a getter', async () => {
+    registerEndpoint('/api/body-getter', defineEventHandler(async event => ({ body: await event.req.json() })))
+
+    const state = reactive({ name: 'userquin' })
+    const { data } = await useFetch<{ body: { name: string } }>('/api/body-getter', {
+      method: 'POST',
+      body: () => ({ ...state }),
+    })
+
+    expect(data.value?.body).toEqual({ name: 'userquin' })
+  })
+
   it('should produce different keys for FormData with duplicate keys or different files', async () => {
     registerEndpoint('/api/formdata-keys', defineEventHandler(() => ({ ok: true })))
 
