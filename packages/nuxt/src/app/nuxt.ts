@@ -27,7 +27,7 @@ import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
-import { appId, asyncCallHook, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
+import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp } from '#build/nuxt.config.mjs'
 
 export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
@@ -460,10 +460,39 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 
 /** @since 3.0.0 */
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>): Promise<void> {
+  if (hasPluginDependencies || hasParallelPlugins) {
+    return applyPluginsWithDependencies(nuxtApp, plugins)
+  }
+
+  let error: Error | undefined
+  const checkIslandEnv = import.meta.server && componentIslands && hasIslandOptOutPlugins
+
+  if (hasPluginHooks) {
+    for (const plugin of plugins) {
+      if (checkIslandEnv && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+      registerPluginHooks(nuxtApp, plugin)
+    }
+  }
+
+  for (const plugin of plugins) {
+    if (checkIslandEnv && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    try {
+      await applyPlugin(nuxtApp, plugin)
+    } catch (e) {
+      // short circuit if we are not rendering `error.vue`
+      if (!nuxtApp.payload.error) { throw e }
+      error ||= e as Error
+    }
+  }
+
+  if (error) { throw nuxtApp.payload.error || error }
+}
+
+async function applyPluginsWithDependencies (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>): Promise<void> {
   const resolvedPlugins: Set<string> = new Set()
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
-  let error: Error | undefined = undefined
+  let error: Error | undefined
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
@@ -500,13 +529,17 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
     }
   }
 
-  for (const plugin of plugins) {
-    if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
-    registerPluginHooks(nuxtApp, plugin)
+  const checkIslandEnv = import.meta.server && componentIslands && hasIslandOptOutPlugins
+
+  if (hasPluginHooks) {
+    for (const plugin of plugins) {
+      if (checkIslandEnv && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+      registerPluginHooks(nuxtApp, plugin)
+    }
   }
 
   for (const plugin of plugins) {
-    if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    if (checkIslandEnv && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
     await executePlugin(plugin)
   }
 

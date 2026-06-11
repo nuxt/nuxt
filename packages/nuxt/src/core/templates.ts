@@ -10,7 +10,7 @@ import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { useNitro } from '@nuxt/kit'
 
-import { annotatePlugins, checkForCircularDependencies } from './app.ts'
+import { annotatePlugins, checkForCircularDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
@@ -66,7 +66,7 @@ const PLUGIN_TEMPLATE_RE = /_(?:45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins.client.mjs',
   async getContents (ctx) {
-    const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
+    const clientPlugins = sortPluginsByDependsOn(await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')))
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
     const imports: string[] = []
@@ -86,7 +86,7 @@ export const clientPluginTemplate: NuxtTemplate = {
 export const serverPluginTemplate: NuxtTemplate = {
   filename: 'plugins.server.mjs',
   async getContents (ctx) {
-    const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
+    const serverPlugins = sortPluginsByDependsOn(await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')))
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = []
     const imports: string[] = []
@@ -532,7 +532,14 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
 // Allow direct access to specific exposed nuxt.config
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
-  getContents: (ctx) => {
+  async getContents (ctx) {
+    const annotatedPlugins = ctx.nuxt.options.dev || ctx.nuxt.options.test
+      ? null
+      : await annotatePlugins(ctx.nuxt, ctx.app.plugins)
+    const pluginsHaveDependencies = annotatedPlugins ? hasPluginDependencies(annotatedPlugins) : true
+    const pluginsRunInParallel = annotatedPlugins ? hasParallelPlugins(annotatedPlugins) : true
+    const pluginsHaveHooks = annotatedPlugins ? hasPluginHooks(annotatedPlugins) : true
+    const pluginsHaveIslandOptOut = annotatedPlugins ? hasIslandOptOutPlugins(annotatedPlugins) : true
     const fetchDefaults = {
       ...ctx.nuxt.options.experimental.defaults.useFetch,
       baseURL: undefined,
@@ -584,6 +591,10 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const alwaysRunFetchOnKeyChange = ${!!ctx.nuxt.options.experimental.alwaysRunFetchOnKeyChange}`,
       `export const asyncCallHook = ${!!ctx.nuxt.options.experimental.asyncCallHook}`,
       `export const clientNodePlaceholder = ${!!ctx.nuxt.options.experimental.clientNodePlaceholder}`,
+      `export const hasPluginDependencies = ${pluginsHaveDependencies}`,
+      `export const hasParallelPlugins = ${pluginsRunInParallel}`,
+      `export const hasPluginHooks = ${pluginsHaveHooks}`,
+      `export const hasIslandOptOutPlugins = ${pluginsHaveIslandOptOut}`,
     ].join('\n\n')
   },
 }

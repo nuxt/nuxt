@@ -229,7 +229,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
           if (!dir || !name) { return r }
           const subpath = await lookupNodeModuleSubpath(r)
-          return join(dir, name, subpath || '')
+          return subpath && subpath !== './' ? join(dir, name, subpath) : r
         }) ?? path
       }
 
