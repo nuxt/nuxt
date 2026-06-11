@@ -70,6 +70,27 @@ describe('nuxt-link:prefetch', () => {
     await observer.trigger()
     expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
   })
+
+  it('should expose prefetched state to the custom slot on an internal link', async () => {
+    const NuxtLink = defineNuxtLink(nuxtLinkDefaults)
+    const nuxtApp = useNuxtApp()
+    nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
+
+    const { observer } = useMockObserver()
+
+    const wrapper = await mountSuspended(defineComponent({
+      render () {
+        return h(NuxtLink, { to: '/to', custom: true, prefetchedClass: 'is-prefetched' }, {
+          default: ({ href, prefetched }: { href: string, prefetched: boolean }) => h('a', { href, class: prefetched ? 'is-prefetched' : '' }, 'link'),
+        })
+      },
+    }))
+
+    await observer.trigger()
+    await flushPromises()
+
+    expect(wrapper.find('a').classes()).toContain('is-prefetched')
+  })
 })
 
 describe('nuxt-link:hash-focus', () => {

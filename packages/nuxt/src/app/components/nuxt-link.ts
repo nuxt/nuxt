@@ -465,6 +465,51 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       }
 
       return () => {
+        // Resolves `target` value
+        const target = props.target || null
+
+        // Resolves `rel`
+        checkPropConflicts(props, 'noRel', 'rel')
+        const rel = firstNonUndefined<string | null>(
+          // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
+          props.noRel ? '' : props.rel,
+          options.externalRelAttribute,
+          /*
+          * A fallback rel of `noopener noreferrer` is applied for external links or links that open in a new tab.
+          * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
+          */
+          (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
+        ) || null
+
+        const getCustomSlotProps = (): NuxtLinkDefaultSlotProps<true> => ({
+          href: href.value,
+          navigate,
+          prefetch,
+          prefetched: prefetched.value,
+          get route () {
+            if (!href.value) { return undefined }
+
+            const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
+            return {
+              path: url.pathname,
+              fullPath: url.pathname,
+              get query () { return parseQuery(url.search) },
+              hash: url.hash,
+              params: {},
+              name: undefined,
+              matched: [],
+              redirectedFrom: undefined,
+              meta: {},
+              href: href.value,
+            } satisfies RouteLocation & { href: string }
+          },
+          rel,
+          target,
+          isExternal: isExternal.value || hasTarget.value,
+          isActive: false,
+          isExactActive: false,
+        })
+
         if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
@@ -495,25 +540,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           return h(
             resolveComponent('RouterLink'),
             routerLinkProps,
-            slots.default,
+            props.custom && slots.default
+              ? { default: () => slots.default!(getCustomSlotProps()) }
+              : slots.default,
           )
         }
-
-        // Resolves `target` value
-        const target = props.target || null
-
-        // Resolves `rel`
-        checkPropConflicts(props, 'noRel', 'rel')
-        const rel = firstNonUndefined<string | null>(
-          // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
-          props.noRel ? '' : props.rel,
-          options.externalRelAttribute,
-          /*
-          * A fallback rel of `noopener noreferrer` is applied for external links or links that open in a new tab.
-          * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
-          */
-          (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
-        ) || null
 
         // https://router.vuejs.org/api/interfaces/routerlinkprops#custom-
         if (props.custom) {
@@ -521,34 +552,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             return null
           }
 
-          return slots.default({
-            href: href.value,
-            navigate,
-            prefetch,
-            prefetched: prefetched.value,
-            get route () {
-              if (!href.value) { return undefined }
-
-              const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
-              return {
-                path: url.pathname,
-                fullPath: url.pathname,
-                get query () { return parseQuery(url.search) },
-                hash: url.hash,
-                params: {},
-                name: undefined,
-                matched: [],
-                redirectedFrom: undefined,
-                meta: {},
-                href: href.value,
-              } satisfies RouteLocation & { href: string }
-            },
-            rel,
-            target,
-            isExternal: isExternal.value || hasTarget.value,
-            isActive: false,
-            isExactActive: false,
-          } satisfies NuxtLinkDefaultSlotProps<true>)
+          return slots.default(getCustomSlotProps())
         }
 
         return h('a', {
