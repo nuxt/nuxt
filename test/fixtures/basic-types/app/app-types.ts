@@ -155,6 +155,46 @@ describe('API routes', () => {
       },
     })
   })
+
+  // https://github.com/nuxt/nuxt/issues/35341
+  it('accepts MaybeRefOrGetter for documented option fields', () => {
+    const method = ref<'POST'>('POST')
+    const base = ref('/api')
+    const search = ref('x')
+    const state = reactive({ name: 'a' })
+
+    for (const useFn of [useFetch, useLazyFetch]) {
+      useFn('/x', {
+        method,
+        baseURL: base,
+        query: { q: search },
+        params: { q: search },
+        headers: { 'x-test': search },
+        body: state,
+      })
+      useFn('/x', {
+        method: computed(() => method.value),
+        baseURL: computed(() => base.value),
+        query: computed(() => ({ q: search.value })),
+        params: computed(() => ({ q: search.value })),
+        headers: computed(() => ({ 'x-test': search.value })),
+        body: computed(() => ({ ...state })),
+      })
+      useFn('/x', {
+        method: () => method.value,
+        baseURL: () => base.value,
+        query: () => ({ q: search.value }),
+        params: () => ({ q: search.value }),
+        headers: () => ({ 'x-test': search.value }),
+        body: () => ({ ...state }),
+      })
+    }
+
+    // @ts-expect-error wrong shape: number is not a method
+    useFetch('/x', { method: 123 })
+    // @ts-expect-error wrong shape: getter must return a method
+    useFetch('/x', { method: () => 123 })
+  })
 })
 
 describe('nitro compatible APIs', () => {
