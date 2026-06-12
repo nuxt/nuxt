@@ -31,6 +31,10 @@ describe('filterIslandProps', () => {
   })
 
   // #35349
+  it('throw on function values', () => {
+    expect(() => filterIslandProps({ heading: () => {}, label: 'hi' })).toThrow()
+  })
+
   it('strips `undefined` values', () => {
     expect(filterIslandProps({ heading: undefined, label: 'hi' })).toEqual({ label: 'hi' })
   })

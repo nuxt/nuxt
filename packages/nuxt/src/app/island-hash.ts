@@ -14,6 +14,9 @@ export function filterIslandProps (props: Record<string, any> | null | undefined
   if (!props) { return {} }
   const out: Record<string, any> = {}
   for (const key in props) {
+    if (typeof props[key] === 'function') {
+      throw new TypeError(`Invalid island prop "${key}": functions cannot be serialized`)
+    }
     if (!key.startsWith('data-v-') && props[key] !== undefined) {
       out[key] = props[key]
     }
