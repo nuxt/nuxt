@@ -1,4 +1,4 @@
-import type { FetchError, FetchOptions, ResponseType as _ResponseType } from 'ofetch'
+import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
 import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
@@ -11,6 +11,7 @@ import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from 'nuxt/app
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
+import type { NuxtError } from './error'
 
 // @ts-expect-error virtual file
 import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
@@ -54,7 +55,7 @@ export interface UseFetchOptions<
  */
 export function useFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -67,7 +68,7 @@ export function useFetch<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
 export function useFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -80,7 +81,7 @@ export function useFetch<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
 export function useFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -177,7 +178,7 @@ export function useFetch<
  */
 export function useLazyFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -190,7 +191,7 @@ export function useLazyFetch<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
 export function useLazyFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -203,7 +204,7 @@ export function useLazyFetch<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
 export function useLazyFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
