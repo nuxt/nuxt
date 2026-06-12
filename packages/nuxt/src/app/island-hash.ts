@@ -14,7 +14,7 @@ export function filterIslandProps (props: Record<string, any> | null | undefined
   if (!props) { return {} }
   const out: Record<string, any> = {}
   for (const key in props) {
-    if (!key.startsWith('data-v-')) {
+    if (!key.startsWith('data-v-') && props[key] !== undefined) {
       out[key] = props[key]
     }
   }

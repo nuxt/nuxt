@@ -29,6 +29,11 @@ describe('filterIslandProps', () => {
     // Only the prefix is stripped — keys like `extra-data-v-x` are legitimate.
     expect(filterIslandProps({ 'extra-data-v-x': 1, 'data-v-x': 2 })).toEqual({ 'extra-data-v-x': 1 })
   })
+
+  // #35349
+  it('strips `undefined` values', () => {
+    expect(filterIslandProps({ heading: undefined, label: 'hi' })).toEqual({ label: 'hi' })
+  })
 })
 
 describe('computeIslandHash', () => {
