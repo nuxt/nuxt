@@ -36,3 +36,5 @@ allowBuilds:
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
+  # Renovate security update: esbuild@0.28.1
+  - esbuild@0.28.1
