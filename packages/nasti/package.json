@@ -1,0 +1,40 @@
+{
+  "name": "@nuxt/nasti-builder",
+  "version": "0.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/nasti"
+  },
+  "description": "Nasti (Rolldown) bundler for Nuxt — M0 proof-of-concept",
+  "homepage": "https://nuxt.com",
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "tsdown",
+    "build": "tsdown"
+  },
+  "dependencies": {
+    "@nuxt/kit": "workspace:*"
+  },
+  "peerDependencies": {
+    "@nasti-toolchain/nasti": "^2.0.1",
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "@nuxt/schema": "workspace:*",
+    "tsdown": "0.22.2"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

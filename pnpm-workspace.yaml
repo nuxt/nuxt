@@ -5,6 +5,7 @@ packages:
   - '!packages/test-utils'
   - '!packages/nuxt/test/package-fixture/pkg'
   - playground
+  - playground-nasti
   - test/fixtures/*
   - test/fixtures/*/_local-modules/*
 
@@ -36,5 +37,7 @@ allowBuilds:
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
+  # Nasti builder (M0) dependency — tracks fresh Nasti releases for the fixture
+  - '@nasti-toolchain/*'
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1

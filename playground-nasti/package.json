@@ -1,0 +1,15 @@
+{
+  "name": "nasti-builder-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxi dev",
+    "build": "nuxi build"
+  },
+  "dependencies": {
+    "@nasti-toolchain/nasti": "^2.0.1",
+    "@nuxt/nasti-builder": "workspace:*",
+    "nuxt": "workspace:*",
+    "vue": "^3.5.21"
+  }
+}
