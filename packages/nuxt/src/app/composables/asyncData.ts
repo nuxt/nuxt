@@ -582,10 +582,27 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
             })
           : noop
 
+        // Enabled watcher: when `enabled` becomes falsy, cancel any in-flight request
+        // (without clearing data). Only needed when `enabled` is reactive (a ref or getter).
+        const unsubEnabledWatcher = isRef(opts.enabled) || typeof opts.enabled === 'function'
+          ? watch(() => toValue(opts.enabled), (isEnabled) => {
+              const entry = nuxtApp._asyncData[key.value]
+              if (isEnabled || !entry || !nuxtApp._asyncDataPromises[key.value]) { return }
+              entry._abortController?.abort(new DOMException('AsyncData request cancelled by `enabled: false`', 'AbortError'))
+              entry._abortController = undefined
+              delete nuxtApp._asyncDataPromises[key.value]
+              if (pendingWhenIdle) {
+                entry.pending.value = false
+              }
+              entry.status.value = 'idle'
+            })
+          : noop
+
         if (hasScope) {
           onScopeDispose(() => {
             unsubKeyWatcher()
             unsubParamsWatcher()
+            unsubEnabledWatcher()
             unregister(key.value)
           })
         }

@@ -1750,4 +1750,40 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toBe('test')
   })
+
+  it('should cancel the pending request when `enabled` changes from true to false', async () => {
+    let resolve!: (value: string) => void
+    const promiseFn = vi.fn(() => new Promise<string>((res) => { resolve = res }))
+    const enabled = ref(true)
+
+    const { data, status, execute } = await useAsyncData(uniqueKey, promiseFn, { enabled, immediate: false })
+
+    const promise = execute()
+    expect(status.value).toBe('pending')
+
+    enabled.value = false
+    await nextTick()
+
+    // the late result must not be applied to a cancelled request
+    resolve('late')
+    await promise.catch(() => {})
+
+    expect(status.value).toBe('idle')
+    expect(data.value).toBeUndefined()
+  })
+
+  it('should still clear data when `clear()` is called while disabled', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const enabled = ref(true)
+
+    const { data, status, clear } = await useAsyncData(uniqueKey, promiseFn, { enabled })
+    expect(data.value).toBe('test')
+
+    enabled.value = false
+    await nextTick()
+
+    clear()
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+  })
 })
