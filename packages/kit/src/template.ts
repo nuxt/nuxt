@@ -10,18 +10,18 @@ import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
-import { distDirURL, filterInPlace } from './utils'
-import { directoryToURL } from './internal/esm'
-import { getDirectory } from './module/install'
-import { tryUseNuxt, useNuxt } from './context'
-import { resolveNuxtModule } from './resolve'
-import { getLayerDirectories } from './layers'
-import type { LayerDirectories } from './layers'
+import { distDirURL, filterInPlace } from './utils.ts'
+import { directoryToURL } from './internal/esm.ts'
+import { getDirectory } from './module/install.ts'
+import { tryUseNuxt, useNuxt } from './context.ts'
+import { resolveNuxtModule } from './resolve.ts'
+import { getLayerDirectories } from './layers.ts'
+import type { LayerDirectories } from './layers.ts'
 
 /**
  * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
  */
-export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
+export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
   const nuxt = useNuxt()
 
   // Normalize template
@@ -52,7 +52,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
 /**
  * Adds a virtual file that can be used within the Nuxt Nitro server build.
  */
-export function addServerTemplate (template: NuxtServerTemplate) {
+export function addServerTemplate (template: NuxtServerTemplate): NuxtServerTemplate {
   const nuxt = useNuxt()
 
   nuxt.options.nitro.virtual ||= {}
@@ -69,7 +69,7 @@ export function addServerTemplate (template: NuxtServerTemplate) {
  *
  * If no context object is passed, then it will only be added to the nuxt context.
  */
-export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean, node?: boolean, shared?: boolean }) {
+export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean, node?: boolean, shared?: boolean }): ResolvedNuxtTemplate<T> {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -167,11 +167,20 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
  *
  * You can pass a filter within the options to selectively regenerate a subset of templates.
  */
-export async function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }) {
-  return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
+export async function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }): Promise<void> {
+  await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string) {
+interface LayerPaths {
+  nuxt: string[]
+  nitro: string[]
+  node: string[]
+  shared: string[]
+  sharedDeclarations: string[]
+  globalDeclarations: string[]
+}
+
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string): LayerPaths {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
@@ -180,6 +189,8 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
     nuxt: [
       join(relativeSrcDir, '**/*'),
       join(relativeModulesDir, `*/runtime/**/*`),
+      join(relativeRootDir, `test/nuxt/**/*`),
+      join(relativeRootDir, `tests/nuxt/**/*`),
       join(relativeRootDir, `layers/*/app/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/**/*`),
     ],
@@ -194,7 +205,8 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `.config/nuxt.*`),
       join(relativeRootDir, `layers/*/nuxt.config.*`),
       join(relativeRootDir, `layers/*/.config/nuxt.*`),
-      join(relativeRootDir, `layers/*/modules/**/*`),
+      join(relativeRootDir, `layers/*/modules/*.*`),
+      join(relativeRootDir, `layers/*/modules/*/*.*`),
     ],
     shared: [
       join(relativeSharedDir, `**/*`),
@@ -213,10 +225,50 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   }
 }
 
-const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
+// TS's `paths` substitution has two branches: an extension on the substitution
+// goes straight to `tryFile` on the literal path (no sibling lookup), while an
+// extensionless substitution goes through `tryAddingExtensions` whose
+// extensionless arm only retries `.ts / .tsx / .d.ts / .js / .jsx`. To make
+// `paths` aliases resolve to the right declarations:
+//   - extensions in that retry list are stripped (TS retries them itself);
+//   - `.d.mts` / `.d.cts` are preserved (the literal-file branch loads them);
+//   - `.mjs` / `.cjs` / `.mts` / `.cts` are checked against their on-disk
+//     siblings (see `getPathSubstitution`).
+// https://github.com/microsoft/TypeScript/blob/v5.6.3/src/compiler/moduleNameResolver.ts
+const STRIPPABLE_EXT_RE = /\b\.(?:d\.ts|tsx?|jsx?)$/
+const RUNTIME_EXT_RE = /\.([cm])(?:ts|js)$/
+
+async function getPathSubstitution (absolutePath: string, buildDir: string): Promise<string> {
+  const stripped = absolutePath.replace(STRIPPABLE_EXT_RE, '')
+  if (stripped !== absolutePath) {
+    return relativeWithDot(buildDir, stripped)
+  }
+  const runtimeMatch = absolutePath.match(RUNTIME_EXT_RE)
+  if (runtimeMatch) {
+    const base = absolutePath.slice(0, -runtimeMatch[0]!.length)
+    if (await fsp.stat(`${base}.d.ts`).then(s => s.isFile(), () => false)) {
+      return relativeWithDot(buildDir, base)
+    }
+    const declaration = `${base}.d.${runtimeMatch[1]}ts`
+    if (await fsp.stat(declaration).then(s => s.isFile(), () => false)) {
+      return relativeWithDot(buildDir, declaration)
+    }
+  }
+  return relativeWithDot(buildDir, absolutePath)
+}
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
-export async function _generateTypes (nuxt: Nuxt) {
+
+interface GenerateTypesReturn {
+  declaration: string
+  sharedTsConfig: TSConfig
+  sharedDeclaration: string
+  nodeTsConfig: TSConfig
+  nodeDeclaration: string
+  tsConfig: TSConfig
+  legacyTsConfig: TSConfig
+}
+export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> {
   const include = new Set<string>(['./nuxt.d.ts'])
   const nodeInclude = new Set<string>(['./nuxt.node.d.ts'])
   const sharedInclude = new Set<string>(['./nuxt.shared.d.ts'])
@@ -247,7 +299,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     legacyExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
   }
 
-  // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
+  // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nitro-server/src/index.ts
   // + nitro generate .data in development when kv storage is used
   for (const dir of ['dist', '.data']) {
     exclude.add(relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, dir)))
@@ -325,7 +377,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   const nestedModulesDirs: string[] = []
-  for (const dir of [...nuxt.options.modulesDir].sort()) {
+  for (const dir of nuxt.options.modulesDir.toSorted()) {
     const withSlash = withTrailingSlash(dir)
     if (nestedModulesDirs.every(d => !d.startsWith(withSlash))) {
       nestedModulesDirs.push(withSlash)
@@ -342,6 +394,8 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
+  const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
+
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -350,10 +404,12 @@ export async function _generateTypes (nuxt: Nuxt) {
       skipLibCheck: true,
       target: 'ESNext',
       allowJs: true,
+      allowImportingTsExtensions: true,
       resolveJsonModule: true,
       moduleDetection: 'force',
       isolatedModules: true,
       verbatimModuleSyntax: true,
+      allowArbitraryExtensions: true,
       /* Strictness */
       strict: nuxt.options.typescript?.strict ?? true,
       noUncheckedIndexedAccess: true,
@@ -401,10 +457,12 @@ export async function _generateTypes (nuxt: Nuxt) {
       skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
       target: tsConfig.compilerOptions?.target,
       allowJs: tsConfig.compilerOptions?.allowJs,
+      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
       resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
       verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
+      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
       /* Strictness */
       strict: tsConfig.compilerOptions?.strict,
       noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
@@ -435,10 +493,12 @@ export async function _generateTypes (nuxt: Nuxt) {
       skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
       target: tsConfig.compilerOptions?.target,
       allowJs: tsConfig.compilerOptions?.allowJs,
+      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
       resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
       verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
+      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
       /* Strictness */
       strict: tsConfig.compilerOptions?.strict,
       noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
@@ -463,13 +523,18 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const aliases: Record<string, string> = nuxt.options.alias
 
+  // TODO: remove support for baseUrl in nuxt v5
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = tsConfig.compilerOptions!.baseUrl
+    // TODO: remove support for baseUrl in nuxt v5
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
+  tsConfig.exclude ||= []
 
   const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
@@ -497,8 +562,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
     } else {
       const path = stats?.isFile()
-        // remove extension
-        ? relativePath.replace(EXTENSION_RE, '')
+        ? await getPathSubstitution(absolutePath, nuxt.options.buildDir)
         // non-existent file probably shouldn't be resolved
         : aliases[alias]!
 
@@ -535,7 +599,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
     include: [...tsConfig.include, ...legacyInclude],
-    exclude: [...legacyExclude],
+    exclude: [...userExclude, ...legacyExclude],
   })
 
   async function resolveConfig (tsConfig: TSConfig) {
@@ -544,7 +608,9 @@ export async function _generateTypes (nuxt: Nuxt) {
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
         if (!isAbsolute(path)) { return path }
         const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-        return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(EXTENSION_RE, '') /* remove extension */ : path)
+        return stats?.isFile()
+          ? getPathSubstitution(path, nuxt.options.buildDir)
+          : relativeWithDot(nuxt.options.buildDir, path)
       })))]
     }
 
@@ -564,12 +630,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   ])
 
   const declaration = [
-    ...references.map((ref) => {
-      if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(nuxt.options.buildDir, ref.path)
-      }
-      return `/// <reference ${renderAttrs(ref)} />`
-    }),
+    ...references.map(ref => renderReference(ref, nuxt.options.buildDir)),
     ...declarations,
     '',
     'export {}',
@@ -577,24 +638,14 @@ export async function _generateTypes (nuxt: Nuxt) {
   ].join('\n')
 
   const nodeDeclaration = [
-    ...nodeReferences.map((ref) => {
-      if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(nuxt.options.buildDir, ref.path)
-      }
-      return `/// <reference ${renderAttrs(ref)} />`
-    }),
+    ...nodeReferences.map(ref => renderReference(ref, nuxt.options.buildDir)),
     '',
     'export {}',
     '',
   ].join('\n')
 
   const sharedDeclaration = [
-    ...sharedReferences.map((ref) => {
-      if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(nuxt.options.buildDir, ref.path)
-      }
-      return `/// <reference ${renderAttrs(ref)} />`
-    }),
+    ...sharedReferences.map(ref => renderReference(ref, nuxt.options.buildDir)),
     '',
     'export {}',
     '',
@@ -611,7 +662,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 }
 
-export async function writeTypes (nuxt: Nuxt) {
+export async function writeTypes (nuxt: Nuxt): Promise<void> {
   const { tsConfig, nodeTsConfig, nodeDeclaration, declaration, legacyTsConfig, sharedDeclaration, sharedTsConfig } = await _generateTypes(nuxt)
 
   const appTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.app.json')
@@ -646,16 +697,11 @@ function sortTsPaths (paths: Record<string, string[]>) {
   }
 }
 
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
-}
-
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
+function renderReference (ref: TSReference, baseDir: string) {
+  const stuff = 'path' in ref
+    ? `path="${isAbsolute(ref.path) ? relative(baseDir, ref.path) : ref.path}"`
+    : `types="${ref.types}"`
+  return `/// <reference ${stuff} />`
 }
 
 const RELATIVE_WITH_DOT_RE = /^([^.])/

@@ -1,10 +1,13 @@
-export default defineNuxtConfig({
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
+import { withMatrix } from '../../matrix'
+import { virtualCounterPlugin } from './vite/virtual-counter-plugin'
+
+export default withMatrix({
+  extends: ['../hmr-sibling-layer'],
   experimental: {
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
+    nitroAutoImports: true,
     inlineRouteRules: true,
   },
-  compatibilityDate: 'latest',
+  vite: {
+    plugins: [virtualCounterPlugin()],
+  },
 })

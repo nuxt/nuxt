@@ -1,0 +1,17 @@
+name: issue-comment-created
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: llm-triage-comment-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  triage:
+    uses: nuxt/.github/.github/workflows/triage-comment.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation
+    permissions:
+      contents: read
+      issues: write
+      models: read

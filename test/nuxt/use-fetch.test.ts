@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
@@ -8,7 +8,10 @@ import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import { withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
 
-import { useFetch, useLazyFetch } from '#app/composables/fetch'
+import { createUseFetch as _createUseFetch, useFetch, useLazyFetch } from '#app/composables/fetch'
+import type { EffectScope } from 'vue'
+
+const createUseFetch = (_createUseFetch as unknown as { __nuxt_factory: typeof _createUseFetch }).__nuxt_factory
 
 interface TestData {
   method: string
@@ -16,9 +19,21 @@ interface TestData {
 }
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
+
+registerEndpoint('/api/sleep', defineEventHandler((event) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ method: event.req.method, headers: Object.fromEntries(event.req.headers.entries()) })
+    }, 100)
+  })
+}))
+
+beforeEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('useFetch', () => {
   beforeEach(() => {
@@ -166,6 +181,71 @@ describe('useFetch', () => {
     }
   })
 
+  // https://github.com/nuxt/nuxt/issues/35341
+  it('should send unwrapped values when options are getters', async () => {
+    registerEndpoint('/api/getter-options', defineEventHandler(async event => ({
+      method: event.req.method,
+      url: event.req.url,
+      header: event.req.headers.get('x-test'),
+      body: event.req.method === 'POST' ? await event.req.json() : null,
+    })))
+
+    const state = reactive({ name: 'userquin' })
+    const method = ref<'POST'>('POST')
+    const search = ref('hello')
+
+    const { data } = await useFetch<{ method: string, url: string, header: string | null, body: { name: string } | null }>('/api/getter-options', {
+      method: () => method.value,
+      baseURL: () => '',
+      query: () => ({ q: search.value }),
+      headers: () => ({ 'x-test': 'yes' }),
+      body: () => ({ ...state }),
+    })
+
+    expect(data.value?.method).toBe('POST')
+    expect(data.value?.url).toContain('q=hello')
+    expect(data.value?.header).toBe('yes')
+    expect(data.value?.body).toEqual({ name: 'userquin' })
+  })
+
+  it('should produce different keys for FormData with duplicate keys or different files', async () => {
+    registerEndpoint('/api/formdata-keys', defineEventHandler(() => ({ ok: true })))
+
+    const nuxtApp = useNuxtApp()
+    const getAsyncDataKeys = () => Object.keys(nuxtApp._asyncData).length
+    const baseCount = getAsyncDataKeys()
+
+    // FormData with multiple entries under the same key
+    const fd1 = new FormData()
+    fd1.append('files', new File([new Uint8Array(10)], 'a.txt'))
+    fd1.append('files', new File([new Uint8Array(20)], 'b.txt'))
+
+    // FormData with a single entry
+    const fd2 = new FormData()
+    fd2.append('files', new File([new Uint8Array(10)], 'a.txt'))
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd1, method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd2, method: 'POST' }, '')
+    // Different number of entries should produce different keys
+    expect.soft(getAsyncDataKeys()).toBe(baseCount + 2)
+
+    // Same filename but different file sizes
+    const fd3 = new FormData()
+    fd3.append('file', new File([new Uint8Array(100)], 'doc.pdf'))
+
+    const fd4 = new FormData()
+    fd4.append('file', new File([new Uint8Array(200)], 'doc.pdf'))
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd3, method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/formdata-keys', { body: fd4, method: 'POST' }, '')
+    // Different file sizes should produce different keys
+    expect.soft(getAsyncDataKeys()).toBe(baseCount + 4)
+  })
+
   it('should timeout', async () => {
     vi.useFakeTimers()
 
@@ -232,16 +312,12 @@ describe('useFetch', () => {
     expect(data.value).toEqual({ custom: 'GET' })
   })
 
-  it('should use default value with lazy', async () => {
+  it('should use default value with lazy', () => {
     const { data, pending } = useLazyFetch<TestData>('/api/test', { default: () => ({ method: 'default', headers: {} }) })
     expect(pending.value).toBe(true)
     expect(data.value).toEqual({ method: 'default', headers: {} })
-    await nextTick()
-    await flushPromises()
     expect(data.value).not.toBeNull()
-    if (data.value) {
-      expect(data.value.method).toEqual('default')
-    }
+    expect(data.value.method).toEqual('default')
   })
 
   it('should not execute with immediate: false and be executable', async () => {
@@ -254,5 +330,154 @@ describe('useFetch', () => {
       expect(data.value.method).toEqual('GET')
     }
     expect(status.value).toBe('success')
+  })
+
+  it('should cancel fetch request on clear', () => {
+    let aborted = false
+
+    class Mock {
+      signal = { aborted: false }
+      abort = () => {
+        this.signal.aborted = true
+        aborted = true
+      }
+    }
+    vi.stubGlobal('AbortController',
+      Mock,
+    )
+    const { clear } = useLazyFetch('/api/sleep')
+    expect(aborted).toBe(false)
+    clear()
+    expect(aborted).toBe(true)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/32102
+  it('passes the current key to getCachedData with watch:false and a reactive key', async () => {
+    registerEndpoint('/api/stale-key', defineEventHandler(() => ({ ok: true })))
+
+    const query = ref('a')
+    const seenKeys: string[] = []
+
+    const { execute } = useFetch('/api/stale-key', {
+      key: computed(() => `search-${query.value}`),
+      getCachedData: (key) => {
+        seenKeys.push(key)
+        return undefined
+      },
+      watch: false,
+    })
+
+    await flushPromises()
+
+    query.value = 'b'
+    await nextTick()
+    await execute()
+    await flushPromises()
+
+    // expected: the second invocation of getCachedData receives the current key
+    expect(seenKeys.at(-1)).toBe('search-b')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/32437
+  // two useFetch calls with the same shape share an auto-key; with watch:false
+  // the key is frozen at first init, so a second instance reads the first's data.
+  it('does not leak data between instances sharing an auto-key with watch:false + execute()', async () => {
+    registerEndpoint('/api/key/1', defineEventHandler(event => ({ url: '/api/key/1', q: event.req.url })))
+    registerEndpoint('/api/key/2', defineEventHandler(event => ({ url: '/api/key/2', q: event.req.url })))
+
+    const createScope = () => () => {
+      const id = ref(1)
+      const query = ref({ someInput: '' })
+      const { data, execute } = useFetch(() => `/api/key/${toValue(id)}`, {
+        query,
+        watch: false,
+        immediate: false,
+      })
+      return { data, execute, id, query }
+    }
+
+    const scope1 = effectScope()
+    const { data: d1, id: i1, query: q1, execute: e1 } = scope1.run(createScope())!
+    const scope2 = effectScope()
+    const { data: d2 } = scope2.run(createScope())!
+
+    expect.soft(d1.value).toStrictEqual(undefined)
+    expect.soft(d2.value).toStrictEqual(undefined)
+
+    q1.value.someInput = 'test'
+    i1.value++
+    await e1()
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    // d1 should have data; d2 should remain untouched
+    expect.soft(d1.value).toMatchObject({ url: '/api/key/2' })
+    expect.soft(d2.value).toStrictEqual(undefined)
+  })
+})
+
+describe('createUseFetch', () => {
+  let scope: EffectScope
+  beforeEach(() => {
+    scope = effectScope()
+  })
+  afterEach(() => {
+    scope.stop()
+  })
+
+  it('should use custom $fetch from factory (defaults mode)', async () => {
+    const customFetch = vi.fn().mockResolvedValue({ variant: 'factory' })
+
+    const { data } = await scope.run(() => {
+      const useCustomFetch = createUseFetch({ $fetch: customFetch as unknown as typeof $fetch })
+      return useCustomFetch('/api/test')
+    })!
+
+    expect(customFetch).toHaveBeenCalledOnce()
+    expect(data.value).toEqual({ variant: 'factory' })
+  })
+
+  it('should allow per-call $fetch to override factory $fetch', async () => {
+    const factoryFetch = vi.fn().mockResolvedValue({ variant: 'factory' })
+    const callFetch = vi.fn().mockResolvedValue({ variant: 'call' })
+
+    const { data } = await scope.run(() => {
+      const useCustomFetch = createUseFetch({ $fetch: factoryFetch as unknown as typeof $fetch })
+      return useCustomFetch('/api/test', { $fetch: callFetch as unknown as typeof $fetch })
+    })!
+
+    expect(factoryFetch).not.toHaveBeenCalled()
+    expect(callFetch).toHaveBeenCalledOnce()
+    expect(data.value).toEqual({ variant: 'call' })
+  })
+
+  it('should use baseURL from factory for URL validation', async () => {
+    const customFetch = vi.fn().mockResolvedValue({ ok: true })
+
+    await scope.run(async () => {
+      const useCustomFetch = createUseFetch({ baseURL: 'https://example.com', $fetch: customFetch as unknown as typeof $fetch })
+      // should not throw because factory provides baseURL
+      await useCustomFetch('//api/test')
+    })
+
+    expect(customFetch).toHaveBeenCalledOnce()
+  })
+
+  it('should include factory options in cache key', async () => {
+    const nuxtApp = useNuxtApp()
+    const originalKeys = Object.keys(nuxtApp.payload.data)
+
+    await scope.run(async () => {
+      const customFetch = vi.fn().mockResolvedValue({ foo: 'bar' })
+      const useCustomFetch = createUseFetch({ baseURL: 'https://example.com', $fetch: customFetch as unknown as typeof $fetch })
+      // @ts-expect-error Overriding auto-key
+      await useFetch('/api/test', {}, '')
+      // @ts-expect-error Overriding auto-key
+      await useCustomFetch('/api/test', {}, '')
+    })
+
+    const keysAfter = Object.keys(nuxtApp.payload.data)
+    expect(keysAfter.length - originalKeys.length).toEqual(2)
   })
 })

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { PrehydrateTransformPlugin } from '../src/core/plugins/prehydrate'
+import { PrehydrateTransformPlugin } from '../src/core/plugins/prehydrate.ts'
 
 describe('prehydrate', () => {
   const transformPlugin = PrehydrateTransformPlugin().raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }

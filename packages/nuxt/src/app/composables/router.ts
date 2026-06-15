@@ -1,16 +1,17 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
+import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
-import type { PageMeta } from '../../pages/runtime/composables'
+import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
+import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
@@ -22,7 +23,7 @@ export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     const middleware = useNuxtApp()._processingMiddleware
     const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    console.warn(`[nuxt] \`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/guide/directory-structure/app/middleware#accessing-route-in-middleware` + ('\n' + trace))
+    console.warn(`[nuxt] \`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/directory-structure/app/middleware#accessing-route-in-middleware` + ('\n' + trace))
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)
@@ -31,7 +32,7 @@ export const useRoute: typeof _useRoute = () => {
 }
 
 /** @since 3.0.0 */
-export const onBeforeRouteLeave = (guard: NavigationGuard) => {
+export const onBeforeRouteLeave = (guard: NavigationGuard): void => {
   const unsubscribe = useRouter().beforeEach((to, from, next) => {
     if (to === from) { return }
     return guard(to, from, next)
@@ -40,7 +41,7 @@ export const onBeforeRouteLeave = (guard: NavigationGuard) => {
 }
 
 /** @since 3.0.0 */
-export const onBeforeRouteUpdate = (guard: NavigationGuard) => {
+export const onBeforeRouteUpdate = (guard: NavigationGuard): void => {
   const unsubscribe = useRouter().beforeEach(guard)
   onScopeDispose(unsubscribe)
 }
@@ -51,7 +52,7 @@ export interface RouteMiddleware {
 
 /** @since 3.0.0 */
 /* @__NO_SIDE_EFFECTS__ */
-export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
+export function defineNuxtRouteMiddleware (middleware: RouteMiddleware): RouteMiddleware {
   return middleware
 }
 
@@ -126,7 +127,18 @@ export interface NavigateToOptions {
   open?: OpenOptions
 }
 
-const URL_QUOTE_RE = /"/g
+const HTML_ATTR_UNSAFE_RE = /[&"'<>]/g
+const HTML_ATTR_ENCODE_MAP: Record<string, string> = {
+  '&': '%26',
+  '"': '%22',
+  '\'': '%27',
+  '<': '%3C',
+  '>': '%3E',
+}
+function encodeForHtmlAttr (value: string): string {
+  return value.replace(HTML_ATTR_UNSAFE_RE, c => HTML_ATTR_ENCODE_MAP[c]!)
+}
+
 /**
  * A helper that aids in programmatic navigation within your Nuxt application.
  *
@@ -134,7 +146,7 @@ const URL_QUOTE_RE = /"/g
  * @param {RouteLocationRaw | undefined | null} [to] - The route to navigate to. Accepts a route object, string path, `undefined`, or `null`. Defaults to '/'.
  * @param {NavigateToOptions} [options] - Optional customization for controlling the behavior of the navigation.
  * @returns {Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw} The navigation result, which varies depending on context and options.
- * @see https://nuxt.com/docs/api/utils/navigate-to
+ * @see https://nuxt.com/docs/4.x/api/utils/navigate-to
  * @since 3.0.0
  */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
@@ -144,6 +156,11 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Early open handler
   if (import.meta.client && options?.open) {
+    const { protocol } = new URL(toPath, window.location.href)
+    if (protocol && isScriptProtocol(protocol)) {
+      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+    }
+
     const { target = '_blank', windowFeatures = {} } = options.open
 
     const features: string[] = []
@@ -200,11 +217,11 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
-        const encodedLoc = location.replace(URL_QUOTE_RE, '%22')
         const encodedHeader = encodeURL(location, isExternalHost)
+        const encodedLoc = encodeForHtmlAttr(encodedHeader)
 
-        nuxtApp.ssrContext!._renderResponse = {
-          statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
+        nuxtApp.ssrContext!['~renderResponse'] = {
+          status: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
           headers: { location: encodedHeader },
         }
@@ -243,7 +260,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     return Promise.resolve()
   }
 
-  return options?.replace ? router.replace(to) : router.push(to)
+  // Encode the path portion of string locations to match vue-router's
+  // percent-encoded route records.
+  const encodedTo = typeof to === 'string' ? encodeRoutePath(to) : to
+  return options?.replace ? router.replace(encodedTo) : router.push(encodedTo)
 }
 
 /**
@@ -266,47 +286,78 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   throw err
 }
 
-/** @since 3.0.0 */
-export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? string : PageMeta['layout']) => {
+/**
+ * Sets the layout for the current page.
+ * @since 3.0.0
+ */
+export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? MakeSerializableObject<NuxtLayouts[Layout]> : never): void => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
-      console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
+      console.warn('[nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
     }
     nuxtApp.payload.state._layout = layout
+    nuxtApp.payload.state._layoutProps = props
   }
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
-    console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
+    console.warn('[nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
   }
   const inMiddleware = isProcessingMiddleware()
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
       to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+      to.meta.layoutProps = props
       unsubscribe()
     })
   }
   if (!inMiddleware) {
-    useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+    const route = useRoute()
+    route.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+    route.meta.layoutProps = props
+    if (import.meta.client) {
+      const unsubscribe = useRouter().beforeResolve((to, from) => {
+        if (to.path === from.path) {
+          to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+          to.meta.layoutProps = props
+        } else {
+          unsubscribe()
+        }
+      })
+      onScopeDispose(unsubscribe, true)
+    }
   }
 }
 
 /**
  * @internal
  */
-export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>): string {
   return withQuery(to.path || '', to.query || {}) + (to.hash || '')
 }
 
 /**
  * @internal
  */
-export function encodeURL (location: string, isExternalHost = false) {
+export function encodeURL (location: string, isExternalHost = false): string {
   const url = new URL(location, 'http://localhost')
   if (!isExternalHost) {
-    return url.pathname + url.search + url.hash
+    // Collapse leading slashes to keep the redirect same-origin (CWE-601).
+    const pathname = url.pathname.replace(/^\/{2,}/, '/')
+    return pathname + url.search + url.hash
   }
   if (location.startsWith('//')) {
     return url.toString().replace(url.protocol, '')
   }
   return url.toString()
+}
+
+/**
+ * Encode the pathname of a route location string. Ensures decoded paths like
+ * `/café` are percent-encoded to match vue-router's encoded route records.
+ * Already-encoded paths are not double-encoded.
+ * @internal
+ */
+export function encodeRoutePath (url: string): string {
+  const parsed = parseURL(url)
+  return encodePath(decodePath(parsed.pathname)) + parsed.search + parsed.hash
 }

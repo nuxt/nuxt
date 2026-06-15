@@ -1,13 +1,15 @@
 /// <reference path="./config-types.ts" />
 
 import { addTypeTemplate, installModule } from 'nuxt/kit'
+import { typescriptBundlerResolution, withMatrix } from '../../matrix'
 
-export default defineNuxtConfig({
+export default withMatrix({
   extends: [
     './extends/node_modules/foo',
   ],
   theme: './extends/bar',
   modules: [
+    'hook-augmenting-module',
     function () {
       addTypeTemplate({
         filename: 'test.d.ts',
@@ -78,20 +80,33 @@ export default defineNuxtConfig({
       testConfig: 123,
     },
   },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   routeRules: {
     '/param': {
       redirect: '/param/1',
     },
+    '/layout': {
+      appLayout: 'custom',
+    },
   },
   future: {
-    typescriptBundlerResolution: process.env.MODULE_RESOLUTION !== 'node',
+    typescriptBundlerResolution,
   },
   experimental: {
+    nitroAutoImports: true,
     typedPages: true,
     appManifest: true,
   },
-  compatibilityDate: 'latest',
+  nitro: {
+    typescript: {
+      tsConfig: {
+        compilerOptions: {
+          paths: {
+            '#app/internal/*': ['../../../../packages/nuxt/dist/app/internal/*'],
+          },
+        },
+      },
+    },
+  },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'schema:extend' (schemas) {
@@ -110,6 +125,24 @@ export default defineNuxtConfig({
     },
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
+    },
+    'my-module:augmented-hook' (payload) {
+      // Augmented inline by `modules/example.ts`. Sanity check that hook keys
+      // augmented from a workspace-module file in the same TS program are
+      // accepted by `defineNuxtConfig`.
+      payload.message.toUpperCase()
+    },
+    'hook-augmenting-module:ping' (payload) {
+      // Augmented by `_local-modules/hook-augmenting-module/types.d.mts`,
+      // which enters the program through `<reference types="hook-augmenting-module" />`
+      // generated into `.nuxt/nuxt*.d.ts`.
+      //
+      // Regression test for the bridge in `packages/nuxt/schema.d.ts`:
+      // augments to `@nuxt/schema { interface NuxtHooks }` from a published
+      // module entering through a `<reference types>` boundary must reach
+      // `NuxtConfig['hooks']` when read via `nuxt/schema` (the path
+      // `defineNuxtConfig` takes).
+      const _: number = payload.value
     },
   },
 })

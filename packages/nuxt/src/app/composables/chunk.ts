@@ -1,4 +1,4 @@
-import destr from 'destr'
+import { isScriptProtocol } from 'ufo'
 import { useNuxtApp } from '../nuxt'
 
 export interface ReloadNuxtAppOptions {
@@ -20,19 +20,29 @@ export interface ReloadNuxtAppOptions {
   /**
    * The path to reload. If this is different from the current window location it will
    * trigger a navigation and add an entry in the browser history.
+   *
+   * Cross-origin paths and URLs with script-like protocols (e.g. `javascript:`, `data:`) are rejected.
    * @default {window.location.pathname}
    */
   path?: string
 }
 
 /** @since 3.3.0 */
-export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
+export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}): void {
   if (import.meta.server) { return }
   const path = options.path || window.location.pathname
 
+  const url = new URL(path, window.location.href)
+  if (url.host !== window.location.host) {
+    throw new Error(`Cannot navigate to a URL with a different host: '${path}'.`)
+  }
+  if (url.protocol && isScriptProtocol(url.protocol)) {
+    throw new Error(`Cannot navigate to a URL with '${url.protocol}' protocol.`)
+  }
+
   let handledPath: Record<string, any> = {}
   try {
-    handledPath = destr(sessionStorage.getItem('nuxt:reload') || '{}')
+    handledPath = JSON.parse(sessionStorage.getItem('nuxt:reload') || '{}')
   } catch {
     // fail gracefully if we can't access sessionStorage
   }

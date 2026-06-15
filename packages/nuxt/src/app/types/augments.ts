@@ -1,32 +1,8 @@
-import type { UseHeadInput } from '@unhead/vue/types'
-import type { NuxtApp, useNuxtApp } from '../nuxt'
+/// <reference path="./build-only.d.ts" />
 
-declare module 'nitropack' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-  }
-}
-declare module 'nitropack/types' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-  }
-}
+import type { UseHeadInput } from '@unhead/vue/types'
+import type { $Fetch } from 'nitro/types'
+import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -49,6 +25,7 @@ declare global {
     browser: boolean
     client: boolean
     dev: boolean
+    envName: string
     server: boolean
     test: boolean
   }
@@ -57,6 +34,9 @@ declare global {
     __NUXT__?: Record<string, any> | Record<string, Record<string, any>>
     useNuxtApp?: typeof useNuxtApp
   }
+
+  // TODO: typed fetch
+  var $fetch: $Fetch
 }
 
 declare module 'vue' {
@@ -80,3 +60,5 @@ declare module 'vue' {
     head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
+
+export type _NuxtAugmentsAnchor = NuxtApp

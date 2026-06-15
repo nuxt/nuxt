@@ -1,18 +1,29 @@
 import { defineComponent, h } from 'vue'
+import type { DefineSetupFnComponent } from 'vue'
 import { parseQuery } from 'vue-router'
-import { resolve } from 'pathe'
-import destr from 'destr'
+import { isAbsolute, relative, resolve } from 'pathe'
 // @ts-expect-error virtual file
 import { devRootDir } from '#build/nuxt.config.mjs'
 
-export default (url: string) => defineComponent({
+const testComponentWrapper = (url: string): DefineSetupFnComponent<{}> => defineComponent({
   name: 'NuxtTestComponentWrapper',
   inheritAttrs: false,
   async setup (props, { attrs }) {
     const query = parseQuery(new URL(url, 'http://localhost').search)
-    const urlProps = query.props ? destr<Record<string, any>>(query.props as string) : {}
+    let urlProps: Record<string, any> = {}
+    if (query.props) {
+      try {
+        const parsedProps = JSON.parse(query.props as string)
+        if (parsedProps && typeof parsedProps === 'object') {
+          urlProps = parsedProps
+        }
+      } catch {
+        // ignore invalid JSON props in test wrapper
+      }
+    }
     const path = resolve(query.path as string)
-    if (!path.startsWith(devRootDir)) {
+    const rel = relative(devRootDir, path)
+    if (rel.startsWith('..') || isAbsolute(rel)) {
       throw new Error(`[nuxt] Cannot access path outside of project root directory: \`${path}\`.`)
     }
     const comp = await import(/* @vite-ignore */ path as string).then(r => r.default)
@@ -23,4 +34,6 @@ export default (url: string) => defineComponent({
       ]),
     ]
   },
-})
+}) as unknown as DefineSetupFnComponent<{}>
+
+export default testComponentWrapper

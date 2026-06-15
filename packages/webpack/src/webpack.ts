@@ -1,6 +1,6 @@
 import pify from 'pify'
-import { createError, defineEventHandler, fromNodeMiddleware, getRequestHeader, handleCors, setHeader } from 'h3'
-import type { H3CorsOptions } from 'h3'
+import type { H3Event as H3V1Event } from 'h3'
+import type { H3Event as H3V2Event } from 'h3-next'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
@@ -11,11 +11,13 @@ import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
-import { DynamicBasePlugin } from './plugins/dynamic-base'
-import { ChunkErrorPlugin } from './plugins/chunk'
-import { createMFS } from './utils/mfs'
-import { client, server } from './configs'
-import { applyPresets, createWebpackConfigContext } from './utils/config'
+import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
+import { ChunkErrorPlugin } from './plugins/chunk.ts'
+import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
+import { createMFS } from './utils/mfs.ts'
+import { isSameOriginRequest } from './utils/same-origin.ts'
+import { client, server } from './configs/index.ts'
+import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
 import { builder, webpack } from '#builder'
 
@@ -23,7 +25,7 @@ import { builder, webpack } from '#builder'
 // const plugins: string[] = []
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
-  const webpackConfigs = await Promise.all([client, ...nuxt.options.ssr ? [server] : []].map(async (preset) => {
+  const webpackConfigs = await Promise.all([client, ...(nuxt.options.ssr ? [server] : [])].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     await applyPresets(ctx, preset)
@@ -48,13 +50,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
 
+  const ssrStylesPlugin = nuxt.options.ssr && !nuxt.options.dev ? new SSRStylesPlugin(nuxt) : null
+
   for (const config of webpackConfigs) {
-    config.plugins!.push(DynamicBasePlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
-    }))
+    config.plugins!.push(DynamicBasePlugin.webpack())
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
+    }
+    if (ssrStylesPlugin) {
+      config.plugins!.push(ssrStylesPlugin)
     }
   }
 
@@ -75,20 +80,18 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('close', async () => {
     for (const compiler of compilers) {
-      await new Promise(resolve => compiler?.close(resolve))
+      await new Promise(resolve => compiler.close(resolve))
     }
   })
 
   // Start Builds
   if (nuxt.options.dev) {
-    await Promise.all(compilers.map(c => c && compile(c)))
+    await Promise.all(compilers.map(c => compile(c)))
     return
   }
 
   for (const c of compilers) {
-    if (c) {
-      await compile(c)
-    }
+    await compile(c)
   }
 }
 
@@ -117,39 +120,29 @@ async function createDevMiddleware (compiler: Compiler) {
   })
 
   // Register devMiddleware on server
-  const devHandler = wdmToH3Handler(devMiddleware, nuxt.options.devServer.cors)
-  const hotHandler = fromNodeMiddleware(hotMiddleware)
+  const devHandler = wdmToH3Handler(devMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
     const body = await devHandler(event)
     if (body !== undefined) {
       return body
     }
-    await hotHandler(event)
-  }))
+    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+    await new Promise<void>((resolve, reject) => hotMiddleware(req as IncomingMessage, res as ServerResponse, err => err ? reject(err) : resolve()))
+  }), { cors: () => true })
 
   return devMiddleware
 }
 
 // TODO: implement upstream in `webpack-dev-middleware`
-function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>, corsOptions: H3CorsOptions) {
+function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
   return defineEventHandler(async (event) => {
-    const isPreflight = handleCors(event, corsOptions)
-    if (isPreflight) {
-      return null
+    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+    if (!isSameOriginRequest(req)) {
+      res!.statusCode = 403
+      res!.end('Forbidden')
+      return
     }
 
-    // disallow cross-site requests in no-cors mode
-    if (getRequestHeader(event, 'sec-fetch-mode') === 'no-cors' && getRequestHeader(event, 'sec-fetch-site') === 'cross-site') {
-      throw createError({ statusCode: 403 })
-    }
-
-    setHeader(event, 'Vary', 'Origin')
-
-    event.context.webpack = {
-      ...event.context.webpack,
-      devMiddleware: devMiddleware.context,
-    }
-    const { req, res } = event.node
     const body = await new Promise((resolve, reject) => {
       // @ts-expect-error handle injected methods
       res.stream = (stream) => {
@@ -163,7 +156,7 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
       res.finish = (data) => {
         resolve(data)
       }
-      devMiddleware(req, res, (err) => {
+      devMiddleware(req as IncomingMessage, res as ServerResponse, (err) => {
         if (err) {
           reject(err)
         } else {
@@ -190,7 +183,7 @@ async function compile (compiler: Compiler) {
     const compilersWatching: Array<Watching | MultiWatching> = []
 
     nuxt.hook('close', async () => {
-      await Promise.all(compilersWatching.map(watching => pify(watching.close.bind(watching))()))
+      await Promise.all(compilersWatching.map(watching => watching && pify(watching.close.bind(watching))()))
     })
 
     // Client build
@@ -222,8 +215,28 @@ async function compile (compiler: Compiler) {
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
+    const formatted = stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true })
+    const compilationErrors = stats.compilation?.errors ?? []
+    logger.error(formatted || '(no formatted errors emitted; see compilation errors below)')
+    for (const err of compilationErrors) {
+      logger.error(err)
+    }
     const error = new Error('Nuxt build error')
-    error.stack = stats.toString('errors-only')
+    error.stack = formatted || compilationErrors.map(e => e.stack || e.message || String(e)).join('\n\n') || error.stack
     throw error
+  }
+}
+
+type GenericHandler = (event: H3V1Event | H3V2Event) => unknown | Promise<unknown>
+
+function defineEventHandler (handler: GenericHandler): GenericHandler {
+  return Object.assign(handler, { __is_handler__: true })
+}
+
+declare module 'srvx' {
+  interface ServerRequestContext {
+    webpack?: {
+      devMiddleware?: webpackDevMiddleware.Context<IncomingMessage, ServerResponse>
+    }
   }
 }

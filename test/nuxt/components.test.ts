@@ -2,6 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { flushPromises } from '@vue/test-utils'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
@@ -68,6 +69,42 @@ describe('nuxt-link:prefetch', () => {
 
     await observer.trigger()
     expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
+  })
+})
+
+describe('nuxt-link:hash-focus', () => {
+  it('should focus target element after hash link navigation', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const router = useRouter()
+
+    // Create a mock element with id "target"
+    const targetEl = document.createElement('div')
+    targetEl.id = 'target'
+    targetEl.tabIndex = -1 // Make it focusable
+    document.body.appendChild(targetEl)
+
+    const focusSpy = vi.spyOn(targetEl, 'focus')
+
+    // Mock router.push to resolve immediately
+    const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined)
+
+    const wrapper = await mountSuspended(component, { props: { to: '#target' } })
+    const link = wrapper.find('a')
+
+    // Trigger click on the hash link
+    await link.trigger('click')
+    await flushPromises()
+
+    // Wait for the async onClick handler to complete
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(pushSpy).toHaveBeenCalledWith('#target')
+    expect(focusSpy).toHaveBeenCalled()
+
+    // Cleanup
+    document.body.removeChild(targetEl)
+    pushSpy.mockRestore()
+    focusSpy.mockRestore()
   })
 })
 

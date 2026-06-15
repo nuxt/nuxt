@@ -17,7 +17,7 @@ no_progress = true
 # include_fragments = true
 
 # Follow redirects
-max_redirects = 10
+max_redirects = 3
 
 # Set user agent to avoid bot blocking
 user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
@@ -26,30 +26,46 @@ user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
 timeout = 20
 retry_wait_time = 2
 max_retries = 6
+# Throttle per host to reduce rate limits / connection failures from external docs in CI
+host_request_interval = "50ms"
+host_concurrency = 5
 
 # Explicitly exclude some URLs
 exclude = [
   "https://twitter.nuxt.dev/",
   "https://www.webpagetest.org/",
-  "https://github.com/nuxt/translations/discussions/4",
   "https://stackoverflow.com/help/minimal-reproducible-example",
   "https://gsap.com/",
+  # external docs sites that block or rate-limit CI bots
+  'https://router.vuejs.org/(.*)',
+  'https://vitest.dev/(.*)',
+  'https://vite.dev/(.*)',
   # dummy example URLs
   "https://myawesome-lib.js/",
   "https://awesome-lib.js/",
   "https://myawesome-lib.css/",
   "https://awesome-lib.css/",
   "https://mycdn.org/",
-  'https://www.npmjs.com/package/(.*)importName(.*)',
-  # TODO: address 404s (non-prerendered files?) from nuxt.com
-  "https://nuxt.com/docs/guide/going-further/modules",
-  "https://nuxt.com/docs/guide/directory-structure/pages",
+  "https://nuxt.new/c/v4",
+  "https://nuxt.new/s/v4",
+  "https://www.npmjs.com/",
+  'https://nuxt\.com/docs/4\.x/api/composables/\$%7BkebabCase\(factory\.name\)%7D.*',
+  # TODO: fix upstream API issues
+  "https://nuxt.com/modules",
   # single-quotes are required for regexp
+  'https://res.cloudinary.com/nuxt/video/upload/(.*)',
+  'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
+  # GitHub URLs that redirect to login in unauthenticated CI
+  'https://github.com/(.*)/issues/new(.*)',
+  'https://github.com/(.*)/edit/(.*)',
+  # Discord invite redirects
+  'https://go.nuxt.com/discord',
   # excluded URLs from test suite
   "http://auth.com",
   "http://example1.com/",
   "http://example2.com/",
+  "http://example3.com/",
   "~images/main-bg.jpg",
 ]

@@ -8,13 +8,12 @@ import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
-import { isTest } from 'std-env'
 import { defu } from 'defu'
-import type { WarningFilter } from '../plugins/warning-ignore'
-import WarningIgnorePlugin from '../plugins/warning-ignore'
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets, fileName } from '../utils/config'
-import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import'
+import type { WarningFilter } from '../plugins/warning-ignore.ts'
+import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets, fileName } from '../utils/config.ts'
+import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
 
 import { WebpackBarPlugin, builder, webpack } from '#builder'
 
@@ -32,7 +31,14 @@ function baseConfig (ctx: WebpackConfigContext) {
   ctx.config = defu({}, {
     name: ctx.name,
     entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
-    module: { rules: [] },
+    module: {
+      rules: [],
+      // Nuxt resolves some virtual module exports lazily (e.g. `?inline` CSS), so missing exports
+      // must not fail the build under Rspack.
+      ...builder === 'rspack'
+        ? { parser: { javascript: { exportsPresence: 'auto' as const } } }
+        : {},
+    },
     plugins: [],
     externals: [],
     optimization: {
@@ -134,7 +140,7 @@ function baseAlias (ctx: WebpackConfigContext) {
     ...ctx.alias,
   }
   if (ctx.isClient) {
-    ctx.alias['nitro/runtime'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
+    ctx.alias['nitro/runtime-config'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
     // TODO: remove in v5
     ctx.alias['#internal/nitro'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
     ctx.alias['nitropack/runtime'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
@@ -227,21 +233,35 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
 }
 
 function getEnv (ctx: WebpackConfigContext) {
-  const _env: Record<string, string | boolean> = {
+  const _env: Record<string, string | boolean | InstanceType<typeof webpack.DefinePlugin>['definitions'][string]> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     '__NUXT_VERSION__': JSON.stringify(ctx.nuxt._version),
     '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.dev': ctx.options.dev,
-    'process.test': isTest,
+    'process.test': ctx.nuxt.options.test,
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
     'process.server': ctx.isServer,
     'import.meta.dev': ctx.options.dev,
-    'import.meta.test': isTest,
+    'import.meta.test': ctx.nuxt.options.test,
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
+    'import.meta.envName': JSON.stringify(ctx.options.envName),
     'import.meta.server': ctx.isServer,
+  }
+
+  if (ctx.isClient) {
+    _env['process.prerender'] = false
+    _env['process.nitro'] = false
+    _env['import.meta.prerender'] = false
+    _env['import.meta.nitro'] = false
+  } else {
+    // wrap in an IIFE, forcing it to be evaluated at runtime
+    _env['process.prerender'] = '(()=>process.prerender)()'
+    _env['process.nitro'] = '(()=>process.nitro)()'
+    _env['import.meta.prerender'] = '(()=>import.meta.prerender)()'
+    _env['import.meta.nitro'] = '(()=>import.meta.nitro)()'
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {

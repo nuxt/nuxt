@@ -1,5 +1,5 @@
 import { EsbuildPlugin } from 'esbuild-loader'
-import type { WebpackConfigContext } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config.ts'
 
 export function esbuild (ctx: WebpackConfigContext) {
   // https://esbuild.github.io/getting-started/#bundling-for-the-browser

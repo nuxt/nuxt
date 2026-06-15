@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
-import { join } from 'pathe'
 import type { Page } from 'playwright-core'
 import { waitForHydration } from '@nuxt/test-utils'
 import { expect, test } from './test-utils'
@@ -10,13 +9,7 @@ import { expect, test } from './test-utils'
  * outside the app tag when spaLoadingTemplateLocation is set to 'body'.
  */
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
-const isDev = process.env.TEST_ENV === 'dev'
-
 const fixtureDir = fileURLToPath(new URL('../fixtures/spa-loader', import.meta.url))
-
-// Skip tests in dev mode
-test.skip(isDev, 'These tests are only relevant in production mode')
 
 const loaderHTML = '<div id="__nuxt"></div><div id="__nuxt-loader"><div data-testid="loader">loading...</div></div>'
 
@@ -27,8 +20,6 @@ test.use({
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
-      buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
-      builder: isWebpack ? 'webpack' : 'vite',
       spaLoadingTemplate: true,
       experimental: {
         spaLoadingTemplateLocation: 'body',

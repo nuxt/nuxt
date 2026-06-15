@@ -1,5 +1,6 @@
+import process from 'node:process'
 import { defu } from 'defu'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   webpack: {
@@ -12,7 +13,7 @@ export default defineResolvers({
     profile: process.argv.includes('--profile'),
     extractCSS: true,
     cssSourceMap: {
-      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
+      $resolve: (val, get) => typeof val === 'boolean' ? val : get('dev'),
     },
     serverURLPolyfill: 'url',
     filenames: {
@@ -116,7 +117,7 @@ export default defineResolvers({
     postcss: {
       postcssOptions: {
         plugins: {
-          $resolve: async (val, get) => val && typeof val === 'object' ? val : (await get('postcss.plugins')),
+          $resolve: (val, get) => val && typeof val === 'object' ? val : (get('postcss.plugins')),
         },
       },
     },

@@ -1,5 +1,5 @@
-import { defineComponent, inject, onUnmounted, provide, reactive } from 'vue'
-import type { PropType, VNodeNormalizedChildren } from 'vue'
+import { defineComponent, getCurrentInstance, inject, onUnmounted, provide, reactive } from 'vue'
+import type { DefineSetupFnComponent, PropType, SlotsType, VNode, VNodeNormalizedChildren } from 'vue'
 import type {
   BodyAttributes,
   HtmlAttributes,
@@ -29,7 +29,7 @@ interface HeadComponents {
   style?: (UnheadStyle | null)[]
   title?: string | null
 }
-type HeadComponentCtx = { input: HeadComponents, entry: ReturnType<typeof useHead> }
+type HeadComponentCtx = { input: HeadComponents, entry: ReturnType<typeof useHead>, update: () => void }
 const HeadComponentCtxSymbol = Symbol('head-component')
 
 const TagPositionProps = {
@@ -40,7 +40,7 @@ const TagPositionProps = {
   tagPosition: { type: String as PropType<UnheadStyle['tagPosition']> },
 }
 
-const normalizeProps = <T extends Record<string, any>>(_props: T): Partial<T> => {
+function normalizeProps<T extends Record<string, any>> (_props: T, key?: string): Partial<T> {
   const props = Object.fromEntries(
     Object.entries(_props).filter(([_, value]) => value !== undefined),
   ) as Partial<T> & { tagPosition?: UnheadStyle['tagPosition'], tagPriority: UnheadStyle['tagPriority'] }
@@ -50,7 +50,15 @@ const normalizeProps = <T extends Record<string, any>>(_props: T): Partial<T> =>
   if (typeof props.renderPriority !== 'undefined') {
     props.tagPriority = props.renderPriority
   }
-  return props
+  return {
+    ...props,
+    key,
+  }
+}
+
+function useVNodeStringKey () {
+  const vnodeKey = getCurrentInstance()?.vnode.key
+  return vnodeKey != null && typeof vnodeKey !== 'symbol' ? String(vnodeKey) : undefined
 }
 
 function useHeadComponentCtx (): HeadComponentCtx {
@@ -65,7 +73,7 @@ function createHeadComponentCtx (): HeadComponentCtx {
   }
   const input = reactive({})
   const entry = useHead(input)
-  const ctx: HeadComponentCtx = { input, entry }
+  const ctx: HeadComponentCtx = { input, entry, update: () => entry.patch(input) }
   provide(HeadComponentCtxSymbol, ctx)
   return ctx
 }
@@ -124,8 +132,57 @@ const globalProps = {
   tagPriority: { type: [String, Number] as PropType<UnheadStyle['tagPriority']> },
 }
 
+interface GlobalProps {
+  accesskey?: string
+  autocapitalize?: string
+  autofocus?: boolean
+  class?: string | Record<string, any> | Array<any>
+  contenteditable?: boolean
+  contextmenu?: string
+  dir?: string
+  draggable?: boolean
+  enterkeyhint?: string
+  exportparts?: string
+  hidden?: boolean
+  id?: string
+  inputmode?: string
+  is?: string
+  itemid?: string
+  itemprop?: string
+  itemref?: string
+  itemscope?: string
+  itemtype?: string
+  lang?: string
+  nonce?: string
+  part?: string
+  slot?: string
+  spellcheck?: boolean
+  style?: string | Record<string, any> | Array<any>
+  tabindex?: string
+  title?: string
+  translate?: string
+  /**
+   * @deprecated Use tagPriority
+   */
+  renderPriority?: string | number
+  /**
+   * Unhead prop to modify the priority of the tag.
+   */
+  tagPriority?: UnheadStyle['tagPriority']
+}
+
+interface TagPositionPropsType {
+  /**
+   * @deprecated Use tagPosition
+   */
+  body?: boolean
+  tagPosition?: UnheadStyle['tagPosition']
+}
+
+type SlotWithDefault = SlotsType<{ default?: () => VNode[] }>
+
 // <noscript>
-export const NoScript = defineComponent({
+export const NoScript: DefineSetupFnComponent<GlobalProps & TagPositionPropsType & { title?: string }, {}, SlotWithDefault> = defineComponent({
   name: 'NoScript',
   inheritAttrs: false,
   props: {
@@ -134,12 +191,16 @@ export const NoScript = defineComponent({
     title: String,
   },
   setup (props, { slots }) {
-    const { input } = useHeadComponentCtx()
+    const { input, update } = useHeadComponentCtx()
     input.noscript ||= []
     const idx: keyof typeof input.noscript = input.noscript.push({}) - 1
-    onUnmounted(() => input.noscript![idx] = null)
+    onUnmounted(() => {
+      input.noscript![idx] = null
+      update()
+    })
+    const key = useVNodeStringKey()
     return () => {
-      const noscript = normalizeProps(props) as Noscript
+      const noscript = normalizeProps(props, key) as Noscript
       const slotVnodes = slots.default?.()
       const textContent: VNodeNormalizedChildren[] = []
       if (slotVnodes) {
@@ -150,16 +211,40 @@ export const NoScript = defineComponent({
         }
       }
       if (textContent.length > 0) {
-        noscript.innerHTML = textContent.join('')
+        noscript.textContent = textContent.join('')
       }
       input.noscript![idx] = noscript
+      update()
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<GlobalProps & TagPositionPropsType & { title?: string }, {}, SlotWithDefault>
+
+interface LinkComponentProps extends GlobalProps, TagPositionPropsType {
+  as?: string
+  crossorigin?: CrossOrigin
+  disabled?: boolean
+  fetchpriority?: FetchPriority
+  href?: string
+  hreflang?: string
+  imagesizes?: string
+  imagesrcset?: string
+  integrity?: string
+  media?: string
+  prefetch?: boolean
+  referrerpolicy?: ReferrerPolicy
+  rel?: LinkRelationship
+  sizes?: string
+  title?: string
+  type?: string
+  /** @deprecated **/
+  methods?: string
+  /** @deprecated **/
+  target?: Target
+}
 
 // <link>
-export const Link = defineComponent({
+export const Link: DefineSetupFnComponent<LinkComponentProps> = defineComponent({
   name: 'Link',
   inheritAttrs: false,
   props: {
@@ -190,19 +275,31 @@ export const Link = defineComponent({
     target: String as PropType<Target>,
   },
   setup (props) {
-    const { input } = useHeadComponentCtx()
+    const { input, update } = useHeadComponentCtx()
     input.link ||= []
-    const idx: keyof typeof input.link = input.link.push({}) - 1
-    onUnmounted(() => input.link![idx] = null)
+    const idx: keyof typeof input.link = input.link.push(null) - 1
+    const key = useVNodeStringKey()
+
+    onUnmounted(() => {
+      input.link![idx] = null
+      update()
+    })
+
     return () => {
-      input.link![idx] = normalizeProps(props) as UnheadLink
+      input.link![idx] = normalizeProps(props, key) as UnheadLink
+      update()
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<LinkComponentProps>
+
+interface BaseComponentProps extends GlobalProps {
+  href?: string
+  target?: Target
+}
 
 // <base>
-export const Base = defineComponent({
+export const Base: DefineSetupFnComponent<BaseComponentProps> = defineComponent({
   name: 'Base',
   inheritAttrs: false,
   props: {
@@ -211,22 +308,30 @@ export const Base = defineComponent({
     target: String as PropType<Target>,
   },
   setup (props) {
-    const { input } = useHeadComponentCtx()
-    onUnmounted(() => input.base = null)
+    const { input, update } = useHeadComponentCtx()
+    const key = useVNodeStringKey()
+    onUnmounted(() => {
+      input.base = null
+      update()
+    })
     return () => {
-      input.base = normalizeProps(props) as UnheadBase
+      input.base = normalizeProps(props, key) as UnheadBase
+      update()
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<BaseComponentProps>
 
 // <title>
-export const Title = defineComponent({
+export const Title: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComponent({
   name: 'Title',
   inheritAttrs: false,
   setup (_, { slots }) {
-    const { input } = useHeadComponentCtx()
-    onUnmounted(() => input.title = null)
+    const { input, update } = useHeadComponentCtx()
+    onUnmounted(() => {
+      input.title = null
+      update()
+    })
     return () => {
       const defaultSlot = slots.default?.()
       input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
@@ -235,13 +340,22 @@ export const Title = defineComponent({
           console.error('<Title> can take only one string in its default slot.')
         }
       }
+      update()
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<{}, {}, SlotWithDefault>
+
+interface MetaComponentProps extends GlobalProps {
+  charset?: string
+  content?: string
+  httpEquiv?: HTTPEquiv
+  name?: string
+  property?: string
+}
 
 // <meta>
-export const Meta = defineComponent({
+export const Meta: DefineSetupFnComponent<MetaComponentProps> = defineComponent({
   name: 'Meta',
   inheritAttrs: false,
   props: {
@@ -253,24 +367,38 @@ export const Meta = defineComponent({
     property: String,
   },
   setup (props) {
-    const { input } = useHeadComponentCtx()
+    const { input, update } = useHeadComponentCtx()
+    const key = useVNodeStringKey()
     input.meta ||= []
-    const idx: keyof typeof input.meta = input.meta.push({}) - 1
-    onUnmounted(() => input.meta![idx] = null)
+    const idx: keyof typeof input.meta = input.meta.push(null) - 1
+    onUnmounted(() => {
+      input.meta![idx] = null
+      update()
+    })
     return () => {
-      const meta = { 'http-equiv': props.httpEquiv, ...normalizeProps(props) } as UnheadMeta
+      const meta = { 'http-equiv': props.httpEquiv, ...normalizeProps(props, key) } as UnheadMeta
       // fix casing for http-equiv
       if ('httpEquiv' in meta) {
         delete meta.httpEquiv
       }
       input.meta![idx] = meta
+      update()
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<MetaComponentProps>
+
+interface StyleComponentProps extends GlobalProps, TagPositionPropsType {
+  type?: string
+  media?: string
+  nonce?: string
+  title?: string
+  /** @deprecated **/
+  scoped?: boolean
+}
 
 // <style>
-export const Style = defineComponent({
+export const Style: DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefault> = defineComponent({
   name: 'Style',
   inheritAttrs: false,
   props: {
@@ -287,37 +415,48 @@ export const Style = defineComponent({
     },
   },
   setup (props, { slots }) {
-    const { input } = useHeadComponentCtx()
+    const { input, update } = useHeadComponentCtx()
+    const key = useVNodeStringKey()
     input.style ||= []
     const idx: keyof typeof input.style = input.style.push({}) - 1
-    onUnmounted(() => input.style![idx] = null)
+    onUnmounted(() => {
+      input.style![idx] = null
+      update()
+    })
     return () => {
-      const style = normalizeProps(props) as UnheadStyle
+      const style = normalizeProps(props, key) as UnheadStyle
       const textContent = slots.default?.()?.[0]?.children
       if (textContent) {
         if (import.meta.dev && typeof textContent !== 'string') {
           console.error('<Style> can only take a string in its default slot.')
         }
         input.style![idx] = style
-        style.textContent = textContent
+        style.textContent = textContent as string
       }
+      update()
       return null
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefault>
 
 // <head>
-export const Head = defineComponent({
+export const Head: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComponent({
   name: 'Head',
   inheritAttrs: false,
   setup: (_props, ctx) => {
     createHeadComponentCtx()
     return () => ctx.slots.default?.()
   },
-})
+}) as unknown as DefineSetupFnComponent<{}, {}, SlotWithDefault>
+
+interface HtmlComponentProps extends GlobalProps {
+  manifest?: string
+  version?: string
+  xmlns?: string
+}
 
 // <html>
-export const Html = defineComponent({
+export const Html: DefineSetupFnComponent<HtmlComponentProps, {}, SlotWithDefault> = defineComponent({
   name: 'Html',
   inheritAttrs: false,
   props: {
@@ -327,26 +466,34 @@ export const Html = defineComponent({
     xmlns: String,
   },
   setup (_props, ctx) {
-    const { input } = useHeadComponentCtx()
-    onUnmounted(() => input.htmlAttrs = null)
+    const { input, update } = useHeadComponentCtx()
+    onUnmounted(() => {
+      input.htmlAttrs = null
+      update()
+    })
     return () => {
       input.htmlAttrs = { ..._props, ...ctx.attrs } as HtmlAttributes
+      update()
       return ctx.slots.default?.()
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<HtmlComponentProps, {}, SlotWithDefault>
 
 // <body>
-export const Body = defineComponent({
+export const Body: DefineSetupFnComponent<GlobalProps, {}, SlotWithDefault> = defineComponent({
   name: 'Body',
   inheritAttrs: false,
   props: globalProps,
   setup (_props, ctx) {
-    const { input } = useHeadComponentCtx()
-    onUnmounted(() => input.bodyAttrs = null)
+    const { input, update } = useHeadComponentCtx()
+    onUnmounted(() => {
+      input.bodyAttrs = null
+      update()
+    })
     return () => {
       input.bodyAttrs = { ..._props, ...ctx.attrs } as BodyAttributes
+      update()
       return ctx.slots.default?.()
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<GlobalProps, {}, SlotWithDefault>

@@ -3,13 +3,38 @@ packages:
   - packages/**
   - '!packages/nuxi'
   - '!packages/test-utils'
-  - '!packages/nuxt/test/package-fixture'
+  - '!packages/nuxt/test/package-fixture/pkg'
   - playground
   - test/fixtures/*
+  - test/fixtures/*/_local-modules/*
 
-ignoredBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - oxc-resolver
-  - unrs-resolver
-  - vue-demi
+patchedDependencies:
+  changelogen: patches/changelogen.patch
+
+publicHoistPattern:
+  - '*-loader'
+  - 'webpack-*'
+
+shellEmulator: true
+
+verifyDepsBeforeRun: install
+
+ignoreWorkspaceCycles: true
+
+overrides:
+  "@nuxt/kit": "workspace:*"
+  "@nuxt/schema": "workspace:*"
+  nuxt: "workspace:*"
+  vite: "8.0.16"
+  vue: "3.5.35"
+
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  unrs-resolver: false
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@nuxt/*'
+  # Renovate security update: esbuild@0.28.1
+  - esbuild@0.28.1

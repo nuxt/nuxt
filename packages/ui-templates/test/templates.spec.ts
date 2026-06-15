@@ -4,7 +4,6 @@ import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { format } from 'prettier'
-import { createJiti } from 'jiti'
 import { HtmlValidate } from 'html-validate'
 
 const distDir = fileURLToPath(new URL('../node_modules/.temp/dist/templates', import.meta.url))
@@ -28,8 +27,6 @@ describe('template', () => {
     })
   }
 
-  const jiti = createJiti(import.meta.url)
-
   const validator = new HtmlValidate({
     extends: [
       'html-validate:document',
@@ -52,7 +49,7 @@ describe('template', () => {
     },
   })
 
-  it.each(['error-404', 'error-500', 'error-dev', 'loading', 'welcome'])('produces correct output for %s template', async (file) => {
+  it.each(['error-404', 'error-500', 'loading', 'welcome'])('produces correct output for %s template', async (file) => {
     const contents = readFileSync(`${distDir}/${file}.vue`, 'utf-8')
 
     const scopedStyle = contents.match(/<style scoped>([\s\S]*)<\/style>/)
@@ -61,7 +58,7 @@ describe('template', () => {
     expect(await formatCss(scopedStyle?.[1] || '')).toMatchSnapshot()
     expect(await formatCss(globalStyle?.[1] || '')).toMatchSnapshot()
 
-    const { template } = await jiti.import(`file://${distDir}/${file}.ts`) as { template: () => string }
+    const { template } = await import(`file://${distDir}/${file}.ts`) as { template: () => string }
     const html = template()
     const { valid, results } = await (validator as any).validateString(html)
     expect.soft(valid).toBe(true)

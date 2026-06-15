@@ -1,10 +1,9 @@
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   future: {
     compatibilityVersion: {
-      // force resolution to `4` no matter what users pass
-      $resolve: () => 4,
+      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 5,
     },
     multiApp: false,
     typescriptBundlerResolution: {
@@ -30,13 +29,11 @@ export default defineResolvers({
         if (
           val === false ||
           (await get('dev')) ||
-          (await get('ssr')) === false ||
-          // @ts-expect-error TODO: handled normalised types
-          (await get('builder')) === '@nuxt/webpack-builder'
+          (await get('ssr')) === false
         ) {
           return false
         }
-        // Enabled by default for vite prod with ssr (for vue components)
+        // Enabled by default for prod with ssr (for vue components)
         return val ?? ((id?: string) => !!id && id.includes('.vue'))
       },
     },
@@ -64,15 +61,13 @@ export default defineResolvers({
     },
   },
   experimental: {
+    runtimeBaseURL: false,
     decorators: false,
     asyncEntry: {
       $resolve: val => typeof val === 'boolean' ? val : false,
     },
 
-    // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/nitrojs/nitro/issues/1118
-    externalVue: true,
-    serverAppConfig: false,
+    serverAppConfig: true,
     emitRouteChunkError: {
       $resolve: (val) => {
         if (val === true) {
@@ -96,11 +91,22 @@ export default defineResolvers({
     },
     templateRouteInjection: true,
     restoreState: false,
-    renderJsonPayloads: true,
     noVueServer: false,
-    payloadExtraction: true,
+    payloadExtraction: {
+      $resolve: async (val, get) => {
+        if ((await get('ssr')) === false) { return false }
+        if (val === 'client' || typeof val === 'boolean') { return val }
+        return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
+      },
+    },
     clientFallback: false,
     crossOriginPrefetch: false,
+
+    /**
+     * Enable View Transition API integration with client-side router.
+     * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
+     * @type {ViewTransitionOptions['enabled'] | ViewTransitionOptions}
+     */
     viewTransition: false,
     writeEarlyHints: false,
     componentIslands: {
@@ -120,10 +126,13 @@ export default defineResolvers({
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
       $resolve: async (val, get) => {
-        const validOptions = new Set(['chokidar', 'parcel', 'chokidar-granular'] as const)
+        const validOptions = new Set(['chokidar', 'parcel', 'chokidar-granular', 'builder'] as const)
         type WatcherOption = typeof validOptions extends Set<infer Option> ? Option : never
         if (typeof val === 'string' && validOptions.has(val as WatcherOption)) {
           return val as WatcherOption
+        }
+        if ((await get('future.compatibilityVersion')) >= 5) {
+          return 'builder' as const
         }
         const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
         if (srcDir === rootDir) {
@@ -158,6 +167,13 @@ export default defineResolvers({
       useAsyncData: {
         deep: false,
       },
+      useState: {
+        resetOnClear: {
+          $resolve: async (val, get) => {
+            return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+          },
+        },
+      },
       useFetch: {},
     },
     clientNodeCompat: false,
@@ -168,6 +184,11 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    normalizePageNames: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     spaLoadingTemplateLocation: {
       $resolve: (val) => {
         const validOptions = new Set(['body', 'within'] as const)
@@ -176,7 +197,7 @@ export default defineResolvers({
       },
     },
     browserDevtoolsTiming: {
-      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
+      $resolve: (val, get) => typeof val === 'boolean' ? val : get('dev'),
     },
     chromeDevtoolsProjectSettings: true,
     debugModuleMutation: {
@@ -193,6 +214,11 @@ export default defineResolvers({
     purgeCachedData: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
+      },
+    },
+    prefetchPreloadTags: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
     granularCachedData: {
@@ -217,5 +243,40 @@ export default defineResolvers({
       },
     },
     entryImportMap: true,
+    extractAsyncDataHandlers: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
+    nitroAutoImports: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
+      },
+    },
+    ssrStreaming: {
+      $resolve (val) {
+        // Indexing crawlers only; `chrome-lighthouse` is intentionally absent
+        // so audit tools measure the same streamed response real users get.
+        const defaultBotRegex = /bot\b|crawl|spider|slurp|facebookexternalhit|google\b|bing\b|yandex\b|baidu\b|duckduck/i
+        const obj = (val !== null && typeof val === 'object') ? val as { enabled?: boolean, botRegex?: RegExp } : null
+        const isEnabled = val === true || (obj !== null && obj.enabled !== false)
+        if (!isEnabled) {
+          return { enabled: false as const, botRegex: defaultBotRegex }
+        }
+        const botRegex = obj?.botRegex instanceof RegExp ? obj.botRegex : defaultBotRegex
+        return { enabled: true as const, botRegex }
+      },
+    },
+    asyncCallHook: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
+      },
+    },
+    clientNodePlaceholder: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
+    clearBuildHooks: true,
   },
 })

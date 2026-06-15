@@ -4,29 +4,35 @@ on:
   merge_group:
   push:
     paths:
-      - ".github/workflows/**"
+      - '.github/workflows/**'
     branches:
       - main
+      - 4.x
       - 3.x
   pull_request:
     paths:
-      - ".github/workflows/**"
+      - '.github/workflows/**'
     branches:
       - main
+      - 4.x
       - 3.x
-      - "!v[0-9]*"
+      - '!v[0-9]*'
 
 permissions:
   contents: read
 
 jobs:
   lint-workflows:
+    # skip on push to main (already tested in merge queue) but run on push to maintenance branches
+    if: github.event_name != 'push' || github.ref_name != 'main'
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
       # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
       - name: Check workflow files
-        uses: docker://rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9
+        uses: docker://rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
         with:
           args: -color

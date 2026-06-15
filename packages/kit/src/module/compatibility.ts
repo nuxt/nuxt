@@ -1,8 +1,8 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
 import type { Nuxt, NuxtModule, NuxtOptions } from '@nuxt/schema'
-import { useNuxt } from '../context'
-import { normalizeSemanticVersion } from '../compatibility'
-import { loadNuxtModuleInstance } from './install'
+import { useNuxt } from '../context.ts'
+import { normalizeSemanticVersion } from '../compatibility.ts'
+import { loadNuxtModuleInstance } from './install.ts'
 
 function resolveNuxtModuleEntryName (m: NuxtOptions['modules'][number]): string | false {
   if (typeof m === 'object' && !Array.isArray(m)) {
@@ -28,7 +28,7 @@ export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()): bool
 }
 
 /**
- * Checks if a Nuxt Module is compatible with a given semver version.
+ * Checks if a Nuxt module is compatible with a given semver version.
  */
 export async function hasNuxtModuleCompatibility (module: string | NuxtModule, semverVersion: string, nuxt: Nuxt = useNuxt()): Promise<boolean> {
   const version = await getNuxtModuleVersion(module, nuxt)

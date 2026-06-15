@@ -1,5 +1,5 @@
 import type { Compilation, Compiler } from 'webpack'
-import { extractQueryPartJS, isJS, validate } from './util'
+import { extractQueryPartJS, isJS, validate } from './util.ts'
 import { webpack } from '#builder'
 
 interface VueSSRServerPluginOptions {
@@ -24,7 +24,10 @@ export default class VueSSRServerPlugin {
         name: 'VueSSRServerPlugin',
         stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
       }, (assets: any, cb: any) => {
-        const stats = compilation.getStats().toJson()
+        const stats = compilation.getStats().toJson({
+          assets: true,
+          entrypoints: true,
+        })
         const [entryName] = Object.keys(stats.entrypoints!)
         const entryInfo = stats.entrypoints![entryName!]
 

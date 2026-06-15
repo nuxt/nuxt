@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake'
+import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake.ts'
+import { clean } from './utils.ts'
 
 describe('tree-shake', () => {
   const transformPlugin: any = TreeShakeComposablesPlugin({
-    sourcemap: false,
     composables: { 'vue': ['onMounted'] },
   }).raw({}, {} as any)
 
@@ -194,14 +194,3 @@ describe('tree-shake', () => {
     `)
   })
 })
-
-function clean (string?: string) {
-  const lines = string?.split('\n').filter(l => l.trim()) || []
-  const indent = lines.reduce((prev, curr) => {
-    const length = curr.match(/^\s+/)?.[0].length ?? 0
-    return length < prev ? length : prev
-  }, Infinity)
-
-  const re = new RegExp(`^\\s{${indent}}`)
-  return lines.map(l => l.replace(re, '')).join('\n')
-}

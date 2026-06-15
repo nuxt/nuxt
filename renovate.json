@@ -7,12 +7,14 @@
   ],
   "baseBranchPatterns": [
     "main",
+    "4.x",
     "3.x"
   ],
   "ignoreDeps": [
     "node",
     "npm"
   ],
+  "minimumReleaseAge": "1 day",
   "packageRules": [
     {
       "groupName": "webpack",
@@ -24,7 +26,6 @@
     {
       "groupName": "vitest",
       "matchPackageNames": [
-        "vite-node",
         "vitest",
         "/^@vitest//"
       ]
@@ -32,6 +33,7 @@
     {
       "matchBaseBranches": [
         "main",
+        "4.x",
         "3.x"
       ],
       "ignoreDeps": [
@@ -39,6 +41,43 @@
         "nuxt3",
         "@nuxt/kit"
       ]
+    },
+    {
+      "matchBaseBranches": [
+        "4.x",
+        "3.x"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor",
+        "pin",
+        "digest",
+        "lockFileMaintenance"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-non-major",
+      "matchPackageNames": [
+        "*"
+      ]
+    },
+    {
+      "groupName": "rolldown",
+      "groupSlug": "rolldown",
+      "matchPackageNames": [
+        "rolldown",
+        "obuild"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "@nuxt/**"
+      ],
+      "minimumReleaseAge": "0"
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "postUpdateOptions": [
+      "pnpmDedupe"
+    ]
+  }
 }

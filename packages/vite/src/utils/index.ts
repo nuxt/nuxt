@@ -1,7 +1,8 @@
-export { isVue } from '../../../nuxt/src/core/utils/plugins'
+export { isVue, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
+export { toVirtualId } from '../../../nuxt/src/core/plugins/virtual.ts'
 
 // Copied from vue-bundle-renderer utils
-const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
+export const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
 export function isCSS (file: string) {
   return IS_CSS_RE.test(file)

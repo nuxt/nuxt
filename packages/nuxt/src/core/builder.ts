@@ -5,21 +5,45 @@ import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isI
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
-import { isDirectory, logger } from '../utils'
-import { generateApp as _generateApp, createApp } from './app'
-import { checkForExternalConfigurationFiles } from './external-config-files'
-import { cleanupCaches, getVueHash } from './cache'
-import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
+import { isDirectory, logger } from '../utils.ts'
+import { generateApp as _generateApp, createApp } from './app.ts'
+import { checkForExternalConfigurationFiles } from './external-config-files.ts'
+import { cleanupCaches, getVueHash } from './cache.ts'
+import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
-export async function build (nuxt: Nuxt) {
+export async function build (nuxt: Nuxt): Promise<void> {
+  nuxt._perf?.startPhase('app:generate')
   const app = createApp(nuxt)
   nuxt.apps.default = app
 
+  let closing = false
+  const writes = new Set<Promise<unknown>>()
+  const track = async <T> (run: () => Promise<T>) => {
+    if (closing) { return }
+    const p = run()
+    writes.add(p)
+    try { await p } finally { writes.delete(p) }
+  }
   const generateApp = debounce(() => _generateApp(nuxt, app), undefined, { leading: true })
   await generateApp()
+  nuxt._perf?.endPhase('app:generate')
+
+  const builder = nuxt.options._prepare ? undefined : await resolveBuilder(nuxt)
 
   if (nuxt.options.dev) {
-    watch(nuxt)
+    if (nuxt.options.experimental.watcher === 'builder' && builder?.setupWatcher) {
+      await builder.setupWatcher(nuxt)
+    } else {
+      if (nuxt.options.experimental.watcher === 'builder') {
+        logger.warn('`experimental.watcher: "builder"` is set but the active builder does not implement `setupWatcher`. Falling back to the default file watcher.')
+      }
+      watch(nuxt)
+    }
+    nuxt.hook('close', async () => {
+      closing = true
+      generateApp.cancel()
+      await Promise.allSettled(writes)
+    })
     nuxt.hook('builder:watch', async (event, relativePath) => {
       // Unset mainComponent and errorComponent if app or error component is changed
       if (event === 'add' || event === 'unlink') {
@@ -38,12 +62,12 @@ export async function build (nuxt: Nuxt) {
       }
 
       // Recompile app templates
-      await generateApp()
+      await track(() => generateApp())
     })
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
-      if (options) { return _generateApp(nuxt, app, options) }
-      return generateApp()
+      if (options) { return track(() => _generateApp(nuxt, app, options)) }
+      return track(() => generateApp())
     })
   }
 
@@ -51,7 +75,8 @@ export async function build (nuxt: Nuxt) {
     const { restoreCache, collectCache } = await getVueHash(nuxt)
     if (await restoreCache()) {
       await nuxt.callHook('build:done')
-      return await nuxt.callHook('close', nuxt)
+      await nuxt.callHook('close', nuxt)
+      return
     }
     nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
     nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
@@ -70,7 +95,21 @@ export async function build (nuxt: Nuxt) {
     })
   }
 
-  await bundle(nuxt)
+  nuxt._perf?.startPhase('build:bundle')
+  await builder?.bundle(nuxt)
+  nuxt._perf?.endPhase('build:bundle')
+
+  // release hooks that will never fire again.
+  if (!nuxt.options.dev && nuxt.options.experimental.clearBuildHooks) {
+    clearBuildHooks(nuxt)
+  }
+
+  // allow GC to reclaim any now-unreferenced bundler memory
+  if (!nuxt.options.dev && typeof globalThis.gc === 'function') {
+    nuxt._perf?.startPhase('build:gc')
+    globalThis.gc()
+    nuxt._perf?.endPhase('build:gc')
+  }
 
   await nuxt.callHook('build:done')
 
@@ -102,7 +141,17 @@ function createWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(dirs => dirs.app), {
+  const layerDirs = getLayerDirectories(nuxt)
+  const paths: string[] = []
+  for (const layer of layerDirs) {
+    paths.push(layer.app)
+    // Only add server if it's not inside app (avoid double-watching)
+    if (!layer.server.startsWith(layer.app.replace(/\/?$/, '/'))) {
+      paths.push(layer.server)
+    }
+  }
+
+  const watcher = chokidarWatch(paths, {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
@@ -192,7 +241,7 @@ async function createParcelWatcher () {
     const pathsToWatch = resolvePathsToWatch(nuxt, { parentDirectories: true })
     for (const dir of pathsToWatch) {
       if (!await isDirectory(dir)) { continue }
-      const watcher = subscribe(dir, (err, events) => {
+      const subscription = await subscribe(dir, (err, events) => {
         if (err) { return }
         for (const event of events) {
           if (isIgnored(event.path)) { continue }
@@ -204,13 +253,11 @@ async function createParcelWatcher () {
           'node_modules',
         ],
       })
-      watcher.then((subscription) => {
-        if (nuxt.options.debug && nuxt.options.debug.watchers) {
-        // eslint-disable-next-line no-console
-          console.timeEnd('[nuxt] builder:parcel:watch')
-        }
-        nuxt.hook('close', () => subscription.unsubscribe())
-      })
+      nuxt.hook('close', () => subscription.unsubscribe())
+    }
+    if (nuxt.options.debug && nuxt.options.debug.watchers) {
+      // eslint-disable-next-line no-console
+      console.timeEnd('[nuxt] builder:parcel:watch')
     }
     return true
   } catch {
@@ -219,38 +266,86 @@ async function createParcelWatcher () {
   }
 }
 
-async function bundle (nuxt: Nuxt) {
-  try {
-    const { bundle } = typeof nuxt.options.builder === 'string'
-      ? await loadBuilder(nuxt, nuxt.options.builder)
-      : nuxt.options.builder
+async function resolveBuilder (nuxt: Nuxt): Promise<NuxtBuilder> {
+  const source = typeof nuxt.options.builder === 'string'
+    ? await loadBuilder(nuxt, nuxt.options.builder)
+    : nuxt.options.builder
 
-    await bundle(nuxt)
-  } catch (error: any) {
-    await nuxt.callHook('build:error', error)
-
-    if (error.toString().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
-      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.')
-    }
-
-    throw error
+  // Wrap `bundle` so the `build:error` hook fires for any builder, including
+  // user-supplied ones, without each caller having to remember to do it.
+  return {
+    ...source,
+    async bundle (nuxt) {
+      try {
+        await source.bundle(nuxt)
+      } catch (error: any) {
+        await nuxt.callHook('build:error', error)
+        throw error
+      }
+    },
   }
 }
 
 async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   try {
-    return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
-  } catch (err) {
-    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``, { cause: err })
+    // prefer our own dependency tree before walking up from rootDir
+    if (builder === '@nuxt/vite-builder') {
+      return await import(builder)
+    }
+    return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
+  } catch (err: any) {
+    if (builder === '@nuxt/webpack-builder' && err?.toString?.().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
+      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.', { cause: err })
+    }
+    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder\``, { cause: err })
+  }
+}
+
+const hooksToClear: Array<keyof NuxtHooks> = [
+  // config-phase hooks that fire before the build starts
+  'vite:extend',
+  'vite:extendConfig',
+  'vite:configResolved',
+  'vite:compiled',
+  'webpack:config',
+  'webpack:configResolved',
+  'webpack:compile',
+  'webpack:compiled',
+  'webpack:change',
+  'webpack:error',
+  'webpack:done',
+  'webpack:progress',
+  'rspack:config',
+  'rspack:configResolved',
+  'rspack:compile',
+  'rspack:compiled',
+  'rspack:change',
+  'rspack:error',
+  'rspack:done',
+  // manifest hook - fires after build
+  'build:manifest',
+  // builder hooks
+  'builder:watch',
+  'builder:generateApp',
+  'app:templatesGenerated',
+]
+
+function clearBuildHooks (nuxt: Nuxt): void {
+  for (const name of hooksToClear) {
+    nuxt.hooks.clearHook(name)
   }
 }
 
 function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
   for (const dirs of getLayerDirectories(nuxt)) {
-    if (!dirs.app || isIgnored(dirs.app)) { continue }
-
-    pathsToWatch.add(dirs.app)
+    if (!isIgnored(dirs.app)) {
+      pathsToWatch.add(dirs.app)
+    }
+    // Only add server if it's not inside app (avoid double-watching)
+    if (!isIgnored(dirs.server) && !dirs.server.startsWith(dirs.app.replace(/\/?$/, '/'))) {
+      pathsToWatch.add(dirs.server)
+    }
   }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }

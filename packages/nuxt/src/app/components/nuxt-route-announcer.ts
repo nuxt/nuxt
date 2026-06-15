@@ -1,8 +1,18 @@
-import { defineComponent, h } from 'vue'
+import { computed, defineComponent, h } from 'vue'
+import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 import type { Politeness } from 'nuxt/app'
 import { useRouteAnnouncer } from '../composables/route-announcer'
 
-export default defineComponent({
+interface NuxtRouteAnnouncerProps {
+  atomic?: boolean
+  politeness?: Politeness
+}
+
+type NuxtRouteAnnouncerSlots = SlotsType<{
+  default?: (props: { message: string }) => VNode[]
+}>
+
+const NuxtRouteAnnouncer = defineComponent({
   name: 'NuxtRouteAnnouncer',
   props: {
     atomic: {
@@ -17,6 +27,16 @@ export default defineComponent({
   setup (props, { slots, expose }) {
     const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness })
 
+    const role = computed(() => {
+      if (politeness.value === 'assertive') {
+        return 'alert'
+      }
+      if (politeness.value === 'off') {
+        return undefined
+      }
+      return 'status'
+    })
+
     expose({
       set, polite, assertive, message, politeness,
     })
@@ -27,7 +47,7 @@ export default defineComponent({
         position: 'absolute',
       },
     }, h('span', {
-      'role': 'alert',
+      'role': role.value,
       'aria-live': politeness.value,
       'aria-atomic': props.atomic,
       'style': {
@@ -45,4 +65,6 @@ export default defineComponent({
       },
     }, slots.default ? slots.default({ message: message.value }) : message.value))
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtRouteAnnouncerProps, {}, NuxtRouteAnnouncerSlots>
+
+export default NuxtRouteAnnouncer

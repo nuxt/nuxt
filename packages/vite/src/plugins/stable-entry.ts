@@ -1,14 +1,13 @@
 import { useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import escapeStringRegexp from 'escape-string-regexp'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { basename } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
-import { toArray } from '../utils'
+import { toArray } from '../utils/index.ts'
 
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
-  let sourcemap: boolean
   let entryFileName: string | undefined
 
   const nitro = useNitro()
@@ -20,22 +19,20 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
 
   return {
     name: 'nuxt:stable-entry',
-    configResolved (config) {
-      sourcemap = !!config.build.sourcemap
-    },
-    applyToEnvironment: environment => environment.name === 'client',
-    apply (config) {
-      if (nuxt.options.dev || !nuxt.options.experimental.entryImportMap) {
+    apply: () => !nuxt.options.dev && nuxt.options.experimental.entryImportMap,
+    applyToEnvironment (environment) {
+      if (environment.name !== 'client') {
         return false
       }
-      if (config.build?.target) {
-        const targets = toArray(config.build.target)
+      if (environment.config.build.target) {
+        const targets = toArray(environment.config.build.target)
         if (!targets.every(isSupported)) {
           return false
         }
       }
       // only apply plugin if the entry file name is hashed
-      return toArray(config.build?.rollupOptions?.output).some(output => typeof output?.entryFileNames === 'string' && output?.entryFileNames.includes('[hash]'))
+      return toArray(environment.config.build.rolldownOptions?.output)
+        .some(output => typeof output?.entryFileNames === 'string' && output?.entryFileNames.includes('[hash]'))
     },
     renderChunk (code, chunk, _options, meta) {
       const entry = Object.values(meta.chunks).find(chunk => chunk.isEntry && chunk.name === 'entry')?.fileName
@@ -44,15 +41,10 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
       }
 
       const filename = new RegExp(`(?<=['"])[\\./]*${escapeStringRegexp(basename(entry))}`, 'g')
-      const s = new MagicString(code)
+      const s = rolldownString(code, chunk.fileName)
       s.replaceAll(filename, '#entry')
 
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: sourcemap ? s.generateMap({ hires: true }) : undefined,
-        }
-      }
+      return generateTransform(s, chunk.fileName)
     },
     writeBundle (_options, bundle) {
       let entry = Object.values(bundle).find(chunk => chunk.type === 'chunk' && chunk.isEntry && chunk.name === 'entry')?.fileName

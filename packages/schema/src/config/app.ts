@@ -1,8 +1,9 @@
+import process from 'node:process'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
-import { defineResolvers } from '../utils/definition'
-import type { AppHeadMetaObject } from '../types/head'
-import type { NuxtAppConfig } from '../types/config'
+import { defineResolvers } from '../utils/definition.ts'
+import type { AppHeadMetaObject } from '../types/head.ts'
+import type { NuxtAppConfig, ViewTransitionOptions } from '../types/config.ts'
 
 export default defineResolvers({
   vue: {
@@ -85,11 +86,26 @@ export default defineResolvers({
     pageTransition: false,
     viewTransition: {
       $resolve: async (val, get) => {
-        if (val === 'always' || typeof val === 'boolean') {
-          return val
+        const isEnabled = (val === 'always' || typeof val === 'boolean')
+        const hasEnabled = val && typeof val === 'object' && 'enabled' in val
+        const hasTypes = val && typeof val === 'object' && 'types' in val
+
+        const appOptions: Partial<ViewTransitionOptions> = {
+          enabled: isEnabled ? val : (hasEnabled ? val.enabled as ViewTransitionOptions['enabled'] : undefined),
+          types: hasTypes ? val.types as ViewTransitionOptions['types'] : undefined,
         }
 
-        return await get('experimental').then(e => e.viewTransition) ?? false
+        if (appOptions.enabled !== undefined && appOptions.types !== undefined) {
+          return appOptions as ViewTransitionOptions
+        }
+
+        const _configOptions = await get('experimental').then(e => e.viewTransition) ?? { enabled: false }
+        const configOptions = typeof _configOptions === 'object' ? _configOptions : { enabled: _configOptions }
+
+        return {
+          enabled: appOptions.enabled ?? configOptions.enabled,
+          types: appOptions.types ?? configOptions.types,
+        }
       },
     },
     keepalive: false,
@@ -157,9 +173,21 @@ export default defineResolvers({
     },
   },
   unhead: {
-    legacy: false,
+    legacy: {
+      $resolve: async (val, get) => {
+        if (typeof val !== 'boolean') { return false }
+        if ((await get('future.compatibilityVersion') as number) >= 5) {
+          if (val) {
+            console.warn('`unhead.legacy` is ignored when `future.compatibilityVersion` >= 5. Remove deprecated head patterns (`hid`, `vmid`, `children`, `body: true`, `renderPriority`) and resolve promise values before passing to `useHead`.')
+          }
+          return false
+        }
+        return val
+      },
+    },
+    vite: {},
     renderSSRHeadOptions: {
-      $resolve: val => ({
+      $resolve: (val: unknown) => ({
         omitLineBreaks: true,
         ...typeof val === 'object' ? val : {},
       }),

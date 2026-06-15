@@ -3,13 +3,13 @@ import { defu } from 'defu'
 import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
-import type { ObjectPlugin, PluginMeta } from 'nuxt/app'
+import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
-import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
-import { logger } from '../../utils'
+import type { ESTree } from 'rolldown/utils'
+import { logger } from '../../utils.ts'
 
 const internalOrderMap = {
   // -50: pre-all (nuxt)
@@ -38,15 +38,13 @@ export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
   post: internalOrderMap['user-post'],
 }
 
-const metaCache: Record<string, Omit<PluginMeta, 'enforce'>> = {}
+export type ExtractedPluginMeta = PluginMeta & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean, _metaUnknown?: boolean }
+
+const metaCache: Record<string, ExtractedPluginMeta> = {}
 export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
-  let meta: PluginMeta = {}
+  let meta: ExtractedPluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
-  }
-  // non-object syntax plugin
-  if (/defineNuxtPlugin\s*\([\w(]/.test(code)) {
-    return {}
   }
   parseAndWalk(code, `file.${loader}`, (node) => {
     if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
@@ -69,33 +67,57 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const plugin = node.arguments[0]
     if (plugin?.type === 'ObjectExpression') {
       meta = defu(extractMetaFromObject(plugin.properties), meta)
+    } else if (plugin && !isFunctionPluginExpression(plugin)) {
+      // Plugin argument is something we can't statically read (an imported
+      // identifier, a factory call, a member access, ...). It may declare
+      // hooks / env / dependsOn / parallel that we can't see, so flag the
+      // metadata as unknown and let the capability probes fall back to the
+      // full runtime resolver.
+      meta._metaUnknown = true
     }
 
     meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
     delete meta.enforce
   })
   metaCache[code] = meta
-  return meta as Omit<PluginMeta, 'enforce'>
+  return meta
 }
 
-type PluginMetaKey = keyof PluginMeta
-const keys: Record<PluginMetaKey, string> = {
+function isFunctionPluginExpression (node: ESTree.Expression | ESTree.SpreadElement): boolean {
+  // Function-syntax plugins (`defineNuxtPlugin(() => {...})` /
+  // `defineNuxtPlugin(function (n) {...})`) carry no capability metadata by
+  // construction, so emitting empty extracted meta is safe and lets the
+  // runtime keep its DCE paths.
+  return node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression'
+}
+
+type ExtractedMetaKey = keyof PluginMeta | 'parallel'
+const keys: Record<ExtractedMetaKey, string> = {
   name: 'name',
   order: 'order',
   enforce: 'enforce',
   dependsOn: 'dependsOn',
+  parallel: 'parallel',
 }
-function isMetadataKey (key: string | IdentifierName): key is PluginMetaKey {
+function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMetaKey {
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
-  const meta: PluginMeta = {}
+function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
+  const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
       throw new Error('Invalid plugin metadata')
     }
     const propertyKey = property.key.name
+    if (propertyKey === 'hooks') {
+      meta.hasHooks = true
+      continue
+    }
+    if (propertyKey === 'env') {
+      meta.hasEnv = true
+      continue
+    }
     if (!isMetadataKey(propertyKey)) { continue }
     if (property.value.type === 'Literal') {
       meta[propertyKey] = property.value.value as any
@@ -107,7 +129,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
       if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
         throw new Error('dependsOn must take an array of string literals')
       }
-      meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as string)
+      meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
     }
   }
   return meta
@@ -116,7 +138,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
 export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
   return {
     name: 'nuxt:remove-plugin-metadata',
-    transform (code, id) {
+    transform (code, id, meta?: unknown) {
       id = normalize(id)
       const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
       if (!plugin) { return }
@@ -140,7 +162,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
         }
       }
 
-      const s = new MagicString(code)
+      const s = rolldownString(code, id, meta)
       let wrapped = false
       const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
@@ -182,12 +204,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
         logger.warn(`Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`)
       }
 
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server ? s.generateMap({ hires: true }) : null,
-        }
-      }
+      return generateTransform(s, id)
     },
   }
 })

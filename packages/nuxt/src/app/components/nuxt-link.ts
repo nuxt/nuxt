@@ -4,18 +4,19 @@ import type {
   ComputedRef,
   DefineSetupFnComponent,
   InjectionKey,
+  MaybeRef,
   PropType,
   SlotsType,
   UnwrapRef,
   VNode,
   VNodeProps,
 } from 'vue'
-import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef } from 'vue'
+import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
-import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
-import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
+import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
@@ -23,15 +24,38 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
-import { hashMode } from '#build/router.options'
+import { hashMode } from '#build/router.options.mjs'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
+
+/**
+ * Reject URL strings that would resolve to a script-capable protocol when used as the
+ * `href` of an anchor element. Returns the value unchanged when safe, or `null`.
+ *
+ * The denylist is delegated to `ufo`'s `isScriptProtocol` so it stays in sync with the
+ * check used by `navigateTo` (currently `javascript:`, `data:`, `vbscript:`, `blob:`).
+ * ASCII whitespace and control characters are stripped first because browser URL
+ * parsers tolerate them before the scheme, and `view-source:` is peeled recursively
+ * because Chromium resolves it transparently to the inner URL.
+ */
+function sanitizeExternalHref (value: string): string | null {
+  // eslint-disable-next-line no-control-regex
+  let candidate = value.replace(/[\u0000-\u001F\s]+/g, '')
+  while (candidate.toLowerCase().startsWith('view-source:')) {
+    candidate = candidate.slice('view-source:'.length)
+  }
+  const colon = candidate.indexOf(':')
+  if (colon > 0 && isScriptProtocol(candidate.slice(0, colon + 1))) {
+    return null
+  }
+  return value
+}
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 /**
  * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
- * @see https://nuxt.com/docs/api/components/nuxt-link
+ * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
  */
 export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<RouterLinkProps, 'to'> {
   custom?: CustomProp
@@ -87,7 +111,7 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
 
 /**
  * Create a NuxtLink component with given options as defaults.
- * @see https://nuxt.com/docs/api/components/nuxt-link
+ * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
  */
 export interface NuxtLinkOptions extends
   Partial<Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>>,
@@ -115,7 +139,7 @@ export interface NuxtLinkOptions extends
 
 type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
   ? {
-      href: string
+      href: string | null
       navigate: (e?: MouseEvent) => Promise<void>
       prefetch: (nuxtApp?: NuxtApp) => Promise<void>
       route: (RouteLocation & { href: string }) | undefined
@@ -131,8 +155,16 @@ type NuxtLinkSlots<CustomProp extends boolean = false> = {
   default?: (props: NuxtLinkDefaultSlotProps<CustomProp>) => VNode[]
 }
 
+export type NuxtLinkComponent = new<CustomProp extends boolean = false>(
+  props: NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
+) => InstanceType<DefineSetupFnComponent<
+  NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
+  [],
+  SlotsType<NuxtLinkSlots<CustomProp>>
+>>
+
 /* @__NO_SIDE_EFFECTS__ */
-export function defineNuxtLink (options: NuxtLinkOptions) {
+export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & Record<string, any> {
   const componentName = options.componentName || 'NuxtLink'
 
   function checkPropConflicts (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void {
@@ -141,7 +173,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
-  function isHashLinkWithoutHashMode (link: unknown): boolean {
+  function isHashLinkWithoutHashMode (link: unknown): link is string {
     return !hashMode && typeof link === 'string' && link.startsWith('#')
   }
 
@@ -168,15 +200,15 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     return resolvedPath
   }
 
-  function useNuxtLink (props: NuxtLinkProps) {
+  function useNuxtLink (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }) {
     const router = useRouter()
     const config = useRuntimeConfig()
 
-    const hasTarget = computed(() => !!props.target && props.target !== '_self')
+    const hasTarget = computed(() => !!unref(props.target) && unref(props.target) !== '_self')
 
     // Lazily check whether to.value has a protocol
     const isAbsoluteUrl = computed(() => {
-      const path = props.to || props.href || ''
+      const path = unref(props.to) || unref(props.href) || ''
       return typeof path === 'string' && hasProtocol(path, { acceptRelative: true })
     })
 
@@ -186,11 +218,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     // Resolving link type
     const isExternal = computed<boolean>(() => {
       // External prop is explicitly set
-      if (props.external) {
+      if (unref(props.external)) {
         return true
       }
 
-      const path = props.to || props.href || ''
+      const path = unref(props.to) || unref(props.href) || ''
 
       // When `to` is a route object then it's an internal link
       if (typeof path === 'object') {
@@ -202,26 +234,28 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolving `to` value from `to` and `href` props
     const to: ComputedRef<RouteLocationRaw> = computed(() => {
-      checkPropConflicts(props, 'to', 'href')
-      const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
+      checkPropConflicts(props as NuxtLinkProps, 'to', 'href')
+      const path = unref(props.to) || unref(props.href) || '' // Defaults to empty string (won't render any `href` attribute)
       if (isExternal.value) { return path }
-      return resolveTrailingSlashBehavior(path, router.resolve, props.trailingSlash)
+      return resolveTrailingSlashBehavior(path, router.resolve, unref(props.trailingSlash))
     })
 
-    const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to })
+    const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to, viewTransition: unref(props.viewTransition) })
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
-      const effectiveTrailingSlash = props.trailingSlash ?? options.trailingSlash
+      const effectiveTrailingSlash = unref(props.trailingSlash) ?? options.trailingSlash
       if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
-        return to.value as string
+        const raw = to.value as string
+        return typeof raw === 'string' ? sanitizeExternalHref(raw) : raw
       }
 
       if (isExternal.value) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
         // separately resolve route objects with a 'name' property and without 'path'
         const href = typeof path === 'object' ? router.resolve(path).href : path
-        return applyTrailingSlashBehavior(href, effectiveTrailingSlash)
+        const safe = typeof href === 'string' ? sanitizeExternalHref(href) : href
+        return safe === null ? null : applyTrailingSlashBehavior(safe, effectiveTrailingSlash)
       }
 
       if (typeof to.value === 'object') {
@@ -242,10 +276,17 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
       route: link?.route ?? computed(() => router.resolve(to.value)),
       async navigate (_e?: MouseEvent) {
-        await navigateTo(href.value, { replace: props.replace, external: isExternal.value || hasTarget.value })
+        if (href.value === null) {
+          if (import.meta.dev) {
+            console.warn(`[${componentName}] refused to navigate to a URL with a script-capable protocol.`)
+          }
+          return
+        }
+        await navigateTo(href.value, { replace: unref(props.replace), external: isExternal.value || hasTarget.value })
       },
-    } satisfies ReturnType<typeof useLink> & {
+    } satisfies Omit<ReturnType<typeof useLink>, 'href'> & {
       to: ComputedRef<RouteLocationRaw>
+      href: ComputedRef<string | null>
       hasTarget: ComputedRef<boolean | null | undefined>
       isAbsoluteUrl: ComputedRef<boolean>
       isExternal: ComputedRef<boolean>
@@ -371,6 +412,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
         if (prefetched.value) { return }
 
+        if (href.value === null) { return }
+
         prefetched.value = true
 
         const path = typeof to.value === 'string'
@@ -378,13 +421,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
         const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
         await Promise.all([
-          nuxtApp.hooks.callHook('link:prefetch', normalizedPath).catch(() => {}),
-          !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+          nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
+          !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
         ])
       }
 
       if (import.meta.client) {
-        checkPropConflicts(props, 'prefetch', 'noPrefetch')
+        checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
           let idleId: number
@@ -471,7 +514,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
         ) || null
 
-        // https://router.vuejs.org/api/interfaces/RouterLinkProps.html#custom-
+        // https://router.vuejs.org/api/interfaces/routerlinkprops#custom-
         if (props.custom) {
           if (!slots.default) {
             return null
@@ -511,29 +554,40 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
           rel,
           target,
-          onClick: (event) => {
+          onClick: async (event) => {
             if (isExternal.value || hasTarget.value) {
               return
             }
 
             event.preventDefault()
 
-            return props.replace
-              ? router.replace(href.value)
-              : router.push(href.value)
+            try {
+              const encodedHref = encodeRoutePath(href.value ?? '')
+              return await (props.replace ? router.replace(encodedHref) : router.push(encodedHref))
+            } finally {
+              // Focus the target element for hash links to restore accessibility behavior
+              // that was prevented by event.preventDefault()
+              if (import.meta.client && isHashLinkWithoutHashMode(to.value)) {
+                const rawHash = (to.value as string).slice(1)
+                let hash = rawHash
+                try {
+                  hash = decodeURIComponent(rawHash)
+                } catch {
+                  // ignore errors
+                }
+                const el = document.getElementById(hash)
+                el?.focus()
+              }
+            }
           },
         }, slots.default?.())
       }
     },
-    // }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>
-  }) as unknown as (new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp>) => InstanceType<DefineSetupFnComponent<
-    NuxtLinkProps<CustomProp>,
-    [],
-    SlotsType<NuxtLinkSlots<CustomProp>>
-  >>) & Record<string, any>
+  }) as unknown as NuxtLinkComponent & Record<string, any>
 }
 
-export default defineNuxtLink(nuxtLinkDefaults)
+const NuxtLink: NuxtLinkComponent & Record<string, any> = defineNuxtLink(nuxtLinkDefaults)
+export default NuxtLink
 
 // -- NuxtLink utils --
 function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {

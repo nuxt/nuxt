@@ -4,15 +4,16 @@ on:
   schedule:
     - cron: '30 1 * * *' # run every day
 
-permissions:
-  issues: write
+permissions: {}
 
 jobs:
-  stale:
-    runs-on: ubuntu-latest
+  stale-reproduction:
+    runs-on: ubuntu-slim
     if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
+    permissions:
+      issues: write
     steps:
-      - uses: actions/stale@3a9db7e6a41a89f618792c92c0e97cc736e1b13f # v10.0.0
+      - uses: actions/stale@eb5cf3af3ac0a1aa4c9c45633dd1ae542a27a899 # v10.3.0
         with:
           days-before-stale: -1 # Issues and PR will never be flagged stale automatically.
           stale-issue-label: 'needs reproduction' # Label that flags an issue as stale.
@@ -21,5 +22,23 @@ jobs:
           ignore-updates: true
           remove-stale-when-updated: false
           close-issue-message: This issue was closed because it was open for 7 days without a reproduction.
+          close-issue-label: closed-by-bot
+          operations-per-run: 300 #default 30
+
+  stale-bot:
+    runs-on: ubuntu-slim
+    if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/stale@eb5cf3af3ac0a1aa4c9c45633dd1ae542a27a899 # v10.3.0
+        with:
+          days-before-stale: -1 # Issues and PR will never be flagged stale automatically.
+          stale-issue-label: 'possible bot' # Label that flags an issue as stale.
+          only-labels: 'possible bot' # Only process these issues
+          days-before-issue-close: 7
+          ignore-updates: true
+          remove-stale-when-updated: false
+          close-issue-message: This issue was closed because there was no human behind it.
           close-issue-label: closed-by-bot
           operations-per-run: 300 #default 30
