@@ -162,6 +162,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
   - `timeout` - a number in milliseconds to wait before timing out the request (defaults to `undefined`, which means no timeout)
+  - `enabled`: a barrier that gates whether the `handler` may run (defaults to `true`). While `false`, every execution is blocked (initial fetch, `execute`/`refresh`, and watch triggers), and switching `true` → `false` cancels any in-flight request without clearing `data`. Re-enabling does not refetch on its own.
 
 ::note
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
@@ -191,6 +192,7 @@ The following options **can differ** without triggering warnings:
 - `immediate`
 - `dedupe`
 - `watch`
+- `enabled`
 
 ```ts
 // ❌ This will trigger a development warning
@@ -254,6 +256,7 @@ type AsyncDataOptions<DataT> = {
   watch?: MultiWatchSources
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
   timeout?: number
+  enabled?: MaybeRefOrGetter<boolean>
 }
 
 type AsyncDataRequestContext = {
