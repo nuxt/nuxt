@@ -17,4 +17,4 @@ jobs:
     steps:
       - name: trigger nuxt website deployment
         if: ${{ github.repository_owner == 'nuxt' }}
-        run: curl "${{ secrets.NUXT_WEBSITE_WEBHOOK_URL }}"
+        run: curl -fsS --max-time 30 --retry 3 --retry-delay 5 --retry-connrefused "${{ secrets.NUXT_WEBSITE_WEBHOOK_URL }}"
