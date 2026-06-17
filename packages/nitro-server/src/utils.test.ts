@@ -1,5 +1,11 @@
-import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern } from './utils.ts'
+import { describe, expect, it, vi } from 'vitest'
+import type { PluginContext, ResolveIdResult } from 'rollup'
+import { getLayerNodeModulesExcludePattern, nitroRuntimeResolvePlugin } from './utils.ts'
+
+function callResolveId (plugin: ReturnType<typeof nitroRuntimeResolvePlugin>, id: string, ctx: Partial<PluginContext> = {}): Promise<ResolveIdResult> {
+  const handler = typeof plugin.resolveId === 'function' ? plugin.resolveId : plugin.resolveId!.handler
+  return handler.call({ resolve: vi.fn().mockResolvedValue(null), ...ctx } as unknown as PluginContext, id, undefined, {} as any) as Promise<ResolveIdResult>
+}
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -61,5 +67,30 @@ describe('getLayerNodeModulesExcludePattern', () => {
     const withSlash = getLayerNodeModulesExcludePattern(['/proj/node_modules/foo/'])
     const withoutSlash = getLayerNodeModulesExcludePattern(['/proj/node_modules/foo'])
     expect(withSlash.source).toBe(withoutSlash.source)
+  })
+})
+
+describe('nitroRuntimeResolvePlugin', () => {
+  it('falls back to nitro-server\'s own copy of nitro and h3 when the project cannot resolve them', async () => {
+    const plugin = nitroRuntimeResolvePlugin()
+    for (const [id, expected] of [['nitro', '/nitro/'], ['nitro/runtime-config', '/nitro/'], ['nitro/h3', '/nitro/'], ['h3', '/h3/']] as const) {
+      const resolved = await callResolveId(plugin, id)
+      expect(resolved, id).toBeTypeOf('string')
+      expect(resolved as string, id).toContain(expected)
+    }
+  })
+
+  it('leaves unrelated specifiers untouched', async () => {
+    const plugin = nitroRuntimeResolvePlugin()
+    expect(await callResolveId(plugin, 'defu')).toBeUndefined()
+    expect(await callResolveId(plugin, 'nitrogen')).toBeUndefined()
+    expect(await callResolveId(plugin, 'h3x')).toBeUndefined()
+  })
+
+  it('defers to the project when it can resolve the import itself', async () => {
+    const plugin = nitroRuntimeResolvePlugin()
+    const resolve = vi.fn().mockResolvedValue({ id: '/project/node_modules/h3/index.mjs' })
+    expect(await callResolveId(plugin, 'h3', { resolve: resolve as unknown as PluginContext['resolve'] })).toBeUndefined()
+    expect(resolve).toHaveBeenCalledOnce()
   })
 })

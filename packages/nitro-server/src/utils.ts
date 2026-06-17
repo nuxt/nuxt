@@ -1,9 +1,43 @@
 import { fileURLToPath } from 'node:url'
+import type { Plugin } from 'rollup'
 import { dirname } from 'pathe'
 import escapeRE from 'escape-string-regexp'
+import { resolveModulePath } from 'exsolve'
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
+}
+
+const NITRO_RUNTIME_RESOLVE_RE = /^(?:nitro|h3)(?:\/|$)/
+
+/**
+ * Fall back to `@nuxt/nitro-server`'s own copy of `nitro` and `h3` when the
+ * project cannot resolve them itself.
+ *
+ * Under pnpm's isolated layout neither package is present in the project's
+ * `node_modules`, so Nitro's `rootDir`-anchored `nodeResolve` cannot resolve
+ * them from `server/` code. Routing those imports to the single instance
+ * `@nuxt/nitro-server` already depends on keeps resolution working without a
+ * second copy being installed into the user's project (which bypasses the
+ * builder/plugin context). When the project can resolve them itself, this
+ * stays out of the way so Nitro's normal externalization still applies.
+ */
+export function nitroRuntimeResolvePlugin (conditions?: string[]): Plugin {
+  const cache = new Map<string, string | null>()
+  return {
+    name: 'nuxt:nitro:runtime-resolve',
+    async resolveId (id, importer) {
+      if (!NITRO_RUNTIME_RESOLVE_RE.test(id)) { return }
+      if (await this.resolve(id, importer, { skipSelf: true })) { return }
+      if (!cache.has(id)) {
+        cache.set(id, resolveModulePath(id, { from: import.meta.url, conditions, try: true }) ?? null)
+      }
+      const resolved = cache.get(id)
+      if (resolved) {
+        return resolved
+      }
+    },
+  }
 }
 
 const NODE_MODULES_RE = /\/node_modules\//g
