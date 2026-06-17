@@ -528,8 +528,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // Add decorator support via Babel when experimental.decorators is enabled.
-  if (nuxt.options.experimental.decorators) {
+  const setupNitroDecorators = async (nitroConfig: NitroConfig) => {
     const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
     const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
       rootDir: nuxt.options.rootDir,
@@ -566,6 +565,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           ],
         }),
       )
+    }
+  }
+
+  // Add decorator support via Babel when experimental.decorators is enabled.
+  if (nuxt.options.experimental.decorators) {
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:build:before', nitro => setupNitroDecorators(nitro.options))
+    } else {
+      await setupNitroDecorators(nitroConfig)
     }
   }
 
