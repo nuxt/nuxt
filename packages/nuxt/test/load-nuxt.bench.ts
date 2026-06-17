@@ -14,6 +14,7 @@ describe('loadNuxt', () => {
     await Promise.all([
       rm(join(emptyDir, 'node_modules/load-nuxt/.nuxt'), { recursive: true, force: true }),
       rm(join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'), { recursive: true, force: true }),
+      rm(join(basicTestFixtureDir, 'node_modules/load-nuxt-dev/.nuxt'), { recursive: true, force: true }),
     ])
   })
 
@@ -34,6 +35,18 @@ describe('loadNuxt', () => {
       ready: true,
       overrides: {
         buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'),
+      },
+    })
+    await nuxt.close()
+  })
+
+  bench('loadNuxt in the basic test fixture (dev)', async () => {
+    const nuxt = await loadNuxt({
+      cwd: basicTestFixtureDir,
+      ready: true,
+      overrides: {
+        dev: true,
+        buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt-dev/.nuxt'),
       },
     })
     await nuxt.close()
