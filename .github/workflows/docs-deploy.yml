@@ -16,8 +16,7 @@ permissions: {}
 jobs:
   deploy-docs:
     runs-on: ubuntu-slim
-
+    if: ${{ github.repository_owner == 'nuxt' }}
     steps:
       - name: trigger docs deployment
-        if: ${{ github.repository_owner == 'nuxt' && github.event_name == 'push' }}
         run: curl -fsS --max-time 30 --retry 3 --retry-delay 5 --retry-connrefused "${{ secrets.DOCS_WEBHOOK }}"

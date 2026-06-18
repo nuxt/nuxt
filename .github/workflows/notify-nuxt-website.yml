@@ -14,7 +14,7 @@ permissions: {}
 jobs:
   notify:
     runs-on: ubuntu-slim
+    if: ${{ github.repository_owner == 'nuxt' }}
     steps:
       - name: trigger nuxt website deployment
-        if: ${{ github.repository_owner == 'nuxt' }}
         run: curl -fsS --max-time 30 --retry 3 --retry-delay 5 --retry-connrefused "${{ secrets.NUXT_WEBSITE_WEBHOOK_URL }}"
