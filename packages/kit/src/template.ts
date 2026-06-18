@@ -573,7 +573,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       : (stats?.isFile()
           ? await getPathSubstitution(absolutePath, nuxt.options.buildDir)
           // non-existent file probably shouldn't be resolved
-          : aliases[alias]!
+          : aliases[alias]!)
 
     if (contexts.includes('app')) {
       tsConfig.compilerOptions.paths[alias] = [finalPath]
