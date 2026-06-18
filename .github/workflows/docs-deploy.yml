@@ -16,7 +16,6 @@ permissions: {}
 jobs:
   deploy-docs:
     runs-on: ubuntu-slim
-
+    if: ${{ github.repository_owner == 'nuxt' }}
     steps:
-      - if: ${{ github.repository_owner == 'nuxt' && github.event_name == 'push' }}
-        run: curl "${{ secrets.DOCS_WEBHOOK }}"
+      - run: curl "${{ secrets.DOCS_WEBHOOK }}"
