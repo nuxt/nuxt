@@ -71,9 +71,9 @@ describe('getLayerNodeModulesExcludePattern', () => {
 })
 
 describe('nitroRuntimeResolvePlugin', () => {
-  it('falls back to nitro-server\'s own copy of nitro and h3 when the project cannot resolve them', async () => {
+  it('falls back to Nitro\'s own copies of its implicit runtime dependencies when the project cannot resolve them', async () => {
     const plugin = nitroRuntimeResolvePlugin()
-    for (const [id, expected] of [['nitro', '/nitro/'], ['nitro/runtime-config', '/nitro/'], ['nitro/h3', '/nitro/'], ['h3', '/h3/']] as const) {
+    for (const [id, expected] of [['nitro', '/nitro/'], ['nitro/runtime-config', '/nitro/'], ['nitro/h3', '/nitro/'], ['h3', '/h3/'], ['srvx', '/srvx/'], ['consola', '/consola/'], ['ofetch', '/ofetch/'], ['crossws', '/crossws/']] as const) {
       const resolved = await callResolveId(plugin, id)
       expect(resolved, id).toBeTypeOf('string')
       expect(resolved as string, id).toContain(expected)
@@ -82,9 +82,10 @@ describe('nitroRuntimeResolvePlugin', () => {
 
   it('leaves unrelated specifiers untouched', async () => {
     const plugin = nitroRuntimeResolvePlugin()
-    expect(await callResolveId(plugin, 'defu')).toBeUndefined()
+    expect(await callResolveId(plugin, 'vue')).toBeUndefined()
     expect(await callResolveId(plugin, 'nitrogen')).toBeUndefined()
     expect(await callResolveId(plugin, 'h3x')).toBeUndefined()
+    expect(await callResolveId(plugin, 'consolation')).toBeUndefined()
   })
 
   it('defers to the project when it can resolve the import itself', async () => {

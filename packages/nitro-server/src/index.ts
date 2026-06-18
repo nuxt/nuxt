@@ -23,7 +23,7 @@ import { runtimeDependencies } from 'nitro/meta'
 import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, nitroRuntimeResolvePlugin, toArray } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, nitroImplicitDependencies, nitroRuntimeResolvePlugin, toArray } from './utils.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -629,8 +629,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Hoist types for nitro implicit dependencies
   nuxt.options.typescript.hoist.push(
-    // Nitro auto-imported/augmented dependencies
-    'nitro',
+    ...nitroImplicitDependencies,
+    // Nitro auto-imported/augmented subpaths
     'nitro/app',
     'nitro/builder',
     'nitro/cache',
@@ -647,12 +647,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     'nitropack/types',
     'nitropack/runtime',
     'nitropack',
-    'srvx',
-    'defu',
-    'h3',
-    'consola',
-    'ofetch',
-    'crossws',
   )
 
   // Extend nitro config with hook
