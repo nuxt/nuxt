@@ -9,10 +9,11 @@ import { clientOnlySymbol } from '../components/client-only'
 import type { NuxtError } from './error'
 import { createError } from './error'
 import { onNuxtReady } from './ready'
+import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
 // @ts-expect-error virtual file
-import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -776,7 +777,7 @@ function buildAsyncData<
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
 
   // When prerendering, share payload data automatically between requests
-  const handler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?.['~sharedPrerenderCache']
+  const baseHandler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?.['~sharedPrerenderCache']
     ? _handler
     : (nuxtApp, options) => {
         const value = nuxtApp.ssrContext!['~sharedPrerenderCache']!.get(key)
@@ -787,6 +788,15 @@ function buildAsyncData<
         nuxtApp.ssrContext!['~sharedPrerenderCache']!.set(key, promise)
         return promise
       }
+
+  const handler: AsyncDataHandler<ResT> = import.meta.server && tracingChannelNuxt
+    ? (nuxtApp, opts) => traceAsync(
+        'nuxt.data',
+        // @ts-expect-error private property
+        { key, functionName: options._functionName },
+        () => Promise.resolve(baseHandler(nuxtApp, opts)),
+      )
+    : baseHandler
 
   const _ref = options.deep ? ref : shallowRef
   const hasCachedData = initialCachedData !== undefined
@@ -923,6 +933,10 @@ function buildAsyncData<
       unsubRefreshAsyncData()
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
+      }
+      if (nuxtApp._asyncDataPromises[key]) {
+        asyncData._abortController?.abort(new DOMException('AsyncData request cancelled by unmount', 'AbortError'))
+        delete nuxtApp._asyncDataPromises[key]
       }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {

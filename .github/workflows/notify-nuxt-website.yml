@@ -16,4 +16,5 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - name: trigger nuxt website deployment
+        if: ${{ github.repository_owner == 'nuxt' }}
         run: curl "${{ secrets.NUXT_WEBSITE_WEBHOOK_URL }}"

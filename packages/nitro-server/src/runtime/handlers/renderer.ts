@@ -15,6 +15,7 @@ import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { relative } from 'pathe'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
+import { traceAsync } from '#app/internal/tracing'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
 import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
@@ -28,7 +29,7 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
-import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive } from '#internal/nuxt.config.mjs'
+import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
@@ -185,10 +186,16 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   if (renderRouteResult instanceof Promise) { await renderRouteResult }
 
   if (NUXT_SSR_STREAMING && canStream && renderRouteContext.prefersStream) {
-    return renderStreamedResponse({ event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION: _PAYLOAD_EXTRACTION!, _PAYLOAD_INLINE, payloadURL })
+    const streamArgs = { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION: _PAYLOAD_EXTRACTION!, _PAYLOAD_INLINE, payloadURL }
+    return tracingChannelNuxt
+      ? traceAsync('nuxt.render', { event, ssrContext, streaming: true }, () => renderStreamedResponse(streamArgs))
+      : renderStreamedResponse(streamArgs)
   }
 
-  const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
+  const _rendered = await (tracingChannelNuxt
+    ? traceAsync('nuxt.render', { event, ssrContext, streaming: false }, () => renderer.renderToString(ssrContext))
+    : renderer.renderToString(ssrContext)
+  ).catch(async (error) => {
     // We use error to bypass full render if we have an early response we can make
     if (ssrContext['~renderResponse'] && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
 
