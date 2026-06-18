@@ -559,66 +559,86 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // Add decorator support via Babel when experimental.decorators is enabled.
-  if (nuxt.options.experimental.decorators) {
-    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
-    let hasDeps = true
-    for (const pkg of nitroDecoratorDeps) {
-      try {
-        await import(pkg)
-      } catch (_err) {
-        const err = _err as NodeJS.ErrnoException
-        if (err.code !== 'ERR_MODULE_NOT_FOUND' && err.code !== 'MODULE_NOT_FOUND') {
-          throw err
-        }
-        if (!isCI && hasTTY) {
-          logger.info('Decorator support requires additional dependencies.')
-          const shouldInstall = await logger.prompt(`Install \`${nitroDecoratorDeps.join('` and `')}\`?`, {
-            type: 'confirm',
-            initial: true,
-          })
-          if (shouldInstall) {
-            logger.start(`Installing ${nitroDecoratorDeps.map(d => `\`${d}\``).join(' and ')}...`)
-            await addDependency(nitroDecoratorDeps, {
-              dev: true,
-              cwd: nuxt.options.rootDir,
-              silent: true,
-            })
-            logger.info('Rerun Nuxt to enable decorator support.')
-            process.exit(1)
-          }
-        }
-        logger.warn(`Cannot find \`${pkg}\`. Install \`${nitroDecoratorDeps.join('` and `')}\` to enable decorator support.`)
-        hasDeps = false
-        break
-      }
+  const nitroDecoratorSetup = new WeakMap<NitroConfig, Promise<void>>()
+  const setupNitroDecorators = (nitroConfig: NitroConfig) => {
+    const existingSetup = nitroDecoratorSetup.get(nitroConfig)
+    if (existingSetup) {
+      return existingSetup
     }
 
-    if (hasDeps) {
-      const { babel } = await import('@rollup/plugin-babel')
-      nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
-      nitroConfig.rollupConfig!.plugins!.unshift(
-        babel({
-          babelHelpers: 'bundled',
-          configFile: false,
-          extensions: ['.ts', '.js', '.mjs', '.mts'],
-          plugins: [
-            // Syntax plugin allows Babel to parse TypeScript without transforming it,
-            // since the actual TS stripping is handled later by the bundler's esbuild plugin.
-            ['@babel/plugin-syntax-typescript', { isTSX: false }],
-            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
-          ],
-        }),
-        babel({
-          babelHelpers: 'bundled',
-          configFile: false,
-          extensions: ['.tsx', '.jsx'],
-          plugins: [
-            ['@babel/plugin-syntax-typescript', { isTSX: true }],
-            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
-          ],
-        }),
-      )
+    const setup = (async () => {
+      const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
+      let hasDeps = true
+      for (const pkg of nitroDecoratorDeps) {
+        try {
+          await import(pkg)
+        } catch (_err) {
+          const err = _err as NodeJS.ErrnoException
+          if (err.code !== 'ERR_MODULE_NOT_FOUND' && err.code !== 'MODULE_NOT_FOUND') {
+            throw err
+          }
+          if (!isCI && hasTTY) {
+            logger.info('Decorator support requires additional dependencies.')
+            const shouldInstall = await logger.prompt(`Install \`${nitroDecoratorDeps.join('` and `')}\`?`, {
+              type: 'confirm',
+              initial: true,
+            })
+            if (shouldInstall) {
+              logger.start(`Installing ${nitroDecoratorDeps.map(d => `\`${d}\``).join(' and ')}...`)
+              await addDependency(nitroDecoratorDeps, {
+                dev: true,
+                cwd: nuxt.options.rootDir,
+                silent: true,
+              })
+              logger.info('Rerun Nuxt to enable decorator support.')
+              process.exit(1)
+            }
+          }
+          logger.warn(`Cannot find \`${pkg}\`. Install \`${nitroDecoratorDeps.join('` and `')}\` to enable decorator support.`)
+          hasDeps = false
+          break
+        }
+      }
+
+      if (hasDeps) {
+        const { babel } = await import('@rollup/plugin-babel')
+        nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
+        nitroConfig.rollupConfig!.plugins!.unshift(
+          babel({
+            babelHelpers: 'bundled',
+            configFile: false,
+            extensions: ['.ts', '.js', '.mjs', '.mts'],
+            plugins: [
+              // Syntax plugin allows Babel to parse TypeScript without transforming it,
+              // since the actual TS stripping is handled later by the bundler's esbuild plugin.
+              ['@babel/plugin-syntax-typescript', { isTSX: false }],
+              ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+            ],
+          }),
+          babel({
+            babelHelpers: 'bundled',
+            configFile: false,
+            extensions: ['.tsx', '.jsx'],
+            plugins: [
+              ['@babel/plugin-syntax-typescript', { isTSX: true }],
+              ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+            ],
+          }),
+        )
+      }
+    })()
+
+    nitroDecoratorSetup.set(nitroConfig, setup)
+    setup.catch(() => nitroDecoratorSetup.delete(nitroConfig))
+    return setup
+  }
+
+  // Add decorator support via Babel when experimental.decorators is enabled.
+  if (nuxt.options.experimental.decorators) {
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:build:before', nitro => setupNitroDecorators(nitro.options))
+    } else {
+      await setupNitroDecorators(nitroConfig)
     }
   }
 
