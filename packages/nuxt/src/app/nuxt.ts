@@ -8,7 +8,7 @@ import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { EventHandlerRequest, H3Event } from '@nuxt/nitro-server/h3'
+import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
 import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
@@ -642,7 +642,7 @@ export function useNuxtApp (id?: string): NuxtApp {
 
 /** @since 3.0.0 */
 /* @__NO_SIDE_EFFECTS__ */
-export function useRuntimeConfig (_event?: H3Event<EventHandlerRequest>): RuntimeConfig {
+export function useRuntimeConfig (): RuntimeConfig {
   return useNuxtApp().$config
 }
 
