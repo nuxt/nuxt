@@ -208,7 +208,7 @@ describe('nitro compatible APIs', () => {
     expectTypeOf(a).toEqualTypeOf<Record<string, any>>()
   })
   it('useRuntimeConfig', () => {
-    useRuntimeConfig({} as H3Event)
+    useRuntimeConfig()
   })
 })
 
