@@ -47,16 +47,20 @@ export function nitroRuntimeResolvePlugin (conditions?: string[]): Plugin {
   const nitroDir = resolveModulePath('nitro/package.json', { from: import.meta.url, try: true })
   return {
     name: 'nuxt:nitro:runtime-resolve',
-    async resolveId (id, importer) {
-      if (!nitroDir || !nitroRuntimeResolveRe.test(id)) { return }
-      if (await this.resolve(id, importer, { skipSelf: true })) { return }
-      if (!cache.has(id)) {
-        cache.set(id, resolveModulePath(id, { from: nitroDir, conditions, try: true }) ?? null)
-      }
-      const resolved = cache.get(id)
-      if (resolved) {
-        return resolved
-      }
+    resolveId: {
+      filter: {
+        id: nitroRuntimeResolveRe,
+      },
+      async handler (id, importer) {
+        if (!nitroDir || await this.resolve(id, importer, { skipSelf: true })) { return }
+        if (!cache.has(id)) {
+          cache.set(id, resolveModulePath(id, { from: nitroDir, conditions, try: true }) ?? null)
+        }
+        const resolved = cache.get(id)
+        if (resolved) {
+          return resolved
+        }
+      },
     },
   }
 }

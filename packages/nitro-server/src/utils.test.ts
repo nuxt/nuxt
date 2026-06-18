@@ -71,21 +71,28 @@ describe('getLayerNodeModulesExcludePattern', () => {
 })
 
 describe('nitroRuntimeResolvePlugin', () => {
+  function filterRe (plugin: ReturnType<typeof nitroRuntimeResolvePlugin>): RegExp {
+    const id = typeof plugin.resolveId === 'object' ? plugin.resolveId.filter?.id : undefined
+    return id as RegExp
+  }
+
+  it('only matches Nitro\'s implicit runtime dependencies', () => {
+    const re = filterRe(nitroRuntimeResolvePlugin())
+    for (const id of ['nitro', 'nitro/runtime-config', 'nitro/h3', 'h3', 'h3/tracing', 'srvx', 'defu', 'consola', 'ofetch', 'crossws']) {
+      expect(re.test(id), id).toBe(true)
+    }
+    for (const id of ['vue', 'nitrogen', 'h3x', 'consolation', '@scope/nitro']) {
+      expect(re.test(id), id).toBe(false)
+    }
+  })
+
   it('falls back to Nitro\'s own copies of its implicit runtime dependencies when the project cannot resolve them', async () => {
     const plugin = nitroRuntimeResolvePlugin()
     for (const [id, expected] of [['nitro', '/nitro/'], ['nitro/runtime-config', '/nitro/'], ['nitro/h3', '/nitro/'], ['h3', '/h3/'], ['srvx', '/srvx/'], ['consola', '/consola/'], ['ofetch', '/ofetch/'], ['crossws', '/crossws/']] as const) {
       const resolved = await callResolveId(plugin, id)
       expect(resolved, id).toBeTypeOf('string')
-      expect(resolved as string, id).toContain(expected)
+      expect((resolved as string).replace(/\\/g, '/'), id).toContain(expected)
     }
-  })
-
-  it('leaves unrelated specifiers untouched', async () => {
-    const plugin = nitroRuntimeResolvePlugin()
-    expect(await callResolveId(plugin, 'vue')).toBeUndefined()
-    expect(await callResolveId(plugin, 'nitrogen')).toBeUndefined()
-    expect(await callResolveId(plugin, 'h3x')).toBeUndefined()
-    expect(await callResolveId(plugin, 'consolation')).toBeUndefined()
   })
 
   it('defers to the project when it can resolve the import itself', async () => {
