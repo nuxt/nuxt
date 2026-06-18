@@ -83,7 +83,7 @@ export function clearNuxtState (
       if (reset && nuxtApp._state[key]) {
         nuxtApp.payload.state[key] = nuxtApp._state[key]._default()
       } else {
-        nuxtApp.payload.state[key] = undefined
+        delete nuxtApp.payload.state[key]
       }
     }
   }

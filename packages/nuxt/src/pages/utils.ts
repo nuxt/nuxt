@@ -1,4 +1,3 @@
-import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 
 import { normalize, relative } from 'pathe'
@@ -10,7 +9,6 @@ import { hash } from 'ohash'
 import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
-import { parseSync, transformSync } from 'rolldown/utils'
 import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
@@ -198,9 +196,30 @@ export function extractScriptContent (sfc: string) {
   return contents
 }
 
-const PAGE_EXTRACT_RE = /(definePageMeta|defineRouteRules)\([\s\S]*?\)/g
+const PAGE_META_MACRO_NAMES = ['definePageMeta', 'defineRouteRules'] as const
+// Cheap pre-scan only. The AST walk below validates call expressions so this
+// intentionally matches macro names, not JavaScript/TypeScript call syntax.
+const PAGE_EXTRACT_RE = new RegExp(`\\b(${PAGE_META_MACRO_NAMES.join('|')})\\b`, 'g')
 export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+
+type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
+
+const STATIC_EXPRESSION_WRAPPERS = new Set([
+  'ParenthesizedExpression',
+  'TSAsExpression',
+  'TSNonNullExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+])
+
+function unwrapStaticExpression (node: ESTree.Node | undefined): ESTree.Node | undefined {
+  let current = node
+  while (current && STATIC_EXPRESSION_WRAPPERS.has(current.type)) {
+    current = (current as StaticExpressionWrapper).expression
+  }
+  return current
+}
 
 const pageContentsCache: Record<string, string> = {}
 const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
@@ -247,24 +266,8 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       if (fnName in found === false || found[fnName] !== false) { return }
       found[fnName] = true
 
-      let code = script.code
-      let pageExtractArgument = node.expression.arguments[0]
-
-      // TODO: always true because `extractScriptContent` only detects ts/tsx loader
-      if (/tsx?/.test(script.loader)) {
-        // slice, transform and parse the `define...` macro node to avoid parsing the whole file
-        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader, tsconfig: false })
-        if (transformed.errors.length) {
-          for (const error of transformed.errors) {
-            logger.warn(`Error while transforming \`${fnName}()\`\n` + error.message)
-          }
-          return
-        }
-
-        // we already know that the first statement is a call expression
-        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ESTree.ExpressionStatement).expression as ESTree.CallExpression).arguments[0]
-        code = transformed.code
-      }
+      const code = script.code
+      const pageExtractArgument = unwrapStaticExpression(node.expression.arguments[0])
 
       if (pageExtractArgument?.type !== 'ObjectExpression') {
         logger.warn(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`)
@@ -430,6 +433,22 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
         : normalizeComponent(page, pageImport, route.name, islandKey)
 
+      // Named views from the `name@view.vue` filename convention. The scanner
+      // emits `components: { default: <file>, <view>: <file> }`.
+      // https://router.vuejs.org/guide/essentials/named-views.html
+      let componentsObject: string | undefined
+      if (page.components) {
+        const viewEntries: string[] = []
+        for (const viewName in page.components) {
+          if (viewName === 'default') { continue }
+          const viewFile = normalize(page.components[viewName]!)
+          viewEntries.push(`${JSON.stringify(viewName)}: ${genDynamicImport(viewFile)}`)
+        }
+        if (viewEntries.length > 0) {
+          componentsObject = `{ default: ${component}, ${viewEntries.join(', ')} }`
+        }
+      }
+
       const metaRoute: NormalizedRoute = {
         name: metaRouteName,
         path: `${metaImportName}?.path ?? ${route.path}`,
@@ -438,6 +457,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
         component,
+      }
+      if (componentsObject) {
+        metaRoute.components = componentsObject
       }
 
       if (page.mode === 'server') {
@@ -519,51 +541,63 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
 }
 
 export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {
-  if (node.type === 'ObjectExpression') {
-    const valueString = code.slice(node.start, node.end)
-    try {
-      return {
-        value: JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {})),
-        serializable: true,
-      }
-    } catch {
-      return {
-        serializable: false,
-      }
+  node = unwrapStaticExpression(node) || node
+
+  if (node.type === 'Literal') {
+    if (typeof node.value === 'string' || typeof node.value === 'number' || typeof node.value === 'boolean' || node.value === null) {
+      return { value: node.value, serializable: true }
     }
+    return { serializable: false }
+  }
+
+  if (node.type === 'UnaryExpression' && (node.operator === '-' || node.operator === '+')) {
+    const arg = node.argument
+    if (arg.type === 'Literal' && typeof arg.value === 'number') {
+      return { value: node.operator === '-' ? -arg.value : arg.value, serializable: true }
+    }
+    return { serializable: false }
   }
 
   if (node.type === 'ArrayExpression') {
-    const values: string[] = []
+    const values: any[] = []
     for (const element of node.elements) {
-      if (!element) {
-        continue
+      // `null` element is a sparse-array hole.
+      if (!element || element.type === 'SpreadElement') {
+        return { serializable: false }
       }
       const { serializable, value } = isSerializable(code, element)
       if (!serializable) {
-        return {
-          serializable: false,
-        }
+        return { serializable: false }
       }
       values.push(value)
     }
+    return { value: values, serializable: true }
+  }
 
-    return {
-      value: values,
-      serializable: true,
+  if (node.type === 'ObjectExpression') {
+    const value: Record<string, any> = {}
+    for (const property of node.properties) {
+      if (property.type !== 'Property' || property.computed || property.kind !== 'init' || property.method) {
+        return { serializable: false }
+      }
+      let key: string
+      if (property.key.type === 'Identifier') {
+        key = property.key.name
+      } else if (property.key.type === 'Literal' && (typeof property.key.value === 'string' || typeof property.key.value === 'number')) {
+        key = String(property.key.value)
+      } else {
+        return { serializable: false }
+      }
+      const { serializable, value: propertyValue } = isSerializable(code, property.value)
+      if (!serializable) {
+        return { serializable: false }
+      }
+      value[key] = propertyValue
     }
+    return { value, serializable: true }
   }
 
-  if (node.type === 'Literal' && (typeof node.value === 'string' || typeof node.value === 'boolean' || typeof node.value === 'number' || node.value === null)) {
-    return {
-      value: node.value,
-      serializable: true,
-    }
-  }
-
-  return {
-    serializable: false,
-  }
+  return { serializable: false }
 }
 
 export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {

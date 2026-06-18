@@ -1,12 +1,13 @@
-import type { FetchError, FetchOptions, ResponseType as _ResponseType } from 'ofetch'
+import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
 import type { $Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
 import { isPlainObject } from '@vue/shared'
-import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
+import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
+import type { NuxtError } from './error'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
 // @ts-expect-error virtual file
@@ -19,7 +20,7 @@ export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRoute
 
 type ComputedOptions<T extends Record<string, any>> = {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
+  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | MaybeRefOrGetter<T[K]>
 }
 
 interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>, DataT = any> extends Omit<FetchOptions<_ResponseType, DataT>, 'cache'> {
@@ -41,6 +42,19 @@ export interface UseFetchOptions<
   $fetch?: $Fetch
   watch?: MultiWatchSources | false
 }
+
+export interface UseFetchOptionsWithTransform<
+  ResT,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = undefined,
+  R extends NitroFetchRequest = string & {},
+  M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
+> extends Omit<UseFetchOptions<ResT, DataT, PickKeys, DefaultT, R, M>, 'transform'> {
+  transform: _Transform<ResT, DataT>
+}
+
+const MAYBE_REF_OR_GETTER_OPTION_KEYS = ['method', 'baseURL', 'query', 'params', 'body', 'headers'] as const
 
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
@@ -84,11 +98,107 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
   return segments
 }
 
+// Type of the public-facing `useFetch` returned by the factory below.
+// Expressed as a callable interface so that all overloads survive
+// oxc's isolated-declarations dts pipeline.
+type FetchFactoryDataT<FDataT, _ResT> = [unknown] extends [FDataT] ? _ResT : FDataT
+type FetchFactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
+type FetchFactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
+export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined> {
+  // Auto-key, opts with transform, default = undefined
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Auto-key, opts with transform, default = DataT
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Auto-key, default = undefined
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = FetchFactoryDataT<FDataT, _ResT>,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  // Auto-key, default = DataT
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = FetchFactoryDataT<FDataT, _ResT>,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  // Explicit auto-key as positional arg
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = undefined,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    arg2?: string,
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+}
+
+export interface CreateUseFetch {
+  <
+    FResT = void,
+    FReqT extends NitroFetchRequest = NitroFetchRequest,
+    FMethod extends AvailableRouterMethod<FReqT> = FResT extends void ? 'get' extends AvailableRouterMethod<FReqT> ? 'get' : AvailableRouterMethod<FReqT> : AvailableRouterMethod<FReqT>,
+    F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
+    FDataT = F_ResT,
+    FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+    FDefaultT = undefined,
+  >(
+    options?:
+      | Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
+      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>),
+  ): UseFetch<FDataT, FPickKeys, FDefaultT>
+}
+
 /**
  * A factory function to create a custom `useFetch` composable with pre-defined default options.
  * @since 4.2.0
  */
-export const createUseFetch = defineKeyedFunctionFactory({
+export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateUseFetch>({
   name: 'createUseFetch',
   factory<
     FResT = void,
@@ -101,7 +211,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
   >(options:
       Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
       | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>) = {},
-  ) {
+  ): UseFetch<FDataT, FPickKeys, FDefaultT> {
     /**
      * Fetch data from an API endpoint with an SSR-friendly composable.
      * See {@link https://nuxt.com/docs/4.x/api/composables/use-fetch}
@@ -111,33 +221,59 @@ export const createUseFetch = defineKeyedFunctionFactory({
      */
     function useFetch<
       ResT = void,
-      ErrorT = FetchError,
+      ErrorT = NuxtError<unknown>,
       ReqT extends NitroFetchRequest = NitroFetchRequest,
       Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = _ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = undefined,
+      DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+      opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
-      ErrorT = FetchError,
+      ErrorT = NuxtError<unknown>,
       ReqT extends NitroFetchRequest = NitroFetchRequest,
       Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = _ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-      DefaultT = DataT,
+      DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+      opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
-      ErrorT = FetchError,
+      ErrorT = NuxtError<unknown>,
+      ReqT extends NitroFetchRequest = NitroFetchRequest,
+      Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+      _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+      DataT = [unknown] extends [FDataT] ? _ResT : FDataT,
+      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+      DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
+    > (
+      request: Ref<ReqT> | ReqT | (() => ReqT),
+      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    ): AsyncData<PickFrom<DataT, [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>> | DefaultT, ErrorT | undefined>
+    function useFetch<
+      ResT = void,
+      ErrorT = NuxtError<unknown>,
+      ReqT extends NitroFetchRequest = NitroFetchRequest,
+      Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+      _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+      DataT = [unknown] extends [FDataT] ? _ResT : FDataT,
+      PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+      DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
+    > (
+      request: Ref<ReqT> | ReqT | (() => ReqT),
+      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    ): AsyncData<PickFrom<DataT, [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>> | DefaultT, ErrorT | undefined>
+    function useFetch<
+      ResT = void,
+      ErrorT = NuxtError<unknown>,
       ReqT extends NitroFetchRequest = NitroFetchRequest,
       Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -225,19 +361,26 @@ export const createUseFetch = defineKeyedFunctionFactory({
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
         const _$fetch: $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || $fetch
 
-        return _$fetch(_request.value, { signal, ..._fetchOptions } as any) as Promise<_ResT>
+        const resolvedOptions = { signal, ..._fetchOptions } as Record<string, unknown>
+        for (const key of MAYBE_REF_OR_GETTER_OPTION_KEYS) {
+          if (typeof resolvedOptions[key] === 'function') {
+            resolvedOptions[key] = toValue(resolvedOptions[key] as () => unknown)
+          }
+        }
+
+        return _$fetch(_request.value, resolvedOptions as any) as Promise<_ResT>
       }, _asyncDataOptions)
 
       return asyncData
     }
 
-    return useFetch
+    return useFetch as unknown as UseFetch<FDataT, FPickKeys, FDefaultT>
   },
 })
 
-export const useFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory()
+export const useFetch: UseFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory()
 
-export const useLazyFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory({
+export const useLazyFetch: UseFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory({
   lazy: true,
   // @ts-expect-error private property
   _functionName: 'useLazyFetch',

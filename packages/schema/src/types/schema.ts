@@ -703,6 +703,17 @@ export interface ConfigSchema {
   test: boolean
 
   /**
+   * The active Nuxt environment name, used by `c12` to select configuration
+   * overrides (e.g. `$env.staging`). Defaults to the explicit `envName` passed to
+   * `loadNuxtConfig` (e.g. via `nuxt --envName`), falling back to `'development'`
+   * in dev mode and `'production'` otherwise.
+   *
+   * Exposed to runtime app code as `import.meta.envName`.
+   *
+   */
+  envName: string
+
+  /**
    * Set to `true` to enable debug mode.
    *
    * At the moment, it prints out hook names and timings on the server, and logs hook arguments as well in the browser.
@@ -1212,13 +1223,15 @@ export interface ConfigSchema {
      * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve performance in large projects or on Windows platforms.
      * You can also set this to `chokidar` to watch all files in your source directory.
      *
+     * Set to `'builder'` to reuse the active builder's own file watcher (e.g. Vite's `server.watcher`) instead of starting a second one. If the active builder does not provide a watcher, Nuxt falls back to its default selection.
+     *
      * @see [chokidar](https://github.com/paulmillr/chokidar)
      *
      * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      *
-     * @default 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
+     * @default 'builder' if `future.compatibilityVersion` >= 5, otherwise 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
      */
-    watcher: 'chokidar' | 'parcel' | 'chokidar-granular'
+    watcher: 'chokidar' | 'parcel' | 'chokidar-granular' | 'builder'
 
     /**
      * Enable native async context to be accessible for nested composables
@@ -1521,6 +1534,16 @@ export interface ConfigSchema {
     purgeCachedData: boolean
 
     /**
+     * When a `<NuxtLink>` is prefetched and the destination route has payload extraction enabled (the default for prerendered and cached routes), forward any `<link rel="preload">` hints that the destination set via `useHead` (or via modules like `@nuxt/image`'s `<NuxtImg preload>`) into the current document.
+     *
+     * The forwarded links are downgraded from `rel="preload"` to `rel="prefetch"` so they don't compete with the current page's critical resources. Only user-defined head tags are forwarded; build-time JS/CSS chunk preloads are not.
+     *
+     * @default false
+     * @see [Issue #34953](https://github.com/nuxt/nuxt/issues/34953)
+     */
+    prefetchPreloadTags: boolean
+
+    /**
      * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
      *
      * @default true
@@ -1599,6 +1622,33 @@ export interface ConfigSchema {
     nitroAutoImports: boolean
 
     /**
+     * Enable SSR streaming to improve Time to First Byte (TTFB).
+     *
+     * When enabled, the server sends the HTML shell (head, styles, preload hints)
+     * immediately and streams the rendered body content progressively.
+     *
+     * Streaming is automatically disabled for bot/crawler user agents to ensure
+     * search engines receive fully-rendered HTML. You can opt a route out of
+     * streaming via `routeRules` with `streaming: false`.
+     *
+     * Set to `true` to enable with defaults, or pass an object to configure options.
+     *
+     * @default false
+     * @see https://github.com/nuxt/nuxt/issues/4753
+     */
+    ssrStreaming: boolean | {
+      enabled?: boolean
+      /**
+       * A regular expression matching bot/crawler user agents. Requests matching
+       * the pattern are served fully-buffered (non-streamed) responses for SEO
+       * safety.
+       *
+       * @default /bot\b|crawl|spider|slurp|facebookexternalhit|google\b|bing\b|yandex\b|baidu\b|duckduck/i
+       */
+      botRegex?: RegExp
+    }
+
+    /**
      * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.
      *
      * Hookable v6 may return `void` instead of `Promise<void>` when there are no registered
@@ -1658,7 +1708,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | DotenvOptions }
+  _loadOptions: { dotenv?: boolean | DotenvOptions, envName?: string | false }
 
   /**
    *

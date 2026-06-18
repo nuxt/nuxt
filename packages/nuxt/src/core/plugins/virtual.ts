@@ -1,12 +1,24 @@
 import process from 'node:process'
 import { filterAliases, resolveAlias } from '@nuxt/kit'
 import type { AliasValue, Nuxt } from '@nuxt/schema'
-import { dirname, isAbsolute, resolve } from 'pathe'
+import { dirname, isAbsolute, relative, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
 
 const PREFIX = 'virtual:nuxt:'
 const PREFIX_RE = /^\/?virtual:nuxt:/
+
+// encode the vfs key as a path relative to `rootDir` so that the same Nuxt
+// source produces byte-identical SSR output across machines
+export function toVirtualId (absolutePath: string, nuxt: Nuxt): string {
+  return PREFIX + encodeURIComponent(relative(nuxt.options.rootDir, absolutePath))
+}
+
+export function fromVirtualId (id: string, nuxt: Nuxt): string {
+  const search = id.match(QUERY_RE)?.[0] || ''
+  const relativePart = withoutQuery(decodeURIComponent(withoutPrefix(id)))
+  return resolve(nuxt.options.rootDir, relativePart) + search
+}
 
 interface VirtualFSPluginOptions {
   mode: 'client' | 'server'
@@ -36,7 +48,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
     id = resolveAlias(id, alias)
 
     if (PREFIX_RE.test(id)) {
-      id = withoutPrefix(decodeURIComponent(id))
+      id = fromVirtualId(id, nuxt)
     }
 
     const search = id.match(QUERY_RE)?.[0] || ''
@@ -49,15 +61,15 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
 
     const resolvedId = resolveWithExt(id)
     if (resolvedId) {
-      return PREFIX + encodeURIComponent(resolvedId) + search
+      return toVirtualId(resolvedId, nuxt) + search
     }
 
     if (importer && RELATIVE_ID_RE.test(id)) {
-      const path = resolve(dirname(withoutPrefix(decodeURIComponent(importer))), id)
+      const path = resolve(dirname(withoutQuery(fromVirtualId(importer, nuxt))), id)
       // resolve relative paths to virtual files
       const resolved = resolveWithExt(path)
       if (resolved) {
-        return PREFIX + encodeURIComponent(resolved) + search
+        return toVirtualId(resolved, nuxt) + search
       }
     }
   }
@@ -103,7 +115,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
             return res
           }
           if (importer && PREFIX_RE.test(importer) && RELATIVE_ID_RE.test(id)) {
-            return this.resolve?.(id, withoutPrefix(decodeURIComponent(importer)), { skipSelf: true })
+            return this.resolve?.(id, withoutQuery(fromVirtualId(importer, nuxt)), { skipSelf: true })
           }
         },
       },
@@ -114,7 +126,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
         id: PREFIX_RE,
       },
       handler (id) {
-        const key = withoutQuery(withoutPrefix(decodeURIComponent(id)))
+        const key = withoutQuery(fromVirtualId(id, nuxt))
         return {
           code: nuxt.vfs[key] || '',
           map: null,

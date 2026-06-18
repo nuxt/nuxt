@@ -1,4 +1,4 @@
-import type { Component, PropType, RendererNode, VNode } from 'vue'
+import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsType, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
@@ -46,7 +46,26 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
   await Promise.all(promises)
 }
 
-export default defineComponent({
+interface NuxtIslandProps {
+  name: string
+  lazy?: boolean
+  props?: Record<string, any>
+  context?: Record<string, any>
+  scopeId?: string | undefined | null
+  source?: string
+  dangerouslyLoadClientComponents?: boolean
+}
+
+type NuxtIslandEmits = {
+  error: (error: unknown) => void
+}
+
+type NuxtIslandSlots = SlotsType<{
+  fallback?: (props: { error: unknown }) => VNode[]
+  [name: string]: ((props: any) => VNode[]) | undefined
+}>
+
+const NuxtIsland = defineComponent({
   name: 'NuxtIsland',
   inheritAttrs: false,
   props: {
@@ -218,7 +237,7 @@ export default defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          throw new Error(e.toString(), { cause: e })
         }
         throw e
       }
@@ -356,4 +375,6 @@ export default defineComponent({
       ]
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits, NuxtIslandSlots>
+
+export default NuxtIsland

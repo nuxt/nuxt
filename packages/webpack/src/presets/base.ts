@@ -14,6 +14,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets, fileName } from '../utils/config.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
+import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
 import { WebpackBarPlugin, builder, webpack } from '#builder'
 
@@ -129,6 +130,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   // Emit explicit dynamic import statements for rollup compatibility
   if (ctx.isServer && !ctx.isDev) {
     ctx.config.plugins.push(new RollupCompatDynamicImportPlugin())
+    ctx.config.plugins.push(new StripInvalidPureAnnotationsPlugin())
   }
 }
 
@@ -247,6 +249,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'import.meta.test': ctx.nuxt.options.test,
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
+    'import.meta.envName': JSON.stringify(ctx.options.envName),
     'import.meta.server': ctx.isServer,
   }
 

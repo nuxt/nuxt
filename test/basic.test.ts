@@ -153,6 +153,13 @@ describe('modules', () => {
 })
 
 describe('pages', () => {
+  it('exposes the current env name at runtime', async () => {
+    const expectedEnvName = isDev ? 'development' : 'production'
+    const { page } = await renderPage('/env-name')
+    expect(await page.getByTestId('env-name').textContent()).toBe(expectedEnvName)
+    await page.close()
+  })
+
   it('render index', async () => {
     const html = await $fetch<string>('/')
 
@@ -551,6 +558,12 @@ describe('pages', () => {
     expect(html).not.toContain('Sugar Counter 12 x 0 = 0')
     // ensure NuxtClientFallback is being rendered with its fallback tag and attributes
     expect(html).toContain('<span class="break-in-ssr">this failed to render</span>')
+
+    const xssHtml = await $fetch<string>('/client-fallback', {
+      query: { unsafe: '<script>alert(1)</script>' },
+    })
+    expect(xssHtml).not.toContain('<section class="escaped-fallback"><script>alert(1)</script></section>')
+    expect(xssHtml).toContain('<section class="escaped-fallback">&lt;script&gt;alert(1)&lt;/script&gt;</section>')
     // ensure Fallback slot is being rendered server side
     expect(html).toContain('Hello world !')
     // ensure fallback is rendered when an async component throws inside a wrapping component
@@ -1242,6 +1255,20 @@ describe('navigate', () => {
     expect(content).toContain('%3E')
     expect(content).toContain('%26')
     expect(content).toContain('%27')
+  })
+
+  it.each([
+    '/..//evil.com',
+    '/.//evil.com',
+    '/%2e%2e//evil.com',
+    '/app/..//evil.com',
+  ])('rejects protocol-relative redirect target via path normalization (%s)', async (next) => {
+    const res = await fetch('/navigate-to-open-redirect?next=' + encodeURIComponent(next), { redirect: 'manual' })
+    const location = res.headers.get('location') || ''
+    expect(location.startsWith('//')).toBe(false)
+    const body = await res.text()
+    const content = body.match(/content="0; url=([^"]*)"/)?.[1] ?? ''
+    expect(content.startsWith('//')).toBe(false)
   })
 })
 
@@ -2135,6 +2162,27 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
+  it.skipIf(!isTestingAppManifest)('should forward destination preload tags as prefetch hints on link prefetch', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    // The NuxtLink to /prefetch/server-components is in view, so visibility-based
+    // prefetching should trigger loading its payload, which includes the
+    // forwarded preload links registered via `useHead` on that page.
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+    )
+
+    // Confirm the rel was downgraded from preload to prefetch.
+    const preloadCount = await page.evaluate(
+      () => document.head.querySelectorAll('link[rel="preload"][href$="/public.svg"]').length,
+    )
+    expect(preloadCount).toBe(0)
+
+    await page.close()
+  })
+
   it('should not prefetch certain dynamic imports by default', async () => {
     const html = await $fetch<string>('/auth')
     // should not prefetch global components
@@ -2327,7 +2375,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
 
 describe.skipIf(isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
-    const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(typeof data.prerenderedAt).toEqual('number')
 
@@ -2389,14 +2437,14 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   it('should not include server-component HTML in payload', async () => {
-    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
   })
 
   it('should render payload for ISR routes', async () => {
-    const payload = await $fetch('/isr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['isr-data']).toBeDefined()
@@ -2404,7 +2452,7 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   it('should render payload for SWR routes', async () => {
-    const payload = await $fetch('/swr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-data']).toBeDefined()
@@ -2413,7 +2461,7 @@ describe.skipIf(isWindows)('payload rendering', () => {
 
   // https://github.com/nuxt/nuxt/issues/34856
   it('should render payload for SSR+SWR routes that opt out of a catch-all `ssr: false` rule', async () => {
-    const payload = await $fetch('/route-rules/swr-in-spa/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/route-rules/swr-in-spa/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-in-spa-data']).toEqual({ ok: true })

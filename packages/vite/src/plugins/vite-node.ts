@@ -1,12 +1,14 @@
 import process from 'node:process'
-import { unlink } from 'node:fs/promises'
+import { rm } from 'node:fs/promises'
 import type { Socket } from 'node:net'
 import net from 'node:net'
 import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
-import { isAbsolute, join, normalize } from 'pathe'
+import { randomUUID } from 'node:crypto'
+import { win32 as pathWin32 } from 'node:path'
+import { dirname, isAbsolute, join, normalize } from 'pathe'
 import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
@@ -14,10 +16,9 @@ import type { FetchResult } from 'vite-node'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
-import { provider } from 'std-env'
 import { resolveModulePath } from 'exsolve'
 
-import { isCSS } from '../utils/index.ts'
+import { isCSS, toVirtualId } from '../utils/index.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 import type { ErrorPartial } from '../types.ts'
 
@@ -124,34 +125,43 @@ function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string
   return manifest
 }
 
-function generateSocketPath () {
-  const uniqueSuffix = `${process.pid}-${Date.now()}`
-  const socketName = `nuxt-vite-node-${uniqueSuffix}`
+export interface SocketPathInfo {
+  socketPath: string
+  /** mkdtemp directory we own; cleaned up on close. Undefined for Windows pipes. */
+  parentDir?: string
+}
 
-  // Windows: pipe
-  if (process.platform === 'win32') {
-    return join(String.raw`\\.\pipe`, socketName)
+// only exported for tests
+export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.tmpdir()): SocketPathInfo {
+  const socketName = 'nuxt.sock'
+  const socketDir = `nuxt-vite-`
+
+  if (platform === 'win32') {
+    // use `node:path/win32` so the `\\.\pipe\...` separators stay as backslashes
+    // (for deno compatibility) plus enough randomness to avoid collisions and being predictable
+    return { socketPath: pathWin32.join(String.raw`\\.\pipe`, socketDir + randomUUID().slice(0, 8)) }
   }
-  // Linux: abstract namespace
-  if (process.platform === 'linux') {
-    const nodeMajor = Number.parseInt(process.versions.node.split('.')[0]!, 10)
-    if (nodeMajor >= 20 && provider !== 'stackblitz') {
-      // We avoid abstract sockets in Docker due to performance issues
-      let isDocker = false
 
-      try {
-        isDocker = fs.existsSync('/.dockerenv') || (fs.existsSync('/proc/1/cgroup') && fs.readFileSync('/proc/1/cgroup', 'utf8').includes('docker'))
-      } catch {
-        // Ignore errors checking Docker status
-      }
+  // creates a random suffix and avoids collisions
+  let parentDir = fs.mkdtempSync(join(tmpdir, socketDir))
 
-      if (!isDocker) {
-        return `\0${socketName}.sock`
-      }
-    }
+  // macOS's per-user $TMPDIR can be too long so fall back to /tmp when the
+  // full path exceeds the limit
+  if (Buffer.byteLength(join(parentDir, socketName)) >
+    (platform === 'linux' ? 108 : /* macOS */ 104)) {
+    parentDir = join('/tmp', socketDir + randomUUID().slice(0, 8))
+    // The socket needs its own 0700 directory to gate access on macOS/BSD.
+    // See https://github.com/advisories/GHSA-534h-c3cw-v3h9
+    fs.mkdirSync(parentDir, { mode: 0o700 })
   }
-  // Unix socket
-  return join(os.tmpdir(), `${socketName}.sock`)
+
+  fs.chmodSync(parentDir, 0o700)
+
+  return { socketPath: join(parentDir, socketName), parentDir }
+}
+
+function generateSocketPath (): SocketPathInfo {
+  return pickSocketPath(process.platform)
 }
 
 function useInvalidates () {
@@ -185,18 +195,21 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   }
 
   let socketServer: net.Server | undefined
-  const socketPath = generateSocketPath()
+  const { socketPath, parentDir } = generateSocketPath()
   const { invalidates, markInvalidate, markInvalidates } = useInvalidates()
 
+  let cleanedUp = false
   async function cleanupSocket () {
+    if (cleanedUp) { return }
+    cleanedUp = true
     if (socketServer && socketServer.listening) {
       await new Promise<void>(resolveClose => socketServer!.close(() => resolveClose()))
     }
-    if (socketPath && !socketPath.startsWith('\\\\.\\pipe\\')) {
+    if (parentDir) {
       try {
-        await unlink(socketPath)
+        await rm(parentDir, { recursive: true, force: true })
       } catch {
-        // Error is ignored if the file doesn't exist or cannot be unlinked
+        // mkdtemp directory cleanup is best-effort
       }
     }
   }
@@ -280,7 +293,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
       const client = clientServer.environments.client
       nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
         for (const template of changedTemplates) {
-          const mods = client.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
+          const mods = client.moduleGraph.getModulesByFile(toVirtualId(template.dst, nuxt))
           for (const mod of mods || []) {
             markInvalidate(mod)
           }
@@ -354,7 +367,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                     errorData.frame = await ssrServer.environments.client.transformRequest(request.payload.moduleId)
                       .then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
                   } catch {
-                  // Ignore transform errors
+                    // Ignore transform errors
                   }
                 }
                 throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
@@ -466,24 +479,43 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
     throw new Error('Socket path not configured for ViteNodeSocketServer.')
   }
 
-  // Clean up existing socket file (Unix only)
-  if (!currentSocketPath.startsWith('\\\\.\\pipe\\')) {
-    try {
-      fs.unlinkSync(currentSocketPath)
-    } catch (unlinkError: any) {
-      if (unlinkError.code !== 'ENOENT') {
-        // Socket cleanup failed, but continue anyway
-      }
-    }
-  }
+  listenAndRestrict(server, currentSocketPath)
 
-  server.listen(currentSocketPath)
-
-  server.on('error', () => {
-    // Server error - will be handled by calling code
-  })
+  server.on('error', () => { })
 
   return server
+}
+
+export function listenAndRestrict (server: net.Server, socketPath: string): void {
+  const isWindowsPipe = socketPath.startsWith('\\\\.\\pipe\\')
+  if (isWindowsPipe) {
+    server.listen(socketPath)
+    return
+  }
+  // 1. the 0700 parent directory (created by pickSocketPath) is the access-control
+  //    boundary, since AF_UNIX connect requires +x on every parent.
+  // 2. The post-listen chmod 0600 protects the socket file itself.
+  // 3. The umask wrap tightens the in-process window between bind(2) and the chmod,
+  //    where the file would otherwise briefly exist with the default umask
+  //    and be observable to other code.
+  const previousUmask = process.umask(0o077)
+  try {
+    server.listen(socketPath, () => {
+      try {
+        fs.chmodSync(socketPath, 0o600)
+      } catch (error) {
+        console.error('[nuxt] Failed to restrict vite-node socket permissions; closing.', error)
+        server.close()
+        try {
+          fs.rmSync(dirname(socketPath), { recursive: true, force: true })
+        } catch {
+          // mkdtemp directory cleanup is best-effort
+        }
+      }
+    })
+  } finally {
+    process.umask(previousUmask)
+  }
 }
 
 function sendResponse<T extends keyof ViteNodeRequestMap> (

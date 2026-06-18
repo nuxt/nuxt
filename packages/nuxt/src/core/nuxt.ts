@@ -39,6 +39,7 @@ import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
+import { installProxyDispatcher } from './utils/proxy.ts'
 import { resolveTypePaths } from './utils/types.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
@@ -253,18 +254,28 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
-  nuxt.hook('nitro:config', async (nitroConfig) => {
+  const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
     paths ||= await resolveTypescriptPaths(nuxt)
     nitroConfig.typescript = defu(nitroConfig.typescript, {
       tsConfig: { compilerOptions: { paths: { ...paths } } },
     })
-  })
+  }
+  if (nuxt.options.dev) {
+    nuxt.hook('nitro:build:before', nitro => applyNitroTypePaths(nitro.options))
+  } else {
+    nuxt.hook('nitro:config', applyNitroTypePaths)
+  }
 
-  const serverBuilderReference = typeof nuxt.options.server.builder === 'string'
-    ? nuxt.options.server.builder === '@nuxt/nitro-server'
+  let serverBuilderReference: { path: string } | { types: string } | undefined
+  const getServerBuilderReference = () => {
+    if (serverBuilderReference || typeof nuxt.options.server.builder !== 'string') {
+      return serverBuilderReference
+    }
+    serverBuilderReference = nuxt.options.server.builder === '@nuxt/nitro-server'
       ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }).replace('.mjs', '.d.mts') }
       : { types: nuxt.options.server.builder }
-    : undefined
+    return serverBuilderReference
+  }
 
   // Add nuxt types
   nuxt.hook('prepare:types', async (opts) => {
@@ -290,6 +301,7 @@ async function initNuxt (nuxt: Nuxt) {
       opts.nodeReferences.push({ types: nuxt.options.builder })
     }
 
+    const serverBuilderReference = getServerBuilderReference()
     if (serverBuilderReference) {
       opts.references.push(serverBuilderReference)
       opts.nodeReferences.push(serverBuilderReference)
@@ -320,6 +332,7 @@ async function initNuxt (nuxt: Nuxt) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
 
+    const serverBuilderReference = getServerBuilderReference()
     if (serverBuilderReference) {
       opts.references.push(serverBuilderReference)
     }
@@ -775,6 +788,9 @@ export default defineNuxtPlugin({
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    if (nuxt.options.experimental.prefetchPreloadTags) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/prefetch-preload-tags.server'))
+    }
   }
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
@@ -788,6 +804,8 @@ export default defineNuxtPlugin({
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+  await installProxyDispatcher()
+
   // Early-init profiler when CLI passes perf overrides (captures config loading).
   // Otherwise, create after config resolves from nuxt.config / env vars.
   let perf: NuxtPerfProfiler | undefined
@@ -894,6 +912,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     options.devServerHandlers.unshift(...nitroOptions.devHandlers)
   }
   createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
+  createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {

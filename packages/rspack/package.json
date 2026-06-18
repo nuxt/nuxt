@@ -16,23 +16,23 @@
     "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
   },
   "exports": {
-    ".": "./dist/index.mjs",
-    "./dist/*": "./dist/*"
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "builder.mjs"
   ],
   "scripts": {
-    "prepack": "obuild",
-    "build:stub": "obuild --stub",
-    "test:attw": "attw --pack"
+    "prepack": "tsdown",
+    "build": "tsdown",
+    "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rspack/core": "^2.0.3",
-    "@vue/compiler-sfc": "3.5.34",
+    "@rspack/core": "^2.0.6",
+    "@vue/compiler-sfc": "3.5.35",
     "autoprefixer": "^10.5.0",
     "css-loader": "^7.1.4",
     "css-minimizer-webpack-plugin": "^8.0.0",
@@ -44,22 +44,22 @@
     "file-loader": "^6.2.0",
     "jiti": "^2.7.0",
     "knitwork": "^1.3.0",
-    "memfs": "^4.57.2",
+    "memfs": "^4.57.6",
     "mlly": "^1.8.2",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pify": "^6.1.0",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "postcss-import": "^16.1.1",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^8.2.1",
-    "postcss-url": "^10.1.3",
+    "postcss-url": "^10.1.4",
     "pug-plain-loader": "^1.1.0",
     "rolldown-string": "^0.3.0",
     "seroval": "^1.5.4",
     "time-fix-plugin": "^2.0.7",
-    "tinyglobby": "^0.2.16",
-    "ts-checker-rspack-plugin": "^1.3.0",
+    "tinyglobby": "^0.2.17",
+    "ts-checker-rspack-plugin": "^1.3.2",
     "ufo": "^1.6.4",
     "unenv": "^2.0.0-rc.24",
     "unplugin": "^3.0.0",
@@ -77,9 +77,9 @@
     "@types/webpack-hot-middleware": "2.25.12",
     "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.22",
-    "obuild": "0.4.35",
-    "rollup": "4.60.4",
-    "vue": "3.5.34"
+    "rollup": "4.61.1",
+    "tsdown": "0.22.2",
+    "vue": "3.5.35"
   },
   "peerDependencies": {
     "nuxt": "workspace:*",
@@ -87,5 +87,12 @@
   },
   "engines": {
     "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./dist/*": "./dist/*",
+      "./package.json": "./package.json"
+    }
   }
 }

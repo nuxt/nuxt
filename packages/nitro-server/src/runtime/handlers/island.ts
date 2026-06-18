@@ -4,11 +4,14 @@ import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'nitro/h3'
 import { HTTPError, defineEventHandler, getQuery, readBody } from 'nitro/h3'
-import { resolveUnrefHeadInput } from '@unhead/vue'
+import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { computeIslandHash, filterIslandProps } from '#app/island-hash'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
+import { traceAsync } from '#app/internal/tracing'
+// @ts-expect-error virtual file
+import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
@@ -38,7 +41,10 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   // Render app
   const renderer = await getSSRRenderer()
 
-  const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
+  const renderResult = await (tracingChannelNuxt
+    ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
+    : renderer.renderToString(ssrContext)
+  ).catch(async (err) => {
     if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
       return {} as Awaited<ReturnType<typeof renderer.renderToString>>
     }
@@ -94,8 +100,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 
   const islandHead: SerializableHead = {}
   for (const entry of ssrContext.head.entries.values()) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+    for (const [key, value] of Object.entries(walkResolver(entry.input, VueResolver) as SerializableHead)) {
       const currentValue = islandHead[key as keyof SerializableHead]
       if (Array.isArray(currentValue)) {
         currentValue.push(...value)

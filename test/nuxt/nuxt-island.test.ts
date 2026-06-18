@@ -67,6 +67,10 @@ vi.mock('#build/nuxt.config.mjs', () => {
     alwaysRunFetchOnKeyChange: false,
     asyncCallHook: false,
     clientNodePlaceholder: true,
+    hasPluginDependencies: true,
+    hasParallelPlugins: true,
+    hasPluginHooks: true,
+    hasIslandOptOutPlugins: true,
   }
 })
 

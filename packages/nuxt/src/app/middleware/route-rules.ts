@@ -1,8 +1,9 @@
 import { hasProtocol } from 'ufo'
 import { defineNuxtRouteMiddleware } from '../composables/router'
+import type { RouteMiddleware } from '../composables/router'
 import { getRouteRules } from '../composables/manifest'
 
-export default defineNuxtRouteMiddleware((to) => {
+const middleware: RouteMiddleware = defineNuxtRouteMiddleware((to) => {
   if (import.meta.server || import.meta.test) { return }
   const rules = getRouteRules({ path: to.path })
   if (rules.redirect) {
@@ -14,3 +15,5 @@ export default defineNuxtRouteMiddleware((to) => {
     return path
   }
 })
+
+export default middleware

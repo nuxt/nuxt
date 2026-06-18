@@ -29,6 +29,13 @@ export interface NuxtPage {
   path: string
   props?: RouteRecordRaw['props']
   file?: string
+  /**
+   * Named view files keyed by view name, including `default`. Populated by the
+   * page scanner from the `name@view.vue` filename convention. When set, the
+   * keys are wired up to vue-router's [`components`](https://router.vuejs.org/guide/essentials/named-views.html)
+   * option so multiple `<NuxtPage name="..." />` outlets can render.
+   */
+  components?: Record<string, string>
   meta?: Record<string, any>
   alias?: string[] | string
   redirect?: RouteLocationRaw

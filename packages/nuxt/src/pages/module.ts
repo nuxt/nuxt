@@ -17,6 +17,7 @@ import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPag
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
+import { toVirtualId } from '../core/plugins/virtual.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
@@ -306,9 +307,9 @@ export default defineNuxtModule({
 
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
       await mkdir(dirname(declarationFile), { recursive: true })
-      await context.scanPages(false)
 
       if (nuxt.options._prepare || !nuxt.options.dev) {
+        await context.scanPages(false)
         // TODO: could we generate this from context instead?
         const dts = await readFile(declarationFile, 'utf-8')
         addTemplate({
@@ -541,7 +542,7 @@ export default defineNuxtModule({
       addBuildPlugin(PageMetaPlugin({
         dev: nuxt.options.dev,
         isPage,
-        routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
+        routesId: toVirtualId(resolve(nuxt.options.buildDir, 'routes.mjs'), nuxt),
         extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],
       }))
     })

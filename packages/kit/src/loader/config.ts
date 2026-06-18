@@ -63,6 +63,11 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
   nuxtConfig._loadOptions = opts
+  // explicit `envName` (e.g. from `nuxt --envName`) takes precedence over `nuxt.config`,
+  // matching how `c12` selects `$env.*` overrides
+  if (typeof opts.envName === 'string') {
+    nuxtConfig.envName = opts.envName
+  }
   nuxtConfig.alias ||= {}
 
   if (meta?.name) {

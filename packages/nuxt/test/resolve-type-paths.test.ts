@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('exsolve', () => ({
@@ -53,7 +54,7 @@ describe('resolveTypePaths', () => {
 
     const results = await resolveTypePaths(['nitro/app'], ['/project/node_modules'])
 
-    expect(results).toEqual([['nitro/app', '/node_modules/nitro/dist/app']])
+    expect(results).toEqual([['nitro/app', '/node_modules/nitro/dist/app.d.mts']])
   })
 
   it('caches base package root across multiple subpath entries', async () => {
@@ -70,8 +71,8 @@ describe('resolveTypePaths', () => {
     const results = await resolveTypePaths(['nitro/app', 'nitro/builder'], ['/project/node_modules'])
 
     expect(results).toHaveLength(2)
-    expect(results).toContainEqual(['nitro/app', '/node_modules/nitro/dist/app'])
-    expect(results).toContainEqual(['nitro/builder', '/node_modules/nitro/dist/builder'])
+    expect(results).toContainEqual(['nitro/app', '/node_modules/nitro/dist/app.d.mts'])
+    expect(results).toContainEqual(['nitro/builder', '/node_modules/nitro/dist/builder.d.mts'])
 
     // resolvePackageJSON called only once (for the base 'nitro', then cached)
     expect(mockedResolvePackageJSON).toHaveBeenCalledTimes(1)
@@ -114,24 +115,42 @@ describe('resolveTypePaths', () => {
 
     expect(results).toHaveLength(3)
     expect(results).toContainEqual(['vue', '/node_modules/vue'])
-    expect(results).toContainEqual(['nitro/app', '/node_modules/nitro/dist/app'])
-    expect(results).toContainEqual(['nitro/types', '/node_modules/nitro/dist/types'])
+    expect(results).toContainEqual(['nitro/app', '/node_modules/nitro/dist/app.d.mts'])
+    expect(results).toContainEqual(['nitro/types', '/node_modules/nitro/dist/types.d.mts'])
   })
 
-  it('strips various type extensions from subpath resolutions', async () => {
+  it('preserves `.d.mts` / `.d.cts` declaration extensions on subpath resolutions', async () => {
     const { resolveTypePaths } = await freshImport()
 
     mockedResolveModulePath.mockImplementation((path) => {
       if (path === 'nitro') { return '/node_modules/nitro/dist/index.mjs' }
-      if (path === 'nitro/app') { return '/node_modules/nitro/dist/app.d.mts' }
+      if (path === 'nitro/h3') { return '/node_modules/nitro/dist/h3.d.mts' }
+      if (path === 'nitro/h3-cjs') { return '/node_modules/nitro/dist/h3.d.cts' }
       throw new Error('MODULE_NOT_FOUND')
     })
     mockedResolvePackageJSON.mockResolvedValue('/node_modules/nitro/package.json')
 
-    const results = await resolveTypePaths(['nitro/app'], ['/project/node_modules'])
+    const results = await resolveTypePaths(['nitro/h3', 'nitro/h3-cjs'], ['/project/node_modules'])
 
-    // .d.mts should be stripped
-    expect(results[0]![1]).toBe('/node_modules/nitro/dist/app')
+    expect(results).toContainEqual(['nitro/h3', '/node_modules/nitro/dist/h3.d.mts'])
+    expect(results).toContainEqual(['nitro/h3-cjs', '/node_modules/nitro/dist/h3.d.cts'])
+  })
+
+  it('strips extensions in TS\'s extensionless retry list', async () => {
+    const { resolveTypePaths } = await freshImport()
+
+    mockedResolveModulePath.mockImplementation((path) => {
+      if (path === 'nitro') { return '/node_modules/nitro/dist/index.mjs' }
+      if (path === 'nitro/util-ts') { return '/node_modules/nitro/dist/util.ts' }
+      if (path === 'nitro/runtime-dts') { return '/node_modules/nitro/dist/runtime.d.ts' }
+      throw new Error('MODULE_NOT_FOUND')
+    })
+    mockedResolvePackageJSON.mockResolvedValue('/node_modules/nitro/package.json')
+
+    const results = await resolveTypePaths(['nitro/util-ts', 'nitro/runtime-dts'], ['/project/node_modules'])
+
+    expect(results).toContainEqual(['nitro/util-ts', '/node_modules/nitro/dist/util'])
+    expect(results).toContainEqual(['nitro/runtime-dts', '/node_modules/nitro/dist/runtime'])
   })
 
   it('handles resolution errors gracefully for individual packages', async () => {
@@ -147,5 +166,30 @@ describe('resolveTypePaths', () => {
 
     // vue resolves, nonexistent is silently skipped
     expect(results).toEqual([['vue', '/node_modules/vue']])
+  })
+
+  it('rewrites `.mjs` to its declaration sibling when one exists', async () => {
+    const { resolveTypePaths } = await freshImport()
+
+    const typesFixtureDir = fileURLToPath(new URL('../../kit/test/types-fixture', import.meta.url))
+
+    mockedResolveModulePath.mockImplementation((path) => {
+      if (path === 'nitro') { return `${typesFixtureDir}/cache.mjs` }
+      if (path === 'nitro/h3-runtime') { return `${typesFixtureDir}/h3-runtime.mjs` }
+      if (path === 'nitro/runtime-with-dts') { return `${typesFixtureDir}/runtime.mjs` }
+      if (path === 'nitro/cache-lonely') { return `${typesFixtureDir}/cache.mjs` }
+      throw new Error('MODULE_NOT_FOUND')
+    })
+    mockedResolvePackageJSON.mockResolvedValue('/node_modules/nitro/package.json')
+
+    const results = await resolveTypePaths(
+      ['nitro/h3-runtime', 'nitro/runtime-with-dts', 'nitro/cache-lonely'],
+      ['/project/node_modules'],
+    )
+
+    const map = Object.fromEntries(results)
+    expect(map['nitro/h3-runtime']).toBe(`${typesFixtureDir}/h3-runtime.d.mts`)
+    expect(map['nitro/runtime-with-dts']).toBe(`${typesFixtureDir}/runtime`)
+    expect(map['nitro/cache-lonely']).toBe(`${typesFixtureDir}/cache.mjs`)
   })
 })

@@ -25,8 +25,8 @@ overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
   nuxt: "workspace:*"
-  vite: "8.0.12"
-  vue: "3.5.34"
+  vite: "8.0.16"
+  vue: "3.5.35"
 
 allowBuilds:
   '@parcel/watcher': true
@@ -36,3 +36,5 @@ allowBuilds:
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
+  # Renovate security update: esbuild@0.28.1
+  - esbuild@0.28.1
