@@ -9,6 +9,6 @@ export const onNuxtReady = (callback: () => any): void => {
   if (nuxtApp.isHydrating) {
     nuxtApp.hooks.hookOnce('app:suspense:resolve', () => { requestIdleCallback(() => callback()) })
   } else {
-    requestIdleCallback(() => callback())
+    callback()
   }
 }
