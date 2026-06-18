@@ -34,7 +34,7 @@ export function installClientHead (nuxtApp: NuxtApp, head: ClientHead): void {
     entry.dispose = () => {
       const transitionPromise = nuxtApp['~transitionPromise']
       if (transitionPromise) {
-        transitionPromise.then(originalDispose)
+        transitionPromise.finally(originalDispose)
       } else {
         originalDispose()
       }
