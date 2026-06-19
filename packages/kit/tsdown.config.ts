@@ -7,6 +7,7 @@ export default defineConfig({
     onlyBundle: [],
     neverBundle: [
       '@rspack/core',
+      '@nasti-toolchain/nasti',
       '@nuxt/schema',
       'nitro/types',
       'nitropack/types',

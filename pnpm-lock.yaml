@@ -10,6 +10,7 @@ overrides:
   nuxt: workspace:*
   vite: 8.0.16
   vue: 3.5.35
+  '@nasti-toolchain/nasti>cac': 7.0.0
 
 patchedDependencies:
   changelogen: 8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b
@@ -38,7 +39,7 @@ importers:
         version: 8.0.2
       '@nuxt/cli':
         specifier: 3.35.2
-        version: 3.35.2(@nuxt/schema@packages+schema)(cac@6.7.14)(magicast@0.5.3)
+        version: 3.35.2(@nuxt/schema@packages+schema)(magicast@0.5.3)
       '@nuxt/eslint-config':
         specifier: 1.15.2
         version: 1.15.2(@typescript-eslint/utils@8.61.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.35)(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
@@ -508,7 +509,7 @@ importers:
         version: 0.4.1(typescript@6.0.3)
       '@nuxt/cli':
         specifier: ^3.35.2
-        version: 3.35.2(@nuxt/schema@packages+schema)(cac@6.7.14)(magicast@0.5.3)
+        version: 3.35.2(@nuxt/schema@packages+schema)(magicast@0.5.3)
       '@nuxt/devtools':
         specifier: ^4.0.0-alpha.7
         version: 4.0.0-alpha.7(crossws@0.4.6(srvx@0.11.16))(db0@0.3.4)(ioredis@5.10.1)(typescript@6.0.3)(vite@8.0.16(@types/node@24.13.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.35(typescript@6.0.3))
@@ -5477,10 +5478,6 @@ packages:
     peerDependenciesMeta:
       magicast:
         optional: true
-
-  cac@6.7.14:
-    resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
-    engines: {node: '>=8'}
 
   cac@7.0.0:
     resolution: {integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==}
@@ -10755,9 +10752,8 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2)':
+  '@bomb.sh/tab@0.0.15(citty@0.2.2)':
     optionalDependencies:
-      cac: 6.7.14
       citty: 0.2.2
 
   '@braidai/lang@1.1.2': {}
@@ -11391,7 +11387,7 @@ snapshots:
 
   '@nasti-toolchain/nasti@2.0.2(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)':
     dependencies:
-      cac: 6.7.14
+      cac: 7.0.0
       chokidar: 4.0.3
       connect: 3.7.0
       dotenv: 16.6.1
@@ -11433,9 +11429,9 @@ snapshots:
 
   '@npmcli/name-from-folder@2.0.0': {}
 
-  '@nuxt/cli@3.35.2(@nuxt/schema@packages+schema)(cac@6.7.14)(magicast@0.5.3)':
+  '@nuxt/cli@3.35.2(@nuxt/schema@packages+schema)(magicast@0.5.3)':
     dependencies:
-      '@bomb.sh/tab': 0.0.15(cac@6.7.14)(citty@0.2.2)
+      '@bomb.sh/tab': 0.0.15(citty@0.2.2)
       '@clack/prompts': 1.5.1
       c12: 3.3.4(magicast@0.5.3)
       citty: 0.2.2
@@ -14316,8 +14312,6 @@ snapshots:
       rc9: 3.0.1
     optionalDependencies:
       magicast: 0.5.3
-
-  cac@6.7.14: {}
 
   cac@7.0.0: {}
 
