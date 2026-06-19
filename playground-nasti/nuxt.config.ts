@@ -4,7 +4,7 @@ import { bundle } from '@nuxt/nasti-builder'
 // package being resolvable by name; `builder: '@nuxt/nasti-builder'` also works
 // at runtime (Nuxt's loadBuilder importModule resolves the workspace package).
 export default defineNuxtConfig({
-  builder: { bundle },
   ssr: false,
   devtools: { enabled: false },
+  builder: { bundle },
 })
