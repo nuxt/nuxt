@@ -81,6 +81,8 @@ export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.t
   let parentDir = fs.mkdtempSync(join(tmpdir, socketDir))
   // macOS's per-user $TMPDIR can exceed the AF_UNIX path limit; fall back to /tmp.
   if (Buffer.byteLength(join(parentDir, socketName)) > (platform === 'linux' ? 108 : 104)) {
+    // Discard the too-long mkdtemp dir we just created before switching to /tmp.
+    fs.rmSync(parentDir, { recursive: true, force: true })
     parentDir = join('/tmp', socketDir + randomUUID().slice(0, 8))
     fs.mkdirSync(parentDir, { mode: 0o700 })
   }

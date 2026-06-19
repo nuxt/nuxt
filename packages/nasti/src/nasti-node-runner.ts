@@ -25,8 +25,15 @@ function normalizeId (id: string) {
 }
 
 async function resolveId (id: string, importer?: string): Promise<{ id: string, external: boolean }> {
-  // Bare specifiers and node builtins are resolved/loaded natively (externalized).
-  if (id.startsWith('node:') || (!id.startsWith('.') && !id.startsWith('/'))) {
+  // node: builtins are always native/external.
+  if (id.startsWith('node:')) {
+    return { id, external: true }
+  }
+  // Nuxt aliases (`#app`, `#imports`, `~/…`, `~~/…`) are app modules, not external bare
+  // specifiers — resolve them via the dev server rather than `import()`-ing natively.
+  const isNuxtAlias = id.startsWith('#') || id.startsWith('~')
+  // Bare specifiers (node_modules) are resolved/loaded natively (externalized).
+  if (!isNuxtAlias && !id.startsWith('.') && !id.startsWith('/')) {
     return { id, external: true }
   }
   const resolved = await nastiNodeFetch.resolveId(id, importer).catch(() => null)

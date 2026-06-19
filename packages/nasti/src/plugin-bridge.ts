@@ -65,9 +65,7 @@ const UNSUPPORTED_HOOKS = new Set([
 ])
 UNSUPPORTED_HOOKS.delete('buildEnd')
 
-const dropped = new Map<string, Set<string>>()
-
-function recordDropped (pluginName: string, hook: string) {
+function recordDropped (dropped: Map<string, Set<string>>, pluginName: string, hook: string) {
   if (!dropped.has(pluginName)) {
     dropped.set(pluginName, new Set())
   }
@@ -95,7 +93,7 @@ export async function flattenVitePlugins (
   return acc
 }
 
-export function toNastiPlugin (plugin: VitePlugin): NastiPlugin {
+export function toNastiPlugin (plugin: VitePlugin, dropped: Map<string, Set<string>>): NastiPlugin {
   const name = plugin.name || '<anonymous>'
   const out: NastiPlugin = { name }
 
@@ -119,7 +117,7 @@ export function toNastiPlugin (plugin: VitePlugin): NastiPlugin {
       : value
 
     if (typeof fn !== 'function') {
-      recordDropped(name, hook)
+      recordDropped(dropped, name, hook)
       continue
     }
 
@@ -138,7 +136,7 @@ export function toNastiPlugin (plugin: VitePlugin): NastiPlugin {
   // Record Vite-only hooks we cannot forward, for the summary warning.
   for (const key of Object.keys(plugin)) {
     if (UNSUPPORTED_HOOKS.has(key)) {
-      recordDropped(name, key)
+      recordDropped(dropped, name, key)
     }
   }
 
@@ -150,9 +148,10 @@ export function toNastiPlugin (plugin: VitePlugin): NastiPlugin {
  * hooks that could not be forwarded — the M1 worklist.
  */
 export async function bridgeVitePlugins (vitePlugins: unknown): Promise<NastiPlugin[]> {
-  dropped.clear()
+  // Request-local so overlapping bridge calls never cross-contaminate each other's tally.
+  const dropped = new Map<string, Set<string>>()
   const flat = await flattenVitePlugins(vitePlugins)
-  const bridged = flat.map(toNastiPlugin)
+  const bridged = flat.map(plugin => toNastiPlugin(plugin, dropped))
 
   if (dropped.size > 0) {
     const lines = [...dropped.entries()]

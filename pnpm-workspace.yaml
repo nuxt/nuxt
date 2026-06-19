@@ -42,6 +42,6 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
   # Nasti builder (M0) dependency — tracks fresh Nasti releases for the fixture
-  - '@nasti-toolchain/*'
+  - '@nasti-toolchain/nasti'
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1

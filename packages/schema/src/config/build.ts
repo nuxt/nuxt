@@ -20,6 +20,11 @@ export default defineResolvers({
         // TODO: improve normalisation inference
         return map[val as keyof typeof map] as Builder
       }
+      // A full builder package name (e.g. `@nuxt/nasti-builder`) is already resolved —
+      // pass it through instead of falling through to the Vite default.
+      if (typeof val === 'string' && (Object.values(map) as string[]).includes(val)) {
+        return val as Builder
+      }
       return map.vite as Builder
     },
   },

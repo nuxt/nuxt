@@ -1,6 +1,7 @@
 import { basename, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import type { NastiConfig } from '@nasti-toolchain/nasti'
+import { logger } from '@nuxt/kit'
 import { bridgeVitePlugins } from './plugin-bridge.ts'
 import { ssrEnvironment } from './config/server.ts'
 
@@ -11,10 +12,21 @@ function normaliseAlias (alias: unknown): Record<string, string> {
   }
   if (Array.isArray(alias)) {
     const out: Record<string, string> = {}
+    const dropped: string[] = []
     for (const entry of alias) {
       if (entry && typeof entry.find === 'string' && typeof entry.replacement === 'string') {
         out[entry.find] = entry.replacement
+      } else if (entry) {
+        // RegExp `find` or `customResolver` entries are not (yet) bridgeable to Nasti's
+        // string-keyed alias map — flag rather than silently drop them.
+        dropped.push(String(entry.find ?? '<unknown>'))
       }
+    }
+    if (dropped.length) {
+      logger.warn(
+        `[nasti-builder] Dropped ${dropped.length} unsupported Vite alias entr${dropped.length === 1 ? 'y' : 'ies'} ` +
+        `(only string \`find\`/\`replacement\` pairs are bridged; RegExp/customResolver aliases are not yet supported): ${dropped.join(', ')}`,
+      )
     }
     return out
   }

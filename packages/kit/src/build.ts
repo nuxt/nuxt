@@ -255,13 +255,20 @@ export function addNastiPlugin (pluginOrGetter: Arrayable<NastiPlugin> | (() => 
       return
     }
 
+    // Disabled on both sides — install nowhere.
+    if (options.server === false && options.client === false) {
+      return
+    }
+
     // Environment-scoped. Nasti's `applyToEnvironment` is a boolean *filter* (not the
     // plugin-returning form Vite uses), so we restrict each plugin to the requested
     // environment while preserving any `applyToEnvironment` the plugin already declared.
     const environmentName = options.server === false ? 'client' : 'ssr'
-    for (const plugin of plugins) {
+    // Wrap first, then apply in one call so `unshift` (prepend) preserves plugin order
+    // instead of reversing it per iteration.
+    const scoped = plugins.map((plugin): NastiPlugin => {
       const userApply = plugin.applyToEnvironment
-      config.plugins[method]({
+      return {
         ...plugin,
         applyToEnvironment (environment) {
           if (environment.name !== environmentName) {
@@ -269,8 +276,9 @@ export function addNastiPlugin (pluginOrGetter: Arrayable<NastiPlugin> | (() => 
           }
           return userApply ? userApply(environment) : true
         },
-      })
-    }
+      }
+    })
+    config.plugins[method](...scoped)
   })
 }
 
