@@ -2,6 +2,7 @@ import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
 import type { ViteDevServer } from 'vite'
+import type { NastiConfig, DevServer as NastiDevServer } from '@nasti-toolchain/nasti'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Import, InlinePreset, Preset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
@@ -363,6 +364,35 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'vite:compiled': () => HookResult
+
+  // Nasti
+  /**
+   * Allows extending the Nasti config before it is resolved. This is the hook used by
+   * `extendNastiConfig` and `addNastiPlugin` from `@nuxt/kit`.
+   * @param nastiBuildContext The Nasti build context object
+   * @param nastiBuildContext.nuxt The Nuxt instance
+   * @param nastiBuildContext.config The Nasti config object
+   * @returns Promise
+   */
+  'nasti:extend': (nastiBuildContext: { nuxt: Nuxt, config: NastiConfig }) => HookResult
+  /**
+   * Allows reading the resolved Nasti config. Unlike Vite/webpack, Nasti shares a single
+   * config across its `client` and `ssr` environments (Environment API), so this fires once.
+   * @param nastiInlineConfig The Nasti config object
+   * @returns Promise
+   */
+  'nasti:configResolved': (nastiInlineConfig: Readonly<NastiConfig>) => HookResult
+  /**
+   * Called when the Nasti dev server is created (middleware mode).
+   * @param nastiServer Nasti development server
+   * @returns Promise
+   */
+  'nasti:serverCreated': (nastiServer: NastiDevServer) => HookResult
+  /**
+   * Called after the Nasti dev server is compiled.
+   * @returns Promise
+   */
+  'nasti:compiled': () => HookResult
 
   // webpack
   /**

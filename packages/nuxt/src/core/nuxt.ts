@@ -223,10 +223,12 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.typescript.builder !== false) {
     const envMap = {
       // defaults from `builder` based on package name
+      '@nuxt/nasti-builder': '@nasti-toolchain/nasti/client',
       '@nuxt/rspack-builder': '@rspack/core/module',
       '@nuxt/vite-builder': 'vite/client',
       '@nuxt/webpack-builder': 'webpack/module',
       // simpler overrides from `typescript.builder` for better DX
+      'nasti': '@nasti-toolchain/nasti/client',
       'rspack': '@rspack/core/module',
       'vite': 'vite/client',
       'webpack': 'webpack/module',

@@ -9,6 +9,7 @@ export function normalizeSemanticVersion (version: string): string {
 }
 
 const builderMap = {
+  '@nuxt/nasti-builder': 'nasti',
   '@nuxt/rspack-builder': 'rspack',
   '@nuxt/vite-builder': 'vite',
   '@nuxt/webpack-builder': 'webpack',

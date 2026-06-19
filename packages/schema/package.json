@@ -36,6 +36,7 @@
     "std-env": "^4.1.0"
   },
   "devDependencies": {
+    "@nasti-toolchain/nasti": "^2.0.1",
     "@nuxt/ui-templates": "workspace:*",
     "@types/pug": "2.0.10",
     "@types/webpack-bundle-analyzer": "4.7.0",

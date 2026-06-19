@@ -7,7 +7,7 @@
     "url": "git+https://github.com/nuxt/nuxt.git",
     "directory": "packages/nasti"
   },
-  "description": "Nasti (Rolldown) bundler for Nuxt — M0 proof-of-concept",
+  "description": "Nasti (Rolldown) bundler for Nuxt",
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
@@ -16,7 +16,15 @@
     ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#builder": "./builder.mjs",
+    "#nasti-node": "./dist/nasti-node.mjs",
+    "#nasti-node-entry": "./dist/nasti-node-entry.mjs",
+    "#nasti-node-runner": "./dist/nasti-node-runner.mjs"
+  },
   "files": [
+    "builder.d.ts",
+    "builder.mjs",
     "dist"
   ],
   "scripts": {
@@ -24,7 +32,20 @@
     "build": "tsdown"
   },
   "dependencies": {
-    "@nuxt/kit": "workspace:*"
+    "@nuxt/kit": "workspace:*",
+    "consola": "^3.4.2",
+    "defu": "^6.1.7",
+    "escape-string-regexp": "^5.0.0",
+    "exsolve": "^1.0.8",
+    "get-port-please": "^3.2.0",
+    "magic-string": "^0.30.21",
+    "mlly": "^1.8.2",
+    "pathe": "^2.0.3",
+    "seroval": "^1.5.4",
+    "std-env": "^4.1.0",
+    "ufo": "^1.6.4",
+    "unenv": "^2.0.0-rc.24",
+    "vue-bundle-renderer": "^2.2.0"
   },
   "peerDependencies": {
     "@nasti-toolchain/nasti": "^2.0.1",
@@ -32,7 +53,8 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "tsdown": "0.22.2"
+    "tsdown": "0.22.2",
+    "vite": "^8.0.16"
   },
   "engines": {
     "node": ">=20.19.0"

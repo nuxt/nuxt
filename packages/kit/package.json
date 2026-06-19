@@ -48,6 +48,7 @@
     "untyped": "^2.0.0"
   },
   "devDependencies": {
+    "@nasti-toolchain/nasti": "^2.0.1",
     "@nuxt/schema": "workspace:*",
     "@rspack/core": "2.0.6",
     "@types/semver": "7.7.1",

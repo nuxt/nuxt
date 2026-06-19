@@ -1,6 +1,7 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
 import type { RspackPluginInstance } from '@rspack/core'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
+import type { NastiConfig, NastiPlugin } from '@nasti-toolchain/nasti'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
 import { resolveAlias } from './resolve.ts'
@@ -208,10 +209,76 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
   })
 }
 
+/**
+ * Extend Nasti config
+ *
+ * Nasti (the Rolldown-based builder) shares a single config across its `client` and
+ * `ssr` environments via the Environment API, so — unlike webpack/rspack — `fn` is
+ * called once with the shared config rather than per named compiler.
+ */
+export function extendNastiConfig (fn: ((config: NastiConfig) => Thenable<void>), options: ExtendConfigOptions = {}): (() => void) | undefined {
+  const nuxt = useNuxt()
+
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
+    return
+  }
+
+  // Call fn() only once
+  return nuxt.hook('nasti:extend', ({ config }) => fn(config))
+}
+
+/**
+ * Append Nasti plugin to the config.
+ */
+export function addNastiPlugin (pluginOrGetter: Arrayable<NastiPlugin> | (() => Thenable<Arrayable<NastiPlugin>>), options: ExtendConfigOptions = {}): void {
+  const nuxt = useNuxt()
+
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
+    return
+  }
+
+  nuxt.hook('nasti:extend', async ({ config }) => {
+    config.plugins ||= []
+
+    const plugins = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+
+    // Common case — apply to every environment.
+    if (options.server !== false && options.client !== false) {
+      config.plugins[method](...plugins)
+      return
+    }
+
+    // Environment-scoped. Nasti's `applyToEnvironment` is a boolean *filter* (not the
+    // plugin-returning form Vite uses), so we restrict each plugin to the requested
+    // environment while preserving any `applyToEnvironment` the plugin already declared.
+    const environmentName = options.server === false ? 'client' : 'ssr'
+    for (const plugin of plugins) {
+      const userApply = plugin.applyToEnvironment
+      config.plugins[method]({
+        ...plugin,
+        applyToEnvironment (environment) {
+          if (environment.name !== environmentName) {
+            return false
+          }
+          return userApply ? userApply(environment) : true
+        },
+      })
+    }
+  })
+}
+
 interface AddBuildPluginFactory {
   vite?: () => Thenable<Arrayable<VitePlugin>>
   webpack?: () => Thenable<Arrayable<WebpackPluginInstance>>
   rspack?: () => Thenable<Arrayable<RspackPluginInstance>>
+  nasti?: () => Thenable<Arrayable<NastiPlugin>>
 }
 
 export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions): void {
@@ -225,5 +292,9 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
 
   if (pluginFactory.rspack) {
     addRspackPlugin(pluginFactory.rspack, options)
+  }
+
+  if (pluginFactory.nasti) {
+    addNastiPlugin(pluginFactory.nasti, options)
   }
 }
