@@ -28,6 +28,12 @@ overrides:
   nuxt: "workspace:*"
   vite: "8.0.16"
   vue: "3.5.35"
+  # Without this, `giget` resolves to two versions across the workspace (the root
+  # picks 3.3.0 while workspace packages keep 3.2.0), which duplicates the `nitro`
+  # instance. Two nitro copies break dev-mode SSR internal fetches: server
+  # components/islands render empty and `useFetch`/payload requests 404 during SSR.
+  # Pin to a single version so `nitro` dedupes.
+  giget: "3.2.0"
   # @nasti-toolchain/nasti depends on cac@6.7.14, which lacks npm provenance and
   # trips the dependency-review downgrade check. Pin the provenance-backed cac@7
   # already used across the toolchain (tsdown, vite-node, unocss, …).
