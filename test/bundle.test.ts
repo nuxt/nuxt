@@ -6,12 +6,22 @@ import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
 import { join } from 'pathe'
 
-const nuxtEntry = fileURLToPath(new URL('../packages/nuxt/dist/index.mjs', import.meta.url))
-const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes('const _module = await jiti')
+const nuxtEntry = fileURLToPath(
+  new URL('../packages/nuxt/dist/index.mjs', import.meta.url),
+)
+const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes(
+  'const _module = await jiti',
+)
 
-describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
+describe.skipIf(
+  isStubbed ||
+    process.env.SKIP_BUNDLE_SIZE === 'true' ||
+    process.env.ECOSYSTEM_CI,
+)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
-  const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
+  const pagesRootDir = fileURLToPath(
+    new URL('./fixtures/minimal-pages', import.meta.url),
+  )
 
   beforeAll(async () => {
     await Promise.all([
@@ -21,9 +31,15 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   }, 120 * 1000)
 
   it('default client bundle size', async () => {
-    const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
+    const clientStats = await analyzeSizes(
+      ['**/*.js'],
+      join(rootDir, '.output/public'),
+      rootDir,
+    )
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"116k"`)
+    expect
+      .soft(roundToKilobytes(clientStats!.totalBytes))
+      .toMatchInlineSnapshot(`"116k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -35,9 +51,15 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   })
 
   it('default client bundle size (pages)', async () => {
-    const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
+    const clientStats = await analyzeSizes(
+      ['**/*.js'],
+      join(pagesRootDir, '.output/public'),
+      pagesRootDir,
+    )
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"175k"`)
+    expect
+      .soft(roundToKilobytes(clientStats!.totalBytes))
+      .toMatchInlineSnapshot(`"175k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -57,11 +79,19 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"69.7k"`)
+    const serverStats = await analyzeSizes(
+      ['**/*.mjs', '!_libs'],
+      serverDir,
+      rootDir,
+    )
+    expect
+      .soft(roundToKilobytes(serverStats.totalBytes))
+      .toMatchInlineSnapshot(`"69.7k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"478k"`)
+    expect
+      .soft(roundToKilobytes(modules.totalBytes))
+      .toMatchInlineSnapshot(`"478k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
@@ -91,11 +121,19 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"279k"`)
+    const serverStats = await analyzeSizes(
+      ['**/*.mjs', '!_libs'],
+      serverDir,
+      pagesRootDir,
+    )
+    expect
+      .soft(roundToKilobytes(serverStats.totalBytes))
+      .toMatchInlineSnapshot(`"279k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"487k"`)
+    expect
+      .soft(roundToKilobytes(modules.totalBytes))
+      .toMatchInlineSnapshot(`"487k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
@@ -126,13 +164,19 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   })
 })
 
-async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
+async function analyzeSizes (
+  pattern: string[],
+  rootDir: string,
+  projectDir: string,
+) {
   const files: string[] = await glob(pattern, { cwd: rootDir })
   const stripPatterns = getStripPatterns(projectDir)
   let totalBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)
-    const isSymlink = (await fsp.lstat(path).catch(() => null))?.isSymbolicLink()
+    const isSymlink = (
+      await fsp.lstat(path).catch(() => null)
+    )?.isSymbolicLink()
 
     if (!isSymlink) {
       const contents = await fsp.readFile(path, 'utf8')
@@ -161,10 +205,7 @@ async function analyzeSizes (pattern: string[], rootDir: string, projectDir: str
 //    The prefix shows up both in `//#region` chunk comments and inside mangled virtual-
 //    module identifiers.
 function getStripPatterns (projectDir: string) {
-  return [
-    ...allForms(projectDir),
-    ...allForms('node_modules/.cache/nuxt/'),
-  ]
+  return [...allForms(projectDir), ...allForms('node_modules/.cache/nuxt/')]
 }
 
 function allForms (value: string) {
@@ -173,5 +214,5 @@ function allForms (value: string) {
 }
 
 function roundToKilobytes (bytes: number) {
-  return (bytes / 1024).toFixed(bytes > (100 * 1024) ? 0 : 1) + 'k'
+  return (bytes / 1024).toFixed(bytes > 100 * 1024 ? 0 : 1) + 'k'
 }
