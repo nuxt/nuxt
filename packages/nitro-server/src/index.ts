@@ -27,6 +27,7 @@ import { distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, to
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { createWaitForModulePlugin, finishConcurrentBuild, handleEarlyRejection } from './build.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 
@@ -37,6 +38,11 @@ const logLevelMapReverse = {
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
+  let appManifestPromise: Promise<void> | undefined
+  let finalBuildPromise: Promise<void> | undefined
+  let prerenderPromise: Promise<void> | undefined
+  let publicAssetsPromise: Promise<void> | undefined
+
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
   const excludePattern = [getLayerNodeModulesExcludePattern(layerDirs.map(dirs => dirs.root))]
@@ -437,6 +443,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
     const tempDir = join(nuxt.options.buildDir, 'manifest')
+    const manifestPath = join(tempDir, `meta/${buildId}.json`)
 
     nitroConfig.prerender ||= {}
     nitroConfig.prerender.ignore ||= []
@@ -457,23 +464,23 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
     )
 
-    nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+    nuxt.options.alias['#app-manifest'] = manifestPath
 
     // write stub manifest before build so external import of #app-manifest can be resolved
     if (!nuxt.options.dev) {
       nuxt.hook('build:before', async () => {
         await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
-        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({}))
+        await fsp.writeFile(manifestPath, JSON.stringify({}))
       })
     }
 
     nuxt.hook('nitro:config', (config) => {
       config.alias ||= {}
-      config.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+      config.alias['#app-manifest'] = manifestPath
     })
 
     nuxt.hook('nitro:init', (nitro) => {
-      nitro.hooks.hook('rollup:before', async (nitro) => {
+      const writeAppManifest = async (nitro: Nitro) => {
         // Add pages prerendered but not covered by route rules
         const prerenderedRoutes = new Set<string>()
         if (nitro._prerenderedRoutes?.length) {
@@ -500,7 +507,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           id: buildId,
           timestamp: buildTimestamp,
         }))
-        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
+        await fsp.writeFile(manifestPath, JSON.stringify(manifest))
+      }
+
+      nitro.hooks.hook('rollup:before', async (nitro, rollupConfig) => {
+        if (prerenderPromise) {
+          appManifestPromise ||= handleEarlyRejection(prerenderPromise.then(() => writeAppManifest(nitro)))
+          rollupConfig.plugins = toArray(await rollupConfig.plugins || [])
+          rollupConfig.plugins.unshift(createWaitForModulePlugin('nuxt:app-manifest-prerender', manifestPath, appManifestPromise))
+          return
+        }
+        await writeAppManifest(nitro)
       })
     })
   }
@@ -737,6 +754,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const cacheDir = resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
   await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => {})
+  nitro.hooks.hook('prerender:config', (config) => {
+    config.output ||= {}
+    config.output.serverDir = resolve(cacheDir, 'server')
+  })
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
       // TODO: resolve upstream where file URLs are not being resolved/inlined correctly
@@ -748,6 +769,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
   await nuxt.callHook('nitro:init', nitro)
+
+  const startFinalBuild = () => {
+    finalBuildPromise ||= handleEarlyRejection(build(nitro))
+    return finalBuildPromise
+  }
+
+  // Register after module hooks so their prerender renderer setup and compiled hooks
+  // finish before the final build starts reading generated state.
+  nitro.hooks.hook('prerender:init', (renderer) => {
+    renderer.hooks.hook('compiled', () => {
+      startFinalBuild()
+    })
+  })
 
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
@@ -971,11 +1005,24 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  // Copy public assets after prerender so app manifest can be present
   if (!nuxt.options.dev) {
-    nitro.hooks.hook('rollup:before', async (nitro) => {
-      await copyPublicAssets(nitro)
-      await nuxt.callHook('nitro:build:public-assets', nitro)
+    nitro.hooks.hook('rollup:before', async (_nitro, rollupConfig) => {
+      const prerenderedAssetsReady = appManifestPromise || prerenderPromise
+      if (prerenderedAssetsReady) {
+        publicAssetsPromise ||= handleEarlyRejection(prerenderedAssetsReady.then(async () => {
+          await copyPublicAssets(nitro)
+          await nuxt.callHook('nitro:build:public-assets', nitro)
+        }))
+      }
+
+      if (publicAssetsPromise) {
+        rollupConfig.plugins = toArray(await rollupConfig.plugins || [])
+        rollupConfig.plugins.unshift(createWaitForModulePlugin(
+          'nuxt:public-assets-prerender',
+          '#nitro/virtual/public-assets-data',
+          publicAssetsPromise,
+        ))
+      }
     })
   }
 
@@ -1023,6 +1070,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt.hook('build:done', async () => {
     nuxt._perf?.startPhase('nitro:build')
     try {
+      appManifestPromise = undefined
+      finalBuildPromise = undefined
+      prerenderPromise = undefined
+      publicAssetsPromise = undefined
       await nuxt.callHook('nitro:build:before', nitro)
       await prepare(nitro)
       if (nuxt.options.dev) {
@@ -1031,11 +1082,33 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         return
       }
 
-      await prerender(nitro)
+      prerenderPromise = prerender(nitro)
+      let loggerRestored = false
+      try {
+        let buildError: unknown
+        try {
+          await finishConcurrentBuild(prerenderPromise, () => finalBuildPromise, startFinalBuild, () => {
+            logger.restoreAll()
+            loggerRestored = true
+          })
+        } catch (error) {
+          buildError = error
+        }
 
-      logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
+        try {
+          await Promise.all([appManifestPromise, publicAssetsPromise])
+        } catch (error) {
+          buildError ||= error
+        }
+
+        if (buildError) {
+          throw buildError
+        }
+      } finally {
+        if (loggerRestored) {
+          logger.wrapAll()
+        }
+      }
 
       await symlinkDist()
     } finally {
