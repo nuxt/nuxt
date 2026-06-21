@@ -3,12 +3,40 @@ import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, useLogger } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
+import type { Plugin } from 'vite'
 import { resolveModulePath } from 'exsolve'
 import { streamingIifeCode } from 'unhead/stream/iife'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
+
+const unheadTransformCodeFilters: Record<string, RegExp> = {
+  'unhead:minify-transform': /\buse(?:Server)?Head\b/,
+  'unhead:use-seo-meta-transform': /\buse(?:Server)?SeoMeta\b/,
+}
+
+export function addUnheadTransformCodeFilters (plugins: Plugin[]) {
+  for (const plugin of plugins) {
+    const code = unheadTransformCodeFilters[plugin.name]
+    if (!code || !plugin.transform) { continue }
+
+    if (typeof plugin.transform === 'function') {
+      plugin.transform = {
+        filter: { code },
+        handler: plugin.transform,
+      }
+    } else if (!plugin.transform.filter?.code) {
+      plugin.transform = {
+        ...plugin.transform,
+        filter: {
+          ...plugin.transform.filter,
+          code,
+        },
+      }
+    }
+  }
+}
 
 export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
@@ -71,7 +99,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       addVitePlugin(async () => {
         const { Unhead } = await import('@unhead/vue/vite')
         const viteOptions = options.vite || {}
-        return Unhead({
+        const plugins = Unhead({
           validate: !nuxt.options.test,
           minify: {
             js: rolldownURL
@@ -93,6 +121,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           },
           ...viteOptions,
         })
+
+        addUnheadTransformCodeFilters(plugins)
+        return plugins
       })
     }
 
