@@ -142,7 +142,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       getContents () {
         return [
           `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
-          `export const ssrStreaming = ${!!(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled)}`,
         ].join('\n')
       },
     })
@@ -235,7 +234,8 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       }
     }
 
-    // Add library-specific plugin
-    addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })
+    // Add library-specific plugins
+    addPlugin({ src: resolve(runtimeDir, ssrStreamingEnabled ? 'plugins/unhead-stream.client' : 'plugins/unhead.client') })
+    addPlugin({ src: resolve(runtimeDir, 'plugins/unhead.server') })
   },
 })
