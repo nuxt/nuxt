@@ -309,13 +309,48 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
         for (const [file, remaining] of pendingChangedFiles) {
           const mods = ssrModuleGraph.getModulesByFile(file)
-          if (mods?.size) {
-            for (const mod of mods) {
-              ssrModuleGraph.invalidateModule(mod)
+          if (!mods?.size) {
+            if (remaining <= 1) {
+              pendingChangedFiles.delete(file)
+            } else {
+              pendingChangedFiles.set(file, remaining - 1)
             }
-            markInvalidates(mods)
-            pendingChangedFiles.delete(file)
-          } else if (remaining <= 1) {
+            continue
+          }
+
+          // A `handleHotUpdate` hook reacting to this edit invalidates virtual
+          // modules only in the client graph (`server.moduleGraph`), so the SSR
+          // copy keeps serving a stale evaluation. Re-evaluate any virtual
+          // module the changed file imports. The SSR graph fills lazily, so the
+          // import may not exist yet on the first render; stay pending until it
+          // surfaces or the countdown runs out.
+          // See https://github.com/nuxt/nuxt/issues/30169.
+          let invalidatedVirtual = false
+          // `ssrModuleGraph` is a union of the legacy and environment graphs, so its
+          // `invalidateModule` is typed against the intersection of both node types.
+          // The nodes we pass always come from this same graph, so narrow the call.
+          const invalidateModule = (mod: ModuleNode | EnvironmentModuleNode) =>
+            (ssrModuleGraph.invalidateModule as (mod: ModuleNode | EnvironmentModuleNode) => void)(mod)
+          const seen = new Set<ModuleNode | EnvironmentModuleNode>()
+          const invalidateVirtualImports = (mod: ModuleNode | EnvironmentModuleNode) => {
+            for (const imported of mod.importedModules) {
+              if (seen.has(imported)) { continue }
+              seen.add(imported)
+              if (imported.id?.startsWith('\0')) {
+                invalidateModule(imported)
+                markInvalidate(imported)
+                invalidatedVirtual = true
+              }
+              invalidateVirtualImports(imported)
+            }
+          }
+          for (const mod of mods) {
+            invalidateVirtualImports(mod)
+            invalidateModule(mod)
+          }
+          markInvalidates(mods)
+
+          if (invalidatedVirtual || remaining <= 1) {
             pendingChangedFiles.delete(file)
           } else {
             pendingChangedFiles.set(file, remaining - 1)
