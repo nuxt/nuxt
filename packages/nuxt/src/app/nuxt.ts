@@ -1,6 +1,6 @@
 import './types/augments'
 
-import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
+import { effectScope, getCurrentInstance, getCurrentScope, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
@@ -607,12 +607,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  */
 export function tryUseNuxtApp (): NuxtApp | null
 export function tryUseNuxtApp (id?: string): NuxtApp | null {
-  let nuxtAppInstance: NuxtApp | null | undefined = getNuxtAppCtx(id).tryUse()
-
-  if (!nuxtAppInstance && hasInjectionContext()) {
-    nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
-  }
-
+  const nuxtAppInstance = getNuxtAppCtx(id).tryUse() ?? getCurrentInstance()?.appContext.app.$nuxt
   return nuxtAppInstance || null
 }
 
