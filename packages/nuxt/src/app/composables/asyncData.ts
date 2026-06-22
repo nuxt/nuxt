@@ -709,10 +709,13 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
     return Promise.resolve()
   }
 
-  await new Promise<void>(resolve => onNuxtReady(resolve))
+  const nuxtApp = useNuxtApp()
+  if (nuxtApp.isHydrating) {
+    await new Promise<void>(resolve => onNuxtReady(resolve))
+  }
 
   const _keys = keys ? toArray(keys) : undefined
-  await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
+  await nuxtApp.hooks.callHookParallel('app:data:refresh', _keys)
 }
 
 /** @since 3.0.0 */
