@@ -82,6 +82,23 @@ function expectNoConsoleIssue () {
   expect(consoleWarn).not.toHaveBeenCalled()
 }
 
+function islandResponse (data: unknown) {
+  return {
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    _data: data,
+    headers: new Headers(),
+  }
+}
+
+function stubFetchRaw (impl: (...args: any[]) => any) {
+  const raw = vi.fn(impl)
+  const $fetch = Object.assign(vi.fn(), { raw, create: () => $fetch })
+  vi.stubGlobal('$fetch', $fetch)
+  return raw
+}
+
 describe('runtime server component', () => {
   beforeEach(() => {
     consoleError.mockClear()
@@ -152,9 +169,9 @@ describe('runtime server component', () => {
   })
   it('force refresh', async () => {
     let count = 0
-    const stubFetch = vi.fn(() => {
+    const fetchRaw = stubFetchRaw(() => {
       count++
-      return Promise.resolve({
+      return Promise.resolve(islandResponse({
         id: '123',
         html: `<div>${count}</div>`,
         state: {},
@@ -162,32 +179,25 @@ describe('runtime server component', () => {
           link: [],
           style: [],
         },
-        json () {
-          return this
-        },
-        ok: true,
-      })
+      }))
     })
 
-    vi.stubGlobal('fetch', stubFetch)
     const component = await mountSuspended(createServerComponent('dummyName'))
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
 
     expect(component.html()).toBe('<div>1</div>')
 
     await component.vm.$.exposed!.refresh()
-    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetchRaw).toHaveBeenCalledTimes(2)
     await nextTick()
     expect(component.html()).toBe('<div>2</div>')
-    vi.mocked(fetch).mockReset()
+    fetchRaw.mockReset()
   })
 
   it('expect NuxtIsland to emit an error', async () => {
-    const stubFetch = vi.fn(() => {
+    const fetchRaw = stubFetchRaw(() => {
       throw new Error('fetch error')
     })
-
-    vi.stubGlobal('fetch', stubFetch)
 
     const wrapper = await mountSuspended(createServerComponent('ErrorServerComponent'), {
       props: {
@@ -199,12 +209,19 @@ describe('runtime server component', () => {
       attachTo: 'body',
     })
 
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
     expect(wrapper.emitted('error')).toHaveLength(1)
-    vi.mocked(fetch).mockReset()
+    fetchRaw.mockReset()
   })
 
   it('expect NuxtIsland to have parent scopeId', async () => {
+    stubFetchRaw(() => Promise.resolve(islandResponse({
+      id: '123',
+      html: '<div>hello</div>',
+      state: {},
+      head: { link: [], style: [] },
+    })))
+
     const wrapper = await mountSuspended(defineComponent({
       render () {
         pushScopeId('data-v-654e2b21')
@@ -232,8 +249,8 @@ describe('client components', () => {
       },
     }))
 
-    const stubFetch = vi.fn(() => {
-      return Promise.resolve({
+    const fetchRaw = stubFetchRaw(() => {
+      return Promise.resolve(islandResponse({
         id: '123',
         html: `<div data-island-uid>hello<div data-island-uid data-island-component="${componentId}"></div></div>`,
         state: {},
@@ -248,14 +265,8 @@ describe('client components', () => {
             chunk: mockPath,
           },
         },
-        json () {
-          return this
-        },
-        ok: true,
-      })
+      }))
     })
-
-    vi.stubGlobal('fetch', stubFetch)
 
     const wrapper = await mountSuspended(NuxtIsland, {
       props: {
@@ -267,7 +278,7 @@ describe('client components', () => {
       attachTo: 'body',
     })
 
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
     expect(removeDataIslandUid(wrapper.html())).toMatchInlineSnapshot(`
       "<div>hello<div data-island-component="Client-12345">
           <div>client component</div>
@@ -277,7 +288,7 @@ describe('client components', () => {
       <!--teleport end-->"
     `)
 
-    vi.mocked(fetch).mockImplementation(() => Promise.resolve(({
+    fetchRaw.mockImplementation(() => Promise.resolve(islandResponse({
       id: '123',
       html: '<div data-island-uid>hello<div><div>fallback</div></div></div>',
       state: {},
@@ -286,11 +297,6 @@ describe('client components', () => {
         style: [],
       },
       components: {},
-      // @ts-expect-error mock
-      json () {
-        return this
-      },
-      ok: true,
     })))
 
     await wrapper.vm.$.exposed!.refresh()
@@ -302,15 +308,15 @@ describe('client components', () => {
         </div>"
       `)
 
-    vi.mocked(fetch).mockReset()
+    fetchRaw.mockReset()
     expectNoConsoleIssue()
   })
 
   it('should not replace nested client components data-island-uid', async () => {
     const componentId = 'Client-12345'
 
-    const stubFetch = vi.fn(() => {
-      return Promise.resolve({
+    const fetchRaw = stubFetchRaw(() => {
+      return Promise.resolve(islandResponse({
         id: '1234',
         html: `<div data-island-uid>hello<div data-island-uid="not-to-be-replaced" data-island-component="${componentId}"></div></div>`,
         state: {},
@@ -318,14 +324,8 @@ describe('client components', () => {
           link: [],
           style: [],
         },
-        json () {
-          return this
-        },
-        ok: true,
-      })
+      }))
     })
-
-    vi.stubGlobal('fetch', stubFetch)
 
     const wrapper = await mountSuspended(NuxtIsland, {
       props: {
@@ -337,9 +337,9 @@ describe('client components', () => {
       attachTo: 'body',
     })
 
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
     expect(wrapper.html()).toContain('data-island-uid="not-to-be-replaced"')
-    vi.mocked(fetch).mockReset()
+    fetchRaw.mockReset()
     expectNoConsoleIssue()
   })
 
@@ -356,8 +356,8 @@ describe('client components', () => {
       }),
     }))
 
-    const stubFetch = vi.fn(() => {
-      return Promise.resolve({
+    const fetchRaw = stubFetchRaw(() => {
+      return Promise.resolve(islandResponse({
         id: '123',
         html: `<div data-island-uid>hello<div data-island-uid data-island-component="${componentId}"></div></div>`,
         state: {},
@@ -375,21 +375,16 @@ describe('client components', () => {
             },
           },
         },
-        json () {
-          return this
-        },
-        ok: true,
-      })
+      }))
     })
 
-    vi.stubGlobal('fetch', stubFetch)
     const wrapper = await mountSuspended(NuxtIsland, {
       props: {
         name: 'NuxtClientWithSlot',
       },
       attachTo: 'body',
     })
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
     expect(removeDataIslandUid(wrapper.html())).toMatchInlineSnapshot(`
       "<div>hello<div data-island-component="ClientWithSlot-12345">
           <div class="client-component">
