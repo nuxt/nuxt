@@ -42,6 +42,21 @@ describe('serializeIslandProps', () => {
       'callback': () => {},
     })).toBe('{"defined":true,"nested":{},"items":[null,null]}')
   })
+
+  it('returns `{}` for nullish input', () => {
+    expect(serializeIslandProps(undefined)).toBe('{}')
+    expect(serializeIslandProps(null)).toBe('{}')
+  })
+
+  // #35349
+  it('drops function values', () => {
+    expect(serializeIslandProps({ heading: () => {}, label: 'hi' })).toBe('{"label":"hi"}')
+  })
+
+  // #35349
+  it('drops `undefined` values', () => {
+    expect(serializeIslandProps({ heading: undefined, label: 'hi' })).toBe('{"label":"hi"}')
+  })
 })
 
 describe('computeIslandHash', () => {

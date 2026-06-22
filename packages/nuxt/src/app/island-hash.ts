@@ -21,12 +21,14 @@ export function filterIslandProps (props: Record<string, any> | null | undefined
 }
 
 /**
- * Serialize island props exactly as they will be sent to the island handler.
+ * Serialize island props exactly as they will be sent to the island handler, so
+ * the client hashes the same string the server receives. Values that JSON
+ * drops or rewrites (`undefined`, functions, `NaN`, ...) are removed.
  *
  * @internal
  */
 export function serializeIslandProps (props: Record<string, any> | null | undefined): string {
-  return JSON.stringify(filterIslandProps(props)) || '{}'
+  return JSON.stringify(filterIslandProps(props))
 }
 
 /**
