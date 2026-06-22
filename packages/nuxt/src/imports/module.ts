@@ -298,7 +298,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       // Utilities that exist in both Nuxt and Nitro contexts but with different implementations.
       // These are safe to use in the shared context.
       const handCraftedDeclarations = `
-  const useRuntimeConfig: (event?: import('h3').H3Event) => import('nuxt/schema').RuntimeConfig
+  const useRuntimeConfig: () => import('nuxt/schema').RuntimeConfig
   const useAppConfig: () => import('nuxt/schema').AppConfig
   const defineAppConfig: <C extends import('nuxt/schema').AppConfigInput>(config: C) => C
   const createError: typeof import('h3')['createError']

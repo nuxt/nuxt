@@ -11,7 +11,7 @@ import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
-import { computeIslandHash, filterIslandProps } from '../island-hash'
+import { computeIslandHash, serializeIslandProps } from '../island-hash'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
@@ -104,8 +104,8 @@ const NuxtIsland = defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => filterIslandProps(props.props))
-    const hashId = computed(() => computeIslandHash(props.name, filteredProps.value, props.context, props.source))
+    const serializedProps = computed(() => serializeIslandProps(props.props))
+    const hashId = computed(() => computeIslandHash(props.name, serializedProps.value, props.context, props.source))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
@@ -125,7 +125,7 @@ const NuxtIsland = defineComponent({
           key,
           ...(import.meta.server && import.meta.prerender)
             ? {}
-            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
+            : { params: { ...props.context, props: props.props ? serializedProps.value : undefined } },
           result: toRevive,
         },
         ...result,
@@ -219,7 +219,7 @@ const NuxtIsland = defineComponent({
       // TODO: Validate response
       const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
-        props: props.props ? JSON.stringify(props.props) : undefined,
+        props: props.props ? serializedProps.value : undefined,
       }))
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
@@ -237,7 +237,7 @@ const NuxtIsland = defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          throw new Error(e.toString(), { cause: e })
         }
         throw e
       }

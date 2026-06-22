@@ -1,8 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
-import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
-import type { H3Event } from 'h3'
 
 import { $fetch } from 'ofetch'
 import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
@@ -135,7 +133,8 @@ describe('API routes', () => {
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
+    // https://github.com/nuxt/nuxt/issues/22753
+    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
 
     // TODO: https://github.com/nitrojs/nitro/issues/2758
@@ -147,7 +146,7 @@ describe('API routes', () => {
     expectTypeOf(useLazyFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useLazyFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
   })
 
@@ -160,11 +159,51 @@ describe('API routes', () => {
       },
     })
   })
+
+  // https://github.com/nuxt/nuxt/issues/35341
+  it('accepts MaybeRefOrGetter for documented option fields', () => {
+    const method = ref<'POST'>('POST')
+    const base = ref('/api')
+    const search = ref('x')
+    const state = reactive({ name: 'a' })
+
+    for (const useFn of [useFetch, useLazyFetch]) {
+      useFn('/x', {
+        method,
+        baseURL: base,
+        query: { q: search },
+        params: { q: search },
+        headers: { 'x-test': search },
+        body: state,
+      })
+      useFn('/x', {
+        method: computed(() => method.value),
+        baseURL: computed(() => base.value),
+        query: computed(() => ({ q: search.value })),
+        params: computed(() => ({ q: search.value })),
+        headers: computed(() => ({ 'x-test': search.value })),
+        body: computed(() => ({ ...state })),
+      })
+      useFn('/x', {
+        method: () => method.value,
+        baseURL: () => base.value,
+        query: () => ({ q: search.value }),
+        params: () => ({ q: search.value }),
+        headers: () => ({ 'x-test': search.value }),
+        body: () => ({ ...state }),
+      })
+    }
+
+    // @ts-expect-error wrong shape: number is not a method
+    useFetch('/x', { method: 123 })
+    // @ts-expect-error wrong shape: getter must return a method
+    useFetch('/x', { method: () => 123 })
+  })
 })
 
 describe('nitro compatible APIs', () => {
   it('useRuntimeConfig', () => {
-    useRuntimeConfig({} as H3Event)
+    useRuntimeConfig()
   })
 })
 

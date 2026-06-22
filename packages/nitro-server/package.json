@@ -84,7 +84,7 @@
     "hookable": "6.1.1",
     "nuxt": "workspace:*",
     "tsdown": "0.22.2",
-    "vitest": "4.1.8"
+    "vitest": "4.1.9"
   },
   "engines": {
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
