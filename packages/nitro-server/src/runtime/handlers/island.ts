@@ -12,11 +12,15 @@ import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { traceAsync } from '#app/internal/tracing'
 // @ts-expect-error virtual file
 import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
-import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import { useStorage } from 'nitro/storage'
+import type { Storage } from 'unstorage'
+
+export const islandCache: Storage<string> | null = import.meta.prerender ? useStorage<string>('internal:nuxt:prerender:island') : null
+export const islandPropCache: Storage<string> | null = import.meta.prerender ? useStorage<string>('internal:nuxt:prerender:island-props') : null
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
@@ -26,7 +30,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 
   const islandPath = event.url.pathname
   if (import.meta.prerender && await islandCache!.hasItem(islandPath)) {
-    return islandCache!.getItem(islandPath) as Promise<Partial<RenderResponse>>
+    return await islandCache!.getItem(islandPath) || undefined
   }
 
   const islandContext = await getIslandContext(event)
@@ -120,17 +124,19 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 
   await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
 
+  const islandResponseString = JSON.stringify(islandResponse)
+
   if (import.meta.prerender) {
     const requestUrl = islandPath + event.url.search + event.url.hash
-    await islandCache!.setItem(islandPath, islandResponse)
+    await islandCache!.setItem(islandPath, islandResponseString)
     await islandPropCache!.setItem(islandPath, requestUrl)
   }
-  return islandResponse
+  return islandResponseString
 })
 
 export default handler
 
-function returnIslandResponse (event: H3Event, response: Partial<RenderResponse>) {
+function returnIslandResponse (event: H3Event, response: Partial<RenderResponse>): string | undefined {
   for (const header in response.headers || {}) {
     event.res.headers.set(header, response.headers![header]!)
   }
