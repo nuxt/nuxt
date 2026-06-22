@@ -650,6 +650,133 @@ describe('NuxtPage render counts with synchronous components', () => {
   })
 })
 
+// Navigating up the tree (e.g. /a/b/c -> /a/b) doesn't remount any Suspense, so `_route`
+// has to be synced from `router.afterEach` rather than `<NuxtPage>`'s `Suspense.onResolve`.
+describe('nuxtApp._route should follow the router on tree-narrowing navigations', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    router.addRoute({
+      name: 'narrowing-parent',
+      path: '/narrowing-parent',
+      component: defineComponent({
+        name: 'narrowing-parent',
+        setup: () => () => h('div', [h('span', 'Parent'), h(NuxtPage)]),
+      }),
+      children: [
+        {
+          name: 'narrowing-child',
+          path: 'child',
+          component: defineComponent({
+            name: 'narrowing-child',
+            setup: () => () => h('div', [h('span', 'Child'), h(NuxtPage)]),
+          }),
+          children: [
+            {
+              name: 'narrowing-grandchild',
+              path: 'grandchild',
+              component: defineComponent({
+                name: 'narrowing-grandchild',
+                setup: () => () => h('div', 'Grandchild'),
+              }),
+            },
+          ],
+        },
+      ],
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('narrowing-parent')
+  })
+
+  it('should sync _route when navigating from a leaf back to its parent', async () => {
+    const el = await mountSuspended({
+      setup () {
+        return () => h(NuxtLayout, {}, { default: () => h(NuxtPage) })
+      },
+    })
+
+    await navigateTo('/narrowing-parent/child/grandchild')
+    await flushPromises()
+    expect(nuxtApp._route.path).toBe('/narrowing-parent/child/grandchild')
+
+    await navigateTo('/narrowing-parent/child')
+    await flushPromises()
+    expect(nuxtApp._route.path).toBe('/narrowing-parent/child')
+
+    await navigateTo('/narrowing-parent')
+    await flushPromises()
+    expect(nuxtApp._route.path).toBe('/narrowing-parent')
+
+    el.unmount()
+  })
+})
+
+// https://github.com/nuxt/nuxt/issues/34967
+describe('NuxtPage should render child routes when the parent route omits its component', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    router.addRoute({
+      name: 'index-34967',
+      path: '/index-34967',
+      component: defineComponent({
+        name: 'index-34967',
+        render: () => h('div', { 'data-testid': 'index-34967' }, 'Index'),
+      }),
+    })
+
+    router.addRoute({
+      // parent route deliberately has no component (added via `pages:extend` without `file`)
+      name: 'parent-34967',
+      path: '/parent-34967',
+      children: [
+        {
+          name: 'child-34967',
+          path: 'child',
+          component: defineComponent({
+            name: 'child-34967',
+            render: () => h('div', { 'data-testid': 'child-34967' }, 'Child'),
+          }),
+        },
+      ],
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('index-34967')
+    router.removeRoute('parent-34967')
+  })
+
+  it('renders the child after client-side navigation into a parent without a component', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/index-34967')
+    await flushPromises()
+    expect(el.html()).toContain('Index')
+    expect(nuxtApp._route.path).toBe('/index-34967')
+
+    await navigateTo('/parent-34967/child')
+    await flushPromises()
+    expect(nuxtApp._route.path).toBe('/parent-34967/child')
+    expect(el.html()).toContain('Child')
+    expect(el.html()).not.toContain('Index')
+
+    el.unmount()
+  })
+})
+
 describe('NuxtPage should work with keepalive options', () => {
   let visits = 0
   let router: ReturnType<typeof useRouter>
@@ -738,6 +865,39 @@ describe('NuxtPage should work with keepalive options', () => {
     await navigateTo('/')
     await navigateTo('/home')
     expect(visits).toBe(1)
+    el.unmount()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33610
+  it('should keep a page alive when only that page sets keepalive in its route meta', async () => {
+    let otherVisits = 0
+    router.addRoute({
+      name: 'other',
+      path: '/other',
+      component: defineComponent({
+        name: 'other',
+        setup () {
+          otherVisits++
+          return () => h('div', 'other')
+        },
+      }),
+    })
+    const homeRoute = router.getRoutes().find(r => r.name === 'home')!
+    homeRoute.meta.keepalive = true
+
+    const el = await mountSuspended({
+      setup () {
+        return () => h(NuxtLayout, {}, { default: () => h(NuxtPage) })
+      },
+    })
+    await navigateTo('/home')
+    await navigateTo('/other')
+    await navigateTo('/home')
+    expect(visits).toBe(1)
+    expect(otherVisits).toBe(1)
+
+    delete homeRoute.meta.keepalive
+    router.removeRoute('other')
     el.unmount()
   })
 })

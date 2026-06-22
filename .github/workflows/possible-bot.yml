@@ -4,13 +4,15 @@ on:
   issues:
     types:
       - labeled
+  # zizmor: ignore[dangerous-triggers] needs write access to comment on PRs from forks
+  # DO NOT add action/checkout in this workflow
   pull_request_target:
     types:
       - labeled
 
 jobs:
   possible-bot:
-    uses: nuxt/.github/.github/workflows/possible-bot.yml@main
+    uses: nuxt/.github/.github/workflows/possible-bot.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation
     permissions:
       issues: write
       pull-requests: write

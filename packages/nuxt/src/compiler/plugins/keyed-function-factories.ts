@@ -1,17 +1,10 @@
 import { resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, logger, stripExtension } from '../../utils.ts'
-import type {
-  ExportDefaultDeclaration,
-  ExportNamedDeclaration,
-  IdentifierReference,
-  MemberExpression,
-  ParenthesizedExpression,
-  VariableDeclarator,
-} from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
@@ -31,11 +24,11 @@ interface ParsedKeyedFunctionFactory {
  * Check if the node is a named export of a keyed function factory, and if so,
  * return its VariableDeclarator node.
  */
-export function parseKeyedFunctionFactory (node: ExportNamedDeclaration | ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
+export function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
   if (node.type === 'ExportNamedDeclaration') {
     const parsed: ParsedKeyedFunctionFactory[] = []
 
-    function processVariableDeclarator (node: VariableDeclarator) {
+    function processVariableDeclarator (node: ESTree.VariableDeclarator) {
       if (node.init?.type !== 'CallExpression' && node.init?.type !== 'ChainExpression') { return }
       const functionCallMeta = parseStaticFunctionCall(node.init, filter)
       if (functionCallMeta && node?.id.type === 'Identifier') {
@@ -131,7 +124,7 @@ function createFactoryProcessor (
 
   function processFactory (
     walkContext: ThisParameterType<NonNullable<Parameters<typeof walk>[1]['enter']>>, // TODO: export type from `oxc-walker`
-    node: ExportNamedDeclaration | ExportDefaultDeclaration,
+    node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration,
     handler: (ctx: { parseFactoryResult: ParsedKeyedFunctionFactory, factory: KeyedFunctionFactory }) => void,
   ) {
     const parsedFactoryCalls = parseKeyedFunctionFactory(node, LOCAL_FACTORY_NAMES_RE, scopeTracker)
@@ -389,7 +382,6 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
 // -------- unplugin for replacing keyed factory macros --------
 
 interface KeyedFunctionFactoriesPluginOptions {
-  sourcemap: boolean
   factories: KeyedFunctionFactory[]
   alias: Record<string, string>
   getAutoImports: () => Promise<Import[]>
@@ -424,8 +416,8 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
         },
         code: { include: KEYED_FUNCTION_FACTORY_NAMES_RE },
       },
-      async handler (code, id) {
-        const s = new MagicString(code)
+      async handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         const scopeTracker = new ScopeTracker({
           preserveExitedScopes: true,
         })
@@ -440,7 +432,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           options.alias,
         )
 
-        function rewriteFactoryMacro (node: IdentifierReference | MemberExpression | ParenthesizedExpression) {
+        function rewriteFactoryMacro (node: ESTree.IdentifierReference | ESTree.MemberExpression | ESTree.ParenthesizedExpression) {
           // TODO: use sth more robust for rewriting optionals
           if (node.type === 'Identifier') {
             // createUseFetch?.() -> createUseFetch?.__nuxt_factory()
@@ -487,14 +479,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           },
         })
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

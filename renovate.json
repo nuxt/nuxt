@@ -14,6 +14,7 @@
     "node",
     "npm"
   ],
+  "minimumReleaseAge": "1 day",
   "packageRules": [
     {
       "groupName": "webpack",
@@ -46,18 +47,37 @@
         "4.x",
         "3.x"
       ],
-      "groupName": "all dependencies",
-      "groupSlug": "all",
+      "matchUpdateTypes": [
+        "patch",
+        "minor",
+        "pin",
+        "digest",
+        "lockFileMaintenance"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-non-major",
       "matchPackageNames": [
         "*"
       ]
+    },
+    {
+      "groupName": "rolldown",
+      "groupSlug": "rolldown",
+      "matchPackageNames": [
+        "rolldown",
+        "obuild"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "@nuxt/**"
+      ],
+      "minimumReleaseAge": "0"
     }
   ],
   "vulnerabilityAlerts": {
     "postUpdateOptions": [
       "pnpmDedupe"
-    ],
-    "groupName": "all dependencies",
-    "groupSlug": "all"
+    ]
   }
 }

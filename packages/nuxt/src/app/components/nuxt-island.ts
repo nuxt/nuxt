@@ -1,7 +1,6 @@
-import type { Component, PropType, RendererNode, VNode } from 'vue'
+import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsType, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
-import { hash } from 'ohash'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -12,6 +11,7 @@ import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
+import { computeIslandHash, filterIslandProps } from '../island-hash'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
@@ -46,7 +46,26 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
   await Promise.all(promises)
 }
 
-export default defineComponent({
+interface NuxtIslandProps {
+  name: string
+  lazy?: boolean
+  props?: Record<string, any>
+  context?: Record<string, any>
+  scopeId?: string | undefined | null
+  source?: string
+  dangerouslyLoadClientComponents?: boolean
+}
+
+type NuxtIslandEmits = {
+  error: (error: unknown) => void
+}
+
+type NuxtIslandSlots = SlotsType<{
+  fallback?: (props: { error: unknown }) => VNode[]
+  [name: string]: ((props: any) => VNode[]) | undefined
+}>
+
+const NuxtIsland = defineComponent({
   name: 'NuxtIsland',
   inheritAttrs: false,
   props: {
@@ -85,8 +104,8 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
-    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
+    const filteredProps = computed(() => filterIslandProps(props.props))
+    const hashId = computed(() => computeIslandHash(props.name, filteredProps.value, props.context, props.source))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
@@ -218,7 +237,7 @@ export default defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          throw new Error(e.toString(), { cause: e })
         }
         throw e
       }
@@ -356,4 +375,6 @@ export default defineComponent({
       ]
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits, NuxtIslandSlots>
+
+export default NuxtIsland
