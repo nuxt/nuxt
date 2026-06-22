@@ -901,3 +901,56 @@ describe('NuxtPage should work with keepalive options', () => {
     el.unmount()
   })
 })
+
+// https://github.com/nuxt/nuxt/issues/35348
+describe('NuxtPage should not emit page:finish before the page:start hook chain settles', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    router.addRoute({
+      name: 'race-35348',
+      path: '/race-35348',
+      component: defineComponent({
+        name: 'race-35348',
+        async setup () {
+          await Promise.resolve()
+          return () => h('div', { 'data-testid': 'race-35348' }, 'Race')
+        },
+      }),
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('race-35348')
+  })
+
+  it('awaits a slow async page:start callback before firing page:finish', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    const order: string[] = []
+    const removeStart = nuxtApp.hooks.hook('page:start', async () => {
+      order.push('start:enter')
+      await new Promise<void>(resolve => setTimeout(resolve, 50))
+      order.push('start:exit')
+    })
+    const removeFinish = nuxtApp.hooks.hook('page:finish', () => {
+      order.push('finish')
+    })
+
+    await navigateTo('/race-35348')
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(order).toEqual(['start:enter', 'start:exit', 'finish'])
+
+    removeStart()
+    removeFinish()
+    el.unmount()
+  })
+})
