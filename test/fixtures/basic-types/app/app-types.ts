@@ -1,7 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
-import type { H3Event } from 'h3'
 
 import { $fetch } from 'ofetch'
 import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
@@ -204,7 +203,7 @@ describe('API routes', () => {
 
 describe('nitro compatible APIs', () => {
   it('useRuntimeConfig', () => {
-    useRuntimeConfig({} as H3Event)
+    useRuntimeConfig()
   })
 })
 

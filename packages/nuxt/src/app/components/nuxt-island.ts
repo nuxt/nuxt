@@ -237,7 +237,7 @@ const NuxtIsland = defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          throw new Error(e.toString(), { cause: e })
         }
         throw e
       }
