@@ -53,7 +53,7 @@
     "css-minimizer-webpack-plugin": "8.0.0",
     "cssnano": "8.0.1",
     "esbuild": "0.28.1",
-    "esbuild-loader": "4.4.3",
+    "esbuild-loader": "4.5.0",
     "file-loader": "6.2.0",
     "h3": "2.0.1-rc.22",
     "hookable": "6.1.1",
