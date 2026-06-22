@@ -181,7 +181,7 @@ describe('errors', () => {
     it('shows the error page for a regular user agent', async () => {
       vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0' })
       const error = useError()
-      await _showError(new Error('chunk failed'))
+      await _showError(useNuxtApp(), new Error('chunk failed'))
       expect(error.value).toMatchInlineSnapshot('[HTTPError: chunk failed]')
     })
 
@@ -194,7 +194,7 @@ describe('errors', () => {
 
       const error = useError()
       const thrown = new Error('chunk failed')
-      await _showError(thrown)
+      await _showError(nuxtApp, thrown)
 
       expect(error.value).toBeUndefined()
       expect(appError).toHaveBeenCalledWith(thrown)

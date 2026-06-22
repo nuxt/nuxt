@@ -2,7 +2,7 @@ import { HTTPError } from '@nuxt/nitro-server/h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import type { NuxtPayload } from '../nuxt'
+import type { NuxtApp, NuxtPayload } from '../nuxt'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
 
@@ -43,8 +43,7 @@ export const showError = <DataT = unknown>(
  *
  * @internal
  */
-export const _showError = async (error: Error): Promise<void> => {
-  const nuxtApp = useNuxtApp()
+export const _showError = async (nuxtApp: NuxtApp, error: Error): Promise<void> => {
   if (import.meta.client && isBotUserAgent(navigator.userAgent)) {
     await nuxtApp.callHook('app:error', error)
     console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, error)

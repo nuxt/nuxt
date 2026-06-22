@@ -172,7 +172,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await router.isReady()
     } catch (error: any) {
       // We'll catch 404s here
-      await _showError(error)
+      await _showError(nuxtApp, error)
     }
 
     // #4920, #4982
@@ -338,7 +338,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         router.options.scrollBehavior = routerOptions.scrollBehavior
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here
-        await _showError(error)
+        await _showError(nuxtApp, error)
       }
     })
 
