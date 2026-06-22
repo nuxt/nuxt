@@ -186,6 +186,7 @@ export default withMatrix({
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
       '/hydration/spa-redirection/**': { ssr: false },
+      '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
       '/route-rules/redirect': { redirect: '/' },
