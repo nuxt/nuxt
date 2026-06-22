@@ -232,15 +232,15 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ```ts [Signature]
 export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
 
-export function useAsyncData<ResT, DataT = ResT, DataE = unknown> (
+export function useAsyncData<ResT, DataE = unknown, DataT = ResT> (
   handler: AsyncDataHandler<ResT>,
   options?: AsyncDataOptions<ResT, DataT>,
 ): AsyncData<DataT, DataE>
-export function useAsyncData<ResT, DataT = ResT, DataE = unknown> (
+export function useAsyncData<ResT, DataE = unknown, DataT = ResT> (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
   options?: AsyncDataOptions<ResT, DataT>,
-): Promise<AsyncData<DataT, DataE>>
+): AsyncData<DataT, DataE>
 
 type AsyncDataOptions<ResT, DataT = ResT> = {
   server?: boolean
