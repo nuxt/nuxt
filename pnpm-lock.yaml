@@ -1014,6 +1014,9 @@ importers:
       jiti:
         specifier: ^2.7.0
         version: 2.7.0
+      js-tokens:
+        specifier: ^9.0.1
+        version: 9.0.1
       knitwork:
         specifier: ^1.3.0
         version: 1.3.0

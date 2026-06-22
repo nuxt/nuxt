@@ -4,6 +4,7 @@ import { addDependency } from 'nypm'
 import { logger } from '@nuxt/kit'
 import { hasTTY, isCI } from 'std-env'
 import type { Nuxt } from '@nuxt/schema'
+import jsTokens from 'js-tokens'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx']
 
@@ -44,6 +45,38 @@ async function ensureBabelDecoratorDeps (nuxt: Nuxt): Promise<boolean> {
   return true
 }
 
+export function hasDecoratorSyntax (code: string, jsx = false) {
+  const tokens = jsx ? jsTokens(code, { jsx: true }) : jsTokens(code)
+
+  for (const token of tokens) {
+    if (!token.value.includes('@')) {
+      continue
+    }
+
+    switch (token.type) {
+      case 'HashbangComment':
+      case 'SingleLineComment':
+      case 'TemplateHead':
+      case 'TemplateMiddle':
+        continue
+      case 'MultiLineComment':
+      case 'StringLiteral':
+      case 'NoSubstitutionTemplate':
+      case 'TemplateTail':
+      case 'JSXString':
+        // An unclosed token can consume code that follows it. Let Babel parse
+        // ambiguous input instead of potentially hiding a real decorator.
+        if (token.closed) {
+          continue
+        }
+    }
+
+    return true
+  }
+
+  return false
+}
+
 export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
   let transformSync: typeof import('@babel/core').transformSync
 
@@ -82,6 +115,10 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
       handler (code, id) {
         // Skip uncompiled SFC markup (raw .vue files not yet processed by @vitejs/plugin-vue)
         if (id.includes('.vue') && code.trimStart().startsWith('<')) {
+          return
+        }
+
+        if (!hasDecoratorSyntax(code, /\.[jt]sx(?:$|\?)/.test(id))) {
           return
         }
 
