@@ -11,7 +11,7 @@ import { toArray } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showError, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
 import _routes, { handleHotUpdate } from '#build/routes'
@@ -172,7 +172,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await router.isReady()
     } catch (error: any) {
       // We'll catch 404s here
-      await nuxtApp.runWithContext(() => showError(error))
+      await _showError(error)
     }
 
     // #4920, #4982
@@ -338,7 +338,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         router.options.scrollBehavior = routerOptions.scrollBehavior
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here
-        await nuxtApp.runWithContext(() => showError(error))
+        await _showError(error)
       }
     })
 

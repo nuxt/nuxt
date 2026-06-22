@@ -9,7 +9,8 @@ import { createClientPage } from '../../packages/nuxt/src/components/runtime/cli
 
 import * as composables from '#app/composables'
 import { refreshNuxtData } from '#app/composables/asyncData'
-import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showError, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { useNuxtApp } from '#app/nuxt'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
@@ -169,6 +170,36 @@ describe('errors', () => {
     expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
+  })
+
+  describe('_showError', () => {
+    afterEach(async () => {
+      vi.unstubAllGlobals()
+      await clearError()
+    })
+
+    it('shows the error page for a regular user agent', async () => {
+      vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0' })
+      const error = useError()
+      await _showError(new Error('chunk failed'))
+      expect(error.value).toMatchInlineSnapshot('[HTTPError: chunk failed]')
+    })
+
+    it('suppresses the error page and fires `app:error` for a crawler', async () => {
+      vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' })
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      const appError = vi.fn()
+      const nuxtApp = useNuxtApp()
+      const off = nuxtApp.hook('app:error', appError)
+
+      const error = useError()
+      const thrown = new Error('chunk failed')
+      await _showError(thrown)
+
+      expect(error.value).toBeUndefined()
+      expect(appError).toHaveBeenCalledWith(thrown)
+      off()
+    })
   })
 })
 
