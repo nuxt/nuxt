@@ -64,7 +64,7 @@
     "unenv": "^2.0.0-rc.24",
     "unplugin": "^3.0.0",
     "url-loader": "^4.1.1",
-    "vue-bundle-renderer": "^2.2.0",
+    "vue-bundle-renderer": "^2.3.1",
     "vue-loader": "^17.4.2",
     "webpack-bundle-analyzer": "^5.3.0",
     "webpack-dev-middleware": "^8.0.3",
