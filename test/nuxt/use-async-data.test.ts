@@ -9,6 +9,7 @@ import { flushPromises } from '@vue/test-utils'
 import { Transition } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
+import * as idleCallback from '#app/compat/idle-callback'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { asyncDataDefaults, pendingWhenIdle } from '#build/nuxt.config.mjs'
 import { NuxtPage } from '#components'
@@ -188,6 +189,27 @@ describe('useAsyncData', () => {
     expect(data.data.value).toBeUndefined()
     await refreshNuxtData(uniqueKey)
     expect(data.data.value).toMatchInlineSnapshot('"test"')
+  })
+
+  it('should not wait for idle callback when refreshing after hydration', async () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback')
+
+    try {
+      nuxtApp.isHydrating = false
+      await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+      clearNuxtData(uniqueKey)
+      const data = useNuxtData(uniqueKey)
+
+      await refreshNuxtData(uniqueKey)
+
+      expect(data.data.value).toMatchInlineSnapshot('"test"')
+      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
   })
 
   it('should allow overriding requests', async () => {
