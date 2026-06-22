@@ -1,8 +1,6 @@
 import type { H3Event } from 'nitro/h3'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { createHead } from '@unhead/vue/server'
-// @ts-expect-error withAsyncContext is exported at runtime but not in Vue's public types
-import { getCurrentInstance, withAsyncContext } from 'vue'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 import { sharedPrerenderCache } from '../cache'
 // @ts-expect-error virtual file
@@ -42,11 +40,4 @@ export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['err
   ssrContext.payload = { error }
   const url = new URL(error.url)
   ssrContext.url = url.pathname + url.search + url.hash
-}
-
-export function clearVueCurrentInstance (): void {
-  if (getCurrentInstance()) {
-    // HACK: using `withAsyncContext` to clear `currentInstance` until Vue exports an equivalent public API
-    withAsyncContext(() => null)
-  }
 }

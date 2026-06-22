@@ -21,7 +21,8 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from
 import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
-import { clearVueCurrentInstance, createSSRContext, setSSRError } from '../utils/renderer/app'
+import { createSSRContext, setSSRError } from '../utils/renderer/app'
+import { clearVueCurrentInstance } from '../utils/renderer/clear-instance'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
