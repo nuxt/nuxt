@@ -56,17 +56,22 @@ function encodeForwardSlashes (str: string): string {
 }
 
 interface SplitPayload {
-  initial: Omit<NuxtPayload, 'data'>
+  initial: Omit<NuxtPayload, 'data' | 'prefetchLinks'>
   payload: {
     data?: NuxtPayload['data']
     prerenderedAt?: NuxtPayload['prerenderedAt']
+    prefetchLinks?: NuxtPayload['prefetchLinks']
   }
 }
 
 export function splitPayload (ssrContext: NuxtSSRContext): SplitPayload {
-  const { data, prerenderedAt, ...initial } = ssrContext.payload
+  const { data, prerenderedAt, prefetchLinks, ...initial } = ssrContext.payload
+  const payload: SplitPayload['payload'] = { data, prerenderedAt }
+  if (prefetchLinks?.length) {
+    payload.prefetchLinks = prefetchLinks
+  }
   return {
     initial: { ...initial, prerenderedAt },
-    payload: { data, prerenderedAt },
+    payload,
   }
 }

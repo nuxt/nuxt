@@ -15,6 +15,7 @@ import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependenc
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
+import type { H3Event } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
@@ -22,7 +23,7 @@ import { runtimeDependencies } from 'nitro/meta'
 import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, toArray } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, toArray } from './utils.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -35,23 +36,10 @@ const logLevelMapReverse = {
   verbose: 3,
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
-const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
-const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
-  const excludePaths: string[] = []
-  for (const dirs of layerDirs) {
-    const paths = [
-      dirs.root.match(NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
-      dirs.root.match(PNPM_NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
-    ]
-    for (const dir of paths) {
-      if (dir) {
-        excludePaths.push(escapeRE(dir))
-      }
-    }
-  }
+  const excludePattern = [getLayerNodeModulesExcludePattern(layerDirs.map(dirs => dirs.root))]
 
   const layerPublicAssetsDirs: Array<{ dir: string, maxAge: number }> = []
   for (const dirs of layerDirs) {
@@ -59,10 +47,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       layerPublicAssetsDirs.push({ dir: dirs.public, maxAge: 0 })
     }
   }
-
-  const excludePattern = excludePaths.length
-    ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
-    : [/node_modules/]
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
@@ -113,7 +97,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
-    const h3Path = JSON.stringify(resolve(distDir, 'runtime/h3-compat'))
+    const h3Path = JSON.stringify(resolve(distDir, 'h3'))
     const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
 
     nuxt.options.nitro.virtual ||= {}
@@ -197,6 +181,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
       // this will be overridden in vite plugin
       '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
+      // overridden by head module when SSR streaming is enabled
+      '#internal/streaming-iife-chunk.mjs': () => `export const iifeChunkFileName = undefined`,
       '#internal/nuxt/entry-ids.mjs': () => `export default []`,
       '#internal/nuxt/nitro-config.mjs': () => {
         const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)
@@ -211,12 +197,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_PAYLOAD_EXTRACTION = ${nuxt.options.experimental.payloadExtraction !== false}`,
           `export const NUXT_PAYLOAD_INLINE = ${nuxt.options.experimental.payloadExtraction !== true}`,
           `export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${hasCachedRoutes}`,
+          `export const NUXT_SSR_STREAMING = ${!!(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled)}`,
+          `export const NUXT_SSR_STREAMING_BOT_RE = ${typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.botRegex instanceof RegExp ? String(nuxt.options.experimental.ssrStreaming.botRegex) : '/^$/'}`,
         ].join('\n')
       },
     },
     routeRules: {
-      '/**': { ssr: true },
+      '/**': typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
+        ? { ssr: true, streaming: true }
+        : { ssr: true },
       '/__nuxt_error': { cache: false },
+    },
+    rolldownConfig: {
+      // don't try to resolve rolldown options from the tsconfig we generate
+      tsconfig: false,
     },
     typescript: {
       generateTsConfig: true,
@@ -395,7 +389,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       return `
       import { defu } from 'defu'
       const matcher = ${matcher}
-      export default (path) => defu({}, ...matcher('', path).map(r => r.data).reverse())
+      export default (path) => defu({}, ...matcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())
       `
     },
   })
@@ -526,7 +520,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  if (nuxt.options.dev) {
+  if (nuxt.options.dev || !nuxt.options.ssr) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
@@ -534,44 +528,64 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // Add decorator support via Babel when experimental.decorators is enabled.
-  if (nuxt.options.experimental.decorators) {
-    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators']
-    const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
-      rootDir: nuxt.options.rootDir,
-      searchPaths: nuxt.options.modulesDir,
-      from: import.meta.url,
-    })
-
-    if (result !== true) {
-      logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+  const nitroDecoratorSetup = new WeakMap<NitroConfig, Promise<void>>()
+  const setupNitroDecorators = (nitroConfig: NitroConfig) => {
+    const existingSetup = nitroDecoratorSetup.get(nitroConfig)
+    if (existingSetup) {
+      return existingSetup
     }
 
-    if (result === true) {
-      const { babel } = await import('@rollup/plugin-babel')
-      nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
-      nitroConfig.rollupConfig!.plugins!.unshift(
-        babel({
-          babelHelpers: 'bundled',
-          configFile: false,
-          extensions: ['.ts', '.js', '.mjs', '.mts'],
-          plugins: [
-            // Syntax plugin allows Babel to parse TypeScript without transforming it,
-            // since the actual TS stripping is handled later by the bundler's esbuild plugin.
-            ['@babel/plugin-syntax-typescript', { isTSX: false }],
-            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
-          ],
-        }),
-        babel({
-          babelHelpers: 'bundled',
-          configFile: false,
-          extensions: ['.tsx', '.jsx'],
-          plugins: [
-            ['@babel/plugin-syntax-typescript', { isTSX: true }],
-            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
-          ],
-        }),
-      )
+    const setup = (async () => {
+      const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
+      const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
+        rootDir: nuxt.options.rootDir,
+        searchPaths: nuxt.options.modulesDir,
+        from: import.meta.url,
+      })
+
+      if (result !== true) {
+        logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+      }
+
+      if (result === true) {
+        const { babel } = await import('@rollup/plugin-babel')
+        nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
+        nitroConfig.rollupConfig!.plugins!.unshift(
+          babel({
+            babelHelpers: 'bundled',
+            configFile: false,
+            extensions: ['.ts', '.js', '.mjs', '.mts'],
+            plugins: [
+              // Syntax plugin allows Babel to parse TypeScript without transforming it,
+              // since the actual TS stripping is handled later by the bundler's esbuild plugin.
+              ['@babel/plugin-syntax-typescript', { isTSX: false }],
+              ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+            ],
+          }),
+          babel({
+            babelHelpers: 'bundled',
+            configFile: false,
+            extensions: ['.tsx', '.jsx'],
+            plugins: [
+              ['@babel/plugin-syntax-typescript', { isTSX: true }],
+              ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+            ],
+          }),
+        )
+      }
+    })()
+
+    nitroDecoratorSetup.set(nitroConfig, setup)
+    setup.catch(() => nitroDecoratorSetup.delete(nitroConfig))
+    return setup
+  }
+
+  // Add decorator support via Babel when experimental.decorators is enabled.
+  if (nuxt.options.experimental.decorators) {
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:build:before', nitro => setupNitroDecorators(nitro.options))
+    } else {
+      await setupNitroDecorators(nitroConfig)
     }
   }
 
@@ -619,7 +633,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }
 
-  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.js')
+  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
   const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath
 
   // Use hash-based cache driver for runtime payload cache to avoid conflicts when
@@ -778,9 +792,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     configEnvironment (name, config) {
       if (name === 'ssr') {
         config.resolve ||= {}
-        config.resolve.conditions = [...nitro.options.exportConditions || []]
-        // TODO: remove in v5
-        config.resolve.conditions = config.resolve.conditions.filter(c => c !== 'import')
+        config.resolve.conditions = getSsrResolveConditions(nitro.options.exportConditions)
       }
     },
   })
@@ -884,12 +896,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     nitro.options.devHandlers.push({
       route: '/.well-known/appspecific/com.chrome.devtools.json',
-      handler: defineEventHandler(() => ({
-        workspace: {
-          ...projectConfiguration,
-          root: nuxt.options.rootDir,
-        },
-      })),
+      handler: defineEventHandler((event) => {
+        if (!isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
+          event.res.status = 403
+          return 'Forbidden'
+        }
+        return {
+          workspace: {
+            ...projectConfiguration,
+            root: nuxt.options.rootDir,
+          },
+        }
+      }),
     })
   }
 
@@ -924,7 +942,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.tsConfig.exclude ||= []
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
-    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
+    opts.references.push({ path: resolve(nuxt.options.rootDir, nitroConfig.typescript!.generatedTypesDir!, 'nitro.d.ts') })
 
     // ensure aliases shared between nuxt + nitro are included in shared tsconfig
     opts.sharedTsConfig.compilerOptions ||= {}
@@ -1039,6 +1057,50 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
   const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
 
   return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
+}
+
+const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
+
+function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
+  const allowedHosts = nuxt.options.vite?.server?.allowedHosts
+  if (allowedHosts === true) {
+    return true
+  }
+  const hosts = new Set(LOOPBACK_HOSTS)
+  if (Array.isArray(allowedHosts)) {
+    for (const host of allowedHosts) {
+      if (typeof host === 'string' && host) {
+        hosts.add(host)
+      }
+    }
+  }
+  return hosts
+}
+
+function isLocalDevRequest (event: H3Event, allowedHosts: ReadonlySet<string> | true): boolean {
+  const hostHeader = event.req.headers.get('host')
+  if (allowedHosts !== true) {
+    const host = hostHeader?.split(':')[0]
+    if (!host || !allowedHosts.has(host)) {
+      return false
+    }
+  }
+
+  const site = event.req.headers.get('sec-fetch-site')
+  if (site !== null) {
+    return site === 'same-origin' || site === 'none'
+  }
+
+  const initiator = event.req.headers.get('origin') || event.req.headers.get('referer')
+  if (!initiator) {
+    return true
+  }
+
+  try {
+    return new URL(initiator).host === hostHeader
+  } catch {
+    return false
+  }
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {

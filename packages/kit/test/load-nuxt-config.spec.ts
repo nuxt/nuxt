@@ -83,4 +83,10 @@ describe('loadNuxtConfig', () => {
       expect(config.devServer.host).toBe('0.0.0.0')
     })
   })
+
+  it('should preserve and resolve a custom env name', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd, envName: 'staging' })
+    expect(config.envName).toBe('staging')
+  })
 })

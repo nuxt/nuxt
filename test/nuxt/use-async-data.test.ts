@@ -9,6 +9,7 @@ import { flushPromises } from '@vue/test-utils'
 import { Transition } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
+import * as idleCallback from '#app/compat/idle-callback'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { NuxtPage } from '#components'
 
@@ -193,6 +194,27 @@ describe('useAsyncData', () => {
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
 
+  it('should not wait for idle callback when refreshing after hydration', async () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback')
+
+    try {
+      nuxtApp.isHydrating = false
+      await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+      clearNuxtData(uniqueKey)
+      const data = useNuxtData(uniqueKey)
+
+      await refreshNuxtData(uniqueKey)
+
+      expect(data.data.value).toMatchInlineSnapshot('"test"')
+      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
+  })
+
   it('should allow overriding requests', async () => {
     vi.useFakeTimers()
 
@@ -276,6 +298,18 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('idle')
 
     vi.useRealTimers()
+  })
+
+  it('removes the key from payload.data and _asyncDataPromises on clear', async () => {
+    const nuxtApp = useNuxtApp()
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+
+    expect(uniqueKey in nuxtApp.payload.data).toBe(true)
+
+    clearNuxtData(uniqueKey)
+
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+    expect(uniqueKey in nuxtApp._asyncDataPromises).toBe(false)
   })
 
   it('should have correct status for previously fetched requests', async () => {
@@ -730,6 +764,76 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
     expect(promiseFn).toHaveBeenLastCalledWith('second')
     expect(comp2.html()).toMatchInlineSnapshot(`"<div>second</div>"`)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35322
+  it('should not leave a new subscriber stuck at idle when the previous subscriber unregisters during an in-flight deferred request', async () => {
+    const key = `stranded-idle-${++counter}`
+
+    let resolveHandler: ((value: string) => void) | undefined
+    const promiseFn = vi.fn(() => new Promise<string>((resolve) => {
+      resolveHandler = resolve
+    }))
+
+    const scopeA = effectScope()
+    let resultA!: ReturnType<typeof useAsyncData>
+    scopeA.run(() => {
+      resultA = useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    const nuxtApp = useNuxtApp()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(nuxtApp._asyncDataPromises[key]).toBeDefined()
+    expect(nuxtApp._asyncData[key]!.status.value).toBe('pending')
+
+    scopeA.stop()
+
+    const scopeB = effectScope()
+    let resultB!: ReturnType<typeof useAsyncData>
+    scopeB.run(() => {
+      resultB = useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    expect(nuxtApp._asyncData[key]!._init).toBe(true)
+
+    resolveHandler!('resolved')
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(nuxtApp._asyncData[key]!.status.value).toBe('success')
+    expect(nuxtApp._asyncData[key]!.data.value).toBe('resolved')
+    expect(resultB.status.value).toBe('success')
+    expect(resultB.data.value).toBe('resolved')
+
+    resultA.clear()
+    scopeB.stop()
+  })
+
+  it('should abort the in-flight request when the last subscriber unmounts', () => {
+    const key = `abort-on-unmount-${++counter}`
+
+    let capturedSignal: AbortSignal | undefined
+    const promiseFn = vi.fn((_nuxtApp, { signal }: { signal: AbortSignal }) => {
+      capturedSignal = signal
+      return new Promise<string>(() => {})
+    })
+
+    const scope = effectScope()
+    scope.run(() => {
+      useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    const nuxtApp = useNuxtApp()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(capturedSignal).toBeDefined()
+    expect(capturedSignal!.aborted).toBe(false)
+    expect(nuxtApp._asyncDataPromises[key]).toBeDefined()
+
+    scope.stop()
+
+    expect(capturedSignal!.aborted).toBe(true)
+    expect(nuxtApp._asyncDataPromises[key]).toBeUndefined()
   })
 
   it('should be synced with useNuxtData', async () => {
@@ -1493,5 +1597,41 @@ describe('useAsyncData', () => {
     const { data: second } = await useAsyncData(key, handler, { getCachedData })
     expect(fetchCount).toBe(1)
     expect(second.value).toBe('fresh-1')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35116
+  it('should call getCachedData for a useLazyAsyncData subscriber that mounts after the initial fetch settled', async () => {
+    const key = `late-subscriber-getCachedData-lazy-${++counter}`
+    const getCachedData = vi.fn((_key: string, nuxtApp: NuxtApp) => nuxtApp.payload.data[_key])
+    const promiseFn = vi.fn(() => Promise.resolve('value'))
+
+    const persistentComponent = defineComponent({
+      setup () {
+        useLazyAsyncData(key, promiseFn, { getCachedData })
+        return () => h('div')
+      },
+    })
+    const lateComponent = defineComponent({
+      setup () {
+        useLazyAsyncData(key, promiseFn, { getCachedData })
+        return () => h('div')
+      },
+    })
+
+    const persistent = await mountSuspended(persistentComponent)
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    const callsAfterFirst = getCachedData.mock.calls.length
+
+    const late = await mountSuspended(lateComponent)
+    await flushPromises()
+
+    // the late subscriber must consult getCachedData...
+    expect(getCachedData.mock.calls.length).toBeGreaterThan(callsAfterFirst)
+    // ...and must reuse the cached payload rather than re-running the handler
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    late.unmount()
+    persistent.unmount()
   })
 })

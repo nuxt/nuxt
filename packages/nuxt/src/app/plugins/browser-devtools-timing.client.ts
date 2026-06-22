@@ -1,6 +1,7 @@
 import { defineNuxtPlugin } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:browser-devtools-timing',
   enforce: 'pre',
   setup (nuxtApp) {
@@ -40,3 +41,5 @@ interface ExtensionTrackEntryPayload {
   properties?: [string, string][] // Key-value pairs for detailed view
   tooltipText?: string // Short description for tooltip
 }
+
+export default plugin

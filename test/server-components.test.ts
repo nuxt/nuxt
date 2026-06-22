@@ -5,9 +5,19 @@ import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
 import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
+import { computeIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
+
+function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
+  const serializedProps = serializeIslandProps(opts.props)
+  const ctx = opts.context ?? {}
+  const hashId = computeIslandHash(name, serializedProps, ctx, undefined)
+  const query: Record<string, any> = { ...ctx }
+  if (opts.props) { query.props = serializedProps }
+  return withQuery(`/__nuxt_island/${name}_${hashId}.json`, query)
+}
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/server-components', import.meta.url)),
@@ -167,11 +177,24 @@ describe('server components/islands', () => {
     expect(await page.innerHTML('head')).toContain('<meta name="author" content="Nuxt">')
     await page.close()
   })
+
+  it('/server-page-with-nuxtpage/child renders the parent server page with the child route', async () => {
+    const html = await $fetch<string>('/server-page-with-nuxtpage/child')
+    expect(html).toContain('id="server-page-with-nuxtpage"')
+    expect(html).toContain('id="server-page-with-nuxtpage-child"')
+    expect(html).toContain('Child body')
+  })
+
+  it('/server-page-with-nuxtpage renders the parent without recursing into itself', async () => {
+    const html = await $fetch<string>('/server-page-with-nuxtpage')
+    expect(html).toContain('id="server-page-with-nuxtpage"')
+    expect(html).toContain('Parent body')
+  })
 })
 
 describe('component islands', () => {
   it('renders components with route', async () => {
-    const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/RouteComponent.json?url=/foo')
+    const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev) {
@@ -180,6 +203,7 @@ describe('component islands', () => {
 
     result.head.link ||= []
     result.head.style ||= []
+    delete result.id
 
     expect(result).toMatchInlineSnapshot(`
       {
@@ -194,11 +218,7 @@ describe('component islands', () => {
   })
 
   it('render async component', async () => {
-    const result = await $fetch<NuxtIslandResponse>(withQuery('/__nuxt_island/LongAsyncComponent.json', {
-      props: JSON.stringify({
-        count: 3,
-      }),
-    }))
+    const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
@@ -206,6 +226,7 @@ describe('component islands', () => {
     result.head.link ||= []
     result.head.style ||= []
     result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
+    delete result.id
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
@@ -255,11 +276,7 @@ describe('component islands', () => {
   })
 
   it('render .server async component', async () => {
-    const result = await $fetch<NuxtIslandResponse>(withQuery('/__nuxt_island/AsyncServerComponent.json', {
-      props: JSON.stringify({
-        count: 2,
-      }),
-    }))
+    const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
     }
@@ -270,6 +287,7 @@ describe('component islands', () => {
     result.components = {}
     result.slots = {}
     result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
+    delete result.id
 
     expect(result).toMatchInlineSnapshot(`
       {
@@ -287,7 +305,7 @@ describe('component islands', () => {
 
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
-      const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
+      const result = await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient'))
       if (isDev) {
         result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
 
@@ -304,6 +322,7 @@ describe('component islands', () => {
 
       result.head.link ||= []
       result.head.style ||= []
+      delete result.id
 
       expect(result).toMatchInlineSnapshot(`
         {
@@ -327,13 +346,13 @@ describe('component islands', () => {
   }
 
   it('renders pure components', async () => {
-    const result = await $fetch<NuxtIslandResponse>(withQuery('/__nuxt_island/PureComponent.json', {
-      props: JSON.stringify({
+    const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', {
+      props: {
         bool: false,
         number: 3487,
         str: 'something',
         obj: { foo: 42, bar: false, me: 'hi' },
-      }),
+      },
     }))
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
 
@@ -461,6 +480,88 @@ describe('component islands', () => {
   })
 })
 
+describe('hash binding', () => {
+  it('accepts a request whose URL hash matches the props', async () => {
+    const res = await fetch(islandURL('PureComponent', {
+      props: { bool: false, number: 1, str: 's', obj: {} },
+    }))
+    expect(res.status).toBe(200)
+  })
+
+  it('accepts props that change during JSON serialization', async () => {
+    const res = await fetch(islandURL('PureComponent', {
+      props: {
+        bool: false,
+        number: 1,
+        str: 's',
+        obj: { optional: undefined, callback: () => {}, items: [undefined] },
+      },
+    }))
+    expect(res.status).toBe(200)
+  })
+
+  it('rejects a request whose URL hash was computed over different props', async () => {
+    // Compute a valid hash for one set of props, then swap the actual query props.
+    const url = islandURL('PureComponent', {
+      props: { bool: false, number: 1, str: 's', obj: {} },
+    })
+    const tampered = url.replace(/props=[^&]+/, 'props=' + encodeURIComponent(JSON.stringify({
+      bool: true, number: 999, str: '<script>x</script>', obj: { evil: true },
+    })))
+    const res = await fetch(tampered)
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects a request with a fabricated hash', async () => {
+    const res = await fetch(withQuery('/__nuxt_island/PureComponent_deadbeefcafef00d.json', {
+      props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects a request with no hash segment in the URL', async () => {
+    const res = await fetch(withQuery('/__nuxt_island/PureComponent.json', {
+      props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+    }))
+    expect(res.status).toBe(400)
+  })
+})
+
+describe('page-island middleware', () => {
+  it('runs page middleware and honours redirects for `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_gated-server-page', {
+      context: { url: '/gated-server-page' },
+    }), { redirect: 'manual' })
+    // page middleware calls `navigateTo('/login', { redirectCode: 302 })`
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toContain('/login')
+    const body = await res.text()
+    expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
+    // this asserts the island handler fires `app:rendered` even when middleware short-circuits response
+    expect(res.headers.get('set-cookie')).toContain('island-auth-marker=set-from-island-middleware')
+  })
+
+  it('still renders unguarded `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_server-page', {
+      context: { url: '/server-page' },
+    }))
+    expect(res.status).toBe(200)
+    const body = await res.json() as NuxtIslandResponse
+    expect(body.html).toContain('Hello this is a server page')
+  })
+
+  it('rejects a `page_*` island whose url routes to a different page', async () => {
+    // Forging `page_gated-server-page` with `url=/server-page` would render the gated
+    // page's HTML while running the (empty) middleware for the unguarded page.
+    const res = await fetch(islandURL('page_gated-server-page', {
+      context: { url: '/server-page' },
+    }), { redirect: 'manual' })
+    expect(res.status).toBe(400)
+    const body = await res.text()
+    expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
+  })
+})
+
 describe.skipIf(isDev || isWebpack)('regressions', () => {
   // https://github.com/nuxt/nuxt/issues/26527
   it.fails('renders <Counter nuxt-client /> when nested two levels deep in server components', async () => {
@@ -481,6 +582,46 @@ describe.skipIf(isDev || isWebpack)('regressions', () => {
 
     await page.locator('#slotted').waitFor()
     expect(consoleLogs.filter(l => l.type === 'error' && l.text.includes('Hydration'))).toEqual([])
+
+    await page.close()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/32537
+  it('keeps a leaving page\'s useHead styles applied throughout pageTransition leave', async () => {
+    const { page } = await renderPage('/page-transition-style/red')
+
+    const redLocator = page.locator('.red-page')
+    await redLocator.waitFor()
+    expect(await redLocator.evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(255, 0, 0)')
+
+    // While the leaving page's <Transition> still has its DOM mounted, the
+    // `useHead({ style })` entry registered by red.vue must still be present in
+    // <head> — otherwise the leaving DIV becomes unstyled mid-animation. Sample
+    // the computed background-color across the leave window (rAF) starting from
+    // the click; before the fix unhead's debounced render fires within ~20ms of
+    // click, dropping the style and turning the bg transparent.
+    await page.evaluate(() => {
+      const w = window as unknown as { __samples?: Array<{ bg: string | null, hasLeave: boolean | null }> }
+      w.__samples = []
+      const start = performance.now()
+      const tick = () => {
+        const el = document.querySelector('.red-page')
+        w.__samples!.push({
+          bg: el ? getComputedStyle(el).backgroundColor : null,
+          hasLeave: el ? el.classList.contains('page-leave-active') : null,
+        })
+        if (performance.now() - start < 600) { requestAnimationFrame(tick) }
+      }
+      ;(document.querySelector('#to-blue') as HTMLAnchorElement).click()
+      requestAnimationFrame(tick)
+    })
+
+    await page.locator('.blue-page').waitFor()
+
+    const samples = await page.evaluate(() => (window as unknown as { __samples: Array<{ bg: string | null, hasLeave: boolean | null }> }).__samples)
+    const leaveSamples = samples.filter(s => s.hasLeave)
+    expect(leaveSamples.length).toBeGreaterThan(0)
+    expect(leaveSamples.every(s => s.bg === 'rgb(255, 0, 0)')).toBe(true)
 
     await page.close()
   })

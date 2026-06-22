@@ -32,7 +32,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
       initial: true,
     })
 
-    if (!confirm) {
+    if (confirm !== true) {
       return false
     }
   }

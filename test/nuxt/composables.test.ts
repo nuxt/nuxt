@@ -121,13 +121,13 @@ describe('composables', () => {
       'useFetch',
       'useHead',
       'useHeadSafe',
+      'useServerHead',
+      'useServerHeadSafe',
+      'useServerSeoMeta',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
-      'useServerHead',
-      'useServerHeadSafe',
-      'useServerSeoMeta',
       'usePreviewMode',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
@@ -396,6 +396,17 @@ describe('clearNuxtState', () => {
     delete nuxtApp.payload.state._layout
     delete nuxtApp.payload.state._layoutProps
   })
+
+  it('removes the key from payload.state rather than setting it to undefined', () => {
+    const nuxtApp = useNuxtApp()
+    const key = 'clearNuxtState-test'
+    useState(key, () => 'test')
+    expect(`$s${key}` in nuxtApp.payload.state).toBe(true)
+
+    clearNuxtState(key, { reset: false })
+
+    expect(`$s${key}` in nuxtApp.payload.state).toBe(false)
+  })
 })
 
 describe('url', () => {
@@ -538,6 +549,15 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       }
     `)
   })
+  it('matches case-insensitively to mirror vue-router defaults', () => {
+    expect(getRouteRules({ path: '/Pre/spa/thing' })).toMatchObject({
+      prerender: true,
+      ssr: false,
+    })
+    expect(getRouteRules({ path: '/PRE/test' })).toMatchObject({
+      redirect: '/',
+    })
+  })
 })
 
 describe('compiled route rules', () => {
@@ -627,6 +647,55 @@ describe('routing utilities: `navigateTo`', () => {
       expect(() => navigateTo(url, { external: true })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
   })
+  it('navigateTo should disallow opening data/script URLs via the `open` option', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      const urls = [
+        ['javascript:alert("hi")', 'javascript'],
+        ['data:alert("hi")', 'data'],
+        ['vbscript:alert("hi")', 'vbscript'],
+        ['\0javascript:alert("hi")', 'javascript'],
+      ]
+      for (const [url, protocol] of urls) {
+        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+      }
+      expect(open).not.toHaveBeenCalled()
+    } finally {
+      open.mockRestore()
+    }
+  })
+  it('navigateTo should still allow opening safe URLs via the `open` option', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      expect(() => navigateTo('https://example.com', { open: { target: '_blank' } })).not.toThrow()
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+    } finally {
+      open.mockRestore()
+    }
+  })
+  it('reloadNuxtApp should disallow paths with data/script URLs', () => {
+    const urls = [
+      'javascript:alert("hi")',
+      'data:alert("hi")',
+      '\0data:alert("hi")',
+    ]
+    for (const url of urls) {
+      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with a different host: '${url}'.`)
+    }
+  })
+  it('reloadNuxtApp should disallow cross-origin paths', () => {
+    const urls = [
+      '//evil.com',
+      'https://evil.com',
+      '\\\\evil.com',
+    ]
+    for (const url of urls) {
+      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with a different host: '${url}'.`)
+    }
+  })
+  it('reloadNuxtApp should allow same-origin paths', () => {
+    expect(() => reloadNuxtApp({ path: '/legit/path' })).not.toThrow()
+  })
   it('navigateTo should replace current navigation state if called within middleware', () => {
     const nuxtApp = useNuxtApp()
     nuxtApp._processingMiddleware = true
@@ -685,6 +754,18 @@ describe('routing utilities: `encodeURL`', () => {
     expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
     expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
     expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
+  })
+
+  it.each([
+    '/..//evil.com',
+    '/.//evil.com',
+    '/%2e%2e//evil.com',
+    '/app/..//evil.com',
+    '/..//evil.com/path?q=1#h',
+  ])('does not produce a protocol-relative URL for path-normalization bypass %s', (input) => {
+    const result = encode(input)
+    expect(result.startsWith('//')).toBe(false)
+    expect(new URL(result, 'http://app.test').origin).toBe('http://app.test')
   })
 })
 
@@ -849,6 +930,24 @@ describe('routing utilities: `setPageLayout`', () => {
     setPageLayout('custom')
     expect(route.meta.layout).toBeUndefined()
     nuxtApp._processingMiddleware = false
+  })
+
+  it('should preserve layout and props on same-path (query-only) navigation', async () => {
+    const router = useRouter()
+    router.addRoute({
+      name: 'layout-props-test',
+      path: '/layout-props-test',
+      component: defineComponent({ template: '<div />' }),
+    })
+    await router.push('/layout-props-test')
+    const route = useRoute()
+    setPageLayout('with-props', { someProp: 'hello' })
+    expect(route.meta.layout).toEqual('with-props')
+    expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
+    await router.push({ query: { tab: 'b' } })
+    expect(route.meta.layout).toEqual('with-props')
+    expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
+    router.removeRoute('layout-props-test')
   })
 })
 

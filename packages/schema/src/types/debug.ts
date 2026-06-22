@@ -43,4 +43,8 @@ export interface NuxtDebugOptions {
    * @since 4.4.0
    */
   perf?: boolean | 'quiet'
+  /**
+   * Debug options for Nitro.
+   */
+  nitro?: boolean
 }

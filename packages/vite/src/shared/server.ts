@@ -64,6 +64,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       'import.meta.server': true,
       'import.meta.client': false,
       'import.meta.browser': false,
+      'import.meta.envName': JSON.stringify(nuxt.options.envName),
       'window': 'undefined',
       'document': 'undefined',
       'navigator': 'undefined',

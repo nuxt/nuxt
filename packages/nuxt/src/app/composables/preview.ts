@@ -1,4 +1,5 @@
 import { toRef, watch } from 'vue'
+import type { Ref } from 'vue'
 
 import { useState } from './state'
 import { refreshNuxtData } from './asyncData'
@@ -42,7 +43,7 @@ type EnteredState = Record<any, unknown> | null | undefined | void
 let unregisterRefreshHook: (() => any) | undefined
 
 /** @since 3.11.0 */
-export function usePreviewMode<S extends EnteredState> (options: PreviewModeOptions<S> = {}) {
+export function usePreviewMode<S extends EnteredState> (options: PreviewModeOptions<S> = {}): { enabled: Ref<boolean>, state: S extends void ? Preview['state'] : (NonNullable<S> & Preview['state']) } {
   const preview = useState<Preview>('_preview-state', () => ({
     enabled: false,
     state: {},
@@ -94,14 +95,14 @@ export function usePreviewMode<S extends EnteredState> (options: PreviewModeOpti
   }
 }
 
-function defaultShouldEnable () {
+function defaultShouldEnable (): boolean {
   const route = useRoute()
   const previewQueryName = 'preview'
 
   return route.query[previewQueryName] === 'true'
 }
 
-function getDefaultState (state: Preview['state']) {
+function getDefaultState (state: Preview['state']): Preview['state'] {
   if (state.token !== undefined) {
     return state
   }
