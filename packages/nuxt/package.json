@@ -122,7 +122,7 @@
     "tsdown": "0.22.2",
     "typescript": "6.0.3",
     "vite": "8.0.16",
-    "vitest": "4.1.8",
+    "vitest": "4.1.9",
     "vue-bundle-renderer": "2.2.0",
     "vue-sfc-transformer": "0.2.3"
   },
