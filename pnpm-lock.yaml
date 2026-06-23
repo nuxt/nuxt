@@ -530,6 +530,9 @@ importers:
       nanotar:
         specifier: ^0.3.0
         version: 0.3.0
+      nostics:
+        specifier: ^1.1.4
+        version: 1.1.4
       object-identity:
         specifier: ^0.2.3
         version: 0.2.3
