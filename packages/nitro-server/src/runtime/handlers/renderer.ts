@@ -28,7 +28,7 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
-import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
+import { appCrossOrigin, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
@@ -287,17 +287,17 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     ssrContext.head.push({ style: inlinedStyles })
   }
 
-  const link: Link[] = []
-  for (const resource of Object.values(styles)) {
-    // Do not add links to resources that are inlined (vite v5+)
-    if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
-      continue
-    }
-    // Add CSS links in <head> for CSS files
-    // - in production
-    // - in dev mode when not rendering an island
-    link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
-  }
+        const link: Link[] = []
+        for (const resource of Object.values(styles)) {
+          // Do not add links to resources that are inlined (vite v5+)
+          if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
+            continue
+          }
+          // Add CSS links in <head> for CSS files
+          // - in production
+          // - in dev mode when not rendering an island
+          link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: appCrossOrigin })
+        }
 
   if (link.length) {
     ssrContext.head.push({ link })
@@ -342,7 +342,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
         // if we are rendering script tag payloads that import an async payload
         // we need to ensure this resolves before executing the Nuxt entry
         tagPosition: 'head',
-        crossorigin: '',
+        crossorigin: appCrossOrigin,
       })),
     })
   }
@@ -410,7 +410,7 @@ async function renderStreamedResponse (ctx: {
   const shellLinks: Link[] = []
   for (const resource of Object.values(entryStyles)) {
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) { continue }
-    shellLinks.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+    shellLinks.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: appCrossOrigin })
   }
   if (shellLinks.length) {
     ssrContext.head.push({ link: shellLinks })
@@ -466,7 +466,7 @@ async function renderStreamedResponse (ctx: {
         src: renderer.rendererContext.buildAssetsURL(resource.file),
         defer: resource.module ? null : true,
         tagPosition: 'head',
-        crossorigin: '',
+        crossorigin: appCrossOrigin,
       })),
     })
   }
@@ -650,7 +650,7 @@ async function renderStreamedResponse (ctx: {
       if (emittedStyles.has(resource.file)) { continue }
       if (import.meta.dev && 'inline' in getURLQuery(resource.file)) { continue }
       emittedStyles.add(resource.file)
-      tags += `<link rel="stylesheet" crossorigin href="${renderer.rendererContext.buildAssetsURL(resource.file)}">`
+      tags += `<link rel="stylesheet" crossorigin="${appCrossOrigin || 'anonymous'}" href="${renderer.rendererContext.buildAssetsURL(resource.file)}">`
     }
     return tags
   }

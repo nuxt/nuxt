@@ -182,6 +182,24 @@ export interface ConfigSchema {
     cdnURL: string
 
     /**
+     * The `crossorigin` attribute to set on rendered CSS stylesheet links and
+     * preload/prefetch links for assets. Set to `'anonymous'` (default empty)
+     * or `'use-credentials'` if your CDN requires credentials.
+     *
+     * @default ''
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     crossOrigin: 'use-credentials'
+     *   }
+     * })
+     * ```
+     */
+    crossOrigin: '' | 'anonymous' | 'use-credentials'
+
+    /**
      * Set default configuration for `<head>` on every page.
      *
      * @example

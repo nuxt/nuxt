@@ -169,6 +169,8 @@ export interface NuxtAppConfig {
   pageTransition: boolean | Serializable<TransitionProps>
   viewTransition?: ViewTransitionOptions['enabled'] | ViewTransitionOptions
   keepalive: boolean | Serializable<KeepAliveProps>
+  /** Cross-origin attribute to set on rendered CSS and preload links */
+  crossOrigin: '' | 'anonymous' | 'use-credentials'
 }
 
 export interface AppConfig {

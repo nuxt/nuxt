@@ -11,7 +11,7 @@ import { computeIslandHash } from '#app/island-hash'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { traceAsync } from '#app/internal/tracing'
 // @ts-expect-error virtual file
-import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
+import { appCrossOrigin, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
@@ -94,7 +94,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
       // Add CSS links in <head> for CSS files
       // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: appCrossOrigin })
       }
     }
     if (link.length) {
