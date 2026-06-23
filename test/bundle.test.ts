@@ -61,7 +61,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"69.7k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"480k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"481k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
@@ -92,10 +92,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"279k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"280k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"489k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"490k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))

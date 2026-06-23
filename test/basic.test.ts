@@ -215,6 +215,17 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
+  // https://github.com/nuxt/nuxt/issues/28174
+  // https://github.com/nuxt/nuxt/issues/28966
+  it('respects `navigateTo` called from a plugin during SPA boot', async () => {
+    const { page, pageErrors } = await renderPage('')
+    await page.goto(url('/spa-plugin-redirect/login'))
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/spa-plugin-redirect/protected')
+    expect(await page.getByTestId('spa-plugin-redirect-page').textContent()).toContain('protected')
+    expect(pageErrors).toEqual([])
+    await page.close()
+  })
+
   it('allows routes to be added dynamically', async () => {
     const html = await $fetch<string>('/add-route-test')
     expect(html).toContain('Hello Nuxt 3!')
@@ -2104,7 +2115,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     expect(cssFiles?.length).toBeGreaterThan(0)
     if (isWebpack) {
       // TODO: use non-hash name for webpack css files in test fixture
-      expect(cssFiles).toHaveLength(2)
+      const stylesheets = cssFiles!.filter(m => m.includes('rel="stylesheet"'))
+      expect(stylesheets).toHaveLength(2)
     } else {
       expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
         [

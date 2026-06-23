@@ -78,7 +78,7 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   islandContext?: NuxtIslandContext
   /** @internal */
-  ['~renderResponse']?: Partial<RenderResponse>
+  ['~renderResponse']?: Partial<Omit<RenderResponse, 'body'>> & { body?: string }
   /** @internal */
   ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */
