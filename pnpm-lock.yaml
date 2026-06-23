@@ -260,6 +260,9 @@ importers:
       mlly:
         specifier: ^1.8.2
         version: 1.8.2
+      nostics:
+        specifier: ^1.1.4
+        version: 1.1.4
       nypm:
         specifier: ^0.6.6
         version: 0.6.6
@@ -7269,6 +7272,9 @@ packages:
 
   nostics@0.2.0:
     resolution: {integrity: sha512-/WQpI46UMbqvy1okYb+V+9wW3J8/m6GJ33wm691n/tyi6YtJiZ6ssJjENAU7y4evfYrrgYN9HllKDzPvffil1w==}
+
+  nostics@1.1.4:
+    resolution: {integrity: sha512-U4FApICSLCQ0dYiN59pxUCEZC053palQXi57yLaNdMaL6TBY4C4q3qZrJKUGcor2dGv8EhEwt8y5KvU2bo2kFg==}
 
   npm-normalize-package-bin@3.0.1:
     resolution: {integrity: sha512-dMxCf+zZ+3zeQZXKxmyuCKlIDPGuv8EF940xbkC4kQVDTtqoh6rJFO+JTKSA6/Rwi0getWmtuy4Itup0AMcaDQ==}
@@ -16113,6 +16119,8 @@ snapshots:
       magic-string: 0.30.21
       oxc-parser: 0.132.0
       unplugin: 3.0.0
+
+  nostics@1.1.4: {}
 
   npm-normalize-package-bin@3.0.1: {}
 
