@@ -42,18 +42,19 @@ export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['err
   ssrContext.url = url.pathname + url.search + url.hash
 }
 
+export function mergeHeaders (base: Headers, overlay: Headers): Headers {
+  for (const [name, value] of overlay) {
+    if (name === 'set-cookie') { continue }
+    base.set(name, value)
+  }
+  for (const cookie of overlay.getSetCookie()) {
+    base.append('set-cookie', cookie)
+  }
+  return base
+}
+
 // TODO: rethink this before nuxt v5
 export function rethrowWithResponseHeaders (event: H3Event, error: any): never {
-  const resHeaders = event.res.headers
-  const setCookies = resHeaders.getSetCookie()
-  const headers = error.headers instanceof Headers ? error.headers : new Headers(error.headers)
-  for (const [name, value] of resHeaders) {
-    if (name === 'set-cookie') { continue }
-    headers.set(name, value)
-  }
-  for (const cookie of setCookies) {
-    headers.append('set-cookie', cookie)
-  }
-  error.headers = headers
+  error.headers = mergeHeaders(error.headers instanceof Headers ? error.headers : new Headers(error.headers), event.res.headers)
   throw error
 }

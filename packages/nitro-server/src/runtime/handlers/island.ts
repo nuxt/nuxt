@@ -11,7 +11,7 @@ import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { traceAsync } from '#app/internal/tracing'
 // @ts-expect-error virtual file
 import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
-import { createSSRContext, rethrowWithResponseHeaders } from '../utils/renderer/app'
+import { createSSRContext, mergeHeaders, rethrowWithResponseHeaders } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
@@ -139,14 +139,7 @@ export default {
 }
 
 function returnIslandResponse (event: H3Event, response: Response): Response {
-  const headers = new Headers(event.res.headers)
-  for (const [name, value] of response.headers) {
-    if (name === 'set-cookie') { continue }
-    headers.set(name, value)
-  }
-  for (const cookie of response.headers.getSetCookie()) {
-    headers.append('set-cookie', cookie)
-  }
+  const headers = mergeHeaders(new Headers(event.res.headers), response.headers)
   return new FastResponse(response.body, {
     status: response.status,
     statusText: response.statusText,
