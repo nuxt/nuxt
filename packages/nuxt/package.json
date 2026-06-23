@@ -123,7 +123,7 @@
     "unbuild": "3.6.1",
     "vite": "7.3.5",
     "vitest": "4.1.8",
-    "vue-bundle-renderer": "2.2.0",
+    "vue-bundle-renderer": "2.3.1",
     "vue-sfc-transformer": "0.2.3"
   },
   "peerDependencies": {
