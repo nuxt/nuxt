@@ -7,13 +7,11 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
-import { consola } from 'consola'
 import onChange from 'on-change'
-import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
@@ -186,7 +184,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     if (nuxt.options.dev && hasTTY && !isCI && !nuxt.options.test && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      consola.warn(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback. More info at: ${colors.underline('https://nitro.build/deploy#compatibility-date')}`)
+      configDiagnostics.NUXT_B5001({ fallback: fallbackCompatibilityDate, latest: formatDate('latest') })
     }
   }
 
@@ -861,7 +859,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       rootDir: options.rootDir,
       searchPaths: options.modulesDir,
     })) {
-      logger.warn('Failed to install `@nuxt/webpack-builder`, please install it manually, or change the `builder` option to vite in `nuxt.config`')
+      configDiagnostics.NUXT_B5002({ rootDir: options.rootDir })
     }
   }
 
@@ -899,7 +897,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId'])
   for (const key in options.runtimeConfig.app) {
     if (!allowedKeys.has(key)) {
-      logger.warn(`The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`)
+      configDiagnostics.NUXT_B5003({ key })
       delete options.runtimeConfig.app[key]
     }
   }

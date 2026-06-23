@@ -1,5 +1,5 @@
 import { resolvePackageJSON } from 'pkg-types'
-import { useNuxt } from '@nuxt/kit'
+import { buildDiagnostics, configDiagnostics, useNuxt } from '@nuxt/kit'
 import { isCI, provider } from 'std-env'
 import { logger } from '../utils.ts'
 
@@ -19,7 +19,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     }
   }
 
-  logger.info(`Package ${name} is missing`)
+  configDiagnostics.NUXT_B5011({ name })
 
   if (isCI) {
     return false
@@ -44,7 +44,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     logger.success(`Installed ${name}`)
     return true
   } catch (err) {
-    logger.error(err)
+    buildDiagnostics.NUXT_B1004({ packages: name, cause: err }, { method: 'error' })
     return false
   }
 }

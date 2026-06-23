@@ -1,5 +1,5 @@
 import { isObject } from '@vue/shared'
-import { isIgnored } from '@nuxt/kit'
+import { buildDiagnostics, isIgnored } from '@nuxt/kit'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
@@ -113,7 +113,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else {
-            throw new Error(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`)
+            throw buildDiagnostics.NUXT_B1019({ mode: String(mode) })
           }
         },
       },
