@@ -41,3 +41,19 @@ export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['err
   const url = new URL(error.url)
   ssrContext.url = url.pathname + url.search + url.hash
 }
+
+// TODO: rethink this before nuxt v5
+export function rethrowWithResponseHeaders (event: H3Event, error: any): never {
+  const resHeaders = event.res.headers
+  const setCookies = resHeaders.getSetCookie()
+  const headers = error.headers instanceof Headers ? error.headers : new Headers(error.headers)
+  for (const [name, value] of resHeaders) {
+    if (name === 'set-cookie') { continue }
+    headers.set(name, value)
+  }
+  for (const cookie of setCookies) {
+    headers.append('set-cookie', cookie)
+  }
+  error.headers = headers
+  throw error
+}

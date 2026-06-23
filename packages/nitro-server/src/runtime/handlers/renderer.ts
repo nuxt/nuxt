@@ -21,7 +21,7 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from
 import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
-import { createSSRContext, setSSRError } from '../utils/renderer/app'
+import { createSSRContext, rethrowWithResponseHeaders, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
@@ -65,6 +65,11 @@ export default {
   fetch (request: ServerRequest) {
     const event = new H3Event(request)
 
+    if (componentIslands && event.url.pathname.startsWith('/__nuxt_island/')) {
+      // @ts-expect-error virtual file
+      return import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(request))
+    }
+
     // Whether we're rendering an error page
     const ssrError = event.url.pathname.startsWith('/__nuxt_error')
       ? getQuery<NuxtPayload['error'] & { url: string }>(event)
@@ -96,21 +101,6 @@ export default {
 
     return renderRoute(event, ssrError).catch(error => rethrowWithResponseHeaders(event, error))
   },
-}
-
-// The renderer mints its own `H3Event`, so response headers set during render
-// (e.g. `Set-Cookie` from `useCookie`) live on this event rather than the one
-// Nitro's error handler inspects. When the render throws, forward them onto the
-// error so the error response still carries them.
-function rethrowWithResponseHeaders (event: H3Event, error: any): never {
-  const setCookies = event.res.headers.getSetCookie()
-  if (!setCookies.length) { throw error }
-  const headers = error.headers instanceof Headers ? error.headers : new Headers(error.headers)
-  for (const cookie of setCookies) {
-    headers.append('set-cookie', cookie)
-  }
-  error.headers = headers
-  throw error
 }
 
 async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<ReadableStream<Uint8Array> | Response> {

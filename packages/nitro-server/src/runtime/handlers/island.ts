@@ -12,7 +12,7 @@ import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { traceAsync } from '#app/internal/tracing'
 // @ts-expect-error virtual file
 import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
-import { createSSRContext } from '../utils/renderer/app'
+import { createSSRContext, rethrowWithResponseHeaders } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
@@ -27,112 +27,115 @@ const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 export default {
   async fetch (request: Request): Promise<Response> {
     const event = new H3Event(request)
+    try {
+      event.res.headers.set('content-type', 'application/json;charset=utf-8')
+      event.res.headers.set('x-powered-by', 'Nuxt')
 
-    event.res.headers.set('content-type', 'application/json;charset=utf-8')
-    event.res.headers.set('x-powered-by', 'Nuxt')
-
-    const islandPath = event.url.pathname
-    if (import.meta.prerender && await islandCache!.hasItem(islandPath)) {
-      return new FastResponse(JSON.stringify(await islandCache!.getItem(islandPath)), event.res)
-    }
-
-    const islandContext = await getIslandContext(event)
-
-    const ssrContext = {
-      ...createSSRContext(event),
-      islandContext,
-      noSSR: false,
-      url: islandContext.url,
-    }
-
-    // Render app
-    const renderer = await getSSRRenderer()
-
-    const renderResult = await (tracingChannelNuxt
-      ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
-      : renderer.renderToString(ssrContext)
-    ).catch(async (err) => {
-      if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
-        return {} as Awaited<ReturnType<typeof renderer.renderToString>>
+      const islandPath = event.url.pathname
+      if (import.meta.prerender && await islandCache!.hasItem(islandPath)) {
+        return new FastResponse(JSON.stringify(await islandCache!.getItem(islandPath)), event.res)
       }
-      await ssrContext.nuxt?.hooks.callHook('app:error', err)
-      throw err
-    })
 
-    // Fire `app:rendered` before checking `~renderResponse` (matches `renderer.ts`), so
-    // anything hooking into it, like `useCookie`, will still work on redirect/reject.
-    await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
+      const islandContext = await getIslandContext(event)
 
-    if (ssrContext['~renderResponse']) {
-      const response = ssrContext['~renderResponse']
-      if (response.status && response.status >= 400) {
-        throw new HTTPError({
-          status: response.status,
-          statusText: response.statusText,
-        })
+      const ssrContext = {
+        ...createSSRContext(event),
+        islandContext,
+        noSSR: false,
+        url: islandContext.url,
       }
-      return returnIslandResponse(event, response)
-    }
 
-    // Handle errors
-    if (ssrContext.payload?.error) {
-      throw ssrContext.payload.error
-    }
+      // Render app
+      const renderer = await getSSRRenderer()
 
-    const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
-
-    if (inlinedStyles.length) {
-      ssrContext.head.push({ style: inlinedStyles })
-    }
-
-    if (import.meta.dev) {
-      const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
-
-      const link: Link[] = []
-      for (const resource of Object.values(styles)) {
-        // Do not add links to resources that are inlined (vite v5+)
-        if ('inline' in getURLQuery(resource.file)) {
-          continue
+      const renderResult = await (tracingChannelNuxt
+        ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
+        : renderer.renderToString(ssrContext)
+      ).catch(async (err) => {
+        if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
+          return {} as Awaited<ReturnType<typeof renderer.renderToString>>
         }
-        // Add CSS links in <head> for CSS files
-        // - in dev mode when rendering an island and the file has scoped styles and is not a page
-        if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
-          link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
-        }
-      }
-      if (link.length) {
-        ssrContext.head.push({ link })
-      }
-    }
+        await ssrContext.nuxt?.hooks.callHook('app:error', err)
+        throw err
+      })
 
-    const islandHead: SerializableHead = {}
-    for (const entry of ssrContext.head.entries.values()) {
-      for (const [key, value] of Object.entries(walkResolver(entry.input, VueResolver) as SerializableHead)) {
-        const currentValue = islandHead[key as keyof SerializableHead]
-        if (Array.isArray(currentValue)) {
-          currentValue.push(...value)
-        } else {
-          islandHead[key as keyof SerializableHead] = value
+      // Fire `app:rendered` before checking `~renderResponse` (matches `renderer.ts`), so
+      // anything hooking into it, like `useCookie`, will still work on redirect/reject.
+      await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
+
+      if (ssrContext['~renderResponse']) {
+        const response = ssrContext['~renderResponse']
+        if (response.status && response.status >= 400) {
+          throw new HTTPError({
+            status: response.status,
+            statusText: response.statusText,
+          })
+        }
+        return returnIslandResponse(event, response)
+      }
+
+      // Handle errors
+      if (ssrContext.payload?.error) {
+        throw ssrContext.payload.error
+      }
+
+      const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
+
+      if (inlinedStyles.length) {
+        ssrContext.head.push({ style: inlinedStyles })
+      }
+
+      if (import.meta.dev) {
+        const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
+
+        const link: Link[] = []
+        for (const resource of Object.values(styles)) {
+          // Do not add links to resources that are inlined (vite v5+)
+          if ('inline' in getURLQuery(resource.file)) {
+            continue
+          }
+          // Add CSS links in <head> for CSS files
+          // - in dev mode when rendering an island and the file has scoped styles and is not a page
+          if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
+            link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+          }
+        }
+        if (link.length) {
+          ssrContext.head.push({ link })
         }
       }
-    }
 
-    const islandResponse: NuxtIslandResponse = {
-      id: islandContext.id,
-      head: islandHead,
-      html: getServerComponentHTML(renderResult.html),
-      components: getClientIslandResponse(ssrContext),
-      slots: getSlotIslandResponse(ssrContext),
-    }
+      const islandHead: SerializableHead = {}
+      for (const entry of ssrContext.head.entries.values()) {
+        for (const [key, value] of Object.entries(walkResolver(entry.input, VueResolver) as SerializableHead)) {
+          const currentValue = islandHead[key as keyof SerializableHead]
+          if (Array.isArray(currentValue)) {
+            currentValue.push(...value)
+          } else {
+            islandHead[key as keyof SerializableHead] = value
+          }
+        }
+      }
 
-    await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
+      const islandResponse: NuxtIslandResponse = {
+        id: islandContext.id,
+        head: islandHead,
+        html: getServerComponentHTML(renderResult.html),
+        components: getClientIslandResponse(ssrContext),
+        slots: getSlotIslandResponse(ssrContext),
+      }
 
-    if (import.meta.prerender) {
-      const requestUrl = islandPath + event.url.search + event.url.hash
-      await islandCache!.setItem(islandPath, islandResponse)
-      await islandPropCache!.setItem(islandPath, requestUrl)
+      await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
+
+      if (import.meta.prerender) {
+        const requestUrl = islandPath + event.url.search + event.url.hash
+        await islandCache!.setItem(islandPath, islandResponse)
+        await islandPropCache!.setItem(islandPath, requestUrl)
+      }
+      return new FastResponse(JSON.stringify(islandResponse), event.res)
+    } catch (error) {
+      rethrowWithResponseHeaders(event, error)
     }
-    return new FastResponse(JSON.stringify(islandResponse), event.res)
   },
 }
 
