@@ -1,4 +1,4 @@
-import { kebabCase } from 'scule'
+import { appDiagnostics } from '../../app/diagnostics/core.ts'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export interface ObjectFactory<T extends Function> {
@@ -19,12 +19,9 @@ export interface ObjectFactory<T extends Function> {
 export function defineKeyedFunctionFactory<T extends Function> (factory: ObjectFactory<T>): T {
   const placeholder = function () {
     if (import.meta.dev) {
-      throw new Error(
-        `[nuxt:compiler] \`${factory.name}\` is a compiler macro that is only usable inside ` +
-        `the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/4.x/api/composables/${kebabCase(factory.name)}\``,
-      )
+      throw appDiagnostics.NUXT_E1007({ name: factory.name })
     }
-    throw new Error(`[nuxt] \`${factory.name}\` is a compiler macro and cannot be called at runtime.`)
+    throw appDiagnostics.NUXT_E1007({ name: factory.name })
   }
 
   return Object.defineProperty(placeholder, '__nuxt_factory', {

@@ -5,7 +5,7 @@ import { createConsoleReporter } from 'nostics'
  *
  * Catalogs are split by domain and imported directly where used — no barrel —
  * so the browser bundle only pulls in the codes a module references. Pair the
- * `/* #__PURE__ *​/` annotations on each `defineDiagnostics()` with dev-guarded,
+ * pure-call annotations on each `defineDiagnostics()` with dev-guarded,
  * statement-level report calls so report-only diagnostics strip from production.
  *
  * Codes are stable, fully-qualified `NUXT_E<NNNN>` identifiers. Codes with a
@@ -20,4 +20,4 @@ export function docsBase (code: string): string {
 // extract the console reporter's per-call `method` option; a plain array
 // collapses it to `{}` and `diagnostics.CODE(p, { method: 'error' })` stops
 // type-checking.
-export const reporters = [/* #__PURE__ */ createConsoleReporter()] as const
+export const reporters = [createConsoleReporter()] as const

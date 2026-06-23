@@ -9,6 +9,7 @@ import {
 } from '@unhead/vue'
 import { useNuxtApp } from '#app/nuxt'
 import type { NuxtApp } from '#app/nuxt'
+import { unheadDiagnostics } from '../../app/diagnostics/head.ts'
 
 /**
  * Injects the head client from the Nuxt context or Vue inject.
@@ -21,7 +22,7 @@ export function injectHead (nuxtApp?: NuxtApp): VueHeadClient {
       const head = inject<VueHeadClient>(headSymbol)
       // should not be possible
       if (!head) {
-        throw new Error('[nuxt] [unhead] Missing Unhead instance.')
+        throw unheadDiagnostics.NUXT_E6001({})
       }
       return head
     }

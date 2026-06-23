@@ -264,6 +264,7 @@ export default createConfigForNuxt({
                   'vue-router',
                   ...runtimeDependencies,
                   'errx', /* only used in dev */
+                  'nostics', /* runtime diagnostics catalog */
                   // internal deps
                   'nuxt/app',
                 ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
