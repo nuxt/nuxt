@@ -1,4 +1,5 @@
 import type { Plugin } from 'vite'
+import type { SourceMapInput } from 'rollup'
 import { ensureDependencyInstalled, logger } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import jsTokens from 'js-tokens'
@@ -103,7 +104,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
         if (result?.code != null) {
           return {
             code: result.code,
-            map: result.map,
+            map: result.map as SourceMapInput,
           }
         }
       },
