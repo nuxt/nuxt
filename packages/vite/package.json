@@ -51,7 +51,7 @@
     "vite": "^8.0.16",
     "vite-node": "^6.0.0",
     "vite-plugin-checker": "^0.14.1",
-    "vue-bundle-renderer": "^2.2.0"
+    "vue-bundle-renderer": "^2.3.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "7.29.7",
