@@ -1,7 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import { renderToWebStream } from 'vue/server-renderer'
-import type { RenderResponse } from 'nitro/types'
 import type { H3Event } from 'nitro/h3'
 import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'nitro/h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
@@ -65,7 +64,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event
   // Whether we're rendering an error page
   const ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery<NuxtPayload['error'] & { url: string }>(event)
-    : null
+    : undefined
 
   if (ssrError && !event.context.nuxt?.['~rendering-error'] /* allow internal fetch from the error handler */) {
     throw new HTTPError({
@@ -94,7 +93,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event
   return renderRoute(event, ssrError)
 })
 
-async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { url: string }) | null) {
+async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<ReadableStream<Uint8Array> | Response | string | undefined> {
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(event)
 
@@ -136,7 +135,8 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     ssrContext.url = url
 
     if (import.meta.prerender && await payloadCache!.hasItem(url + '.json')) {
-      return returnResponse(event, await payloadCache!.getItem(url + '.json') as Partial<RenderResponse>)
+      event.res.headers.set('content-type', 'application/json')
+      return returnResponse(event, await payloadCache!.getItem(url + '.json') || undefined)
     }
   }
 
@@ -381,11 +381,11 @@ async function renderStreamedResponse (ctx: {
   ssrContext: NuxtSSRContext
   renderer: Awaited<ReturnType<typeof getRenderer>>
   routeOptions: ReturnType<typeof getRouteRules>['routeRules']
-  ssrError: (NuxtPayload['error'] & { url: string }) | null
+  ssrError?: (NuxtPayload['error'] & { url: string })
   _PAYLOAD_EXTRACTION: boolean
   _PAYLOAD_INLINE: boolean
   payloadURL: string | undefined
-}): Promise<ReadableStream<Uint8Array> | RenderResponse['body']> {
+}): Promise<ReadableStream<Uint8Array> | Response | string | undefined> {
   const { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
@@ -577,8 +577,9 @@ async function renderStreamedResponse (ctx: {
   } catch (error) {
     reader.releaseLock()
     event.res.headers.delete('link')
-    if (ssrContext['~renderResponse']) {
-      return returnResponse(event, ssrContext['~renderResponse'])
+    const response = ssrContext['~renderResponse'] as NuxtSSRContext['~renderResponse']
+    if (response) {
+      return returnResponse(event, response)
     }
     const _err = (!ssrError && ssrContext.payload?.error) || error
     const r = ssrContext.nuxt?.hooks.callHook('app:error', _err)
@@ -586,10 +587,11 @@ async function renderStreamedResponse (ctx: {
     throw _err
   }
 
-  if (ssrContext['~renderResponse']) {
+  const response = ssrContext['~renderResponse'] as NuxtSSRContext['~renderResponse']
+  if (response) {
     reader.cancel().catch(() => {})
     event.res.headers.delete('link')
-    return returnResponse(event, ssrContext['~renderResponse'])
+    return returnResponse(event, response)
   }
 
   if (ssrContext.payload?.error && !ssrError) {
@@ -884,7 +886,11 @@ function stripInlineOnlyPayloadFields (payload: NuxtSSRContext['payload']): Nuxt
   return rest
 }
 
-function returnResponse (event: H3Event, response: Partial<RenderResponse>) {
+function returnResponse (event: H3Event, response: NuxtSSRContext['~renderResponse']): string | undefined {
+  if (!response) {
+    return
+  }
+
   for (const header in response.headers || {}) {
     event.res.headers.set(header, response.headers![header]!)
   }

@@ -288,7 +288,7 @@ jobs:
 
   test-benchmark:
     runs-on: ubuntu-latest
-    if: github.event_name != 'merge_group'
+    if: github.event_name != 'merge_group' && github.repository_owner == 'nuxt'
     needs:
       - build
 
