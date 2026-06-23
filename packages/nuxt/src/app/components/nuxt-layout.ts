@@ -7,6 +7,7 @@ import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 import { _mergeTransitionProps, _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
@@ -64,7 +65,7 @@ export default defineComponent({
       let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          console.warn(`[nuxt] Invalid layout \`${layout}\` selected.`)
+          renderDiagnostics.NUXT_E4001({ layout, available: Object.keys(layouts).join(', ') || 'none' })
         }
         if (props.fallback) {
           layout = unref(props.fallback)
@@ -205,9 +206,9 @@ const LayoutProvider = defineComponent({
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
-              console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+              renderDiagnostics.NUXT_E4002({ name })
             } else {
-              console.warn('[nuxt] `<NuxtLayout>` needs to be passed a single root node in its default slot.')
+              renderDiagnostics.NUXT_E4003()
             }
           }
         })

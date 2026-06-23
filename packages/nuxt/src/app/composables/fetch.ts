@@ -7,6 +7,7 @@ import { hash } from 'ohash'
 import { isPlainObject } from '@vue/shared'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
+import { dataDiagnostics } from '../diagnostics/data.ts'
 import type { NuxtError } from './error'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
@@ -91,7 +92,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       try {
         segments.push(hash(value))
       } catch {
-        console.warn('[useFetch] Failed to hash body', value)
+        dataDiagnostics.NUXT_E3002({ cause: value })
       }
     }
   }
@@ -316,7 +317,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       const key = computed(() => toValue(fetchOptions.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
-        throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
+        throw dataDiagnostics.NUXT_E3001({ url: _request.value })
       }
 
       const _fetchOptions = reactive<typeof fetchOptions>({

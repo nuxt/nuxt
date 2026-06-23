@@ -11,6 +11,7 @@ import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError } from './composables/error'
+import { appDiagnostics } from './diagnostics/core.ts'
 
 // @ts-expect-error virtual file
 import '#build/css'
@@ -106,7 +107,7 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    console.error('Error while mounting app:', error)
+    appDiagnostics.NUXT_E1011({ cause: error }, { method: 'error' })
     throw error
   })
 }

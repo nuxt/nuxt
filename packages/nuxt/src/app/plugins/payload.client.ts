@@ -5,6 +5,7 @@ import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
 import { injectHead } from '../composables/head'
+import { stateDiagnostics } from '../diagnostics/state.ts'
 
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
@@ -52,7 +53,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         const { hostname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
-        const payload = await loadPayload(url).catch(() => { console.warn('[nuxt] Error preloading payload for', url) })
+        const payload = await loadPayload(url).catch(() => { stateDiagnostics.NUXT_E7003({ url }) })
         if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(url)) {
           const entry = head.push({
             link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {

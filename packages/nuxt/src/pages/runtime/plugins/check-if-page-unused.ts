@@ -3,6 +3,7 @@ import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { onNuxtReady } from '#app/composables/ready'
 import { useError } from '#app/composables/error'
+import { renderDiagnostics } from '../../../app/diagnostics/render.ts'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:checkIfPageUnused',
@@ -11,12 +12,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     function checkIfPageUnused () {
       if (!error.value && !nuxtApp._isNuxtPageUsed) {
-        console.warn(
-          '[nuxt] Your project has pages but `<NuxtPage />` has not been detected.' +
-          ' Make sure you are using `<NuxtPage />` instead of `<RouterView />`, as `<RouterView />` will not work correctly in Nuxt.' +
-          ' If `<NuxtPage />` is rendered conditionally, this warning can be triggered before it is mounted.' +
-          ' You can set `pages: false` in `nuxt.config` if you do not wish to use the Nuxt `vue-router` integration.',
-        )
+        renderDiagnostics.NUXT_E4011()
       }
     }
 

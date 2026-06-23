@@ -3,6 +3,7 @@ import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
 import { useError } from '../composables/error'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 
 // @ts-expect-error virtual file
 import layouts from '#build/layouts'
@@ -14,11 +15,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     function checkIfLayoutUsed () {
       if (!error.value && !nuxtApp._isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
-        console.warn(
-          '[nuxt] Your project has layouts but `<NuxtLayout />` has not been detected.' +
-          ' Make sure you are using `<NuxtLayout />` in your app to render layouts.' +
-          ' If `<NuxtLayout />` is rendered conditionally, this warning can be triggered before it is mounted.',
-        )
+        renderDiagnostics.NUXT_E4007()
       }
     }
     if (import.meta.server) {
