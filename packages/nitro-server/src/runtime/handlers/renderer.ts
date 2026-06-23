@@ -305,18 +305,16 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   if (!NO_SCRIPTS) {
     // 4. Resource Hints
-    // Remove lazy hydrated modules from ssrContext.modules so they don't get preloaded
-    // (CSS links are already added above, this only affects JS preloads)
-    if (ssrContext['~lazyHydratedModules']) {
-      for (const id of ssrContext['~lazyHydratedModules']) {
-        ssrContext.modules?.delete(id)
-      }
-    }
+    // Exclude lazy hydrated modules so their JS chunks don't get preloaded
+    // (CSS links are already added above, this only affects JS preloads).
+    const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
+      ? { exclude: ssrContext['~lazyHydratedModules'] }
+      : undefined
     ssrContext.head.push({
-      link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
+      link: getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
     })
     ssrContext.head.push({
-      link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
+      link: getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
     })
     // 5. Payloads
     ssrContext.head.push({
