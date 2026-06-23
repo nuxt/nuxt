@@ -7,7 +7,7 @@ import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
-import { computeIslandHash, filterIslandProps } from '#app/island-hash'
+import { computeIslandHash } from '#app/island-hash'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { traceAsync } from '#app/internal/tracing'
 // @ts-expect-error virtual file
