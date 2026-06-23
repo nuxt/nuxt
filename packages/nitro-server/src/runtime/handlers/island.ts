@@ -1,5 +1,4 @@
 import { useNitroHooks } from 'nitro/app'
-import type { RenderResponse } from 'nitro/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import { H3Event, HTTPError, getQuery, readBody } from 'nitro/h3'
@@ -139,17 +138,20 @@ export default {
   },
 }
 
-function returnIslandResponse (event: H3Event, response: Partial<RenderResponse>): Response {
-  for (const header in response.headers || {}) {
-    event.res.headers.set(header, response.headers![header]!)
+function returnIslandResponse (event: H3Event, response: Response): Response {
+  const headers = new Headers(event.res.headers)
+  for (const [name, value] of response.headers) {
+    if (name === 'set-cookie') { continue }
+    headers.set(name, value)
   }
-  if (response.status) {
-    event.res.status = response.status
+  for (const cookie of response.headers.getSetCookie()) {
+    headers.append('set-cookie', cookie)
   }
-  if (response.statusText) {
-    event.res.statusText = response.statusText
-  }
-  return new FastResponse(response.body, event.res)
+  return new FastResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
 }
 
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'

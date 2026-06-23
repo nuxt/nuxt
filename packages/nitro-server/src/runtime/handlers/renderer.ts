@@ -226,7 +226,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   if (appRenderedResult instanceof Promise) { await appRenderedResult }
 
   if (ssrContext['~renderResponse']) {
-    return new FastResponse(ssrContext['~renderResponse'].body, ssrContext['~renderResponse'])
+    return ssrContext['~renderResponse']
   }
 
   // Handle errors
@@ -503,7 +503,7 @@ async function renderStreamedResponse (ctx: {
       // Drop any preload `Link` header that targeted the streamed entry - the
       // redirect/response we are about to send does not need them.
       event.res.headers.delete('link')
-      return new FastResponse(ssrContext['~renderResponse'].body, ssrContext['~renderResponse'])
+      return ssrContext['~renderResponse']
     }
     const r = ssrContext.nuxt?.hooks.callHook('app:error', error)
     if (r instanceof Promise) { await r }
@@ -511,7 +511,7 @@ async function renderStreamedResponse (ctx: {
   }
   if (ssrContext['~renderResponse']) {
     event.res.headers.delete('link')
-    return new FastResponse(ssrContext['~renderResponse'].body, ssrContext['~renderResponse'])
+    return ssrContext['~renderResponse']
   }
 
   // 5. Render the shell head (atomically renders and clears entries pushed
@@ -590,7 +590,7 @@ async function renderStreamedResponse (ctx: {
     event.res.headers.delete('link')
     const response = ssrContext['~renderResponse'] as NuxtSSRContext['~renderResponse']
     if (response) {
-      return new FastResponse(response.body, response)
+      return response
     }
     const _err = (!ssrError && ssrContext.payload?.error) || error
     const r = ssrContext.nuxt?.hooks.callHook('app:error', _err)
@@ -602,7 +602,7 @@ async function renderStreamedResponse (ctx: {
   if (response) {
     reader.cancel().catch(() => {})
     event.res.headers.delete('link')
-    return new FastResponse(response.body, response)
+    return response
   }
 
   if (ssrContext.payload?.error && !ssrError) {
