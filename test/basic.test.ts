@@ -57,6 +57,17 @@ describe('server api', () => {
       }
     `)
   })
+
+  it('should resolve explicit imports from #imports/server', async () => {
+    const res = await $fetch('/api/imports-server')
+    expect(res).toMatchInlineSnapshot(`
+      {
+        "autoImported": "utils",
+        "fromServerDir": "test-utils",
+        "thisIs": "serverAutoImported",
+      }
+    `)
+  })
 })
 
 describe('route rules', () => {

@@ -121,6 +121,30 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
+    // Support for importing server-only auto-imports from '#imports/server'
+    // (added via `addServerImports`/`addServerImportsDir`) in a way that resolves
+    // in both the app and server type-checking contexts. See nuxt#33979.
+    addTemplate({
+      filename: 'imports-server.mjs',
+      getContents: async () => toExports(await useNitro().unimport?.getImports() ?? []),
+    })
+    addTypeTemplate({
+      filename: 'imports-server.d.ts',
+      getContents: async ({ nuxt }) => toExports(await useNitro().unimport?.getImports() ?? [], nuxt.options.buildDir, true, { declaration: true }),
+    })
+    // The extensionless path works for the app bundler (Vite/webpack try extensions
+    // automatically) and for the app tsconfig (TypeScript tries .d.ts automatically).
+    nuxt.options.alias['#imports/server'] = join(nuxt.options.buildDir, 'imports-server')
+
+    // Rolldown (used by Nitro for the server bundle) is strict: it matches an alias
+    // but fails if the resolved path has no extension and the file does not exist at
+    // that exact path. Override the alias inside Nitro's config to point to the actual
+    // .mjs file so rolldown can load it.
+    nuxt.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.alias ||= {}
+      nitroConfig.alias['#imports/server'] = join(nuxt.options.buildDir, 'imports-server.mjs')
+    })
+
     // Transform to inject imports in production mode
     addBuildPlugin(TransformPlugin({
       ctx: {

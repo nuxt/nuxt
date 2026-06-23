@@ -183,6 +183,27 @@ describe('tsConfig generation', () => {
       ],
     })
   })
+
+  it('should map `#imports/server` to its own path, distinct from `#imports`', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      alias: {
+        '#imports': './imports',
+        '#imports/server': './imports-server',
+      },
+    }))
+
+    // `#imports` has no wildcard entry, so it only matches the bare specifier and does not
+    // shadow `#imports/server` (regression test for https://github.com/nuxt/nuxt/issues/33979).
+    expect(tsConfig.compilerOptions?.paths).toMatchObject({
+      '#imports': [
+        './imports',
+      ],
+      '#imports/server': [
+        './imports-server',
+      ],
+    })
+    expect(tsConfig.compilerOptions?.paths?.['#imports/*']).toBeUndefined()
+  })
 })
 
 describe('resolveLayerPaths', async () => {
