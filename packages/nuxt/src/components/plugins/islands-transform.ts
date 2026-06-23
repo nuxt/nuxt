@@ -1,4 +1,5 @@
 import type { Component } from '@nuxt/schema'
+import { componentDiagnostics } from '@nuxt/kit'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
@@ -134,9 +135,9 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
 
         if (hasNuxtClient) {
           if (!options.selectiveClient) {
-            console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: ${id}`)
+            componentDiagnostics.NUXT_B3007({ file: id })
           } else if (!isVite) {
-            console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: ${id}`)
+            componentDiagnostics.NUXT_B3007({ file: id })
           }
         }
 

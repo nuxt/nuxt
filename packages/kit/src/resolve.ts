@@ -10,6 +10,7 @@ import { directoryToURL } from './internal/esm.ts'
 import { tryUseNuxt } from './context.ts'
 import { isIgnored } from './ignore.ts'
 import { type RequirePicked, toArray } from './utils.ts'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -105,7 +106,7 @@ export interface Resolver {
  */
 export function createResolver (base: string | URL): Resolver {
   if (!base) {
-    throw new Error('`base` argument is missing for createResolver(base)!')
+    throw kitDiagnostics.NUXT_B8002({})
   }
 
   base = base.toString()

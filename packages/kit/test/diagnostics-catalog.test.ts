@@ -45,7 +45,7 @@ describe('build diagnostics catalog', () => {
       })
       try {
         for (const code of Object.keys(catalog)) {
-          const handle = (catalog as Record<string, (p?: Record<string, unknown>) => { name: string, message: string }>)[code]!
+          const handle = (catalog as unknown as Record<string, (p?: Record<string, unknown>) => { name: string, message: string }>)[code]!
           const d = handle(params)
           expect(d.name).toBe(code)
           expect(typeof d.message).toBe('string')

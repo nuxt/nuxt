@@ -9,7 +9,7 @@ import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
-import { logger } from '../../utils.ts'
+import { pluginDiagnostics } from '@nuxt/kit'
 
 const internalOrderMap = {
   // -50: pre-all (nuxt)
@@ -127,7 +127,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
     }
     if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
       if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
-        throw new Error('dependsOn must take an array of string literals')
+        throw pluginDiagnostics.NUXT_B2003()
       }
       meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
     }
@@ -144,7 +144,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       if (!plugin) { return }
 
       if (!code.trim()) {
-        logger.warn(`Plugin \`${plugin.src}\` has no content.`)
+        pluginDiagnostics.NUXT_B2004({ src: plugin.src })
 
         return {
           code: 'export default () => {}',
@@ -155,7 +155,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const exports = findExports(code)
       const defaultExport = exports.find(e => e.type === 'default' || e.name === 'default')
       if (!defaultExport) {
-        logger.warn(`Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
+        pluginDiagnostics.NUXT_B2005({ src: plugin.src })
         return {
           code: 'export default () => {}',
           map: null,
@@ -196,12 +196,12 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           }
         })
       } catch (e) {
-        logger.error(e)
+        pluginDiagnostics.NUXT_B2006({ src: plugin.src, cause: e }, { method: 'error' })
         return
       }
 
       if (!wrapped) {
-        logger.warn(`Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`)
+        pluginDiagnostics.NUXT_B2007({ src: plugin.src })
       }
 
       return generateTransform(s, id)

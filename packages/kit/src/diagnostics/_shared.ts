@@ -1,5 +1,4 @@
 import { createConsoleReporter } from 'nostics'
-import type { DiagnosticReporter } from 'nostics'
 
 /**
  * Shared configuration for every build-time diagnostics catalog.
@@ -17,4 +16,8 @@ export function docsBase (code: string): string {
   return `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 }
 
-export const reporters: DiagnosticReporter[] = [/* #__PURE__ */ createConsoleReporter()]
+// NB: `as const` (a readonly tuple) is required — `defineDiagnostics` extracts
+// each reporter's call-site options by matching a tuple shape. A plain
+// `DiagnosticReporter[]` (or an un-`as const` array) collapses the options to
+// `{}`, so `diagnostics.CODE(p, { method: 'error' })` would stop type-checking.
+export const reporters = [createConsoleReporter()] as const

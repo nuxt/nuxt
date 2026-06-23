@@ -14,6 +14,7 @@ import { distDirURL, filterInPlace } from './utils.ts'
 import { directoryToURL } from './internal/esm.ts'
 import { getDirectory } from './module/install.ts'
 import { tryUseNuxt, useNuxt } from './context.ts'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
 import { resolveNuxtModule } from './resolve.ts'
 import { getLayerDirectories } from './layers.ts'
 import type { LayerDirectories } from './layers.ts'
@@ -75,7 +76,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
   const template = addTemplate(_template)
 
   if (!template.filename.endsWith('.d.ts')) {
-    throw new Error(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`)
+    throw kitDiagnostics.NUXT_B8007({ template: template.filename })
   }
 
   // Add template to types reference
@@ -122,7 +123,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
  */
 export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
   if (!template) {
-    throw new Error('Invalid template: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8008({ template: JSON.stringify(template) })
   }
 
   // Normalize
@@ -135,7 +136,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   // Use src if provided
   if (template.src) {
     if (!existsSync(template.src)) {
-      throw new Error('Template not found: ' + template.src)
+      throw kitDiagnostics.NUXT_B8009({ template: template.src })
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
@@ -144,11 +145,11 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   if (!template.src && !template.getContents) {
-    throw new Error('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8010({ template: template.filename || template.src || '' })
   }
 
   if (!template.filename) {
-    throw new Error('Invalid template. `filename` must be provided: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8011({ template: JSON.stringify(template) })
   }
 
   // Always write declaration files

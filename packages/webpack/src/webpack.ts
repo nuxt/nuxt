@@ -8,7 +8,7 @@ import type { Compiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
-import { logger, useNitro, useNuxt } from '@nuxt/kit'
+import { bundlerDiagnostics, logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
@@ -221,9 +221,7 @@ async function compile (compiler: Compiler) {
     for (const err of compilationErrors) {
       logger.error(err)
     }
-    const error = new Error('Nuxt build error')
-    error.stack = formatted || compilationErrors.map(e => e.stack || e.message || String(e)).join('\n\n') || error.stack
-    throw error
+    throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name! })
   }
 }
 
