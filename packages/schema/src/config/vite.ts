@@ -1,5 +1,4 @@
 import { resolve } from 'pathe'
-import { isTest } from 'std-env'
 import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
@@ -12,7 +11,7 @@ export default defineResolvers({
     },
     define: {
       $resolve: async (_val, get) => {
-        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')])
+        const [isDev, isTest, isDebug] = await Promise.all([get('dev'), get('test'), get('debug')])
         return {
           '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(isDebug && (isDebug === true || isDebug.hydration)),
           'process.dev': isDev,

@@ -60,6 +60,18 @@ const error = useError()
 // render an empty <div> when plugins have thrown an error but we're not yet rendering the error page
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
 const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
+// returning `false` from onErrorCaptured below stops Vue from invoking
+// `app.config.errorHandler`, so call it explicitly (#22691)
+function invokeAppErrorHandler (err, target, info) {
+  const errorHandler = nuxtApp.vueApp.config.errorHandler
+  if (errorHandler && !errorHandler.__nuxt_default) {
+    try {
+      errorHandler(err, target, info)
+    } catch (handlerError) {
+      console.error('[nuxt] Error in `app.config.errorHandler`', handlerError)
+    }
+  }
+}
 onErrorCaptured((err, target, info) => {
   nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
   if (import.meta.client && BOT_RE.test(navigator.userAgent)) {
@@ -70,6 +82,7 @@ onErrorCaptured((err, target, info) => {
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
     const p = nuxtApp.runWithContext(() => showError(err))
     onServerPrefetch(() => p)
+    invokeAppErrorHandler(err, target, info)
     return false // suppress error from breaking render
   }
 })

@@ -32,6 +32,12 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   } else {
     _manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
       responseType: 'json',
+    }).then((res) => {
+      // handle errors fetching manifest, e.g. from an improperly configured proxy
+      if (!res || typeof res !== 'object' || !Array.isArray((res as NuxtAppManifest).prerendered)) {
+        throw new Error('[nuxt] Received malformed app manifest. Ensure that `builds/meta/*.json` is served as JSON by your hosting/proxy and not rewritten to an HTML fallback.')
+      }
+      return res
     })
   }
   manifest = _manifest
@@ -62,7 +68,7 @@ export function getRouteRules (url: string): Record<string, any>
 export function getRouteRules (arg: string | H3Event | { path: string }) {
   const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   try {
-    return routeRulesMatcher(path)
+    return routeRulesMatcher(path.toLowerCase())
   } catch (e) {
     console.error('[nuxt] Error matching route rules.', e)
     return {}

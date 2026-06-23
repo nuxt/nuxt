@@ -78,6 +78,7 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
       'import.meta.server': false,
       'import.meta.client': true,
       'import.meta.browser': true,
+      'import.meta.envName': JSON.stringify(nuxt.options.envName),
       'import.meta.nitro': false,
       'import.meta.prerender': false,
       'module.hot': false,

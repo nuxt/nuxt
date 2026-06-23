@@ -28,7 +28,7 @@ To use `useNuxtData`, ensure that the data-fetching composable (`useFetch`, `use
 
 ## Return Values
 
-- `data`: A reactive reference to the cached data associated with the provided key. If no cached data exists, the value will be `null`. This `Ref` automatically updates if the cached data changes, allowing seamless reactivity in your components.
+- `data`: A reactive reference to the cached data associated with the provided key. If no cached data exists, the value will be `undefined`. This `Ref` automatically updates if the cached data changes, allowing seamless reactivity in your components.
 
 ## Example
 

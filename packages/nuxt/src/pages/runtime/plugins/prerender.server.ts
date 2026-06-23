@@ -3,6 +3,7 @@ import { joinURL } from 'ufo'
 import type { NitroRouteRules } from 'nitro/types'
 
 import { defineNuxtPlugin } from '#app/nuxt'
+import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { prerenderRoutes } from '#app/composables/ssr'
 import _routes from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
@@ -15,7 +16,7 @@ const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRule
 
 let routes: string[]
 
-export default defineNuxtPlugin(async () => {
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin(async () => {
   if (!import.meta.server || !import.meta.prerender || hashMode) {
     return
   }
@@ -25,6 +26,8 @@ export default defineNuxtPlugin(async () => {
   const batch = routes.splice(0, 10)
   prerenderRoutes(batch)
 })
+
+export default plugin
 
 // Implementation
 

@@ -1,18 +1,19 @@
 import { defineComponent } from 'vue'
-import type { SlotsType, VNode } from 'vue'
+import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 
-export default defineComponent({
+type DevOnlySlots = SlotsType<{
+  default?: () => VNode[]
+  /**
+   * If you ever require to have a replacement during production.
+   */
+  fallback?: () => VNode[]
+}>
+
+const DevOnly = defineComponent({
   name: 'DevOnly',
   inheritAttrs: false,
   ...(import.meta.dev && {
-    slots: Object as SlotsType<{
-      default?: () => VNode[]
-
-      /**
-       * If you ever require to have a replacement during production.
-       */
-      fallback?: () => VNode[]
-    }>,
+    slots: Object as DevOnlySlots,
   }),
   setup (_, props) {
     if (import.meta.dev) {
@@ -20,4 +21,6 @@ export default defineComponent({
     }
     return () => props.slots.fallback?.()
   },
-})
+}) as unknown as DefineSetupFnComponent<{}, {}, DevOnlySlots>
+
+export default DevOnly

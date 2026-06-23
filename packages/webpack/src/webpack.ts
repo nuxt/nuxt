@@ -15,6 +15,7 @@ import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { ChunkErrorPlugin } from './plugins/chunk.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { createMFS } from './utils/mfs.ts'
+import { isSameOriginRequest } from './utils/same-origin.ts'
 import { client, server } from './configs/index.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
@@ -49,12 +50,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
 
-  const ssrStylesPlugin = nuxt.options.ssr && !nuxt.options.dev && nuxt.options.features.inlineStyles ? new SSRStylesPlugin(nuxt) : null
+  const ssrStylesPlugin = nuxt.options.ssr && !nuxt.options.dev ? new SSRStylesPlugin(nuxt) : null
 
   for (const config of webpackConfigs) {
-    config.plugins!.push(DynamicBasePlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
-    }))
+    config.plugins!.push(DynamicBasePlugin.webpack())
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
@@ -137,9 +136,8 @@ async function createDevMiddleware (compiler: Compiler) {
 // TODO: implement upstream in `webpack-dev-middleware`
 function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
   return defineEventHandler(async (event) => {
-    // disallow cross-site requests in no-cors mode
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-    if (req.headers['sec-fetch-mode'] === 'no-cors' && req.headers['sec-fetch-site'] === 'cross-site') {
+    if (!isSameOriginRequest(req)) {
       res!.statusCode = 403
       res!.end('Forbidden')
       return
@@ -217,8 +215,14 @@ async function compile (compiler: Compiler) {
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
+    const formatted = stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true })
+    const compilationErrors = stats.compilation?.errors ?? []
+    logger.error(formatted || '(no formatted errors emitted; see compilation errors below)')
+    for (const err of compilationErrors) {
+      logger.error(err)
+    }
     const error = new Error('Nuxt build error')
-    error.stack = stats.toString('errors-only')
+    error.stack = formatted || compilationErrors.map(e => e.stack || e.message || String(e)).join('\n\n') || error.stack
     throw error
   }
 }

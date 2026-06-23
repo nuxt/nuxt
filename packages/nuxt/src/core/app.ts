@@ -5,11 +5,10 @@ import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
 
-import type { PluginMeta } from 'nuxt/app'
-
 import { logger, resolveToAlias } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
+import type { ExtractedPluginMeta } from './plugins/plugin-metadata.ts'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
@@ -139,7 +138,7 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // resolve layer
   const layerDirs = getLayerDirectories(nuxt)
-  const reversedLayerDirs = [...layerDirs].reverse()
+  const reversedLayerDirs = layerDirs.toReversed()
 
   // Resolve main (app.vue)
   app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.app, 'App'), join(d.app, 'app')]))
@@ -202,7 +201,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Add back plugins not specified in layers or user config
-  for (const p of [...nuxt.options.plugins].reverse()) {
+  for (const p of nuxt.options.plugins.toReversed()) {
     const plugin = normalizePlugin(p)
     if (!plugins.some(p => p.src === plugin.src)) {
       plugins.unshift(plugin)
@@ -210,7 +209,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  middleware = uniqueBy(await resolvePaths(nuxt, [...middleware].reverse(), 'path'), 'name').reverse()
+  middleware = uniqueBy(await resolvePaths(nuxt, middleware.toReversed(), 'path'), 'name').reverse()
   plugins = uniqueBy(await resolvePaths(nuxt, plugins, 'src'), 'src')
 
   // Resolve app.config
@@ -250,8 +249,10 @@ function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item
 
 const IS_TSX = /\.[jt]sx$/
 
-export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
-  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
+export type AnnotatedPlugin = NuxtPlugin & ExtractedPluginMeta
+
+export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promise<AnnotatedPlugin[]> {
+  const _plugins: AnnotatedPlugin[] = []
   for (const plugin of plugins) {
     try {
       const code = nuxt.vfs[plugin.src] ?? await fsp.readFile(plugin.src!, 'utf-8')
@@ -266,14 +267,107 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
       } else {
         logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
       }
-      _plugins.push(plugin)
+      _plugins.push({ ...plugin, _metaUnknown: true })
     }
   }
 
   return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
 }
 
-export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>>) {
+/**
+ * Reorder `order`-sorted plugins so each plugin's `dependsOn` entries appear earlier in the array.
+ * The original (order-sorted) sequence is preserved as the stable tiebreaker. Unknown dependency
+ * names are ignored to match the runtime resolver. Cycles are not resolved here; any plugin still
+ * pending after the walk is emitted in its original position. `checkForCircularDependencies`
+ * surfaces those graphs separately.
+ */
+export function sortPluginsByDependsOn<T extends AnnotatedPlugin> (plugins: T[]): T[] {
+  const known = new Set<string>()
+  for (const plugin of plugins) {
+    if (plugin.name) { known.add(plugin.name) }
+  }
+
+  const emitted = new Set<string>()
+  const result: T[] = []
+  const pending: T[] = []
+
+  const tryEmit = (plugin: T): boolean => {
+    const deps = plugin.dependsOn
+    if (deps) {
+      for (const dep of deps) {
+        if (known.has(dep) && !emitted.has(dep)) { return false }
+      }
+    }
+    result.push(plugin)
+    if (plugin.name) { emitted.add(plugin.name) }
+    return true
+  }
+
+  const flushPending = () => {
+    let progressed = true
+    while (progressed) {
+      progressed = false
+      for (let i = 0; i < pending.length;) {
+        if (tryEmit(pending[i]!)) {
+          pending.splice(i, 1)
+          progressed = true
+        } else {
+          i++
+        }
+      }
+    }
+  }
+
+  for (const plugin of plugins) {
+    if (!tryEmit(plugin)) {
+      pending.push(plugin)
+    } else {
+      flushPending()
+    }
+  }
+
+  // Any leftover entries are part of a cycle (or transitively depend on one).
+  // Preserve their original relative order.
+  for (const plugin of pending) {
+    result.push(plugin)
+  }
+
+  return result
+}
+
+export function hasPluginDependencies (plugins: Array<{ dependsOn?: string[], _metaUnknown?: boolean }>): boolean {
+  for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
+    if (plugin.dependsOn && plugin.dependsOn.length > 0) { return true }
+  }
+  return false
+}
+
+export function hasParallelPlugins (plugins: Array<{ parallel?: boolean, _metaUnknown?: boolean }>): boolean {
+  for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
+    if (plugin.parallel) { return true }
+  }
+  return false
+}
+
+export function hasPluginHooks (plugins: Array<{ hasHooks?: boolean, _metaUnknown?: boolean }>): boolean {
+  for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
+    if (plugin.hasHooks) { return true }
+  }
+  return false
+}
+
+export function hasIslandOptOutPlugins (plugins: Array<{ hasEnv?: boolean, _metaUnknown?: boolean }>): boolean {
+  for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
+    if (plugin.hasEnv) { return true }
+  }
+  return false
+}
+
+export function checkForCircularDependencies (_plugins: AnnotatedPlugin[]) {
   const deps: Record<string, string[]> = Object.create(null)
   const pluginNames = new Set(_plugins.map(plugin => plugin.name))
   for (const plugin of _plugins) {

@@ -1,13 +1,12 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { createIsIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
-import { dirname, join, relative } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
 
@@ -327,7 +326,7 @@ async function writeCache (cwd: string, sources: string | string[], cacheFile: s
 function getCacheDir (nuxt: Nuxt) {
   let cacheDir = join(nuxt.options.workspaceDir, 'node_modules')
   if (!existsSync(cacheDir)) {
-    for (const dir of [...nuxt.options.modulesDir].sort((a, b) => a.length - b.length)) {
+    for (const dir of nuxt.options.modulesDir.toSorted((a, b) => a.length - b.length)) {
       if (existsSync(dir)) {
         cacheDir = dir
         break

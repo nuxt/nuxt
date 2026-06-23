@@ -1,7 +1,7 @@
 import { useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import escapeStringRegexp from 'escape-string-regexp'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { basename } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
@@ -26,7 +26,6 @@ export function getStableEntryChunkHashSeed (chunk: ChunkLike) {
 }
 
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
-  let sourcemap: boolean
   let entryFileName: string | undefined
 
   const nitro = useNitro()
@@ -38,9 +37,6 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
 
   return {
     name: 'nuxt:stable-entry',
-    configResolved (config) {
-      sourcemap = !!config.build.sourcemap
-    },
     apply: () => !nuxt.options.dev && nuxt.options.experimental.entryImportMap,
     applyToEnvironment (environment) {
       if (environment.name !== 'client') {
@@ -63,15 +59,10 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
       }
 
       const filename = new RegExp(`(?<=['"])[\\./]*${escapeStringRegexp(basename(entry))}`, 'g')
-      const s = new MagicString(code)
+      const s = rolldownString(code, chunk.fileName)
       s.replaceAll(filename, '#entry')
 
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: sourcemap ? s.generateMap({ hires: true }) : undefined,
-        }
-      }
+      return generateTransform(s, chunk.fileName)
     },
     augmentChunkHash (chunk) {
       return getStableEntryChunkHashSeed(chunk)

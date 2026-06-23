@@ -1,10 +1,13 @@
 import type { WebpackConfigContext } from '../utils/config.ts'
+import { builder } from '#builder'
 
 export function node (ctx: WebpackConfigContext) {
   ctx.config.target = 'node'
   ctx.config.node = false
 
-  ctx.config.experiments!.outputModule = true
+  if (builder !== 'rspack') {
+    ctx.config.experiments!.outputModule = true
+  }
 
   ctx.config.output = {
     ...ctx.config.output,

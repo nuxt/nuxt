@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
-import { createUnimport, scanDirExports, toExports } from 'unimport'
+import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
@@ -231,7 +231,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
           if (!dir || !name) { return r }
           const subpath = await lookupNodeModuleSubpath(r)
-          return join(dir, name, subpath || '')
+          return subpath && subpath !== './' ? join(dir, name, subpath) : r
         }) ?? path
       }
 
@@ -297,23 +297,28 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
       await cacheImportPaths(sharedImports)
 
-      const sharedCtx = createUnimport({
-        imports: sharedImports,
-      })
-
       // Utilities that exist in both Nuxt and Nitro contexts but with different implementations.
       // These are safe to use in the shared context.
       const handCraftedDeclarations = `
-  const useRuntimeConfig: (event?: import('h3').H3Event) => import('nuxt/schema').RuntimeConfig
+  const useRuntimeConfig: () => import('nuxt/schema').RuntimeConfig
   const useAppConfig: () => import('nuxt/schema').AppConfig
   const defineAppConfig: <C extends import('nuxt/schema').AppConfigInput>(config: C) => C
   const createError: typeof import('h3')['createError']
   const setResponseStatus: typeof import('h3')['setResponseStatus']`
 
-      return GENERATED_BY_COMMENT + (await sharedCtx.generateTypeDeclarations({ resolvePath: r })).replace(
+      const valueImports = sharedImports.filter(i => !i.type)
+      const typeImports = sharedImports.filter(i => i.type)
+
+      let dts = toTypeDeclarationFile(valueImports, { resolvePath: r }).replace(
         /^declare global \{$/m,
         `declare global {${handCraftedDeclarations}`,
       )
+
+      if (typeImports.length) {
+        dts += '\n' + toTypeReExports(typeImports, { resolvePath: r })
+      }
+
+      return GENERATED_BY_COMMENT + dts
     },
   })
 }

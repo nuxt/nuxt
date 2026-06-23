@@ -144,10 +144,13 @@ function connectSocket (): Promise<Socket> {
               if (requestHandlers) {
                 const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
                 if (response.type === 'error') {
-                  const err: Error & { stack?: string, data?: unknown, status?: number, statusCode?: number } = new Error(response.error.message)
-                  err.stack = response.error.stack
+                  const err: Error & { stack?: string, data?: unknown, status?: number, statusCode?: number, _fromServer?: boolean } = new Error(response.error.message)
+                  if (response.error.stack) {
+                    err.stack = response.error.stack
+                  }
                   err.data = response.error.data
                   err.statusCode = err.status = response.error.status || response.error.statusCode
+                  err._fromServer = true
                   rejectRequest(err)
                 } else {
                   resolveRequest(response.data)
@@ -261,6 +264,10 @@ async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload
       })
     } catch (error) {
       lastError = error
+      // Don't retry application-level errors from the server
+      if (error && typeof error === 'object' && '_fromServer' in error) {
+        break
+      }
       if (requestAttempt < MAX_RETRY_ATTEMPTS) {
         const delay = calculateRetryDelay(requestAttempt)
         await new Promise(resolve => setTimeout(resolve, delay))

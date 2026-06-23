@@ -1,6 +1,29 @@
+<script setup lang="ts">
+const route = useRoute()
+const keepalive = useState('test-suspense-keepalive', () => route.query.ka === '1' ? true : undefined)
+const transition = useState('test-suspense-transition', () => route.query.tr === '1' ? { name: 'page', mode: 'out-in' as const } : undefined)
+</script>
+
 <template>
   <div>
-    <NuxtPage />
+    <nav class="global-nav">
+      <NuxtLink
+        to="/setting/project"
+        data-testid="nav-link-project"
+      >
+        Project
+      </NuxtLink>
+      <NuxtLink
+        to="/waiting"
+        data-testid="nav-link-waiting"
+      >
+        Waiting
+      </NuxtLink>
+    </nav>
+    <NuxtPage
+      :keepalive="keepalive"
+      :transition="transition"
+    />
   </div>
 </template>
 

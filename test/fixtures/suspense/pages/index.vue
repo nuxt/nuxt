@@ -42,6 +42,20 @@ async function trigger () {
         >
           Target B
         </NuxtLink>
+        <NuxtLink
+          to="/setting/project"
+          data-testid="link-project"
+          class="test-button"
+        >
+          Setting / Project
+        </NuxtLink>
+        <NuxtLink
+          to="/waiting"
+          data-testid="link-waiting"
+          class="test-button"
+        >
+          Waiting (async)
+        </NuxtLink>
       </div>
     </div>
 

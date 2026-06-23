@@ -8,6 +8,7 @@ import { normalizeViteManifest, precomputeDependencies } from 'vue-bundle-render
 import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
+import { useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry } from '../utils/config.ts'
 
@@ -15,6 +16,24 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let clientEntry: string
   let key: string
   let disableCssCodeSplit: boolean
+
+  let precomputedCode = 'export default undefined'
+  let manifestCode: string
+
+  const vfs = {
+    'client.precomputed.mjs': () => precomputedCode,
+    'client.manifest.mjs': () => manifestCode,
+  }
+
+  const nitro = useNitro()
+  nitro.options.virtual ||= {}
+  nitro.options._config.virtual ||= {}
+
+  for (const key in vfs) {
+    const filename = `#build/dist/server/${key}`
+    nitro.options.virtual[filename] ||= vfs[key as keyof typeof vfs] as () => string
+    nitro.options._config.virtual[filename] ||= vfs[key as keyof typeof vfs] as () => string
+  }
 
   return {
     name: 'nuxt:client-manifest',
@@ -47,9 +66,8 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
             },
       }
 
-      // Write client manifest for use in vue-bundle-renderer
+      // expose client manifest for use in vue-bundle-renderer
       const clientDist = resolve(nuxt.options.buildDir, 'dist/client')
-      const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
 
       const manifestFile = resolve(clientDist, 'manifest.json')
       const clientManifest = nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
@@ -65,8 +83,6 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
         }
       }
 
-      await mkdir(serverDist, { recursive: true })
-
       if (disableCssCodeSplit) {
         for (const entry of manifestEntries) {
           if (entry.file?.endsWith('.css')) {
@@ -79,11 +95,18 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
 
       const manifest = normalizeViteManifest(clientManifest)
       await nuxt.callHook('build:manifest', manifest)
-      const precomputed = precomputeDependencies(manifest)
-      await writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default ' + serialize(manifest), 'utf8')
-      await writeFile(resolve(serverDist, 'client.precomputed.mjs'), 'export default ' + serialize(precomputed), 'utf8')
+
+      precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
+      manifestCode = 'export default ' + serialize(manifest)
 
       if (!nuxt.options.dev) {
+        if (nuxt.options.experimental.buildCache) {
+          const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
+          await mkdir(serverDist, { recursive: true })
+          await writeFile(resolve(serverDist, 'client.manifest.mjs'), manifestCode, 'utf8')
+          await writeFile(resolve(serverDist, 'client.precomputed.mjs'), precomputedCode, 'utf8')
+        }
+
         await rm(manifestFile, { force: true })
       }
     },

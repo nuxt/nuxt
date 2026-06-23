@@ -1,6 +1,6 @@
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
-export type { AsyncDataOptions, AsyncData, AsyncDataRequestStatus } from './asyncData'
+export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataRequestStatus } from './asyncData'
 export { useHydration } from './hydrate'
 export { callOnce } from './once'
 export { useState, clearNuxtState } from './state'

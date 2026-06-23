@@ -251,7 +251,7 @@ type AsyncDataOptions<DataT> = {
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
-  watch?: MultiWatchSources | false
+  watch?: MultiWatchSources
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
   timeout?: number
 }

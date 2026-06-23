@@ -69,6 +69,9 @@ if (import.meta.client) {
       await nuxt.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
+    // marker so nuxt-root.vue can skip re-invoking the default handler from
+    // its onErrorCaptured (which already calls `app:error` via showError)
+    ;(handleVueError as any).__nuxt_default = true
 
     vueApp.config.errorHandler = handleVueError
     // If the errorHandler is not overridden by the user, we unset it after the app is hydrated

@@ -62,6 +62,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
       resolvedConfig = config
     },
     transform: {
+      order: 'pre',
       filter: {
         id: {
           include: [JSX_RE],

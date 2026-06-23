@@ -3,7 +3,6 @@ import { ViteNodeRunner } from 'vite-node/client'
 import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from '#vite-node'
 import process from 'node:process'
-import type { ErrorPartial } from './types'
 
 const runner: ViteNodeRunner = createRunner()
 
@@ -17,79 +16,70 @@ function createRunner () {
     fetchModule (id) {
       id = id.replace(/\/\//g, '/') // TODO: fix in vite-node
       return viteNodeFetch.fetchModule(id).catch((err) => {
-        const errorData = err?.data?.data
+        const errorData = err?.data
         if (!errorData) {
           throw err
         }
-        let _err
+        let built: Error
         try {
-          const { message, stack } = formatViteError(errorData, id)
-          _err = {
-            statusText: 'Vite Error',
-            message,
-            stack,
-          } satisfies ErrorPartial
-        } catch (formatError) {
-          consola.warn('Internal nuxt error while formatting vite-node error. Please report this!', formatError)
+          built = buildViteError(errorData, id)
+        } catch (buildErr) {
+          consola.warn('Internal nuxt error while formatting vite-node error. Please report this!', buildErr)
           const message = `[vite-node] [TransformError] ${errorData?.message || '-'}`
           consola.error(message, errorData)
-          throw {
+          built = Object.assign(new Error(message), {
             statusText: 'Vite Error',
-            message,
+            statusMessage: 'Vite Error',
             stack: `${message}\nat ${id}\n` + (errorData?.stack || ''),
-          } satisfies ErrorPartial
+          })
         }
-        throw _err
+        throw built
       })
     },
   })
 }
 
-export function formatViteError (errorData: any, id: string) {
-  const errorCode = errorData.name || errorData.reasonCode || errorData.code
-  const frame = errorData.frame || errorData.source || errorData.pluginCode
-  const detail = errorData.reason || errorData.message
+interface ViteNodeErrorData {
+  code?: string
+  id?: string
+  message?: string
+  stack?: string
+  frame?: string
+}
 
-  const getLocId = (locObj: { file?: string, id?: string, url?: string } = {}) => {
-    const locId = locObj.file || locObj.id || locObj.url
-    if (typeof locId === 'string' && locId && locId !== 'undefined') {
-      return locId
-    }
-    return id || ''
+function buildViteError (errorData: ViteNodeErrorData, id: string): Error {
+  const loc = (errorData.id || id || '').replace(process.cwd(), '.')
+
+  // `err.message` from some compilers (notably @vue/compiler-sfc) embeds a
+  // `[scope/plugin]` prefix plus a code frame, separated from the real
+  // description by a blank line. Split on that boundary so we can show the
+  // clean one-liner as the heading and feed the frame text to `hint` below.
+  const rawMessage: string = errorData.message || ''
+  const [headRaw, ...frameTail] = rawMessage.split(/\r?\n\s*\n/)
+  const reason = ((headRaw || '').split(/\r?\n/)[0] ?? '')
+    .replace(/^\[@?[\w.\-/:]+\]\s*/, '')
+    .trim()
+  const messageFrame = frameTail.length ? frameTail.join('\n\n').trim() : ''
+
+  const message = reason ? `${loc} — ${reason}` : (rawMessage || loc)
+
+  const error = Object.assign(new Error(message), {
+    name: 'ViteError',
+    statusText: 'Vite Error',
+    statusMessage: 'Vite Error',
+    code: errorData.code,
+    // Youch renders `hint` as a styled callout alongside the main message —
+    // a natural home for the code frame.
+    hint: errorData.frame || messageFrame || undefined,
+  })
+
+  // Prefer the server-side stack so Youch's stack viewer points at the real
+  // origin (compiler-sfc → plugin-vue → Vite) rather than this runner.
+  if (errorData.stack) {
+    error.stack = errorData.stack
   }
-  const getLocPos = (locObj: { line?: string | number, column?: string | number } = {}) => {
-    const line = locObj.line
-    if (line === undefined || line === null || line === '' || line === 'undefined') {
-      return ''
-    }
-    const column = locObj.column
-    const safeColumn = (column === undefined || column === null || column === '' || column === 'undefined') ? 0 : column
-    return `${line}:${safeColumn}`
-  }
-  const locId = getLocId(errorData.loc) || getLocId(errorData.location) || getLocId(errorData.input) || getLocId(errorData)
-  const locPos = getLocPos(errorData.loc) || getLocPos(errorData.location) || getLocPos(errorData.input) || getLocPos(errorData)
-  const rawLoc = locId.replace(process.cwd(), '.') + (locPos ? `:${locPos}` : '')
-  const loc = rawLoc.includes('undefined:undefined') ? locId.replace(process.cwd(), '.') : rawLoc
 
-  const message = [
-    '[vite-node]',
-    errorData.plugin && `[plugin:${errorData.plugin}]`,
-    errorCode && `[${errorCode}]`,
-    loc,
-    detail && `: ${detail}`,
-    frame && `<br><pre>${frame.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><br>`,
-  ].filter(Boolean).join(' ')
-
-  const stack = [
-    message,
-    `at ${loc}`,
-    errorData.stack,
-  ].filter(Boolean).join('\n')
-
-  return {
-    message,
-    stack,
-  }
+  return error
 }
 
 export default runner

@@ -11,6 +11,8 @@ import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
+// @ts-expect-error virtual file
+import { pageIslandRoutes } from '#build/components.islands.mjs'
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
@@ -109,9 +111,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     router.afterEach((to, from) => {
-      // We won't trigger suspense if the component is reused between routes
-      // so we need to update the route manually
-      if (to.matched.at(-1)?.components?.default === from.matched.at(-1)?.components?.default) {
+      // `_route` is usually re-synced by `<NuxtPage>`'s `Suspense.onResolve`. When no Suspense
+      // remounts (leaf component reused, or navigating up the tree) we sync manually.
+      const lastTo = to.matched.at(-1)?.components?.default
+      const lastFrom = from.matched.at(-1)?.components?.default
+      if (lastTo === lastFrom) {
+        syncCurrentRoute()
+        return
+      }
+      if (to.matched.length < from.matched.length && to.matched.every((m, i) => m.components?.default === from.matched[i]?.components?.default)) {
         syncCurrentRoute()
       }
     })
@@ -133,7 +141,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     const error = useError()
-    if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
+    // we only skip redirect handlers for component islands, not page islands
+    const isServerPage = import.meta.server && nuxtApp.ssrContext?.islandContext?.name?.startsWith('page_')
+    if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
       router.afterEach(async (to, _from, failure) => {
         delete nuxtApp._processingMiddleware
 
@@ -169,6 +179,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? router.resolve(initialURL)
       : router.currentRoute.value
 
+    // snapshot the starting route so a plugin that calls `navigateTo`
+    // during `applyPlugins` is not clobbered later on
+    const prePluginRoutePath = import.meta.client ? router.currentRoute.value.fullPath : ''
+
     // Detect if we're hydrating a prerendered page that doesn't match the current URL
     // (for example, if the browser URL has different query params than the
     // prerendered payload).
@@ -181,8 +195,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     syncCurrentRoute()
 
-    if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
-      // We're in an island context, and don't need to handle middleware or redirections
+    if (import.meta.server && nuxtApp.ssrContext?.islandContext && !isServerPage) {
+      // we don't need to handle middleware or redirections for non-page islands
       return { provide: { router } }
     }
 
@@ -195,7 +209,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
       nuxtApp._processingMiddleware = true
 
-      if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
+      if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
         type MiddlewareDef = string | RouteMiddleware
         const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
         for (const component of to.matched) {
@@ -277,6 +291,22 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
     })
 
+    if (isServerPage) {
+      // validate that a server page is rendering the correct url
+      router.beforeResolve((to) => {
+        const expected = pageIslandRoutes[nuxtApp.ssrContext!.islandContext!.name]
+        const actual = to.matched.find(m => (m.components?.default as any)?.__nuxt_island)
+          ?.components?.default as any
+        if (!expected || expected !== actual?.__nuxt_island) {
+          nuxtApp.ssrContext!['~renderResponse'] = {
+            status: 400,
+            statusText: 'Invalid island request path',
+          }
+          return false
+        }
+      })
+    }
+
     router.onError(async () => {
       delete nuxtApp._processingMiddleware
       await nuxtApp.callHook('page:loading:end')
@@ -301,7 +331,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           resolvedInitialRoute.name = undefined
         }
 
-        if (hasDeferredRoute) {
+        // respect a plugin that navigated away during boot
+        const pluginNavigatedAway = import.meta.client && router.currentRoute.value.fullPath !== prePluginRoutePath
+
+        if (pluginNavigatedAway) {
+          // we don't need to push the previous route
+        } else if (hasDeferredRoute) {
           // First apply the route that was prerendered to avoid hydration mismatches,
           // then replace it after hydration with the actual resolved initial route
           const payloadRoute = router.resolve(nuxtApp.payload.path!)

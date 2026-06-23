@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   triage:
-    uses: nuxt/.github/.github/workflows/triage-edited.yml@main
+    uses: nuxt/.github/.github/workflows/triage-edited.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation
     permissions:
       contents: read
       issues: write

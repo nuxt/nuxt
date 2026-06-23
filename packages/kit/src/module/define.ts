@@ -125,7 +125,7 @@ function _defineNuxtModule<
     const moduleName = uniqueKey || module.meta.name || '<no name>'
     nuxt._perf?.startPhase(`module:${moduleName}`)
     const start = performance.now()
-    let res = {} as ModuleSetupReturn
+    let res: ModuleSetupReturn
     try {
       res = await module.setup?.call(null as any, _options, nuxt) ?? {}
     } finally {

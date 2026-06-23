@@ -4,7 +4,6 @@ import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { format } from 'prettier'
-import { createJiti } from 'jiti'
 import { HtmlValidate } from 'html-validate'
 
 const distDir = fileURLToPath(new URL('../node_modules/.temp/dist/templates', import.meta.url))
@@ -27,8 +26,6 @@ describe('template', () => {
       parser: 'css',
     })
   }
-
-  const jiti = createJiti(import.meta.url)
 
   const validator = new HtmlValidate({
     extends: [
@@ -61,7 +58,7 @@ describe('template', () => {
     expect(await formatCss(scopedStyle?.[1] || '')).toMatchSnapshot()
     expect(await formatCss(globalStyle?.[1] || '')).toMatchSnapshot()
 
-    const { template } = await jiti.import(`file://${distDir}/${file}.ts`) as { template: () => string }
+    const { template } = await import(`file://${distDir}/${file}.ts`) as { template: () => string }
     const html = template()
     const { valid, results } = await (validator as any).validateString(html)
     expect.soft(valid).toBe(true)

@@ -67,7 +67,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
       initial: true,
     })
 
-    if (!shouldInstall) {
+    if (shouldInstall !== true) {
       return Array.isArray(names) ? missing : false
     }
   } else if (!isStackblitz) {

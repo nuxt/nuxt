@@ -1,5 +1,5 @@
 import { createCommentVNode, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
-import type { AsyncComponentLoader, ComponentOptions } from 'vue'
+import type { AsyncComponentLoader, Component, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '#app/nuxt'
 // @ts-expect-error virtual file
@@ -12,7 +12,7 @@ function createPlaceholder () {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export async function createClientPage (loader: AsyncComponentLoader) {
+export async function createClientPage (loader: AsyncComponentLoader): Promise<Component> {
   // vue-router: Write "() => import('./MyPage.vue')" instead of "defineAsyncComponent(() => import('./MyPage.vue'))".
   const m = await loader()
   const c = m.default || m

@@ -1,18 +1,21 @@
 import { ref } from 'vue'
+import { defineScript } from '@unhead/vue'
 import { defineNuxtPlugin } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 import { useHead } from '../composables/head'
 
 const SUPPORTED_PROTOCOLS = new Set(['http:', 'https:'])
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:cross-origin-prefetch',
   setup (nuxtApp) {
     const externalURLs = ref(new Set<string>())
     function generateRules () {
-      return {
+      return defineScript({
         type: 'speculationrules',
         key: 'speculationrules',
-        innerHTML: JSON.stringify({
+        // unhead v3 JSON-stringifies object innerHTML for <script> tags
+        innerHTML: {
           prefetch: [
             {
               source: 'list',
@@ -20,8 +23,8 @@ export default defineNuxtPlugin({
               requires: ['anonymous-client-ip-when-cross-origin'],
             },
           ],
-        }),
-      }
+        },
+      })
     }
     const head = useHead({
       script: [generateRules()],
@@ -37,3 +40,5 @@ export default defineNuxtPlugin({
     })
   },
 })
+
+export default plugin

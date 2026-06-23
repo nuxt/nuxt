@@ -1,7 +1,8 @@
 import { createError } from '#app/composables/error'
 import { defineNuxtRouteMiddleware } from '#app/composables/router'
+import type { RouteMiddleware } from '#app/composables/router'
 
-export default defineNuxtRouteMiddleware(async (to, from) => {
+const middleware: RouteMiddleware = defineNuxtRouteMiddleware(async (to, from) => {
   if (!to.meta?.validate) { return }
 
   const result = await Promise.resolve(to.meta.validate(to))
@@ -27,3 +28,5 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   return error
 })
+
+export default middleware

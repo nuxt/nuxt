@@ -78,6 +78,8 @@ describe('nitro-ssr-routes', () => {
         "/about",
         "/about",
         "/about",
+        "/foo",
+        "/foo/bar",
       ]
     `)
   })

@@ -150,6 +150,67 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: { path: '/to' }, external: true }, { trailingSlash: 'append' }).props.href).toBe('/to/')
         expect(nuxtLink({ to: '/to', external: true }, { trailingSlash: 'append' }).props.href).toBe('/to/')
       })
+
+      it('strips script-capable protocols from auto-detected external links', () => {
+        const cases = [
+          'javascript:alert(1)',
+          ' javascript:alert(1)',
+          'JAVASCRIPT:alert(1)',
+          'java\tscript:alert(1)',
+          'data:text/html,<script>alert(1)</script>',
+          'vbscript:msgbox(1)',
+          'view-source:javascript:alert(1)',
+          'view-source:view-source:javascript:alert(1)',
+          'blob:https://example.test/abc',
+        ]
+        for (const to of cases) {
+          expect(nuxtLink({ to }).props.href, to).toBe(null)
+        }
+      })
+
+      it('strips script-capable protocols when the caller forces `external: true`', () => {
+        const cases = [
+          'javascript:alert(1)',
+          '\u0001javascript:alert(1)',
+          '\tjavascript:alert(1)',
+          'data:text/html,<script>alert(1)</script>',
+          'view-source:javascript:alert(1)',
+        ]
+        for (const to of cases) {
+          expect(nuxtLink({ to, external: true }).props.href, to).toBe(null)
+        }
+      })
+
+      it('preserves safe external href values', () => {
+        const safe = [
+          'https://nuxtjs.org',
+          'http://nuxtjs.org',
+          '//nuxtjs.org',
+          'mailto:hello@nuxtjs.org',
+          'tel:0123456789',
+          'ftp://example.test/file',
+        ]
+        for (const to of safe) {
+          expect(nuxtLink({ to }).props.href, to).toBe(to)
+        }
+      })
+
+      it('strips script-capable protocols passed through the `custom` slot', () => {
+        let received: { href: string | null } | undefined
+        const component = defineNuxtLink({ componentName: 'NuxtLink' })
+        ;(component as any).setup(
+          { to: 'javascript:alert(1)', custom: true },
+          {
+            slots: {
+              default: (slotProps: { href: string | null }) => {
+                received = slotProps
+                return null
+              },
+            },
+          },
+        )()
+        expect(received?.href).toBe(null)
+      })
     })
 
     describe('target', () => {
@@ -461,6 +522,14 @@ describe('nuxt-link:useLink', () => {
     const link = component.useLink({ to: '/about', replace })
     await link.navigate()
     expect(navigateToMock).toHaveBeenCalledWith('/about', { replace: true, external: false })
+  })
+
+  it('navigate() skips links with a script-capable protocol', async () => {
+    navigateToMock.mockClear()
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const link = component.useLink({ to: 'javascript:alert(1)' })
+    await link.navigate()
+    expect(navigateToMock).not.toHaveBeenCalled()
   })
 
   it('applies trailingSlash with Ref `to`', () => {

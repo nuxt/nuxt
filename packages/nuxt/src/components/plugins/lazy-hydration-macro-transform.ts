@@ -1,16 +1,15 @@
 import { createUnplugin } from 'unplugin'
 import { relative } from 'pathe'
 import { resolveAlias } from 'pathe/utils'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { genImport } from 'knitwork'
 import { isJS, isVue } from '../../core/utils/index.ts'
 import type { ComponentsOptions } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
-import type { Argument, Expression, FunctionBody, ImportExpression } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 
 interface LoaderOptions {
   srcDir: string
-  sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   clientDelayedComponentRuntime: string
   alias: Record<string, string>
@@ -51,8 +50,8 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           include: LAZY_HYDRATION_MACRO_RE,
         },
       },
-      handler (code, id) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         const names = new Set<string>()
         type Edit = { start: number, end: number, replacement: string }
         const edits: Edit[] = []
@@ -99,24 +98,17 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           s.prepend(imports)
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }
 })
 
-function isStringLiteral (node: Argument | undefined) {
+function isStringLiteral (node: ESTree.Argument | undefined): node is ESTree.StringLiteral {
   return !!node && node.type === 'Literal' && typeof node.value === 'string'
 }
 
-function findImportExpression (node: Expression | FunctionBody): { importExpression?: ImportExpression, importLiteral?: Expression } {
+function findImportExpression (node: ESTree.Expression | ESTree.FunctionBody): { importExpression?: ESTree.ImportExpression, importLiteral?: ESTree.Expression } {
   if (node.type === 'ImportExpression') {
     return { importExpression: node, importLiteral: node.source }
   }

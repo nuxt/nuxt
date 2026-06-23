@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "#app": ["./src/app/index"],
+      "#app/*": ["./src/app/*"],
+      "#unhead/composables": ["./src/head/runtime/composables"],
+      "nuxt/app": ["./src/app/index"],
+      "nuxt/app/*": ["./src/app/*"]
+    }
+  }
+}

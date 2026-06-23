@@ -1,5 +1,5 @@
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { camelCase, pascalCase } from 'scule'
 
 import { tryUseNuxt } from '@nuxt/kit'
@@ -11,7 +11,6 @@ import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]
-  sourcemap?: boolean
   transform?: ComponentsOptions['transform']
 }
 
@@ -51,7 +50,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
         code: { include: TEMPLATE_WITH_LAZY_HYDRATION_RE },
       },
 
-      async handler (code, id) {
+      async handler (code, id, meta?: unknown) {
         // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
         const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
         if (!template) {
@@ -68,7 +67,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             } catch { /* ignore */ }
           }
 
-          const s = new MagicString(code)
+          const s = rolldownString(code, id, meta)
 
           const components = new Set(options.getComponents().map(c => c.pascalName))
           await walk(ast, (node) => {
@@ -122,14 +121,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               }
             }
           })
-          if (s.hasChanged()) {
-            return {
-              code: s.toString(),
-              map: options.sourcemap
-                ? s.generateMap({ hires: true })
-                : undefined,
-            }
-          }
+          return generateTransform(s, id)
         } catch {
           // ignore errors if it's not html-like
         }

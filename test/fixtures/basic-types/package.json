@@ -6,15 +6,16 @@
     "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
   },
   "dependencies": {
+    "hook-augmenting-module": "workspace:*",
     "nuxt": "workspace:*",
     "ofetch": "^2.0.0-alpha.3",
-    "vue": "^3.5.22",
-    "vue-router": "^5.0.3"
+    "vue": "^3.5.34",
+    "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "vitest": "4.0.18"
+    "vitest": "4.1.6"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
   }
 }

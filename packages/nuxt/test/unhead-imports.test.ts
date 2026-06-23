@@ -7,13 +7,13 @@ import { UnheadImportsPlugin } from '../src/head/plugins/unhead-imports.ts'
 describe('UnheadImportsPlugin', () => {
   // Helper function to transform code
   function transform (code: string, id = 'app.vue') {
-    const plugin = UnheadImportsPlugin({ rootDir: import.meta.dirname, sourcemap: false }).raw({}, {} as any) as any
+    const plugin = UnheadImportsPlugin({ rootDir: import.meta.dirname }).raw({}, {} as any) as any
     return plugin.transformInclude(id) ? Promise.resolve(plugin.transform.handler(code, id)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
   }
 
   describe('transformInclude', () => {
     // @ts-expect-error untyped
-    const transformInclude = UnheadImportsPlugin({ rootDir: process.cwd(), sourcemap: false }).raw({}, {} as any).transformInclude
+    const transformInclude = UnheadImportsPlugin({ rootDir: process.cwd() }).raw({}, {} as any).transformInclude
 
     it('should include JS files', () => {
       expect(transformInclude('/project/components/MyComponent.js')).toBe(true)
