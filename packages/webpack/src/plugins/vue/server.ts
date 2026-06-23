@@ -1,4 +1,5 @@
 import type { Compilation, Compiler } from 'webpack'
+import { bundlerDiagnostics } from '@nuxt/kit'
 import { extractQueryPartJS, isJS, validate } from './util.ts'
 import { webpack } from '#builder'
 
@@ -39,17 +40,12 @@ export default class VueSSRServerPlugin {
         const entryAssets = entryInfo.assets!.filter((asset: { name: string }) => isJS(asset.name))
 
         if (entryAssets.length > 1) {
-          throw new Error(
-            'Server-side bundle should have one single entry file. ' +
-            'Avoid using CommonsChunkPlugin in the server config.',
-          )
+          throw bundlerDiagnostics.NUXT_B7003({})
         }
 
         const [entry] = entryAssets
         if (!entry || typeof entry.name !== 'string') {
-          throw new Error(
-            `Entry "${entryName}" not found. Did you specify the correct entry option?`,
-          )
+          throw bundlerDiagnostics.NUXT_B7004({ entryName: entryName! })
         }
 
         const bundle = {

@@ -1,8 +1,8 @@
-import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, buildDiagnostics, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, normalizeExtension, toArray } from '../utils.ts'
 import { createScanPluginContext, matchWithStringOrRegex } from './utils.ts'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin, scanFileForFactories } from './plugins/keyed-function-factories.ts'
@@ -125,11 +125,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              logger.error(`[nuxt:compiler] Plugin \`${plugin.name}\` failed to scan file \`${filePath}\``, e)
+              buildDiagnostics.NUXT_B1005({ plugin: plugin.name, file: filePath, cause: e }, { method: 'error' })
             }
           }))
         } catch (e) {
-          logger.error(`[nuxt:compiler] Cannot read file \`${filePath}\``, e)
+          buildDiagnostics.NUXT_B1006({ file: filePath, cause: e }, { method: 'error' })
         }
       }
 
@@ -138,7 +138,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         try {
           await plugin.afterScan(nuxt)
         } catch (e) {
-          logger.error(`[nuxt:compiler] Error in \`afterScan\` hook of plugin \`${plugin.name}\``, e)
+          buildDiagnostics.NUXT_B1007({ plugin: plugin.name, cause: e }, { method: 'error' })
         }
       }))
     }

@@ -509,7 +509,7 @@ describe('rewrite page meta', () => {
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[Error: Multiple \`definePageMeta\` calls are not supported. File: component.vue]`)
+    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[NUXT_B4003: \`definePageMeta()\` is called 2 times in a single page, but only one call is allowed.]`)
   })
 
   it('should extract metadata from vue components', () => {
@@ -797,7 +797,7 @@ definePageMeta({
       transformPlugin.transform.handler(compiled.content, 'component.vue?macro=true')
     } catch (e) {
       if (e instanceof Error) {
-        expect(e.message).toMatch(/await in definePageMeta/)
+        expect(e.message).toContain('`await` expression is used in a variable referenced by `definePageMeta`')
         wasErrorThrown = true
       }
     }

@@ -1,7 +1,7 @@
 import { relative } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { logger } from '@nuxt/kit'
+import { bundlerDiagnostics, logger } from '@nuxt/kit'
 import { colorize } from 'consola/utils'
 
 export function formatIncludeSnippet (deps: string[], cjsDeps?: Set<string>): string {
@@ -125,13 +125,7 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         }
       } else if (hasStale) {
         hasShownStaleHint = true
-        const parts: string[] = []
-        parts.push(formatStaleDepsHint([...userStale], [...moduleStale]))
-        parts.push(
-          `Update your \`nuxt.config.ts\`:\n\n` +
-          configBlock(getSnippetDeps()),
-        )
-        logger.warn(parts.join('\n\n'))
+        bundlerDiagnostics.NUXT_B7002({})
       }
     }, 3000)
   }
