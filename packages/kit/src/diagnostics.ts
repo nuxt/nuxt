@@ -28,6 +28,9 @@ export const diagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B2011: {
       why: (p: { src: string }) => `Invalid plugin \`${p.src}\`. The \`src\` option is required.`,
       fix: 'Pass a string path, or an object with a `src` property, to `addPlugin()`.',
+      // No dedicated docs page: the inline why+fix is self-sufficient, so we
+      // opt out of the auto-generated docs URL rather than ship a 404.
+      docs: false,
     },
   },
 })
