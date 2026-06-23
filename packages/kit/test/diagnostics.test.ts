@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { Diagnostic } from 'nostics'
 
-import { diagnostics } from '../src/diagnostics.ts'
+import { pluginDiagnostics } from '../src/diagnostics/plugins.ts'
 import { normalizePlugin } from '../src/plugin.ts'
 
 describe('build diagnostics', () => {
   it('builds a Diagnostic with a stable code, interpolated why and fix', () => {
-    const d = diagnostics.NUXT_B2011({ src: '/plugins/bad.ts' })
+    const d = pluginDiagnostics.NUXT_B2011({ src: '/plugins/bad.ts' })
     expect(d).toBeInstanceOf(Diagnostic)
     expect(d.name).toBe('NUXT_B2011')
     expect(d.message).toContain('/plugins/bad.ts')
@@ -14,13 +14,13 @@ describe('build diagnostics', () => {
   })
 
   it('opts out of a docs URL when the code has no dedicated page (docs: false)', () => {
-    const d = diagnostics.NUXT_B2011({ src: '/plugins/bad.ts' })
+    const d = pluginDiagnostics.NUXT_B2011({ src: '/plugins/bad.ts' })
     expect(d.docs).toBeUndefined()
   })
 
   it('is throwable and catchable as a Diagnostic', () => {
     try {
-      throw diagnostics.NUXT_B2011({ src: '/plugins/bad.ts' })
+      throw pluginDiagnostics.NUXT_B2011({ src: '/plugins/bad.ts' })
     } catch (err) {
       expect(err).toBeInstanceOf(Diagnostic)
       expect((err as Diagnostic).name).toBe('NUXT_B2011')
