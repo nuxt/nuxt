@@ -11,7 +11,11 @@ describe('build diagnostics', () => {
     expect(d.name).toBe('NUXT_B2011')
     expect(d.message).toContain('/plugins/bad.ts')
     expect(d.fix).toContain('addPlugin()')
-    expect(d.docs).toBe('https://nuxt.com/docs/4.x/errors/b2011')
+  })
+
+  it('opts out of a docs URL when the code has no dedicated page (docs: false)', () => {
+    const d = diagnostics.NUXT_B2011({ src: '/plugins/bad.ts' })
+    expect(d.docs).toBeUndefined()
   })
 
   it('is throwable and catchable as a Diagnostic', () => {
