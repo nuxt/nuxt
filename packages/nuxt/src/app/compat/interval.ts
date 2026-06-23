@@ -1,4 +1,5 @@
 import { createError } from '../composables/error'
+import { appDiagnostics } from '../diagnostics/core.ts'
 
 const intervalError = '[nuxt] `setInterval` should not be used on the server. Consider wrapping it with an `onNuxtReady`, `onBeforeMount` or `onMounted` lifecycle hook, or ensure you only call it in the browser by checking `import.meta.client`.'
 
@@ -12,5 +13,5 @@ export const setInterval: typeof globalThis.setInterval = import.meta.client
         })
       }
 
-      console.error(intervalError)
+      appDiagnostics.NUXT_E1004({}, { method: 'error' })
     }) as any

@@ -11,6 +11,7 @@ import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
+import { navigationDiagnostics } from '../diagnostics/navigation.ts'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */
@@ -23,7 +24,7 @@ export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     const middleware = useNuxtApp()._processingMiddleware
     const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    console.warn(`[nuxt] \`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/directory-structure/app/middleware#accessing-route-in-middleware` + ('\n' + trace))
+    navigationDiagnostics.NUXT_E2005({ middleware, trace })
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)
@@ -71,7 +72,7 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
   const global = options.global || typeof name !== 'string'
   const mw = typeof name !== 'string' ? name : middleware
   if (!mw) {
-    console.warn('[nuxt] No route middleware passed to `addRouteMiddleware`.', name)
+    navigationDiagnostics.NUXT_E2006({ cause: name })
     return
   }
   if (global) {
@@ -178,11 +179,11 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
-      throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
+      throw navigationDiagnostics.NUXT_E2001({ toPath })
     }
     const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+      throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
   }
 
@@ -274,7 +275,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (import.meta.dev && !isProcessingMiddleware()) {
-    throw new Error('abortNavigation() is only usable inside a route middleware handler.')
+    throw navigationDiagnostics.NUXT_E2003({})
   }
 
   if (!err) { return false }
@@ -296,13 +297,13 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
-      console.warn('[nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
+      navigationDiagnostics.NUXT_E2007({})
     }
     nuxtApp.payload.state._layout = layout
     nuxtApp.payload.state._layoutProps = props
   }
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
-    console.warn('[nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
+    navigationDiagnostics.NUXT_E2008({})
   }
   const inMiddleware = isProcessingMiddleware()
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {

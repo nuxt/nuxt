@@ -7,6 +7,7 @@ import { useHead } from './head'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
 import { createError } from './error'
+import { dataDiagnostics } from '../diagnostics/data.ts'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
@@ -42,7 +43,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
       })
     }
   } else if (import.meta.dev) {
-    console.warn('[nuxt] asyncData should return an object', data)
+    dataDiagnostics.NUXT_E3007({ cause: data })
   }
 }
 

@@ -4,6 +4,7 @@ import { defu } from 'defu'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -93,7 +94,7 @@ export function vforToArray (source: any): any[] {
     return source.split('')
   } else if (typeof source === 'number') {
     if (import.meta.dev && !Number.isInteger(source)) {
-      console.warn(`The v-for range expect an integer value but got ${source}.`)
+      renderDiagnostics.NUXT_E4013({ source })
     }
     const array: number[] = []
     for (let i = 0; i < source; i++) {
