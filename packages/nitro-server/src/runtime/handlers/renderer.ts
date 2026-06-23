@@ -823,7 +823,7 @@ async function renderStreamedResponse (ctx: {
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  return outputStream
+  return new FastResponse(outputStream, event.res)
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {
