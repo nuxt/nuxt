@@ -42,6 +42,8 @@ export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['err
   ssrContext.url = url.pathname + url.search + url.hash
 }
 
+// Layer `overlay` onto `base`, overwriting per header except `set-cookie`,
+// which is appended so cookies from both sides survive.
 export function mergeHeaders (base: Headers, overlay: Headers): Headers {
   for (const [name, value] of overlay) {
     if (name === 'set-cookie') { continue }
