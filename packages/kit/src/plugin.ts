@@ -4,7 +4,7 @@ import { normalize } from 'pathe'
 import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { MODE_RE, filterInPlace } from './utils.ts'
-import { diagnostics } from './diagnostics.ts'
+import { pluginDiagnostics } from './diagnostics/plugins.ts'
 import { tryUseNuxt, useNuxt } from './context.ts'
 import { addTemplate } from './template.ts'
 import { resolveAlias } from './resolve.ts'
@@ -26,7 +26,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   }
 
   if (!plugin.src) {
-    throw diagnostics.NUXT_B2011({ src: JSON.stringify(plugin) })
+    throw pluginDiagnostics.NUXT_B2011({ src: JSON.stringify(plugin) })
   }
 
   // Normalize full path to plugin

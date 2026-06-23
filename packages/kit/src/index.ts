@@ -40,6 +40,17 @@ export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRou
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { logger, useLogger } from './logger.ts'
 
+// Build-time diagnostics catalogs (split by domain; imported directly, no barrel).
+// Re-exported here for use from other packages (nuxt, vite, webpack, nitro-server);
+// the B8xxx kit-api catalog is intentionally kit-internal.
+export { buildDiagnostics } from './diagnostics/build.ts'
+export { pluginDiagnostics } from './diagnostics/plugins.ts'
+export { componentDiagnostics } from './diagnostics/components.ts'
+export { pageDiagnostics } from './diagnostics/pages.ts'
+export { configDiagnostics } from './diagnostics/config.ts'
+export { headDiagnostics } from './diagnostics/head.ts'
+export { bundlerDiagnostics } from './diagnostics/bundler.ts'
+
 // Dependencies
 export { ensureDependencyInstalled } from './dependency.ts'
 export type { EnsureDependencyInstalledOptions } from './dependency.ts'
