@@ -31,6 +31,18 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
     expect(cssLinks, page).toEqual([])
   })
 
+  // https://github.com/nuxt/nuxt/issues/35423
+  it.each([
+    ['bar/test', '--inline-page-bar-slug-token:bar'],
+    ['foo/test', '--inline-page-foo-slug-token:foo'],
+  ])('inlines CSS for duplicate page basenames (%s)', async (route, token) => {
+    const html = await readFile(join(outputDir, 'public', route, 'index.html'), 'utf-8')
+    expect(html).toContain(token)
+
+    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    expect(cssLinks).toEqual([])
+  })
+
   // https://github.com/nuxt/nuxt/issues/31558
   it('inlines CSS for a non-island child of a server component', async () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')

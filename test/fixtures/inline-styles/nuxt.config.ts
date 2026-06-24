@@ -12,5 +12,8 @@ export default withMatrix({
     output: {
       dir: `.output-${projectSuffix}`,
     },
+    prerender: {
+      routes: ['/bar/test', '/foo/test'],
+    },
   },
 })

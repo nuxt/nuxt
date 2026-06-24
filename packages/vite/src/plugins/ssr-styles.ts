@@ -105,6 +105,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const cssMap: Record<string, { files: string[], inBundle?: boolean, cssIds?: Set<string> }> = {}
   // Track emitted CSS chunk refs globally to avoid duplicate emissions across transform calls.
   const emittedFileRefs: Record<string, string> = {}
+  // Keep emitted style chunk names unique across transform calls. Pages with
+  // the same basename (for example `pages/foo/[slug].vue` and
+  // `pages/bar/[slug].vue`) otherwise both start from `*-styles-1.mjs`, which
+  // can collide in rolldown/vite output.
+  let styleCtr = 0
 
   const options = {
     shouldInline: nuxt.options.features.inlineStyles,
@@ -342,7 +347,6 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             const emittedIds = new Set<string>()
             const idFilename = filename(id)
 
-            let styleCtr = 0
             const ids = clientCSSMap[id] || []
             for (const file of ids) {
               if (emittedIds.has(file)) { continue }
