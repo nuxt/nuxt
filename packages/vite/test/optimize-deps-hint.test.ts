@@ -311,7 +311,7 @@ describe('OptimizeDepsHintPlugin', () => {
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('module-dep'))
     })
 
-    it('shows the stale-only B7002 diagnostic (console.warn) when no new deps', async () => {
+    it('warns about stale optimized deps when there are no new deps', async () => {
       // The stale-only path now reports through the NUXT_B7002 diagnostic
       // (nostics console reporter → console.warn) rather than a bespoke
       // logger.warn. Note: the per-dep detail is intentionally not surfaced in

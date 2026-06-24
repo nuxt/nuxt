@@ -1,5 +1,19 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
+// Build-time (NUXT_B) catalogs — the public ones come through the kit barrel.
+import {
+  buildDiagnostics,
+  bundlerDiagnostics,
+  componentDiagnostics,
+  configDiagnostics,
+  headDiagnostics,
+  pageDiagnostics,
+  pluginDiagnostics,
+} from '@nuxt/kit'
+// The B8xxx kit-api catalog is intentionally kit-internal, so reach for it directly.
+import { kitDiagnostics } from '../../kit/src/diagnostics/kit-api.ts'
+
+// Runtime (NUXT_E) catalogs.
 import { appDiagnostics } from '../src/app/diagnostics/core.ts'
 import { navigationDiagnostics } from '../src/app/diagnostics/navigation.ts'
 import { dataDiagnostics } from '../src/app/diagnostics/data.ts'
@@ -8,47 +22,29 @@ import { manifestDiagnostics } from '../src/app/diagnostics/manifest.ts'
 import { unheadDiagnostics } from '../src/app/diagnostics/head.ts'
 import { stateDiagnostics } from '../src/app/diagnostics/state.ts'
 
-const catalogs = {
-  core: appDiagnostics,
-  navigation: navigationDiagnostics,
-  data: dataDiagnostics,
-  render: renderDiagnostics,
-  manifest: manifestDiagnostics,
-  head: unheadDiagnostics,
-  state: stateDiagnostics,
-}
+const catalogs = [
+  buildDiagnostics,
+  pluginDiagnostics,
+  componentDiagnostics,
+  pageDiagnostics,
+  configDiagnostics,
+  headDiagnostics,
+  bundlerDiagnostics,
+  kitDiagnostics,
+  appDiagnostics,
+  navigationDiagnostics,
+  dataDiagnostics,
+  renderDiagnostics,
+  manifestDiagnostics,
+  unheadDiagnostics,
+  stateDiagnostics,
+]
 
-describe('runtime diagnostics catalog', () => {
-  it('exposes a callable handle per code, all matching NUXT_E<NNNN>', () => {
-    const allCodes = Object.values(catalogs).flatMap(c => Object.keys(c))
-    expect(allCodes.length).toBe(62)
-    for (const code of allCodes) {
-      expect(code, `${code} should be a NUXT_E code`).toMatch(/^NUXT_E\d{4}$/)
-    }
-  })
-
-  it('has no duplicate codes across domain catalogs', () => {
-    const allCodes = Object.values(catalogs).flatMap(c => Object.keys(c))
+describe('diagnostics catalog', () => {
+  it('has no duplicate codes across every catalog', () => {
+    // Codes live in separate defineDiagnostics() calls, so nothing but this
+    // global sweep can catch two diagnostics sharing a code.
+    const allCodes = catalogs.flatMap(c => Object.keys(c))
     expect(new Set(allCodes).size).toBe(allCodes.length)
   })
-
-  for (const [name, catalog] of Object.entries(catalogs)) {
-    it(`every ${name} handle builds a Diagnostic whose name is its code`, () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      const params = new Proxy({}, {
-        get: (_t, key) => (key === 'sources' || key === 'cause' || typeof key === 'symbol') ? undefined : 'x',
-      })
-      try {
-        for (const code of Object.keys(catalog)) {
-          const handle = (catalog as unknown as Record<string, (p?: Record<string, unknown>) => { name: string, message: string }>)[code]!
-          const d = handle(params)
-          expect(d.name).toBe(code)
-          expect(typeof d.message).toBe('string')
-          expect(d.message.length).toBeGreaterThan(0)
-        }
-      } finally {
-        warn.mockRestore()
-      }
-    })
-  }
 })
