@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, readBody } from 'h3'
 
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
@@ -184,10 +184,10 @@ describe('useFetch', () => {
   // https://github.com/nuxt/nuxt/issues/35341
   it('should send unwrapped values when options are getters', async () => {
     registerEndpoint('/api/getter-options', defineEventHandler(async event => ({
-      method: event.req.method,
-      url: event.req.url,
-      header: event.req.headers.get('x-test'),
-      body: event.req.method === 'POST' ? await event.req.json() : null,
+      method: event.method,
+      url: event.path,
+      header: event.headers.get('x-test'),
+      body: event.method === 'POST' ? await readBody(event) : null,
     })))
 
     const state = reactive({ name: 'userquin' })
