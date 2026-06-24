@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { createConsoleReporter } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 import { colors } from 'consola/utils'
@@ -28,4 +27,8 @@ export const docsBase = (code: string): string =>
 // so snapshots/assertions stay plain. consola's `colors` already no-op when the
 // stream lacks color support (CI, piped output, NO_COLOR), so this stays quiet
 // in non-interactive builds.
+//
+// Use the bare `process.env.NODE_ENV` global (no `node:process` import) so the
+// bundler can statically replace it; importing `process` would defeat that.
+// eslint-disable-next-line no-restricted-globals -- statically replaced at build time
 export const reporters = [/* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) }))] as const
