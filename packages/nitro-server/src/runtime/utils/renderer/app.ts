@@ -1,4 +1,5 @@
 import type { H3Event } from 'nitro/h3'
+import { FastResponse } from 'srvx'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { createHead } from '@unhead/vue/server'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -53,6 +54,15 @@ export function mergeHeaders (base: Headers, overlay: Headers): Headers {
     base.append('set-cookie', cookie)
   }
   return base
+}
+
+export function returnRenderResponse (event: H3Event, response: Response): Response {
+  const headers = mergeHeaders(new Headers(event.res.headers), response.headers)
+  return new FastResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
 }
 
 // TODO: rethink this before nuxt v5

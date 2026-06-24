@@ -21,7 +21,7 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from
 import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
-import { createSSRContext, rethrowWithResponseHeaders, setSSRError } from '../utils/renderer/app'
+import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
@@ -226,7 +226,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   if (appRenderedResult instanceof Promise) { await appRenderedResult }
 
   if (ssrContext['~renderResponse']) {
-    return ssrContext['~renderResponse']
+    return returnRenderResponse(event, ssrContext['~renderResponse'])
   }
 
   // Handle errors
@@ -501,7 +501,7 @@ async function renderStreamedResponse (ctx: {
       // Drop any preload `Link` header that targeted the streamed entry - the
       // redirect/response we are about to send does not need them.
       event.res.headers.delete('link')
-      return ssrContext['~renderResponse']
+      return returnRenderResponse(event, ssrContext['~renderResponse'])
     }
     const r = ssrContext.nuxt?.hooks.callHook('app:error', error)
     if (r instanceof Promise) { await r }
@@ -509,7 +509,7 @@ async function renderStreamedResponse (ctx: {
   }
   if (ssrContext['~renderResponse']) {
     event.res.headers.delete('link')
-    return ssrContext['~renderResponse']
+    return returnRenderResponse(event, ssrContext['~renderResponse'])
   }
 
   // 5. Render the shell head (atomically renders and clears entries pushed
@@ -588,7 +588,7 @@ async function renderStreamedResponse (ctx: {
     event.res.headers.delete('link')
     const response = ssrContext['~renderResponse'] as NuxtSSRContext['~renderResponse']
     if (response) {
-      return response
+      return returnRenderResponse(event, response)
     }
     const _err = (!ssrError && ssrContext.payload?.error) || error
     const r = ssrContext.nuxt?.hooks.callHook('app:error', _err)
@@ -600,7 +600,7 @@ async function renderStreamedResponse (ctx: {
   if (response) {
     reader.cancel().catch(() => {})
     event.res.headers.delete('link')
-    return response
+    return returnRenderResponse(event, response)
   }
 
   if (ssrContext.payload?.error && !ssrError) {
