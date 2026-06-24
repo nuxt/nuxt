@@ -16,8 +16,13 @@ export function docsBase (code: string): string {
   return `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 }
 
+// The `/* #__PURE__ */` annotation lets bundlers drop the reporter (and nostics)
+// when every catalog using it is tree-shaken out. It lives on a hoisted const
+// rather than inside the array literal so it survives `array-bracket-spacing`.
+const consoleReporter = /* #__PURE__ */ createConsoleReporter()
+
 // NB: `as const` (a readonly tuple) is required — `defineDiagnostics` extracts
 // each reporter's call-site options by matching a tuple shape. A plain
 // `DiagnosticReporter[]` (or an un-`as const` array) collapses the options to
 // `{}`, so `diagnostics.CODE(p, { method: 'error' })` would stop type-checking.
-export const reporters = [createConsoleReporter()] as const
+export const reporters = [consoleReporter] as const
