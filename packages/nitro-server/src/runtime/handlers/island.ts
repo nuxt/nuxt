@@ -11,7 +11,7 @@ import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { traceAsync } from '#app/internal/tracing'
 // @ts-expect-error virtual file
 import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
-import { createSSRContext, mergeHeaders, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
+import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
