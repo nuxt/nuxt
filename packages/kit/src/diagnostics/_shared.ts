@@ -1,4 +1,7 @@
 import { createConsoleReporter } from 'nostics'
+import { ansiFormatter } from 'nostics/formatters/ansi'
+import { colors } from 'consola/utils'
+import { isTest } from 'std-env'
 
 /**
  * Shared configuration for every build-time diagnostics catalog.
@@ -19,4 +22,9 @@ export const docsBase = (code: string): string =>
 // each reporter's call-site options by matching a tuple shape. A plain
 // `DiagnosticReporter[]` (or an un-`as const` array) collapses the options to
 // `{}`, so `diagnostics.CODE(p, { method: 'error' })` would stop type-checking.
-export const reporters = [/* #__PURE__ */ (createConsoleReporter())] as const
+//
+// Build-time always runs in Node, so we colorize via the ansi formatter for a
+// readable terminal; tests opt out (`isTest`) so snapshots/assertions stay
+// plain. consola's `colors` already no-op when the stream lacks color support
+// (CI, piped output, NO_COLOR), so this stays quiet in non-interactive builds.
+export const reporters = [/* #__PURE__ */ (createConsoleReporter(isTest ? undefined : { formatter: ansiFormatter(colors) }))] as const
