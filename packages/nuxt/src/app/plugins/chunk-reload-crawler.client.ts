@@ -15,7 +15,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     nuxtApp.hook('app:chunkError', () => {
       if (isHydrating && isBotUserAgent(navigator.userAgent)) {
-        reloadNuxtApp({ persistState: true })
+        reloadNuxtApp()
       }
     })
   },
