@@ -10,13 +10,13 @@ import { bundlerDiagnostics } from '../src/diagnostics/bundler.ts'
 import { kitDiagnostics } from '../src/diagnostics/kit-api.ts'
 
 const catalogs = {
-  build: buildDiagnostics,
-  plugins: pluginDiagnostics,
-  components: componentDiagnostics,
-  pages: pageDiagnostics,
-  config: configDiagnostics,
-  head: headDiagnostics,
-  bundler: bundlerDiagnostics,
+  'build': buildDiagnostics,
+  'plugins': pluginDiagnostics,
+  'components': componentDiagnostics,
+  'pages': pageDiagnostics,
+  'config': configDiagnostics,
+  'head': headDiagnostics,
+  'bundler': bundlerDiagnostics,
   'kit-api': kitDiagnostics,
 }
 
