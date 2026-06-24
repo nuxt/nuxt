@@ -20,7 +20,7 @@ export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
 let entry: Entry
 
 if (import.meta.server) {
-  entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
+  entry = async function createNuxtAppServer(ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
@@ -48,7 +48,7 @@ if (import.meta.client) {
   // eslint-disable-next-line prefer-const
   let vueAppPromise: Promise<App<Element>>
 
-  entry = async function initApp () {
+  entry = async function initApp() {
     if (vueAppPromise) { return vueAppPromise }
 
     const isSSR = Boolean(
@@ -59,13 +59,13 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
-    async function handleVueError (error: any) {
+    async function handleVueError(error: any) {
       await nuxt.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
     // marker so nuxt-root.vue can skip re-invoking the default handler from
     // its onErrorCaptured (which already calls `app:error` via showError)
-    ;(handleVueError as any).__nuxt_default = true
+    ; (handleVueError as any).__nuxt_default = true
 
     vueApp.config.errorHandler = handleVueError
     // If the errorHandler is not overridden by the user, we unset it after the app is hydrated
@@ -100,7 +100,7 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    appDiagnostics.NUXT_E1011({ cause: error }, { method: 'error' })
+    appDiagnostics.NUXT_E1009({ cause: error }, { method: 'error' })
     throw error
   })
 }
