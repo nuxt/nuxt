@@ -421,6 +421,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
         const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
+        // NB: prefetch failures are deliberately swallowed — do NOT report a
+        // diagnostic here (the reserved code NUXT_E2010 stays unused).
+        // Prefetching is a best-effort optimization triggered by viewport /
+        // interaction; failures are routine (the user may never navigate,
+        // chunks load fine on real navigation) and warning would be noisy.
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
           !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
