@@ -31,8 +31,15 @@ if (import.meta.server) {
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
 
+    const isErrorRender = !!(
+      ssrContext?.payload?.error ||
+      ssrContext?.error
+    )
+
     try {
-      await applyPlugins(nuxt, plugins)
+      if (!isErrorRender) {
+        await applyPlugins(nuxt, plugins)
+      }
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (error) {
       await nuxt.hooks.callHook('app:error', error)
