@@ -391,9 +391,23 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
       const client = nuxt.options.experimental.viteEnvironmentApi ? clientServer.environments.client : clientServer
       nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
+        // The SSR dev server runs with `hmr: false`, so a regenerated template
+        // (e.g. `routes.mjs` after a page is added) only ever invalidates its
+        // client-graph copy. Without also invalidating the SSR copy, server
+        // renders keep evaluating the stale module and never pick up the new
+        // route. See https://github.com/nuxt/nuxt/issues/30169.
+        const ssrModuleGraph = nuxt.options.experimental.viteEnvironmentApi
+          ? clientServer.environments.ssr.moduleGraph
+          : legacySsrServer?.moduleGraph
         for (const template of changedTemplates) {
-          const mods = client.moduleGraph.getModulesByFile(toVirtualId(template.dst, nuxt))
+          const virtualId = toVirtualId(template.dst, nuxt)
+          const mods = client.moduleGraph.getModulesByFile(virtualId)
           for (const mod of mods || []) {
+            markInvalidate(mod)
+          }
+          const ssrMods = ssrModuleGraph?.getModulesByFile(virtualId)
+          for (const mod of ssrMods || []) {
+            ssrModuleGraph!.invalidateModule(mod as ModuleNode & EnvironmentModuleNode)
             markInvalidate(mod)
           }
         }
