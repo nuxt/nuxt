@@ -9,7 +9,7 @@ import { createClientPage } from '../../packages/nuxt/src/components/runtime/cli
 
 import * as composables from '#app/composables'
 import { refreshNuxtData } from '#app/composables/asyncData'
-import { _showError, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
@@ -172,16 +172,17 @@ describe('errors', () => {
     expect(error.value).toBe(undefined)
   })
 
-  describe('_showError', () => {
+  describe('_showErrorUnlessCrawler', () => {
     afterEach(async () => {
       vi.unstubAllGlobals()
+      vi.restoreAllMocks()
       await clearError()
     })
 
     it('shows the error page for a regular user agent', async () => {
       vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0' })
       const error = useError()
-      await _showError(useNuxtApp(), new Error('chunk failed'))
+      await _showErrorUnlessCrawler(useNuxtApp(), new Error('chunk failed'))
       expect(error.value).toMatchInlineSnapshot('[HTTPError: chunk failed]')
     })
 
@@ -193,11 +194,10 @@ describe('errors', () => {
       const off = nuxtApp.hook('app:error', appError)
 
       const error = useError()
-      const thrown = new Error('chunk failed')
-      await _showError(nuxtApp, thrown)
+      await _showErrorUnlessCrawler(nuxtApp, new Error('chunk failed'))
 
       expect(error.value).toBeUndefined()
-      expect(appError).toHaveBeenCalledWith(thrown)
+      expect(appError).toHaveBeenCalledWith(expect.objectContaining({ message: 'chunk failed' }))
       off()
     })
   })

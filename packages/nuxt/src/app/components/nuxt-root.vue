@@ -20,7 +20,7 @@
 <script setup>
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { isNuxtError, showError, useError } from '../composables/error'
+import { _notifyCrawlerError, isNuxtError, showError, useError } from '../composables/error'
 import { isBotUserAgent } from '../utils'
 import { useRoute, useRouter } from '../composables/router'
 import { PageRouteSymbol } from '../components/injections'
@@ -75,8 +75,7 @@ function invokeAppErrorHandler (err, target, info) {
 onErrorCaptured((err, target, info) => {
   nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
   if (import.meta.client && isBotUserAgent(navigator.userAgent)) {
-    nuxtApp.hooks.callHook('app:error', err)
-    console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, err)
+    _notifyCrawlerError(nuxtApp, err)
     return false
   }
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {

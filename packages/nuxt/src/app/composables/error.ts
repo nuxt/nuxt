@@ -38,15 +38,26 @@ export const showError = <DataT = unknown>(
 }
 
 /**
- * Show the error page, unless the current client is a crawler. Bots receive the
- * already server-rendered HTML rather than the error page (#32137, #35338).
+ * Notify the app of an error caught for a crawler without rendering the error
+ * page, so the bot indexes the server-rendered HTML instead (#32137, #35338).
  *
  * @internal
  */
-export const _showError = async (nuxtApp: NuxtApp, error: Error): Promise<void> => {
+export const _notifyCrawlerError = (nuxtApp: NuxtApp, error: Error): Promise<void> | void => {
+  const result = nuxtApp.callHook('app:error', createError(error))
+  console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, error)
+  return result
+}
+
+/**
+ * Show the error page unless the current client is a crawler, in which case the
+ * bot receives the already server-rendered HTML instead (#32137, #35338).
+ *
+ * @internal
+ */
+export const _showErrorUnlessCrawler = async (nuxtApp: NuxtApp, error: Error): Promise<void> => {
   if (import.meta.client && isBotUserAgent(navigator.userAgent)) {
-    await nuxtApp.callHook('app:error', error)
-    console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, error)
+    await _notifyCrawlerError(nuxtApp, error)
     return
   }
   await nuxtApp.runWithContext(() => showError(error))
