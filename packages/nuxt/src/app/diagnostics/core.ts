@@ -37,19 +37,8 @@ export const appDiagnostics = /* #__PURE__ */ defineDiagnostics({
       why: 'Skipping render: a response was already set by middleware or a plugin.',
     },
     NUXT_E1009: {
-      why: 'A `vue:error` hook handler threw or rejected.',
-      fix: 'Check your `vue:error` hook handlers for unhandled errors.',
-    },
-    NUXT_E1010: {
-      why: (p: { userAgent: string }) => `Not rendering error page for bot with user agent \`${p.userAgent}\`.`,
-    },
-    NUXT_E1011: {
       why: 'Error while mounting app.',
       fix: 'Check your plugins and app initialization code for unhandled errors.',
-    },
-    NUXT_E1012: {
-      why: 'A `vue:setup` hook handler returned a promise.',
-      fix: 'Make all `vue:setup` callbacks synchronous.',
     },
   },
 })
