@@ -244,6 +244,17 @@ export default createConfigForNuxt({
         '@typescript-eslint/no-empty-object-type': ['error', { allowObjectTypes: 'always' }],
       },
     },
+    // diagnostics catalogs keep an inline `/* #__PURE__ */` annotation on the
+    // reporter factory call inside the `reporters` array literal (for
+    // tree-shaking). array-bracket-spacing's autofix would strip a comment that
+    // sits right after `[`, so it is disabled in these dirs.
+    {
+      files: ['packages/kit/src/diagnostics/**', 'packages/nuxt/src/app/diagnostics/**'],
+      name: 'local/diagnostics-pure-annotations',
+      rules: {
+        '@stylistic/array-bracket-spacing': 'off',
+      },
+    },
     // manually specify dependencies for nuxt browser app
     {
       files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/(components,head,imports,pages)/runtime/**'],
