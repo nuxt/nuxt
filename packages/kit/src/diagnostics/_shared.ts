@@ -1,7 +1,7 @@
+import process from 'node:process'
 import { createConsoleReporter } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 import { colors } from 'consola/utils'
-import { isTest } from 'std-env'
 
 /**
  * Shared configuration for every build-time diagnostics catalog.
@@ -24,7 +24,8 @@ export const docsBase = (code: string): string =>
 // `{}`, so `diagnostics.CODE(p, { method: 'error' })` would stop type-checking.
 //
 // Build-time always runs in Node, so we colorize via the ansi formatter for a
-// readable terminal; tests opt out (`isTest`) so snapshots/assertions stay
-// plain. consola's `colors` already no-op when the stream lacks color support
-// (CI, piped output, NO_COLOR), so this stays quiet in non-interactive builds.
-export const reporters = [/* #__PURE__ */ (createConsoleReporter(isTest ? undefined : { formatter: ansiFormatter(colors) }))] as const
+// readable terminal; tests opt out (statically-analyzable `process.env.NODE_ENV`)
+// so snapshots/assertions stay plain. consola's `colors` already no-op when the
+// stream lacks color support (CI, piped output, NO_COLOR), so this stays quiet
+// in non-interactive builds.
+export const reporters = [/* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) }))] as const
