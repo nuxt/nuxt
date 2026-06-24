@@ -249,7 +249,7 @@ export default createConfigForNuxt({
     // tree-shaking). array-bracket-spacing's autofix would strip a comment that
     // sits right after `[`, so it is disabled in these dirs.
     {
-      files: ['packages/kit/src/diagnostics/**', 'packages/nuxt/src/app/diagnostics/**'],
+      files: ['packages/**/diagnostics/**', 'packages/**/diagnostics.ts'],
       name: 'local/diagnostics-pure-annotations',
       rules: {
         '@stylistic/array-bracket-spacing': 'off',
@@ -264,21 +264,20 @@ export default createConfigForNuxt({
           'patterns': [
             {
               allowTypeImports: true,
-              regex: `^(?!(${
-                [
-                  // vue ecosystem
-                  '@unhead',
-                  '@vue/shared',
-                  'ofetch',
-                  'vue/server-renderer',
-                  'vue',
-                  'vue-router',
-                  ...runtimeDependencies,
-                  'errx', /* only used in dev */
-                  'nostics', /* runtime diagnostics catalog */
-                  // internal deps
-                  'nuxt/app',
-                ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+              regex: `^(?!(${[
+                // vue ecosystem
+                '@unhead',
+                '@vue/shared',
+                'ofetch',
+                'vue/server-renderer',
+                'vue',
+                'vue-router',
+                ...runtimeDependencies,
+                'errx', /* only used in dev */
+                'nostics', /* runtime diagnostics catalog */
+                // internal deps
+                'nuxt/app',
+              ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
               })($|/))(?!#)(?!\\.)[a-zA-Z@]`,
             },
           ],
