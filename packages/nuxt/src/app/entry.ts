@@ -27,7 +27,7 @@ export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
 let entry: Entry
 
 if (import.meta.server) {
-  entry = async function createNuxtAppServer(ssrContext: CreateOptions['ssrContext']) {
+  entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
@@ -55,7 +55,7 @@ if (import.meta.client) {
   // eslint-disable-next-line prefer-const
   let vueAppPromise: Promise<App<Element>>
 
-  entry = async function initApp() {
+  entry = async function initApp () {
     if (vueAppPromise) { return vueAppPromise }
 
     const isSSR = Boolean(
@@ -66,7 +66,7 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
-    async function handleVueError(error: any) {
+    async function handleVueError (error: any) {
       await nuxt.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
