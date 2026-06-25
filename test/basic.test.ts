@@ -1227,6 +1227,13 @@ describe('navigate', () => {
     expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/navigate-some-path"></head></html>"')
   })
 
+  it('preserves cookies set during render on a redirect response', async () => {
+    const res = await fetch('/cookie-then-redirect', { redirect: 'manual' })
+    expect(res.status).toEqual(302)
+    expect(res.headers.get('location')).toEqual('/')
+    expect(res.headers.get('set-cookie')).toContain('set-before-redirect=redirected')
+  })
+
   it('should not overwrite headers', async () => {
     const { headers, status } = await fetch('/navigate-to-external', { redirect: 'manual' })
 

@@ -287,10 +287,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         const actual = to.matched.find(m => (m.components?.default as any)?.__nuxt_island)
           ?.components?.default as any
         if (!expected || expected !== actual?.__nuxt_island) {
-          nuxtApp.ssrContext!['~renderResponse'] = {
+          nuxtApp.ssrContext!['~renderResponse'] = new Response(null, {
             status: 400,
             statusText: 'Invalid island request path',
-          }
+          })
           return false
         }
       })
