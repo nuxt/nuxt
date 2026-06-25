@@ -58,6 +58,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       },
     },
     define: {
+      'process.env.NODE_ENV': JSON.stringify(nuxt.options.vite.mode),
       'process.server': true,
       'process.client': false,
       'process.browser': false,
