@@ -10,7 +10,7 @@ test.use({
 })
 
 test.describe('server page CSS with inlineStyles false', () => {
-  test('server page scoped CSS is delivered', async ({ fetch }) => {
+  test('server page scoped CSS is delivered', async ({ fetch, isBuilt }) => {
     const res = await fetch('/')
     const html = await res.text()
 
@@ -18,34 +18,46 @@ test.describe('server page CSS with inlineStyles false', () => {
     expect(html).toContain('nuxt-only-shell')
     expect(html).toContain('nuxt-only-card')
 
-    // The island handler always inlines CSS as <style> tags,
-    // regardless of the inlineStyles setting
-    expect(html).toContain('.nuxt-only-shell')
+    if (isBuilt) {
+      // The island handler inlines the server page's scoped CSS as a <style> tag,
+      // regardless of the inlineStyles setting
+      expect(html).toContain('.nuxt-only-shell')
+    } else {
+      // In dev there is no built styles manifest, so the scoped CSS is delivered
+      // via a vite module <link> instead of being inlined
+      expect(html).toMatch(/<link[^>]+rel="stylesheet"[^>]+pages\/index\.server\.vue[^>]+scoped/)
+    }
   })
 
-  test('normal page scoped CSS is delivered via <link>', async ({ page }) => {
+  test('normal page scoped CSS is delivered', async ({ page, isBuilt }) => {
     await page.goto('/normal')
 
     // Normal page should be visible
     await expect(page.locator('.normal-shell')).toBeVisible()
 
-    // CSS should be linked (not inlined, since inlineStyles: false)
-    const styleLinks = page.locator('link[rel="stylesheet"]')
-    const count = await styleLinks.count()
-    expect(count).toBeGreaterThan(0)
+    if (isBuilt) {
+      // CSS is delivered via <link> (not inlined, since inlineStyles: false)
+      const styleLinks = page.locator('link[rel="stylesheet"]')
+      const count = await styleLinks.count()
+      expect(count).toBeGreaterThan(0)
 
-    // Find the CSS file containing our normal page styles
-    let found = false
-    for (let i = 0; i < count; i++) {
-      const href = await styleLinks.nth(i).getAttribute('href')
-      if (!href) { continue }
-      const cssRes = await page.request.get(href)
-      const css = await cssRes.text()
-      if (css.includes('.normal-shell')) {
-        found = true
-        break
+      let found = false
+      for (let i = 0; i < count; i++) {
+        const href = await styleLinks.nth(i).getAttribute('href')
+        if (!href) { continue }
+        const cssRes = await page.request.get(href)
+        const css = await cssRes.text()
+        if (css.includes('.normal-shell')) {
+          found = true
+          break
+        }
       }
+      expect(found).toBe(true)
+    } else {
+      // In dev the vite client injects the active route's scoped CSS as a <style>
+      // tag during hydration, replacing the server-rendered <link>
+      const padding = await page.locator('.normal-shell').evaluate(el => getComputedStyle(el).padding)
+      expect(padding).toBe('32px')
     }
-    expect(found).toBe(true)
   })
 })
