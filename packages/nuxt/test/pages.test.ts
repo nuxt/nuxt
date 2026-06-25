@@ -523,6 +523,46 @@ describe('pages:warnDuplicateRoutePaths', () => {
     expect(duplicateWarnings(warn)).toHaveLength(0)
     warn.mockRestore()
   })
+
+  it('does not warn when a redirect-only route shares a path with a page', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', redirect: '/other' },
+      { path: '/test', file: 'pages/test.vue' },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(0)
+    warn.mockRestore()
+  })
+
+  it('does not warn for server/client variants of the same page', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', file: 'pages/test.vue', mode: 'server' },
+      { path: '/test', file: 'pages/test.vue', mode: 'client' },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(0)
+    warn.mockRestore()
+  })
+
+  it('still warns when two rendering routes share both path and mode', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', file: 'pages/test.vue', mode: 'client' },
+      { path: '/test', file: 'modules/runtime/pages/test.vue', mode: 'client' },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(1)
+    warn.mockRestore()
+  })
+
+  it('does not warn when a colliding route opts out via meta.allowDuplicatePath', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', file: 'pages/test.vue' },
+      { path: '/test', file: 'modules/runtime/pages/test.vue', meta: { allowDuplicatePath: true } },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(0)
+    warn.mockRestore()
+  })
 })
 
 const pagesDir = 'pages'

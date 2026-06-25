@@ -53,6 +53,12 @@ export interface PageMeta {
   props?: RouteRecordRaw['props']
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
+  /**
+   * Silence the "multiple routes resolve to the same path" warning when a
+   * collision with another route is intentional (e.g. a module deliberately
+   * overriding a page).
+   */
+  allowDuplicatePath?: boolean
 }
 
 declare module 'vue-router' {

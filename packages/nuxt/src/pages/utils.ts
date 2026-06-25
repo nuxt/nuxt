@@ -157,11 +157,19 @@ export function warnDuplicateRoutePaths (pages: NuxtPage[], parentPath = '') {
   const seen = new Map<string, NuxtPage>()
   for (const route of pages) {
     const fullPath = route.path.startsWith('/') ? route.path : joinURL(parentPath, route.path)
-    const existing = seen.get(route.path)
-    if (existing) {
-      logger.warn(`Multiple routes resolve to the same path \`${fullPath || '/'}\`${existing.file && route.file ? ` (\`${existing.file}\` and \`${route.file}\`)` : ''}. Only one will be matched, so you may wish to ensure each route has a unique path.`)
-    } else {
-      seen.set(route.path, route)
+    // Only routes that render their own component can shadow each other. Redirect-only
+    // routes, route groups and other component-less entries deliberately share a path and
+    // should not warn. Server/client variants of the same page also legitimately collide.
+    // `meta.allowDuplicatePath` opts a route out where the collision is intentional (e.g. a
+    // module deliberately overriding a page).
+    if ((route.file || route.components) && !route.meta?.allowDuplicatePath) {
+      const key = `${route.path}\0${route.mode ?? 'all'}`
+      const existing = seen.get(key)
+      if (existing) {
+        logger.warn(`Multiple routes resolve to the same path \`${fullPath || '/'}\`${existing.file && route.file ? ` (\`${existing.file}\` and \`${route.file}\`)` : ''}. Only one will be matched, so you may wish to ensure each route has a unique path. Set \`meta.allowDuplicatePath\` on a route to silence this warning if the collision is intentional.`)
+      } else {
+        seen.set(key, route)
+      }
     }
     if (route.children?.length) {
       warnDuplicateRoutePaths(route.children, fullPath)
