@@ -105,6 +105,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const cssMap: Record<string, { files: string[], inBundle?: boolean, cssIds?: Set<string> }> = {}
   // Track emitted CSS chunk refs globally to avoid duplicate emissions across transform calls.
   const emittedFileRefs: Record<string, string> = {}
+  // map for source file to a unique chunk-name prefix
+  const chunkNamePrefixes = new Map<string, string>()
+  const usedChunkNamePrefixes = new Set<string>()
 
   const options = {
     shouldInline: nuxt.options.features.inlineStyles,
@@ -346,7 +349,16 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             const idCssIds = idMap.cssIds ||= new Set()
 
             const emittedIds = new Set<string>()
-            const chunkNamePrefix = filename(relativeId.replace(/[\\/]/g, '-')) || filename(id)
+            let chunkNamePrefix = chunkNamePrefixes.get(relativeId)
+            if (chunkNamePrefix === undefined) {
+              const baseName = filename(id)
+              chunkNamePrefix = baseName
+              for (let i = 2; usedChunkNamePrefixes.has(chunkNamePrefix); i++) {
+                chunkNamePrefix = `${baseName}-${i}`
+              }
+              usedChunkNamePrefixes.add(chunkNamePrefix)
+              chunkNamePrefixes.set(relativeId, chunkNamePrefix)
+            }
 
             let styleCtr = 0
             const ids = clientCSSMap[id] || []
