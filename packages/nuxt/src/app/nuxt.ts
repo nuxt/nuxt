@@ -191,6 +191,12 @@ interface _NuxtApp {
   '_route': RouteLocationNormalizedLoaded & {
     sync?: () => void
   }
+  /**
+   * Restores the real route after a prerendered page hydrates against the query-less payload
+   * route. Called by `<NuxtPage>` as its `Suspense` resolves, before mounted hooks flush.
+   * @internal
+   */
+  '~restoreDeferredRoute'?: () => void | Promise<void>
 
   /** @internal */
   '_islandPromises'?: Record<string, Promise<any>>
