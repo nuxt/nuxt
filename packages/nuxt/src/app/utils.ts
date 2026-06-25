@@ -5,6 +5,12 @@ export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
 
+const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
+
+export function isBotUserAgent (userAgent: string): boolean {
+  return BOT_RE.test(userAgent)
+}
+
 const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
 type Trace = { source: string, line?: number, column?: number }
 

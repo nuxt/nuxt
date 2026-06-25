@@ -60,6 +60,10 @@ describe('resolveApp', () => {
           },
           {
             "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload-crawler.client.ts",
+          },
+          {
+            "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
           {

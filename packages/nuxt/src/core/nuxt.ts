@@ -686,6 +686,11 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
   }
+  // Reload for crawlers when a chunk fails during initial hydration, so they
+  // index the server-rendered HTML rather than a blank page
+  if (nuxt.options.experimental.emitRouteChunkError) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-crawler.client'))
+  }
 
   // Add experimental session restoration support
   if (nuxt.options.experimental.restoreState) {
