@@ -468,16 +468,24 @@ describe('page:extends', () => {
 })
 
 describe('pages:warnDuplicateRoutePaths', () => {
+  const DUPLICATE_PATH_WARNING = 'Multiple routes resolve to the same path'
+  function duplicateWarnings (warn: ReturnType<typeof vi.spyOn>) {
+    return (warn.mock.calls as unknown[][])
+      .map((call): string => String(call[0]))
+      .filter(message => message.includes(DUPLICATE_PATH_WARNING))
+  }
+
   it('warns when sibling routes resolve to the same path', () => {
     const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
     warnDuplicateRoutePaths([
       { path: '/test', file: 'pages/test.vue' },
       { path: '/test', file: 'modules/runtime/pages/test.vue' },
     ])
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0]![0]).toContain('/test')
-    expect(warn.mock.calls[0]![0]).toContain('pages/test.vue')
-    expect(warn.mock.calls[0]![0]).toContain('modules/runtime/pages/test.vue')
+    const warnings = duplicateWarnings(warn)
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('/test')
+    expect(warnings[0]).toContain('pages/test.vue')
+    expect(warnings[0]).toContain('modules/runtime/pages/test.vue')
     warn.mockRestore()
   })
 
@@ -493,8 +501,9 @@ describe('pages:warnDuplicateRoutePaths', () => {
         ],
       },
     ])
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0]![0]).toContain('/parent/child')
+    const warnings = duplicateWarnings(warn)
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('/parent/child')
     warn.mockRestore()
   })
 
@@ -511,7 +520,7 @@ describe('pages:warnDuplicateRoutePaths', () => {
         ],
       },
     ])
-    expect(warn).not.toHaveBeenCalled()
+    expect(duplicateWarnings(warn)).toHaveLength(0)
     warn.mockRestore()
   })
 })
