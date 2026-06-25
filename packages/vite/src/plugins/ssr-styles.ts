@@ -2,7 +2,7 @@ import type { Plugin } from 'vite'
 import { dirname, relative } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
-import type { Nuxt } from '@nuxt/schema'
+import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
@@ -130,6 +130,14 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
   )
   const islandPaths = new Set(islands.map(c => c.filePath))
+
+  // Server pages (.server.vue) are not in the components list but still need
+  // their CSS extracted for inline delivery via the island handler.
+  const flattenPages = (pages?: NuxtPage[]): NuxtPage[] =>
+    pages?.flatMap(p => [p, ...flattenPages(p.children)]) ?? []
+  const pages = flattenPages(nuxt.apps.default!.pages)
+  const serverPages = pages.filter(({ mode, file }) => mode === 'server' && file)
+  const serverPagePaths = new Set(serverPages.map(({ file }) => file!))
 
   let entry: string
 
@@ -278,7 +286,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
             const relativePath = relativeToSrcDir(stripQuery(moduleId))
             if (relativePath in cssMap) {
-              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativePath) || isEntry)
+              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(stripQuery(moduleId)) && !!relativePath) || isEntry)
             }
           }
 
@@ -327,11 +335,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
             const { pathname, search } = parseModuleId(id)
 
-            if (!(id in clientCSSMap) && !islandPaths.has(pathname) && !isVue(pathname)) { return }
+            if (!(id in clientCSSMap) && !islandPaths.has(pathname) && !serverPagePaths.has(pathname) && !isVue(pathname)) { return }
 
             if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
 
-            if (!islandPaths.has(pathname)) {
+            if (!islandPaths.has(pathname) && !serverPagePaths.has(pathname)) {
               if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
             }
 

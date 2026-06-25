@@ -25,10 +25,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
 
   it('default client bundle size', async () => {
     const [clientStats, clientStatsInlined] = await Promise.all((['.output', '.output-inline'])
-      .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))))
+      .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'), rootDir)))
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"119k"`)
-    expect.soft(roundToKilobytes(clientStatsInlined!.totalBytes)).toMatchInlineSnapshot(`"119k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"120k"`)
+    expect.soft(roundToKilobytes(clientStatsInlined!.totalBytes)).toMatchInlineSnapshot(`"120k"`)
 
     const files = new Set([...clientStats!.files, ...clientStatsInlined!.files].map(f => f.replace(/\..*\.js/, '.js')))
 
@@ -40,9 +40,9 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   })
 
   it('default client bundle size (pages)', async () => {
-    const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'))
+    const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"179k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"180k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -61,11 +61,11 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, rootDir)
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"203k"`)
 
-    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1530k"`)
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir, rootDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1533k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -99,11 +99,11 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size (inlined vue modules)', async () => {
     const serverDir = join(rootDir, '.output-inline/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"574k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, rootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"576k"`)
 
-    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"188k"`)
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir, rootDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"189k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -121,11 +121,11 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"297k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, pagesRootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"298k"`)
 
-    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1541k"`)
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir, pagesRootDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1543k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -157,19 +157,50 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   })
 })
 
-async function analyzeSizes (pattern: string[], rootDir: string) {
+async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })
+  const stripPatterns = getStripPatterns(projectDir)
   let totalBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)
     const isSymlink = (await fsp.lstat(path).catch(() => null))?.isSymbolicLink()
 
     if (!isSymlink) {
-      const bytes = Buffer.byteLength(await fsp.readFile(path))
-      totalBytes += bytes
+      const contents = await fsp.readFile(path, 'utf8')
+      let normalized = contents
+      for (const pattern of stripPatterns) {
+        normalized = normalized.replaceAll(pattern, '')
+      }
+      totalBytes += Buffer.byteLength(normalized)
     }
   }
   return { files, totalBytes }
+}
+
+// Strip strings that vary by host or by build invocation but don't represent real bundle
+// content, so the byte count is stable across machines and consecutive builds.
+//
+// 1. `projectDir`: leaks into rolldown-generated identifier names. Rolldown turns a virtual
+//    module's absolute path into a JS identifier as
+//    `encodeURIComponent(path).replace(/\W/g, '_')`, so the raw, URL-encoded, and mangled
+//    forms can all appear in the emitted server bundle.
+//
+// 2. `node_modules/.cache/nuxt/`: `@nuxt/kit` config loader flips `buildDir` from
+//    `<rootDir>/.nuxt` to `<rootDir>/node_modules/.cache/nuxt/.nuxt` when `.nuxt/` already
+//    exists at config-load time (the production-build-after-prior-build case), so the same
+//    fixture produces different bytes on first build vs second build on the same machine.
+//    The prefix shows up both in `//#region` chunk comments and inside mangled virtual-
+//    module identifiers.
+function getStripPatterns (projectDir: string) {
+  return [
+    ...allForms(projectDir),
+    ...allForms('node_modules/.cache/nuxt/'),
+  ]
+}
+
+function allForms (value: string) {
+  const encoded = encodeURIComponent(value)
+  return [value, encoded, encoded.replace(/\W/g, '_')]
 }
 
 function roundToKilobytes (bytes: number) {

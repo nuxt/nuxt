@@ -9,9 +9,7 @@ import { hash } from 'ohash'
 import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
-import { parseSync } from 'oxc-parser'
-import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
-import { transformSync } from 'oxc-transform'
+import type { Node, ObjectProperty } from 'oxc-parser'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 import { getLoader } from '../core/utils/index.ts'
@@ -197,9 +195,30 @@ export function extractScriptContent (sfc: string) {
   return contents
 }
 
-const PAGE_EXTRACT_RE = /(definePageMeta|defineRouteRules)\([\s\S]*?\)/g
+const PAGE_META_MACRO_NAMES = ['definePageMeta', 'defineRouteRules'] as const
+// Cheap pre-scan only. The AST walk below validates call expressions so this
+// intentionally matches macro names, not JavaScript/TypeScript call syntax.
+const PAGE_EXTRACT_RE = new RegExp(`\\b(${PAGE_META_MACRO_NAMES.join('|')})\\b`, 'g')
 export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+
+type StaticExpressionWrapper = Node & { expression: Node }
+
+const STATIC_EXPRESSION_WRAPPERS = new Set([
+  'ParenthesizedExpression',
+  'TSAsExpression',
+  'TSNonNullExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+])
+
+function unwrapStaticExpression (node: Node | undefined): Node | undefined {
+  let current = node
+  while (current && STATIC_EXPRESSION_WRAPPERS.has(current.type)) {
+    current = (current as StaticExpressionWrapper).expression
+  }
+  return current
+}
 
 const pageContentsCache: Record<string, string> = {}
 const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
@@ -246,24 +265,8 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       if (fnName in found === false || found[fnName] !== false) { return }
       found[fnName] = true
 
-      let code = script.code
-      let pageExtractArgument = node.expression.arguments[0]
-
-      // TODO: always true because `extractScriptContent` only detects ts/tsx loader
-      if (/tsx?/.test(script.loader)) {
-        // slice, transform and parse the `define...` macro node to avoid parsing the whole file
-        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
-        if (transformed.errors.length) {
-          for (const error of transformed.errors) {
-            logger.warn(`Error while transforming \`${fnName}()\`` + error.codeframe)
-          }
-          return
-        }
-
-        // we already know that the first statement is a call expression
-        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]
-        code = transformed.code
-      }
+      const code = script.code
+      const pageExtractArgument = unwrapStaticExpression(node.expression.arguments[0])
 
       if (pageExtractArgument?.type !== 'ObjectExpression') {
         logger.warn(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`)
@@ -537,6 +540,8 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
 }
 
 export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
+  node = unwrapStaticExpression(node) || node
+
   if (node.type === 'Literal') {
     if (typeof node.value === 'string' || typeof node.value === 'number' || typeof node.value === 'boolean' || node.value === null) {
       return { value: node.value, serializable: true }

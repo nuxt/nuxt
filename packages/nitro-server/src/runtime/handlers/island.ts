@@ -7,7 +7,7 @@ import { createError, defineEventHandler, getQuery, readBody, setResponseHeader,
 import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
-import { computeIslandHash, filterIslandProps } from '#app/island-hash'
+import { computeIslandHash } from '#app/island-hash'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
@@ -161,11 +161,10 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   }
 
   const rawContext = event.method === 'GET' ? getQuery<NuxtIslandContext>(event) : await readBody<NuxtIslandContext>(event)
-  const rawProps = destr<Record<string, any> | null | undefined>(rawContext?.props) || {}
-  const filteredProps = filterIslandProps(rawProps)
+  const serializedProps = typeof rawContext?.props === 'string' ? rawContext.props : '{}'
 
   // Reconstruct the `context` object as the client computed its hash over.
-  // `<NuxtIsland>` sends `{ ...props.context, props: JSON.stringify(props.props) }`
+  // `<NuxtIsland>` sends `{ ...props.context, props: serializedProps }`
   const clientContext: Record<string, any> = {}
   if (rawContext && typeof rawContext === 'object') {
     for (const key in rawContext) {
@@ -176,17 +175,19 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   }
 
   // Bind the response to the URL: a request whose URL-resident `hashId` does not match
-  // the actual (name, props, context) is rejected.
-  const expectedHash = computeIslandHash(componentName, filteredProps, clientContext, undefined)
+  // the actual (name, serialized props, context) is rejected.
+  const expectedHash = computeIslandHash(componentName, serializedProps, clientContext, undefined)
   if (!hashId || hashId !== expectedHash) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid island request hash' })
   }
+
+  const parsedProps = destr<Record<string, any> | null | undefined>(serializedProps) || {}
 
   return {
     url: typeof rawContext?.url === 'string' ? rawContext.url : '/',
     id: hashId,
     name: componentName,
-    props: rawProps,
+    props: parsedProps,
     slots: {},
     components: {},
   }

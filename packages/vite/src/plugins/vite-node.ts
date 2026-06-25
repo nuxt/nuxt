@@ -7,6 +7,7 @@ import fs from 'node:fs' // For sync operations like unlinkSync if needed during
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
+import { win32 as pathWin32 } from 'node:path'
 import { dirname, isAbsolute, join, normalize } from 'pathe'
 import { directoryToURL, resolveAlias, resolvePath, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
@@ -18,7 +19,7 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 
-import { isCSS } from '../utils/index.ts'
+import { isCSS, toVirtualId } from '../utils/index.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 import type { ErrorPartial } from '../types.ts'
 
@@ -137,8 +138,9 @@ export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.t
   const socketDir = `nuxt-vite-`
 
   if (platform === 'win32') {
-  // enough randomness to avoid collisions and being predictable
-    return { socketPath: join(String.raw`\\.\pipe`, socketDir + randomUUID().slice(0, 8)) }
+    // use `node:path/win32` so the `\\.\pipe\...` separators stay as backslashes
+    // (for deno compatibility) plus enough randomness to avoid collisions and being predictable
+    return { socketPath: pathWin32.join(String.raw`\\.\pipe`, socketDir + randomUUID().slice(0, 8)) }
   }
 
   // creates a random suffix and avoids collisions
@@ -276,6 +278,19 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
       // See https://github.com/nuxt/nuxt/issues/30169.
       let lastSeenTimestamp = 0
 
+      // Files the watcher saw change but couldn't map to an SSR module yet:
+      // the SSR graph is populated lazily by `fetchModule` on render, so a
+      // file in an extended layer often isn't present at watch time and never
+      // gets its SSR timestamp advanced by Vite's HMR. We resolve these against
+      // the (now-populated) SSR graph at render time and invalidate them along
+      // with their importers, so an edit to e.g. a sibling-layer component
+      // reaches the page that renders it.
+      //
+      // The value counts down the renders a file may stay unresolved before we
+      // give up on it, so files that are never SSR-relevant don't accumulate.
+      const pendingChangedFiles = new Map<string, number>()
+      const PENDING_CHANGED_FILE_RENDERS = 2
+
       function collectInvalidatedSsrModules (ssrServer: ViteDevServer) {
         const ssrModuleGraph = nuxt.options.experimental.viteEnvironmentApi
           ? ssrServer.environments.ssr.moduleGraph
@@ -291,6 +306,56 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
           }
         }
         lastSeenTimestamp = maxSeen
+
+        for (const [file, remaining] of pendingChangedFiles) {
+          const mods = ssrModuleGraph.getModulesByFile(file)
+          if (!mods?.size) {
+            if (remaining <= 1) {
+              pendingChangedFiles.delete(file)
+            } else {
+              pendingChangedFiles.set(file, remaining - 1)
+            }
+            continue
+          }
+
+          // A `handleHotUpdate` hook reacting to this edit invalidates virtual
+          // modules only in the client graph (`server.moduleGraph`), so the SSR
+          // copy keeps serving a stale evaluation. Re-evaluate any virtual
+          // module the changed file imports. The SSR graph fills lazily, so the
+          // import may not exist yet on the first render; stay pending until it
+          // surfaces or the countdown runs out.
+          // See https://github.com/nuxt/nuxt/issues/30169.
+          let invalidatedVirtual = false
+          // `ssrModuleGraph` is a union of the legacy and environment graphs, so its
+          // `invalidateModule` is typed against the intersection of both node types.
+          // The nodes we pass always come from this same graph, so narrow the call.
+          const invalidateModule = (mod: ModuleNode | EnvironmentModuleNode) =>
+            (ssrModuleGraph.invalidateModule as (mod: ModuleNode | EnvironmentModuleNode) => void)(mod)
+          const seen = new Set<ModuleNode | EnvironmentModuleNode>()
+          const invalidateVirtualImports = (mod: ModuleNode | EnvironmentModuleNode) => {
+            for (const imported of mod.importedModules) {
+              if (seen.has(imported)) { continue }
+              seen.add(imported)
+              if (imported.id?.startsWith('\0')) {
+                invalidateModule(imported)
+                markInvalidate(imported)
+                invalidatedVirtual = true
+              }
+              invalidateVirtualImports(imported)
+            }
+          }
+          for (const mod of mods) {
+            invalidateVirtualImports(mod)
+            invalidateModule(mod)
+          }
+          markInvalidates(mods)
+
+          if (invalidatedVirtual || remaining <= 1) {
+            pendingChangedFiles.delete(file)
+          } else {
+            pendingChangedFiles.set(file, remaining - 1)
+          }
+        }
       }
 
       function resolveServer (ssrServer: ViteDevServer) {
@@ -326,9 +391,23 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
       const client = nuxt.options.experimental.viteEnvironmentApi ? clientServer.environments.client : clientServer
       nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
+        // The SSR dev server runs with `hmr: false`, so a regenerated template
+        // (e.g. `routes.mjs` after a page is added) only ever invalidates its
+        // client-graph copy. Without also invalidating the SSR copy, server
+        // renders keep evaluating the stale module and never pick up the new
+        // route. See https://github.com/nuxt/nuxt/issues/30169.
+        const ssrModuleGraph = nuxt.options.experimental.viteEnvironmentApi
+          ? clientServer.environments.ssr.moduleGraph
+          : legacySsrServer?.moduleGraph
         for (const template of changedTemplates) {
-          const mods = client.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
+          const virtualId = toVirtualId(template.dst, nuxt)
+          const mods = client.moduleGraph.getModulesByFile(virtualId)
           for (const mod of mods || []) {
+            markInvalidate(mod)
+          }
+          const ssrMods = ssrModuleGraph?.getModulesByFile(virtualId)
+          for (const mod of ssrMods || []) {
+            ssrModuleGraph!.invalidateModule(mod as ModuleNode & EnvironmentModuleNode)
             markInvalidate(mod)
           }
         }
@@ -336,7 +415,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
       clientServer.watcher.on('all', (_event, file) => {
         invalidates.add(file)
-        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalize(file)))
+        const normalized = normalize(file)
+        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalized))
+        pendingChangedFiles.set(normalized, PENDING_CHANGED_FILE_RENDERS)
       })
     },
     async buildEnd () {

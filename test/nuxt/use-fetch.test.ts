@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, readBody } from 'h3'
 
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
@@ -179,6 +179,33 @@ describe('useFetch', () => {
       const { data } = await useFetch('/api/complex-objects', { body: value, immediate: false }, 'autokey')
       expect(data.value).toEqual('new value')
     }
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35341
+  it('should send unwrapped values when options are getters', async () => {
+    registerEndpoint('/api/getter-options', defineEventHandler(async event => ({
+      method: event.method,
+      url: event.path,
+      header: event.headers.get('x-test'),
+      body: event.method === 'POST' ? await readBody(event) : null,
+    })))
+
+    const state = reactive({ name: 'userquin' })
+    const method = ref<'POST'>('POST')
+    const search = ref('hello')
+
+    const { data } = await useFetch<{ method: string, url: string, header: string | null, body: { name: string } | null }>('/api/getter-options', {
+      method: () => method.value,
+      baseURL: () => '',
+      query: () => ({ q: search.value }),
+      headers: () => ({ 'x-test': 'yes' }),
+      body: () => ({ ...state }),
+    })
+
+    expect(data.value?.method).toBe('POST')
+    expect(data.value?.url).toContain('q=hello')
+    expect(data.value?.header).toBe('yes')
+    expect(data.value?.body).toEqual({ name: 'userquin' })
   })
 
   it('should produce different keys for FormData with duplicate keys or different files', async () => {

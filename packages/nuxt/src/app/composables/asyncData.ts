@@ -709,10 +709,13 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
     return Promise.resolve()
   }
 
-  await new Promise<void>(resolve => onNuxtReady(resolve))
+  const nuxtApp = useNuxtApp()
+  if (nuxtApp.isHydrating) {
+    await new Promise<void>(resolve => onNuxtReady(resolve))
+  }
 
   const _keys = keys ? toArray(keys) : undefined
-  await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
+  await nuxtApp.hooks.callHookParallel('app:data:refresh', _keys)
 }
 
 /** @since 3.0.0 */
@@ -923,6 +926,10 @@ function buildAsyncData<
       unsubRefreshAsyncData()
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
+      }
+      if (nuxtApp._asyncDataPromises[key]) {
+        asyncData._abortController?.abort(new DOMException('AsyncData request cancelled by unmount', 'AbortError'))
+        delete nuxtApp._asyncDataPromises[key]
       }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {

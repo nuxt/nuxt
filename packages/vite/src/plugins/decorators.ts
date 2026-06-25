@@ -1,9 +1,11 @@
 import process from 'node:process'
 import type { Plugin } from 'vite'
+import type { SourceMapInput } from 'rollup'
 import { addDependency } from 'nypm'
 import { logger } from '@nuxt/kit'
 import { hasTTY, isCI } from 'std-env'
 import type { Nuxt } from '@nuxt/schema'
+import jsTokens from 'js-tokens'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx']
 
@@ -42,6 +44,38 @@ async function ensureBabelDecoratorDeps (nuxt: Nuxt): Promise<boolean> {
     }
   }
   return true
+}
+
+export function hasDecoratorSyntax (code: string, jsx = false) {
+  const tokens = jsx ? jsTokens(code, { jsx: true }) : jsTokens(code)
+
+  for (const token of tokens) {
+    if (!token.value.includes('@')) {
+      continue
+    }
+
+    switch (token.type) {
+      case 'HashbangComment':
+      case 'SingleLineComment':
+      case 'TemplateHead':
+      case 'TemplateMiddle':
+        continue
+      case 'MultiLineComment':
+      case 'StringLiteral':
+      case 'NoSubstitutionTemplate':
+      case 'TemplateTail':
+      case 'JSXString':
+        // An unclosed token can consume code that follows it. Let Babel parse
+        // ambiguous input instead of potentially hiding a real decorator.
+        if (token.closed) {
+          continue
+        }
+    }
+
+    return true
+  }
+
+  return false
 }
 
 export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
@@ -85,6 +119,10 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
           return
         }
 
+        if (!hasDecoratorSyntax(code, /\.[jt]sx(?:$|\?)/.test(id))) {
+          return
+        }
+
         const result = transformSync(code, {
           filename: id,
           configFile: false,
@@ -98,7 +136,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
         if (result?.code != null) {
           return {
             code: result.code,
-            map: result.map,
+            map: result.map as SourceMapInput,
           }
         }
       },

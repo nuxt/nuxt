@@ -263,18 +263,28 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
-  nuxt.hook('nitro:config', async (nitroConfig) => {
+  const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
     paths ||= await resolveTypescriptPaths(nuxt)
     nitroConfig.typescript = defu(nitroConfig.typescript, {
       tsConfig: { compilerOptions: { paths: { ...paths } } },
     })
-  })
+  }
+  if (nuxt.options.dev) {
+    nuxt.hook('nitro:build:before', nitro => applyNitroTypePaths(nitro.options))
+  } else {
+    nuxt.hook('nitro:config', applyNitroTypePaths)
+  }
 
-  const serverBuilderReference = typeof nuxt.options.server.builder === 'string'
-    ? nuxt.options.server.builder === '@nuxt/nitro-server'
+  let serverBuilderReference: { path: string } | { types: string } | undefined
+  const getServerBuilderReference = () => {
+    if (serverBuilderReference || typeof nuxt.options.server.builder !== 'string') {
+      return serverBuilderReference
+    }
+    serverBuilderReference = nuxt.options.server.builder === '@nuxt/nitro-server'
       ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }).replace('.mjs', '.d.mts') }
       : { types: nuxt.options.server.builder }
-    : undefined
+    return serverBuilderReference
+  }
 
   // Add nuxt types
   nuxt.hook('prepare:types', async (opts) => {
@@ -300,6 +310,7 @@ async function initNuxt (nuxt: Nuxt) {
       opts.nodeReferences.push({ types: nuxt.options.builder })
     }
 
+    const serverBuilderReference = getServerBuilderReference()
     if (serverBuilderReference) {
       opts.references.push(serverBuilderReference)
       opts.nodeReferences.push(serverBuilderReference)
@@ -330,6 +341,7 @@ async function initNuxt (nuxt: Nuxt) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
 
+    const serverBuilderReference = getServerBuilderReference()
     if (serverBuilderReference) {
       opts.references.push(serverBuilderReference)
     }

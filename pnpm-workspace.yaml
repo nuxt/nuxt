@@ -31,12 +31,13 @@ overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
   nuxt: "workspace:*"
-  vue: "3.5.35"
+  vue: "3.5.38"
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1
+  - vue-bundle-renderer
   # Renovate security update: undici@8.5.0
   - undici@8.5.0
