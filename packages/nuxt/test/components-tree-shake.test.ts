@@ -29,7 +29,6 @@ function vuePlugin (options: Options) {
 const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(componentsFixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
 
 const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
-  sourcemap: false,
   getComponents () {
     return [{
       pascalName: 'NotDotClientComponent',

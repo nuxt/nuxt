@@ -1,4 +1,5 @@
-import MagicString from 'magic-string'
+import type { RolldownString } from 'rolldown-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
@@ -9,7 +10,6 @@ import { distDir } from '../../dirs.ts'
 import { VUE_ID_RE } from '../../core/utils/plugins.ts'
 
 interface TreeShakeTemplatePluginOptions {
-  sourcemap?: boolean
   getComponents (): Component[]
 }
 
@@ -26,7 +26,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
       filter: {
         id: { include: VUE_ID_RE },
       },
-      handler (code, id) {
+      handler (code, id, meta?: unknown) {
         const components = options.getComponents()
 
         if (!regexpMap.has(components)) {
@@ -39,7 +39,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
           regexpMap.set(components, [new RegExp(`(${clientOnlyComponents.join('|')})`), new RegExp(`^(${clientOnlyComponents.map(c => `(?:(?:_unref\\()?(?:_component_)?(?:Lazy|lazy_)?${c}\\)?)`).join('|')})$`), clientOnlyComponents])
         }
 
-        const s = new MagicString(code)
+        const s = rolldownString(code, id, meta)
 
         const [COMPONENTS_RE, COMPONENTS_IDENTIFIERS_RE] = regexpMap.get(components)!
         if (!COMPONENTS_RE.test(code)) { return }
@@ -94,14 +94,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
           removeFromSetupReturn(ast, componentName, s)
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }
@@ -110,7 +103,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
 /**
  * find and remove all property with the name parameter from the setup return statement and the __returned__ object
  */
-function removeFromSetupReturn (codeAst: ESTree.Program, name: string, magicString: MagicString) {
+function removeFromSetupReturn (codeAst: ESTree.Program, name: string, magicString: RolldownString) {
   let walkedInSetup = false
   walk(codeAst, {
     enter (node) {
@@ -144,7 +137,7 @@ function removeFromSetupReturn (codeAst: ESTree.Program, name: string, magicStri
 /**
  * remove a property from an object expression
  */
-function removePropertyFromObject (node: ESTree.ObjectExpression, name: string, magicString: MagicString) {
+function removePropertyFromObject (node: ESTree.ObjectExpression, name: string, magicString: RolldownString) {
   for (const property of node.properties) {
     if (property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === name) {
       magicString.remove(property.start, property.end + 1)
@@ -161,7 +154,7 @@ function isSsrRender (node: ESTree.Node): node is ESTree.CallExpression {
   return node.type === 'CallExpression' && node.callee.type === 'Identifier' && SSR_RENDER_RE.test(node.callee.name)
 }
 
-function removeImportDeclaration (ast: ESTree.Program, importName: string, magicString: MagicString): boolean {
+function removeImportDeclaration (ast: ESTree.Program, importName: string, magicString: RolldownString): boolean {
   for (const node of ast.body) {
     if (node.type !== 'ImportDeclaration' || !node.specifiers) {
       continue
@@ -231,7 +224,7 @@ function getComponentName (ssrRenderNode: ESTree.CallExpression): string | undef
 /**
  * remove a variable declaration within the code
  */
-function removeVariableDeclarator (codeAst: ESTree.Program, name: string, magicString: MagicString, removedNodes: WeakSet<ESTree.Node>): ESTree.Node | void {
+function removeVariableDeclarator (codeAst: ESTree.Program, name: string, magicString: RolldownString, removedNodes: WeakSet<ESTree.Node>): ESTree.Node | void {
   // remove variables
   walk(codeAst, {
     enter (node) {

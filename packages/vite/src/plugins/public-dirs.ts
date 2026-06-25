@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { useNitro } from '@nuxt/kit'
 import { withLeadingSlash, withTrailingSlash } from 'ufo'
 import { dirname, relative } from 'pathe'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { isCSSRequest } from 'vite'
 import type { Plugin } from 'vite'
 
@@ -19,7 +19,6 @@ interface VitePublicDirsPluginOptions {
 
 export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[] => {
   const { resolveFromPublicAssets } = useResolveFromPublicAssets()
-  let sourcemap: boolean
 
   return [
     {
@@ -27,29 +26,21 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
       apply () {
         return !!options.dev && !!options.baseURL && options.baseURL !== '/'
       },
-      transform (code, id) {
+      transform (code, id, meta?: unknown) {
         if (!isCSSRequest(id) || !CSS_URL_SINGLE_RE.test(code)) { return }
 
-        const s = new MagicString(code)
+        const s = rolldownString(code, id, meta)
         for (const [full, url] of code.matchAll(CSS_URL_RE)) {
           if (url && resolveFromPublicAssets(url)) {
             s.replace(full, `url(${options.baseURL}${url})`)
           }
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: sourcemap ? s.generateMap({ hires: true }) : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
     {
       name: 'nuxt:vite-public-dir-resolution',
-      configResolved (config) {
-        sourcemap = !!config.build.sourcemap
-      },
       load: {
         order: 'pre',
         filter: {
@@ -75,7 +66,7 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
       renderChunk (code, chunk) {
         if (!chunk.facadeModuleId?.includes('?inline&used')) { return }
 
-        const s = new MagicString(code)
+        const s = rolldownString(code, chunk.fileName)
         const q = code.match(RENDER_CHUNK_RE)?.[0] || '"'
         for (const [full, url] of code.matchAll(CSS_URL_RE)) {
           if (url && resolveFromPublicAssets(url)) {
@@ -85,11 +76,8 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
 
         if (s.hasChanged()) {
           s.prepend(`import { publicAssetsURL } from '#internal/nuxt/paths';`)
-          return {
-            code: s.toString(),
-            map: sourcemap ? s.generateMap({ hires: true }) : undefined,
-          }
         }
+        return generateTransform(s, chunk.fileName)
       },
       generateBundle (_outputOptions, bundle) {
         for (const [file, chunk] of Object.entries(bundle)) {

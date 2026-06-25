@@ -4,7 +4,7 @@ import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, logger, stripEx
 import type { ESTree } from 'rolldown/utils'
 import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
@@ -382,7 +382,6 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
 // -------- unplugin for replacing keyed factory macros --------
 
 interface KeyedFunctionFactoriesPluginOptions {
-  sourcemap: boolean
   factories: KeyedFunctionFactory[]
   alias: Record<string, string>
   getAutoImports: () => Promise<Import[]>
@@ -417,8 +416,8 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
         },
         code: { include: KEYED_FUNCTION_FACTORY_NAMES_RE },
       },
-      async handler (code, id) {
-        const s = new MagicString(code)
+      async handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         const scopeTracker = new ScopeTracker({
           preserveExitedScopes: true,
         })
@@ -480,14 +479,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           },
         })
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }
