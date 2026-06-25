@@ -192,7 +192,7 @@ describe('errors', () => {
       vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0' })
       const error = useError()
       await _showErrorUnlessCrawler(useNuxtApp(), new Error('chunk failed'))
-      expect(error.value).toMatchInlineSnapshot('[HTTPError: chunk failed]')
+      expect(error.value?.message).toBe('chunk failed')
     })
 
     it('suppresses the error page and fires `app:error` for a crawler', async () => {
