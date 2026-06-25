@@ -349,12 +349,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             // later, after mounted hooks flush. Resolve fresh so `route.name` survives.
             ;(router.currentRoute as Ref<RouteLocationNormalizedLoadedGeneric>).value = router.resolve(initialURL) as RouteLocationNormalizedLoadedGeneric
             syncCurrentRoute()
-            return router.replace({ ...resolvedInitialRoute, force: true }).catch(() => {})
+            router.replace({ ...resolvedInitialRoute, force: true }).catch(() => {})
           }
           // `<NuxtPage>` calls this before its mounted hooks flush; the hook is the fallback when
           // there is no page to render.
           nuxtApp['~restoreDeferredRoute'] = restoreDeferredRoute
-          nuxtApp.hooks.hookOnce('app:suspense:resolve', () => nuxtApp['~restoreDeferredRoute']?.())
+          nuxtApp.hooks.hookOnce('app:suspense:resolve', restoreDeferredRoute)
         } else {
           await router.replace({
             ...resolvedInitialRoute,

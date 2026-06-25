@@ -196,7 +196,7 @@ interface _NuxtApp {
    * payload route. Called by `<NuxtPage>` as its `Suspense` resolves, before mounted hooks flush.
    * @internal
    */
-  '~restoreDeferredRoute'?: () => void | Promise<void>
+  '~restoreDeferredRoute'?: () => void
 
   /** @internal */
   '_islandPromises'?: Record<string, Promise<any>>
