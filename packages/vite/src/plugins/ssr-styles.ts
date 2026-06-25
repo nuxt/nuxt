@@ -351,7 +351,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             const emittedIds = new Set<string>()
             let chunkNamePrefix = chunkNamePrefixes.get(relativeId)
             if (chunkNamePrefix === undefined) {
-              const baseName = filename(id)
+              const baseName = filename(id) || 'styles'
               chunkNamePrefix = baseName
               for (let i = 2; usedChunkNamePrefixes.has(chunkNamePrefix); i++) {
                 chunkNamePrefix = `${baseName}-${i}`
