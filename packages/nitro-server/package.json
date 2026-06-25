@@ -60,8 +60,8 @@
     "vue-devtools-stub": "^0.1.0"
   },
   "peerDependencies": {
-    "@babel/plugin-proposal-decorators": "^7.25.0",
-    "@babel/plugin-syntax-typescript": "^7.25.0",
+    "@babel/plugin-proposal-decorators": "^7.25.0 || ^8.0.0",
+    "@babel/plugin-syntax-typescript": "^7.25.0 || ^8.0.0",
     "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
     "nuxt": "workspace:^"
   },
@@ -77,8 +77,8 @@
     }
   },
   "devDependencies": {
-    "@babel/plugin-proposal-decorators": "7.29.7",
-    "@babel/plugin-syntax-typescript": "7.29.7",
+    "@babel/plugin-proposal-decorators": "8.0.2",
+    "@babel/plugin-syntax-typescript": "8.0.1",
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "7.1.0",
     "hookable": "6.1.1",
