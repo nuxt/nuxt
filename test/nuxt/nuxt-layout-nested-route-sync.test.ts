@@ -83,6 +83,7 @@ describe('NuxtLayout nested layout route sync (#32904)', () => {
   })
 
   afterAll(() => {
+    el.unmount()
     for (const layout of addedLayouts) {
       delete layouts[layout]
     }
