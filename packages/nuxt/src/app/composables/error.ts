@@ -3,7 +3,8 @@ import { createError as createH3Error } from '@nuxt/nitro-server/h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import type { NuxtPayload } from '../nuxt'
+import type { NuxtApp, NuxtPayload } from '../nuxt'
+import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
 
 export const NUXT_ERROR_SIGNATURE = '__nuxt_error' as const
@@ -47,6 +48,32 @@ export const showError = <DataT = unknown>(
   }
 
   return nuxtError
+}
+
+/**
+ * Notify the app of an error caught for a crawler without rendering the error
+ * page, so the bot indexes the server-rendered HTML instead (#32137, #35338).
+ *
+ * @internal
+ */
+export const _notifyCrawlerError = (nuxtApp: NuxtApp, error: Error): Promise<void> | void => {
+  const result = nuxtApp.callHook('app:error', createError(error))
+  console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, error)
+  return result
+}
+
+/**
+ * Show the error page unless the current client is a crawler, in which case the
+ * bot receives the already server-rendered HTML instead (#32137, #35338).
+ *
+ * @internal
+ */
+export const _showErrorUnlessCrawler = async (nuxtApp: NuxtApp, error: Error): Promise<void> => {
+  if (import.meta.client && isBotUserAgent(navigator.userAgent)) {
+    await _notifyCrawlerError(nuxtApp, error)
+    return
+  }
+  await nuxtApp.runWithContext(() => showError(error))
 }
 
 /** @since 3.0.0 */
