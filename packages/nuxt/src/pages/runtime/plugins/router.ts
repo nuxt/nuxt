@@ -7,7 +7,8 @@ import { isSamePath, withoutBase } from 'ufo'
 import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
-import { toArray } from '../utils'
+import { generateRouteKey, toArray } from '../utils'
+import type { RouterViewSlotProps } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
@@ -117,7 +118,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       const lastTo = to.matched.at(-1)?.components?.default
       const lastFrom = from.matched.at(-1)?.components?.default
       if (lastTo === lastFrom) {
-        syncCurrentRoute()
+        // Only sync eagerly when the reused page is not remounted (unchanged key). When the key
+        // changes (e.g. catch-all/param navigation) the page remounts and `Suspense.onResolve`
+        // syncs the route once it resolves; syncing here would update it too early (#33107).
+        const toKey = generateRouteKey({ route: to, Component: { type: lastTo } } as RouterViewSlotProps)
+        const fromKey = generateRouteKey({ route: from, Component: { type: lastFrom } } as RouterViewSlotProps)
+        if (toKey === fromKey) {
+          syncCurrentRoute()
+        }
         return
       }
       if (to.matched.length < from.matched.length && to.matched.every((m, i) => m.components?.default === from.matched[i]?.components?.default)) {
