@@ -8,7 +8,7 @@ import type { ScopeTrackerNode } from 'oxc-walker'
 import { logger } from '../../utils.ts'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isSerializable } from '../utils.ts'
-import type { ObjectPropertyKind, ParserOptions } from 'oxc-parser'
+import type { ESTree, ParserOptions } from 'rolldown/utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -243,7 +243,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             const m = new MagicString(metaCode)
 
             if (meta.type === 'ObjectExpression') {
-              const omitProp = (prop: ObjectPropertyKind, i: number) => {
+              const omitProp = (prop: ESTree.ObjectPropertyKind, i: number) => {
                 const nextProperty = meta.properties[i + 1]
                 if (nextProperty) {
                   m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')

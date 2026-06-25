@@ -9,7 +9,7 @@ import { findStaticImports, parseStaticImport } from 'mlly'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
 import type { KeyedFunction } from '@nuxt/schema'
-import type { Node } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 import type { Import } from 'unimport'
 
 import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, isWhitespace, logger, stripExtension } from '../../utils.ts'
@@ -260,7 +260,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
         function processKeyedFunction (
           walkContext: ThisParameterType<NonNullable<Parameters<typeof walk>[1]['enter']>>, // TODO: export type from `oxc-walker`
-          node: Node,
+          node: ESTree.Node,
           handler: (ctx: { parsedCall: FunctionCallMetadata, fnMeta: BackwardsCompatibleKeyedFunction }) => void,
         ) {
           if (node.type !== 'CallExpression' && node.type !== 'ChainExpression') { return }
