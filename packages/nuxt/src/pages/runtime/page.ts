@@ -237,8 +237,6 @@ export default defineComponent({
                   onResolve: async () => {
                     isSuspensePending = false
                     hasResolvedOnce = true
-                    // Restore the real route (kept query-less for the hydration render) before the
-                    // page's mounted hooks flush, so its query is present in `onMounted`.
                     if (import.meta.client && nuxtApp.isHydrating) {
                       nuxtApp['~restoreDeferredRoute']?.()
                     }

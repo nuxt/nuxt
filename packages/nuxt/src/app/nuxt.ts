@@ -192,8 +192,8 @@ interface _NuxtApp {
     sync?: () => void
   }
   /**
-   * Restores the real route after a prerendered page hydrates against the query-less payload
-   * route. Called by `<NuxtPage>` as its `Suspense` resolves, before mounted hooks flush.
+   * Restore the real route after a prerendered page hydrates against the query-less
+   * payload route. Called by `<NuxtPage>` as its `Suspense` resolves, before mounted hooks flush.
    * @internal
    */
   '~restoreDeferredRoute'?: () => void | Promise<void>
