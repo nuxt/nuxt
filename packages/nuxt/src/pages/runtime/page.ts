@@ -71,6 +71,8 @@ export default defineComponent({
     const done = nuxtApp.deferHydration()
     let isSuspensePending = false
     let hasResolvedOnce = false
+    let pageStartPromise: ReturnType<typeof nuxtApp.callHook>
+
     let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
@@ -230,7 +232,7 @@ export default defineComponent({
                         nuxtApp['~transitionFinish'] = resolve
                       })
                     }
-                    nuxtApp.callHook('page:start', routeProps.Component)
+                    pageStartPromise = nuxtApp.callHook('page:start', routeProps.Component)
                   },
                   onResolve: async () => {
                     isSuspensePending = false
@@ -238,6 +240,7 @@ export default defineComponent({
                     try {
                       await nextTick()
                       nuxtApp._route.sync?.()
+                      await pageStartPromise
                       await nuxtApp.callHook('page:finish', routeProps.Component)
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true

@@ -97,7 +97,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
-    const h3Path = JSON.stringify(resolve(distDir, 'h3'))
     const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
 
     nuxt.options.nitro.virtual ||= {}
@@ -106,12 +105,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
         return `export { default } from ${islandHandlerPath}`
       }
-      return `import { defineEventHandler } from ${h3Path}; export default defineEventHandler(() => {});`
+      return `export default { fetch: () => undefined }`
     }
-    nuxt.options.serverHandlers.push({
-      route: '/__nuxt_island/**',
-      handler: ISLAND_RENDERER_KEY,
-    })
 
     if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
       nuxt.options.ssr = true

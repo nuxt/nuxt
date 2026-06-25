@@ -180,6 +180,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? router.resolve(initialURL)
       : router.currentRoute.value
 
+    // snapshot the starting route so a plugin that calls `navigateTo`
+    // during `applyPlugins` is not clobbered later on
+    const prePluginRoutePath = import.meta.client ? router.currentRoute.value.fullPath : ''
+
     // Detect if we're hydrating a prerendered page that doesn't match the current URL
     // (for example, if the browser URL has different query params than the
     // prerendered payload).
@@ -283,10 +287,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         const actual = to.matched.find(m => (m.components?.default as any)?.__nuxt_island)
           ?.components?.default as any
         if (!expected || expected !== actual?.__nuxt_island) {
-          nuxtApp.ssrContext!['~renderResponse'] = {
+          nuxtApp.ssrContext!['~renderResponse'] = new Response(null, {
             status: 400,
             statusText: 'Invalid island request path',
-          }
+          })
           return false
         }
       })
@@ -316,7 +320,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           resolvedInitialRoute.name = undefined
         }
 
-        if (hasDeferredRoute) {
+        // respect a plugin that navigated away during boot
+        const pluginNavigatedAway = import.meta.client && router.currentRoute.value.fullPath !== prePluginRoutePath
+
+        if (pluginNavigatedAway) {
+          // we don't need to push the previous route
+        } else if (hasDeferredRoute) {
           // First apply the route that was prerendered to avoid hydration mismatches,
           // then replace it after hydration with the actual resolved initial route
           const payloadRoute = router.resolve(nuxtApp.payload.path!)

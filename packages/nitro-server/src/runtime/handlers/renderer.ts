@@ -1,9 +1,9 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import { renderToWebStream } from 'vue/server-renderer'
-import type { RenderResponse } from 'nitro/types'
-import type { H3Event } from 'nitro/h3'
-import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'nitro/h3'
+import type { ServerRequest } from 'nitro/types'
+import { H3Event, HTTPError, getQuery, writeEarlyHints } from 'nitro/h3'
+import { FastResponse } from 'srvx'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
@@ -21,7 +21,7 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from
 import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
-import { createSSRContext, setSSRError } from '../utils/renderer/app'
+import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
@@ -61,40 +61,49 @@ let entryPath: string
 // Bot detection regex for SSR streaming.
 const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
 
-const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
-  // Whether we're rendering an error page
-  const ssrError = event.url.pathname.startsWith('/__nuxt_error')
-    ? getQuery<NuxtPayload['error'] & { url: string }>(event)
-    : null
+export default {
+  fetch (request: ServerRequest) {
+    const event = new H3Event(request)
 
-  if (ssrError && !event.context.nuxt?.['~rendering-error'] /* allow internal fetch from the error handler */) {
-    throw new HTTPError({
-      status: 404,
-      statusText: 'Page Not Found: /__nuxt_error',
-    })
-  }
+    if (componentIslands && event.url.pathname.startsWith('/__nuxt_island/')) {
+      // @ts-expect-error virtual file
+      return import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(request))
+    }
 
-  // During prerender, refuse to recurse into a URL that is already rendering
-  // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
-  // the in-flight URL (typically from route middleware) silently deadlocks the
-  // build. See https://github.com/nuxt/nuxt/issues/33871.
-  if (import.meta.prerender && prerenderRenderingURLs) {
-    const renderingURL = event.url.pathname + event.url.search
-    const stack = prerenderRenderingURLs.getStore()
-    if (stack?.includes(renderingURL)) {
-      const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `"${url}"`).join(' -> ')
+    // Whether we're rendering an error page
+    const ssrError = event.url.pathname.startsWith('/__nuxt_error')
+      ? getQuery<NuxtPayload['error'] & { url: string }>(event)
+      : undefined
+
+    if (ssrError && !event.context.nuxt?.['~rendering-error'] /* allow internal fetch from the error handler */) {
       throw new HTTPError({
-        status: 508,
-        statusText: `Loop detected while prerendering "${renderingURL}" (${chain}). Check for \`useFetch\`/\`$fetch\` calls targeting a URL that is currently being rendered.`,
+        status: 404,
+        statusText: 'Page Not Found: /__nuxt_error',
       })
     }
-    return prerenderRenderingURLs.run([...(stack || []), renderingURL], () => renderRoute(event, ssrError))
-  }
 
-  return renderRoute(event, ssrError)
-})
+    // During prerender, refuse to recurse into a URL that is already rendering
+    // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
+    // the in-flight URL (typically from route middleware) silently deadlocks the
+    // build. See https://github.com/nuxt/nuxt/issues/33871.
+    if (import.meta.prerender && prerenderRenderingURLs) {
+      const renderingURL = event.url.pathname + event.url.search
+      const stack = prerenderRenderingURLs.getStore()
+      if (stack?.includes(renderingURL)) {
+        const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `"${url}"`).join(' -> ')
+        throw new HTTPError({
+          status: 508,
+          statusText: `Loop detected while prerendering "${renderingURL}" (${chain}). Check for \`useFetch\`/\`$fetch\` calls targeting a URL that is currently being rendered.`,
+        })
+      }
+      return prerenderRenderingURLs.run([...(stack || []), renderingURL], () => renderRoute(event, ssrError)).catch(error => rethrowWithResponseHeaders(event, error))
+    }
 
-async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { url: string }) | null) {
+    return renderRoute(event, ssrError).catch(error => rethrowWithResponseHeaders(event, error))
+  },
+}
+
+async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<ReadableStream<Uint8Array> | Response> {
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(event)
 
@@ -136,7 +145,9 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     ssrContext.url = url
 
     if (import.meta.prerender && await payloadCache!.hasItem(url + '.json')) {
-      return returnResponse(event, await payloadCache!.getItem(url + '.json') as Partial<RenderResponse>)
+      event.res.headers.set('content-type', 'application/json')
+      const response = await payloadCache!.getItem(url + '.json') || undefined
+      return new FastResponse(response?.body, response)
     }
   }
 
@@ -215,7 +226,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   if (appRenderedResult instanceof Promise) { await appRenderedResult }
 
   if (ssrContext['~renderResponse']) {
-    return returnResponse(event, ssrContext['~renderResponse'])
+    return returnRenderResponse(event, ssrContext['~renderResponse'])
   }
 
   // Handle errors
@@ -230,7 +241,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
       await payloadCache!.setItem(ssrContext.url + '.json', response)
     }
 
-    return returnResponse(event, response)
+    return new FastResponse(response.body, response)
   }
 
   if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
@@ -305,18 +316,16 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
 
   if (!NO_SCRIPTS) {
     // 4. Resource Hints
-    // Remove lazy hydrated modules from ssrContext.modules so they don't get preloaded
-    // (CSS links are already added above, this only affects JS preloads)
-    if (ssrContext['~lazyHydratedModules']) {
-      for (const id of ssrContext['~lazyHydratedModules']) {
-        ssrContext.modules?.delete(id)
-      }
-    }
+    // Exclude lazy hydrated modules so their JS chunks don't get preloaded
+    // (CSS links are already added above, this only affects JS preloads).
+    const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
+      ? { exclude: ssrContext['~lazyHydratedModules'] }
+      : undefined
     ssrContext.head.push({
-      link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
+      link: getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
     })
     ssrContext.head.push({
-      link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
+      link: getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
     })
     // 5. Payloads
     ssrContext.head.push({
@@ -373,21 +382,19 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  return renderHTMLDocument(htmlContext)
+  return new FastResponse(renderHTMLDocument(htmlContext), event.res)
 }
-
-export default handler
 
 async function renderStreamedResponse (ctx: {
   event: H3Event
   ssrContext: NuxtSSRContext
   renderer: Awaited<ReturnType<typeof getRenderer>>
   routeOptions: ReturnType<typeof getRouteRules>['routeRules']
-  ssrError: (NuxtPayload['error'] & { url: string }) | null
+  ssrError?: (NuxtPayload['error'] & { url: string })
   _PAYLOAD_EXTRACTION: boolean
   _PAYLOAD_INLINE: boolean
   payloadURL: string | undefined
-}): Promise<ReadableStream<Uint8Array> | RenderResponse['body']> {
+}): Promise<ReadableStream<Uint8Array> | Response> {
   const { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
@@ -494,7 +501,7 @@ async function renderStreamedResponse (ctx: {
       // Drop any preload `Link` header that targeted the streamed entry - the
       // redirect/response we are about to send does not need them.
       event.res.headers.delete('link')
-      return returnResponse(event, ssrContext['~renderResponse'])
+      return returnRenderResponse(event, ssrContext['~renderResponse'])
     }
     const r = ssrContext.nuxt?.hooks.callHook('app:error', error)
     if (r instanceof Promise) { await r }
@@ -502,7 +509,7 @@ async function renderStreamedResponse (ctx: {
   }
   if (ssrContext['~renderResponse']) {
     event.res.headers.delete('link')
-    return returnResponse(event, ssrContext['~renderResponse'])
+    return returnRenderResponse(event, ssrContext['~renderResponse'])
   }
 
   // 5. Render the shell head (atomically renders and clears entries pushed
@@ -579,8 +586,9 @@ async function renderStreamedResponse (ctx: {
   } catch (error) {
     reader.releaseLock()
     event.res.headers.delete('link')
-    if (ssrContext['~renderResponse']) {
-      return returnResponse(event, ssrContext['~renderResponse'])
+    const response = ssrContext['~renderResponse'] as NuxtSSRContext['~renderResponse']
+    if (response) {
+      return returnRenderResponse(event, response)
     }
     const _err = (!ssrError && ssrContext.payload?.error) || error
     const r = ssrContext.nuxt?.hooks.callHook('app:error', _err)
@@ -588,10 +596,11 @@ async function renderStreamedResponse (ctx: {
     throw _err
   }
 
-  if (ssrContext['~renderResponse']) {
+  const response = ssrContext['~renderResponse'] as NuxtSSRContext['~renderResponse']
+  if (response) {
     reader.cancel().catch(() => {})
     event.res.headers.delete('link')
-    return returnResponse(event, ssrContext['~renderResponse'])
+    return returnRenderResponse(event, response)
   }
 
   if (ssrContext.payload?.error && !ssrError) {
@@ -812,7 +821,7 @@ async function renderStreamedResponse (ctx: {
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  return outputStream
+  return new FastResponse(outputStream, event.res)
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {
@@ -884,18 +893,4 @@ function stripInlineOnlyPayloadFields (payload: NuxtSSRContext['payload']): Nuxt
   if (!payload.prefetchLinks) { return payload }
   const { prefetchLinks: _, ...rest } = payload
   return rest
-}
-
-function returnResponse (event: H3Event, response: Partial<RenderResponse>) {
-  for (const header in response.headers || {}) {
-    event.res.headers.set(header, response.headers![header]!)
-  }
-  if (response.status) {
-    event.res.status = response.status
-  }
-  if (response.statusText) {
-    event.res.statusText = response.statusText
-  }
-
-  return response.body
 }

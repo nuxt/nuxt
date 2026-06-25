@@ -220,11 +220,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         const encodedHeader = encodeURL(location, isExternalHost)
         const encodedLoc = encodeForHtmlAttr(encodedHeader)
 
-        nuxtApp.ssrContext!['~renderResponse'] = {
-          status: sanitizeStatusCode(options?.redirectCode || 302, 302),
-          body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location: encodedHeader },
-        }
+        nuxtApp.ssrContext!['~renderResponse'] = new Response(
+          `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
+          {
+            status: sanitizeStatusCode(options?.redirectCode || 302, 302),
+            headers: { location: encodedHeader },
+          },
+        )
         return response
       }
 
