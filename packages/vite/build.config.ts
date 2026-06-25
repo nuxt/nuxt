@@ -13,7 +13,7 @@ export default defineBuildConfig({
           'nitropack/types',
           '#vite-node',
           '#vite-node-runner',
-          '#internal/nuxt/vite-node-runner',
+          '#internal/nuxt/vite-node-runner.mjs',
         ],
       },
     },
