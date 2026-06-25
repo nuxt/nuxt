@@ -741,6 +741,10 @@ describe('pages', () => {
     expect(await page.evaluate(() => window.useNuxtApp?.()._route.query.active)).toBe('true')
     expect(await page.$eval('div', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
 
+    // the query should already be restored by the time the page is mounted, so
+    // `onMounted` reads the real query rather than the prerendered empty one
+    expect(await page.innerText('#mounted-query')).toBe('true')
+
     await page.close()
   })
 

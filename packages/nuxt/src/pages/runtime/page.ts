@@ -237,6 +237,9 @@ export default defineComponent({
                   onResolve: async () => {
                     isSuspensePending = false
                     hasResolvedOnce = true
+                    if (import.meta.client && nuxtApp.isHydrating) {
+                      nuxtApp['~restoreDeferredRoute']?.()
+                    }
                     try {
                       await nextTick()
                       nuxtApp._route.sync?.()
