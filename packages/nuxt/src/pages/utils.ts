@@ -9,7 +9,7 @@ import { hash } from 'ohash'
 import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
-import type { Node, ObjectProperty } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 import { getLoader } from '../core/utils/index.ts'
@@ -202,7 +202,7 @@ const PAGE_EXTRACT_RE = new RegExp(`\\b(${PAGE_META_MACRO_NAMES.join('|')})\\b`,
 export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
-type StaticExpressionWrapper = Node & { expression: Node }
+type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
 
 const STATIC_EXPRESSION_WRAPPERS = new Set([
   'ParenthesizedExpression',
@@ -212,7 +212,7 @@ const STATIC_EXPRESSION_WRAPPERS = new Set([
   'TSTypeAssertion',
 ])
 
-function unwrapStaticExpression (node: Node | undefined): Node | undefined {
+function unwrapStaticExpression (node: ESTree.Node | undefined): ESTree.Node | undefined {
   let current = node
   while (current && STATIC_EXPRESSION_WRAPPERS.has(current.type)) {
     current = (current as StaticExpressionWrapper).expression
@@ -286,7 +286,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
       if (fnName === 'definePageMeta') {
         for (const key of extractionKeys) {
-          const property = pageExtractArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+          const property = pageExtractArgument.properties.find((property): property is ESTree.ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
           if (!property) { continue }
 
           const { value, serializable } = isSerializable(code, property.value)
@@ -539,7 +539,7 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
   ]
 }
 
-export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
+export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {
   node = unwrapStaticExpression(node) || node
 
   if (node.type === 'Literal') {

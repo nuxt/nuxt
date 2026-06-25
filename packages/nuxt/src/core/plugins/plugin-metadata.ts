@@ -8,7 +8,7 @@ import { normalize } from 'pathe'
 import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
-import type { Expression, IdentifierName, ObjectPropertyKind, SpreadElement } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 import { logger } from '../../utils.ts'
 
 const internalOrderMap = {
@@ -83,7 +83,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
   return meta
 }
 
-function isFunctionPluginExpression (node: Expression | SpreadElement): boolean {
+function isFunctionPluginExpression (node: ESTree.Expression | ESTree.SpreadElement): boolean {
   // Function-syntax plugins (`defineNuxtPlugin(() => {...})` /
   // `defineNuxtPlugin(function (n) {...})`) carry no capability metadata by
   // construction, so emitting empty extracted meta is safe and lets the
@@ -99,11 +99,11 @@ const keys: Record<ExtractedMetaKey, string> = {
   dependsOn: 'dependsOn',
   parallel: 'parallel',
 }
-function isMetadataKey (key: string | IdentifierName): key is ExtractedMetaKey {
+function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMetaKey {
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
+function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
   const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {

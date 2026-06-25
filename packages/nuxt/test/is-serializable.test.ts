@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { parseSync } from 'oxc-parser'
-import type { Expression, VariableDeclaration } from 'oxc-parser'
+import { parseSync } from 'rolldown/utils'
+import type { ESTree } from 'rolldown/utils'
 
 import { isSerializable } from '../src/pages/utils.ts'
 
-function parseExpression (source: string): { code: string, node: Expression } {
+function parseExpression (source: string): { code: string, node: ESTree.Expression } {
   // Parse as a variable initialiser so a leading `{` isn't ambiguous with a block, and we get the
   // raw expression node rather than a ParenthesizedExpression wrapper.
   const code = `const __x = ${source}`
   const ast = parseSync('test.js', code, { lang: 'js' })
-  const decl = ast.program.body[0] as VariableDeclaration
-  return { code, node: decl.declarations[0]!.init as Expression }
+  const decl = ast.program.body[0] as ESTree.VariableDeclaration
+  return { code, node: decl.declarations[0]!.init as ESTree.Expression }
 }
 
 function check (source: string) {
