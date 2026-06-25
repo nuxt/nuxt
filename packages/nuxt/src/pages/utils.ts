@@ -123,6 +123,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
 
   if (shouldAugment === false) {
     await nuxt.callHook('pages:extend', pages)
+    warnDuplicateRoutePaths(pages)
     return pages
   }
 
@@ -145,9 +146,27 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
     augmentedPages?.clear()
   }
 
+  warnDuplicateRoutePaths(pages)
+
   await nuxt.callHook('pages:resolved', pages)
 
   return pages
+}
+
+export function warnDuplicateRoutePaths (pages: NuxtPage[], parentPath = '') {
+  const seen = new Map<string, NuxtPage>()
+  for (const route of pages) {
+    const fullPath = route.path.startsWith('/') ? route.path : joinURL(parentPath, route.path)
+    const existing = seen.get(route.path)
+    if (existing) {
+      logger.warn(`Multiple routes resolve to the same path \`${fullPath || '/'}\`${existing.file && route.file ? ` (\`${existing.file}\` and \`${route.file}\`)` : ''}. Only one will be matched, so you may wish to ensure each route has a unique path.`)
+    } else {
+      seen.set(route.path, route)
+    }
+    if (route.children?.length) {
+      warnDuplicateRoutePaths(route.children, fullPath)
+    }
+  }
 }
 
 interface AugmentPagesContext {
