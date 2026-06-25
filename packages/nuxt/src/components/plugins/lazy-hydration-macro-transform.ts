@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import { relative } from 'pathe'
 import { resolveAlias } from 'pathe/utils'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { genImport } from 'knitwork'
 import { isJS, isVue } from '../../core/utils/index.ts'
 import type { ComponentsOptions } from 'nuxt/schema'
@@ -10,7 +10,6 @@ import type { ESTree } from 'rolldown/utils'
 
 interface LoaderOptions {
   srcDir: string
-  sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   clientDelayedComponentRuntime: string
   alias: Record<string, string>
@@ -51,8 +50,8 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           include: LAZY_HYDRATION_MACRO_RE,
         },
       },
-      handler (code, id) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         const names = new Set<string>()
         type Edit = { start: number, end: number, replacement: string }
         const edits: Edit[] = []
@@ -99,14 +98,7 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           s.prepend(imports)
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }
