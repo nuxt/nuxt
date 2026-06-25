@@ -31,13 +31,13 @@
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^6.0.3",
     "@vitejs/plugin-vue": "^6.0.7",
-    "@vitejs/plugin-vue-jsx": "^5.1.5",
-    "autoprefixer": "^10.5.0",
+    "@vitejs/plugin-vue-jsx": "^5.1.6",
+    "autoprefixer": "^10.5.1",
     "consola": "^3.4.2",
-    "cssnano": "^8.0.1",
+    "cssnano": "^8.0.2",
     "defu": "^6.1.7",
     "escape-string-regexp": "^5.0.0",
-    "exsolve": "^1.0.8",
+    "exsolve": "^1.1.0",
     "get-port-please": "^3.2.0",
     "jiti": "^2.7.0",
     "js-tokens": "^10.0.0",
@@ -45,7 +45,7 @@
     "magic-string": "^0.30.21",
     "mlly": "^1.8.2",
     "mocked-exports": "^0.1.1",
-    "nypm": "^0.6.6",
+    "nypm": "^0.6.7",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.1",
     "postcss": "^8.5.15",
@@ -55,7 +55,7 @@
     "unenv": "^2.0.0-rc.24",
     "vite": "^7.3.5",
     "vite-node": "^5.3.0",
-    "vite-plugin-checker": "^0.14.1",
+    "vite-plugin-checker": "^0.14.4",
     "vue-bundle-renderer": "^2.3.1"
   },
   "devDependencies": {
@@ -67,9 +67,9 @@
     "nitropack": "2.13.4",
     "obuild": "0.4.37",
     "rolldown": "1.1.2",
-    "rollup": "4.61.1",
+    "rollup": "4.62.2",
     "rollup-plugin-visualizer": "7.0.1",
-    "vue": "3.5.35"
+    "vue": "3.5.38"
   },
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0",
