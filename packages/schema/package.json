@@ -56,7 +56,7 @@
     "hookable": "6.1.1",
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.10.2",
-    "obuild": "0.4.36",
+    "obuild": "0.4.37",
     "ofetch": "1.5.1",
     "oxc-transform": "0.137.0",
     "postcss": "8.5.15",
