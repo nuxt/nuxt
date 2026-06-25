@@ -82,7 +82,7 @@
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "7.1.0",
     "nuxt": "workspace:*",
-    "obuild": "0.4.36",
+    "obuild": "0.4.37",
     "vitest": "4.1.8"
   },
   "engines": {
