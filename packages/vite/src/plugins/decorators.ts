@@ -1,5 +1,6 @@
 import process from 'node:process'
 import type { Plugin } from 'vite'
+import type { SourceMapInput } from 'rollup'
 import { addDependency } from 'nypm'
 import { logger } from '@nuxt/kit'
 import { hasTTY, isCI } from 'std-env'
@@ -135,7 +136,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
         if (result?.code != null) {
           return {
             code: result.code,
-            map: result.map,
+            map: result.map as SourceMapInput,
           }
         }
       },
