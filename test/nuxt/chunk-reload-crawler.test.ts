@@ -33,7 +33,7 @@ describe('chunk-reload-crawler plugin', () => {
 
     await nuxtApp.callHook('app:chunkError', { error: new Error('failed to load chunk') })
 
-    expect(reloadNuxtApp).toHaveBeenCalledWith({ persistState: true })
+    expect(reloadNuxtApp).toHaveBeenCalledWith()
   })
 
   it('does not reload for a bot once hydration has resolved', async () => {
