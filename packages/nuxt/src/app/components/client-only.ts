@@ -3,7 +3,7 @@ import type { ComponentInternalInstance, ComponentOptions, InjectionKey, SlotsTy
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import ServerPlaceholder from './server-placeholder'
-import { elToStaticVNode } from './utils'
+import { elToStaticVNode, sanitizeTag } from './utils'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
 
@@ -49,7 +49,7 @@ export default defineComponent({
       const slot = slots.fallback || slots.placeholder
       if (slot) { return h(slot) }
       const fallbackStr = props.fallback || props.placeholder || ''
-      const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
+      const fallbackTag = sanitizeTag(props.fallbackTag || props.placeholderTag, 'span')
       return createElementBlock(fallbackTag, attrs, fallbackStr)
     }
   },

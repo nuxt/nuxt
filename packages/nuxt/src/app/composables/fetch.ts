@@ -1,4 +1,4 @@
-import type { FetchError, FetchOptions, ResponseType as _ResponseType } from 'ofetch'
+import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
 import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
@@ -11,6 +11,7 @@ import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from 'nuxt/app
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
+import type { NuxtError } from './error'
 
 // @ts-expect-error virtual file
 import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
@@ -22,7 +23,7 @@ export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRoute
 
 type ComputedOptions<T extends Record<string, any>> = {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
+  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | MaybeRefOrGetter<T[K]>
 }
 
 interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>, DataT = any> extends Omit<FetchOptions<_ResponseType, DataT>, 'cache'> {
@@ -54,7 +55,7 @@ export interface UseFetchOptions<
  */
 export function useFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -67,7 +68,7 @@ export function useFetch<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
 export function useFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -80,7 +81,7 @@ export function useFetch<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
 export function useFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -162,7 +163,14 @@ export function useFetch<
       }
     }
 
-    return _$fetch(_request.value, { signal, ..._fetchOptions } as any) as Promise<_ResT>
+    const resolvedOptions = { signal, ..._fetchOptions } as Record<string, unknown>
+    for (const key of MAYBE_REF_OR_GETTER_OPTION_KEYS) {
+      if (typeof resolvedOptions[key] === 'function') {
+        resolvedOptions[key] = toValue(resolvedOptions[key] as () => unknown)
+      }
+    }
+
+    return _$fetch(_request.value, resolvedOptions as any) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
@@ -177,7 +185,7 @@ export function useFetch<
  */
 export function useLazyFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -190,7 +198,7 @@ export function useLazyFetch<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
 export function useLazyFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -203,7 +211,7 @@ export function useLazyFetch<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
 export function useLazyFetch<
   ResT = void,
-  ErrorT = FetchError,
+  ErrorT = NuxtError<unknown>,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
@@ -229,6 +237,8 @@ export function useLazyFetch<
   // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
   autoKey)
 }
+
+const MAYBE_REF_OR_GETTER_OPTION_KEYS = ['method', 'baseURL', 'query', 'params', 'body', 'headers'] as const
 
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [

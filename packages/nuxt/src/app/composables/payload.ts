@@ -54,8 +54,14 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
       }
       document.head.appendChild(linkEl)
       return new Promise<void>((resolve, reject) => {
-        linkEl.addEventListener('load', () => resolve())
-        linkEl.addEventListener('error', () => reject())
+        const cleanup = () => {
+          linkEl.removeEventListener('load', onLoad)
+          linkEl.removeEventListener('error', onError)
+        }
+        const onLoad = () => { cleanup(); resolve() }
+        const onError = () => { cleanup(); reject() }
+        linkEl.addEventListener('load', onLoad)
+        linkEl.addEventListener('error', onError)
       })
     }
   })

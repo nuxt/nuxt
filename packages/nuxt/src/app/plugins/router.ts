@@ -117,7 +117,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
     const registerHook = <T extends keyof RouterHooks> (hook: T, guard: RouterHooks[T]) => {
       hooks[hook].push(guard)
-      return () => hooks[hook].splice(hooks[hook].indexOf(guard), 1)
+      return () => {
+        const index = hooks[hook].indexOf(guard)
+        if (index !== -1) { hooks[hook].splice(index, 1) }
+      }
     }
     const baseURL = useRuntimeConfig().app.baseURL
 
