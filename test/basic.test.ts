@@ -2087,7 +2087,7 @@ describe.skipIf(isDev)('inlining component styles', () => {
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
-    const cssFiles = html.match(/<link [^>]*href="[^"]*\.css"/g)
+    const cssFiles = html.match(/<link [^>]*rel="stylesheet"[^>]*href="[^"]*\.css"/g)
     expect(cssFiles?.length).toBeGreaterThan(0)
     if (isWebpack) {
       // TODO: use non-hash name for webpack css files in test fixture
