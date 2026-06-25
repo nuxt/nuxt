@@ -334,17 +334,27 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         if (pluginNavigatedAway) {
           // we don't need to push the previous route
         } else if (hasDeferredRoute) {
-          // First apply the route that was prerendered to avoid hydration mismatches,
-          // then replace it after hydration with the actual resolved initial route
+          // Hydrate against the query-less prerendered route to avoid a mismatch, then restore the
+          // real route once the page has hydrated.
           const payloadRoute = router.resolve(nuxtApp.payload.path!)
           if ('name' in payloadRoute) {
             payloadRoute.name = undefined
           }
           await router.replace({ ...payloadRoute, force: true })
 
-          nuxtApp.hooks.hookOnce('app:suspense:resolve', async () => {
-            await router.replace({ ...resolvedInitialRoute, force: true })
-          })
+          const restoreDeferredRoute = () => {
+            if (!nuxtApp['~restoreDeferredRoute']) { return }
+            nuxtApp['~restoreDeferredRoute'] = undefined
+            // Assign synchronously: `router.replace` only finalises `currentRoute` a microtask
+            // later, after mounted hooks flush. Resolve fresh so `route.name` survives.
+            ;(router.currentRoute as Ref<RouteLocationNormalizedLoadedGeneric>).value = router.resolve(initialURL) as RouteLocationNormalizedLoadedGeneric
+            syncCurrentRoute()
+            router.replace({ ...resolvedInitialRoute, force: true }).catch(() => {})
+          }
+          // `<NuxtPage>` calls this before its mounted hooks flush; the hook is the fallback when
+          // there is no page to render.
+          nuxtApp['~restoreDeferredRoute'] = restoreDeferredRoute
+          nuxtApp.hooks.hookOnce('app:suspense:resolve', restoreDeferredRoute)
         } else {
           await router.replace({
             ...resolvedInitialRoute,
