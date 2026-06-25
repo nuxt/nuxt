@@ -91,7 +91,7 @@ describe('NuxtLayout nested layout route sync (#32904)', () => {
     }
   })
 
-  it.fails('does not update inner nested layout route before the suspended destination page resolves', async () => {
+  it('does not update inner nested layout route before the suspended destination page resolves', async () => {
     const nuxtApp = useNuxtApp()
 
     await navigateTo('/x-a')
