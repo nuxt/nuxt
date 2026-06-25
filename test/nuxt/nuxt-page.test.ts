@@ -954,3 +954,95 @@ describe('NuxtPage should not emit page:finish before the page:start hook chain 
     el.unmount()
   })
 })
+
+describe('NuxtPage route sync when leaf component is reused (#33107)', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let resolvers: Array<() => void>
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+    resolvers = []
+
+    // A single component matched by two different paths (like a catch-all or `[id]` page)
+    router.addRoute({
+      name: 'items',
+      path: '/items/:id',
+      component: defineComponent({
+        name: 'items',
+        async setup () {
+          const route = useRoute()
+          await new Promise<void>((resolve) => { resolvers.push(resolve) })
+          return () => h('div', { 'data-testid': 'item-page' }, `item:${route.params.id}`)
+        },
+      }),
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('items')
+  })
+
+  it('does not update the route read outside <NuxtPage> before a param navigation to the same component resolves', async () => {
+    const el = await mountSuspended({
+      setup () {
+        // read outside the page's `<RouteProvider>`, so this resolves to the deferred `nuxtApp._route`
+        const route = useRoute()
+        return () => h('div', [
+          h('span', { 'data-testid': 'outer-path' }, route.path),
+          h(NuxtPage),
+        ])
+      },
+    })
+
+    await navigateTo('/items/a')
+    resolvers.at(-1)!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-path"]').text()).toBe('/items/a')
+    expect(el.get('[data-testid="item-page"]').text()).toBe('item:a')
+
+    await navigateTo('/items/b')
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-path"]').text()).toBe('/items/a')
+    expect(el.get('[data-testid="item-page"]').text()).toBe('item:a')
+
+    resolvers.at(-1)!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-path"]').text()).toBe('/items/b')
+    expect(el.get('[data-testid="item-page"]').text()).toBe('item:b')
+
+    el.unmount()
+  })
+
+  it('still syncs the route immediately on a query-only navigation that does not remount the page (#34918)', async () => {
+    const el = await mountSuspended({
+      setup () {
+        const route = useRoute()
+        return () => h('div', [
+          h('span', { 'data-testid': 'outer-full-path' }, route.fullPath),
+          h(NuxtPage),
+        ])
+      },
+    })
+
+    await navigateTo('/items/a')
+    resolvers.at(-1)!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-full-path"]').text()).toBe('/items/a')
+
+    await navigateTo('/items/a?page=2')
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-full-path"]').text()).toBe('/items/a?page=2')
+
+    el.unmount()
+  })
+})
