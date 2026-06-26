@@ -58,17 +58,18 @@ jobs:
 
       # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
       # format to the repository Actions tab.
-      - name: "Upload artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: github.repository == 'nuxt/nuxt' && success()
-        with:
-          name: SARIF file
-          path: results.sarif
-          retention-days: 5
+      - parallel:
+          - name: "Upload artifact"
+            uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+            if: github.repository == 'nuxt/nuxt' && success()
+            with:
+              name: SARIF file
+              path: results.sarif
+              retention-days: 5
 
-      # Upload the results to GitHub's code scanning dashboard.
-      - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
-        if: github.repository == 'nuxt/nuxt' && success()
-        with:
-          sarif_file: results.sarif
+          # Upload the results to GitHub's code scanning dashboard.
+          - name: "Upload to code-scanning"
+            uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+            if: github.repository == 'nuxt/nuxt' && success()
+            with:
+              sarif_file: results.sarif
