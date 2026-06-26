@@ -1,4 +1,4 @@
-import type { Connect, Plugin, ServerOptions } from 'vite'
+import type { Connect, Plugin, ServerOptions, WsOptions } from 'vite'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
 import { defu } from 'defu'
@@ -38,15 +38,20 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
 
       if (config.server && config.server.hmr !== false) {
-        const serverDefaults: Omit<ServerOptions, 'hmr'> & { hmr: Exclude<ServerOptions['hmr'], boolean> } = {
+        const serverDefaults: Omit<ServerOptions, 'hmr' | 'ws'> & { hmr: Exclude<ServerOptions['hmr'], boolean>, ws: NonNullable<Exclude<ServerOptions['ws'], false>> } = {
           hmr: {
             protocol: nuxt.options.devServer.https ? 'wss' : undefined,
           },
+          ws: {},
         }
-        if (typeof config.server.hmr !== 'object' || !config.server.hmr.server) {
-          serverDefaults.hmr ??= {}
+        // `@nuxt/cli` provides a custom HMR websocket server on the (deprecated)
+        // `server.hmr.server`; vite mirrors it onto `server.ws.server`. When one
+        // is present HMR attaches to it, so we must not allocate a separate port.
+        const hmrConfig = typeof config.server.hmr === 'object' ? config.server.hmr as WsOptions : undefined
+        const wsConfig = typeof config.server.ws === 'object' ? config.server.ws : undefined
+        if (!wsConfig?.server && !hmrConfig?.server) {
           const hmrPortDefault = 24678 // Vite's default HMR port
-          serverDefaults.hmr.port = await getPort({
+          serverDefaults.ws.port = await getPort({
             verbose: false,
             portRange: [hmrPortDefault, hmrPortDefault + 20],
           })
