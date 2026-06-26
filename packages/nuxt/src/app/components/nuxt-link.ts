@@ -19,6 +19,7 @@ import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
+import { tryResolveURL } from '../utils'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
@@ -419,13 +420,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         const path = typeof to.value === 'string'
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-        const normalizedPath = (() => {
-          try {
-            return isExternal.value ? new URL(path, window.location.href).href : path
-          } catch {
-            return path
-          }
-        })()
+        const normalizedPath = isExternal.value
+          ? (tryResolveURL(path, window.location.href)?.href ?? path)
+          : path
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
           !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
@@ -533,12 +530,8 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             get route () {
               if (!href.value) { return undefined }
 
-              let url: URL
-              try {
-                url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
-              } catch {
-                return undefined
-              }
+              const url = tryResolveURL(href.value, import.meta.client ? window.location.href : 'http://localhost')
+              if (!url) { return undefined }
               return {
                 path: url.pathname,
                 fullPath: url.pathname,

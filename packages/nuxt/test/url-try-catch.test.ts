@@ -73,7 +73,7 @@ describe('navigateTo', () => {
     // The error is thrown inside the external-block try-catch before any
     // Nuxt runtime dependency is touched, so no mocking is needed.
     expect(() => navigateTo('http://a b.com', { external: true }))
-      .toThrow('Cannot navigate to invalid URL')
+      .toThrow('Cannot parse invalid URL')
   })
 
   it('throws Error (not TypeError) on invalid URL', () => {
@@ -91,7 +91,7 @@ describe('navigateTo', () => {
 
   it('includes the problematic URL in the error message', () => {
     expect(() => navigateTo('http://[::1', { external: true }))
-      .toThrow(/Cannot navigate to invalid URL/)
+      .toThrow("Cannot parse invalid URL: 'http://[::1'")
   })
 })
 

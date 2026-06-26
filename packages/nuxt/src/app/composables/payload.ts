@@ -6,6 +6,7 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 import { useHead } from './head'
 
+import { resolveURL } from '../utils'
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
@@ -76,12 +77,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
 const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
-  let u: URL
-  try {
-    u = new URL(url, 'http://localhost')
-  } catch {
-    throw new Error('Invalid payload URL: ' + url)
-  }
+  const u = resolveURL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }

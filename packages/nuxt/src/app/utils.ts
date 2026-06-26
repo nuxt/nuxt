@@ -1,5 +1,23 @@
 import { captureStackTrace } from 'errx'
 
+/** @internal */
+export function resolveURL (input: string, base?: string): URL {
+  try {
+    return new URL(input, base)
+  } catch {
+    throw new Error(`Cannot parse invalid URL: '${input}'`)
+  }
+}
+
+/** @internal */
+export function tryResolveURL (input: string, base?: string): URL | null {
+  try {
+    return new URL(input, base)
+  } catch {
+    return null
+  }
+}
+
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
