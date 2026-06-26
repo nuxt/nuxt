@@ -4,7 +4,7 @@ import { isAbsolute, normalize, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import { genArrayFromRaw, genObjectFromRawEntries } from 'knitwork'
 import type { Nuxt } from '@nuxt/schema'
-import { resolveAlias, useNitro } from '@nuxt/kit'
+import { resolveAlias, setBuildOutput, useNitro } from '@nuxt/kit'
 import { parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
@@ -334,11 +334,10 @@ export class SSRStylesPlugin {
       ].join('\n')
 
       compilation.emitAsset('styles.mjs', new rawSource(stylesSource))
+      setBuildOutput('ssrStyles', resolve(this.nuxt.options.buildDir, 'dist/server/styles.mjs'))
 
       const entryIds = Array.from(this.chunksWithInlinedCSS).filter(id => entryModules.has(id))
-      nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(entryIds)}`
-      nitro.options._config.virtual ||= {}
-      nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
+      setBuildOutput('entryIds', () => `export default ${JSON.stringify(entryIds)}`)
     })
   }
 

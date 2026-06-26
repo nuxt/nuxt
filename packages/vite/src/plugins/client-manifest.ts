@@ -8,7 +8,7 @@ import { normalizeViteManifest, precomputeDependencies } from 'vue-bundle-render
 import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
-import { useNitro } from '@nuxt/kit'
+import { setBuildOutput } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry } from '../utils/config.ts'
 
@@ -18,22 +18,11 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let disableCssCodeSplit: boolean
 
   let precomputedCode = 'export default undefined'
-  let manifestCode: string
+  // Default empty manifest so the build output is loadable before the real one is populated.
+  let manifestCode = 'export default {}'
 
-  const vfs = {
-    'client.precomputed.mjs': () => precomputedCode,
-    'client.manifest.mjs': () => manifestCode,
-  }
-
-  const nitro = useNitro()
-  nitro.options.virtual ||= {}
-  nitro.options._config.virtual ||= {}
-
-  for (const key in vfs) {
-    const filename = `#build/dist/server/${key}`
-    nitro.options.virtual[filename] ||= vfs[key as keyof typeof vfs] as () => string
-    nitro.options._config.virtual[filename] ||= vfs[key as keyof typeof vfs] as () => string
-  }
+  setBuildOutput('clientPrecomputed', () => precomputedCode)
+  setBuildOutput('clientManifest', () => manifestCode)
 
   return {
     name: 'nuxt:client-manifest',
