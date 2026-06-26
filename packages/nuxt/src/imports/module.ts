@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
@@ -231,7 +231,8 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       }
 
       if (existsSync(path) && !(await isDirectory(path))) {
-        path = path.replace(SUPPORTED_EXTENSION_RE, '')
+        const declarationPath = await resolveDeclarationPath(path)
+        path = declarationPath === path ? path.replace(SUPPORTED_EXTENSION_RE, '') : declarationPath
       }
 
       if (isAbsolute(path)) {

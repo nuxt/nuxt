@@ -59,25 +59,26 @@ describe('resolveTypePaths', () => {
     return pkgDir
   }
 
-  it('resolves a base package to its declaration entry via the `types` condition', async () => {
+  it('resolves a bare package to its root so TypeScript follows its own `exports` / `types`', async () => {
+    // a package whose `.` export condition resolves to a different file than its `types`
+    // field (e.g. `nitro`): resolving to the root lets TypeScript pick the canonical entry
     const pkgDir = createPackage('typed-pkg', {
-      'index.mjs': 'export const useThing = () => true\n',
-      'dist/types.d.mts': 'export declare const useThing: () => boolean\n',
+      'dist/runtime.mjs': 'export const useThing = () => true\n',
+      'dist/runtime.d.mts': 'export declare const useThing: () => boolean\n',
+      'lib/index.d.mts': 'export declare const useThing: () => boolean\n',
     }, {
       type: 'module',
+      types: './lib/index.d.mts',
       exports: {
-        '.': {
-          types: './dist/types.d.mts',
-          import: './index.mjs',
-        },
+        '.': './dist/runtime.mjs',
       },
     })
 
     const results = await resolveTypePaths(['typed-pkg'], [dir])
-    expect(results).toEqual([['typed-pkg', join(pkgDir, 'dist/types.d.mts')]])
+    expect(results).toEqual([['typed-pkg', pkgDir]])
   })
 
-  it('falls back to the package root when the root entry has no declaration', async () => {
+  it('resolves a bare package to its root when the entry has no declaration', async () => {
     // mirrors `vue`, whose runtime entry has no sibling declaration and whose
     // `exports` map has no entry for the resolved file, so the type only resolves
     // through the package root

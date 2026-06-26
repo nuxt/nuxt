@@ -57,8 +57,9 @@ export function packageName (specifier: string): string {
 const rootCache = new Map<string, Promise<string | undefined>>()
 
 function resolveRoot (basePkg: string, from: Array<string | URL>): Promise<string | undefined> {
-  if (rootCache.has(basePkg)) {
-    return rootCache.get(basePkg)!
+  const cacheKey = `${basePkg}\0${from.map(String).join('\0')}`
+  if (rootCache.has(cacheKey)) {
+    return rootCache.get(cacheKey)!
   }
   const promise = (async () => {
     try {
@@ -68,43 +69,32 @@ function resolveRoot (basePkg: string, from: Array<string | URL>): Promise<strin
       return undefined
     }
   })()
-  rootCache.set(basePkg, promise)
+  rootCache.set(cacheKey, promise)
   return promise
 }
 
 /**
  * Resolve auto-import / `tsConfig.paths` entries to the path TypeScript should load types from.
  *
- * Each package specifier (a base package, a subpath export, or either of those scoped) resolves to:
- * - the declaration sibling of its resolved entry, when one exists adjacent to the runtime file; or
- * - the package root, when the entry maps to the package's `.` export and has no adjacent declaration,
- *   so TypeScript resolves through the package's `exports` / `types`.
+ * A bare package resolves to its package root, so TypeScript follows the package's own
+ * `exports` / `types` (which may differ from the file its `.` export condition points at).
+ * A subpath export resolves to its entry's declaration sibling when one exists, otherwise to
+ * the resolved file itself.
  *
  * Returns `[specifier, absolutePath]` pairs, omitting any specifier that cannot be resolved.
  */
 export async function resolveTypePaths (packages: string[], searchPaths: string[]): Promise<Array<[string, string]>> {
-  const results: Array<[string, string]> = []
   const from = searchPaths.map(d => directoryToURL(d))
 
-  await Promise.allSettled(packages.map(async (pkg) => {
-    const resolved = resolveModulePath(pkg, { from, try: true, ...TYPE_RESOLVE_OPTIONS })
-    if (!resolved) {
-      return
-    }
-
-    const declaration = await resolveDeclarationPath(resolved)
-
-    // A runtime path that `resolveDeclarationPath` could not rewrite to a declaration
-    // resolves to `any` as a file path. For a bare package (its `.` export), fall back to
-    // the package root, which resolves through `exports` / `types`; for subpath exports
-    // there is no better path, so keep the resolved file.
-    if (declaration === resolved && RUNTIME_EXT_RE.test(resolved) && pkg === packageName(pkg)) {
+  const settled = await Promise.allSettled(packages.map(async (pkg): Promise<[string, string] | undefined> => {
+    if (pkg === packageName(pkg)) {
       const root = await resolveRoot(pkg, from)
-      return results.push([pkg, root ?? resolved])
+      return root ? [pkg, root] : undefined
     }
 
-    results.push([pkg, declaration])
+    const resolved = resolveModulePath(pkg, { from, try: true, ...TYPE_RESOLVE_OPTIONS })
+    return resolved ? [pkg, await resolveDeclarationPath(resolved)] : undefined
   }))
 
-  return results
+  return settled.flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : [])
 }
