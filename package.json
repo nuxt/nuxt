@@ -49,7 +49,7 @@
     "@codspeed/core": "5.7.1",
     "@codspeed/vitest-plugin": "5.7.1",
     "@eslint/markdown": "8.0.2",
-    "@nuxt/cli": "3.36.0",
+    "@nuxt/cli": "3.36.1",
     "@nuxt/eslint-config": "1.16.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
