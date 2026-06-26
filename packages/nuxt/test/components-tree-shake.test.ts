@@ -52,7 +52,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
       mode: 'client',
     }]
   },
-}).raw({}, { framework: 'rollup' }) as Plugin
+}).raw({}, { framework: 'rollup', versions: {} }) as Plugin
 
 const treeshake = async (source: string): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

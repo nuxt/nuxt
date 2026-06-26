@@ -64,8 +64,29 @@ describe('computeIslandHash', () => {
     const name = 'PureComponent'
     const serializedProps = '{"count":3,"label":"hi"}'
     const context = { url: '/foo' }
-    const expected = hash([name, serializedProps, context, undefined]).replace(/[-_]/g, '')
+    const expected = hash([name, JSON.parse(serializedProps), context, undefined]).replace(/[-_]/g, '')
     expect(computeIslandHash(name, serializedProps, context, undefined)).toBe(expected)
+  })
+
+  // External island clients (e.g. `@nuxtjs/og-image`) hash the plain props object and send
+  // `JSON.stringify(props)`; that hash must still validate when the round-trip is identity.
+  it('matches a client that hashes the props object directly', () => {
+    const name = 'OgImageCommunityNuxtSeoSatori'
+    const props = { title: 'Hello World' }
+    const objectHash = hash([name, props, {}, undefined]).replace(/[-_]/g, '')
+    expect(computeIslandHash(name, JSON.stringify(props), {}, undefined)).toBe(objectHash)
+  })
+
+  // #35349
+  it('is stable across the JSON round-trip for dropped values', () => {
+    const serialized = serializeIslandProps({ label: 'hi', onClick: () => {}, missing: undefined })
+    const objectHash = hash(['X', { label: 'hi' }, {}, undefined]).replace(/[-_]/g, '')
+    expect(computeIslandHash('X', serialized, {}, undefined)).toBe(objectHash)
+  })
+
+  // The server hashes attacker-controllable query input before validating it.
+  it('does not throw on malformed serialized props', () => {
+    expect(() => computeIslandHash('X', '{"a":1', {}, undefined)).not.toThrow()
   })
 
   it('changes when props change', () => {

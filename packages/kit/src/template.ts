@@ -12,6 +12,7 @@ import { captureStackTrace } from 'errx'
 
 import { distDirURL, filterInPlace } from './utils.ts'
 import { directoryToURL } from './internal/esm.ts'
+import { resolveDeclarationPath } from './types.ts'
 import { getDirectory } from './module/install.ts'
 import { tryUseNuxt, useNuxt } from './context.ts'
 import { resolveNuxtModule } from './resolve.ts'
@@ -225,36 +226,8 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   }
 }
 
-// TS's `paths` substitution has two branches: an extension on the substitution
-// goes straight to `tryFile` on the literal path (no sibling lookup), while an
-// extensionless substitution goes through `tryAddingExtensions` whose
-// extensionless arm only retries `.ts / .tsx / .d.ts / .js / .jsx`. To make
-// `paths` aliases resolve to the right declarations:
-//   - extensions in that retry list are stripped (TS retries them itself);
-//   - `.d.mts` / `.d.cts` are preserved (the literal-file branch loads them);
-//   - `.mjs` / `.cjs` / `.mts` / `.cts` are checked against their on-disk
-//     siblings (see `getPathSubstitution`).
-// https://github.com/microsoft/TypeScript/blob/v5.6.3/src/compiler/moduleNameResolver.ts
-const STRIPPABLE_EXT_RE = /\b\.(?:d\.ts|tsx?|jsx?)$/
-const RUNTIME_EXT_RE = /\.([cm])(?:ts|js)$/
-
 async function getPathSubstitution (absolutePath: string, buildDir: string): Promise<string> {
-  const stripped = absolutePath.replace(STRIPPABLE_EXT_RE, '')
-  if (stripped !== absolutePath) {
-    return relativeWithDot(buildDir, stripped)
-  }
-  const runtimeMatch = absolutePath.match(RUNTIME_EXT_RE)
-  if (runtimeMatch) {
-    const base = absolutePath.slice(0, -runtimeMatch[0]!.length)
-    if (await fsp.stat(`${base}.d.ts`).then(s => s.isFile(), () => false)) {
-      return relativeWithDot(buildDir, base)
-    }
-    const declaration = `${base}.d.${runtimeMatch[1]}ts`
-    if (await fsp.stat(declaration).then(s => s.isFile(), () => false)) {
-      return relativeWithDot(buildDir, declaration)
-    }
-  }
-  return relativeWithDot(buildDir, absolutePath)
+  return relativeWithDot(buildDir, await resolveDeclarationPath(absolutePath))
 }
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]

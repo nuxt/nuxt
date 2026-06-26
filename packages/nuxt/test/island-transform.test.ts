@@ -19,14 +19,14 @@ const getComponents = () => [{
 const pluginWebpack = IslandsTransformPlugin({
   getComponents,
   selectiveClient: true,
-}).raw({}, { framework: 'webpack', webpack: { compiler: {} as any } }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+}).raw({}, { framework: 'webpack', webpack: { compiler: {} as any }, versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
 async function viteTransform (source: string, id: string, selectiveClient: boolean | 'deep' = false, getServerPages: () => string[] = () => []) {
   const vitePlugin = IslandsTransformPlugin({
     getComponents,
     getServerPages,
     selectiveClient,
-  }).raw({}, { framework: 'vite' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+  }).raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
   const result = await vitePlugin.transform.handler(source, id)
   return typeof result === 'string' ? result : result!.code

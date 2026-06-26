@@ -34,8 +34,8 @@ export function serializeIslandProps (props: Record<string, any> | null | undefi
 /**
  * Compute the `hashId` segment embedded in an island URL (`/__nuxt_island/<Name>_<hashId>.json`).
  *
- * The hash binds the response to the requested `(name, serializedProps, context, source)` tuple,
- * so the server can reject requests whose URL hash does not match the supplied query/body.
+ * The hash binds the response to the requested `(name, props, context, source)` tuple, so the
+ * server can reject requests whose URL hash does not match the supplied query/body.
  *
  * @internal
  */
@@ -45,5 +45,13 @@ export function computeIslandHash (
   context: Record<string, any>,
   source: string | undefined,
 ): string {
-  return hash([name, serializedProps, context, source]).replace(/[-_]/g, '')
+  let parsed: unknown
+  // The server hashes attacker-controllable query input before validating, so a malformed
+  // string must not throw here; fall back to the raw value (matching the hash on both ends).
+  try {
+    parsed = JSON.parse(serializedProps)
+  } catch {
+    parsed = serializedProps
+  }
+  return hash([name, parsed, context, source]).replace(/[-_]/g, '')
 }

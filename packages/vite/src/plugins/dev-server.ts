@@ -38,15 +38,15 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
 
       if (config.server && config.server.hmr !== false) {
-        const serverDefaults: Omit<ServerOptions, 'hmr'> & { hmr: Exclude<ServerOptions['hmr'], boolean> } = {
+        const serverDefaults: Omit<ServerOptions, 'hmr' | 'ws'> & { hmr: Exclude<ServerOptions['hmr'], boolean>, ws: NonNullable<Exclude<ServerOptions['ws'], false>> } = {
           hmr: {
             protocol: nuxt.options.devServer.https ? 'wss' : undefined,
           },
+          ws: {},
         }
-        if (typeof config.server.hmr !== 'object' || !config.server.hmr.server) {
-          serverDefaults.hmr ??= {}
+        if (typeof config.server.ws !== 'object' || !config.server.ws.server) {
           const hmrPortDefault = 24678 // Vite's default HMR port
-          serverDefaults.hmr.port = await getPort({
+          serverDefaults.ws.port = await getPort({
             verbose: false,
             portRange: [hmrPortDefault, hmrPortDefault + 20],
           })
