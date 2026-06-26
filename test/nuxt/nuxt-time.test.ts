@@ -78,6 +78,25 @@ describe('<NuxtTime>', () => {
     )
   })
 
+  it('should display compact relative time with relativeCompact', async () => {
+    const datetime = Date.now() - 5 * 60 * 1000
+    const thing = await mountSuspended(
+      defineComponent({
+        render: () =>
+          h(NuxtTime, {
+            datetime,
+            relative: true,
+            locale: 'en-GB',
+            relativeStyle: 'narrow',
+            relativeCompact: true,
+          }),
+      }),
+    )
+    expect(thing.html()).toMatchInlineSnapshot(
+      `"<time datetime="${new Date(datetime).toISOString()}">5m</time>"`,
+    )
+  })
+
   it('should display datetime in title', async () => {
     const datetime = Date.now() - 5 * 60 * 1000
     const thing = await mountSuspended(
@@ -166,6 +185,53 @@ describe('<NuxtTime>', () => {
     expect(thing.html()).toEqual(
       `<time data-locale="en-GB" data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
+
+    vi.restoreAllMocks()
+  })
+
+  it('should generate correct hydrateable code with relativeCompact', async () => {
+    const datetime = Date.now() - 25 * 60 * 60 * 1000
+    const thing = await mountSuspended(
+      defineComponent({
+        render: () =>
+          h(NuxtTime, {
+            ssr: true,
+            datetime,
+            relative: true,
+            locale: 'en-GB',
+            relativeStyle: 'narrow',
+            relativeCompact: true,
+          }),
+      }),
+    )
+
+    const html = thing.html()
+    expect(html).toContain('data-relative-compact="true"')
+    expect(html).toContain('data-relative-style="narrow"')
+
+    const id = html.match(/data-prehydrate-id="([^"]+)"/)?.[1]
+    expect(id).toBeDefined()
+
+    expect(thing.element.textContent).toBe('1d')
+
+    vi.spyOn(document, 'querySelectorAll').mockImplementation((selector) => {
+      if (selector === `[data-prehydrate-id*="${id}"]`) {
+        return [thing.element] as any
+      }
+      return []
+    })
+
+    const head = injectHead()
+    const prehydrateEntry = [...head.entries.values()].find(
+      // @ts-expect-error untyped internal
+      e => e.input?.script?.[0]?.innerHTML?.includes('_nuxtTimeNow'),
+    )
+    expect(prehydrateEntry).toBeDefined()
+    // @ts-expect-error untyped internal
+    const fn = new Function(prehydrateEntry!.input.script[0].innerHTML)
+    fn()
+
+    expect(thing.element.textContent).toBe('1d')
 
     vi.restoreAllMocks()
   })
