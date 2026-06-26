@@ -156,7 +156,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Early open handler
   if (import.meta.client && options?.open) {
-    const { protocol } = new URL(toPath, window.location.href)
+    let url: URL
+    try {
+      url = new URL(toPath, window.location.href)
+    } catch {
+      throw new Error(`Cannot navigate to invalid URL: '${toPath}'`)
+    }
+    const { protocol } = url
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -180,7 +186,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
+    let url: URL
+    try {
+      url = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
+    } catch {
+      throw new Error(`Cannot navigate to invalid URL: '${toPath}'`)
+    }
+    const { protocol } = url
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -341,7 +353,12 @@ export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>): stri
  * @internal
  */
 export function encodeURL (location: string, isExternalHost = false): string {
-  const url = new URL(location, 'http://localhost')
+  let url: URL
+  try {
+    url = new URL(location, 'http://localhost')
+  } catch {
+    return location
+  }
   if (!isExternalHost) {
     // Collapse leading slashes to keep the redirect same-origin (CWE-601).
     const pathname = url.pathname.replace(/^\/{2,}/, '/')

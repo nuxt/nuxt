@@ -76,7 +76,12 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
 const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
-  const u = new URL(url, 'http://localhost')
+  let u: URL
+  try {
+    u = new URL(url, 'http://localhost')
+  } catch {
+    throw new Error('Invalid payload URL: ' + url)
+  }
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }

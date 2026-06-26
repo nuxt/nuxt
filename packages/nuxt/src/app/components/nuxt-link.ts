@@ -419,7 +419,13 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         const path = typeof to.value === 'string'
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-        const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
+        const normalizedPath = (() => {
+          try {
+            return isExternal.value ? new URL(path, window.location.href).href : path
+          } catch {
+            return path
+          }
+        })()
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
           !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
@@ -527,7 +533,12 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             get route () {
               if (!href.value) { return undefined }
 
-              const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
+              let url: URL
+              try {
+                url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
+              } catch {
+                return undefined
+              }
               return {
                 path: url.pathname,
                 fullPath: url.pathname,
