@@ -30,10 +30,10 @@ jobs:
       - name: Build Nuxt
         run: pnpm build
 
-      - parallel:
-          - name: Lint (docs)
-            run: pnpm lint:docs:fix
-          - name: Typecheck (docs)
-            run: pnpm typecheck:docs
+      - name: Lint (docs)
+        run: pnpm lint:docs:fix
+
+      - name: Typecheck (docs)
+        run: pnpm typecheck:docs
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1.3.4
