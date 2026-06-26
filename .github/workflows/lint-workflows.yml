@@ -24,7 +24,9 @@ permissions:
 jobs:
   lint-workflows:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    if: github.event_name != 'push' || github.ref_name != 'main'
+    # if: github.event_name != 'push' || github.ref_name != 'main'
+    # temporarily disabled until https://github.com/rhysd/actionlint/pull/694 is merged
+    if: false
     runs-on: ubuntu-latest
 
     steps:
