@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: AgentScan
         id: agentscan
-        uses: MatteoGabriele/agentscan-action@ccb50da057e2ac7fcdb123db3110f00af97f0fef # v1.14.0
+        uses: MatteoGabriele/agentscan-action@51fb33d2bf6290780418ae231d7e7096ef5d8311 # v1.15.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-members: "dependabot[bot],renovate[bot]"
