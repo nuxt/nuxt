@@ -1,11 +1,10 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, resolveAlias, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 
-import { parseNodeModulePath } from 'mlly'
 import { isDirectory, logger, resolveToAlias } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
 import { appCompatPresets, defaultPresets } from './presets.ts'
@@ -224,7 +223,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
         const typePath = resolved.get(from)
         // skip relative import paths for node_modules that are explicitly installed,
         // letting TypeScript resolve them from `node_modules` by name
-        if (typePath && nuxt._dependencies?.has(parseNodeModulePath(typePath).name || '')) {
+        if (typePath && nuxt._dependencies?.has(packageName(from))) {
           path = from
         } else {
           path = typePath ?? path

@@ -3,9 +3,22 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { join } from 'pathe'
 import { describe, expect, it } from 'vitest'
-import { resolveDeclarationPath, resolveTypePaths } from '../src/types.ts'
+import { packageName, resolveDeclarationPath, resolveTypePaths } from '../src/types.ts'
 
 const fixtureDir = fileURLToPath(new URL('./types-fixture', import.meta.url))
+
+describe('packageName', () => {
+  it('returns the package name for bare and subpath specifiers', () => {
+    expect(packageName('vue')).toBe('vue')
+    expect(packageName('vue/compiler-sfc')).toBe('vue')
+    expect(packageName('vue-router/auto-routes')).toBe('vue-router')
+  })
+
+  it('keeps the scope for scoped specifiers', () => {
+    expect(packageName('@vue/runtime-core')).toBe('@vue/runtime-core')
+    expect(packageName('@vue/runtime-core/dist/runtime-core')).toBe('@vue/runtime-core')
+  })
+})
 
 describe('resolveDeclarationPath', () => {
   it('strips extensions in TypeScript\'s extensionless retry list', async () => {

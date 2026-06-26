@@ -38,7 +38,7 @@ export { createResolver, findPath, resolveAlias, resolveFiles, resolveNuxtModule
 export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
-export { resolveDeclarationPath, resolveTypePaths } from './types.ts'
+export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
 export { logger, useLogger } from './logger.ts'
 
 // Dependencies

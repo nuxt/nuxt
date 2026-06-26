@@ -1,7 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { resolveModulePath } from 'exsolve'
-import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
-import { dirname, join } from 'pathe'
+import { dirname } from 'pathe'
 import { resolvePackageJSON } from 'pkg-types'
 import { directoryToURL } from './internal/esm.ts'
 
@@ -49,6 +48,12 @@ export async function resolveDeclarationPath (absolutePath: string): Promise<str
   return absolutePath
 }
 
+/** Extract the package name (including scope) from a (possibly subpath) module specifier. */
+export function packageName (specifier: string): string {
+  const segments = specifier.split('/')
+  return specifier[0] === '@' ? segments.slice(0, 2).join('/') : segments[0]!
+}
+
 const rootCache = new Map<string, Promise<string | undefined>>()
 
 function resolveRoot (basePkg: string, from: Array<string | URL>): Promise<string | undefined> {
@@ -88,15 +93,13 @@ export async function resolveTypePaths (packages: string[], searchPaths: string[
     }
 
     const declaration = await resolveDeclarationPath(resolved)
-    const subpath = await lookupNodeModuleSubpath(resolved)
 
     // A runtime path that `resolveDeclarationPath` could not rewrite to a declaration
-    // resolves to `any` as a file path. For the package's `.` export, fall back to the
-    // package root, which resolves through `exports` / `types`; for other subpaths there
-    // is no better path, so keep the resolved file.
-    if (declaration === resolved && RUNTIME_EXT_RE.test(resolved) && (!subpath || subpath === './')) {
-      const { dir, name } = parseNodeModulePath(resolved)
-      const root = dir && name ? join(dir, name) : await resolveRoot(pkg, from)
+    // resolves to `any` as a file path. For a bare package (its `.` export), fall back to
+    // the package root, which resolves through `exports` / `types`; for subpath exports
+    // there is no better path, so keep the resolved file.
+    if (declaration === resolved && RUNTIME_EXT_RE.test(resolved) && pkg === packageName(pkg)) {
+      const root = await resolveRoot(pkg, from)
       return results.push([pkg, root ?? resolved])
     }
 
