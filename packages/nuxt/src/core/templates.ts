@@ -101,8 +101,6 @@ export const serverPluginTemplate: NuxtTemplate = {
 
 const TS_RE = /\.[cm]?tsx?$/
 const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
-const JS_RE = /\.[cm]jsx?$/
-const JS_CAPTURE_RE = /\.[cm](jsx?)$/
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async ({ nuxt, app }) => {
@@ -128,14 +126,6 @@ export const pluginsDeclaration: NuxtTemplate = {
       // if `.d.ts` file exists alongside a `.js` plugin, or if `.d.mts` file exists alongside a `.mjs` plugin, we can use the entire path
       if (correspondingDeclaration !== pluginPath && exists(correspondingDeclaration)) {
         tsImports.push(relativePath)
-        continue
-      }
-
-      const incorrectDeclaration = pluginPath.replace(JS_RE, '.d.ts')
-      // if `.d.ts` file exists, but plugin is `.mjs`, add `.js` extension to the import
-      // to hotfix issue until ecosystem updates to `@nuxt/module-builder@>=0.8.0`
-      if (incorrectDeclaration !== pluginPath && exists(incorrectDeclaration)) {
-        tsImports.push(relativePath.replace(JS_CAPTURE_RE, '.$1'))
         continue
       }
 
