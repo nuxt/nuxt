@@ -80,6 +80,14 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     close: async () => { await hooks.callHook('close', nuxt) },
     vfs: {},
     apps: {},
+    buildOutputs: {
+      ssrStyles: undefined,
+      serverEntry: () => 'export default () => {}',
+      clientManifest: () => 'export default {}',
+      clientPrecomputed: () => 'export default undefined',
+      entryChunkName: () => 'export const entryFileName = undefined',
+      entryIds: () => 'export default []',
+    },
     runWithContext: fn => runWithNuxtContext(nuxt, fn),
     options,
   }
