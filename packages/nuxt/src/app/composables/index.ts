@@ -12,6 +12,7 @@ export { useCookie, refreshCookie } from './cookie'
 export type { CookieOptions, CookieRef } from './cookie'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { onPrehydrate, prerenderRoutes, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus, useResponseHeader } from './ssr'
+export { useDebounce } from './debounce'
 export { onNuxtReady } from './ready'
 export { abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, onBeforeRouteLeave, onBeforeRouteUpdate, setPageLayout, navigateTo, useRoute, useRouter } from './router'
 export type { AddRouteMiddlewareOptions, RouteMiddleware } from './router'

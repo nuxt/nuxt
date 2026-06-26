@@ -42,6 +42,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/once',
   },
   {
+    imports: ['useDebounce'],
+    from: '#app/composables/debounce',
+  },
+  {
     imports: ['useState', 'clearNuxtState'],
     from: '#app/composables/state',
   },
