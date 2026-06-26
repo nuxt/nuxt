@@ -42,8 +42,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Lint monorepo
-        run: pnpm sherif -r multiple-dependency-versions
-
-      - name: Check engine ranges, peer dependency ranges and installed versions
-        run: pnpm test:engines
+      - parallel:
+          - name: Lint monorepo
+            run: pnpm sherif -r multiple-dependency-versions
+          - name: Check engine ranges, peer dependency ranges and installed versions
+            run: pnpm test:engines
