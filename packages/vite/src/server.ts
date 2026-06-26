@@ -33,9 +33,10 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
         async config (serverConfig) {
           serverConfig.server ||= {}
           serverConfig.server.hmr ||= {}
+          serverConfig.server.ws ||= {}
           if (nuxt.options.dev && typeof serverConfig.server.hmr !== 'boolean') {
             const hmrPortDefault = 24678
-            serverConfig.server.hmr.port ||= await getPort({
+            serverConfig.server.ws.port ||= await getPort({
               verbose: false,
               portRange: [hmrPortDefault, hmrPortDefault + 20],
             })

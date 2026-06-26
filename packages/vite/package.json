@@ -31,7 +31,7 @@
     "@nuxt/kit": "workspace:*",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vitejs/plugin-vue-jsx": "^5.1.6",
-    "autoprefixer": "^10.5.1",
+    "autoprefixer": "^10.5.2",
     "consola": "^3.4.2",
     "cssnano": "^8.0.2",
     "defu": "^6.1.7",
@@ -52,7 +52,7 @@
     "std-env": "^4.1.0",
     "ufo": "^1.6.4",
     "unenv": "^2.0.0-rc.24",
-    "vite": "^8.0.16",
+    "vite": "^8.1.0",
     "vite-node": "^6.0.0",
     "vite-plugin-checker": "^0.14.4",
     "vue-bundle-renderer": "^2.3.1"
@@ -68,7 +68,7 @@
     "rolldown": "1.1.2",
     "rollup": "4.62.2",
     "rollup-plugin-visualizer": "7.0.1",
-    "vue": "3.5.38"
+    "vue": "3.5.39"
   },
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0 || ^8.0.0",
