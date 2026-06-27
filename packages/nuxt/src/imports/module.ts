@@ -1,11 +1,10 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 
-import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory, logger, resolveToAlias } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
 import { appCompatPresets, defaultPresets } from './presets.ts'
@@ -210,31 +209,30 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
   const SUPPORTED_EXTENSION_RE = new RegExp(`\\.(?:${nuxt.options.extensions.map(i => i.replace('.', '')).join('|')})$`)
 
-  const importPaths = nuxt.options.modulesDir.map(dir => directoryToURL(dir))
-
   async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.typeFrom || i.from)))
-    // skip relative import paths for node_modules that are explicitly installed
+      .filter(from => !resolvedImportPathMap.has(from) && !nuxt._dependencies?.has(from))
+
+    const aliasedPaths = new Map(importSource.map(from => [from, resolveAlias(from)] as const))
+    const bareSpecifiers = importSource.filter(from => !isAbsolute(aliasedPaths.get(from)!))
+    const resolved = new Map(await resolveTypePaths(bareSpecifiers, nuxt.options.modulesDir))
+
     await Promise.all(importSource.map(async (from) => {
-      if (resolvedImportPathMap.has(from) || nuxt._dependencies?.has(from)) {
-        return
-      }
-      let path = resolveAlias(from)
+      let path = aliasedPaths.get(from)!
       if (!isAbsolute(path)) {
-        path = await tryResolveModule(from, importPaths).then(async (r) => {
-          if (!r) { return r }
-
-          const { dir, name } = parseNodeModulePath(r)
-          if (name && nuxt._dependencies?.has(name)) { return from }
-
-          if (!dir || !name) { return r }
-          const subpath = await lookupNodeModuleSubpath(r)
-          return subpath && subpath !== './' ? join(dir, name, subpath) : r
-        }) ?? path
+        const typePath = resolved.get(from)
+        // skip relative import paths for node_modules that are explicitly installed,
+        // letting TypeScript resolve them from `node_modules` by name
+        if (typePath && nuxt._dependencies?.has(packageName(from))) {
+          path = from
+        } else {
+          path = typePath ?? path
+        }
       }
 
       if (existsSync(path) && !(await isDirectory(path))) {
-        path = path.replace(SUPPORTED_EXTENSION_RE, '')
+        const declarationPath = await resolveDeclarationPath(path)
+        path = declarationPath === path ? path.replace(SUPPORTED_EXTENSION_RE, '') : declarationPath
       }
 
       if (isAbsolute(path)) {

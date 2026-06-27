@@ -500,6 +500,20 @@ describe('hash binding', () => {
     expect(res.status).toBe(200)
   })
 
+  // External island clients (e.g. `@nuxtjs/og-image`) build the URL hash from the props object
+  // and send `JSON.stringify(props)`. `computeIslandHash` over the serialized string and the
+  // client's object hash converge (asserted in island-hash.test.ts); here we send the raw
+  // `JSON.stringify(props)` the external client emits rather than `serializeIslandProps`.
+  it('accepts a request whose props were serialized by an external client', async () => {
+    const name = 'PureComponent'
+    const props = { bool: false, number: 1, str: 's', obj: {} }
+    const hashId = computeIslandHash(name, JSON.stringify(props), {}, undefined)
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: JSON.stringify(props),
+    }))
+    expect(res.status).toBe(200)
+  })
+
   it('rejects a request whose URL hash was computed over different props', async () => {
     // Compute a valid hash for one set of props, then swap the actual query props.
     const url = islandURL('PureComponent', {
