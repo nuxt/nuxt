@@ -71,7 +71,7 @@ export function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, tex
 
 const BASE_TIMEOUT = isCI ? 6_000 : 3_000
 export async function gotoPath (page: Page, path: string, retries = 2) {
-  await vi.waitFor(() => page.goto(url(path), { timeout: BASE_TIMEOUT }), { timeout: BASE_TIMEOUT * retries })
+  await vi.waitFor(() => page.goto(url(path), { timeout: BASE_TIMEOUT }), { timeout: BASE_TIMEOUT * retries || BASE_TIMEOUT })
   await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
 }
 
