@@ -43,9 +43,11 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
             protocol: nuxt.options.devServer.https ? 'wss' : undefined,
           },
         }
+        /* eslint-disable-next-line @typescript-eslint/no-deprecated */
         if (typeof config.server.hmr !== 'object' || !config.server.hmr.server) {
           serverDefaults.hmr ??= {}
           const hmrPortDefault = 24678 // Vite's default HMR port
+          /* eslint-disable-next-line @typescript-eslint/no-deprecated */
           serverDefaults.hmr.port = await getPort({
             verbose: false,
             portRange: [hmrPortDefault, hmrPortDefault + 20],
