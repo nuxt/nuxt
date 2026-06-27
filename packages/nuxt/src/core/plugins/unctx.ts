@@ -6,6 +6,7 @@ import { isJS, isVue } from '../utils/index.ts'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 const TRANSFORM_MARKER_RE = /^\/\* _processed_nuxt_unctx_transform \*\/\n/
+const AWAIT_RE = /\bawait\b/
 
 interface UnctxTransformPluginOptions {
   sourcemap?: boolean
@@ -25,13 +26,13 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
       filter: {
         ...transformer.filter,
         code: {
-          ...transformer.filter.code,
+          include: transformer.filter.code,
           exclude: TRANSFORM_MARKER_RE,
         },
       },
       handler (code) {
         // TODO: needed for webpack - update transform in unctx/unplugin?
-        if (!transformer.shouldTransform(code)) { return }
+        if (!AWAIT_RE.test(code) || !transformer.shouldTransform(code)) { return }
         const result = transformer.transform(code)
         if (result) {
           return {
