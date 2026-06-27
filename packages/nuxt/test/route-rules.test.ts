@@ -1,3 +1,4 @@
+import type { NuxtPage } from '@nuxt/schema'
 import { describe, expect, it } from 'vitest'
 
 import { globRouteRulesFromPages, removePagesRules } from '../src/pages/route-rules.ts'
@@ -66,7 +67,7 @@ describe('routeRules from page meta', () => {
   })
 
   it('expands constrained params from parent route records', () => {
-    const pages = [
+    const pages: NuxtPage[] = [
       {
         path: '/:locale(en-US|pt_BR)',
         children: [
@@ -75,7 +76,7 @@ describe('routeRules from page meta', () => {
             children: [
               {
                 path: 'verify',
-                rules: { robots: false },
+                rules: { prerender: true },
               },
             ],
           },
@@ -88,9 +89,9 @@ describe('routeRules from page meta', () => {
     ]
 
     expect(globRouteRulesFromPages(pages)).toEqual({
-      '/en-US/account/verify': { robots: false },
+      '/en-US/account/verify': { prerender: true },
       '/en-US/blog/**': { swr: 60 },
-      '/pt_BR/account/verify': { robots: false },
+      '/pt_BR/account/verify': { prerender: true },
       '/pt_BR/blog/**': { swr: 60 },
     })
   })
