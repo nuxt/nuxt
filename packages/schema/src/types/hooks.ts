@@ -8,7 +8,7 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
-import type { ViteConfig } from './config.ts'
+import type { NuxtOptions, ViteConfig } from './config.ts'
 import type { NuxtCompatibility, NuxtCompatibilityIssues } from './compatibility.ts'
 import type { Component, ComponentsOptions } from './components.ts'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt.ts'
@@ -85,6 +85,19 @@ export interface NuxtAnalyzeMeta {
   analyzeDir: string
   buildDir: string
   outDir: string
+}
+
+/**
+ * Template generator for nuxi scaffolding templates.
+ * Used by the `templates:extend` hook to add or override code generation templates.
+ */
+export type TemplateGenerator = (options: {
+  name: string
+  args: Record<string, unknown>
+  nuxtOptions: NuxtOptions
+}) => {
+  path: string
+  contents: string
 }
 
 /**
@@ -294,6 +307,15 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'listen': (listenerServer: HttpServer | HttpsServer, listener: any) => HookResult
+  /**
+   * Allows extending nuxi `add-template` code generation templates.
+   *
+   * The `templates` object maps template names to generator functions. Modules
+   * can add new entries or override existing ones by mutating the object.
+   * @param templates The `templates` record to mutate
+   * @returns Promise
+   */
+  'templates:extend': (templates: Record<string, TemplateGenerator>) => HookResult
 
   // Schema
   /**

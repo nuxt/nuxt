@@ -110,3 +110,60 @@ npx nuxt add api hello
 # Generates `layers/subscribe/nuxt.config.ts`
 npx nuxt add layer subscribe
 ```
+
+## Extending Templates
+
+You can extend the available templates using the `templates:extend` hook, for example in a module or plugin. This allows adding new template types or overriding built-in ones.
+
+Custom templates receive the same `args` as built-in templates. All CLI flags — including modifier flags like `--client`, `--server`, `--mode`, `--method`, `--global` — flow through to the template generator via the `args` parameter.
+
+### Adding a new template
+
+```ts
+import { defineNuxtModule } from '@nuxt/kit'
+
+export default defineNuxtModule({
+  setup (_, nuxt) {
+    nuxt.hook('templates:extend', (templates) => {
+      templates.model = ({ name, args, nuxtOptions }) => ({
+        path: `${nuxtOptions.srcDir}/models/${name}${args.type ? `.${args.type}` : ''}.ts`,
+        contents: `
+export interface ${name} {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+`,
+      })
+    })
+  },
+})
+```
+
+Then generate it with:
+
+```bash [Terminal]
+npx nuxt add model User
+npx nuxt add model User --type=query
+```
+
+### Overriding an existing template
+
+```ts
+import { defineNuxtModule } from '@nuxt/kit'
+
+export default defineNuxtModule({
+  setup (_, nuxt) {
+    nuxt.hook('templates:extend', (templates) => {
+      templates.component = ({ name, args, nuxtOptions }) => ({
+        path: `${nuxtOptions.srcDir}/components/${name}${args.mode ? `.${args.mode}` : ''}.vue`,
+        contents: `
+<template>
+  <div>{{ ${name} }}</div>
+</template>
+`,
+      })
+    })
+  },
+})
+```
