@@ -7,7 +7,7 @@
  * @module url-try-catch.test
  */
 import { describe, expect, it } from 'vitest'
-import { encodeURL, encodeRoutePath } from '../src/app/composables/router'
+import { encodeRoutePath, encodeURL } from '../src/app/composables/router'
 
 // ---------------------------------------------------------------------------
 // encodeURL — pure function; no mocks needed
