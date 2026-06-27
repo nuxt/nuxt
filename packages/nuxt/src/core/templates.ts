@@ -61,7 +61,7 @@ export const islandRendererTemplate: NuxtTemplate = {
     const islandRenderer = resolve(ctx.nuxt.options.appDir, 'components/island-renderer')
     return [
       'import { defineAsyncComponent } from \'vue\'',
-      `export default import.meta.server ? defineAsyncComponent(() => import(${JSON.stringify(islandRenderer)}).then(r => r.default || r)) : () => null`,
+      `export default import.meta.server ? defineAsyncComponent(() => ${genDynamicImport(islandRenderer, { wrapper: false })}.then(r => r.default || r)) : () => null`,
     ].join('\n')
   },
 }
