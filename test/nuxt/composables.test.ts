@@ -783,7 +783,7 @@ describe('routing utilities: `encodeURL`', () => {
     expect(encode('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"//"`)
     const encoded = encode('/cœur?redirected=' + encodeURIComponent('https://google.com'))
     expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
-    expect(encoded).toMatchInlineSnapshot(`"/cœur?redirected=https%3A%2F%2Fgoogle.com"`)
+    expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
     expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
   })
 
