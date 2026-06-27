@@ -13,7 +13,7 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
-import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, stringifyParsedURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
@@ -419,7 +419,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         const path = typeof to.value === 'string'
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-        const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
+        const normalizedPath = isExternal.value
+          ? stringifyParsedURL(parseURL(path, window.location.href))
+          : path
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
           !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
@@ -527,7 +529,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             get route () {
               if (!href.value) { return undefined }
 
-              const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
+              const url = parseURL(href.value, import.meta.client ? window.location.href : 'http://localhost')
               return {
                 path: url.pathname,
                 fullPath: url.pathname,
