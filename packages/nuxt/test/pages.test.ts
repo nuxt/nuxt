@@ -1,7 +1,8 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob, warnDuplicateRoutePaths } from '../src/pages/utils.ts'
+import { logger } from '../src/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -463,6 +464,104 @@ describe('page:extends', () => {
         meta: { [DYNAMIC_META_KEY]: new Set(['meta']), snap: true },
       },
     ])
+  })
+})
+
+describe('pages:warnDuplicateRoutePaths', () => {
+  const DUPLICATE_PATH_WARNING = 'Multiple routes resolve to the same path'
+  function duplicateWarnings (warn: ReturnType<typeof vi.spyOn>) {
+    return (warn.mock.calls as unknown[][])
+      .map((call): string => String(call[0]))
+      .filter(message => message.includes(DUPLICATE_PATH_WARNING))
+  }
+
+  it('warns when sibling routes resolve to the same path', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', file: 'pages/test.vue' },
+      { path: '/test', file: 'modules/runtime/pages/test.vue' },
+    ])
+    const warnings = duplicateWarnings(warn)
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('/test')
+    expect(warnings[0]).toContain('pages/test.vue')
+    expect(warnings[0]).toContain('modules/runtime/pages/test.vue')
+    warn.mockRestore()
+  })
+
+  it('warns for nested sibling routes using the resolved full path', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      {
+        path: '/parent',
+        file: 'pages/parent.vue',
+        children: [
+          { path: 'child', file: 'pages/parent/child.vue' },
+          { path: 'child', file: 'modules/runtime/pages/child.vue' },
+        ],
+      },
+    ])
+    const warnings = duplicateWarnings(warn)
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('/parent/child')
+    warn.mockRestore()
+  })
+
+  it('does not warn when all routes have unique paths', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/', file: 'pages/index.vue' },
+      { path: '/about', file: 'pages/about.vue' },
+      {
+        path: '/parent',
+        file: 'pages/parent.vue',
+        children: [
+          { path: 'child', file: 'pages/parent/child.vue' },
+        ],
+      },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(0)
+    warn.mockRestore()
+  })
+
+  it('does not warn when a redirect-only route shares a path with a page', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', redirect: '/other' },
+      { path: '/test', file: 'pages/test.vue' },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(0)
+    warn.mockRestore()
+  })
+
+  it('does not warn for server/client variants of the same page', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', file: 'pages/test.vue', mode: 'server' },
+      { path: '/test', file: 'pages/test.vue', mode: 'client' },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(0)
+    warn.mockRestore()
+  })
+
+  it('still warns when two rendering routes share both path and mode', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', file: 'pages/test.vue', mode: 'client' },
+      { path: '/test', file: 'modules/runtime/pages/test.vue', mode: 'client' },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(1)
+    warn.mockRestore()
+  })
+
+  it('does not warn when a colliding route opts out via meta.allowDuplicatePath', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    warnDuplicateRoutePaths([
+      { path: '/test', file: 'pages/test.vue' },
+      { path: '/test', file: 'modules/runtime/pages/test.vue', meta: { allowDuplicatePath: true } },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(0)
+    warn.mockRestore()
   })
 })
 
