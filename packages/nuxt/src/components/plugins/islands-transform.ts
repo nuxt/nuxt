@@ -211,7 +211,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
     {
       name: 'nuxt:components-chunk:client',
       apply: () => !options.dev,
-      applyToEnvironment: environment => environment.name === 'client',
+      applyToEnvironment: environment => environment.config.consumer === 'client',
       buildStart () {
         for (const c of options.getComponents()) {
           if (!c.filePath || c.mode === 'server') {

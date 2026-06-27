@@ -21,7 +21,7 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:stable-entry',
     apply: () => !nuxt.options.dev && nuxt.options.experimental.entryImportMap,
     applyToEnvironment (environment) {
-      if (environment.name !== 'client') {
+      if (environment.config.consumer !== 'client') {
         return false
       }
       if (environment.config.build.target) {

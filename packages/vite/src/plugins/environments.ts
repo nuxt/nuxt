@@ -56,7 +56,7 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     applyToEnvironment (environment) {
-      if (environment.name === 'client') {
+      if (environment.config.consumer === 'client') {
         return [
           ...nuxt.options.experimental.clientNodeCompat ? [NodeCompatAliasPlugin()] : [],
           {

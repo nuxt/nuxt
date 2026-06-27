@@ -177,7 +177,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           },
         },
         generateBundle (outputOptions) {
-          if (environment.name === 'client') { return }
+          if (environment.config.consumer === 'client') { return }
 
           const emitted: Record<string, string> = {}
           const usedNames = new Set<string>()
@@ -253,7 +253,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             clientCSSMap[chunk.facadeModuleId!] ||= new Set()
           }
           let chunkCSSSources: Set<string> | undefined
-          if (environment.name === 'client' && chunk.facadeModuleId) {
+          if (environment.config.consumer === 'client' && chunk.facadeModuleId) {
             const chunkSrc = relativeToSrcDir(chunk.facadeModuleId)
             if (chunkSrc) {
               chunkCSSSources = cssSourcesByChunkSrc.get(chunkSrc)
@@ -266,7 +266,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           for (const moduleId of [chunk.facadeModuleId, ...chunk.moduleIds].filter(Boolean) as string[]) {
             // 'Teleport' CSS chunks that made it into the bundle on the client side
             // to be inlined on server rendering
-            if (environment.name === 'client') {
+            if (environment.config.consumer === 'client') {
               const moduleMap = clientCSSMap[moduleId] ||= new Set()
               if (isCSS(moduleId)) {
                 chunkCSSSources?.add(stripQuery(moduleId))
@@ -301,14 +301,14 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         transform: {
           filter: {
             id: {
-              include: environment.name === 'client'
+              include: environment.config.consumer === 'client'
                 ? new RegExp('^' + escapeStringRegexp(entry) + '$')
                 : undefined,
-              exclude: environment.name === 'client' ? [] : [/\?.*macro=/, /\?.*nuxt_component=/],
+              exclude: environment.config.consumer === 'client' ? [] : [/\?.*macro=/, /\?.*nuxt_component=/],
             },
           },
           async handler (code, id, meta?: unknown) {
-            if (environment.name === 'client') {
+            if (environment.config.consumer === 'client') {
               // We will either teleport global CSS to the 'entry' chunk on the server side
               // or include it here in the client build so it is emitted in the CSS.
               if (id === entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {

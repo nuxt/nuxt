@@ -9,7 +9,7 @@ export function RuntimePathsPlugin (): Plugin {
   return {
     name: 'nuxt:runtime-paths-dep',
     enforce: 'post',
-    applyToEnvironment: environment => environment.name === 'client',
+    applyToEnvironment: environment => environment.config.consumer === 'client',
     transform (code, id, meta?: unknown) {
       const { pathname, search } = parseModuleId(id)
 
