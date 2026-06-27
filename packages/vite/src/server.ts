@@ -14,6 +14,22 @@ import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { ssr, ssrEnvironment } from './shared/server.ts'
 
+type ViteServerOptions = NonNullable<ViteConfig['server']>
+
+export function detachSsrHmrServer (server: ViteServerOptions, hmrPort: number): void {
+  if (server.hmr === false || server.ws === false) {
+    server.hmr = false
+    server.ws = false
+    return
+  }
+  const ws = typeof server.ws === 'object' ? server.ws : {}
+  // honour a port set via the deprecated `$server.server.hmr.port` as well as `ws.port`
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const userPort = ws.port || (typeof server.hmr === 'object' ? server.hmr?.port : undefined)
+  server.hmr = false
+  server.ws = { ...ws, server: undefined, port: userPort || hmrPort }
+}
+
 export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
   const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
@@ -31,15 +47,16 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       {
         name: 'nuxt:server-hmr-port',
         async config (serverConfig) {
-          serverConfig.server ||= {}
-          serverConfig.server.hmr ||= {}
-          if (nuxt.options.dev && typeof serverConfig.server.hmr !== 'boolean') {
-            const hmrPortDefault = 24678
-            serverConfig.server.hmr.port ||= await getPort({
-              verbose: false,
-              portRange: [hmrPortDefault, hmrPortDefault + 20],
-            })
+          if (!nuxt.options.dev) {
+            return
           }
+          serverConfig.server ||= {}
+          const hmrPortDefault = 24678
+          const hmrPort = await getPort({
+            verbose: false,
+            portRange: [hmrPortDefault, hmrPortDefault + 20],
+          })
+          detachSsrHmrServer(serverConfig.server, hmrPort)
         },
       },
     ],
