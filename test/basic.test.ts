@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, getBrowser, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
@@ -1913,6 +1913,40 @@ describe('nested suspense', () => {
     ].sort())
 
     await page.close()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/25317
+  describe('client.vue / server.vue wrapper around nested suspense', () => {
+    async function sawInnerFallback () {
+      const browser = await getBrowser()
+      const page = await browser.newPage({})
+      await page.addInitScript(() => {
+        ;(window as any).__issue25317SawInnerFallback = false
+        const check = () => {
+          if (document.getElementById('issue-25317-inner-fallback')) {
+            ;(window as any).__issue25317SawInnerFallback = true
+          }
+        }
+        check()
+        new MutationObserver(check).observe(document, { childList: true, subtree: true })
+      })
+
+      await gotoPath(page, '/issue-25317')
+      await page.waitForSelector('#issue-25317-inner-loaded')
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100)))
+
+      const saw = await page.evaluate(() => (window as any).__issue25317SawInnerFallback as boolean)
+      await page.close()
+      return saw
+    }
+
+    it.runIf(isDev).fails('should not flash the inner suspense fallback (dev)', async () => {
+      expect(await sawInnerFallback()).toBe(false)
+    })
+
+    it.skipIf(isDev)('should not flash the inner suspense fallback (built)', async () => {
+      expect(await sawInnerFallback()).toBe(false)
+    })
   })
 })
 
