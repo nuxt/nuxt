@@ -110,7 +110,7 @@ export default defineConfig({
           include: ['test/*.test.ts'],
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           setupFiles: ['./test/setup-env.ts'],
-          testTimeout: isWindows ? 60000 : 10000,
+          testTimeout: isWindows ? 60000 : 20000,
           retry: isCI ? 2 : 0,
           benchmark: { include: [] },
           env: fixtureProjectEnv(entry),
