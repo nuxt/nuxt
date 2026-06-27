@@ -3,4 +3,10 @@ export default defineNuxtConfig({
   $meta: {
     name: 'layer-fixture',
   },
+  alias: {
+    '#contextual': {
+      path: './contextual',
+      context: ['app'],
+    },
+  },
 })

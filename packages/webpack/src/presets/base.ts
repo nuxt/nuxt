@@ -2,7 +2,7 @@ import { basename, normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
-import { logger } from '@nuxt/kit'
+import { filterAliases, logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
@@ -138,7 +138,7 @@ function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
     [basename(ctx.nuxt.options.dir.assets)]: resolve(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.assets),
-    ...ctx.options.alias,
+    ...filterAliases(ctx.options.alias, ctx.isServer ? 'server' : 'app'),
     ...ctx.alias,
   }
   if (ctx.isClient) {

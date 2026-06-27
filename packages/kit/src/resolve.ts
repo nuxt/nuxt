@@ -6,6 +6,8 @@ import { type GlobOptions, glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { parseNodeModulePath } from 'mlly'
+import type { AliasContext, AliasValue } from '@nuxt/schema'
+
 import { directoryToURL } from './internal/esm.ts'
 import { tryUseNuxt } from './context.ts'
 import { isIgnored } from './ignore.ts'
@@ -16,7 +18,10 @@ export interface ResolvePathOptions {
   cwd?: string
 
   /** An object of aliases. Default is Nuxt configured aliases. */
-  alias?: Record<string, string>
+  alias?: Record<string, AliasValue>
+
+  /** The context to resolve aliases for. */
+  context?: AliasContext
 
   /**
    * The file extensions to try.
@@ -87,12 +92,30 @@ export async function findPath (paths: string | string[], opts?: ResolvePathOpti
   return null
 }
 
+export function filterAliases (alias: Record<string, AliasValue>, context?: AliasContext): Record<string, string> {
+  const filteredAlias: Record<string, string> = {}
+
+  for (const key in alias) {
+    const value = alias[key]
+
+    if (typeof value === 'string') {
+      filteredAlias[key] = value
+    } else if (value && typeof value === 'object' && 'path' in value) {
+      if (!context || toArray(value.context).includes(context)) {
+        filteredAlias[key] = value.path
+      }
+    }
+  }
+
+  return filteredAlias
+}
+
 /**
  * Resolve path aliases respecting Nuxt alias options
  */
-export function resolveAlias (path: string, alias?: Record<string, string>): string {
+export function resolveAlias (path: string, alias?: Record<string, AliasValue>, context?: AliasContext): string {
   alias ||= tryUseNuxt()?.options.alias || {}
-  return _resolveAlias(path, alias)
+  return _resolveAlias(path, filterAliases(alias, context))
 }
 
 export interface Resolver {
@@ -203,7 +226,7 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
-  path = _resolveAlias(path, opts.alias ?? nuxt?.options.alias ?? {})
+  path = resolveAlias(path, opts.alias, opts.context)
 
   // Resolve relative to cwd
   if (!isAbsolute(path)) {
