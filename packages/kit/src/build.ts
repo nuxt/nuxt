@@ -34,6 +34,18 @@ export interface ExtendConfigOptions {
    * Prepends the plugin to the array with `unshift()` instead of `push()`.
    */
   prepend?: boolean
+  /**
+   * Also install the plugin for Vite worker bundles. Required for plugins that need to
+   * transform code imported from `new Worker(new URL(...), { type: 'module' })` in production,
+   * because Vite uses a separate plugin pipeline for worker bundles outside of dev.
+   *
+   * The same plugin instance is reused across worker bundles, so prefer stateless plugins
+   * when opting in.
+   *
+   * @see https://vite.dev/config/worker-options#worker-plugins
+   * @default false
+   */
+  worker?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -164,13 +176,28 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     return
   }
 
+  const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+  const resolvePlugin = async () => toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
+
   let needsEnvInjection = false
   nuxt.hook('vite:extend', async ({ config }) => {
     config.plugins ||= []
 
-    const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
+    const plugin = await resolvePlugin()
+
+    if (options.worker) {
+      // `config.plugins` only applies to workers in dev; production worker bundles use a
+      // separate pipeline (see https://vite.dev/config/worker-options#worker-plugins).
+      // Vite expects this getter to be synchronous, so the plugin instances are captured
+      // here and reused across worker bundles.
+      const prev = (config.worker ??= {}).plugins
+      config.worker.plugins = () => {
+        const prevPlugins = typeof prev === 'function' ? prev() : (prev ?? [])
+        return options?.prepend ? [...plugin, ...prevPlugins] : [...prevPlugins, ...plugin]
+      }
+    }
+
     if (options.server !== false && options.client !== false) {
-      const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
       config.plugins[method](...plugin)
       return
     }
@@ -197,8 +224,7 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     if (!needsEnvInjection) {
       return
     }
-    const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
-    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    const plugin = await resolvePlugin()
     if (env.isClient && options.server === false) {
       config.plugins![method](...plugin)
     }
