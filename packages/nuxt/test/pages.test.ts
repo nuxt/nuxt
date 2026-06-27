@@ -432,6 +432,7 @@ describe('pages:pathToNitroGlobs', () => {
   it('expands simple constrained route params before converting dynamic segments to globs', () => {
     expect(pathToNitroGlobs('/:locale(de)/account/verify')).toEqual(['/de/account/verify'])
     expect(pathToNitroGlobs('/:locale(de|fr)/privacy-policy')).toEqual(['/de/privacy-policy', '/fr/privacy-policy'])
+    expect(pathToNitroGlobs('/:locale(en-US|pt_BR)/about')).toEqual(['/en-US/about', '/pt_BR/about'])
     expect(pathToNitroGlobs('/:locale(de|fr)/blog/:slug')).toEqual(['/de/blog/**', '/fr/blog/**'])
   })
 })

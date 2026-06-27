@@ -65,6 +65,36 @@ describe('routeRules from page meta', () => {
     })
   })
 
+  it('expands constrained params from parent route records', () => {
+    const pages = [
+      {
+        path: '/:locale(en-US|pt_BR)',
+        children: [
+          {
+            path: 'account',
+            children: [
+              {
+                path: 'verify',
+                rules: { robots: false },
+              },
+            ],
+          },
+          {
+            path: 'blog/:slug',
+            rules: { swr: 60 },
+          },
+        ],
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages)).toEqual({
+      '/en-US/account/verify': { robots: false },
+      '/en-US/blog/**': { swr: 60 },
+      '/pt_BR/account/verify': { robots: false },
+      '/pt_BR/blog/**': { swr: 60 },
+    })
+  })
+
   it('removes route rules from pages', () => {
     const pages = getPages()
     removePagesRules(pages)
