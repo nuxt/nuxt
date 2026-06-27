@@ -117,6 +117,29 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
 
+  // Nuxt's internal server imports (the `defineAppConfig` shim and asset-URL helpers). These must
+  // stay available even when Nitro auto-imports are disabled (`nitroAutoImports: false`, the v5
+  // default), since `app.config.ts` is bundled into the server build.
+  const nitroInternalImports = [
+    {
+      as: '__buildAssetsURL',
+      name: 'buildAssetsURL',
+      from: resolve(distDir, 'runtime/utils/paths'),
+    },
+    {
+      as: '__publicAssetsURL',
+      name: 'publicAssetsURL',
+      from: resolve(distDir, 'runtime/utils/paths'),
+    },
+    {
+      // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
+      as: 'defineAppConfig',
+      name: 'defineAppConfig',
+      from: resolve(distDir, 'runtime/utils/config'),
+      priority: -1,
+    },
+  ]
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
@@ -133,7 +156,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       version: nuxtPkg.version || nitroBuilder.version,
     },
     imports: nuxt.options.experimental.nitroAutoImports === false
-      ? false
+      ? {
+          // Auto-imports are disabled, but keep Nuxt's internal imports (`nitroInternalImports`).
+          autoImport: nuxt.options.imports.autoImport as boolean,
+          dirs: [],
+          presets: [],
+          imports: nitroInternalImports,
+          exclude: [...excludePattern, /[\\/]\.git[\\/]/],
+        }
       : {
           autoImport: nuxt.options.imports.autoImport as boolean,
           dirs: [...sharedDirs],
@@ -143,25 +173,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
                 await getH3ImportsPreset(),
               ]
             : [],
-          imports: [
-            {
-              as: '__buildAssetsURL',
-              name: 'buildAssetsURL',
-              from: resolve(distDir, 'runtime/utils/paths'),
-            },
-            {
-              as: '__publicAssetsURL',
-              name: 'publicAssetsURL',
-              from: resolve(distDir, 'runtime/utils/paths'),
-            },
-            {
-              // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
-              as: 'defineAppConfig',
-              name: 'defineAppConfig',
-              from: resolve(distDir, 'runtime/utils/config'),
-              priority: -1,
-            },
-          ],
+          imports: nitroInternalImports,
           exclude: [...excludePattern, /[\\/]\.git[\\/]/],
         },
     // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
