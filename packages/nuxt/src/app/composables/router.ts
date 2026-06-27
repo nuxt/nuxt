@@ -348,7 +348,7 @@ export function encodeURL (location: string, isExternalHost = false): string {
     return (pathname || url.search || url.hash) ? pathname + url.search + url.hash : location
   }
   if (location.startsWith('//')) {
-    return stringifyParsedURL(url).replace(url.protocol, '')
+    return stringifyParsedURL(url).replace(url.protocol || '', '')
   }
   return stringifyParsedURL(url)
 }
