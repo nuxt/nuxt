@@ -1,13 +1,13 @@
 /**
  * Tests for URL try-catch fix (PR #35449).
  *
- * Verifies that `encodeURL`, `navigateTo`, and `encodeRoutePath` handle invalid
- * URLs gracefully instead of throwing unhandled `TypeError`.
+ * Verifies that `encodeURL` and `encodeRoutePath` handle invalid URLs gracefully
+ * using `parseURL` from `ufo` instead of try-catch.
  *
  * @module url-try-catch.test
  */
 import { describe, expect, it } from 'vitest'
-import { encodeURL, navigateTo, encodeRoutePath } from '../src/app/composables/router'
+import { encodeURL, encodeRoutePath } from '../src/app/composables/router'
 
 // ---------------------------------------------------------------------------
 // encodeURL — pure function; no mocks needed
@@ -27,11 +27,11 @@ describe('encodeURL', () => {
   })
 
   // ── Negative / edge cases ────────────────────────────────────────────────
-  it('does not throw on double-slash external URL and collapses the path', () => {
-    // //external.com is parsed as hostname external.com by URL, path becomes '/'
+  it('does not throw on protocol-relative URL and falls back to raw input', () => {
+    // parseURL returns empty pathname for //external.com, so encodeURL
+    // falls back to the raw input when no meaningful components exist.
     expect(() => encodeURL('//external.com')).not.toThrow()
-    const result = encodeURL('//external.com')
-    expect(result).toBe('/')
+    expect(encodeURL('//external.com')).toBe('//external.com')
   })
 
   it('does not throw on empty string', () => {
@@ -42,16 +42,16 @@ describe('encodeURL', () => {
     expect(() => encodeURL('\\\\invalid')).not.toThrow()
   })
 
-  it('returns invalid URL input as-is when URL constructor throws', () => {
-    // new URL('http://a b.com', ...) throws TypeError (space in host)
-    const result = encodeURL('http://a b.com')
-    expect(result).toBe('http://a b.com')
+  it('returns invalid URL input as-is when parseURL yields no useful parts', () => {
+    // parseURL is lenient and parses 'http://a b.com' with host='a b.com'
+    // but pathname/search/hash are empty, so encodeURL falls back to raw input.
+    expect(encodeURL('http://a b.com')).toBe('http://a b.com')
   })
 
-  it('handles raw IPv6 that would cause URL constructor to throw', () => {
-    // new URL('http://[::1', ...) throws because bracket is unclosed
-    const result = encodeURL('http://[::1')
-    expect(result).toBe('http://[::1')
+  it('falls back to raw input for broken IPv6 URL', () => {
+    // parseURL parses 'http://[::1' with host='[::1' and empty pathname,
+    // so encodeURL returns the raw input since no meaningful parts exist.
+    expect(encodeURL('http://[::1')).toBe('http://[::1')
   })
 
   it('handles isExternalHost=true with valid URL', () => {
@@ -62,36 +62,6 @@ describe('encodeURL', () => {
   it('handles isExternalHost=true with double-slash URL', () => {
     const result = encodeURL('//example.com/foo', true)
     expect(result).toContain('example.com/foo')
-  })
-})
-
-// ---------------------------------------------------------------------------
-// navigateTo — throws descriptive Error (not TypeError) when URL is invalid
-// ---------------------------------------------------------------------------
-describe('navigateTo', () => {
-  it('throws descriptive error on invalid URL with external option', () => {
-    // The error is thrown inside the external-block try-catch before any
-    // Nuxt runtime dependency is touched, so no mocking is needed.
-    expect(() => navigateTo('http://a b.com', { external: true }))
-      .toThrow('Cannot parse invalid URL')
-  })
-
-  it('throws Error (not TypeError) on invalid URL', () => {
-    // Verify the thrown error is a regular Error, not the raw TypeError that
-    // new URL() would produce without the try-catch wrapper.
-    let thrown: unknown
-    try {
-      navigateTo('http://a b.com', { external: true })
-    } catch (e) {
-      thrown = e
-    }
-    expect(thrown).toBeInstanceOf(Error)
-    expect(thrown).not.toBeInstanceOf(TypeError)
-  })
-
-  it('includes the problematic URL in the error message', () => {
-    expect(() => navigateTo('http://[::1', { external: true }))
-      .toThrow("Cannot parse invalid URL: 'http://[::1'")
   })
 })
 

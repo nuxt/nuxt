@@ -13,13 +13,13 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
-import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, stringifyParsedURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
-import { tryResolveURL } from '../utils'
+
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
@@ -421,7 +421,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
         const normalizedPath = isExternal.value
-          ? (tryResolveURL(path, window.location.href)?.href ?? path)
+          ? stringifyParsedURL(parseURL(path, window.location.href))
           : path
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
@@ -530,8 +530,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             get route () {
               if (!href.value) { return undefined }
 
-              const url = tryResolveURL(href.value, import.meta.client ? window.location.href : 'http://localhost')
-              if (!url) { return undefined }
+              const url = parseURL(href.value, import.meta.client ? window.location.href : 'http://localhost')
               return {
                 path: url.pathname,
                 fullPath: url.pathname,
