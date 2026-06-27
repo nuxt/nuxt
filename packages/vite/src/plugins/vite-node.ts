@@ -252,6 +252,19 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
       // See https://github.com/nuxt/nuxt/issues/30169.
       let lastSeenTimestamp = 0
 
+      // Files the watcher saw change but couldn't map to an SSR module yet:
+      // the SSR graph is populated lazily by `fetchModule` on render, so a
+      // file in an extended layer often isn't present at watch time and never
+      // gets its SSR timestamp advanced by Vite's HMR. We resolve these against
+      // the (now-populated) SSR graph at render time and invalidate them along
+      // with their importers, so an edit to e.g. a sibling-layer component
+      // reaches the page that renders it.
+      //
+      // The value counts down the renders a file may stay unresolved before we
+      // give up on it, so files that are never SSR-relevant don't accumulate.
+      const pendingChangedFiles = new Map<string, number>()
+      const PENDING_CHANGED_FILE_RENDERS = 2
+
       function collectInvalidatedSsrModules (ssrServer: ViteDevServer) {
         const ssrModuleGraph = ssrServer.environments.ssr.moduleGraph
         let maxSeen = lastSeenTimestamp
@@ -265,6 +278,51 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
           }
         }
         lastSeenTimestamp = maxSeen
+
+        for (const [file, remaining] of pendingChangedFiles) {
+          const mods = ssrModuleGraph.getModulesByFile(file)
+          if (!mods?.size) {
+            if (remaining <= 1) {
+              pendingChangedFiles.delete(file)
+            } else {
+              pendingChangedFiles.set(file, remaining - 1)
+            }
+            continue
+          }
+
+          // A `handleHotUpdate` hook reacting to this edit invalidates virtual
+          // modules only in the client graph (`server.moduleGraph`), so the SSR
+          // copy keeps serving a stale evaluation. Re-evaluate any virtual
+          // module the changed file imports. The SSR graph fills lazily, so the
+          // import may not exist yet on the first render; stay pending until it
+          // surfaces or the countdown runs out.
+          // See https://github.com/nuxt/nuxt/issues/30169.
+          let invalidatedVirtual = false
+          const seen = new Set<EnvironmentModuleNode>()
+          const invalidateVirtualImports = (mod: EnvironmentModuleNode) => {
+            for (const imported of mod.importedModules) {
+              if (seen.has(imported)) { continue }
+              seen.add(imported)
+              if (imported.id?.startsWith('\0')) {
+                ssrModuleGraph.invalidateModule(imported)
+                markInvalidate(imported)
+                invalidatedVirtual = true
+              }
+              invalidateVirtualImports(imported)
+            }
+          }
+          for (const mod of mods) {
+            invalidateVirtualImports(mod)
+            ssrModuleGraph.invalidateModule(mod)
+          }
+          markInvalidates(mods)
+
+          if (invalidatedVirtual || remaining <= 1) {
+            pendingChangedFiles.delete(file)
+          } else {
+            pendingChangedFiles.set(file, remaining - 1)
+          }
+        }
       }
 
       function resolveServer (ssrServer: ViteDevServer) {
@@ -302,7 +360,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
       clientServer.watcher.on('all', (_event, file) => {
         invalidates.add(file)
-        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalize(file)))
+        const normalized = normalize(file)
+        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalized))
+        pendingChangedFiles.set(normalized, PENDING_CHANGED_FILE_RENDERS)
       })
     },
     async buildEnd () {

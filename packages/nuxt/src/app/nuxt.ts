@@ -9,7 +9,6 @@ import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from '@nuxt/nitro-server/h3'
-import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
 import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
@@ -78,7 +77,7 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   islandContext?: NuxtIslandContext
   /** @internal */
-  ['~renderResponse']?: Partial<RenderResponse>
+  ['~renderResponse']?: Response
   /** @internal */
   ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */
@@ -192,6 +191,12 @@ interface _NuxtApp {
   '_route': RouteLocationNormalizedLoaded & {
     sync?: () => void
   }
+  /**
+   * Restore the real route after a prerendered page hydrates against the query-less
+   * payload route. Called by `<NuxtPage>` as its `Suspense` resolves, before mounted hooks flush.
+   * @internal
+   */
+  '~restoreDeferredRoute'?: () => void
 
   /** @internal */
   '_islandPromises'?: Record<string, Promise<any>>

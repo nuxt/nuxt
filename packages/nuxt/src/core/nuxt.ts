@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -40,7 +40,6 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
-import { resolveTypePaths } from './utils/types.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
@@ -685,6 +684,11 @@ async function initNuxt (nuxt: Nuxt) {
   // Add experimental immediate page reload support
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
+  }
+  // Reload for crawlers when a chunk fails during initial hydration, so they
+  // index the server-rendered HTML rather than a blank page
+  if (nuxt.options.experimental.emitRouteChunkError) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-crawler.client'))
   }
 
   // Add experimental session restoration support

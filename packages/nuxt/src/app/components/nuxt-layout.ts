@@ -181,6 +181,12 @@ const LayoutProvider = defineComponent({
     const injectedRoute = inject(PageRouteSymbol)
     const isNotWithinNuxtPage = injectedRoute && injectedRoute === useRoute()
 
+    // The enclosing layout chain, if this layout is nested inside another `<NuxtLayout>`.
+    // When the eager route no longer selects that enclosing layout, this layout is being
+    // re-rendered in the old suspense fork while the destination page is still pending, so
+    // it must keep reading the deferred route rather than jumping ahead to the eager one (#32904).
+    const enclosingLayout = inject(LayoutMetaSymbol, null)
+
     if (isNotWithinNuxtPage) {
       // this route updates immediately
       const vueRouterRoute = useVueRouterRoute() as ReturnType<typeof useRoute>
@@ -192,7 +198,9 @@ const LayoutProvider = defineComponent({
           get: () => {
             // we want to use the eager route if we are rendering a layout for the first time
             // and only swap back to the lazy route if the route has already changed from the first render
-            return props.isRenderingNewLayout(props.name) ? vueRouterRoute[key] : injectedRoute[key]
+            const useEagerRoute = props.isRenderingNewLayout(props.name) &&
+              (!enclosingLayout || enclosingLayout.isCurrent(vueRouterRoute))
+            return useEagerRoute ? vueRouterRoute[key] : injectedRoute[key]
           },
         })
       }
