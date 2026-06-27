@@ -841,7 +841,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   if (nuxt.options.vue.runtimeCompiler) {
     addVitePlugin({
       name: 'nuxt:vue:runtime-compiler',
-      applyToEnvironment: environment => environment.name === 'client',
+      applyToEnvironment: environment => environment.config.consumer === 'client',
       enforce: 'pre',
       resolveId (id, importer) {
         if (id === 'vue') {
