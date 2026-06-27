@@ -16,6 +16,7 @@ import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
+import { resolveIgnoreDirPatterns } from './ignore-dir-patterns.ts'
 import type { Component, ComponentsDir, ComponentsOptions, NuxtPage } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
@@ -302,7 +303,7 @@ export default defineNuxtModule<ComponentsOptions>({
  * @param options.priority - Priority number to assign to all returned entries (default 0).
  * @returns A normalized, flat, and sorted array of ComponentsDir objects ready for component scanning.
  */
-function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {
+export function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {
   if (Array.isArray(dir)) {
     return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
   }
@@ -322,6 +323,10 @@ function normalizeDirs (dir: undefined | boolean | ComponentsOptions | Component
     return []
   }
 
+  const ignoreDirPatterns = 'ignoreDirPatterns' in dir
+    ? resolveIgnoreDirPatterns((dir as ComponentsOptions).ignoreDirPatterns)
+    : null
+
   const normalizedDirs: ComponentsDir[] = []
   for (const d of ('dirs' in dir ? dir.dirs || [] : [dir])) {
     const normalizedDir = typeof d === 'string' ? { path: d } : d
@@ -330,6 +335,7 @@ function normalizeDirs (dir: undefined | boolean | ComponentsOptions | Component
     }
     normalizedDirs.push({
       priority: options?.priority || 0,
+      ...(ignoreDirPatterns ? { ignoreDirPatterns } : {}),
       ...normalizedDir,
       path: resolve(cwd, resolveAlias(normalizedDir.path)),
     })
