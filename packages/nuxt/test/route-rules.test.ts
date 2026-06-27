@@ -40,6 +40,31 @@ describe('routeRules from page meta', () => {
     })
   })
 
+  it('does not collapse constrained params to a global rule', () => {
+    const pages = [
+      {
+        path: '/:locale(de)/account/verify',
+        rules: { robots: false },
+      },
+      {
+        path: '/:locale(de|fr)/privacy-policy',
+        rules: { robots: false },
+      },
+      {
+        path: '/:locale(de|fr)/blog/:slug',
+        rules: { swr: 60 },
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages)).toEqual({
+      '/de/account/verify': { robots: false },
+      '/de/blog/**': { swr: 60 },
+      '/de/privacy-policy': { robots: false },
+      '/fr/blog/**': { swr: 60 },
+      '/fr/privacy-policy': { robots: false },
+    })
+  })
+
   it('removes route rules from pages', () => {
     const pages = getPages()
     removePagesRules(pages)

@@ -520,7 +520,32 @@ async function createClientPage(loader) {
   }
 }
 
+// Convert the first dynamic route segment and anything after it into a Nitro wildcard.
+// For example: `/blog/:slug` -> `/blog/**`.
 const PATH_TO_NITRO_GLOB_RE = /\/[^:/]*:\w.*$/
+// Match simple constrained params that can be expanded into concrete paths.
+// For example: `/:locale(de|fr)/blog` -> `/de/blog` and `/fr/blog`.
+const CONSTRAINED_PARAM_SEGMENT_RE = /\/:[\w-]+\(([^()]+)\)(?=\/|$)/
+// Do not expand arbitrary regex constraints, only literal path segment alternatives.
+// For example: `de|fr` is expanded, but `[a-z]{2}` is left untouched.
+const SIMPLE_PARAM_ALTERNATIVE_RE = /^[\w-]+$/
+
+function expandRouteParamAlternatives (path: string): string[] {
+  const match = path.match(CONSTRAINED_PARAM_SEGMENT_RE)
+  if (!match || typeof match.index !== 'number') {
+    return [path]
+  }
+
+  const alternatives = match[1]!.split('|')
+  if (!alternatives.every(alternative => SIMPLE_PARAM_ALTERNATIVE_RE.test(alternative))) {
+    return [path]
+  }
+
+  const prefix = path.slice(0, match.index)
+  const suffix = path.slice(match.index + match[0]!.length)
+  return alternatives.flatMap(alternative => expandRouteParamAlternatives(`${prefix}/${alternative}${suffix}`))
+}
+
 export function pathToNitroGlob (path: string) {
   if (!path) {
     return null
@@ -531,6 +556,17 @@ export function pathToNitroGlob (path: string) {
   }
 
   return path.replace(PATH_TO_NITRO_GLOB_RE, '/**')
+}
+
+export function pathToNitroGlobs (path: string) {
+  const globs = new Set<string>()
+  for (const expandedPath of expandRouteParamAlternatives(path)) {
+    const glob = pathToNitroGlob(expandedPath)
+    if (glob) {
+      globs.add(glob)
+    }
+  }
+  return globs.size ? [...globs] : null
 }
 
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
