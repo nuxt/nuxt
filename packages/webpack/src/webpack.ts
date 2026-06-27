@@ -7,8 +7,10 @@ import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { NuxtBuilder } from '@nuxt/schema'
+import { pathToFileURL } from 'node:url'
+import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
-import { logger, useNitro, useNuxt } from '@nuxt/kit'
+import { logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
@@ -49,6 +51,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
+
+  // In dev the SSR entry is served from the in-memory bundle via the builder compile hook.
+  if (nuxt.options.ssr && !nuxt.options.dev) {
+    const serverEntryFile = pathToFileURL(resolve(nuxt.options.buildDir, 'dist/server/server.mjs')).href
+    setBuildOutput('serverEntry', () => `export { default } from ${JSON.stringify(serverEntryFile)}`)
+  }
 
   const ssrStylesPlugin = nuxt.options.ssr && !nuxt.options.dev ? new SSRStylesPlugin(nuxt) : null
 

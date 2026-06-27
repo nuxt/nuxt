@@ -29,6 +29,12 @@
     "./kit": "./kit.js",
     "./meta": "./meta.js",
     "./app": "./dist/app/index.js",
+    "./entry": "./dist/runtime/server/entry.js",
+    "./manifest": "./dist/runtime/server/manifest.js",
+    "./precomputed": "./dist/runtime/server/precomputed.js",
+    "./styles": "./dist/runtime/server/styles.js",
+    "./entry-chunk": "./dist/runtime/server/entry-chunk.js",
+    "./entry-ids": "./dist/runtime/server/entry-ids.js",
     "./package.json": "./package.json"
   },
   "imports": {

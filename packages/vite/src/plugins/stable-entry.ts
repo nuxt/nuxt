@@ -1,4 +1,4 @@
-import { useNitro } from '@nuxt/kit'
+import { setBuildOutput } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import escapeStringRegexp from 'escape-string-regexp'
 import { generateTransform, rolldownString } from 'rolldown-string'
@@ -10,12 +10,7 @@ import { toArray } from '../utils/index.ts'
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
   let entryFileName: string | undefined
 
-  const nitro = useNitro()
-
-  nitro.options.virtual ||= {}
-  nitro.options._config.virtual ||= {}
-
-  nitro.options._config.virtual['#internal/entry-chunk.mjs'] = nitro.options.virtual['#internal/entry-chunk.mjs'] = () => `export const entryFileName = ${JSON.stringify(entryFileName)}`
+  setBuildOutput('entryChunkName', () => `export const entryFileName = ${JSON.stringify(entryFileName)}`)
 
   return {
     name: 'nuxt:stable-entry',

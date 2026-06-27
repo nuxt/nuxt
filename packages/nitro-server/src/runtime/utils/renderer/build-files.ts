@@ -13,8 +13,9 @@ import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../paths'
+import { lazyCachedFunction } from './cache'
 
-type Entry = (ssrContext?: NuxtSSRContext) => Promise<App>
+type Entry = (ssrContext: NuxtSSRContext) => Promise<App>
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -24,18 +25,15 @@ globalThis.__publicAssetsURL = publicAssetsURL
 export const APP_ROOT_OPEN_TAG: string = `<${appRootTag}${propsToString(appRootAttrs)}>`
 export const APP_ROOT_CLOSE_TAG: string = `</${appRootTag}>`
 
-// @ts-expect-error file will be produced after app build
-const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
+const getServerEntry: () => Promise<Entry> = () => import('nuxt/entry').then(r => (r.default || r) as Entry)
 
-// @ts-expect-error file will be produced after app build
-const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
+const getClientManifest: () => Promise<Manifest> = () => import('nuxt/manifest')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<Manifest>
 
-// @ts-expect-error file will be produced after app build
-const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import('#build/dist/server/client.precomputed.mjs')
-  .then(r => r.default || r)
-  .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData>
+const getPrecomputedDependencies: () => Promise<PrecomputedData | undefined> = () => import('nuxt/precomputed')
+  .then(r => 'default' in r ? r.default : r)
+  .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData | undefined>
 
 interface Renderer {
   rendererContext: RendererContext
@@ -57,8 +55,10 @@ export const getSSRRenderer: () => Promise<Renderer> = lazyCachedFunction(async 
   // Load precomputed dependencies
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
 
-  // Create renderer
-  const renderer = createRenderer(createSSRApp, {
+  // Create renderer. `vue-bundle-renderer`'s `CreateApp` is typed against
+  // its own `SSRContext`; Nuxt's entry expects the `NuxtSSRContext` shape
+  // (a structural superset) which Nuxt populates before invoking the renderer.
+  const renderer = createRenderer(createSSRApp as Parameters<typeof createRenderer<App>>[0], {
     precomputed,
     manifest: import.meta.dev ? await getClientManifest() : undefined,
     renderToString,
@@ -123,16 +123,6 @@ const getSPARenderer = lazyCachedFunction(async (): Promise<Renderer> => {
   }
 })
 
-function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
-  let res: Promise<T> | null = null
-  return () => {
-    if (res === null) {
-      res = fn().catch((err) => { res = null; throw err })
-    }
-    return res
-  }
-}
-
 export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
   return (NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()
 }
@@ -140,5 +130,4 @@ export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
 // Expose the server app factory for streaming (renderToWebStream needs it directly)
 export const getServerApp: () => Promise<Entry> = lazyCachedFunction(getServerEntry)
 
-// @ts-expect-error file will be produced after app build
-export const getSSRStyles: () => Promise<Record<string, () => Promise<string[]>>> = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
+export const getSSRStyles: () => Promise<Record<string, () => Promise<string[]>>> = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('nuxt/styles').then(r => r.default || r))
