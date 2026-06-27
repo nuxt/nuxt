@@ -55,13 +55,14 @@ export const islandRendererTemplate: NuxtTemplate = {
   filename: 'island-renderer.mjs',
   getContents (ctx) {
     if (!shouldEnableComponentIslands(ctx.nuxt, ctx.app)) {
-      return 'export default () => null'
+      return 'const IslandRenderer = () => null\nexport default IslandRenderer'
     }
 
     const islandRenderer = resolve(ctx.nuxt.options.appDir, 'components/island-renderer')
     return [
       'import { defineAsyncComponent } from \'vue\'',
-      `export default import.meta.server ? defineAsyncComponent(() => ${genDynamicImport(islandRenderer, { wrapper: false })}.then(r => r.default || r)) : () => null`,
+      `const IslandRenderer = import.meta.server ? defineAsyncComponent(() => ${genDynamicImport(islandRenderer, { wrapper: false })}.then(r => r.default || r)) : () => null`,
+      'export default IslandRenderer',
     ].join('\n')
   },
 }
