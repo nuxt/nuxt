@@ -31,9 +31,9 @@ const getClientManifest: () => Promise<Manifest> = () => import('nuxt/manifest')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<Manifest>
 
-const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import('nuxt/precomputed')
-  .then(r => r.default || r)
-  .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData>
+const getPrecomputedDependencies: () => Promise<PrecomputedData | undefined> = () => import('nuxt/precomputed')
+  .then(r => 'default' in r ? r.default : r)
+  .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData | undefined>
 
 interface Renderer {
   rendererContext: RendererContext

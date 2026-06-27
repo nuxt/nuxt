@@ -82,7 +82,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     apps: {},
     buildOutputs: {
       ssrStyles: undefined,
-      serverEntry: () => 'export default () => {}',
+      serverEntry: () => `export default () => { throw new Error('[nuxt] nuxt/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.') }`,
       clientManifest: () => 'export default {}',
       clientPrecomputed: () => 'export default undefined',
       entryChunkName: () => 'export const entryFileName = undefined',
