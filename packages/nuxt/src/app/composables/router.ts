@@ -344,9 +344,10 @@ export function encodeURL (location: string, isExternalHost = false): string {
   const url = parseURL(location, 'http://localhost')
   if (!isExternalHost) {
     // Collapse leading slashes to keep the redirect same-origin (CWE-601).
-    const pathname = url.pathname.replace(/^\/{2,}/, '/')
+    const pathname = encodePath(decodePath(url.pathname)).replace(/^\/{2,}/, '/')
     return (pathname || url.search || url.hash) ? pathname + url.search + url.hash : location
   }
+  url.pathname = encodePath(decodePath(url.pathname))
   if (location.startsWith('//')) {
     return stringifyParsedURL(url).replace(url.protocol || '', '')
   }
