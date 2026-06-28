@@ -106,6 +106,7 @@ describe('route rules', () => {
   it('should set layout defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
+    expect(html).toContain('data-testid="route-meta-layout">custom</div>')
   })
 
   it('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
