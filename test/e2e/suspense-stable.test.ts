@@ -37,6 +37,10 @@ test.describe('Suspense stableContent', () => {
 
     // Should eventually settle on page B without errors
     await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/page-b')
+
+    // Assert that the previous page (home) is still visible during the pending window,
+    // before page-b resolves — this is the core stableContent guarantee.
+    await expect(page.getByTestId('home-title')).toBeVisible()
     await expect(page.getByTestId('page-b-content')).toBeVisible({ timeout: 10_000 })
 
     // Verify no errors or warnings occurred
@@ -55,6 +59,9 @@ test.describe('Suspense stableContent', () => {
 
     // Should settle on the final destination
     await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/page-b')
+
+    // Previous content should remain visible during the pending window
+    await expect(page.getByTestId('home-title')).toBeVisible()
     await expect(page.getByTestId('page-b-content')).toBeVisible({ timeout: 10_000 })
 
     expect(page).toHaveNoErrorsOrWarnings()
@@ -64,16 +71,18 @@ test.describe('Suspense stableContent', () => {
     await goto('/')
     await expect(page.getByTestId('home-title')).toBeVisible()
 
-    // Navigate to page-d which has definePageMeta({ stableContent: true })
+    // Navigate to a slow async page first
     await page.getByTestId('nav-page-a').dispatchEvent('click')
-    // Rapidly navigate to page-d before page-a resolves
-    const pageDLink = page.locator('[data-testid="nav-home"]')
-    await pageDLink.dispatchEvent('click')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
-    await expect(page.getByTestId('home-title')).toBeVisible()
 
-    // Now navigate to page-d
-    await page.goto('/page-d')
+    // Rapidly navigate to page-d (which has definePageMeta({ stableContent: true }))
+    // before page-a resolves — this exercises the route.meta.stableContent branch
+    // while isSuspensePending is true.
+    await page.getByTestId('nav-page-d').dispatchEvent('click')
+
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/page-d')
+
+    // Previous content (home) should remain visible while page-d is pending
+    await expect(page.getByTestId('home-title')).toBeVisible()
     await expect(page.getByTestId('page-d-content')).toBeVisible({ timeout: 10_000 })
 
     expect(page).toHaveNoErrorsOrWarnings()
@@ -98,6 +107,9 @@ test.describe('Suspense stableContent', () => {
 
     // Should settle on page B
     await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/page-b')
+
+    // Previous content should remain visible during the pending window
+    await expect(page.getByTestId('home-title')).toBeVisible()
     await expect(page.getByTestId('page-b-content')).toBeVisible({ timeout: 10_000 })
 
     expect(page).toHaveNoErrorsOrWarnings()
@@ -108,17 +120,14 @@ test.describe('Suspense stableContent', () => {
     await goto('/')
     await expect(page.getByTestId('home-title')).toBeVisible()
 
-    // Navigate to a page
+    // Navigate to a slow async page
     await page.getByTestId('nav-page-a').dispatchEvent('click')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/page-a')
-    await expect(page.getByTestId('page-a-content')).toBeVisible({ timeout: 10_000 })
 
-    // Navigate back and then to another page
-    await page.getByTestId('back-home').click()
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
-    await expect(page.getByTestId('home-title')).toBeVisible()
-
+    // Fire a second navigation before page-a resolves to exercise the default
+    // remount path (suspenseKey++ when stableContent is unset).
     await page.getByTestId('nav-page-b').dispatchEvent('click')
+
+    // Should settle on page-b with the legacy remount behavior
     await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/page-b')
     await expect(page.getByTestId('page-b-content')).toBeVisible({ timeout: 10_000 })
 

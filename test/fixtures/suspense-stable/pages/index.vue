@@ -14,6 +14,9 @@
       <NuxtLink to="/page-c" data-testid="nav-page-c">
         Page C (fast)
       </NuxtLink>
+      <NuxtLink to="/page-d" data-testid="nav-page-d">
+        Page D (stableContent meta)
+      </NuxtLink>
     </div>
   </div>
 </template>

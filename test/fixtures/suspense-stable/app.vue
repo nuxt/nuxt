@@ -1,7 +1,6 @@
 <script setup lang="ts">
-const route = useRoute()
-// Enable stableContent via query param for testing both modes
-const stableContent = computed(() => route.query.stable === '1')
+// Read the query once so prop-mode stays enabled for the whole app session.
+const stableContent = useRoute().query.stable === '1'
 </script>
 
 <template>
