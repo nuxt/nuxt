@@ -231,8 +231,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
         const routeRules = getRouteRules({ path: to.path })
 
-        if (routeRules.appLayout && to.meta.layout == null) {
-          to.meta.layout = routeRules.appLayout as Exclude<PageMeta['layout'], Ref | false>
+        if (routeRules.appLayout !== undefined && to.meta.layout == null) {
+          to.meta.layout = routeRules.appLayout as Exclude<PageMeta['layout'], Ref>
         }
 
         if (routeRules.appMiddleware) {
