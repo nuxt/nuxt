@@ -53,6 +53,17 @@ export interface PageMeta {
   props?: RouteRecordRaw['props']
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
+  /**
+   * When `true`, the previous page content stays visible during rapid/concurrent
+   * navigation until this page's async dependencies resolve. This prevents the
+   * blank-content flash caused by the internal Suspense boundary being recreated
+   * on every route change while a previous navigation is still pending.
+   *
+   * Can also be set globally via the `stableContent` prop on `<NuxtPage>`.
+   *
+   * @default false
+   */
+  stableContent?: boolean
 }
 
 declare module 'vue-router' {
