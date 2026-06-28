@@ -38,6 +38,13 @@ export interface ResolvePathOptions {
    */
   fallbackToOriginal?: boolean
   /**
+   * Conditions to apply when resolving package exports.
+   * @default ['node', 'import']
+   *
+   * Conditions are applied without order.
+   */
+  conditions?: string[]
+  /**
    * The type of the path to be resolved.
    * @default 'file'
    */
@@ -238,6 +245,7 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
       try: true,
       suffixes: ['', 'index'],
       from: [cwd, ...modulesDir].map(d => directoryToURL(d)),
+      conditions: opts.conditions,
     })
     if (resolvedModulePath) {
       return {

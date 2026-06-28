@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { stat } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { resolve } from 'pathe'
@@ -19,10 +20,18 @@ const nuxt = await loadNuxt({
     ],
   },
 })
+const conditionsFixtureDir = fileURLToPath(new URL('../test/conditions-fixture/', import.meta.url))
 
 describe('resolvePath', () => {
   it('should resolve paths correctly', async () => {
     expect(await resolvePath('.nuxt/app.config')).toBe(resolve('.nuxt/app.config.mjs'))
+  })
+
+  it('should use custom export conditions', async () => {
+    expect(await resolvePath('conditional-package', {
+      cwd: conditionsFixtureDir,
+      conditions: ['custom-kit'],
+    })).toBe(resolve(conditionsFixtureDir, 'custom.js'))
   })
 })
 

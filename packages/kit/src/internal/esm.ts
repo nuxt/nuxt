@@ -11,6 +11,13 @@ export interface ResolveModuleOptions {
   url?: URL | URL[]
   /** @default ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'] */
   extensions?: string[]
+  /**
+   * Conditions to apply when resolving package exports.
+   * @default ['node', 'import']
+   *
+   * Conditions are applied without order.
+   */
+  conditions?: string[]
 }
 
 export function directoryToURL (dir: string): URL {
@@ -39,6 +46,7 @@ export function resolveModule (id: string, options?: ResolveModuleOptions): stri
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     from: options?.url ?? options?.paths ?? [import.meta.url],
     extensions: options?.extensions ?? ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+    conditions: options?.conditions,
   })
 }
 
