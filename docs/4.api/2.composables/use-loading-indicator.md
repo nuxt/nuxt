@@ -1,6 +1,7 @@
 ---
 title: 'useLoadingIndicator'
 description: This composable gives you access to the loading state of the app page.
+minimalVersion: "3.9"
 links:
   - label: Source
     icon: i-simple-icons-github

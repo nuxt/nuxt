@@ -1,6 +1,7 @@
 ---
 title: 'prerenderRoutes'
 description: prerenderRoutes hints to Nitro to prerender an additional route.
+minimalVersion: "3.8"
 links:
   - label: Source
     icon: i-simple-icons-github
