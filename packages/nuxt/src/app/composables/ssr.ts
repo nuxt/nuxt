@@ -6,7 +6,6 @@ import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import { appDiagnostics } from '../diagnostics/core.ts'
-import { manifestDiagnostics } from '../diagnostics/manifest.ts'
 import { useHead } from './head'
 
 /** @since 3.0.0 */
@@ -74,7 +73,7 @@ export function useResponseHeader (header: string): import('vue').WritableComput
     if (import.meta.dev) {
       return computed({
         get: () => undefined,
-        set: () => manifestDiagnostics.NUXT_E5004({}),
+        set: () => appDiagnostics.NUXT_E1010({}),
       })
     }
     return ref()

@@ -58,15 +58,5 @@ export const stateDiagnostics = import.meta.client && !import.meta.dev && !impor
           fix: 'Pass a string key as the first argument to `callOnce()`, e.g. `callOnce(\'myKey\', () => { ... })`.',
           docs: false,
         },
-        NUXT_E7011: {
-          why: '`useAsyncData` key must be a non-empty string.',
-          fix: 'Pass a non-empty string as the first argument to `useAsyncData()`.',
-          docs: false,
-        },
-        NUXT_E7012: {
-          why: '`useAsyncData` handler must be a function.',
-          fix: 'Pass a function as the handler argument, e.g. `useAsyncData(\'key\', () => $fetch(\'/api/data\'))`.',
-          docs: false,
-        },
       },
     })

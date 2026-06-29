@@ -44,5 +44,10 @@ export const appDiagnostics = import.meta.client && !import.meta.dev && !import.
           fix: 'Check your plugins and app initialization code for unhandled errors.',
           docs: false,
         },
+        NUXT_E1010: {
+          why: 'Response headers cannot be set in the browser.',
+          fix: 'Guard this code with `import.meta.server` or move it to a server-only context.',
+          docs: false,
+        },
       },
     })

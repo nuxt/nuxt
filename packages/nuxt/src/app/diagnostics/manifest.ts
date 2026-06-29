@@ -23,10 +23,5 @@ export const manifestDiagnostics = import.meta.client && !import.meta.dev && !im
           fix: 'Check your `routeRules` in `nuxt.config` for invalid patterns.',
           docs: false,
         },
-        NUXT_E5004: {
-          why: 'Response headers cannot be set in the browser.',
-          fix: 'Guard this code with `import.meta.server` or move it to a server-only context.',
-          docs: false,
-        },
       },
     })
