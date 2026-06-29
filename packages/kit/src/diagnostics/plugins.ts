@@ -2,7 +2,8 @@ import { defineDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
 /**
- * B2xxx — Plugin diagnostics (`addPlugin`, plugin metadata, plugin ordering).
+ * B2xxx
+ * Plugin diagnostics (`addPlugin`, plugin metadata, plugin ordering).
  */
 export const pluginDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,

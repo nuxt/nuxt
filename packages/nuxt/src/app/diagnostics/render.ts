@@ -1,7 +1,10 @@
 import { defineDiagnostics, defineProdDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
-/** E4xxx — Layout / component / island rendering runtime diagnostics. */
+/**
+ * E4xxx
+ * Layout / component / island rendering runtime diagnostics.
+ */
 export const renderDiagnostics = import.meta.client && !import.meta.dev && !import.meta.test
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
   : /* #__PURE__ */ defineDiagnostics({

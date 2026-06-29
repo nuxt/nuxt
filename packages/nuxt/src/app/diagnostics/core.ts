@@ -1,7 +1,10 @@
 import { defineDiagnostics, defineProdDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
-/** E1xxx — Core / Nuxt-instance / lifecycle runtime diagnostics. */
+/**
+ * E1xxx
+ * Core / Nuxt-instance / lifecycle runtime diagnostics.
+ */
 export const appDiagnostics = import.meta.client && !import.meta.dev && !import.meta.test
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
   : /* #__PURE__ */ defineDiagnostics({
