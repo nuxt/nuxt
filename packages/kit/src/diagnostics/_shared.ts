@@ -3,23 +3,19 @@ import { ansiFormatter } from 'nostics/formatters/ansi'
 import { colors } from 'consola/utils'
 
 /**
- * Shared configuration for every build-time diagnostics catalog.
+ * Resolve the docs URL for a stable `NUXT_B<NNNN>` code.
  *
- * Catalogs are split by domain (one file per `B<N>xxx` range) and imported
- * directly where they are used — there is intentionally no barrel re-exporting
- * them all, so a consumer only pulls in the codes it references.
- *
- * Codes are stable, fully-qualified `NUXT_B<NNNN>` identifiers. Codes that have
- * a dedicated docs page resolve a `see:` URL via {@link docsBase}; codes whose
- * inline why+fix is self-sufficient opt out with `docs: false` rather than ship
- * a link to a page that does not exist.
+ * Codes with a dedicated docs page pass this as their `see:` URL; codes whose
+ * inline why+fix is self-sufficient opt out with `docs: false`.
  */
 export const docsBase = (code: string): string =>
   `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
-// `as const` keeps the tuple shape `defineDiagnostics` reads to type each
+// `as const` preserves the tuple shape `defineDiagnostics` reads to type each
 // reporter's call-site options; a plain array collapses them to `{}`.
-// Colorize the terminal; tests stay plain. Bare `process.env.NODE_ENV` (no
-// import) so the bundler can statically replace it.
-// eslint-disable-next-line no-restricted-globals -- statically replaced at build time
-export const reporters = [/* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) }))] as const
+export const reporters = [
+  // Colorize the terminal; tests stay plain. Bare `process.env.NODE_ENV` (no
+  // import) lets the bundler statically replace it.
+  // eslint-disable-next-line no-restricted-globals -- statically replaced at build time
+  /* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) })),
+] as const
