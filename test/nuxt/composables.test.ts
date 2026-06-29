@@ -536,6 +536,9 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             "/pre/test": {
               "redirect": "/",
             },
+            "/route-rules/layout": {
+              "appLayout": "custom",
+            },
             "/specific-prerendered": {
               "prerender": true,
             },
