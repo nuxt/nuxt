@@ -34,7 +34,7 @@
     "jiti": "^2.7.0",
     "klona": "^2.0.6",
     "mlly": "^1.8.2",
-    "nypm": "^0.6.7",
+    "nypm": "^0.6.8",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.1",
@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "2.0.8",
+    "@rspack/core": "2.1.1",
     "@types/semver": "7.7.1",
     "hookable": "6.1.1",
     "nitro": "3.0.260522-beta",
