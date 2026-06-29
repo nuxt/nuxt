@@ -46,7 +46,16 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
     }
 
     const { default: viteJsxPlugin } = await import('@vitejs/plugin-vue-jsx')
-    resolvedPlugin = viteJsxPlugin(options)
+    resolvedPlugin = viteJsxPlugin({
+      ...options,
+      defineComponentName: [
+        ...new Set([
+          'defineComponent',
+          'defineNuxtComponent',
+          ...(options?.defineComponentName ?? []),
+        ]),
+      ],
+    })
 
     // Replay configResolved so the real plugin captures HMR/sourcemap state
     if (resolvedConfig && typeof resolvedPlugin.configResolved === 'function') {
