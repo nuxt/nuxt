@@ -8,6 +8,7 @@ import { flushPromises } from '@vue/test-utils'
 import { NuxtLayout, NuxtPage } from '#components'
 import layouts from '#build/layouts.mjs'
 import { useRoute } from '#app/composables/router'
+import { getRouteRules } from '#app/composables/manifest'
 
 describe('NuxtLayout', () => {
   let router: ReturnType<typeof useRouter>
@@ -233,5 +234,45 @@ describe('NuxtLayout', () => {
     resolveDeferredPage()
     await flushPromises()
     expect.soft(el.html()).toMatchInlineSnapshot(`"<h3>Current route: /deferred</h3>"`)
+  })
+
+  it('should set layout from route rules in route.meta.layout', async () => {
+    layouts.custom = defineComponent({
+      setup (_, ctx) {
+        return () => h('div', { id: 'custom-layout' }, ctx.slots.default?.())
+      },
+    })
+
+    const removeHook = router.beforeEach((to) => {
+      const routeRules = getRouteRules({ path: to.path })
+      if (routeRules.appLayout !== undefined && to.meta.layout === undefined) {
+        to.meta.layout = routeRules.appLayout
+      }
+    })
+
+    router.addRoute({
+      name: 'route-rules-layout',
+      path: '/route-rules/layout',
+      component: defineComponent({
+        setup () {
+          const route = useRoute()
+          return () => h('div', {}, [
+            h('span', { id: 'meta-layout' }, String(route.meta.layout)),
+            h('span', { id: 'route-path' }, route.path),
+          ])
+        },
+      }),
+    })
+
+    await navigateTo('/route-rules/layout')
+    await flushPromises()
+
+    expect(useRoute().meta.layout).toBe('custom')
+    expect(el.find('#meta-layout').text()).toBe('custom')
+
+    // Clean up
+    delete layouts.custom
+    router.removeRoute('route-rules-layout')
+    removeHook()
   })
 })

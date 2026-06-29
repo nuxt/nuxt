@@ -254,6 +254,10 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
           const routeRules = getRouteRules({ path: to.path })
+
+          if (routeRules.appLayout !== undefined && to.meta.layout === undefined) {
+            to.meta.layout = routeRules.appLayout
+          }
           if (routeRules.appMiddleware) {
             for (const key in routeRules.appMiddleware) {
               const guard = nuxtApp._middleware.named[key] as RouteGuard | undefined

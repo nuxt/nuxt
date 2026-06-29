@@ -579,6 +579,10 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
         "ssr": true,
       }
     `)
+    expect(getRouteRules({ path: '/route-rules/layout' })).toEqual({
+      appLayout: 'custom',
+      ssr: true,
+    })
   })
   it('matches case-insensitively to mirror vue-router defaults', () => {
     expect(getRouteRules({ path: '/Pre/spa/thing' })).toMatchObject({

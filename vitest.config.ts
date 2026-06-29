@@ -15,6 +15,7 @@ const commonSettings: NuxtConfig = {
     '/pre/test': { redirect: '/' },
     '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
+    '/route-rules/layout': { appLayout: 'custom' },
   },
   experimental: {
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
