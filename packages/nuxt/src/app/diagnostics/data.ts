@@ -11,6 +11,7 @@ export const dataDiagnostics = import.meta.client && !import.meta.dev && !import
         NUXT_E3001: {
           why: (p: { url: string }) => `The \`useFetch\` request URL must not start with "//" (received \`${p.url}\`).`,
           fix: 'Use an absolute URL with a protocol or a relative path instead.',
+          docs: false,
         },
         NUXT_E3002: {
           why: '`useFetch` failed to hash the request body for the cache key.',
@@ -20,14 +21,17 @@ export const dataDiagnostics = import.meta.client && !import.meta.dev && !import
         NUXT_E3003: {
           why: 'Component is already mounted, so the data fetch cannot be awaited during setup.',
           fix: 'Use `$fetch()` for requests triggered after mount (e.g., in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.',
+          docs: false,
         },
         NUXT_E3004: {
           why: (p: { key: string, warnings: string }) => `Incompatible options detected for "${p.key}":\n${p.warnings}`,
           fix: 'You can use a different key or move the call to a composable to ensure the options are shared across calls.',
+          docs: false,
         },
         NUXT_E3005: {
           why: '`execute` was passed directly to `watch`, which causes unintended behavior.',
           fix: 'Wrap the call: `watch(source, () => execute())` instead of `watch(source, execute)`.',
+          docs: false,
         },
         NUXT_E3006: {
           why: (p: { fn: string }) => `\`${p.fn}\` handler returned \`undefined\`, so the request may be duplicated on the client side.`,

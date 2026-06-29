@@ -11,6 +11,7 @@ export const manifestDiagnostics = import.meta.client && !import.meta.dev && !im
         NUXT_E5001: {
           why: 'The app manifest is not enabled.',
           fix: 'Set `experimental.appManifest: true` in your `nuxt.config`.',
+          docs: false,
         },
         NUXT_E5002: {
           why: 'Could not fetch the app manifest.',
@@ -25,6 +26,7 @@ export const manifestDiagnostics = import.meta.client && !import.meta.dev && !im
         NUXT_E5004: {
           why: 'Response headers cannot be set in the browser.',
           fix: 'Guard this code with `import.meta.server` or move it to a server-only context.',
+          docs: false,
         },
       },
     })

@@ -16,6 +16,7 @@ export const stateDiagnostics = import.meta.client && !import.meta.dev && !impor
         NUXT_E7002: {
           why: (p: { url: string }) => `Cannot load payload \`${p.url}\`.`,
           fix: 'Ensure the payload file is generated and accessible; this may stem from a prerendering issue, server misconfiguration, or a network error.',
+          docs: false,
         },
         NUXT_E7003: {
           why: (p: { url: string }) => `Failed to preload the payload for \`${p.url}\`.`,
@@ -40,6 +41,7 @@ export const stateDiagnostics = import.meta.client && !import.meta.dev && !impor
         NUXT_E7007: {
           why: (p: { type: string }) => `\`useState\` init must be a function, but got \`${p.type}\`.`,
           fix: 'Wrap the initial value in a function: `useState(\'key\', () => value)` instead of `useState(\'key\', value)`.',
+          docs: false,
         },
         NUXT_E7008: {
           why: (p: { type: string }) => `\`callOnce\` \`fn\` must be a function, but got \`${p.type}\`.`,
