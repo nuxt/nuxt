@@ -58,7 +58,7 @@
     "unimport": "6.3.0",
     "vite": "8.1.0",
     "vitest": "4.1.9",
-    "webpack": "5.107.2"
+    "webpack": "5.108.1"
   },
   "engines": {
     "node": ">=18.12.0"
