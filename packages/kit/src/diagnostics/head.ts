@@ -1,7 +1,10 @@
 import { defineDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
-/** B6xxx — Head / auto-import diagnostics. */
+/**
+ * B6xxx
+ * Head / auto-import diagnostics.
+ */
 export const headDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
   reporters,

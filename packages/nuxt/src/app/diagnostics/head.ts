@@ -1,7 +1,10 @@
 import { defineDiagnostics, defineProdDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
-/** E6xxx — Head / unhead runtime diagnostics. */
+/**
+ * E6xxx
+ * Head / unhead runtime diagnostics.
+ */
 export const unheadDiagnostics = import.meta.client && !import.meta.dev && !import.meta.test
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
   : /* #__PURE__ */ defineDiagnostics({

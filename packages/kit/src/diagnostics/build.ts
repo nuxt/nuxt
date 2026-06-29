@@ -1,7 +1,10 @@
 import { defineDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
-/** B1xxx — Build / compilation diagnostics. */
+/**
+ * B1xxx
+ * Build / compilation diagnostics.
+ */
 export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
   reporters,

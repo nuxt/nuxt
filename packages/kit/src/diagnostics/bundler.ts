@@ -1,7 +1,10 @@
 import { defineDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
-/** B7xxx — Bundler (Vite / webpack / Nitro) diagnostics. */
+/**
+ * B7xxx
+ * Bundler (Vite / webpack / Nitro) diagnostics.
+ */
 export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
   reporters,

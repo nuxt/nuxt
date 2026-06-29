@@ -1,7 +1,10 @@
 import { defineDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
-/** B8xxx — Kit API diagnostics. */
+/**
+ * B8xxx
+ * Kit API diagnostics.
+ */
 export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
   reporters,

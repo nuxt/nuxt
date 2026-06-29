@@ -1,7 +1,10 @@
 import { defineDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
-/** B5xxx — Configuration diagnostics. */
+/**
+ * B5xxx
+ * Configuration diagnostics.
+ */
 export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
   reporters,
