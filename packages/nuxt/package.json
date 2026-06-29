@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@dxup/nuxt": "^0.5.2",
-    "@nuxt/cli": "^3.36.0",
+    "@nuxt/cli": "^3.36.1",
     "@nuxt/devtools": "^3.2.4",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
@@ -64,7 +64,7 @@
     "@nuxt/telemetry": "^2.8.0",
     "@nuxt/vite-builder": "workspace:*",
     "@unhead/vue": "^2.1.15",
-    "@vue/shared": "^3.5.38",
+    "@vue/shared": "^3.5.39",
     "c12": "^3.3.4",
     "chokidar": "^5.0.0",
     "compatx": "^0.2.0",
@@ -86,7 +86,7 @@
     "magic-string": "^0.30.21",
     "mlly": "^1.8.2",
     "nanotar": "^0.3.0",
-    "nypm": "^0.6.7",
+    "nypm": "^0.6.8",
     "ofetch": "^1.5.1",
     "ohash": "^2.0.11",
     "on-change": "^6.0.2",
@@ -110,7 +110,7 @@
     "unplugin": "^3.2.0",
     "unplugin-vue-router": "^0.19.2",
     "untyped": "^2.0.0",
-    "vue": "^3.5.38",
+    "vue": "^3.5.39",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
@@ -119,9 +119,9 @@
     "@types/estree": "1.0.9",
     "@vitejs/plugin-vue": "6.0.7",
     "@vitejs/plugin-vue-jsx": "5.1.6",
-    "@vue/compiler-sfc": "3.5.38",
+    "@vue/compiler-sfc": "3.5.39",
     "unbuild": "3.6.1",
-    "vite": "7.3.5",
+    "vite": "7.3.6",
     "vitest": "4.1.9",
     "vue-bundle-renderer": "2.3.1",
     "vue-sfc-transformer": "0.2.3"

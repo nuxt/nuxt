@@ -20,15 +20,15 @@ overrides:
   '@nuxt/schema': workspace:*
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
-  '@vue/compiler-core': 3.5.38
-  '@vue/compiler-dom': 3.5.38
-  '@vue/shared': 3.5.38
+  '@vue/compiler-core': 3.5.39
+  '@vue/compiler-dom': 3.5.39
+  '@vue/shared': 3.5.39
   nuxt: workspace:*
   send: '>=1.2.1'
-  vite: '^7.3.5'
-  vue: 3.5.38
+  vite: '^7.3.6'
+  vue: 3.5.39
   typescript: 5.9.3
-  webpack: ^5.107.2
+  webpack: ^5.108.1
 
 patchedDependencies:
   changelogen: patches/changelogen.patch
