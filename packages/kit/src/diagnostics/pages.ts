@@ -14,6 +14,7 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B4002: {
       why: 'An `await` expression is used in a variable referenced by `definePageMeta`, which runs synchronously.',
       fix: (p: { codeSnippet: string, offset: number }) => `Move the \`await\` outside of variables referenced in \`definePageMeta\`, or use a static value instead (near offset ${p.offset}): ${p.codeSnippet}`,
+      docs: false,
     },
     NUXT_B4003: {
       why: (p: { callCount: number }) => `\`definePageMeta()\` is called ${p.callCount} times in a single page, but only one call is allowed.`,
@@ -23,6 +24,7 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B4004: {
       why: (p: { file: string, existingFile: string }) => `The route name generated for \`${p.file}\` collides with the one already generated for \`${p.existingFile}\`.`,
       fix: 'Set a custom name using `definePageMeta` within one of the page files.',
+      docs: false,
     },
     NUXT_B4005: {
       why: (p: { fnName: string, file: string, receivedType: string }) => `\`${p.fnName}\` was called with a \`${p.receivedType}\` instead of an object literal (reading \`${p.file}\`).`,
@@ -42,6 +44,7 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B4008: {
       why: 'Server pages with `ssr: false` are not supported while component islands are auto-detected.',
       fix: 'Set `experimental.componentIslands` to `true`.',
+      docs: false,
     },
     NUXT_B4009: {
       why: (p: { file: string }) => `No layout name could be resolved for \`${p.file}\` (\`index\` is ignored for the purpose of creating a layout name).`,

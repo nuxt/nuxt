@@ -36,7 +36,6 @@ export const navigationDiagnostics = import.meta.client && !import.meta.dev && !
         NUXT_E2007: {
           why: '`setPageLayout` was called to change the layout on the server within a component, which will cause hydration errors.',
           fix: 'Call `setPageLayout` in a route middleware or plugin instead of inside a component\'s `setup()`.',
-          docs: false,
         },
         NUXT_E2008: {
           why: '`setPageLayout` was called to change the layout during hydration, which will cause hydration errors.',

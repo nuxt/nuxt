@@ -19,10 +19,12 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B1003: {
       why: 'Invalid template. Templates must have either `src` or `getContents`.',
       fix: 'Add a `getContents` function or a `src` path to the `addTemplate()` call.',
+      docs: false,
     },
     NUXT_B1004: {
       why: 'Failed to install dependencies.',
       fix: (p: { packages: string }) => `Try installing manually with \`npm install ${p.packages}\`.`,
+      docs: false,
     },
     NUXT_B1005: {
       why: (p: { plugin: string, file: string }) => `Plugin \`${p.plugin}\` failed to scan file \`${p.file}\`.`,
@@ -47,6 +49,7 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B1009: {
       why: (p: { functionName: string, name?: string, source?: string }) => `Duplicate keyed function name \`${p.functionName}\`${p.name && p.functionName !== p.name ? ` defined as \`${p.name}\`` : ''} with ${p.source ? `the same source \`${p.source}\`` : 'no source'} found. Overwriting the existing entry.`,
       fix: 'Ensure each keyed function has a unique name, or use a different source to distinguish them.',
+      docs: false,
     },
     NUXT_B1010: {
       why: (p: { file: string }) => `Failed to read file \`${p.file}\` as it changed during read.`,
@@ -76,18 +79,22 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B1015: {
       why: 'Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.',
       fix: 'Install `@parcel/watcher` for better performance: `npm install -D @parcel/watcher`.',
+      docs: false,
     },
     NUXT_B1016: {
       why: 'Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies.',
       fix: 'Run `npm install -D @nuxt/webpack-builder` to install it.',
+      docs: false,
     },
     NUXT_B1017: {
       why: (p: { builder: string }) => `Loading \`${p.builder}\` builder failed.`,
       fix: (p: { builder: string }) => `Run \`npm install ${p.builder}\` to install it.`,
+      docs: false,
     },
     NUXT_B1018: {
       why: (p: { builder: string }) => `Loading \`${p.builder}\` server builder failed.`,
       fix: (p: { builder: string }) => `Run \`npm install ${p.builder}\` to install it.`,
+      docs: false,
     },
     NUXT_B1019: {
       why: (p: { mode: string }) => `Unknown component mode: ${p.mode}, this might be an internal bug of Nuxt.`,

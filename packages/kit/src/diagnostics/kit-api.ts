@@ -9,6 +9,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B8001: {
       why: 'The active Nuxt instance is unavailable in the current context.',
       fix: 'Call this within a Nuxt module `setup()` function, or inside a `nuxt.hook()` callback.',
+      docs: false,
     },
     NUXT_B8002: {
       why: 'The `base` argument to `createResolver(base)` is missing.',
@@ -18,10 +19,12 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B8003: {
       why: 'Nitro is not initialized yet — `useNitro()` was called before the `ready` hook ran.',
       fix: 'Move the `useNitro()` call inside a hook that runs after initialization, such as `nuxt.hook(\'ready\', () => { ... })`.',
+      docs: false,
     },
     NUXT_B8004: {
       why: (p: { issues: string }) => `Nuxt compatibility issues were found:\n${p.issues}`,
       fix: 'Update the module to support the current Nuxt version, or check if a newer version of the module is available.',
+      docs: false,
     },
     NUXT_B8005: {
       why: 'The Nuxt version cannot be determined — no current instance was passed.',
@@ -31,6 +34,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B8006: {
       why: (p: { cwd: string }) => `No Nuxt version could be found from \`${p.cwd}\`.`,
       fix: 'Run `npm install nuxt` in your project directory to install Nuxt.',
+      docs: false,
     },
     NUXT_B8007: {
       why: (p: { template: string }) => `The type template filename \`${p.template}\` is invalid.`,
@@ -65,10 +69,12 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B8013: {
       why: (p: { message: string }) => p.message,
       fix: 'Update the module to a version that supports the current Nuxt version, or set `experimental.enforceModuleCompatibility` to `true` to make this a fatal error.',
+      docs: false,
     },
     NUXT_B8014: {
       why: (p: { name: string, time: number }) => `Module \`${p.name}\` was slow to set up, taking \`${p.time}ms\`.`,
       fix: 'Defer expensive operations to a later hook (e.g. `build:before`) to reduce startup time.',
+      docs: false,
     },
     NUXT_B8015: {
       why: (p: { received: string }) => `A Nuxt module must be a function or a string to import. Received: \`${p.received}\`.`,
@@ -83,10 +89,12 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B8017: {
       why: (p: { module: string }) => `The module \`${p.module}\` could not be loaded — it may not be installed.`,
       fix: (p: { module: string }) => `Run \`npm install ${p.module}\` to install it.`,
+      docs: false,
     },
     NUXT_B8018: {
       why: (p: { module: string, error: string }) => `An error occurred while importing the module \`${p.module}\`: ${p.error}.`,
       fix: 'A sub-dependency of this module is missing. Install it, or check that the module is compatible with the current environment.',
+      docs: false,
     },
     NUXT_B8019: {
       why: (p: { phase: string, name: string, error: string }) => `An error occurred while executing the ${p.phase} hook for module \`${p.name}\`: ${p.error}.`,

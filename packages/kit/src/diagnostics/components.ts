@@ -14,6 +14,7 @@ export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B3002: {
       why: (p: { component: string }) => `Using server component \`${p.component}\` with \`ssr: false\` is not supported with auto-detected component islands.`,
       fix: 'Set `experimental.componentIslands` to `true` in your `nuxt.config`, or convert the component to a client component.',
+      docs: false,
     },
     NUXT_B3003: {
       why: (p: { component: string }) => `Standalone server components (\`${p.component}\`) are not yet supported without enabling \`experimental.componentIslands\`.`,
@@ -23,6 +24,7 @@ export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B3004: {
       why: (p: { file: string, component: string, requiredModule: string }) => `\`${p.file}\` is using \`${p.component}\` which requires \`${p.requiredModule}\`.`,
       fix: (p: { requiredModule: string }) => `Run \`npx nuxt add ${p.requiredModule}\` to install it.`,
+      docs: false,
     },
     NUXT_B3005: {
       why: (p: { component: string, file: string }) => `Multiple hydration strategies are not supported in the same component \`<${p.component}>\` in \`${p.file}\`.`,
@@ -37,6 +39,7 @@ export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B3007: {
       why: (p: { file: string }) => `The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled, or with Vite. file: \`${p.file}\`.`,
       fix: 'Set `experimental.componentIslands.selectiveClient` to `true` in your `nuxt.config`, or switch to the Vite builder with `builder: \'vite\'`.',
+      docs: false,
     },
     NUXT_B3008: {
       why: (p: { scannedPath: string }) => `Components not scanned from \`${p.scannedPath}\`, likely due to a directory casing mismatch.`,

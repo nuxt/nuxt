@@ -11,6 +11,7 @@ export const renderDiagnostics = import.meta.client && !import.meta.dev && !impo
         NUXT_E4001: {
           why: (p: { layout: string, available: string }) => `Invalid layout \`${p.layout}\` selected. Available layouts: ${p.available}.`,
           fix: (p: { layout: string }) => `Create a \`layouts/${p.layout}.vue\` file, or use one of the available layouts.`,
+          docs: false,
         },
         NUXT_E4002: {
           why: (p: { name: string }) => `\`${p.name}\` layout does not have a single root node and will cause errors when navigating between routes.`,
@@ -40,6 +41,7 @@ export const renderDiagnostics = import.meta.client && !import.meta.dev && !impo
         NUXT_E4007: {
           why: 'Your project has layouts but the `<NuxtLayout />` component has not been used.',
           fix: 'Add `<NuxtLayout>` to your `app.vue`, or set `pages: false` in `nuxt.config` if you don\'t need layouts.',
+          docs: false,
         },
         NUXT_E4008: {
           why: (p: { path: string }) => `Cannot access path outside of project root directory: \`${p.path}\`.`,
@@ -49,6 +51,7 @@ export const renderDiagnostics = import.meta.client && !import.meta.dev && !impo
         NUXT_E4009: {
           why: 'You can\'t nest one `<a>` inside another `<a>`. This will cause a hydration error on client-side.',
           fix: 'Pass the `custom` prop to take full control of the markup.',
+          docs: false,
         },
         NUXT_E4010: {
           why: (p: { componentName: string, main: string, sub: string }) => `[${p.componentName}] \`${p.main}\` and \`${p.sub}\` cannot be used together. \`${p.sub}\` will be ignored.`,
@@ -58,6 +61,7 @@ export const renderDiagnostics = import.meta.client && !import.meta.dev && !impo
         NUXT_E4011: {
           why: 'Your project has pages but the `<NuxtPage />` component has not been used. You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt.',
           fix: 'You can set `pages: false` in `nuxt.config` if you do not wish to use the Nuxt `vue-router` integration.',
+          docs: false,
         },
         NUXT_E4012: {
           why: (p: { name: string, status: number, detail: string }) => `Failed to parse island response for \`${p.name}\` (HTTP ${p.status}): ${p.detail}`,
@@ -72,6 +76,7 @@ export const renderDiagnostics = import.meta.client && !import.meta.dev && !impo
         NUXT_E4014: {
           why: (p: { dir: string }) => `No pages found. \`<NuxtPage>\` requires at least one page component in the \`${p.dir}/\` directory.`,
           fix: (p: { dir: string }) => `Create an \`index.vue\` file inside the \`${p.dir}/\` directory.`,
+          docs: false,
         },
       },
     })

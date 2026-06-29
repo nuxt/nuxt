@@ -13,6 +13,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B5002: {
       why: (p: { rootDir: string }) => `\`@nuxt/webpack-builder\` could not be installed in \`${p.rootDir}\`.`,
       fix: 'Install it manually with `npm install -D @nuxt/webpack-builder`, or change the `builder` option to `vite` in `nuxt.config`.',
+      docs: false,
     },
     NUXT_B5003: {
       why: (p: { key: string }) => `The \`app\` namespace is reserved for Nuxt and exposed to the browser, but \`runtimeConfig.app.${p.key}\` is set.`,
