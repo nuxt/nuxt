@@ -223,6 +223,7 @@ describe('resolveLayerPaths', async () => {
           "../layers/*/modules/*/*.*",
         ],
         "nuxt": [
+          "../test/*",
           "../app/**/*",
           "../custom-modules/*/runtime/**/*",
           "../test/nuxt/**/*",
@@ -242,5 +243,10 @@ describe('resolveLayerPaths', async () => {
         ],
       }
     `)
+  })
+
+  it('should include top-level test folders when they exist', () => {
+    const paths = resolveLayerPaths({ root: repoRoot, app: repoRoot, modules: repoRoot, shared: repoRoot } as any, `${repoRoot}/.nuxt`)
+    expect(paths.nuxt).toContain('../test/*')
   })
 })
