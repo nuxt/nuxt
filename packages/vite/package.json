@@ -68,7 +68,7 @@
     "rollup": "4.62.2",
     "rollup-plugin-visualizer": "7.0.1",
     "tsdown": "0.22.3",
-    "vue": "3.5.38"
+    "vue": "3.5.39"
   },
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0 || ^8.0.0",
