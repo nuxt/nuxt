@@ -43,5 +43,15 @@ export const dataDiagnostics = import.meta.client && !import.meta.dev && !import
           fix: 'Return a plain object from the `asyncData()` function, e.g. `asyncData() { return { key: value } }`.',
           docs: false,
         },
+        NUXT_E3008: {
+          why: '`useAsyncData` key must be a non-empty string.',
+          fix: 'Pass a non-empty string as the first argument to `useAsyncData()`.',
+          docs: false,
+        },
+        NUXT_E3009: {
+          why: '`useAsyncData` handler must be a function.',
+          fix: 'Pass a function as the handler argument, e.g. `useAsyncData(\'key\', () => $fetch(\'/api/data\'))`.',
+          docs: false,
+        },
       },
     })

@@ -12,7 +12,6 @@ import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 import { dataDiagnostics } from '../diagnostics/data.ts'
-import { stateDiagnostics } from '../diagnostics/state.ts'
 
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
@@ -361,10 +360,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       // Validate arguments
       const key = (isKeyReactive ? computed(() => toValue(_key)!) : { value: _key as string }) as { readonly value: string }
       if (!key.value || typeof key.value !== 'string') {
-        throw stateDiagnostics.NUXT_E7011({})
+        throw dataDiagnostics.NUXT_E3008({})
       }
       if (typeof _handler !== 'function') {
-        throw stateDiagnostics.NUXT_E7012({})
+        throw dataDiagnostics.NUXT_E3009({})
       }
 
       const shouldFactoryOptionsOverride = typeof options === 'function'
