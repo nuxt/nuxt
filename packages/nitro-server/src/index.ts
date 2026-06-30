@@ -115,6 +115,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
+  // Only pull `beasties` into the bundle when critical CSS inlining is enabled.
+  nuxt.options.nitro.virtual ||= {}
+  nuxt.options.nitro.virtual['#internal/nuxt/critical-styles.mjs'] = () => nuxt.options.features.criticalStyles
+    ? `export { renderCriticalStyles } from ${JSON.stringify(resolve(distDir, 'runtime/utils/renderer/critical-styles'))}`
+    : `export const renderCriticalStyles = (html) => html`
+
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
@@ -186,6 +192,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
           `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
           `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
+          `export const NUXT_CRITICAL_STYLES = ${JSON.stringify(nuxt.options.features.criticalStyles ?? false)}`,
+          `export const NUXT_CLIENT_DIR = ${JSON.stringify(resolve(nuxt.options.buildDir, 'dist/client'))}`,
           `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
           `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,

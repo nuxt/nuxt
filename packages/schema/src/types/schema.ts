@@ -15,6 +15,7 @@ import type { CorsOptions, H3CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from 'nuxt/app'
 import type { FetchOptions } from 'ofetch'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
+import type { Options as BeastiesOptions } from 'beasties'
 import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
 import type { RawVueCompilerOptions } from '@vue/language-core'
@@ -1052,6 +1053,17 @@ export interface ConfigSchema {
    * You can also pass a function that receives the path of a Vue component and returns a boolean indicating whether to inline the styles for that component.
    */
     inlineStyles: boolean | ((id?: string) => boolean)
+
+    /**
+     * Inline critical CSS and lazy-load the rest of your stylesheets when rendering HTML, powered by [`beasties`](https://github.com/danielroe/beasties).
+     *
+     * Pass `true` to enable with defaults, or an object to forward options to `beasties`. Options are serialized at build time, so only JSON-serializable values are forwarded (use string selectors in `allowRules`).
+     *
+     * This processes the fully rendered HTML document, so it applies to prerendered and (buffered) server-rendered responses, but not to streamed responses. It is disabled in development, when `ssr` is `false`, and for non-server-rendered (`ssr: false`) routes.
+     *
+     * It composes with `inlineStyles`: that feature inlines component CSS, while this one inlines the critical part of any remaining external stylesheets and lazy-loads the rest. Styles already inlined by `inlineStyles` are left untouched unless you opt in via `reduceInlineStyles`.
+     */
+    criticalStyles: boolean | BeastiesOptions
 
     /**
      * Stream server logs to the client as you are developing. These logs can be handled in the `dev:ssr-logs` hook.

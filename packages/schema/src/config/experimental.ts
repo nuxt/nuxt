@@ -37,6 +37,17 @@ export default defineResolvers({
         return val ?? ((id?: string) => !!id && id.includes('.vue'))
       },
     },
+    criticalStyles: {
+      async $resolve (val, get) {
+        if (val !== true && (typeof val !== 'object' || val === null)) {
+          return false
+        }
+        if ((await get('dev')) || (await get('ssr')) === false) {
+          return false
+        }
+        return val
+      },
+    },
     devLogs: {
       async $resolve (val, get) {
         if (typeof val === 'boolean' || val === 'silent') {

@@ -29,6 +29,7 @@ export default defineConfig([
         '#internal/nuxt/app-config',
         '#internal/nuxt/entry-ids.mjs',
         '#internal/nuxt/nitro-config.mjs',
+        '#internal/nuxt/critical-styles.mjs',
         '#internal/unhead.config.mjs',
         '#internal/unhead-options.mjs',
         '#spa-template',

@@ -27,7 +27,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_CRITICAL_STYLES, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -382,7 +382,16 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  return new FastResponse(renderHTMLDocument(htmlContext), event.res)
+  let html = renderHTMLDocument(htmlContext)
+  // Skip the SPA shell: critical CSS must be derived from server-rendered markup.
+  // Loaded on demand so `beasties` is never bundled into the hot path when disabled.
+  if (NUXT_CRITICAL_STYLES && !ssrContext.noSSR) {
+    // @ts-expect-error virtual file
+    const { renderCriticalStyles } = await import('#internal/nuxt/critical-styles.mjs')
+    html = await renderCriticalStyles(html, NUXT_CRITICAL_STYLES).catch(() => html)
+  }
+
+  return new FastResponse(html, event.res)
 }
 
 async function renderStreamedResponse (ctx: {

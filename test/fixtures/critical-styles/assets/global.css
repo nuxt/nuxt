@@ -1,0 +1,9 @@
+.global-used {
+  --global-critical: present;
+  color: #ff0000;
+}
+
+.global-unused {
+  --global-noncritical: present;
+  color: #00ff00;
+}
