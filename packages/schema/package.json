@@ -47,6 +47,7 @@
     "@vue/compiler-sfc": "3.5.38",
     "@vue/language-core": "3.3.5",
     "autoprefixer": "10.5.2",
+    "beasties": "0.4.2",
     "c12": "3.3.4",
     "chokidar": "5.0.0",
     "compatx": "0.2.0",
