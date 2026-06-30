@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { performance } from 'node:perf_hooks'
+import { pathToFileURL } from 'node:url'
 import { createBuilder, createServer, mergeConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
@@ -49,10 +50,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   // Register Nitro plugin to fix SSR error stacktraces in dev mode
   if (nuxt.options.dev) {
     const nitro = useNitro()
-    nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
+    nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(pathToFileURL(resolve(distDir, 'fix-stacktrace')).href)}`
     nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
-    nitro.options.virtual['#internal/nuxt/vite-node-runner.mjs'] = () => `export { default } from ${JSON.stringify(resolve(distDir, 'vite-node-runner'))}`
+    nitro.options.virtual['#internal/nuxt/vite-node-runner.mjs'] = () => `export { default } from ${JSON.stringify(pathToFileURL(resolve(distDir, 'vite-node-runner')).href)}`
   }
 
   let allowDirs = [
