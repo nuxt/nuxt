@@ -57,6 +57,7 @@
     "postcss-loader": "^8.2.1",
     "postcss-url": "^10.1.4",
     "pug-plain-loader": "^1.1.0",
+    "raw-loader": "^4.0.2",
     "rolldown-string": "^0.3.0",
     "seroval": "^1.5.4",
     "time-fix-plugin": "^2.0.7",
