@@ -55,7 +55,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack())
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
-    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder' && nuxt.options.builder !== '@nuxt/rsbuild-builder') {
+    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
     }
     if (ssrStylesPlugin) {
