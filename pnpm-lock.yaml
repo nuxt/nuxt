@@ -695,6 +695,9 @@ importers:
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.107.2(cssnano@8.0.2(postcss@8.5.15))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.15))
+      hash-sum:
+        specifier: ^2.0.0
+        version: 2.0.0
       jiti:
         specifier: ^2.7.0
         version: 2.7.0
@@ -1314,6 +1317,9 @@ importers:
       fork-ts-checker-webpack-plugin:
         specifier: ^9.1.0
         version: 9.1.0(typescript@6.0.3)(webpack@5.107.2(cssnano@8.0.2(postcss@8.5.15))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.15))
+      hash-sum:
+        specifier: ^2.0.0
+        version: 2.0.0
       jiti:
         specifier: ^2.7.0
         version: 2.7.0

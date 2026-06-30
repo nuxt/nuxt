@@ -43,6 +43,7 @@
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.1.0",
     "file-loader": "^6.2.0",
+    "hash-sum": "^2.0.0",
     "jiti": "^2.7.0",
     "knitwork": "^1.3.0",
     "memfs": "^4.57.8",
