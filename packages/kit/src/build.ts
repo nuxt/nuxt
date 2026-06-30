@@ -230,8 +230,8 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
 interface AddBuildPluginFactory {
   vite?: () => Thenable<Arrayable<VitePlugin>>
   webpack?: () => Thenable<Arrayable<WebpackPluginInstance>>
-  rspack?: () => Thenable<Arrayable<RspackPluginInstance>>
-  rsbuild?: () => Thenable<Arrayable<RspackPluginInstance>>
+  rspack?: () => unknown
+  rsbuild?: () => unknown
 }
 
 export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions): void {
@@ -244,10 +244,10 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
   }
 
   if (pluginFactory.rspack) {
-    addRspackPlugin(pluginFactory.rspack, options)
+    addRspackPlugin(pluginFactory.rspack as () => Thenable<Arrayable<RspackPluginInstance>>, options)
   }
 
   if (pluginFactory.rsbuild) {
-    addRsbuildPlugin(pluginFactory.rsbuild, options)
+    addRsbuildPlugin(pluginFactory.rsbuild as () => Thenable<Arrayable<RspackPluginInstance>>, options)
   }
 }
