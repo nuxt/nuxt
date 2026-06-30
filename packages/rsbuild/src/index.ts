@@ -1,1 +1,1 @@
-export * from '../../webpack/src/index.ts'
+export { bundle } from './webpack.ts'

@@ -252,5 +252,7 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
 
   if (pluginFactory.rsbuild) {
     addRsbuildPlugin(pluginFactory.rsbuild, options)
+  } else if (pluginFactory.rspack) {
+    addRsbuildPlugin(pluginFactory.rspack, options)
   }
 }
