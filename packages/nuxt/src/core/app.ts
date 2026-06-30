@@ -230,6 +230,35 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
   app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
   app.configs = [...new Set(app.configs)]
+
+  // Filter out disabled plugins, including those disabled via plugin metadata
+  app.plugins = await filterDisabledPlugins(nuxt, app.plugins)
+}
+
+async function filterDisabledPlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
+  const result: NuxtPlugin[] = []
+
+  for (const plugin of plugins) {
+    if (plugin.enabled === false) {
+      continue
+    }
+    if (plugin.enabled === true || !plugin.src) {
+      result.push(plugin)
+      continue
+    }
+
+    try {
+      const code = nuxt.vfs[plugin.src] ?? await fsp.readFile(plugin.src, 'utf-8')
+      const meta = extractMetadata(code, /\.[jt]sx$/.test(plugin.src) ? 'tsx' : 'ts')
+      if (meta.enabled !== false) {
+        result.push(plugin)
+      }
+    } catch {
+      result.push(plugin)
+    }
+  }
+
+  return result
 }
 
 function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {

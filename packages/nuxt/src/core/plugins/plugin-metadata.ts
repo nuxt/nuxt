@@ -98,6 +98,7 @@ const keys: Record<ExtractedMetaKey, string> = {
   enforce: 'enforce',
   dependsOn: 'dependsOn',
   parallel: 'parallel',
+  enabled: 'enabled',
 }
 function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMetaKey {
   return typeof key !== 'string' ? key.name in keys : key in keys

@@ -246,6 +246,10 @@ export interface PluginMeta {
    * It overrides the value of `enforce` and is used to sort plugins.
    */
   order?: number
+  /**
+   * Whether the plugin is enabled or disabled. When set to `false`, the plugin will not be included in the build.
+   */
+  enabled?: boolean
 }
 
 export interface PluginEnvContext {

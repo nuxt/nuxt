@@ -1547,6 +1547,12 @@ describe('plugins', () => {
     expect(html).toContain('asyncPlugin: Async plugin works! 123')
     expect(html).toContain('useFetch works!')
   })
+
+  it('disabled plugins should not be available', async () => {
+    const html = await $fetch<string>('/disabled-plugins')
+    expect(html).toContain('disabledViaDefinition: Not available (expected)')
+    expect(html).toContain('disabledViaConfig: Not available (expected)')
+  })
 })
 
 describe('layouts', () => {

@@ -216,6 +216,9 @@ export default withMatrix({
       '~~/postcss/plugin': {},
     },
   },
+  plugins: [
+    { src: '~/plugins/can-be-disabled-via-config.ts', enabled: false },
+  ],
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'webpack:config' (configs) {

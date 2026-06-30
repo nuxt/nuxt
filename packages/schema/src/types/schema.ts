@@ -354,7 +354,8 @@ export interface ConfigSchema {
    * An array of nuxt app plugins.
    *
    * Each plugin can be a string (which can be an absolute or relative path to a file). If it ends with `.client` or `.server` then it will be automatically loaded only in the appropriate context.
-   * It can also be an object with `src` and `mode` keys.
+   * It can also be an object with `src` and `mode` keys. 
+   * The `enabled` property can be used to conditionally disable a plugin from being included in the build.
    *
    * @note Plugins are also auto-registered from the `~/plugins` directory
    * and these plugins do not need to be listed in `nuxt.config` unless you
@@ -370,7 +371,8 @@ export interface ConfigSchema {
    *   '~/plugins/baz.js', // both client & server
    *   { src: '~/plugins/both-sides.js' },
    *   { src: '~/plugins/client-only.js', mode: 'client' }, // only on client side
-   *   { src: '~/plugins/server-only.js', mode: 'server' } // only on server side
+   *   { src: '~/plugins/server-only.js', mode: 'server' }, // only on server side
+   *   { src: '~/plugins/disabled-plugin.js', enabled: false } // plugin is disabled
    * ]
    * ```
    */

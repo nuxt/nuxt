@@ -4,6 +4,7 @@ import { afterAll, describe, expect, it } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { createApp, resolveApp } from '../src/core/app.ts'
+import { clientPluginTemplate, serverPluginTemplate } from '../src/core/templates.ts'
 import { loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
@@ -81,6 +82,37 @@ describe('resolveApp', () => {
         "templates": [],
       }
     `)
+  })
+
+  it('filters plugins disabled via runtime defineNuxtPlugin metadata', async () => {
+    const app = await getResolvedApp([
+      {
+        name: 'app/plugins/disabled-plugin.ts',
+        contents: `export default defineNuxtPlugin({\n  enabled: false,\n  setup (nuxtApp) {\n    nuxtApp.provide('disabledViaDefinition', 'should not be available')\n  },\n})`,
+      },
+    ])
+
+    expect(app.plugins.some(plugin => plugin.src.includes('disabled-plugin.ts'))).toBe(false)
+  })
+
+  it('filters disabled plugins before plugin template generation', async () => {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(join(rootDir, 'app/plugins'), { recursive: true })
+    await writeFile(join(rootDir, 'nuxt.config.ts'), 'export default {}')
+    await writeFile(join(rootDir, 'app/plugins/disabled-plugin.ts'), 'export default defineNuxtPlugin({ enabled: false, setup () {} })')
+
+    const nuxt = await loadNuxt({ cwd: rootDir })
+    const app = createApp(nuxt)
+    await resolveApp(nuxt, app)
+
+    const clientContents = await clientPluginTemplate.getContents({ nuxt, app } as any)
+    const serverContents = await serverPluginTemplate.getContents({ nuxt, app } as any)
+
+    expect(clientContents).not.toContain('disabled-plugin.ts')
+    expect(serverContents).not.toContain('disabled-plugin.ts')
+
+    await nuxt.close()
+    await rm(rootDir, { recursive: true, force: true })
   })
 
   it('resolves layouts and middleware correctly', async () => {
