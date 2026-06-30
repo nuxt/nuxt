@@ -1272,11 +1272,23 @@ describe('navigate', () => {
     expect(res.headers.get('location')).not.toContain('<')
     expect(res.headers.get('location')).not.toContain('>')
     const content = body.match(/content="0; url=([^"]*)"/)?.[1] ?? ''
-    expect(content).not.toMatch(/[<>&"']/)
-    expect(content).toContain('%3C')
-    expect(content).toContain('%3E')
-    expect(content).toContain('%26')
-    expect(content).toContain('%27')
+    // HTML-significant characters are entity-encoded so they cannot break out of
+    // the attribute, while the URL stays semantically intact once decoded.
+    expect(content).not.toMatch(/[<>"]/)
+    expect(content).toContain('&amp;')
+    expect(content).toContain('&#x27;')
+  })
+
+  it('preserves query string separators in SSR redirect body', async () => {
+    const res = await fetch('/navigate-to-query-params', { redirect: 'manual' })
+    const body = await res.text()
+    expect(res.status).toEqual(302)
+    // Location header must keep the query separators as `&` (#35475)
+    expect(res.headers.get('location')).toEqual('/navigate-some-path?a=a&b=b&c=c')
+    // The meta-refresh body must not corrupt separators into `%26`
+    const content = body.match(/content="0; url=([^"]*)"/)?.[1] ?? ''
+    expect(content).not.toContain('%26')
+    expect(content).toContain('a=a&amp;b=b&amp;c=c')
   })
 
   it.each([
