@@ -50,6 +50,8 @@ exclude = [
   "https://nuxt.new/s/v4",
   "https://www.npmjs.com/",
   'https://nuxt\.com/docs/4\.x/api/composables/\$%7BkebabCase\(factory\.name\)%7D.*',
+  # `docsBase` template literal in diagnostics `_shared.ts` (kit + nuxt), not a real link
+  'https://nuxt\.com/docs/4\.x/errors/\$%7B.*',
   # TODO: fix upstream API issues
   "https://nuxt.com/modules",
   # single-quotes are required for regexp
