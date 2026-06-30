@@ -52,6 +52,7 @@
     "@nuxt/cli": "3.36.1",
     "@nuxt/eslint-config": "1.16.0",
     "@nuxt/kit": "workspace:*",
+    "@nuxt/rsbuild-builder": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/test-utils": "4.0.3",
     "@nuxt/webpack-builder": "workspace:*",

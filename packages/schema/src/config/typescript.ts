@@ -5,7 +5,7 @@ export default defineResolvers({
     strict: true,
     builder: {
       $resolve: (val) => {
-        const validBuilderTypes = new Set(['vite', 'webpack', 'rspack', 'shared'] as const)
+        const validBuilderTypes = new Set(['vite', 'webpack', 'rspack', 'rsbuild', 'shared'] as const)
         type ValidBuilderType = typeof validBuilderTypes extends Set<infer Option> ? Option : never
         if (typeof val === 'string' && validBuilderTypes.has(val as ValidBuilderType)) {
           return val as ValidBuilderType

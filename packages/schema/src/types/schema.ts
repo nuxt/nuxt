@@ -437,7 +437,7 @@ export interface ConfigSchema {
    * The builder to use for bundling the Vue part of your application.
    *
    */
-  builder: 'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: Nuxt) => Promise<void> }
+  builder: 'vite' | 'webpack' | 'rspack' | 'rsbuild' | { bundle: (nuxt: Nuxt) => Promise<void> }
 
   /**
    * Configures whether and how sourcemaps are generated for server and/or client bundles.
@@ -1786,7 +1786,7 @@ export interface ConfigSchema {
      * By default Nuxt infers this based on your `builder` option (defaulting to 'vite') but you can either turn off builder environment types (with `false`) to handle this fully yourself, or opt for a 'shared' option.
      * The 'shared' option is advised for module authors, who will want to support multiple possible builders.
      */
-    builder: 'vite' | 'webpack' | 'rspack' | 'shared' | false | undefined | null
+    builder: 'vite' | 'webpack' | 'rspack' | 'rsbuild' | 'shared' | false | undefined | null
 
     /**
      * Modules to generate deep aliases for within `compilerOptions.paths`. This does not yet support subpaths. It may be necessary when using Nuxt within a pnpm monorepo with `shamefully-hoist=false`.
