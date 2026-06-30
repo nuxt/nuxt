@@ -114,7 +114,7 @@ export default class VueSSRClientPlugin {
 
         const [cid] = m.chunks
         const chunk = stats.chunks!.find(c => c.id === cid)
-        if (!chunk || !chunk.files || !cid) {
+        if (!chunk || !chunk.files || cid == null) {
           continue
         }
         const relativeId = this.getRelativeModuleId(m.identifier!, context)
