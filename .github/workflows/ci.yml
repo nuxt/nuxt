@@ -336,7 +336,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
+            projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*" --project "fixtures:rsbuild-*"'
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-*"'
           - os: windows-latest
@@ -344,7 +344,7 @@ jobs:
           - os: windows-latest
             projects: '--project "fixtures:vite-built-*"'
           - os: windows-latest
-            projects: '--project "fixtures:rspack-*" --project "fixtures:webpack-*"'
+            projects: '--project "fixtures:rspack-*" --project "fixtures:rsbuild-*" --project "fixtures:webpack-*"'
 
     timeout-minutes: 45
 
@@ -541,4 +541,4 @@ jobs:
           name: dist
           path: packages
 
-      - run: pnpm pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step
+      - run: pnpm pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rsbuild' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step

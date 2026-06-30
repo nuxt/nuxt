@@ -222,12 +222,12 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.typescript.builder !== false) {
     const envMap = {
       // defaults from `builder` based on package name
-      '@nuxt/rsbuild-builder': '@nuxt/schema/builder-env',
+      '@nuxt/rsbuild-builder': '@rspack/core/module',
       '@nuxt/rspack-builder': '@rspack/core/module',
       '@nuxt/vite-builder': 'vite/client',
       '@nuxt/webpack-builder': 'webpack/module',
       // simpler overrides from `typescript.builder` for better DX
-      'rsbuild': '@nuxt/schema/builder-env',
+      'rsbuild': '@rspack/core/module',
       'rspack': '@rspack/core/module',
       'vite': 'vite/client',
       'webpack': 'webpack/module',
