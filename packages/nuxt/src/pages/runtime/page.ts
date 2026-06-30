@@ -28,6 +28,19 @@ export interface NuxtPageProps extends RouterViewProps {
    * Control when the `NuxtPage` component is re-rendered.
    */
   pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
+
+  /**
+   * When `true`, the previous page content stays visible during rapid/concurrent
+   * navigation until the new page's async dependencies resolve. This prevents
+   * the blank-content flash caused by the internal Suspense boundary being
+   * recreated on every route change while a previous navigation is still pending.
+   *
+   * The effect is scoped to the `NuxtPage` instance — set it on the `<NuxtPage>`
+   * component in your `app.vue` (or nested layouts) to opt in.
+   *
+   * @default false
+   */
+  stableContent?: boolean
 }
 
 const _routeProviders = import.meta.dev ? new Map<string, ReturnType<typeof defineRouteProvider> | undefined>() : new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
@@ -53,6 +66,10 @@ export default defineComponent({
     pageKey: {
       type: [Function, String] as unknown as () => string | ((route: RouteLocationNormalizedLoaded) => string),
       default: null,
+    },
+    stableContent: {
+      type: Boolean,
+      default: false,
     },
   },
   setup (props, { attrs, slots, expose }) {
@@ -161,7 +178,11 @@ export default defineComponent({
 
               // remount suspense on rapid navigation, but not before the first resolve:
               // tearing down a never-resolved suspensible Suspense strands its parent. See #28425, #34683.
-              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce) {
+              // When stableContent is enabled (via prop or per-page meta), skip the remount so that
+              // the previous page content remains visible while the new page's async dependencies
+              // resolve — preventing the blank-content flash described in #35236.
+              const isStableContent = props.stableContent || routeProps.route.meta.stableContent
+              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce && !isStableContent) {
                 suspenseKey++
               }
 
