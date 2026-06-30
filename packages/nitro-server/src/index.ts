@@ -843,7 +843,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         config.resolve.conditions = [...nitro.options.exportConditions || [], 'import']
       }
     },
-  })
+  }, { client: false })
 
   // Tree-shake Vue feature flags for non-node Nitro targets
   addVitePlugin({
