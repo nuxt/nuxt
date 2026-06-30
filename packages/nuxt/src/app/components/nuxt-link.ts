@@ -426,7 +426,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         ])
       }
 
-      if (import.meta.client) {
+      if (import.meta.client && !props.custom) {
         checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
@@ -490,11 +490,23 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             routerLinkProps.rel = props.rel || undefined
           }
 
+          const routerLinkSlots = props.custom
+            ? {
+                default: (slotProps: Record<string, unknown>) => slots.default?.({
+                  ...slotProps,
+                  prefetch,
+                  rel: props.rel || null,
+                  target: props.target || null,
+                  isExternal: false,
+                }),
+              }
+            : slots.default
+
           // Internal link
           return h(
             resolveComponent('RouterLink'),
             routerLinkProps,
-            slots.default,
+            routerLinkSlots,
           )
         }
 

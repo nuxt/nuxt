@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
+import { h } from 'vue'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
@@ -69,6 +70,45 @@ describe('nuxt-link:prefetch', () => {
 
     await observer.trigger()
     expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
+  })
+
+  it('should not prefetch custom links on visibility', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const nuxtApp = useNuxtApp()
+    nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
+
+    const { observer } = useMockObserver()
+    await mountSuspended(component, {
+      props: { to: '/to', custom: true },
+      slots: {
+        default: ({ href, navigate }: { href: string, navigate: (e?: MouseEvent) => Promise<void> }) =>
+          h('a', { href, onClick: navigate }, 'to'),
+      },
+    })
+
+    await observer.trigger()
+    expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
+  })
+
+  it('should expose prefetch to custom links', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const nuxtApp = useNuxtApp()
+    nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
+    let prefetch: ((nuxtApp?: ReturnType<typeof useNuxtApp>) => Promise<void>) | undefined
+
+    await mountSuspended(component, {
+      props: { to: '/to', custom: true },
+      slots: {
+        default: (slotProps: { href: string, navigate: (e?: MouseEvent) => Promise<void>, prefetch?: typeof prefetch }) => {
+          prefetch = slotProps.prefetch
+          return h('a', { href: slotProps.href, onClick: slotProps.navigate }, 'to')
+        },
+      },
+    })
+
+    expect(prefetch).toEqual(expect.any(Function))
+    await prefetch?.(nuxtApp)
+    expect(nuxtApp.hooks.callHook).toHaveBeenCalledTimes(1)
   })
 })
 
