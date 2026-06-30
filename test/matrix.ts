@@ -1,12 +1,12 @@
 import { defu } from 'defu'
 import type { NuxtConfig } from 'nuxt/schema'
 
-export const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
+export const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack' || process.env.TEST_BUILDER === 'rsbuild'
 
 export const isDev = process.env.TEST_ENV === 'dev'
 export const isBuilt = !isDev
 
-const _builder = process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite'
+const _builder = process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'rsbuild' | 'vite'
 export const builder = _builder ?? 'vite'
 
 export const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'

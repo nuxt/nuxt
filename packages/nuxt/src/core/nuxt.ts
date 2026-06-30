@@ -222,10 +222,12 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.typescript.builder !== false) {
     const envMap = {
       // defaults from `builder` based on package name
+      '@nuxt/rsbuild-builder': '@rspack/core/module',
       '@nuxt/rspack-builder': '@rspack/core/module',
       '@nuxt/vite-builder': 'vite/client',
       '@nuxt/webpack-builder': 'webpack/module',
       // simpler overrides from `typescript.builder` for better DX
+      'rsbuild': '@rspack/core/module',
       'rspack': '@rspack/core/module',
       'vite': 'vite/client',
       'webpack': 'webpack/module',
@@ -409,6 +411,7 @@ async function initNuxt (nuxt: Nuxt) {
         vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
         webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
         rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
+        rsbuild: () => ImpoundPlugin.rspack(sharedProtectionConfig),
       }, { server: false, prepend: true })
 
       // Add import protection
@@ -422,6 +425,7 @@ async function initNuxt (nuxt: Nuxt) {
       addBuildPlugin({
         webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
         rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
+        rsbuild: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
       })
 
       // Register Vite import protection plugins with split enforce:
@@ -630,7 +634,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Track components used to render for webpack
-  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rspack-builder') {
+  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rspack-builder' || nuxt.options.builder === '@nuxt/rsbuild-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 

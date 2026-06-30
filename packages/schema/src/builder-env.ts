@@ -9,4 +9,4 @@ declare global {
   }
 }
 
-export const builders = ['vite', 'webpack'] as const
+export const builders = ['vite', 'webpack', 'rspack', 'rsbuild'] as const
