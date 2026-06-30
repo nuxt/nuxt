@@ -849,7 +849,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         }
       },
     })
-    for (const hook of ['webpack:config', 'rspack:config'] as const) {
+    for (const hook of ['webpack:config', 'rspack:config', 'rsbuild:config'] as const) {
       nuxt.hook(hook, (configuration) => {
         const clientConfig = configuration.find(config => config.name === 'client')
         if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
@@ -986,7 +986,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // nuxt dev
   let waitUntilCompile: Promise<void> | undefined
   if (nuxt.options.dev) {
-    for (const builder of ['webpack', 'rspack'] as const) {
+    for (const builder of ['webpack', 'rspack', 'rsbuild'] as const) {
       nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
         if (name === 'server') {
           const memfs = compiler.outputFileSystem as typeof import('node:fs')

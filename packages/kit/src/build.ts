@@ -58,7 +58,7 @@ export interface ExtendViteConfigOptions extends Omit<ExtendConfigOptions, 'serv
   client?: boolean
 }
 
-const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((config: WebpackConfig) => Thenable<void>), options: ExtendWebpackConfigOptions = {}) => {
+const extendWebpackCompatibleConfig = (builder: 'rsbuild' | 'rspack' | 'webpack') => (fn: ((config: WebpackConfig) => Thenable<void>), options: ExtendWebpackConfigOptions = {}) => {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
@@ -100,6 +100,13 @@ export const extendWebpackConfig: ExtendWebpacklikeConfig = extendWebpackCompati
  * when applying to both client and server builds.
  */
 export const extendRspackConfig: ExtendWebpacklikeConfig = extendWebpackCompatibleConfig('rspack')
+/**
+ * Extend rsbuild config
+ *
+ * The fallback function might be called multiple times
+ * when applying to both client and server builds.
+ */
+export const extendRsbuildConfig: ExtendWebpacklikeConfig = extendWebpackCompatibleConfig('rsbuild')
 
 /**
  * Extend Vite config
@@ -143,6 +150,18 @@ export function addWebpackPlugin (pluginOrGetter: Arrayable<WebpackPluginInstanc
  */
 export function addRspackPlugin (pluginOrGetter: Arrayable<RspackPluginInstance> | (() => Thenable<Arrayable<RspackPluginInstance>>), options?: ExtendWebpackConfigOptions): void {
   extendRspackConfig(async (config) => {
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
+
+    config.plugins ||= []
+    config.plugins[method](...toArray(plugin))
+  }, options)
+}
+/**
+ * Append rsbuild plugin to the config.
+ */
+export function addRsbuildPlugin (pluginOrGetter: Arrayable<RspackPluginInstance> | (() => Thenable<Arrayable<RspackPluginInstance>>), options?: ExtendWebpackConfigOptions): void {
+  extendRsbuildConfig(async (config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
 
@@ -212,6 +231,7 @@ interface AddBuildPluginFactory {
   vite?: () => Thenable<Arrayable<VitePlugin>>
   webpack?: () => Thenable<Arrayable<WebpackPluginInstance>>
   rspack?: () => Thenable<Arrayable<RspackPluginInstance>>
+  rsbuild?: () => Thenable<Arrayable<RspackPluginInstance>>
 }
 
 export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions): void {
@@ -225,5 +245,9 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
 
   if (pluginFactory.rspack) {
     addRspackPlugin(pluginFactory.rspack, options)
+  }
+
+  if (pluginFactory.rsbuild) {
+    addRsbuildPlugin(pluginFactory.rsbuild, options)
   }
 }

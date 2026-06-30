@@ -230,6 +230,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         addBuildPlugin({
           webpack: makeIifeAssetPlugin,
           rspack: makeIifeAssetPlugin,
+          rsbuild: makeIifeAssetPlugin,
         })
       }
     }

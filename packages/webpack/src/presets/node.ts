@@ -5,7 +5,7 @@ export function node (ctx: WebpackConfigContext) {
   ctx.config.target = 'node'
   ctx.config.node = false
 
-  if (builder !== 'rspack') {
+  if (builder !== 'rspack' && builder !== 'rsbuild') {
     ctx.config.experiments!.outputModule = true
   }
 

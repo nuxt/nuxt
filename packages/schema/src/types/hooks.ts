@@ -471,6 +471,60 @@ export interface NuxtHooks {
    * @returns void
    */
   'rspack:progress': (statesArray: any[]) => void
+
+  // rsbuild
+  /**
+   * Called before configuring the rsbuild compiler.
+   * @param webpackConfigs Configs objects to be pushed to the compiler
+   * @returns Promise
+   */
+  'rsbuild:config': (webpackConfigs: Configuration[]) => HookResult
+  /**
+   * Allows to read the resolved rsbuild config
+   * @param webpackConfigs Configs objects to be pushed to the compiler
+   * @returns Promise
+   */
+  'rsbuild:configResolved': (webpackConfigs: Readonly<Configuration>[]) => HookResult
+  /**
+   * Called right before compilation.
+   * @param options The options to be added
+   * @param options.name The name of the compiler
+   * @param options.compiler The rsbuild compiler instance
+   * @returns Promise
+   */
+  'rsbuild:compile': (options: { name: string, compiler: Compiler }) => HookResult
+  /**
+   * Called after resources are loaded.
+   * @param options The compiler options
+   * @param options.name The name of the compiler
+   * @param options.compiler The rsbuild compiler instance
+   * @param options.stats The rsbuild compilation stats
+   * @returns Promise
+   */
+  'rsbuild:compiled': (options: { name: string, compiler: Compiler, stats: Stats }) => HookResult
+
+  /**
+   * Called on `change` on WebpackBar.
+   * @param shortPath the short path
+   * @returns void
+   */
+  'rsbuild:change': (shortPath: string) => void
+  /**
+   * Called on `done` if has errors on WebpackBar.
+   * @returns void
+   */
+  'rsbuild:error': () => void
+  /**
+   * Called on `allDone` on WebpackBar.
+   * @returns void
+   */
+  'rsbuild:done': () => void
+  /**
+   * Called on `progress` on WebpackBar.
+   * @param statesArray The array containing the states on progress
+   * @returns void
+   */
+  'rsbuild:progress': (statesArray: any[]) => void
 }
 
 export type NuxtHookName = keyof NuxtHooks

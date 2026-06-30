@@ -36,7 +36,7 @@ function baseConfig (ctx: WebpackConfigContext) {
       rules: [],
       // Nuxt resolves some virtual module exports lazily (e.g. `?inline` CSS), so missing exports
       // must not fail the build under Rspack.
-      ...builder === 'rspack'
+      ...builder === 'rspack' || builder === 'rsbuild'
         ? { parser: { javascript: { exportsPresence: 'auto' as const } } }
         : {},
     },
@@ -62,7 +62,7 @@ function basePlugins (ctx: WebpackConfigContext) {
 
   // Add timefix-plugin before other plugins
   if (ctx.options.dev) {
-    if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
+    if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder' && ctx.nuxt.options.builder !== '@nuxt/rsbuild-builder') {
       ctx.config.plugins.push(new TimeFixPlugin())
     }
   }
@@ -71,7 +71,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   ctx.config.plugins.push(...(ctx.userConfig.plugins || []))
 
   // Ignore empty warnings
-  if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
+  if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder' && ctx.nuxt.options.builder !== '@nuxt/rsbuild-builder') {
     ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
   }
 

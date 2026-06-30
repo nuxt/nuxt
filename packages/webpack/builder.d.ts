@@ -7,5 +7,5 @@ declare module '#builder' {
   export const WebpackBarPlugin: typeof import('webpackbar').default
   export const MiniCssExtractPlugin: typeof MiniCssExtractPlugin
   export const TsCheckerPlugin: typeof TsCheckerPlugin
-  export const builder: 'webpack' | 'rspack'
+  export const builder: 'webpack' | 'rspack' | 'rsbuild'
 }
