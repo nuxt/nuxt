@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
+import { createSSRApp, h } from 'vue'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
@@ -70,6 +71,33 @@ describe('nuxt-link:prefetch', () => {
     await observer.trigger()
     expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
   })
+
+  it('should prefetch custom links rendering a single element on visibility', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const nuxtApp = useNuxtApp()
+    const router = useRouter()
+    nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
+
+    // hydrate existing markup so `$el` is the `<a>` itself. a single-root custom slot
+    // has no fragment marker, and a fresh mount would add one that masks the bug (#14897/#19375)
+    const container = document.createElement('div')
+    container.innerHTML = '<a href="/to">link</a>'
+    document.body.appendChild(container)
+
+    const { observer } = useMockObserver()
+
+    createSSRApp({
+      setup: () => () => h(component, { to: '/to', custom: true }, { default: ({ href }: { href: string }) => h('a', { href }, 'link') }),
+    }).use(router).mount(container)
+
+    await vi.waitFor(() => expect(observer.observed()?.tagName).toBe('A'))
+
+    expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
+    await observer.trigger()
+    expect(nuxtApp.hooks.callHook).toHaveBeenCalledTimes(1)
+
+    container.remove()
+  })
 })
 
 describe('nuxt-link:hash-focus', () => {
@@ -120,6 +148,7 @@ function useMockObserver () {
     observe = (_el: HTMLElement) => { el = _el }
 
     trigger = () => callback?.([{ target: el, isIntersecting: true }])
+    observed = () => el
     unobserve = () => {}
     disconnect = () => {}
   }

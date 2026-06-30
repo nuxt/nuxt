@@ -400,7 +400,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       // Prefetching
       const prefetched = shallowRef(false)
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
-      const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
+      const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? resolveCustomLinkEl(ref?.$el) : ref?.$el }
 
       function shouldPrefetch (mode: 'visibility' | 'interaction') {
         if (import.meta.server) { return }
@@ -601,6 +601,16 @@ function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions[
 }
 
 // --- Prefetching utils ---
+
+// `custom` RouterLink renders a single-node slot as the element itself, but a
+// fragment behind a marker (comment/text) node. So `$el` is either the element
+// or the marker preceding it (#14897, #19375). Resolve the element in both cases.
+export function resolveCustomLinkEl (root: Node | null | undefined): HTMLElement | null {
+  return (root && root.nodeType === 1 /* Node.ELEMENT_NODE */
+    ? root
+    : (root as NonDocumentTypeChildNode | null)?.nextElementSibling ?? null) as HTMLElement | null
+}
+
 type CallbackFn = () => void
 type ObserveFn = (element: Element, callback: CallbackFn) => () => void
 

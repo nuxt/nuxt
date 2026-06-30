@@ -3,7 +3,7 @@ import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import { ref } from 'vue'
 import { withQuery } from 'ufo'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link.ts'
-import { defineNuxtLink } from '../src/app/components/nuxt-link.ts'
+import { defineNuxtLink, resolveCustomLinkEl } from '../src/app/components/nuxt-link.ts'
 import { useRuntimeConfig } from '../src/app/nuxt.ts'
 
 // mocks `useRuntimeConfig()`
@@ -412,6 +412,29 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: '/to/', external: true }, removeSlashOptions).props.href).toBe('/to')
       })
     })
+  })
+})
+
+describe('nuxt-link:resolveCustomLinkEl', () => {
+  const ELEMENT_NODE = 1
+  const TEXT_NODE = 3
+  const COMMENT_NODE = 8
+
+  it('returns the root when it is already an element (single-vnode `custom` slot)', () => {
+    const a = { nodeType: ELEMENT_NODE, tagName: 'A', nextElementSibling: null }
+    expect(resolveCustomLinkEl(a as unknown as Node)).toBe(a)
+  })
+
+  it('returns the next element sibling when the root is a marker node (fragment `custom` slot)', () => {
+    const a = { nodeType: ELEMENT_NODE, tagName: 'A' }
+    expect(resolveCustomLinkEl({ nodeType: COMMENT_NODE, nextElementSibling: a } as unknown as Node)).toBe(a)
+    expect(resolveCustomLinkEl({ nodeType: TEXT_NODE, nextElementSibling: a } as unknown as Node)).toBe(a)
+  })
+
+  it('returns `null` when there is no resolvable element', () => {
+    expect(resolveCustomLinkEl(null)).toBe(null)
+    expect(resolveCustomLinkEl(undefined)).toBe(null)
+    expect(resolveCustomLinkEl({ nodeType: TEXT_NODE, nextElementSibling: null } as unknown as Node)).toBe(null)
   })
 })
 
