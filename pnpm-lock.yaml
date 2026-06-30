@@ -704,6 +704,9 @@ importers:
       memfs:
         specifier: ^4.57.8
         version: 4.57.8(tslib@2.8.1)
+      mini-css-extract-plugin:
+        specifier: ^2.10.2
+        version: 2.10.2(webpack@5.107.2(cssnano@8.0.2(postcss@8.5.15))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.15))
       mlly:
         specifier: ^1.8.2
         version: 1.8.2
