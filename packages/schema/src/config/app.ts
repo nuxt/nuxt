@@ -186,6 +186,14 @@ export default defineResolvers({
       },
     },
     vite: {},
+    templateParams: {
+      // v5 aligns with unhead v3, which no longer auto-loads `TemplateParamsPlugin`.
+      // v4/legacy keeps it for back-compat. An explicit boolean always wins.
+      $resolve: async (val, get) => {
+        if (typeof val === 'boolean') { return val }
+        return (await get('future.compatibilityVersion') as number) < 5
+      },
+    },
     renderSSRHeadOptions: {
       $resolve: (val: unknown) => ({
         omitLineBreaks: true,
