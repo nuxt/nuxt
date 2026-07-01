@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite'
 import type { SourceMapInput } from 'rollup'
-import { ensureDependencyInstalled, logger } from '@nuxt/kit'
+import { bundlerDiagnostics, ensureDependencyInstalled } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import jsTokens from 'js-tokens'
 
@@ -52,7 +52,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
       })
 
       if (result !== true) {
-        logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), install: result.join(' ') })
         return false
       }
 

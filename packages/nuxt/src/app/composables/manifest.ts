@@ -1,6 +1,7 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { NitroRouteRules } from 'nitro/types'
 import { useRuntimeConfig } from '../nuxt'
+import { manifestDiagnostics } from '../diagnostics/manifest.ts'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -23,7 +24,7 @@ let manifest: Promise<NuxtAppManifest> | undefined
 
 function fetchManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+    throw manifestDiagnostics.NUXT_E5001({})
   }
   let _manifest: Promise<NuxtAppManifest>
   if (import.meta.server) {
@@ -47,7 +48,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     if (manifest === _manifest) {
       manifest = undefined
     }
-    console.error('[nuxt] Error fetching app manifest.', e)
+    manifestDiagnostics.NUXT_E5002({ cause: e }, { method: 'error' })
   })
   return _manifest
 }
@@ -55,7 +56,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
 /** @since 3.7.4 */
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+    throw manifestDiagnostics.NUXT_E5001({})
   }
   return manifest || fetchManifest()
 }
@@ -70,7 +71,7 @@ export function getRouteRules (arg: string | H3Event | { path: string }) {
   try {
     return routeRulesMatcher(path.toLowerCase())
   } catch (e) {
-    console.error('[nuxt] Error matching route rules.', e)
+    manifestDiagnostics.NUXT_E5003({ path, cause: e }, { method: 'error' })
     return {}
   }
 }

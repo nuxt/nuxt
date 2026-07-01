@@ -4,6 +4,7 @@ import { normalize } from 'pathe'
 import { useNuxt } from './context.ts'
 import type { Nitro, NitroDevEventHandler, NitroEventHandler } from './nitro-types.ts'
 import { toArray } from './utils.ts'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
 const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
 type HANDLER_METHOD_RE = 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace'
@@ -80,7 +81,7 @@ export function addPrerenderRoutes (routes: string | string[]): void {
 export function useNitro (): Nitro {
   const nuxt = useNuxt()
   if (!(nuxt as any)._nitro) {
-    throw new Error('Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.')
+    throw kitDiagnostics.NUXT_B8003({})
   }
   return (nuxt as any)._nitro
 }

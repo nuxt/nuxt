@@ -1,7 +1,7 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
+import { buildDiagnostics, createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -91,7 +91,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
   if (nuxt.options.dev && !nuxt.options.test) {
     nuxt.hooks.hookOnce('build:done', () => {
       checkForExternalConfigurationFiles()
-        .catch(e => logger.warn('Problem checking for external configuration files.', e))
+        .catch(e => buildDiagnostics.NUXT_B1014({ cause: e }))
     })
   }
 
@@ -261,7 +261,7 @@ async function createParcelWatcher () {
     }
     return true
   } catch {
-    logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+    buildDiagnostics.NUXT_B1015()
     return false
   }
 }
@@ -295,9 +295,9 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err: any) {
     if (builder === '@nuxt/webpack-builder' && err?.toString?.().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
-      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.', { cause: err })
+      throw buildDiagnostics.NUXT_B1016({ cause: err })
     }
-    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder\``, { cause: err })
+    throw buildDiagnostics.NUXT_B1017({ builder, cause: err })
   }
 }
 

@@ -2,11 +2,11 @@ import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
-import { isIgnored, useNuxt } from '@nuxt/kit'
+import { componentDiagnostics, isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 
 import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
-import { logger, resolveToAlias } from '../utils.ts'
+import { resolveToAlias } from '../utils.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
@@ -47,7 +47,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
             const nuxt = useNuxt()
             const original = resolveToAlias(dir.path, nuxt)
             const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
-            logger.warn(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`)
+            componentDiagnostics.NUXT_B3008({ scannedPath: corrected, expectedPath: original })
             break
           }
         }
@@ -99,7 +99,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const pascalName = pascalCase(componentNameSegments)
 
       if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
-        logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
+        componentDiagnostics.NUXT_B3009({ component: pascalName, filePath })
       }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
@@ -139,7 +139,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        logger.warn(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`)
+        componentDiagnostics.NUXT_B3010({ filePath: resolveToAlias(filePath) })
         continue
       }
 
@@ -171,10 +171,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
-    `\n - ${filePath}` +
-    `\n - ${duplicatePath}`,
-  )
+  componentDiagnostics.NUXT_B3011({ component: componentName, filePath, duplicatePath })
 }
 
 const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/

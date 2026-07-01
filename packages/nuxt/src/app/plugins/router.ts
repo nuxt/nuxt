@@ -7,6 +7,7 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
+import { navigationDiagnostics } from '../diagnostics/navigation.ts'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
@@ -158,7 +159,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         }
       } catch (err) {
         if (import.meta.dev && !hooks.error.length) {
-          console.warn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`', err)
+          navigationDiagnostics.NUXT_E2009({ cause: err })
         }
         for (const handler of hooks.error) {
           await handler(err)

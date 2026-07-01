@@ -1,7 +1,7 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { createIsIgnored } from '@nuxt/kit'
+import { buildDiagnostics, createIsIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
@@ -252,7 +252,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       if (count < 5) {
         return await readFileWithMeta(dir, fileName, count + 1)
       }
-      console.warn(`Failed to read file \`${fileName}\` as it changed during read.`)
+      buildDiagnostics.NUXT_B1010({ file: fileName })
       return
     }
 
@@ -265,7 +265,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       },
     }
   } catch (err) {
-    console.warn(`Failed to read file \`${fileName}\`:`, err)
+    buildDiagnostics.NUXT_B1011({ file: fileName, cause: err })
   } finally {
     await fd?.close()
   }
@@ -285,7 +285,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
       // Prevent path traversal attacks
       if (!filePath.startsWith(resolvedCwd)) {
-        consola.warn(`Skipping unsafe cache path: ${file.name}`)
+        buildDiagnostics.NUXT_B1012({ path: file.name })
         continue
       }
 
@@ -305,7 +305,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
-      console.error(err)
+      buildDiagnostics.NUXT_B1013({ file: file.name, cause: err }, { method: 'error' })
     } finally {
       await fd?.close()
     }

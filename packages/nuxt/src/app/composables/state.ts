@@ -2,6 +2,7 @@ import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
+import { stateDiagnostics } from '../diagnostics/state.ts'
 
 // @ts-expect-error virtual file
 import { useStateDefaults } from '#build/nuxt.config.mjs'
@@ -21,10 +22,10 @@ export function useState<T> (...args: any): Ref<T> {
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, init] = args as [string, (() => T | Ref<T>)]
   if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [useState] key must be a string: ' + _key)
+    throw stateDiagnostics.NUXT_E7009({ key: _key })
   }
   if (init !== undefined && typeof init !== 'function') {
-    throw new Error('[nuxt] [useState] init must be a function: ' + init)
+    throw stateDiagnostics.NUXT_E7007({ type: typeof init })
   }
   const key = useStateKeyPrefix + _key
 
