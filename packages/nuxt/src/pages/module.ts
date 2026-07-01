@@ -98,12 +98,13 @@ export default defineNuxtModule({
     )
 
     const handleRouteRules = async (pages: NuxtPage[]) => {
-      if (nuxt.options.experimental.inlineRouteRules) {
-        const routeRules = globRouteRulesFromPages(pages)
-        await updateRouteConfig?.(routeRules)
-      } else {
+      if (!nuxt.options.experimental.inlineRouteRules) {
         removePagesRules(pages)
+        return
       }
+
+      const routeRules = globRouteRulesFromPages(pages, undefined, '', nuxt.options.dev ? { warn: message => logger.warn(message) } : undefined)
+      await updateRouteConfig?.(routeRules)
     }
 
     const resolvePagesRoutes = async (pattern: string | string[], nuxt: Nuxt) => {

@@ -66,6 +66,64 @@ describe('routeRules from page meta', () => {
     })
   })
 
+  it('warns when a route rule glob is broader than the page route', () => {
+    const warnings: string[] = []
+    const pages = [
+      {
+        path: '/foo-:id',
+        rules: { swr: 60 },
+      },
+      {
+        path: '/users/:id(\\d+)',
+        rules: { prerender: true },
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages, {}, '', { warn: message => warnings.push(message) })).toEqual({
+      '/**': { swr: 60 },
+      '/users/**': { prerender: true },
+    })
+    expect(warnings).toHaveLength(2)
+    expect(warnings[0]).toContain('partial dynamic segment')
+    expect(warnings[1]).toContain('custom RegExp constraint')
+  })
+
+  it('does not generate broad route rules for multiple unresolved dynamic params', () => {
+    const warnings: string[] = []
+    const pages = [
+      {
+        path: '/foo/:id/:slug',
+        rules: { swr: 60 },
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages, {}, '', { warn: message => warnings.push(message) })).toEqual({})
+    expect(warnings).toEqual([
+      'Inline route rules for `/foo/:id/:slug` could not be mapped and were skipped because multiple dynamic params cannot be represented by a single Nitro route rule glob.',
+    ])
+  })
+
+  it('warns when generated route rule globs conflict', () => {
+    const warnings: string[] = []
+    const pages = [
+      {
+        path: '/foo/:id',
+        rules: { swr: 60 },
+      },
+      {
+        path: '/foo/:slug',
+        rules: { prerender: true },
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages, {}, '', { warn: message => warnings.push(message) })).toEqual({
+      '/foo/**': { prerender: true },
+    })
+    expect(warnings).toEqual([
+      'Inline route rules for `/foo/:slug` generated `/foo/**`, which is already used by another page. The later inline route rules will override the earlier ones.',
+    ])
+  })
+
   it('expands constrained params from parent route records', () => {
     const pages: NuxtPage[] = [
       {

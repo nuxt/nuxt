@@ -520,53 +520,360 @@ async function createClientPage(loader) {
   }
 }
 
-// Convert the first dynamic route segment and anything after it into a Nitro wildcard.
-// For example: `/blog/:slug` -> `/blog/**`.
-const PATH_TO_NITRO_GLOB_RE = /\/[^:/]*:\w.*$/
-// Match simple constrained params that can be expanded into concrete paths.
-// For example: `/:locale(de|fr)/blog` -> `/de/blog` and `/fr/blog`.
-const CONSTRAINED_PARAM_SEGMENT_RE = /\/:[\w-]+\(([^()]+)\)(?=\/|$)/
-// Do not expand arbitrary regex constraints, only literal path segment alternatives.
-// For example: `de|fr` is expanded, but `[a-z]{2}` is left untouched.
-const SIMPLE_PARAM_ALTERNATIVE_RE = /^[\w-]+$/
-
-function expandRouteParamAlternatives (path: string): string[] {
-  const match = path.match(CONSTRAINED_PARAM_SEGMENT_RE)
-  if (!match || typeof match.index !== 'number') {
-    return [path]
-  }
-
-  const alternatives = match[1]!.split('|')
-  if (!alternatives.every(alternative => SIMPLE_PARAM_ALTERNATIVE_RE.test(alternative))) {
-    return [path]
-  }
-
-  const prefix = path.slice(0, match.index)
-  const suffix = path.slice(match.index + match[0]!.length)
-  return alternatives.flatMap(alternative => expandRouteParamAlternatives(`${prefix}/${alternative}${suffix}`))
+interface PathToNitroGlobOptions {
+  warn?: (message: string) => void
+  maxExpandedPaths?: number
 }
 
-export function pathToNitroGlob (path: string) {
+type RoutePathToken = RoutePathStaticToken | RoutePathParamToken
+
+interface RoutePathStaticToken {
+  type: 'static'
+  value: string
+}
+
+interface RoutePathParamToken {
+  type: 'param'
+  regexp?: string
+  value: string
+  optional: boolean
+  repeatable: boolean
+}
+
+type TokenizerState = 'static' | 'param' | 'param-regexp' | 'param-regexp-end' | 'escape-next'
+
+interface SegmentResolution {
+  type: 'exact' | 'fallback'
+  segments?: string[]
+  warn?: boolean
+  reason?: string
+}
+
+const DEFAULT_MAX_ROUTE_RULE_GLOBS = 64
+
+// Adapted from Vue Router's internal path tokenizer:
+// https://github.com/vuejs/router/blob/v5.1.0/packages/router/src/matcher/pathTokenizer.ts
+// TODO: replace this if Vue Router exposes path tokens publicly.
+function tokenizeRoutePath (path: string): RoutePathToken[][] {
+  if (!path) { return [[]] }
+  if (path === '/') { return [[{ type: 'static', value: '' }]] }
+  if (!path.startsWith('/')) {
+    throw new Error(`Route paths should start with a "/": "${path}" should be "/${path}".`)
+  }
+
+  let state: TokenizerState = 'static'
+  let previousState = state
+  const tokens: RoutePathToken[][] = []
+  let segment: RoutePathToken[] | undefined
+  let i = 0
+  let char = ''
+  let buffer = ''
+  let customRe = ''
+
+  function crash (message: string) {
+    throw new Error(`ERR (${state})/"${buffer}": ${message}`)
+  }
+
+  function finalizeSegment () {
+    if (segment) {
+      tokens.push(segment)
+    }
+    segment = []
+  }
+
+  function consumeBuffer () {
+    if (!buffer) { return }
+
+    segment ||= []
+
+    if (state === 'static') {
+      segment.push({ type: 'static', value: buffer })
+    } else if (state === 'param' || state === 'param-regexp' || state === 'param-regexp-end') {
+      if (segment.length > 1 && (char === '*' || char === '+')) {
+        crash(`A repeatable param (${buffer}) must be alone in its segment. eg: '/:ids+.`)
+      }
+      segment.push({
+        type: 'param',
+        value: buffer,
+        regexp: customRe,
+        repeatable: char === '*' || char === '+',
+        optional: char === '*' || char === '?',
+      })
+    } else {
+      crash('Invalid state to consume buffer')
+    }
+    buffer = ''
+  }
+
+  while (i < path.length) {
+    char = path[i++]!
+
+    switch (state) {
+      case 'static':
+        if (char === '\\') {
+          previousState = state
+          state = 'escape-next'
+        } else if (char === '/') {
+          consumeBuffer()
+          finalizeSegment()
+        } else if (char === ':') {
+          consumeBuffer()
+          state = 'param'
+        } else {
+          buffer += char
+        }
+        break
+
+      case 'escape-next':
+        buffer += char
+        state = previousState
+        break
+
+      case 'param':
+        if (char === '(') {
+          state = 'param-regexp'
+        } else if (isValidParamChar(char)) {
+          buffer += char
+        } else {
+          consumeBuffer()
+          state = 'static'
+          if (char !== '*' && char !== '?' && char !== '+') {
+            i--
+          }
+        }
+        break
+
+      case 'param-regexp':
+        if (char === ')') {
+          if (customRe[customRe.length - 1] === '\\') {
+            customRe = customRe.slice(0, -1) + char
+          } else {
+            state = 'param-regexp-end'
+          }
+        } else {
+          customRe += char
+        }
+        break
+
+      case 'param-regexp-end':
+        consumeBuffer()
+        state = 'static'
+        if (char !== '*' && char !== '?' && char !== '+') {
+          i--
+        }
+        customRe = ''
+        break
+    }
+  }
+
+  if (state === 'param-regexp') {
+    crash(`Unfinished custom RegExp for param "${buffer}"`)
+  }
+
+  consumeBuffer()
+  finalizeSegment()
+
+  return tokens
+}
+
+function isValidParamChar (char: string) {
+  const code = char.charCodeAt(0)
+  return (code >= 65 && code <= 90) // A-Z
+    || (code >= 97 && code <= 122) // a-z
+    || (code >= 48 && code <= 57) // 0-9
+    || char === '_'
+}
+
+function isSafeRouteRuleAlternativeChar (char: string) {
+  const code = char.charCodeAt(0)
+  return (code >= 65 && code <= 90) // A-Z
+    || (code >= 97 && code <= 122) // a-z
+    || (code >= 48 && code <= 57) // 0-9
+    || char === '_'
+    || char === '-'
+    || char === '.'
+    || char === '~'
+}
+
+function getFiniteParamAlternatives (token: RoutePathParamToken) {
+  if (!token.regexp || token.repeatable) {
+    return null
+  }
+
+  const alternatives: string[] = []
+  let buffer = ''
+  for (const char of token.regexp) {
+    if (char === '|') {
+      if (!buffer) { return null }
+      alternatives.push(buffer)
+      buffer = ''
+    } else if (isSafeRouteRuleAlternativeChar(char)) {
+      buffer += char
+    } else {
+      return null
+    }
+  }
+
+  if (!buffer) { return null }
+  alternatives.push(buffer)
+
+  if (token.optional) {
+    alternatives.push('')
+  }
+
+  return alternatives
+}
+
+function isExpectedDynamicFallback (token: RoutePathParamToken) {
+  if (!token.regexp) {
+    return true
+  }
+
+  return token.regexp === '[^/]+'
+    || token.regexp === '.*'
+    || (token.repeatable && token.regexp === '[^/]*')
+}
+
+function countUnresolvedRouteParams (segments: RoutePathToken[][]) {
+  let count = 0
+  for (const segment of segments) {
+    for (const token of segment) {
+      if (token.type === 'param' && !getFiniteParamAlternatives(token)) {
+        count++
+      }
+    }
+  }
+  return count
+}
+
+function resolveRouteRuleSegment (segment: RoutePathToken[], maxExpandedPaths: number): SegmentResolution {
+  if (!segment.length) {
+    return { type: 'exact', segments: [''] }
+  }
+
+  const paramTokens = segment.filter((token): token is RoutePathParamToken => token.type === 'param')
+
+  if (!paramTokens.length) {
+    return { type: 'exact', segments: [segment.map(token => escapeNitroStaticSegment(token.value)).join('')] }
+  }
+
+  if (segment.length === 1) {
+    const token = segment[0] as RoutePathParamToken
+    const alternatives = getFiniteParamAlternatives(token)
+    if (alternatives) {
+      return { type: 'exact', segments: alternatives.map(escapeNitroStaticSegment) }
+    }
+    return isExpectedDynamicFallback(token)
+      ? { type: 'fallback' }
+      : { type: 'fallback', warn: true, reason: `custom RegExp constraint for parameter \`${token.value}\` cannot be represented by Nitro route rules` }
+  }
+
+  let alternatives = ['']
+  for (const token of segment) {
+    if (token.type === 'static') {
+      alternatives = alternatives.map(alternative => alternative + escapeNitroStaticSegment(token.value))
+      continue
+    }
+
+    const paramAlternatives = getFiniteParamAlternatives(token)
+    if (!paramAlternatives) {
+      return {
+        type: 'fallback',
+        warn: true,
+        reason: `partial dynamic segment \`${stringifyRouteRuleSegment(segment)}\` cannot be represented by Nitro route rules`,
+      }
+    }
+
+    if (alternatives.length * paramAlternatives.length > maxExpandedPaths) {
+      return { type: 'fallback', warn: true, reason: 'finite route alternatives exceed the expansion limit' }
+    }
+
+    alternatives = alternatives.flatMap(alternative => paramAlternatives.map(paramAlternative => alternative + escapeNitroStaticSegment(paramAlternative)))
+  }
+
+  return { type: 'exact', segments: alternatives }
+}
+
+function stringifyRouteRuleSegment (segment: RoutePathToken[]) {
+  return segment.map((token) => {
+    if (token.type === 'static') {
+      return token.value
+    }
+    return `:${token.value}${token.regexp ? `(${token.regexp})` : ''}${token.repeatable ? token.optional ? '*' : '+' : token.optional ? '?' : ''}`
+  }).join('')
+}
+
+function escapeNitroStaticSegment (segment: string) {
+  let escaped = ''
+  for (const char of segment) {
+    escaped += char === ':' || char === '(' || char === ')' || char === '{' || char === '}' || char === '*'
+      ? `\\${char}`
+      : char
+  }
+  return escaped
+}
+
+function appendRouteRuleSegment (path: string, segment: string) {
+  if (!segment) {
+    return path
+  }
+  return `${path || ''}/${segment}`
+}
+
+function toNitroFallbackGlob (path: string) {
+  return path ? `${path}/**` : '/**'
+}
+
+function warnRouteRuleFallback (path: string, globs: string[], reason: string | undefined, warn: PathToNitroGlobOptions['warn']) {
+  if (!warn) { return }
+  warn(`Inline route rules for \`${path}\` were mapped to ${globs.map(glob => `\`${glob}\``).join(', ')}, which is broader than the page route.${reason ? ` ${reason}.` : ''}`)
+}
+
+export function pathToNitroGlob (path: string, options: PathToNitroGlobOptions = {}) {
+  return pathToNitroGlobs(path, options)?.[0] || null
+}
+
+export function pathToNitroGlobs (path: string, options: PathToNitroGlobOptions = {}) {
   if (!path) {
     return null
   }
-  // Ignore pages with multiple dynamic parameters.
-  if (path.indexOf(':') !== path.lastIndexOf(':')) {
+
+  const maxExpandedPaths = options.maxExpandedPaths ?? DEFAULT_MAX_ROUTE_RULE_GLOBS
+  let segments: RoutePathToken[][]
+  try {
+    segments = tokenizeRoutePath(path)
+  } catch (error) {
+    options.warn?.(`Inline route rules for \`${path}\` could not be mapped and were skipped. ${error instanceof Error ? error.message : String(error)}`)
     return null
   }
 
-  return path.replace(PATH_TO_NITRO_GLOB_RE, '/**')
-}
-
-export function pathToNitroGlobs (path: string) {
-  const globs = new Set<string>()
-  for (const expandedPath of expandRouteParamAlternatives(path)) {
-    const glob = pathToNitroGlob(expandedPath)
-    if (glob) {
-      globs.add(glob)
-    }
+  if (countUnresolvedRouteParams(segments) > 1) {
+    options.warn?.(`Inline route rules for \`${path}\` could not be mapped and were skipped because multiple dynamic params cannot be represented by a single Nitro route rule glob.`)
+    return null
   }
-  return globs.size ? [...globs] : null
+
+  let paths = ['']
+  for (const segment of segments) {
+    const resolved = resolveRouteRuleSegment(segment, maxExpandedPaths)
+    if (resolved.type === 'fallback') {
+      const globs = [...new Set(paths.map(toNitroFallbackGlob))]
+      if (resolved.warn) {
+        warnRouteRuleFallback(path, globs, resolved.reason, options.warn)
+      }
+      return globs
+    }
+
+    if (paths.length * resolved.segments!.length > maxExpandedPaths) {
+      const globs = [...new Set(paths.map(toNitroFallbackGlob))]
+      warnRouteRuleFallback(path, globs, 'finite route alternatives exceed the expansion limit', options.warn)
+      return globs
+    }
+
+    paths = paths.flatMap(path => resolved.segments!.map(segment => appendRouteRuleSegment(path, segment)))
+  }
+
+  const globs = [...new Set(paths.map(path => path || '/'))]
+  return globs.length ? globs : null
 }
 
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
