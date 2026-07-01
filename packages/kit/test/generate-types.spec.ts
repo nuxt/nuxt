@@ -214,6 +214,12 @@ describe('resolveLayerPaths', async () => {
           "../layers/*/modules/*/runtime/server/**/*",
         ],
         "node": [
+          "../test/*",
+          "../test/e2e/**/*",
+          "../test/fixtures/**/*",
+          "../test/fixtures-temp/**/*",
+          "../test/mocks/**/*",
+          "../test/runtime/**/*",
           "../custom-modules/*.*",
           "../nuxt.config.*",
           "../.config/nuxt.*",

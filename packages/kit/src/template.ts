@@ -1,4 +1,4 @@
-import { existsSync, promises as fsp } from 'node:fs'
+import { existsSync, promises as fsp, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
@@ -181,6 +181,27 @@ interface LayerPaths {
   globalDeclarations: string[]
 }
 
+function getNonNuxtTestPaths (dirs: LayerDirectories, relativeRootDir: string): string[] {
+  const paths: string[] = []
+  for (const dirName of ['test', 'tests']) {
+    const dirPath = resolve(dirs.root, dirName)
+    if (existsSync(dirPath)) {
+      paths.push(join(relativeRootDir, `${dirName}/*`))
+      try {
+        const subdirs = readdirSync(dirPath, { withFileTypes: true })
+        for (const subdir of subdirs) {
+          if (subdir.isDirectory() && subdir.name !== 'nuxt') {
+            paths.push(join(relativeRootDir, `${dirName}/${subdir.name}/**/*`))
+          }
+        }
+      } catch {
+        // Silently ignore
+      }
+    }
+  }
+  return paths
+}
+
 export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string): LayerPaths {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
@@ -201,6 +222,7 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `layers/*/modules/*/runtime/server/**/*`),
     ],
     node: [
+      ...getNonNuxtTestPaths(dirs, relativeRootDir),
       join(relativeModulesDir, `*.*`),
       join(relativeRootDir, `nuxt.config.*`),
       join(relativeRootDir, `.config/nuxt.*`),
