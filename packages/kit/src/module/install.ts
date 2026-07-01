@@ -319,7 +319,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   // resolution failures mean the module isn't installed
-  let src: URL
+  let src: string
   try {
     src = resolveModuleURL(nuxtModule, {
       from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
