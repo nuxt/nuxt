@@ -473,7 +473,17 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
 
   const tempDir = join(repoRoot, 'node_modules/.temp/module-load-errors')
 
+  function loadError (module: string) {
+    return loadNuxtModuleInstance(module, nuxt).then(
+      () => { throw new Error(`expected \`${module}\` to fail loading`) },
+      (error: Error & { cause?: unknown }) => error,
+    )
+  }
+
   beforeAll(async () => {
+    // start from a clean slate so a crashed prior run can't leave stale fixtures behind
+    await rm(tempDir, { recursive: true, force: true })
+
     // installed, resolves fine, but throws during evaluation
     const throwingModule = join(tempDir, 'node_modules/throwing-module')
     await mkdir(throwingModule, { recursive: true })
@@ -507,22 +517,30 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
   })
 
   it('surfaces the real error when an installed module throws during evaluation', async () => {
-    await expect(loadNuxtModuleInstance('throwing-module', nuxt)).rejects.toThrow(/boom from inside the module/)
-    await expect(loadNuxtModuleInstance('throwing-module', nuxt)).rejects.not.toThrow(/Is it installed/)
+    const error = await loadError('throwing-module')
+    expect(error.message).toMatch(/Error while importing module/)
+    expect(error.message).not.toMatch(/Is it installed/)
+    expect((error.cause as Error)?.message).toMatch(/boom from inside the module/)
   })
 
   it('surfaces a missing sub-dependency rather than reporting the module as missing', async () => {
-    await expect(loadNuxtModuleInstance('broken-dep-module', nuxt)).rejects.toThrow(/this-dependency-does-not-exist/)
-    await expect(loadNuxtModuleInstance('broken-dep-module', nuxt)).rejects.not.toThrow(/Is it installed/)
+    const error = await loadError('broken-dep-module')
+    expect(error.message).toMatch(/this-dependency-does-not-exist/)
+    expect(error.message).not.toMatch(/Is it installed/)
+    expect(error.cause).toBeInstanceOf(Error)
   })
 
   it('surfaces a non-exported dependency subpath rather than reporting the module as missing', async () => {
-    await expect(loadNuxtModuleInstance('subpath-module', nuxt)).rejects.toThrow(/Error while importing module/)
-    await expect(loadNuxtModuleInstance('subpath-module', nuxt)).rejects.not.toThrow(/Is it installed/)
+    const error = await loadError('subpath-module')
+    expect(error.message).toMatch(/Error while importing module/)
+    expect(error.message).not.toMatch(/Is it installed/)
+    expect(error.cause).toBeInstanceOf(Error)
   })
 
   it('reports a genuinely missing module as not installed', async () => {
-    await expect(loadNuxtModuleInstance('this-module-is-not-installed', nuxt)).rejects.toThrow(/Is it installed/)
+    const error = await loadError('this-module-is-not-installed')
+    expect(error.message).toMatch(/Is it installed/)
+    expect(error.cause).toBeInstanceOf(Error)
   })
 })
 
