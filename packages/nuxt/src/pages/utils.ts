@@ -622,30 +622,14 @@ function resolveRouteRuleSegment (segment: RoutePathToken[], maxExpandedPaths: n
   const paramTokens = segment.filter((token): token is RoutePathParamToken => token.type === 'param')
 
   if (!paramTokens.length) {
-    const staticSegment = segment.map(token => token.value).join('')
-    if (!canRepresentNitroStaticSegment(staticSegment)) {
-      return {
-        type: 'fallback',
-        warn: true,
-        reason: `static segment \`${staticSegment}\` cannot be represented by Nitro route rules`,
-      }
-    }
-    return { type: 'exact', segments: [escapeNitroStaticSegment(staticSegment)] }
+    return resolveExactSegments([segment.map(token => token.value).join('')])
   }
 
   if (segment.length === 1) {
     const token = segment[0] as RoutePathParamToken
     const alternatives = getFiniteParamAlternatives(token)
     if (alternatives) {
-      const unsupportedSegment = alternatives.find(alternative => !canRepresentNitroStaticSegment(alternative))
-      if (unsupportedSegment != null) {
-        return {
-          type: 'fallback',
-          warn: true,
-          reason: `static segment \`${unsupportedSegment}\` cannot be represented by Nitro route rules`,
-        }
-      }
-      return { type: 'exact', segments: alternatives.map(escapeNitroStaticSegment) }
+      return resolveExactSegments(alternatives)
     }
     return isExpectedDynamicFallback(token)
       ? { type: 'fallback' }
@@ -675,7 +659,12 @@ function resolveRouteRuleSegment (segment: RoutePathToken[], maxExpandedPaths: n
     alternatives = alternatives.flatMap(alternative => paramAlternatives.map(paramAlternative => alternative + paramAlternative))
   }
 
-  const unsupportedSegment = alternatives.find(alternative => !canRepresentNitroStaticSegment(alternative))
+  return resolveExactSegments(alternatives)
+}
+
+// Escape the finite literal segments for Nitro, falling back if any cannot be represented as a rou3 static route.
+function resolveExactSegments (segments: string[]): SegmentResolution {
+  const unsupportedSegment = segments.find(segment => !canRepresentNitroStaticSegment(segment))
   if (unsupportedSegment != null) {
     return {
       type: 'fallback',
@@ -683,8 +672,7 @@ function resolveRouteRuleSegment (segment: RoutePathToken[], maxExpandedPaths: n
       reason: `static segment \`${unsupportedSegment}\` cannot be represented by Nitro route rules`,
     }
   }
-
-  return { type: 'exact', segments: alternatives.map(escapeNitroStaticSegment) }
+  return { type: 'exact', segments: segments.map(escapeNitroStaticSegment) }
 }
 
 function stringifyRouteRuleSegment (segment: RoutePathToken[]) {
