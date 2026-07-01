@@ -318,31 +318,17 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     nuxtModule = resolve(nuxt.options.rootDir, nuxtModule)
   }
 
+  // Resolve the module location on disk. A failure here means the module could not be
+  // found, which usually maps to a missing installation.
+  let src: URL
   try {
-    const src = resolveModuleURL(nuxtModule, {
+    src = resolveModuleURL(nuxtModule, {
       from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
       suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
       extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
     })
-    const resolvedModulePath = fileURLToPath(src)
-    const resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
-
-    if (typeof resolvedNuxtModule !== 'function') {
-      throw new TypeError(`Nuxt module should be a function: ${nuxtModule}.`)
-    }
-
-    // nuxt-module-builder generates a module.json with metadata including the version
-    const moduleMetadataPath = new URL('module.json', src)
-    if (existsSync(moduleMetadataPath)) {
-      buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
-    }
-
-    return { nuxtModule: resolvedNuxtModule, buildTimeModuleMeta, resolvedModulePath }
   } catch (error: unknown) {
     const code = (error as Error & { code?: string }).code
-    if (code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
-      throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`, { cause: error })
-    }
     if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
       const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
       // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
@@ -351,9 +337,34 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`, { cause: error })
       }
     }
+    throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`, { cause: error })
   }
 
-  throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+  // At this point the module has been resolved on disk, so it IS installed. Any error while
+  // importing it comes from evaluating the module's own code (or its dependencies) and must be
+  // surfaced rather than masked as a missing installation.
+  const resolvedModulePath = fileURLToPath(src)
+  let resolvedNuxtModule: NuxtModule<any>
+  try {
+    resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
+  } catch (error: unknown) {
+    // The entrypoint already resolved on disk above, so the module is installed. Any error here,
+    // including export/dir-import failures, originates from evaluating the module's own code or
+    // dependency graph and must be surfaced with its cause rather than masked as a missing install.
+    throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`, { cause: error })
+  }
+
+  if (typeof resolvedNuxtModule !== 'function') {
+    throw new TypeError(`Nuxt module should be a function: ${nuxtModule}.`)
+  }
+
+  // nuxt-module-builder generates a module.json with metadata including the version
+  const moduleMetadataPath = new URL('module.json', src)
+  if (existsSync(moduleMetadataPath)) {
+    buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
+  }
+
+  return { nuxtModule: resolvedNuxtModule, buildTimeModuleMeta, resolvedModulePath }
 }
 
 // --- Internal ---

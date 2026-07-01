@@ -8,7 +8,7 @@ import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
 
-import { defineNuxtModule, installModule, loadNuxt } from '../src/index.ts'
+import { defineNuxtModule, installModule, loadNuxt, loadNuxtModuleInstance } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -465,6 +465,66 @@ export default Object.assign((options) => {
       // user configuration should be merged in
       userDefault: 'from user',
     })
+  })
+})
+
+describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
+  let nuxt: Nuxt
+
+  const tempDir = join(repoRoot, 'node_modules/.temp/module-load-errors')
+
+  beforeAll(async () => {
+    // a module that is installed and resolves fine, but throws while its code is evaluated
+    const throwingModule = join(tempDir, 'node_modules/throwing-module')
+    await mkdir(throwingModule, { recursive: true })
+    await writeFile(join(throwingModule, 'package.json'), JSON.stringify({ name: 'throwing-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(throwingModule, 'index.js'), `throw new Error('boom from inside the module')\n`)
+
+    // a module whose entrypoint imports a dependency that does not exist
+    const brokenDepModule = join(tempDir, 'node_modules/broken-dep-module')
+    await mkdir(brokenDepModule, { recursive: true })
+    await writeFile(join(brokenDepModule, 'package.json'), JSON.stringify({ name: 'broken-dep-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(brokenDepModule, 'index.js'), `import 'this-dependency-does-not-exist'\nexport default () => {}\n`)
+
+    // an installed dependency that only exports its main entry
+    const depWithExports = join(tempDir, 'node_modules/dep-with-exports')
+    await mkdir(depWithExports, { recursive: true })
+    await writeFile(join(depWithExports, 'package.json'), JSON.stringify({ name: 'dep-with-exports', version: '1.0.0', type: 'module', exports: { '.': './index.js' } }))
+    await writeFile(join(depWithExports, 'index.js'), `export default () => {}\n`)
+
+    // a module whose entrypoint imports a subpath that the installed dependency does not export,
+    // which throws ERR_PACKAGE_PATH_NOT_EXPORTED at import time even though the module is installed
+    const subpathModule = join(tempDir, 'node_modules/subpath-module')
+    await mkdir(subpathModule, { recursive: true })
+    await writeFile(join(subpathModule, 'package.json'), JSON.stringify({ name: 'subpath-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(subpathModule, 'index.js'), `import 'dep-with-exports/not-exported'\nexport default () => {}\n`)
+
+    nuxt = await loadNuxt({ cwd: tempDir })
+  })
+
+  afterAll(async () => {
+    await nuxt?.close()
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  it('surfaces the real error when an installed module throws during evaluation', async () => {
+    await expect(loadNuxtModuleInstance('throwing-module', nuxt)).rejects.toThrow(/boom from inside the module/)
+    await expect(loadNuxtModuleInstance('throwing-module', nuxt)).rejects.not.toThrow(/Is it installed/)
+  })
+
+  it('surfaces a missing sub-dependency rather than reporting the module as missing', async () => {
+    await expect(loadNuxtModuleInstance('broken-dep-module', nuxt)).rejects.toThrow(/this-dependency-does-not-exist/)
+    await expect(loadNuxtModuleInstance('broken-dep-module', nuxt)).rejects.not.toThrow(/Is it installed/)
+  })
+
+  it('surfaces a non-exported dependency subpath rather than reporting the module as missing', async () => {
+    // installed module, but its dependency graph throws ERR_PACKAGE_PATH_NOT_EXPORTED at import time
+    await expect(loadNuxtModuleInstance('subpath-module', nuxt)).rejects.toThrow(/Error while importing module/)
+    await expect(loadNuxtModuleInstance('subpath-module', nuxt)).rejects.not.toThrow(/Is it installed/)
+  })
+
+  it('reports a genuinely missing module as not installed', async () => {
+    await expect(loadNuxtModuleInstance('this-module-is-not-installed', nuxt)).rejects.toThrow(/Is it installed/)
   })
 })
 
