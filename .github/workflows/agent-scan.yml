@@ -27,7 +27,9 @@ jobs:
           skip-members: "dependabot[bot],renovate[bot]"
           agent-scan-comment: false
       - name: Handle flagged PR
-        if: contains(fromJSON('["automation","mixed"]'), steps.agentscan.outputs.classification) || steps.agentscan.outputs.community-flagged == 'true'
+        if: |
+          !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+          && (contains(fromJSON('["automation","mixed"]'), steps.agentscan.outputs.classification) || steps.agentscan.outputs.community-flagged == 'true')
         env:
           CLASSIFICATION: ${{ steps.agentscan.outputs.classification }}
           COMMUNITY_FLAGGED: ${{ steps.agentscan.outputs.community-flagged }}
