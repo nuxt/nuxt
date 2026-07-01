@@ -23,6 +23,9 @@ export function resolveServerEntry (config: ResolvedConfig) {
     if (!Array.isArray(input) && input.server) {
       return input.server
     }
+    if (!Array.isArray(input) && input.entry) {
+      return input.entry
+    }
   }
 
   throw new Error('No entry found in rolldownOptions.input')
