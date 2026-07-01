@@ -8,7 +8,7 @@ import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
 
-import { defineNuxtModule, installModule, loadNuxt } from '../src/index.ts'
+import { defineNuxtModule, installModule, loadNuxt, loadNuxtModuleInstance } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -465,6 +465,82 @@ export default Object.assign((options) => {
       // user configuration should be merged in
       userDefault: 'from user',
     })
+  })
+})
+
+describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
+  let nuxt: Nuxt
+
+  const tempDir = join(repoRoot, 'node_modules/.temp/module-load-errors')
+
+  function loadError (module: string) {
+    return loadNuxtModuleInstance(module, nuxt).then(
+      () => { throw new Error(`expected \`${module}\` to fail loading`) },
+      (error: Error & { cause?: unknown }) => error,
+    )
+  }
+
+  beforeAll(async () => {
+    // start from a clean slate so a crashed prior run can't leave stale fixtures behind
+    await rm(tempDir, { recursive: true, force: true })
+
+    // installed, resolves fine, but throws during evaluation
+    const throwingModule = join(tempDir, 'node_modules/throwing-module')
+    await mkdir(throwingModule, { recursive: true })
+    await writeFile(join(throwingModule, 'package.json'), JSON.stringify({ name: 'throwing-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(throwingModule, 'index.js'), `throw new Error('boom from inside the module')\n`)
+
+    // entrypoint imports a dependency that does not exist
+    const brokenDepModule = join(tempDir, 'node_modules/broken-dep-module')
+    await mkdir(brokenDepModule, { recursive: true })
+    await writeFile(join(brokenDepModule, 'package.json'), JSON.stringify({ name: 'broken-dep-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(brokenDepModule, 'index.js'), `import 'this-dependency-does-not-exist'\nexport default () => {}\n`)
+
+    // installed dependency that only exports its main entry
+    const depWithExports = join(tempDir, 'node_modules/dep-with-exports')
+    await mkdir(depWithExports, { recursive: true })
+    await writeFile(join(depWithExports, 'package.json'), JSON.stringify({ name: 'dep-with-exports', version: '1.0.0', type: 'module', exports: { '.': './index.js' } }))
+    await writeFile(join(depWithExports, 'index.js'), `export default () => {}\n`)
+
+    // entrypoint imports a non-exported subpath, throwing ERR_PACKAGE_PATH_NOT_EXPORTED at import time
+    const subpathModule = join(tempDir, 'node_modules/subpath-module')
+    await mkdir(subpathModule, { recursive: true })
+    await writeFile(join(subpathModule, 'package.json'), JSON.stringify({ name: 'subpath-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(subpathModule, 'index.js'), `import 'dep-with-exports/not-exported'\nexport default () => {}\n`)
+
+    nuxt = await loadNuxt({ cwd: tempDir })
+  })
+
+  afterAll(async () => {
+    await nuxt?.close()
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  it('surfaces the real error when an installed module throws during evaluation', async () => {
+    const error = await loadError('throwing-module')
+    expect(error.message).toMatch(/Error while importing module/)
+    expect(error.message).not.toMatch(/Is it installed/)
+    expect((error.cause as Error)?.message).toMatch(/boom from inside the module/)
+  })
+
+  it('surfaces a missing sub-dependency rather than reporting the module as missing', async () => {
+    const error = await loadError('broken-dep-module')
+    expect(error.message).toMatch(/this-dependency-does-not-exist/)
+    expect(error.message).not.toMatch(/Is it installed/)
+    expect(error.cause).toBeInstanceOf(Error)
+  })
+
+  it('surfaces a non-exported dependency subpath rather than reporting the module as missing', async () => {
+    const error = await loadError('subpath-module')
+    expect(error.message).toMatch(/Error while importing module/)
+    expect(error.message).not.toMatch(/Is it installed/)
+    expect(error.cause).toBeInstanceOf(Error)
+  })
+
+  it('reports a genuinely missing module as not installed', async () => {
+    const error = await loadError('this-module-is-not-installed')
+    expect(error.message).toMatch(/Is it installed/)
+    expect(error.cause).toBeInstanceOf(Error)
   })
 })
 
