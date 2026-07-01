@@ -77,15 +77,37 @@ describe('routeRules from page meta', () => {
         path: '/users/:id(\\d+)',
         rules: { prerender: true },
       },
+      {
+        path: '/docs/foo*bar',
+        rules: { appMiddleware: 'auth' },
+      },
     ]
 
     expect(globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })).toEqual({
       '/**': { swr: 60 },
+      '/docs/**': { appMiddleware: 'auth' },
       '/users/**': { prerender: true },
     })
-    expect(warnings).toHaveLength(2)
+    expect(warnings).toHaveLength(3)
     expect(warnings[0]).toContain('partial dynamic segment')
     expect(warnings[1]).toContain('custom RegExp constraint')
+    expect(warnings[2]).toContain('static segment')
+  })
+
+  it('collapses overlapping fallback globs from optional constrained params', () => {
+    const warnings: string[] = []
+    const pages = [
+      {
+        path: '/:locale(en|fr)?/:slug',
+        rules: { swr: 60 },
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })).toEqual({
+      '/**': { swr: 60 },
+    })
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('fallback route alternatives collapse')
   })
 
   it('does not generate broad route rules for multiple unresolved dynamic params', () => {

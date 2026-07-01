@@ -434,6 +434,8 @@ describe('pages:pathToNitroGlobs', () => {
     expect(pathToNitroGlobs('/:locale(de)/account/verify')).toEqual(['/de/account/verify'])
     expect(pathToNitroGlobs('/:locale(de|fr)/privacy-policy')).toEqual(['/de/privacy-policy', '/fr/privacy-policy'])
     expect(pathToNitroGlobs('/:locale(en-US|pt_BR)/about')).toEqual(['/en-US/about', '/pt_BR/about'])
+    expect(pathToNitroGlobs('/:version(v1\\.0|v2\\.0)/about')).toEqual(['/v1.0/about', '/v2.0/about'])
+    expect(pathToNitroGlobs('/:symbol(\\*)')).toEqual(['/\\*'])
     expect(pathToNitroGlobs('/:locale(de|fr)/blog/:slug')).toEqual(['/de/blog/**', '/fr/blog/**'])
   })
 
@@ -448,10 +450,15 @@ describe('pages:pathToNitroGlobs', () => {
     expect(pathToNitroGlobs('/bar/foo-:id', { warn: message => warnings.push(message) })).toEqual(['/bar/**'])
     expect(pathToNitroGlobs('/:id(\\d+)', { warn: message => warnings.push(message) })).toEqual(['/**'])
     expect(pathToNitroGlobs('/:a(foo|bar)/:b(\\d+)', { warn: message => warnings.push(message) })).toEqual(['/foo/**', '/bar/**'])
+    expect(pathToNitroGlobs('/:version(v1.0|v2.0)/about', { warn: message => warnings.push(message) })).toEqual(['/**'])
+    expect(pathToNitroGlobs('/foo*bar', { warn: message => warnings.push(message) })).toEqual(['/**'])
+    expect(pathToNitroGlobs('/docs/foo*bar', { warn: message => warnings.push(message) })).toEqual(['/docs/**'])
 
-    expect(warnings).toHaveLength(4)
+    expect(warnings).toHaveLength(7)
     expect(warnings[0]).toContain('partial dynamic segment')
     expect(warnings[2]).toContain('custom RegExp constraint')
+    expect(warnings[4]).toContain('custom RegExp constraint')
+    expect(warnings[5]).toContain('static segment')
   })
 
   it('skips multiple unresolved dynamic params to preserve existing behaviour', () => {
@@ -470,6 +477,15 @@ describe('pages:pathToNitroGlobs', () => {
     expect(pathToNitroGlobs('/foo/:slug(.*)*', { warn: message => warnings.push(message) })).toEqual(['/foo/**'])
     expect(pathToNitroGlobs('/foo/:id([^/]+)', { warn: message => warnings.push(message) })).toEqual(['/foo/**'])
     expect(warnings).toEqual([])
+  })
+
+  it('collapses overlapping fallback globs to the broadest glob', () => {
+    const warnings: string[] = []
+    expect(pathToNitroGlobs('/:locale(en|fr)?/:slug', { warn: message => warnings.push(message) })).toEqual(['/**'])
+    expect(pathToNitroGlobs('/shop/:country(us|ca)?/:slug', { warn: message => warnings.push(message) })).toEqual(['/shop/**'])
+
+    expect(warnings).toHaveLength(2)
+    expect(warnings[0]).toContain('fallback route alternatives collapse')
   })
 
   it('falls back when finite alternatives exceed the expansion limit', () => {

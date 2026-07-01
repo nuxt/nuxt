@@ -535,6 +535,7 @@ interface SegmentResolution {
 }
 
 const DEFAULT_MAX_ROUTE_RULE_GLOBS = 64
+const REGEXP_LITERAL_ESCAPE_CHARS = new Set(['.', '+', '*', '?', '^', '$', '(', ')', '[', ']', '{', '}', '|', '\\'])
 
 function isSafeRouteRuleAlternativeChar (char: string) {
   const code = char.charCodeAt(0)
@@ -543,7 +544,6 @@ function isSafeRouteRuleAlternativeChar (char: string) {
     || (code >= 48 && code <= 57) // 0-9
     || char === '_'
     || char === '-'
-    || char === '.'
     || char === '~'
 }
 
@@ -554,7 +554,22 @@ function getFiniteParamAlternatives (token: RoutePathParamToken) {
 
   const alternatives: string[] = []
   let buffer = ''
+  let escaped = false
   for (const char of token.regexp) {
+    if (escaped) {
+      if (!REGEXP_LITERAL_ESCAPE_CHARS.has(char)) {
+        return null
+      }
+      buffer += char
+      escaped = false
+      continue
+    }
+
+    if (char === '\\') {
+      escaped = true
+      continue
+    }
+
     if (char === '|') {
       if (!buffer) { return null }
       alternatives.push(buffer)
@@ -566,6 +581,7 @@ function getFiniteParamAlternatives (token: RoutePathParamToken) {
     }
   }
 
+  if (escaped) { return null }
   if (!buffer) { return null }
   alternatives.push(buffer)
 
@@ -606,13 +622,29 @@ function resolveRouteRuleSegment (segment: RoutePathToken[], maxExpandedPaths: n
   const paramTokens = segment.filter((token): token is RoutePathParamToken => token.type === 'param')
 
   if (!paramTokens.length) {
-    return { type: 'exact', segments: [segment.map(token => escapeNitroStaticSegment(token.value)).join('')] }
+    const staticSegment = segment.map(token => token.value).join('')
+    if (!canRepresentNitroStaticSegment(staticSegment)) {
+      return {
+        type: 'fallback',
+        warn: true,
+        reason: `static segment \`${staticSegment}\` cannot be represented by Nitro route rules`,
+      }
+    }
+    return { type: 'exact', segments: [escapeNitroStaticSegment(staticSegment)] }
   }
 
   if (segment.length === 1) {
     const token = segment[0] as RoutePathParamToken
     const alternatives = getFiniteParamAlternatives(token)
     if (alternatives) {
+      const unsupportedSegment = alternatives.find(alternative => !canRepresentNitroStaticSegment(alternative))
+      if (unsupportedSegment != null) {
+        return {
+          type: 'fallback',
+          warn: true,
+          reason: `static segment \`${unsupportedSegment}\` cannot be represented by Nitro route rules`,
+        }
+      }
       return { type: 'exact', segments: alternatives.map(escapeNitroStaticSegment) }
     }
     return isExpectedDynamicFallback(token)
@@ -623,7 +655,7 @@ function resolveRouteRuleSegment (segment: RoutePathToken[], maxExpandedPaths: n
   let alternatives = ['']
   for (const token of segment) {
     if (token.type === 'static') {
-      alternatives = alternatives.map(alternative => alternative + escapeNitroStaticSegment(token.value))
+      alternatives = alternatives.map(alternative => alternative + token.value)
       continue
     }
 
@@ -640,10 +672,19 @@ function resolveRouteRuleSegment (segment: RoutePathToken[], maxExpandedPaths: n
       return { type: 'fallback', warn: true, reason: 'finite route alternatives exceed the expansion limit' }
     }
 
-    alternatives = alternatives.flatMap(alternative => paramAlternatives.map(paramAlternative => alternative + escapeNitroStaticSegment(paramAlternative)))
+    alternatives = alternatives.flatMap(alternative => paramAlternatives.map(paramAlternative => alternative + paramAlternative))
   }
 
-  return { type: 'exact', segments: alternatives }
+  const unsupportedSegment = alternatives.find(alternative => !canRepresentNitroStaticSegment(alternative))
+  if (unsupportedSegment != null) {
+    return {
+      type: 'fallback',
+      warn: true,
+      reason: `static segment \`${unsupportedSegment}\` cannot be represented by Nitro route rules`,
+    }
+  }
+
+  return { type: 'exact', segments: alternatives.map(escapeNitroStaticSegment) }
 }
 
 function stringifyRouteRuleSegment (segment: RoutePathToken[]) {
@@ -665,6 +706,10 @@ function escapeNitroStaticSegment (segment: string) {
   return escaped
 }
 
+function canRepresentNitroStaticSegment (segment: string) {
+  return !segment.includes('*') || segment === '*' || segment === '**'
+}
+
 function appendRouteRuleSegment (path: string, segment: string) {
   if (!segment) {
     return path
@@ -674,6 +719,21 @@ function appendRouteRuleSegment (path: string, segment: string) {
 
 function toNitroFallbackGlob (path: string) {
   return path ? `${path}/**` : '/**'
+}
+
+function routeRuleGlobCovers (glob: string, other: string) {
+  if (glob === other || glob === '/**') {
+    return true
+  }
+  if (!glob.endsWith('/**') || !other.endsWith('/**')) {
+    return false
+  }
+  return other.startsWith(`${glob.slice(0, -3)}/`)
+}
+
+function collapseRouteRuleFallbackGlobs (paths: string[]) {
+  const globs = [...new Set(paths.map(toNitroFallbackGlob))]
+  return globs.filter(glob => !globs.some(other => other !== glob && routeRuleGlobCovers(other, glob)))
 }
 
 function warnRouteRuleFallback (path: string, globs: string[], reason: string | undefined, warn: PathToNitroGlobOptions['warn']) {
@@ -708,15 +768,16 @@ export function pathToNitroGlobs (path: string, options: PathToNitroGlobOptions 
   for (const segment of segments) {
     const resolved = resolveRouteRuleSegment(segment, maxExpandedPaths)
     if (resolved.type === 'fallback') {
-      const globs = [...new Set(paths.map(toNitroFallbackGlob))]
-      if (resolved.warn) {
-        warnRouteRuleFallback(path, globs, resolved.reason, options.warn)
+      const rawGlobs = [...new Set(paths.map(toNitroFallbackGlob))]
+      const globs = collapseRouteRuleFallbackGlobs(paths)
+      if (resolved.warn || rawGlobs.length !== globs.length) {
+        warnRouteRuleFallback(path, globs, resolved.reason || 'fallback route alternatives collapse to a broader Nitro route rule glob', options.warn)
       }
       return globs
     }
 
     if (paths.length * resolved.segments!.length > maxExpandedPaths) {
-      const globs = [...new Set(paths.map(toNitroFallbackGlob))]
+      const globs = collapseRouteRuleFallbackGlobs(paths)
       warnRouteRuleFallback(path, globs, 'finite route alternatives exceed the expansion limit', options.warn)
       return globs
     }
