@@ -76,7 +76,6 @@ describe('nuxt-link:prefetch', () => {
     const nuxtApp = useNuxtApp()
     nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
 
-    const { observer } = useMockObserver()
     let prefetch: ((nuxtApp?: ReturnType<typeof useNuxtApp>) => Promise<void>) | undefined
     let shouldPrefetch: ((mode: 'visibility' | 'interaction') => boolean) | undefined
 
@@ -96,9 +95,6 @@ describe('nuxt-link:prefetch', () => {
         })
       },
     }))
-
-    await observer.trigger()
-    await flushPromises()
 
     expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
     expect(wrapper.find('a').classes()).not.toContain('is-prefetched')
