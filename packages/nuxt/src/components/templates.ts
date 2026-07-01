@@ -80,7 +80,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
-      return 'export const islandComponents = {}\nexport const pageIslandRoutes = {}'
+      return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)'
     }
 
     const components = app.components
@@ -102,7 +102,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
 
     return [
       'import { defineAsyncComponent } from \'vue\'',
-      'export const islandComponents = import.meta.client ? {} : {',
+      'export const islandComponents = import.meta.client ? Object.create(null) : Object.assign(Object.create(null), {',
       islands.map(
         (c) => {
           const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
@@ -110,10 +110,10 @@ export const componentsIslandsTemplate: NuxtTemplate = {
           return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
         },
       ).concat(pageExports).join(',\n'),
-      '}',
-      'export const pageIslandRoutes = import.meta.client ? {} : {',
+      '})',
+      'export const pageIslandRoutes = import.meta.client ? Object.create(null) : Object.assign(Object.create(null), {',
       pageIslandRoutes.join(',\n'),
-      '}',
+      '})',
     ].join('\n')
   },
 }

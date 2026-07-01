@@ -1,15 +1,10 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured, shallowRef, useId } from 'vue'
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
-import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
+import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
 
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
-import { createBuffer } from './utils'
-
-const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
-function sanitizeTag (tag: string, fallback: string): string {
-  return VALID_TAG_RE.test(tag) ? tag : fallback
-}
+import { createBuffer, sanitizeTag } from './utils'
 
 interface NuxtClientFallbackProps {
   fallbackTag?: string
@@ -100,7 +95,7 @@ const NuxtClientFallbackServer = defineComponent({
       } else {
         const content = ctx.placeholder || ctx.fallback
         const tag = sanitizeTag(ctx.placeholderTag || ctx.fallbackTag, 'div')
-        push(`<${tag}${ssrRenderAttrs(ctx.$attrs)}>${content}</${tag}>`)
+        push(`<${tag}${ssrRenderAttrs(ctx.$attrs)}>${ssrInterpolate(content)}</${tag}>`)
       }
     } else {
       // push Fragment markup

@@ -47,6 +47,12 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   return true
 }
 
+const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
+/** Return `tag` if it is a safe HTML tag name, otherwise `fallback`. */
+export function sanitizeTag (tag: string | undefined, fallback: string): string {
+  return tag && VALID_TAG_RE.test(tag) ? tag : fallback
+}
+
 export type SSRBuffer = SSRBufferItem[] & { hasAsync?: boolean }
 export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
 

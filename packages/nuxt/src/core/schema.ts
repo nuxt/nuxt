@@ -21,7 +21,7 @@ export default defineNuxtModule({
 
     // Initialize untyped/jiti loader
     const _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
-      cache: false,
+      fsCache: false,
       transformOptions: {
         babel: {
           plugins: [untypedPlugin],

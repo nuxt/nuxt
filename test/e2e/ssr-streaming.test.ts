@@ -1,25 +1,19 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
 import { fetch } from 'ofetch'
-import { join } from 'pathe'
 import { joinURL } from 'ufo'
 import { expect, test } from './test-utils'
-import { isDev } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/ssr-streaming', import.meta.url))
 
-test.describe.configure({ mode: isDev ? 'serial' : 'parallel' })
+test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
     rootDir: fixtureDir,
-    dev: isDev,
     server: true,
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
-    nuxtConfig: {
-      buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
-    },
   },
 })
 
@@ -30,7 +24,7 @@ test.describe('SSR Streaming', () => {
     expect(res.headers.get('content-type')).toContain('text/html')
   })
 
-  test('shell contains bootstrap script and IIFE', async ({ fetch }) => {
+  test('shell contains bootstrap script and IIFE', async ({ fetch, isDev }) => {
     const res = await fetch('/')
     const html = await res.text()
 
@@ -187,7 +181,7 @@ test.describe('SSR Streaming', () => {
   // `features.inlineStyles`) and the shell ships them in `<head>`. This is
   // a Vite-dev pipeline limitation, not a streaming bug. Documented under
   // SSR streaming in `docs/3.guide/6.going-further/1.experimental-features.md`.
-  test.fixme('dev: SFC styles reach the shell head before body streams (no FOUC)', async ({ fetch }) => {
+  test.fixme('dev: SFC styles reach the shell head before body streams (no FOUC)', async ({ fetch, isDev }) => {
     test.skip(!isDev, 'reproduces dev-only CSS flash; production extracts styles via inlineStyles')
 
     const res = await fetch('/styled')
@@ -309,7 +303,7 @@ test.describe('SSR Streaming', () => {
   // pushes) that bypass unhead. When a security module has stamped a nonce on
   // the head scripts, the renderer reuses it so a strict `script-src` policy
   // does not block them. The `/nonce` fixture plugin stamps `test-csp-nonce`.
-  test('a head-script nonce is threaded onto streamed inline scripts', async ({ fetch }) => {
+  test('a head-script nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
     const res = await fetch('/nonce')
     const html = await res.text()
 
@@ -329,7 +323,7 @@ test.describe('SSR Streaming', () => {
   // The shell is flushed before render, so it only carries entry-chunk styles.
   // Route/layout styles are emitted once render has registered them — inlined
   // as `<style>` (matching `inlineStyles`) after the shell, outside `#__nuxt`.
-  test('route-level CSS is streamed after the shell', async ({ fetch }) => {
+  test('route-level CSS is streamed after the shell', async ({ fetch, isDev }) => {
     test.skip(isDev, 'dev serves SFC <style> as JS modules, not extracted CSS assets')
 
     const res = await fetch('/styled')
@@ -351,7 +345,7 @@ test.describe('SSR Streaming', () => {
   // DOM. The browser paints it unstyled until the final chunk arrives. `/fouc`
   // reproduces this: `FoucNestedParent` resolves, then renders the styled
   // `flashy`, while a slow sibling holds the stream open.
-  test('async-component CSS streams behind its DOM (FOUC footgun)', async ({ fetch }) => {
+  test('async-component CSS streams behind its DOM (FOUC footgun)', async ({ fetch, isDev }) => {
     test.skip(isDev, 'dev serves SFC <style> as JS modules, not extracted CSS assets')
 
     const res = await fetch('/fouc')
@@ -376,7 +370,7 @@ test.describe('SSR Streaming', () => {
   // the styled element while the rest of the document is still streaming. The
   // slow sibling on `/fouc` keeps the connection open long enough to observe
   // `flashy` painted before its `<style>` chunk arrives.
-  test('async-component CSS visibly flashes unstyled mid-stream', async ({ page, _nuxtHooks }) => {
+  test('async-component CSS visibly flashes unstyled mid-stream', async ({ page, _nuxtHooks, isDev }) => {
     test.skip(isDev, 'dev FOUC has a different cause (Vite JS-module styles); covered by the dev fixme')
 
     const url = _nuxtHooks.ctx.url!

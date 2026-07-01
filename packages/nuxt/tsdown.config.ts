@@ -1,8 +1,14 @@
-import { copyFile } from 'node:fs/promises'
+import { copyFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { defineConfig } from 'tsdown'
 import { vueSfcPlugin } from 'vue-sfc-transformer/rolldown'
+
+let distCleaned: Promise<void> | undefined
+function cleanDist (outDir: string) {
+  distCleaned ??= rm(outDir, { recursive: true, force: true })
+  return distCleaned
+}
 
 const RUNTIME_TREES = [
   'src/app',
@@ -51,7 +57,9 @@ export default defineConfig([
         'lightningcss',
       ],
     },
+    clean: false,
     hooks: {
+      'build:prepare': ({ options }) => cleanDist(options.outDir),
       'build:done': async ({ options }) => {
         // TODO: remove in Nuxt v5
         await Promise.all([
@@ -63,6 +71,10 @@ export default defineConfig([
   },
   {
     unbundle: true,
+    clean: false,
+    hooks: {
+      'build:prepare': ({ options }) => cleanDist(options.outDir),
+    },
     dts: { oxc: true, sideEffects: true },
     // TODO: remove in Nuxt v5 to switch to `.mjs`
     fixedExtension: false,

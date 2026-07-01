@@ -219,6 +219,8 @@ definePageMeta({ name: 'bar' })
     definePageMeta({
       name: 'name-from-page-meta' as PageName,
       path: ('/some-custom-path') as const,
+      alias: <string>'/some-alias',
+      redirect: '/some-redirect'!,
       props: <{ foo: string }>{
         foo: 'bar' satisfies string,
       },
@@ -228,8 +230,36 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
+        "alias": "/some-alias",
         "name": "name-from-page-meta",
         "path": "/some-custom-path",
+        "props": {
+          "foo": "bar",
+        },
+        "redirect": "/some-redirect",
+      }
+    `)
+  })
+
+  it('should extract metadata from typed macro calls', () => {
+    const meta = getRouteMeta(`
+    <script setup lang="ts">
+    interface PageMeta {
+      name: string
+    }
+
+    definePageMeta<PageMeta>({
+      name: 'name-from-page-meta',
+      props: {
+        foo: 'bar',
+      },
+    });
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "name": "name-from-page-meta",
         "props": {
           "foo": "bar",
         },

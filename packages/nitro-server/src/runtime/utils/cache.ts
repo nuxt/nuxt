@@ -1,8 +1,15 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
-import type { Storage, StorageValue } from 'unstorage'
+import type { Storage } from 'unstorage'
 import { useStorage } from 'nitro/storage'
 // @ts-expect-error virtual file
 import { NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
+
+export interface CachedResponse {
+  body: string
+  status: number
+  statusText: string
+  headers: Record<string, string>
+}
 
 /**
  * Stack of URLs currently rendering in the active async context (oldest first).
@@ -10,13 +17,11 @@ import { NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SHARED_DATA } from '#internal/nux
  */
 export const prerenderRenderingURLs: AsyncLocalStorage<readonly string[]> | null = import.meta.prerender ? new AsyncLocalStorage() : null
 
-export const payloadCache: Storage | null = import.meta.prerender
-  ? useStorage<StorageValue>('internal:nuxt:prerender:payload')
+export const payloadCache: Storage<CachedResponse> | null = import.meta.prerender
+  ? useStorage<CachedResponse>('internal:nuxt:prerender:payload')
   : NUXT_RUNTIME_PAYLOAD_EXTRACTION
-    ? useStorage<StorageValue>('cache:nuxt:payload')
+    ? useStorage<CachedResponse>('cache:nuxt:payload')
     : null
-export const islandCache: Storage | null = import.meta.prerender ? useStorage<StorageValue>('internal:nuxt:prerender:island') : null
-export const islandPropCache: Storage | null = import.meta.prerender ? useStorage<StorageValue>('internal:nuxt:prerender:island-props') : null
 export const sharedPrerenderPromises: Map<string, Promise<any>> | null = import.meta.prerender && NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 
 const sharedPrerenderKeys = new Set<string>()

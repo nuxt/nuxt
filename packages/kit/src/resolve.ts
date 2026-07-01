@@ -68,13 +68,14 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
  */
 export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: PathType = 'file'): Promise<string | null> {
   for (const path of toArray(paths)) {
+    // TODO: this is for backwards compatibility, remove the `pathType` argument in Nuxt 5
+    const type = opts?.type || pathType
     const res = await _resolvePathGranularly(path, {
       ...opts,
-      // TODO: this is for backwards compatibility, remove the `pathType` argument in Nuxt 5
-      type: opts?.type || pathType,
+      type,
     })
 
-    if (!res.type || (pathType && res.type !== pathType)) {
+    if (!res.type || res.type !== type) {
       continue
     }
 

@@ -211,7 +211,7 @@ export const NoScript: DefineSetupFnComponent<GlobalProps & TagPositionPropsType
         }
       }
       if (textContent.length > 0) {
-        noscript.innerHTML = textContent.join('')
+        noscript.textContent = textContent.join('')
       }
       input.noscript![idx] = noscript
       update()
