@@ -290,6 +290,7 @@ export default createConfigForNuxt({
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/triple-slash-reference': 'off',
+        'nuxt/no-nuxt-config-test-key': 'off',
         'vue/multi-word-component-names': 'off',
         'vue/valid-v-for': 'off',
       },
