@@ -71,17 +71,28 @@ describe('nuxt-link:prefetch', () => {
     expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
   })
 
-  it('should expose prefetched state to the custom slot on an internal link', async () => {
+  it('should expose prefetch controls to the custom slot on an internal link', async () => {
     const NuxtLink = defineNuxtLink(nuxtLinkDefaults)
     const nuxtApp = useNuxtApp()
     nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
 
     const { observer } = useMockObserver()
+    let prefetch: ((nuxtApp?: ReturnType<typeof useNuxtApp>) => Promise<void>) | undefined
+    let shouldPrefetch: ((mode: 'visibility' | 'interaction') => boolean) | undefined
 
     const wrapper = await mountSuspended(defineComponent({
       render () {
         return h(NuxtLink, { to: '/to', custom: true, prefetchedClass: 'is-prefetched' }, {
-          default: ({ href, prefetched }: { href: string, prefetched: boolean }) => h('a', { href, class: prefetched ? 'is-prefetched' : '' }, 'link'),
+          default: (slotProps: {
+            href: string
+            prefetch: (nuxtApp?: ReturnType<typeof useNuxtApp>) => Promise<void>
+            prefetched: boolean
+            shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
+          }) => {
+            prefetch = slotProps.prefetch
+            shouldPrefetch = slotProps.shouldPrefetch
+            return h('a', { href: slotProps.href, class: slotProps.prefetched ? 'is-prefetched' : '' }, 'link')
+          },
         })
       },
     }))
@@ -89,7 +100,51 @@ describe('nuxt-link:prefetch', () => {
     await observer.trigger()
     await flushPromises()
 
+    expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
+    expect(wrapper.find('a').classes()).not.toContain('is-prefetched')
+    expect(shouldPrefetch?.('visibility')).toBe(true)
+    expect(prefetch).toEqual(expect.any(Function))
+
+    await prefetch?.(nuxtApp)
+    await flushPromises()
+
+    expect(nuxtApp.hooks.callHook).toHaveBeenCalledTimes(1)
     expect(wrapper.find('a').classes()).toContain('is-prefetched')
+    expect(shouldPrefetch?.('visibility')).toBe(false)
+  })
+
+  it('should preserve RouterLink slot props on an internal custom link', async () => {
+    const NuxtLink = defineNuxtLink(nuxtLinkDefaults)
+    const router = useRouter()
+    const to = router.currentRoute.value.path || '/'
+    let slotProps: {
+      href: string
+      route?: { href: string }
+      isActive: boolean
+      isExactActive: boolean
+      prefetch: (nuxtApp?: ReturnType<typeof useNuxtApp>) => Promise<void>
+      prefetched: boolean
+      shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
+    } | undefined
+
+    await mountSuspended(defineComponent({
+      render () {
+        return h(NuxtLink, { to, custom: true }, {
+          default: (props: typeof slotProps) => {
+            slotProps = props
+            return h('a', { href: props?.href }, 'link')
+          },
+        })
+      },
+    }))
+
+    expect(slotProps?.href).toBe(to)
+    expect(slotProps?.route?.href).toBe(to)
+    expect(slotProps?.isActive).toBe(true)
+    expect(slotProps?.isExactActive).toBe(true)
+    expect(slotProps?.prefetch).toEqual(expect.any(Function))
+    expect(slotProps?.prefetched).toBe(false)
+    expect(slotProps?.shouldPrefetch).toEqual(expect.any(Function))
   })
 })
 

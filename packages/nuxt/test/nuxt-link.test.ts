@@ -209,7 +209,7 @@ describe('nuxt-link:propsOrAttributes', () => {
             },
           },
         )()
-        expect(received?.href).toBe(null)
+        expect(received?.href).toBe(undefined)
       })
     })
 

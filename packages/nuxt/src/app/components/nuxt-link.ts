@@ -139,30 +139,46 @@ export interface NuxtLinkOptions extends
 
 type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
   ? {
-      href: string | null
+      href: string | undefined
       navigate: (e?: MouseEvent) => Promise<void>
       prefetch: (nuxtApp?: NuxtApp) => Promise<void>
       prefetched: boolean
+      shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
       route: (RouteLocation & { href: string }) | undefined
       rel: string | null
       target: '_blank' | '_parent' | '_self' | '_top' | (string & {}) | null
       isExternal: boolean
-      isActive: false
-      isExactActive: false
+      isActive: boolean
+      isExactActive: boolean
     }
   : UnwrapRef<UseLinkReturn>
+
+type RouterLinkSlotProps = Partial<Pick<NuxtLinkDefaultSlotProps<true>, 'href' | 'navigate' | 'route' | 'isActive' | 'isExactActive'>>
 
 type NuxtLinkSlots<CustomProp extends boolean = false> = {
   default?: (props: NuxtLinkDefaultSlotProps<CustomProp>) => VNode[]
 }
 
-export type NuxtLinkComponent = new<CustomProp extends boolean = false>(
-  props: NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
-) => InstanceType<DefineSetupFnComponent<
-  NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
+type NuxtLinkComponentProps<CustomProp extends boolean = false> =
+  NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>
+
+type NuxtLinkComponentInstance<CustomProp extends boolean = false> = InstanceType<DefineSetupFnComponent<
+  NuxtLinkComponentProps<CustomProp>,
   [],
   SlotsType<NuxtLinkSlots<CustomProp>>
 >>
+
+export type NuxtLinkComponent = {
+  new (
+    props: NuxtLinkComponentProps<true> & { custom: true }
+  ): NuxtLinkComponentInstance<true>
+  new (
+    props: NuxtLinkComponentProps<false>
+  ): NuxtLinkComponentInstance<false>
+  new<CustomProp extends boolean = false>(
+    props: NuxtLinkComponentProps<CustomProp>
+  ): NuxtLinkComponentInstance<CustomProp>
+}
 
 /* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & Record<string, any> {
@@ -403,9 +419,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
-      function shouldPrefetch (mode: 'visibility' | 'interaction') {
-        if (import.meta.server) { return }
-        return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
+      function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
+        if (import.meta.server) { return false }
+        return Boolean((!prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()))
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
@@ -427,7 +443,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         ])
       }
 
-      if (import.meta.client) {
+      if (import.meta.client && !props.custom) {
         checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
@@ -481,11 +497,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
         ) || null
 
-        const getCustomSlotProps = (): NuxtLinkDefaultSlotProps<true> => ({
-          href: href.value,
+        const getCustomSlotProps = (routerLinkSlotProps?: RouterLinkSlotProps): NuxtLinkDefaultSlotProps<true> => ({
+          href: href.value || undefined, // set as undefined to avoid type assertion errors with `:href="href"`
           navigate,
-          prefetch,
-          prefetched: prefetched.value,
           get route () {
             if (!href.value) { return undefined }
 
@@ -501,13 +515,17 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
               redirectedFrom: undefined,
               meta: {},
               href: href.value,
-            } satisfies RouteLocation & { href: string }
+            } as unknown as RouteLocation & { href: string }
           },
           rel,
           target,
           isExternal: isExternal.value || hasTarget.value,
           isActive: false,
           isExactActive: false,
+          ...routerLinkSlotProps,
+          prefetch,
+          prefetched: prefetched.value,
+          shouldPrefetch,
         })
 
         if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
@@ -541,7 +559,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             resolveComponent('RouterLink'),
             routerLinkProps,
             props.custom && slots.default
-              ? { default: () => slots.default!(getCustomSlotProps()) }
+              ? { default: (slotProps: RouterLinkSlotProps) => slots.default!(getCustomSlotProps(slotProps)) }
               : slots.default,
           )
         }
