@@ -541,11 +541,11 @@ describe('pages', () => {
 
   it('/wrapper-expose/page', async () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/wrapper-expose/page')
-    await page.waitForLoadState('networkidle')
     await page.locator('#log-foo').click()
     expect(consoleLogs.at(-1)?.text).toBe('bar')
     // change page
     await page.locator('#to-hello').click()
+    await page.locator('#to-foo').waitFor()
     await page.locator('#log-foo').click()
     expect(pageErrors.at(-1)?.toString() || consoleLogs.at(-1)!.text).toContain('.foo is not a function')
     await page.locator('#log-hello').click()
@@ -2821,11 +2821,22 @@ describe('lazy import components', () => {
       const incrementButton = page.getByTestId('increment')
 
       await countLocator.waitFor()
+      expect(await countLocator.textContent()).toBe('0')
 
-      for (let i = 0; i < 10; i++) {
-        expect(await countLocator.textContent()).toBe(`${i}`)
-        await incrementButton.hover()
+      // The first interaction triggers hydration asynchronously, and the click
+      // that triggers it is not guaranteed to also register as an increment.
+      // Hover to start hydration, then click until the count actually advances
+      // before driving the deterministic loop below.
+      await incrementButton.hover()
+      await expect.poll(async () => {
         await incrementButton.click()
+        return countLocator.textContent()
+      }).not.toBe('0')
+
+      let count = Number(await countLocator.textContent())
+      while (count < 10) {
+        await incrementButton.click()
+        await expect.poll(() => countLocator.textContent()).toBe(`${++count}`)
       }
 
       expect(await countLocator.textContent()).toBe('10')
