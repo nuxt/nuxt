@@ -255,6 +255,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
             }
+
+            if (import.meta.server) {
+              nuxtApp._processingMiddlewareRoute = to
+            }
+
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
@@ -283,6 +288,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               await nuxtApp.runWithContext(() => showError(error))
             }
             return error
+          } finally {
+            if (import.meta.server) {
+              delete nuxtApp._processingMiddlewareRoute
+            }
           }
         }
       }

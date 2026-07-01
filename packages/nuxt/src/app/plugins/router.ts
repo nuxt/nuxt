@@ -5,7 +5,7 @@ import { HTTPError } from '@nuxt/nitro-server/h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
-import { clearError, showError } from '../composables/error'
+import { clearError, isNuxtError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 
 // @ts-expect-error virtual file
@@ -271,7 +271,29 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || true
             }
-            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+
+            let result: Awaited<ReturnType<RouteGuard>>
+
+            try {
+              if (import.meta.server) {
+                nuxtApp._processingMiddlewareRoute = to
+              }
+
+              result = await nuxtApp.runWithContext(() => middleware(to, from))
+            } catch (err: unknown) {
+              // Let fatal middleware errors go through the same SSR error handling path
+              // as errors returned from middleware.
+              if (import.meta.server && isNuxtError(err) && err.fatal) {
+                result = err
+              } else {
+                throw err
+              }
+            } finally {
+              if (import.meta.server) {
+                delete nuxtApp._processingMiddlewareRoute
+              }
+            }
+
             if (import.meta.server) {
               if (result === false || result instanceof Error) {
                 const error = result || new HTTPError({
