@@ -103,7 +103,7 @@ export default defineNuxtModule({
         return
       }
 
-      const routeRules = globRouteRulesFromPages(pages, undefined, '', nuxt.options.dev ? { warn: message => logger.warn(message) } : undefined)
+      const routeRules = globRouteRulesFromPages(pages, nuxt.options.dev ? { warn: message => logger.warn(message) } : undefined)
       await updateRouteConfig?.(routeRules)
     }
 

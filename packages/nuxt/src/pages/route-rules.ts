@@ -9,7 +9,11 @@ interface GlobRouteRulesFromPagesOptions {
   warn?: (message: string) => void
 }
 
-export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glob: string]: NitroRouteConfig }, prefix = '', options: GlobRouteRulesFromPagesOptions = {}) {
+export function globRouteRulesFromPages (pages: NuxtPage[], options: GlobRouteRulesFromPagesOptions = {}) {
+  return collectRouteRulesFromPages(pages, {}, '', options)
+}
+
+function collectRouteRulesFromPages (pages: NuxtPage[], paths: Record<string, NitroRouteConfig>, prefix: string, options: GlobRouteRulesFromPagesOptions) {
   for (const page of pages) {
     if (page.rules) {
       if (Object.keys(page.rules).length) {
@@ -26,7 +30,7 @@ export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glo
       delete page.rules
     }
     if (page.children?.length) {
-      globRouteRulesFromPages(page.children, paths, prefix + page.path + '/', options)
+      collectRouteRulesFromPages(page.children, paths, prefix + page.path + '/', options)
     }
   }
   return paths

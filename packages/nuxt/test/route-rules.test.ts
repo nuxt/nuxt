@@ -79,7 +79,7 @@ describe('routeRules from page meta', () => {
       },
     ]
 
-    expect(globRouteRulesFromPages(pages, {}, '', { warn: message => warnings.push(message) })).toEqual({
+    expect(globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })).toEqual({
       '/**': { swr: 60 },
       '/users/**': { prerender: true },
     })
@@ -97,7 +97,7 @@ describe('routeRules from page meta', () => {
       },
     ]
 
-    expect(globRouteRulesFromPages(pages, {}, '', { warn: message => warnings.push(message) })).toEqual({})
+    expect(globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })).toEqual({})
     expect(warnings).toEqual([
       'Inline route rules for `/foo/:id/:slug` could not be mapped and were skipped because multiple dynamic params cannot be represented by a single Nitro route rule glob.',
     ])
@@ -116,7 +116,7 @@ describe('routeRules from page meta', () => {
       },
     ]
 
-    expect(globRouteRulesFromPages(pages, {}, '', { warn: message => warnings.push(message) })).toEqual({
+    expect(globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })).toEqual({
       '/foo/**': { prerender: true },
     })
     expect(warnings).toEqual([
