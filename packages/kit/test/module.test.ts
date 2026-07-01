@@ -474,26 +474,25 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
   const tempDir = join(repoRoot, 'node_modules/.temp/module-load-errors')
 
   beforeAll(async () => {
-    // a module that is installed and resolves fine, but throws while its code is evaluated
+    // installed, resolves fine, but throws during evaluation
     const throwingModule = join(tempDir, 'node_modules/throwing-module')
     await mkdir(throwingModule, { recursive: true })
     await writeFile(join(throwingModule, 'package.json'), JSON.stringify({ name: 'throwing-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(throwingModule, 'index.js'), `throw new Error('boom from inside the module')\n`)
 
-    // a module whose entrypoint imports a dependency that does not exist
+    // entrypoint imports a dependency that does not exist
     const brokenDepModule = join(tempDir, 'node_modules/broken-dep-module')
     await mkdir(brokenDepModule, { recursive: true })
     await writeFile(join(brokenDepModule, 'package.json'), JSON.stringify({ name: 'broken-dep-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(brokenDepModule, 'index.js'), `import 'this-dependency-does-not-exist'\nexport default () => {}\n`)
 
-    // an installed dependency that only exports its main entry
+    // installed dependency that only exports its main entry
     const depWithExports = join(tempDir, 'node_modules/dep-with-exports')
     await mkdir(depWithExports, { recursive: true })
     await writeFile(join(depWithExports, 'package.json'), JSON.stringify({ name: 'dep-with-exports', version: '1.0.0', type: 'module', exports: { '.': './index.js' } }))
     await writeFile(join(depWithExports, 'index.js'), `export default () => {}\n`)
 
-    // a module whose entrypoint imports a subpath that the installed dependency does not export,
-    // which throws ERR_PACKAGE_PATH_NOT_EXPORTED at import time even though the module is installed
+    // entrypoint imports a non-exported subpath, throwing ERR_PACKAGE_PATH_NOT_EXPORTED at import time
     const subpathModule = join(tempDir, 'node_modules/subpath-module')
     await mkdir(subpathModule, { recursive: true })
     await writeFile(join(subpathModule, 'package.json'), JSON.stringify({ name: 'subpath-module', version: '1.0.0', type: 'module', exports: './index.js' }))
@@ -518,7 +517,6 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
   })
 
   it('surfaces a non-exported dependency subpath rather than reporting the module as missing', async () => {
-    // installed module, but its dependency graph throws ERR_PACKAGE_PATH_NOT_EXPORTED at import time
     await expect(loadNuxtModuleInstance('subpath-module', nuxt)).rejects.toThrow(/Error while importing module/)
     await expect(loadNuxtModuleInstance('subpath-module', nuxt)).rejects.not.toThrow(/Is it installed/)
   })
