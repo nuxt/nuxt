@@ -15,6 +15,8 @@ import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } fro
 
 import { getLoader } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
+import { tokenizePath } from './vue-router.ts'
+import type { VueRouterPathParamToken as RoutePathParamToken, VueRouterPathToken as RoutePathToken } from './vue-router.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
 // ---------------------------------------------------------------------------
@@ -520,17 +522,246 @@ async function createClientPage(loader) {
   }
 }
 
-const PATH_TO_NITRO_GLOB_RE = /\/[^:/]*:\w.*$/
-export function pathToNitroGlob (path: string) {
-  if (!path) {
-    return null
-  }
-  // Ignore pages with multiple dynamic parameters.
-  if (path.indexOf(':') !== path.lastIndexOf(':')) {
+interface PathToNitroGlobOptions {
+  warn?: (message: string) => void
+  maxExpandedPaths?: number
+}
+
+type SegmentResolution =
+  | { type: 'exact', segments: string[] }
+  | { type: 'fallback', warn?: boolean, reason?: string }
+
+const DEFAULT_MAX_ROUTE_RULE_GLOBS = 64
+const REGEXP_LITERAL_ESCAPE_CHARS = new Set(['.', '+', '*', '?', '^', '$', '(', ')', '[', ']', '{', '}', '|', '\\'])
+
+// URL-safe literal characters we can expand a finite param alternative into (letters, digits, `_`, `-`, `~`).
+const SAFE_ROUTE_RULE_ALTERNATIVE_CHAR_RE = /[\w~-]/
+function isSafeRouteRuleAlternativeChar (char: string) {
+  return SAFE_ROUTE_RULE_ALTERNATIVE_CHAR_RE.test(char)
+}
+
+function getFiniteParamAlternatives (token: RoutePathParamToken) {
+  if (!token.regexp || token.repeatable) {
     return null
   }
 
-  return path.replace(PATH_TO_NITRO_GLOB_RE, '/**')
+  const alternatives: string[] = []
+  let buffer = ''
+  let escaped = false
+  for (const char of token.regexp) {
+    if (escaped) {
+      if (!REGEXP_LITERAL_ESCAPE_CHARS.has(char)) {
+        return null
+      }
+      buffer += char
+      escaped = false
+      continue
+    }
+
+    if (char === '\\') {
+      escaped = true
+      continue
+    }
+
+    if (char === '|') {
+      if (!buffer) { return null }
+      alternatives.push(buffer)
+      buffer = ''
+    } else if (isSafeRouteRuleAlternativeChar(char)) {
+      buffer += char
+    } else {
+      return null
+    }
+  }
+
+  if (escaped) { return null }
+  if (!buffer) { return null }
+  alternatives.push(buffer)
+
+  if (token.optional) {
+    alternatives.push('')
+  }
+
+  return alternatives
+}
+
+function isExpectedDynamicFallback (token: RoutePathParamToken) {
+  if (!token.regexp) {
+    return true
+  }
+
+  return token.regexp === '[^/]+'
+    || token.regexp === '.*'
+    || (token.repeatable && token.regexp === '[^/]*')
+}
+
+function countUnresolvedRouteParams (segments: RoutePathToken[][]) {
+  let count = 0
+  for (const segment of segments) {
+    for (const token of segment) {
+      if (token.type === 'param' && !getFiniteParamAlternatives(token)) {
+        count++
+      }
+    }
+  }
+  return count
+}
+
+function resolveRouteRuleSegment (segment: RoutePathToken[], maxExpandedPaths: number): SegmentResolution {
+  if (!segment.length) {
+    return { type: 'exact', segments: [''] }
+  }
+
+  const paramTokens = segment.filter((token): token is RoutePathParamToken => token.type === 'param')
+
+  if (!paramTokens.length) {
+    return resolveExactSegments([segment.map(token => token.value).join('')])
+  }
+
+  if (segment.length === 1) {
+    const token = segment[0] as RoutePathParamToken
+    const alternatives = getFiniteParamAlternatives(token)
+    if (alternatives) {
+      return resolveExactSegments(alternatives)
+    }
+    return isExpectedDynamicFallback(token)
+      ? { type: 'fallback' }
+      : { type: 'fallback', warn: true, reason: `custom RegExp constraint for parameter \`${token.value}\` cannot be represented by Nitro route rules` }
+  }
+
+  let alternatives = ['']
+  for (const token of segment) {
+    if (token.type === 'static') {
+      alternatives = alternatives.map(alternative => alternative + token.value)
+      continue
+    }
+
+    const paramAlternatives = getFiniteParamAlternatives(token)
+    if (!paramAlternatives) {
+      return {
+        type: 'fallback',
+        warn: true,
+        reason: `partial dynamic segment \`${stringifyRouteRuleSegment(segment)}\` cannot be represented by Nitro route rules`,
+      }
+    }
+
+    if (alternatives.length * paramAlternatives.length > maxExpandedPaths) {
+      return { type: 'fallback', warn: true, reason: 'finite route alternatives exceed the expansion limit' }
+    }
+
+    alternatives = alternatives.flatMap(alternative => paramAlternatives.map(paramAlternative => alternative + paramAlternative))
+  }
+
+  return resolveExactSegments(alternatives)
+}
+
+// Escape the finite literal segments for Nitro, falling back if any cannot be represented as a rou3 static route.
+function resolveExactSegments (segments: string[]): SegmentResolution {
+  const unsupportedSegment = segments.find(segment => !canRepresentNitroStaticSegment(segment))
+  if (unsupportedSegment != null) {
+    return {
+      type: 'fallback',
+      warn: true,
+      reason: `static segment \`${unsupportedSegment}\` cannot be represented by Nitro route rules`,
+    }
+  }
+  return { type: 'exact', segments: segments.map(escapeNitroStaticSegment) }
+}
+
+function stringifyRouteRuleSegment (segment: RoutePathToken[]) {
+  return segment.map((token) => {
+    if (token.type === 'static') {
+      return token.value
+    }
+    return `:${token.value}${token.regexp ? `(${token.regexp})` : ''}${token.repeatable ? token.optional ? '*' : '+' : token.optional ? '?' : ''}`
+  }).join('')
+}
+
+// Escape the rou3 route-rule metacharacters that support backslash escaping (see rou3's `encodeEscapes`, plus whole-segment `\*`).
+const NITRO_STATIC_SEGMENT_ESCAPE_RE = /[:(){}*]/g
+function escapeNitroStaticSegment (segment: string) {
+  return segment.replace(NITRO_STATIC_SEGMENT_ESCAPE_RE, char => `\\${char}`)
+}
+
+function canRepresentNitroStaticSegment (segment: string) {
+  return !segment.includes('*') || segment === '*' || segment === '**'
+}
+
+function appendRouteRuleSegment (path: string, segment: string) {
+  return segment ? `${path}/${segment}` : path
+}
+
+function toNitroFallbackGlob (path: string) {
+  return path ? `${path}/**` : '/**'
+}
+
+function routeRuleGlobCovers (glob: string, other: string) {
+  if (glob === other || glob === '/**') {
+    return true
+  }
+  if (!glob.endsWith('/**') || !other.endsWith('/**')) {
+    return false
+  }
+  return other.startsWith(`${glob.slice(0, -3)}/`)
+}
+
+function collapseRouteRuleFallbackGlobs (paths: string[]) {
+  const globs = [...new Set(paths.map(toNitroFallbackGlob))]
+  return globs.filter(glob => !globs.some(other => other !== glob && routeRuleGlobCovers(other, glob)))
+}
+
+function warnRouteRuleFallback (path: string, globs: string[], reason: string | undefined, warn: PathToNitroGlobOptions['warn']) {
+  if (!warn) { return }
+  warn(`Inline route rules for \`${path}\` were mapped to ${globs.map(glob => `\`${glob}\``).join(', ')}, which is broader than the page route.${reason ? ` ${reason}.` : ''}`)
+}
+
+export function pathToNitroGlob (path: string, options: PathToNitroGlobOptions = {}) {
+  // Cap expansion at one glob so a path with finite alternatives falls back to a single safe glob rather than silently returning only the first expansion.
+  return pathToNitroGlobs(path, { ...options, maxExpandedPaths: 1 })?.[0] || null
+}
+
+export function pathToNitroGlobs (path: string, options: PathToNitroGlobOptions = {}) {
+  if (!path) {
+    return null
+  }
+
+  const maxExpandedPaths = options.maxExpandedPaths ?? DEFAULT_MAX_ROUTE_RULE_GLOBS
+  let segments: RoutePathToken[][]
+  try {
+    segments = tokenizePath(path)
+  } catch (error) {
+    options.warn?.(`Inline route rules for \`${path}\` could not be mapped and were skipped. ${error instanceof Error ? error.message : String(error)}`)
+    return null
+  }
+
+  if (countUnresolvedRouteParams(segments) > 1) {
+    options.warn?.(`Inline route rules for \`${path}\` could not be mapped and were skipped because multiple dynamic params cannot be represented by a single Nitro route rule glob.`)
+    return null
+  }
+
+  let paths = ['']
+  for (const segment of segments) {
+    const resolved = resolveRouteRuleSegment(segment, maxExpandedPaths)
+    if (resolved.type === 'fallback') {
+      const rawGlobs = [...new Set(paths.map(toNitroFallbackGlob))]
+      const globs = collapseRouteRuleFallbackGlobs(paths)
+      if (resolved.warn || rawGlobs.length !== globs.length) {
+        warnRouteRuleFallback(path, globs, resolved.reason || 'fallback route alternatives collapse to a broader Nitro route rule glob', options.warn)
+      }
+      return globs
+    }
+
+    if (paths.length * resolved.segments.length > maxExpandedPaths) {
+      const globs = collapseRouteRuleFallbackGlobs(paths)
+      warnRouteRuleFallback(path, globs, 'finite route alternatives exceed the expansion limit', options.warn)
+      return globs
+    }
+
+    paths = paths.flatMap(path => resolved.segments.map(segment => appendRouteRuleSegment(path, segment)))
+  }
+
+  const globs = [...new Set(paths.map(path => path || '/'))]
+  return globs.length ? globs : null
 }
 
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {

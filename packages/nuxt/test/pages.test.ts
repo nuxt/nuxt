@@ -1,7 +1,7 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob, pathToNitroGlobs } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -419,12 +419,82 @@ const pathToNitroGlobTests = {
   '/some-:id?': '/**',
   '/other/some-:id?': '/other/**',
   '/other/some-:id()-more': '/other/**',
+  '/test\\:name': '/test\\:name',
   '/other/nested': '/other/nested',
+  // Falls back to a single safe glob rather than returning only the first finite expansion.
+  '/:locale(en|fr)/about': '/**',
 }
 
 describe('pages:pathToNitroGlob', () => {
   it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
     expect(pathToNitroGlob(path)).to.equal(expected)
+  })
+})
+
+describe('pages:pathToNitroGlobs', () => {
+  it('expands simple constrained route params before converting dynamic segments to globs', () => {
+    expect(pathToNitroGlobs('/:locale(de)/account/verify')).toEqual(['/de/account/verify'])
+    expect(pathToNitroGlobs('/:locale(de|fr)/privacy-policy')).toEqual(['/de/privacy-policy', '/fr/privacy-policy'])
+    expect(pathToNitroGlobs('/:locale(en-US|pt_BR)/about')).toEqual(['/en-US/about', '/pt_BR/about'])
+    expect(pathToNitroGlobs('/:version(v1\\.0|v2\\.0)/about')).toEqual(['/v1.0/about', '/v2.0/about'])
+    expect(pathToNitroGlobs('/:symbol(\\*)')).toEqual(['/\\*'])
+    expect(pathToNitroGlobs('/:locale(de|fr)/blog/:slug')).toEqual(['/de/blog/**', '/fr/blog/**'])
+  })
+
+  it('expands finite partial dynamic segments', () => {
+    expect(pathToNitroGlobs('/foo-:kind(a|b)')).toEqual(['/foo-a', '/foo-b'])
+    expect(pathToNitroGlobs('/:locale(de|fr)/foo-:kind(a|b)')).toEqual(['/de/foo-a', '/de/foo-b', '/fr/foo-a', '/fr/foo-b'])
+  })
+
+  it('warns when falling back more broadly than the route matcher', () => {
+    const warnings: string[] = []
+    expect(pathToNitroGlobs('/foo-:id', { warn: message => warnings.push(message) })).toEqual(['/**'])
+    expect(pathToNitroGlobs('/bar/foo-:id', { warn: message => warnings.push(message) })).toEqual(['/bar/**'])
+    expect(pathToNitroGlobs('/:id(\\d+)', { warn: message => warnings.push(message) })).toEqual(['/**'])
+    expect(pathToNitroGlobs('/:a(foo|bar)/:b(\\d+)', { warn: message => warnings.push(message) })).toEqual(['/foo/**', '/bar/**'])
+    expect(pathToNitroGlobs('/:version(v1.0|v2.0)/about', { warn: message => warnings.push(message) })).toEqual(['/**'])
+    expect(pathToNitroGlobs('/foo*bar', { warn: message => warnings.push(message) })).toEqual(['/**'])
+    expect(pathToNitroGlobs('/docs/foo*bar', { warn: message => warnings.push(message) })).toEqual(['/docs/**'])
+
+    expect(warnings).toHaveLength(7)
+    expect(warnings[0]).toContain('partial dynamic segment')
+    expect(warnings[2]).toContain('custom RegExp constraint')
+    expect(warnings[4]).toContain('custom RegExp constraint')
+    expect(warnings[5]).toContain('static segment')
+  })
+
+  it('skips multiple unresolved dynamic params to preserve existing behaviour', () => {
+    const warnings: string[] = []
+    expect(pathToNitroGlobs('/foo/:id/:slug', { warn: message => warnings.push(message) })).toEqual(null)
+    expect(pathToNitroGlobs('/:locale(de|fr)/blog/:category/:slug', { warn: message => warnings.push(message) })).toEqual(null)
+    expect(pathToNitroGlobs('/:locale(de|fr)/blog/:slug', { warn: message => warnings.push(message) })).toEqual(['/de/blog/**', '/fr/blog/**'])
+
+    expect(warnings).toHaveLength(2)
+    expect(warnings[0]).toContain('multiple dynamic params')
+  })
+
+  it('does not warn for expected dynamic fallbacks', () => {
+    const warnings: string[] = []
+    expect(pathToNitroGlobs('/foo/:id/bar', { warn: message => warnings.push(message) })).toEqual(['/foo/**'])
+    expect(pathToNitroGlobs('/foo/:slug(.*)*', { warn: message => warnings.push(message) })).toEqual(['/foo/**'])
+    expect(pathToNitroGlobs('/foo/:id([^/]+)', { warn: message => warnings.push(message) })).toEqual(['/foo/**'])
+    expect(warnings).toEqual([])
+  })
+
+  it('collapses overlapping fallback globs to the broadest glob', () => {
+    const warnings: string[] = []
+    expect(pathToNitroGlobs('/:locale(en|fr)?/:slug', { warn: message => warnings.push(message) })).toEqual(['/**'])
+    expect(pathToNitroGlobs('/shop/:country(us|ca)?/:slug', { warn: message => warnings.push(message) })).toEqual(['/shop/**'])
+
+    expect(warnings).toHaveLength(2)
+    expect(warnings[0]).toContain('fallback route alternatives collapse')
+  })
+
+  it('falls back when finite alternatives exceed the expansion limit', () => {
+    const warnings: string[] = []
+    expect(pathToNitroGlobs('/foo/:locale(de|fr|en)', { warn: message => warnings.push(message), maxExpandedPaths: 2 })).toEqual(['/foo/**'])
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('expansion limit')
   })
 })
 

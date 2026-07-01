@@ -1,14 +1,28 @@
 import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitro/types'
 
-import { pathToNitroGlob } from './utils.ts'
+import { isEqual } from 'ohash'
 
-export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glob: string]: NitroRouteConfig }, prefix = '') {
+import { pathToNitroGlobs } from './utils.ts'
+
+interface GlobRouteRulesFromPagesOptions {
+  warn?: (message: string) => void
+}
+
+export function globRouteRulesFromPages (pages: NuxtPage[], options: GlobRouteRulesFromPagesOptions = {}) {
+  return collectRouteRulesFromPages(pages, {}, '', options)
+}
+
+function collectRouteRulesFromPages (pages: NuxtPage[], paths: Record<string, NitroRouteConfig>, prefix: string, options: GlobRouteRulesFromPagesOptions) {
   for (const page of pages) {
     if (page.rules) {
       if (Object.keys(page.rules).length) {
-        const glob = pathToNitroGlob(prefix + page.path)
-        if (glob) {
+        const path = prefix + page.path
+        const globs = pathToNitroGlobs(path, { warn: options.warn })
+        for (const glob of globs || []) {
+          if (glob in paths && !isEqual(paths[glob], page.rules)) {
+            options.warn?.(`Inline route rules for \`${path}\` generated \`${glob}\`, which is already used by another page. The later inline route rules will override the earlier ones.`)
+          }
           paths[glob] = page.rules
         }
       }
@@ -16,7 +30,7 @@ export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glo
       delete page.rules
     }
     if (page.children?.length) {
-      globRouteRulesFromPages(page.children, paths, prefix + page.path + '/')
+      collectRouteRulesFromPages(page.children, paths, prefix + page.path + '/', options)
     }
   }
   return paths
