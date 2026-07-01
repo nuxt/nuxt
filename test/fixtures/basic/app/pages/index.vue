@@ -39,6 +39,13 @@
       Chunk error
     </NuxtLink>
     <NuxtLink
+      id="to-lazy-chunk-error"
+      no-prefetch
+      to="/lazy-chunk-error"
+    >
+      Lazy chunk error
+    </NuxtLink>
+    <NuxtLink
       id="to-client-only-components"
       to="/client-only-components"
     >

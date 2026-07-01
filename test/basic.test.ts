@@ -1402,6 +1402,31 @@ describe('errors', () => {
 
     await expectNoClientErrors('/error/error-boundary')
   })
+
+  // Regression test for https://github.com/nuxt/nuxt/issues/29624
+  // A lazy component whose dynamic import rejects (as happens after a redeploy
+  // when the previous chunk no longer exists) should be handled gracefully
+  // instead of crashing the app.
+  it.runIf(!isDev && builder !== 'rspack')('should handle chunk loading errors in nested lazy components', async () => {
+    const { page, consoleLogs, pageErrors } = await renderPage()
+    await page.goto(url('/'))
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/' && !window.useNuxtApp?.().isHydrating)
+    consoleLogs.length = 0
+    pageErrors.length = 0
+
+    await page.locator('#to-lazy-chunk-error').click()
+    await page.waitForURL(url('/lazy-chunk-error'))
+
+    // Give Nuxt a moment to react to the rejected dynamic import.
+    await page.waitForTimeout(500)
+
+    const logs = consoleLogs.map(c => c.text).join('\n')
+    const errors = pageErrors.map(e => e.message).join('\n')
+
+    expect(logs + '\n' + errors).toContain('caught chunk load error')
+
+    await page.close()
+  })
 })
 
 describe('navigate external', () => {
