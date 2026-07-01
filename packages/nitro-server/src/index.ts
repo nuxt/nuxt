@@ -97,7 +97,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
-    const h3Path = JSON.stringify(resolve(distDir, 'h3'))
     const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
 
     nuxt.options.nitro.virtual ||= {}
@@ -106,12 +105,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
         return `export { default } from ${islandHandlerPath}`
       }
-      return `import { defineEventHandler } from ${h3Path}; export default defineEventHandler(() => {});`
+      return `export default { fetch: () => undefined }`
     }
-    nuxt.options.serverHandlers.push({
-      route: '/__nuxt_island/**',
-      handler: ISLAND_RENDERER_KEY,
-    })
 
     if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
       nuxt.options.ssr = true
@@ -528,44 +523,64 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // Add decorator support via Babel when experimental.decorators is enabled.
-  if (nuxt.options.experimental.decorators) {
-    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
-    const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
-      rootDir: nuxt.options.rootDir,
-      searchPaths: nuxt.options.modulesDir,
-      from: import.meta.url,
-    })
-
-    if (result !== true) {
-      logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+  const nitroDecoratorSetup = new WeakMap<NitroConfig, Promise<void>>()
+  const setupNitroDecorators = (nitroConfig: NitroConfig) => {
+    const existingSetup = nitroDecoratorSetup.get(nitroConfig)
+    if (existingSetup) {
+      return existingSetup
     }
 
-    if (result === true) {
-      const { babel } = await import('@rollup/plugin-babel')
-      nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
-      nitroConfig.rollupConfig!.plugins!.unshift(
-        babel({
-          babelHelpers: 'bundled',
-          configFile: false,
-          extensions: ['.ts', '.js', '.mjs', '.mts'],
-          plugins: [
-            // Syntax plugin allows Babel to parse TypeScript without transforming it,
-            // since the actual TS stripping is handled later by the bundler's esbuild plugin.
-            ['@babel/plugin-syntax-typescript', { isTSX: false }],
-            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
-          ],
-        }),
-        babel({
-          babelHelpers: 'bundled',
-          configFile: false,
-          extensions: ['.tsx', '.jsx'],
-          plugins: [
-            ['@babel/plugin-syntax-typescript', { isTSX: true }],
-            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
-          ],
-        }),
-      )
+    const setup = (async () => {
+      const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
+      const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
+        rootDir: nuxt.options.rootDir,
+        searchPaths: nuxt.options.modulesDir,
+        from: import.meta.url,
+      })
+
+      if (result !== true) {
+        logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+      }
+
+      if (result === true) {
+        const { babel } = await import('@rollup/plugin-babel')
+        nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
+        nitroConfig.rollupConfig!.plugins!.unshift(
+          babel({
+            babelHelpers: 'bundled',
+            configFile: false,
+            extensions: ['.ts', '.js', '.mjs', '.mts'],
+            plugins: [
+              // Syntax plugin allows Babel to parse TypeScript without transforming it,
+              // since the actual TS stripping is handled later by the bundler's esbuild plugin.
+              ['@babel/plugin-syntax-typescript', { isTSX: false }],
+              ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+            ],
+          }),
+          babel({
+            babelHelpers: 'bundled',
+            configFile: false,
+            extensions: ['.tsx', '.jsx'],
+            plugins: [
+              ['@babel/plugin-syntax-typescript', { isTSX: true }],
+              ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+            ],
+          }),
+        )
+      }
+    })()
+
+    nitroDecoratorSetup.set(nitroConfig, setup)
+    setup.catch(() => nitroDecoratorSetup.delete(nitroConfig))
+    return setup
+  }
+
+  // Add decorator support via Babel when experimental.decorators is enabled.
+  if (nuxt.options.experimental.decorators) {
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:build:before', nitro => setupNitroDecorators(nitro.options))
+    } else {
+      await setupNitroDecorators(nitroConfig)
     }
   }
 

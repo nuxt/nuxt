@@ -12,7 +12,7 @@ import { useNitro } from '@nuxt/kit'
 
 import { annotatePlugins, checkForCircularDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
+import type { NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
@@ -50,6 +50,21 @@ export const rootComponentTemplate: NuxtTemplate = {
 export const errorComponentTemplate: NuxtTemplate = {
   filename: 'error-component.mjs',
   getContents: ctx => genExport(ctx.app.errorComponent!, ['default']),
+}
+export const islandRendererTemplate: NuxtTemplate = {
+  filename: 'island-renderer.mjs',
+  getContents (ctx) {
+    if (!shouldEnableComponentIslands(ctx.nuxt, ctx.app)) {
+      return 'const IslandRenderer = () => null\nexport default IslandRenderer'
+    }
+
+    const islandRenderer = resolve(ctx.nuxt.options.appDir, 'components/island-renderer')
+    return [
+      'import { defineAsyncComponent } from \'vue\'',
+      `const IslandRenderer = import.meta.server ? defineAsyncComponent(() => ${genDynamicImport(islandRenderer, { wrapper: false })}.then(r => r.default || r)) : () => null`,
+      'export default IslandRenderer',
+    ].join('\n')
+  },
 }
 // TODO: Use an alias
 export const testComponentWrapperTemplate: NuxtTemplate = {
@@ -105,8 +120,6 @@ export const serverPluginTemplate: NuxtTemplate = {
 
 const TS_RE = /\.[cm]?tsx?$/
 const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
-const JS_RE = /\.[cm]jsx?$/
-const JS_CAPTURE_RE = /\.[cm](jsx?)$/
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async ({ nuxt, app }) => {
@@ -132,14 +145,6 @@ export const pluginsDeclaration: NuxtTemplate = {
       // if `.d.ts` file exists alongside a `.js` plugin, or if `.d.mts` file exists alongside a `.mjs` plugin, we can use the entire path
       if (correspondingDeclaration !== pluginPath && exists(correspondingDeclaration)) {
         tsImports.push(relativePath)
-        continue
-      }
-
-      const incorrectDeclaration = pluginPath.replace(JS_RE, '.d.ts')
-      // if `.d.ts` file exists, but plugin is `.mjs`, add `.js` extension to the import
-      // to hotfix issue until ecosystem updates to `@nuxt/module-builder@>=0.8.0`
-      if (incorrectDeclaration !== pluginPath && exists(incorrectDeclaration)) {
-        tsImports.push(relativePath.replace(JS_CAPTURE_RE, '.$1'))
         continue
       }
 
@@ -529,6 +534,20 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
   },
 }
 
+function hasActiveComponentIslands (ctx: { nuxt: { options: NuxtOptions }, app: NuxtApp }) {
+  return ctx.nuxt.options.experimental.componentIslands && (
+    ctx.nuxt.options.experimental.componentIslands !== 'auto' ||
+    ctx.app.pages?.some(p => p.mode === 'server') ||
+    ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components!.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
+  )
+}
+
+function shouldEnableComponentIslands (nuxt: { options: NuxtOptions }, app: NuxtApp) {
+  return nuxt.options.experimental.componentIslands && (
+    nuxt.options.dev || hasActiveComponentIslands({ nuxt, app })
+  )
+}
+
 // Allow direct access to specific exposed nuxt.config
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
@@ -545,24 +564,15 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       baseURL: undefined,
       headers: undefined,
     }
-    // Whether island components are genuinely used by the app (server pages /
-    // server components, or islands explicitly enabled). This excludes the
-    // dev-only inflation below.
-    const componentIslandsActive = ctx.nuxt.options.experimental.componentIslands && (
-      ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
-    )
-    // In dev the islands handler is always wired up so Vite generates the
-    // islands module graph for HMR, regardless of actual island usage.
-    const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
-      ctx.nuxt.options.dev || componentIslandsActive
-    )
+    const componentIslandsActive = hasActiveComponentIslands(ctx)
+    const componentIslands = shouldEnableComponentIslands(ctx.nuxt, ctx.app)
     const nitro = useNitro() as Nitro
 
     const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)
     const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (nitro.options.static || hasCachedRoutes || (nitro.options.prerender.routes && nitro.options.prerender.routes.length > 0) || nitro.routing.routeRules.routes.some(r => r.data.prerender))
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
-      `export const componentIslands = ${shouldEnableComponentIslands}`,
+      `export const componentIslands = ${componentIslands}`,
       `export const componentIslandsActive = ${componentIslandsActive}`,
       `export const payloadExtraction = ${payloadExtraction}`,
       `export const prefetchPreloadTags = ${!!ctx.nuxt.options.experimental.prefetchPreloadTags}`,

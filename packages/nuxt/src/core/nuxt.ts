@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -40,7 +40,6 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
-import { resolveTypePaths } from './utils/types.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
@@ -254,18 +253,28 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
-  nuxt.hook('nitro:config', async (nitroConfig) => {
+  const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
     paths ||= await resolveTypescriptPaths(nuxt)
     nitroConfig.typescript = defu(nitroConfig.typescript, {
       tsConfig: { compilerOptions: { paths: { ...paths } } },
     })
-  })
+  }
+  if (nuxt.options.dev) {
+    nuxt.hook('nitro:build:before', nitro => applyNitroTypePaths(nitro.options))
+  } else {
+    nuxt.hook('nitro:config', applyNitroTypePaths)
+  }
 
-  const serverBuilderReference = typeof nuxt.options.server.builder === 'string'
-    ? nuxt.options.server.builder === '@nuxt/nitro-server'
+  let serverBuilderReference: { path: string } | { types: string } | undefined
+  const getServerBuilderReference = () => {
+    if (serverBuilderReference || typeof nuxt.options.server.builder !== 'string') {
+      return serverBuilderReference
+    }
+    serverBuilderReference = nuxt.options.server.builder === '@nuxt/nitro-server'
       ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }).replace('.mjs', '.d.mts') }
       : { types: nuxt.options.server.builder }
-    : undefined
+    return serverBuilderReference
+  }
 
   // Add nuxt types
   nuxt.hook('prepare:types', async (opts) => {
@@ -291,6 +300,7 @@ async function initNuxt (nuxt: Nuxt) {
       opts.nodeReferences.push({ types: nuxt.options.builder })
     }
 
+    const serverBuilderReference = getServerBuilderReference()
     if (serverBuilderReference) {
       opts.references.push(serverBuilderReference)
       opts.nodeReferences.push(serverBuilderReference)
@@ -321,6 +331,7 @@ async function initNuxt (nuxt: Nuxt) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
 
+    const serverBuilderReference = getServerBuilderReference()
     if (serverBuilderReference) {
       opts.references.push(serverBuilderReference)
     }
@@ -673,6 +684,11 @@ async function initNuxt (nuxt: Nuxt) {
   // Add experimental immediate page reload support
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
+  }
+  // Reload for crawlers when a chunk fails during initial hydration, so they
+  // index the server-rendered HTML rather than a blank page
+  if (nuxt.options.experimental.emitRouteChunkError) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-crawler.client'))
   }
 
   // Add experimental session restoration support

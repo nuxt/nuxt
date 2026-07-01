@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -10,7 +10,6 @@ import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
-import { resolveTypePaths } from '../core/utils/types.ts'
 import { logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
@@ -307,9 +306,9 @@ export default defineNuxtModule({
 
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
       await mkdir(dirname(declarationFile), { recursive: true })
-      await context.scanPages(false)
 
       if (nuxt.options._prepare || !nuxt.options.dev) {
+        await context.scanPages(false)
         // TODO: could we generate this from context instead?
         const dts = await readFile(declarationFile, 'utf-8')
         addTemplate({

@@ -341,14 +341,14 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   } catch (error: unknown) {
     const code = (error as Error & { code?: string }).code
     if (code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
-      throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+      throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`, { cause: error })
     }
     if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
       const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
       // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
       // i.e. module is importing a module that is missing
       if (module && !module.includes(nuxtModule as string)) {
-        throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`)
+        throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`, { cause: error })
       }
     }
   }

@@ -215,6 +215,17 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
+  // https://github.com/nuxt/nuxt/issues/28174
+  // https://github.com/nuxt/nuxt/issues/28966
+  it('respects `navigateTo` called from a plugin during SPA boot', async () => {
+    const { page, pageErrors } = await renderPage('')
+    await page.goto(url('/spa-plugin-redirect/login'))
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/spa-plugin-redirect/protected')
+    expect(await page.getByTestId('spa-plugin-redirect-page').textContent()).toContain('protected')
+    expect(pageErrors).toEqual([])
+    await page.close()
+  })
+
   it('allows routes to be added dynamically', async () => {
     const html = await $fetch<string>('/add-route-test')
     expect(html).toContain('Hello Nuxt 3!')
@@ -530,11 +541,11 @@ describe('pages', () => {
 
   it('/wrapper-expose/page', async () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/wrapper-expose/page')
-    await page.waitForLoadState('networkidle')
     await page.locator('#log-foo').click()
     expect(consoleLogs.at(-1)?.text).toBe('bar')
     // change page
     await page.locator('#to-hello').click()
+    await page.locator('#to-foo').waitFor()
     await page.locator('#log-foo').click()
     expect(pageErrors.at(-1)?.toString() || consoleLogs.at(-1)!.text).toContain('.foo is not a function')
     await page.locator('#log-hello').click()
@@ -724,6 +735,10 @@ describe('pages', () => {
     await page.waitForFunction(() => window.useNuxtApp?.()._route.query.active === 'true')
     expect(await page.evaluate(() => window.useNuxtApp?.()._route.query.active)).toBe('true')
     expect(await page.$eval('div', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
+
+    // the query should already be restored by the time the page is mounted, so
+    // `onMounted` reads the real query rather than the prerendered empty one
+    expect(await page.innerText('#mounted-query')).toBe('true')
 
     await page.close()
   })
@@ -1214,6 +1229,13 @@ describe('navigate', () => {
     expect(res.headers.get('location')).toEqual('/navigate-some-path')
     expect(res.status).toEqual(307)
     expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/navigate-some-path"></head></html>"')
+  })
+
+  it('preserves cookies set during render on a redirect response', async () => {
+    const res = await fetch('/cookie-then-redirect', { redirect: 'manual' })
+    expect(res.status).toEqual(302)
+    expect(res.headers.get('location')).toEqual('/')
+    expect(res.headers.get('set-cookie')).toContain('set-before-redirect=redirected')
   })
 
   it('should not overwrite headers', async () => {
@@ -2104,7 +2126,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     expect(cssFiles?.length).toBeGreaterThan(0)
     if (isWebpack) {
       // TODO: use non-hash name for webpack css files in test fixture
-      expect(cssFiles).toHaveLength(2)
+      const stylesheets = cssFiles!.filter(m => m.includes('rel="stylesheet"'))
+      expect(stylesheets).toHaveLength(2)
     } else {
       expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
         [
@@ -2798,11 +2821,22 @@ describe('lazy import components', () => {
       const incrementButton = page.getByTestId('increment')
 
       await countLocator.waitFor()
+      expect(await countLocator.textContent()).toBe('0')
 
-      for (let i = 0; i < 10; i++) {
-        expect(await countLocator.textContent()).toBe(`${i}`)
-        await incrementButton.hover()
+      // The first interaction triggers hydration asynchronously, and the click
+      // that triggers it is not guaranteed to also register as an increment.
+      // Hover to start hydration, then click until the count actually advances
+      // before driving the deterministic loop below.
+      await incrementButton.hover()
+      await expect.poll(async () => {
         await incrementButton.click()
+        return countLocator.textContent()
+      }).not.toBe('0')
+
+      let count = Number(await countLocator.textContent())
+      while (count < 10) {
+        await incrementButton.click()
+        await expect.poll(() => countLocator.textContent()).toBe(`${++count}`)
       }
 
       expect(await countLocator.textContent()).toBe('10')

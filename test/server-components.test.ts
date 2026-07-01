@@ -5,17 +5,17 @@ import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
 import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
-import { computeIslandHash, filterIslandProps } from '../packages/nuxt/src/app/island-hash'
+import { computeIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
-  const filtered = filterIslandProps(opts.props ?? {})
+  const serializedProps = serializeIslandProps(opts.props)
   const ctx = opts.context ?? {}
-  const hashId = computeIslandHash(name, filtered, ctx, undefined)
+  const hashId = computeIslandHash(name, serializedProps, ctx, undefined)
   const query: Record<string, any> = { ...ctx }
-  if (opts.props) { query.props = JSON.stringify(opts.props) }
+  if (opts.props) { query.props = serializedProps }
   return withQuery(`/__nuxt_island/${name}_${hashId}.json`, query)
 }
 
@@ -484,6 +484,32 @@ describe('hash binding', () => {
   it('accepts a request whose URL hash matches the props', async () => {
     const res = await fetch(islandURL('PureComponent', {
       props: { bool: false, number: 1, str: 's', obj: {} },
+    }))
+    expect(res.status).toBe(200)
+  })
+
+  it('accepts props that change during JSON serialization', async () => {
+    const res = await fetch(islandURL('PureComponent', {
+      props: {
+        bool: false,
+        number: 1,
+        str: 's',
+        obj: { optional: undefined, callback: () => {}, items: [undefined] },
+      },
+    }))
+    expect(res.status).toBe(200)
+  })
+
+  // External island clients (e.g. `@nuxtjs/og-image`) build the URL hash from the props object
+  // and send `JSON.stringify(props)`. `computeIslandHash` over the serialized string and the
+  // client's object hash converge (asserted in island-hash.test.ts); here we send the raw
+  // `JSON.stringify(props)` the external client emits rather than `serializeIslandProps`.
+  it('accepts a request whose props were serialized by an external client', async () => {
+    const name = 'PureComponent'
+    const props = { bool: false, number: 1, str: 's', obj: {} }
+    const hashId = computeIslandHash(name, JSON.stringify(props), {}, undefined)
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: JSON.stringify(props),
     }))
     expect(res.status).toBe(200)
   })
