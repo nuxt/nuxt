@@ -527,24 +527,17 @@ interface PathToNitroGlobOptions {
   maxExpandedPaths?: number
 }
 
-interface SegmentResolution {
-  type: 'exact' | 'fallback'
-  segments?: string[]
-  warn?: boolean
-  reason?: string
-}
+type SegmentResolution =
+  | { type: 'exact', segments: string[] }
+  | { type: 'fallback', warn?: boolean, reason?: string }
 
 const DEFAULT_MAX_ROUTE_RULE_GLOBS = 64
 const REGEXP_LITERAL_ESCAPE_CHARS = new Set(['.', '+', '*', '?', '^', '$', '(', ')', '[', ']', '{', '}', '|', '\\'])
 
+// URL-safe literal characters we can expand a finite param alternative into (letters, digits, `_`, `-`, `~`).
+const SAFE_ROUTE_RULE_ALTERNATIVE_CHAR_RE = /[\w~-]/
 function isSafeRouteRuleAlternativeChar (char: string) {
-  const code = char.charCodeAt(0)
-  return (code >= 65 && code <= 90) // A-Z
-    || (code >= 97 && code <= 122) // a-z
-    || (code >= 48 && code <= 57) // 0-9
-    || char === '_'
-    || char === '-'
-    || char === '~'
+  return SAFE_ROUTE_RULE_ALTERNATIVE_CHAR_RE.test(char)
 }
 
 function getFiniteParamAlternatives (token: RoutePathParamToken) {
@@ -684,14 +677,10 @@ function stringifyRouteRuleSegment (segment: RoutePathToken[]) {
   }).join('')
 }
 
+// Escape the rou3 route-rule metacharacters that support backslash escaping (see rou3's `encodeEscapes`, plus whole-segment `\*`).
+const NITRO_STATIC_SEGMENT_ESCAPE_RE = /[:(){}*]/g
 function escapeNitroStaticSegment (segment: string) {
-  let escaped = ''
-  for (const char of segment) {
-    escaped += char === ':' || char === '(' || char === ')' || char === '{' || char === '}' || char === '*'
-      ? `\\${char}`
-      : char
-  }
-  return escaped
+  return segment.replace(NITRO_STATIC_SEGMENT_ESCAPE_RE, char => `\\${char}`)
 }
 
 function canRepresentNitroStaticSegment (segment: string) {
@@ -699,10 +688,7 @@ function canRepresentNitroStaticSegment (segment: string) {
 }
 
 function appendRouteRuleSegment (path: string, segment: string) {
-  if (!segment) {
-    return path
-  }
-  return `${path || ''}/${segment}`
+  return segment ? `${path}/${segment}` : path
 }
 
 function toNitroFallbackGlob (path: string) {
@@ -764,13 +750,13 @@ export function pathToNitroGlobs (path: string, options: PathToNitroGlobOptions 
       return globs
     }
 
-    if (paths.length * resolved.segments!.length > maxExpandedPaths) {
+    if (paths.length * resolved.segments.length > maxExpandedPaths) {
       const globs = collapseRouteRuleFallbackGlobs(paths)
       warnRouteRuleFallback(path, globs, 'finite route alternatives exceed the expansion limit', options.warn)
       return globs
     }
 
-    paths = paths.flatMap(path => resolved.segments!.map(segment => appendRouteRuleSegment(path, segment)))
+    paths = paths.flatMap(path => resolved.segments.map(segment => appendRouteRuleSegment(path, segment)))
   }
 
   const globs = [...new Set(paths.map(path => path || '/'))]
