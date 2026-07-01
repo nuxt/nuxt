@@ -716,7 +716,8 @@ function warnRouteRuleFallback (path: string, globs: string[], reason: string | 
 }
 
 export function pathToNitroGlob (path: string, options: PathToNitroGlobOptions = {}) {
-  return pathToNitroGlobs(path, options)?.[0] || null
+  // Cap expansion at one glob so a path with finite alternatives falls back to a single safe glob rather than silently returning only the first expansion.
+  return pathToNitroGlobs(path, { ...options, maxExpandedPaths: 1 })?.[0] || null
 }
 
 export function pathToNitroGlobs (path: string, options: PathToNitroGlobOptions = {}) {

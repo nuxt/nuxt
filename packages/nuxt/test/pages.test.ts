@@ -421,6 +421,8 @@ const pathToNitroGlobTests = {
   '/other/some-:id()-more': '/other/**',
   '/test\\:name': '/test\\:name',
   '/other/nested': '/other/nested',
+  // Falls back to a single safe glob rather than returning only the first finite expansion.
+  '/:locale(en|fr)/about': '/**',
 }
 
 describe('pages:pathToNitroGlob', () => {
