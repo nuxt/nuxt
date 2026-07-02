@@ -543,6 +543,35 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     }
   }
 
+  // The `~`/`@`/`~~`/`@@` aliases are resolved relative to each layer's own
+  // directory at build/dev time (see `LayerAliasingPlugin`), so an import like
+  // `@/components/Foo.vue` inside an extended layer points at that layer's
+  // source. `tsConfig.paths` can't resolve relative to the importer, so we add
+  // each extended layer's directory as a fallback candidate (ordered by layer
+  // priority) to keep type-checking in sync.
+  // https://github.com/nuxt/nuxt/issues/35373
+  //
+  // The project layer (index 0) is skipped: its alias is already emitted by the
+  // alias loop above (from `nuxt.options.alias`, honouring any user override),
+  // so single-layer projects keep byte-identical output.
+  const layerAliasDirKeys = { '~': 'app', '@': 'app', '~~': 'root', '@@': 'root' } as const
+  for (const alias in layerAliasDirKeys) {
+    if (!(alias in tsConfig.compilerOptions.paths)) { continue }
+    const dirKey = layerAliasDirKeys[alias as keyof typeof layerAliasDirKeys]
+    const hasGlob = `${alias}/*` in tsConfig.compilerOptions.paths
+    for (let i = 1; i < layerDirs.length; i++) {
+      const override = nuxt.options._layers[i]?.config?.alias?.[alias]
+      const absoluteDir = override ? resolve(layerDirs[i]!.root, override) : layerDirs[i]![dirKey]
+      // Emit relative paths directly so `resolveConfig` skips a redundant
+      // `fs.stat` on each (these are always directories).
+      const dir = relativeWithDot(nuxt.options.buildDir, absoluteDir)
+      tsConfig.compilerOptions.paths[alias]!.push(dir)
+      if (hasGlob) {
+        tsConfig.compilerOptions.paths[`${alias}/*`]!.push(`${dir}/*`)
+      }
+    }
+  }
+
   const references: TSReference[] = []
   const nodeReferences: TSReference[] = []
   const sharedReferences: TSReference[] = []

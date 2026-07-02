@@ -1,5 +1,8 @@
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { join } from 'pathe'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -49,6 +52,145 @@ describe('tsConfig generation', () => {
         ],
       }
     `)
+  })
+
+  it('should resolve layer aliases (`~`/`@`/`~~`/`@@`) against every layer, ordered by priority', async () => {
+    // #35373: aliases must fall back to each extended layer's own directory.
+    const nuxt = {
+      options: {
+        rootDir: '/my-app',
+        srcDir: '/my-app',
+        alias: {
+          '~': '/my-app',
+          '@': '/my-app',
+          '~~': '/my-app',
+          '@@': '/my-app',
+        },
+        typescript: { includeWorkspace: false },
+        buildDir: '/my-app/.nuxt',
+        modulesDir: ['/my-app/node_modules', '/node_modules'],
+        modules: [],
+        extensions: ['.ts', '.mjs', '.js'],
+        _layers: [
+          { config: { rootDir: '/my-app', srcDir: '/my-app' } },
+          { config: { rootDir: '/base', srcDir: '/base' } },
+        ],
+        _installedModules: [],
+        _modules: [],
+      },
+      callHook: () => {},
+    } satisfies DeepPartial<Nuxt> as unknown as Nuxt
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
+      {
+        "@": [
+          "..",
+          "../../base",
+        ],
+        "@@": [
+          "..",
+          "../../base",
+        ],
+        "~": [
+          "..",
+          "../../base",
+        ],
+        "~~": [
+          "..",
+          "../../base",
+        ],
+      }
+    `)
+  })
+
+  it('should honour a per-layer alias override when adding layer fallbacks', async () => {
+    // A layer's own `alias` override resolves relative to that layer's root.
+    const nuxt = {
+      options: {
+        rootDir: '/my-app',
+        srcDir: '/my-app',
+        alias: { '~': '/my-app', '@': '/my-app', '~~': '/my-app', '@@': '/my-app' },
+        typescript: { includeWorkspace: false },
+        buildDir: '/my-app/.nuxt',
+        modulesDir: ['/my-app/node_modules', '/node_modules'],
+        modules: [],
+        extensions: ['.ts', '.mjs', '.js'],
+        _layers: [
+          { config: { rootDir: '/my-app', srcDir: '/my-app' } },
+          { config: { rootDir: '/base', srcDir: '/base', alias: { '@': './custom-src' } } },
+        ],
+        _installedModules: [],
+        _modules: [],
+      },
+      callHook: () => {},
+    } satisfies DeepPartial<Nuxt> as unknown as Nuxt
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.compilerOptions?.paths?.['@']).toEqual(['..', '../../base/custom-src'])
+    expect(tsConfig.compilerOptions?.paths?.['~']).toEqual(['..', '../../base'])
+  })
+
+  it('should leave single-layer alias paths byte-identical (no self-duplication)', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxt)
+    expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
+      {
+        "some-custom-alias": [
+          "../some-alias",
+        ],
+        "~": [
+          "..",
+        ],
+      }
+    `)
+  })
+
+  describe('with layer directories on disk', () => {
+    // #35373: alias targets exist on disk, so glob (`@/*`) fallbacks are emitted.
+    let root: string
+    beforeAll(() => {
+      root = mkdtempSync(join(tmpdir(), 'nuxt-layer-alias-'))
+      for (const dir of ['my-app/app', 'my-app/.nuxt', 'base/app']) {
+        mkdirSync(join(root, dir), { recursive: true })
+      }
+    })
+    afterAll(() => rmSync(root, { recursive: true, force: true }))
+
+    it('should add every layer directory (with glob) for layer aliases', async () => {
+      const appSrc = join(root, 'my-app/app') + '/'
+      const appRoot = join(root, 'my-app') + '/'
+      const nuxt = {
+        options: {
+          rootDir: join(root, 'my-app'),
+          srcDir: join(root, 'my-app/app'),
+          alias: { '~': appSrc, '@': appSrc, '~~': appRoot, '@@': appRoot },
+          typescript: { includeWorkspace: false },
+          buildDir: join(root, 'my-app/.nuxt'),
+          modulesDir: [join(root, 'my-app/node_modules')],
+          modules: [],
+          extensions: ['.ts', '.mjs', '.js'],
+          _layers: [
+            { config: { rootDir: join(root, 'my-app'), srcDir: join(root, 'my-app/app') } },
+            { config: { rootDir: join(root, 'base'), srcDir: join(root, 'base/app') } },
+          ],
+          _installedModules: [],
+          _modules: [],
+        },
+        callHook: () => {},
+      } satisfies DeepPartial<Nuxt> as unknown as Nuxt
+
+      const { tsConfig } = await _generateTypes(nuxt)
+      const paths = tsConfig.compilerOptions?.paths ?? {}
+
+      expect(paths['@']).toEqual(['../app', '../../base/app'])
+      expect(paths['@/*']).toEqual(['../app/*', '../../base/app/*'])
+      expect(paths['~']).toEqual(['../app', '../../base/app'])
+      expect(paths['~/*']).toEqual(['../app/*', '../../base/app/*'])
+      expect(paths['~~']).toEqual(['..', '../../base'])
+      expect(paths['~~/*']).toEqual(['../*', '../../base/*'])
+      expect(paths['@@']).toEqual(['..', '../../base'])
+      expect(paths['@@/*']).toEqual(['../*', '../../base/*'])
+    })
   })
 
   it('should add exclude for module paths', async () => {
