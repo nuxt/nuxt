@@ -14,6 +14,7 @@ import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
+import { renderWithRenderStack } from '../utils/render-stack'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
 import { useStorage } from 'nitro/storage'
 import type { Storage } from 'unstorage'
@@ -47,9 +48,9 @@ export default {
       // Render app
       const renderer = await getSSRRenderer()
 
-      const renderResult = await (tracingChannelNuxt
+      const renderResult = await renderWithRenderStack(event, () => tracingChannelNuxt
         ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
-        : renderer.renderToString(ssrContext)
+        : renderer.renderToString(ssrContext),
       ).catch(async (err) => {
         if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
           return {} as Awaited<ReturnType<typeof renderer.renderToString>>

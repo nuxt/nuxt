@@ -1,6 +1,6 @@
-import { AsyncLocalStorage } from 'node:async_hooks'
 import type { Storage } from 'unstorage'
 import { useStorage } from 'nitro/storage'
+import { renderingURLs } from './render-stack'
 // @ts-expect-error virtual file
 import { NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
@@ -11,11 +11,7 @@ export interface CachedResponse {
   headers: Record<string, string>
 }
 
-/**
- * Stack of URLs currently rendering in the active async context (oldest first).
- * A repeated entry signals a render cycle.
- */
-export const prerenderRenderingURLs: AsyncLocalStorage<readonly string[]> | null = import.meta.prerender ? new AsyncLocalStorage() : null
+export const prerenderRenderingURLs = import.meta.prerender ? renderingURLs : null
 
 export const payloadCache: Storage<CachedResponse> | null = import.meta.prerender
   ? useStorage<CachedResponse>('internal:nuxt:prerender:payload')
