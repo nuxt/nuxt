@@ -11,7 +11,7 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
@@ -23,7 +23,7 @@ import { runtimeDependencies } from 'nitro/meta'
 import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, toArray } from './utils.ts'
+import { distDir, getNodeModulePackageRoot, getNodeModulesExcludePattern, getSsrResolveConditions, toArray } from './utils.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -39,7 +39,6 @@ const logLevelMapReverse = {
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
-  const excludePattern = [getLayerNodeModulesExcludePattern(layerDirs.map(dirs => dirs.root))]
 
   const layerPublicAssetsDirs: Array<{ dir: string, maxAge: number }> = []
   for (const dirs of layerDirs) {
@@ -59,6 +58,25 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   const modules = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
+  const modulePackageRoots = await Promise.all(moduleEntryPaths.map(async (path) => {
+    // `modules` is kept for existing template generation below, but it can
+    // collapse node_modules entries to a parent directory. Resolve the original
+    // installed entry path so this allow-list is scoped to the package root.
+    const resolvedPath = path.startsWith(rootDirWithSlash)
+      ? path
+      : await resolvePath(path, { alias: nuxt.options.alias, cwd: rootDirWithSlash, fallbackToOriginal: true })
+    return getNodeModulePackageRoot(resolvedPath)
+  }))
+  const moduleRootsInNodeModules = new Set<string>()
+  for (const packageRoot of modulePackageRoots) {
+    if (packageRoot) {
+      moduleRootsInNodeModules.add(packageRoot)
+    }
+  }
+  const excludePattern = [getNodeModulesExcludePattern([
+    ...layerDirs.map(dirs => dirs.root),
+    ...moduleRootsInNodeModules,
+  ])]
 
   addTemplate(nitroSchemaTemplate)
 
