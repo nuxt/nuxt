@@ -687,7 +687,7 @@ export function useNuxtData<DataT = any> (key: MaybeRefOrGetter<string>): { data
         }
       })
     }
-  })
+  }, { immediate: true })
 
   return {
     data: computed({
