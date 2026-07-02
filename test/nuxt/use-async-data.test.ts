@@ -215,6 +215,51 @@ describe('useAsyncData', () => {
     }
   })
 
+  it('should accept reactive key', async () => {
+    const key = ref(uniqueKey)
+    const { data } = useNuxtData(key)
+    
+    // Set initial data
+    useNuxtApp().payload.data[uniqueKey] = 'initial'
+    expect(data.value).toBe('initial')
+    
+    // Change key
+    key.value = `${uniqueKey}-2`
+    await flushPromises()
+    expect(data.value).toBeUndefined()
+    
+    // Set data for new key
+    useNuxtApp().payload.data[`${uniqueKey}-2`] = 'updated'
+    expect(data.value).toBe('updated')
+    
+    // Change back to original key
+    key.value = uniqueKey
+    await flushPromises()
+    expect(data.value).toBe('initial')
+    
+    clearNuxtData([uniqueKey, `${uniqueKey}-2`])
+  })
+
+  it('should work with useAsyncData and reactive key', async () => {
+    const key = ref(uniqueKey)
+    
+    // Fetch data with initial key
+    const { data: asyncData } = await useAsyncData(key, () => Promise.resolve('async-data'))
+    const { data: nuxtData } = useNuxtData(key)
+    
+    expect(asyncData.value).toBe('async-data')
+    expect(nuxtData.value).toBe('async-data')
+    
+    // Change key
+    const newKey = `${uniqueKey}-new`
+    key.value = newKey
+    await flushPromises()
+    
+    expect(nuxtData.value).toBeUndefined()
+    
+    clearNuxtData([uniqueKey, newKey])
+  })
+
   it('should allow overriding requests', async () => {
     vi.useFakeTimers()
 

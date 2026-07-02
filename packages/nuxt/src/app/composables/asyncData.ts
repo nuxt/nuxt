@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, onWatcherCleanup, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -666,19 +666,20 @@ function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (()
 }
 
 /** @since 3.1.0 */
-export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> } {
+export function useNuxtData<DataT = any> (key: MaybeRefOrGetter<string>): { data: Ref<DataT | undefined> } {
   const nuxtApp = useNuxtApp()
 
-  // Initialize value when key is not already set
-  if (!(key in nuxtApp.payload.data)) {
-    nuxtApp.payload.data[key] = undefined
-  }
+  watch(() => toValue(key), (keyValue) => { 
+    // Initialize value when key is not already set
+    if (!(keyValue in nuxtApp.payload.data)) {
+      nuxtApp.payload.data[keyValue] = undefined
+    }
 
-  if (nuxtApp._asyncData[key]) {
-    const data = nuxtApp._asyncData[key]
-    data._deps++
-    if (getCurrentScope()) {
-      onScopeDispose(() => {
+    if (nuxtApp._asyncData[keyValue]) {
+      const data = nuxtApp._asyncData[keyValue]
+      data._deps++
+
+      onWatcherCleanup(() => { 
         data._deps--
         // clean up memory when it no longer is needed
         if (data._deps === 0) {
@@ -686,18 +687,20 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
         }
       })
     }
-  }
+  })
 
   return {
     data: computed({
       get () {
-        return nuxtApp._asyncData[key]?.data.value ?? nuxtApp.payload.data[key]
+        const keyValue = toValue(key)
+        return nuxtApp._asyncData[keyValue]?.data.value ?? nuxtApp.payload.data[keyValue]
       },
       set (value) {
-        if (nuxtApp._asyncData[key]) {
-          nuxtApp._asyncData[key]!.data.value = value
+        const keyValue = toValue(key)
+        if (nuxtApp._asyncData[keyValue]) {
+          nuxtApp._asyncData[keyValue]!.data.value = value
         } else {
-          nuxtApp.payload.data[key] = value
+          nuxtApp.payload.data[keyValue] = value
         }
       },
     }),
