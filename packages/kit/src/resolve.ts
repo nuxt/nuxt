@@ -164,18 +164,13 @@ async function _resolvePathType (path: string, opts: ResolvePathOptions = {}, sk
     return
   }
 
-  const fd = await fsp.open(path, 'r').catch(() => null)
-  try {
-    const stats = await fd?.stat()
-    if (stats) {
-      return {
-        path,
-        type: stats.isFile() ? 'file' : 'dir',
-        virtual: false,
-      }
+  const stats = await fsp.stat(path).catch(() => null)
+  if (stats) {
+    return {
+      path,
+      type: stats.isFile() ? 'file' : 'dir',
+      virtual: false,
     }
-  } finally {
-    fd?.close()
   }
 }
 
@@ -215,21 +210,20 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
     return res
   }
 
-  // Check possible extensions
+  // Check possible extensions — probe candidates in parallel but preserve resolution order
   if (opts.type === 'file') {
-    for (const ext of extensions) {
+    const candidates = await Promise.all(extensions.flatMap((ext) => {
       const normalizedExt = normalizeExtension(ext)
-
-      // path.[ext]
-      const extPath = await _resolvePathType(path + normalizedExt, opts)
-      if (extPath && extPath.type === 'file') {
-        return extPath
-      }
-
-      // path/index.[ext]
-      const indexPath = await _resolvePathType(join(path, 'index' + normalizedExt), opts, res?.type !== 'dir' /* skip checking if parent is not a directory */)
-      if (indexPath && indexPath.type === 'file') {
-        return indexPath
+      return [
+        // path.[ext]
+        _resolvePathType(path + normalizedExt, opts),
+        // path/index.[ext]
+        _resolvePathType(join(path, 'index' + normalizedExt), opts, res?.type !== 'dir' /* skip checking if parent is not a directory */),
+      ]
+    }))
+    for (const candidate of candidates) {
+      if (candidate && candidate.type === 'file') {
+        return candidate
       }
     }
 
