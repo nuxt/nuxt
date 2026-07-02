@@ -111,7 +111,7 @@
     "vitest-environment-nuxt": "2.0.0",
     "vue": "3.5.38",
     "vue-tsc": "3.3.5",
-    "webpack": "5.107.2"
+    "webpack": "5.108.1"
   },
   "packageManager": "pnpm@11.9.0",
   "version": ""
