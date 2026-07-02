@@ -459,16 +459,34 @@ export interface ConfigSchema {
    * Shared build configuration.
    */
   build: {
-  /**
-   * If you want to transpile specific dependencies with Babel, you can add them here. Each item in transpile can be a package name, a function, a string or regex object matching the dependency's file name.
-   *
-   * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
-   *
-   * @example
-   * ```js
-   * transpile: [({ isLegacy }) => isLegacy && 'ky']
-   * ```
-   */
+    /**
+     * Whether to build the client bundle and copy public assets into the output directory in production builds.
+     *
+     * Set this to `false` for server-only production builds when client assets are deployed separately. The dev server always builds the client bundle.
+     *
+     * @default true
+     */
+    client: boolean
+
+    /**
+     * Whether to build the Vue server renderer bundle in production builds.
+     *
+     * Set this to `false` when you only need the Nitro server output without server-side rendering. The dev server always builds the server renderer.
+     *
+     * @default true
+     */
+    server: boolean
+
+    /**
+     * If you want to transpile specific dependencies with Babel, you can add them here. Each item in transpile can be a package name, a function, a string or regex object matching the dependency's file name.
+     *
+     * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
+     *
+     * @example
+     * ```js
+     * transpile: [({ isLegacy }) => isLegacy && 'ky']
+     * ```
+     */
     transpile: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)>
 
     /**

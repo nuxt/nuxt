@@ -49,6 +49,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
+  const buildClient = nuxt.options.dev || nuxt.options.build.client !== false
+  const buildServer = nuxt.options.dev || nuxt.options.build.server !== false
+  if (!buildClient && !buildServer) {
+    logger.warn('Both `build.client` and `build.server` are disabled. Nuxt will only generate Nitro output without client assets or Vue server renderer.')
+  }
 
   const moduleEntryPaths: string[] = []
   for (const m of nuxt.options._installedModules) {
@@ -238,20 +243,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         ],
       },
     },
-    publicAssets: [
-      nuxt.options.dev
-        ? {
-            dir: resolve(nuxt.options.buildDir, 'dist/client'),
-            maxAge: 0,
-          }
-        : {
-            dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
-            maxAge: 31536000 /* 1 year */,
-            baseURL: nuxt.options.app.buildAssetsDir,
-            ignore: false,
-          },
-      ...layerPublicAssetsDirs,
-    ],
+    publicAssets: buildClient
+      ? [
+          nuxt.options.dev
+            ? {
+                dir: resolve(nuxt.options.buildDir, 'dist/client'),
+                maxAge: 0,
+              }
+            : {
+                dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
+                maxAge: 31536000 /* 1 year */,
+                baseURL: nuxt.options.app.buildAssetsDir,
+                ignore: false,
+              },
+          ...layerPublicAssetsDirs,
+        ]
+      : [],
     prerender: {
       ignoreUnprefixedPublicAssets: true,
       failOnError: true,
@@ -333,7 +340,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // add error handler
-  if (!nitroConfig.errorHandler && (nuxt.options.dev || !nuxt.options.experimental.noVueServer)) {
+  if (!nitroConfig.errorHandler && (nuxt.options.dev || (buildServer && !nuxt.options.experimental.noVueServer))) {
     nitroConfig.errorHandler = resolve(distDir, 'runtime/handlers/error')
   }
 
@@ -437,20 +444,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitroConfig.prerender.ignore ||= []
     nitroConfig.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, manifestPrefix))
 
-    nitroConfig.publicAssets!.unshift(
-      // build manifest
-      {
-        dir: join(tempDir, 'meta'),
-        maxAge: 31536000 /* 1 year */,
-        baseURL: joinURL(manifestPrefix, 'meta'),
-      },
-      // latest build
-      {
-        dir: tempDir,
-        maxAge: 1,
-        baseURL: manifestPrefix,
-      },
-    )
+    if (buildClient) {
+      nitroConfig.publicAssets!.unshift(
+        // build manifest
+        {
+          dir: join(tempDir, 'meta'),
+          maxAge: 31536000 /* 1 year */,
+          baseURL: joinURL(manifestPrefix, 'meta'),
+        },
+        // latest build
+        {
+          dir: tempDir,
+          maxAge: 1,
+          baseURL: manifestPrefix,
+        },
+      )
+    }
 
     nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
 
@@ -507,7 +516,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Add fallback server for `ssr: false`
   const FORWARD_SLASH_RE = /\//g
-  if (!nuxt.options.ssr) {
+  if (!nuxt.options.ssr || !buildServer) {
     nitroConfig.virtual!['#build/dist/server/server.mjs'] = 'export default () => {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
@@ -515,7 +524,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  if (nuxt.options.dev || !nuxt.options.ssr) {
+  if (nuxt.options.dev || !nuxt.options.ssr || !buildServer) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
@@ -671,6 +680,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
+  if (!buildClient) {
+    nitroConfig.noPublicDir = true
+    nitroConfig.publicAssets = []
+  }
 
   if (nitroConfig.static && nuxt.options.dev) {
     nitroConfig.routeRules ||= {}
@@ -852,14 +865,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     for (const hook of ['webpack:config', 'rspack:config'] as const) {
       nuxt.hook(hook, (configuration) => {
         const clientConfig = configuration.find(config => config.name === 'client')
-        if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
-        if (Array.isArray(clientConfig!.resolve!.alias)) {
-          clientConfig!.resolve!.alias.push({
+        if (!clientConfig) {
+          return
+        }
+        clientConfig.resolve ||= {}
+        clientConfig.resolve.alias ||= {}
+        if (Array.isArray(clientConfig.resolve.alias)) {
+          clientConfig.resolve.alias.push({
             name: 'vue',
             alias: 'vue/dist/vue.esm-bundler',
           })
         } else {
-          clientConfig!.resolve!.alias!.vue = 'vue/dist/vue.esm-bundler'
+          clientConfig.resolve.alias.vue = 'vue/dist/vue.esm-bundler'
         }
       })
     }
@@ -906,7 +923,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  if (!nuxt.options.dev && nuxt.options.experimental.noVueServer) {
+  if (!nuxt.options.dev && (!buildServer || nuxt.options.experimental.noVueServer)) {
     nitro.hooks.hook('rollup:before', (nitro) => {
       if (nitro.options.preset === 'nitro-prerender') {
         nitro.options.errorHandler = resolve(distDir, 'runtime/handlers/error')
