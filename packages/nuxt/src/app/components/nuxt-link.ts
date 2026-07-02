@@ -591,6 +591,10 @@ export default NuxtLink
 
 // -- NuxtLink utils --
 function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {
+  // When `trailingSlash` is unset (or not a valid value) the URL is returned untouched
+  if (trailingSlash !== 'append' && trailingSlash !== 'remove') {
+    return to
+  }
   const normalizeFn = trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
   // Until https://github.com/unjs/ufo/issues/189 is resolved
   const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
