@@ -18,11 +18,12 @@ import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/ap
 import { traceAsync } from '#app/internal/tracing'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
-import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
+import { payloadCache } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
+import { renderWithRenderStack } from '../utils/render-stack'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
@@ -82,24 +83,7 @@ export default {
       })
     }
 
-    // During prerender, refuse to recurse into a URL that is already rendering
-    // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
-    // the in-flight URL (typically from route middleware) silently deadlocks the
-    // build. See https://github.com/nuxt/nuxt/issues/33871.
-    if (import.meta.prerender && prerenderRenderingURLs) {
-      const renderingURL = event.url.pathname + event.url.search
-      const stack = prerenderRenderingURLs.getStore()
-      if (stack?.includes(renderingURL)) {
-        const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `"${url}"`).join(' -> ')
-        throw new HTTPError({
-          status: 508,
-          statusText: `Loop detected while prerendering "${renderingURL}" (${chain}). Check for \`useFetch\`/\`$fetch\` calls targeting a URL that is currently being rendered.`,
-        })
-      }
-      return prerenderRenderingURLs.run([...(stack || []), renderingURL], () => renderRoute(event, ssrError)).catch(error => rethrowWithResponseHeaders(event, error))
-    }
-
-    return renderRoute(event, ssrError).catch(error => rethrowWithResponseHeaders(event, error))
+    return renderWithRenderStack(event, () => renderRoute(event, ssrError)).catch(error => rethrowWithResponseHeaders(event, error))
   },
 }
 
