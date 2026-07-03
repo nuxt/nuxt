@@ -179,9 +179,9 @@ function removeImportDeclaration (ast: ESTree.Program, importName: string, magic
 }
 
 /**
- * collect the identifiers referenced within the setup function and the ssrRender function
- * ImportDeclarations and VariableDeclarations are ignored
- * a component whose name is not in the returned set is not called anywhere
+ * return the set of identifiers referenced inside the setup function and the ssrRender function.
+ * identifiers inside variable declarations are skipped, so a component's own declaration does not count as a reference.
+ * a component whose name is absent from this set is not used anywhere and can be removed.
  */
 function getSetupReferencedNames (code: string, id: string): Set<string> {
   const names = new Set<string>()
