@@ -210,20 +210,21 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
     return res
   }
 
-  // Check possible extensions — probe candidates in parallel but preserve resolution order
+  // Check possible extensions
   if (opts.type === 'file') {
-    const candidates = await Promise.all(extensions.flatMap((ext) => {
+    for (const ext of extensions) {
       const normalizedExt = normalizeExtension(ext)
-      return [
-        // path.[ext]
-        _resolvePathType(path + normalizedExt, opts),
-        // path/index.[ext]
-        _resolvePathType(join(path, 'index' + normalizedExt), opts, res?.type !== 'dir' /* skip checking if parent is not a directory */),
-      ]
-    }))
-    for (const candidate of candidates) {
-      if (candidate && candidate.type === 'file') {
-        return candidate
+
+      // path.[ext]
+      const extPath = await _resolvePathType(path + normalizedExt, opts)
+      if (extPath && extPath.type === 'file') {
+        return extPath
+      }
+
+      // path/index.[ext]
+      const indexPath = await _resolvePathType(join(path, 'index' + normalizedExt), opts, res?.type !== 'dir' /* skip checking if parent is not a directory */)
+      if (indexPath && indexPath.type === 'file') {
+        return indexPath
       }
     }
 
