@@ -181,7 +181,7 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:templates', async (app) => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
-      const modesByName = new Map<string, Set<string>>()
+      const modesByName = new Map<string, Set<string | undefined>>()
       for (const component of newComponents) {
         let modes = modesByName.get(component.pascalName)
         if (!modes) {
