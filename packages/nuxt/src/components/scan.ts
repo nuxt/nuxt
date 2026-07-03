@@ -30,7 +30,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   // Keep resolved path to avoid duplicates
   const filePaths = new Set<string>()
 
-  // All scanned paths (with trailing slash)
+  // All scanned paths
   const scannedPaths: string[] = []
 
   for (const dir of dirs) {
@@ -146,9 +146,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
-      const validModes = new Set(['all', component.mode])
       const existingEntries = componentsByName.get(component.pascalName)
-      const existingEntry = existingEntries?.find(e => validModes.has(e.component.mode))
+      const existingEntry = existingEntries?.find(e => e.component.mode === 'all' || e.component.mode === component.mode)
       // Ignore component if component is already defined (with same mode)
       if (existingEntry) {
         const existingComponent = existingEntry.component
