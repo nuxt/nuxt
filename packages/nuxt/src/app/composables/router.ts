@@ -2,7 +2,7 @@ import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
-import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, stringifyParsedURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 
@@ -156,7 +156,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Early open handler
   if (import.meta.client && options?.open) {
-    const { protocol } = new URL(toPath, window.location.href)
+    const { protocol } = parseURL(toPath, window.location.href)
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -180,7 +180,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
+    const { protocol } = parseURL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -341,16 +341,17 @@ export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>): stri
  * @internal
  */
 export function encodeURL (location: string, isExternalHost = false): string {
-  const url = new URL(location, 'http://localhost')
+  const url = parseURL(location, 'http://localhost')
   if (!isExternalHost) {
     // Collapse leading slashes to keep the redirect same-origin (CWE-601).
-    const pathname = url.pathname.replace(/^\/{2,}/, '/')
-    return pathname + url.search + url.hash
+    const pathname = encodePath(decodePath(url.pathname)).replace(/^\/{2,}/, '/')
+    return (pathname || url.search || url.hash) ? pathname + url.search + url.hash : location
   }
+  url.pathname = encodePath(decodePath(url.pathname))
   if (location.startsWith('//')) {
-    return url.toString().replace(url.protocol, '')
+    return stringifyParsedURL(url).replace(url.protocol || '', '')
   }
-  return url.toString()
+  return stringifyParsedURL(url)
 }
 
 /**

@@ -1,11 +1,10 @@
-import { hasProtocol, joinURL } from 'ufo'
+import { hasProtocol, joinURL, parseURL } from 'ufo'
 import { parse } from 'devalue'
 import { defineLink } from '@unhead/vue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 import { useHead } from './head'
-
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
@@ -76,7 +75,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
 const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
-  const u = new URL(url, 'http://localhost')
+  const u = parseURL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }

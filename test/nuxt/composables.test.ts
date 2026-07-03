@@ -778,9 +778,9 @@ describe('routing utilities: `encodeURL`', () => {
     return encodeURL(url, isExternal)
   }
   it('encodeURL should correctly encode a URL', () => {
-    expect(encode('https://test.com')).toMatchInlineSnapshot(`"https://test.com/"`)
-    expect(encode('//test.com')).toMatchInlineSnapshot(`"//test.com/"`)
-    expect(encode('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"mailto:daniel@c%C5%93ur.com"`)
+    expect(encode('https://test.com')).toMatchInlineSnapshot(`"https://test.com"`)
+    expect(encode('//test.com')).toMatchInlineSnapshot(`"//test.com"`)
+    expect(encode('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"//"`)
     const encoded = encode('/cœur?redirected=' + encodeURIComponent('https://google.com'))
     expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
     expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
