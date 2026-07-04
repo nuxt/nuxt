@@ -36,8 +36,12 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
         if (!shouldTransform(code)) { return }
         const result = transform(code)
         if (result) {
+          // prepend the marker through the MagicString instance (rather than
+          // string-concatenating it onto `result.code`) so the sourcemap generated
+          // below accounts for the extra line it introduces
+          result.magicString.prepend(TRANSFORM_MARKER)
           return {
-            code: TRANSFORM_MARKER + result.code,
+            code: result.magicString.toString(),
             map: options.sourcemap
               ? result.magicString.generateMap({ hires: true })
               : undefined,
