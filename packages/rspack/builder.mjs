@@ -1,4 +1,4 @@
-import webpack from '@rspack/core'
+import { rspack as webpack } from '@rsbuild/core'
 
 export { default as WebpackBarPlugin } from 'webpackbar/rspack'
 
