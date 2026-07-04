@@ -8,7 +8,7 @@ export interface MatrixOptions {
   isDev: boolean
   isBuilt: boolean
   isWebpack: boolean
-  builder: 'vite' | 'rspack' | 'rsbuild' | 'webpack'
+  builder: 'vite' | 'rspack' | 'webpack'
 }
 
 const test = base.extend<{ fetch: (path: string) => Promise<Response> } & MatrixOptions>({

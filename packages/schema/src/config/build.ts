@@ -10,12 +10,11 @@ export default defineResolvers({
         return val as { bundle: (nuxt: Nuxt) => Promise<void> }
       }
       const map = {
-        rsbuild: '@nuxt/rsbuild-builder',
         rspack: '@nuxt/rspack-builder',
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }
-      type Builder = 'vite' | 'webpack' | 'rspack' | 'rsbuild'
+      type Builder = 'vite' | 'webpack' | 'rspack'
       if (typeof val === 'string' && val in map) {
         // TODO: improve normalisation inference
         return map[val as keyof typeof map] as Builder

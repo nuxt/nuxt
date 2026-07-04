@@ -322,14 +322,6 @@ const hooksToClear: Array<keyof NuxtHooks> = [
   'rspack:change',
   'rspack:error',
   'rspack:done',
-  'rsbuild:config',
-  'rsbuild:configResolved',
-  'rsbuild:compile',
-  'rsbuild:compiled',
-  'rsbuild:change',
-  'rsbuild:error',
-  'rsbuild:done',
-  'rsbuild:progress',
   // manifest hook - fires after build
   'build:manifest',
   // builder hooks
