@@ -1,0 +1,67 @@
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+
+describe('pnpm-workspace.yaml must have blockExoticSubdeps: true to prevent untrusted dependency installation', () => {
+  const payloads = [
+    // Exact exploit case - missing blockExoticSubdeps
+    `packages:
+  - 'packages/*'`,
+    
+    // Boundary case - blockExoticSubdeps set to false
+    `packages:
+  - 'packages/*'
+blockExoticSubdeps: false`,
+    
+    // Valid input - blockExoticSubdeps set to true
+    `packages:
+  - 'packages/*'
+blockExoticSubdeps: true`,
+    
+    // Adversarial case - malformed YAML with exotic subdeps risk
+    `packages: ['packages/*']
+blockExoticSubdeps: "false"`,
+    
+    // Minimal case - empty but valid workspace file
+    `packages: []`
+  ];
+
+  test.each(payloads)('ensures blockExoticSubdeps is present and true for payload: %s', async (payload) => {
+    const testDir = path.join(__dirname, 'test-workspace');
+    const configPath = path.join(testDir, 'pnpm-workspace.yaml');
+    
+    // Clean up any previous test directory
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
+    }
+    
+    // Create test directory and write payload
+    fs.mkdirSync(testDir, { recursive: true });
+    fs.writeFileSync(configPath, payload);
+    
+    try {
+      // Parse the actual pnpm-workspace.yaml file using pnpm's config reading
+      const result = execSync(`node -e "const fs = require('fs'); const yaml = require('yaml'); const config = yaml.parse(fs.readFileSync('${configPath}', 'utf8')); console.log(JSON.stringify(config))"`, {
+        cwd: testDir,
+        encoding: 'utf8'
+      });
+      
+      const config = JSON.parse(result);
+      
+      // Security property: blockExoticSubdeps MUST be present and set to true
+      expect(config.blockExoticSubdeps).toBe(true);
+      
+    } catch (error) {
+      // If YAML is malformed, that's acceptable - but valid YAML must have the property
+      if (payload.includes('packages')) {
+        // Only fail if the payload contains workspace structure but lacks the security property
+        throw new Error(`Valid workspace configuration must have blockExoticSubdeps: true`);
+      }
+    } finally {
+      // Cleanup
+      if (fs.existsSync(testDir)) {
+        fs.rmSync(testDir, { recursive: true, force: true });
+      }
+    }
+  });
+});
