@@ -4,6 +4,7 @@ declare module '#builder' {
   import type TsCheckerPlugin from 'fork-ts-checker-webpack-plugin'
 
   export const webpack: typeof Webpack
+  export const createRsbuild: undefined | ((options?: any) => Promise<any>)
   export const WebpackBarPlugin: typeof import('webpackbar').default
   export const MiniCssExtractPlugin: typeof MiniCssExtractPlugin
   export const TsCheckerPlugin: typeof TsCheckerPlugin
