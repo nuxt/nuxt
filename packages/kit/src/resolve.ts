@@ -164,18 +164,13 @@ async function _resolvePathType (path: string, opts: ResolvePathOptions = {}, sk
     return
   }
 
-  const fd = await fsp.open(path, 'r').catch(() => null)
-  try {
-    const stats = await fd?.stat()
-    if (stats) {
-      return {
-        path,
-        type: stats.isFile() ? 'file' : 'dir',
-        virtual: false,
-      }
+  const stats = await fsp.stat(path).catch(() => null)
+  if (stats) {
+    return {
+      path,
+      type: stats.isFile() ? 'file' : 'dir',
+      virtual: false,
     }
-  } finally {
-    fd?.close()
   }
 }
 

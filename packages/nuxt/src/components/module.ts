@@ -181,13 +181,22 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:templates', async (app) => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
+      const modesByName = new Map<string, Set<string | undefined>>()
+      for (const component of newComponents) {
+        let modes = modesByName.get(component.pascalName)
+        if (!modes) {
+          modes = new Set()
+          modesByName.set(component.pascalName, modes)
+        }
+        modes.add(component.mode)
+      }
       // add server placeholder for .client components server side. issue: #7085
       for (const component of newComponents) {
         if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && isAbsolute(component.filePath) && !existsSync(component.filePath)) {
           // attempt to resolve component path
           component.filePath = resolveModulePath(resolveAlias(component.filePath), { try: true, extensions: nuxt.options.extensions }) ?? component.filePath
         }
-        if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
+        if (component.mode === 'client' && !modesByName.get(component.pascalName)?.has('server')) {
           newComponents.push({
             ...component,
             _raw: true,
@@ -195,8 +204,9 @@ export default defineNuxtModule<ComponentsOptions>({
             filePath: serverPlaceholderPath,
             chunkName: 'components/' + component.kebabName,
           })
+          modesByName.get(component.pascalName)!.add('server')
         }
-        if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
+        if (component.mode === 'server' && !nuxt.options.ssr && !modesByName.get(component.pascalName)?.has('client')) {
           logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
         }
       }
