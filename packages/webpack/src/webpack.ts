@@ -66,19 +66,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)
 
   // Configure compilers
-  const compilers = await Promise.all(webpackConfigs.map(async (config) => {
-    // Create compiler
-    const compiler = builder === 'rspack' && createRsbuild
-      ? await createRsbuildCompiler(config)
-      : webpack(config)
+  const compilers = builder === 'rspack' && createRsbuild
+    ? await createRsbuildCompilers(webpackConfigs)
+    : webpackConfigs.map(config => webpack(config))
 
-    // In dev, write files in memory FS
-    if (nuxt.options.dev && compiler) {
+  // In dev, write files in memory FS
+  if (nuxt.options.dev) {
+    for (const compiler of compilers) {
       compiler.outputFileSystem = mfs! as unknown as Compiler['outputFileSystem']
     }
-
-    return compiler
-  }))
+  }
 
   nuxt.hook('close', async () => {
     for (const compiler of compilers) {
@@ -97,8 +94,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 }
 
-async function createRsbuildCompiler (config: Configuration) {
+async function createRsbuildCompilers (configs: Configuration[]): Promise<Compiler[]> {
   const nuxt = useNuxt()
+
+  // One rsbuild environment per Nuxt bundle (client → web, server → node)
+  const environments: Record<string, unknown> = {}
+  for (const config of configs) {
+    environments[config.name!] = {
+      output: {
+        target: config.name === 'server' ? 'node' : 'web',
+      },
+      tools: {
+        // Nuxt generates the full rspack configuration itself, so the
+        // rsbuild-generated config is replaced rather than merged into
+        rspack: () => config,
+      },
+    }
+  }
+
   const rsbuild = await createRsbuild!({
     callerName: 'nuxt',
     cwd: nuxt.options.rootDir,
@@ -106,13 +119,13 @@ async function createRsbuildCompiler (config: Configuration) {
       root: nuxt.options.rootDir,
       mode: nuxt.options.dev ? 'development' : 'production',
       logLevel: 'silent',
-      tools: {
-        rspack: () => config,
-      },
+      environments,
     },
   })
 
-  return await rsbuild.createCompiler() as Compiler
+  // Returns a MultiCompiler when more than one environment is configured
+  const compiler = await rsbuild.createCompiler()
+  return ('compilers' in compiler ? compiler.compilers : [compiler]) as Compiler[]
 }
 
 async function createDevMiddleware (compiler: Compiler) {
