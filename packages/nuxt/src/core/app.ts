@@ -3,6 +3,7 @@ import process from 'node:process'
 import { performance } from 'node:perf_hooks'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
+import { Diagnostic } from 'nostics'
 import { buildDiagnostics, findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, pageDiagnostics, pluginDiagnostics, resolveFiles, resolvePath } from '@nuxt/kit'
 
 import { logger, resolveToAlias } from '../utils.ts'
@@ -66,7 +67,10 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const start = performance.now()
     const oldContents = nuxt.vfs[fullPath]
     const contents = await compileTemplate(template, templateContext).catch((e) => {
-      buildDiagnostics.NUXT_B1001({ filename: template.filename!, src: template.src, cause: e }, { method: 'error' })
+      // already-coded template failures (e.g. B1002/B1003) were reported in `compileTemplate`
+      if (!(e instanceof Diagnostic)) {
+        buildDiagnostics.NUXT_B1001({ filename: template.filename!, src: template.src, cause: e }, { method: 'error' })
+      }
       throw e
     })
 
@@ -123,8 +127,7 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     try {
       return await fsp.readFile(template.src, 'utf-8')
     } catch (err) {
-      buildDiagnostics.NUXT_B1002({ src: template.src, cause: err }, { method: 'error' })
-      throw err
+      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err }, { method: 'error' })
     }
   }
   if (template.getContents) {
