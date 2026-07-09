@@ -125,7 +125,11 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         }
       } else if (hasStale) {
         hasShownStaleHint = true
-        bundlerDiagnostics.NUXT_B7002({})
+        const deps = [
+          ...[...userStale].map(d => `\`${d}\``),
+          ...[...moduleStale].map(d => `\`${d}\` (from a Nuxt module)`),
+        ].join(', ')
+        bundlerDiagnostics.NUXT_B7002({ deps })
       }
     }, 3000)
   }

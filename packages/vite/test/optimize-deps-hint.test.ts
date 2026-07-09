@@ -312,16 +312,17 @@ describe('OptimizeDepsHintPlugin', () => {
     })
 
     it('warns about stale optimized deps when there are no new deps', async () => {
-      // The stale-only path now reports through the NUXT_B7002 diagnostic
+      // The stale-only path reports through the NUXT_B7002 diagnostic
       // (nostics console reporter → console.warn) rather than a bespoke
-      // logger.warn. Note: the per-dep detail is intentionally not surfaced in
-      // this path's message (the merged new-deps path still lists them).
+      // logger.warn, and must list the unresolvable entries by name.
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
       const { callbacks } = setupPlugin({ userInclude: ['stale'] })
 
       callbacks.onStaleDep('stale')
+      callbacks.onStaleDep('mod-dep')
       await flushHint()
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining('optimized by Vite after the dev server started'))
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('`stale`'))
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('`mod-dep` (from a Nuxt module)'))
       expect(logger.warn).not.toHaveBeenCalled()
       warn.mockRestore()
     })

@@ -15,8 +15,8 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B7002: {
-      why: 'Some dependencies were optimized by Vite after the dev server started, which can cause a full page reload.',
-      fix: 'Add the listed values to the `vite.optimizeDeps.include` array in your `nuxt.config.ts`.',
+      why: (p: { deps: string }) => `Some \`vite.optimizeDeps.include\` entries could not be resolved: ${p.deps}.`,
+      fix: 'Remove or correct these entries in the `vite.optimizeDeps.include` array of your `nuxt.config.ts`. Report entries added by a Nuxt module to the module author.',
       docs: false,
     },
     NUXT_B7003: {
