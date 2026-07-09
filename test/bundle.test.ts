@@ -124,6 +124,87 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   })
 })
 
+describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt install size', () => {
+  it('installed node_modules size', async () => {
+    const totalBytes = await measureInstallSize(fileURLToPath(new URL('../packages/nuxt', import.meta.url)))
+
+    expect.soft(roundToMegabytes(totalBytes)).toMatchInlineSnapshot(`"79.8M"`)
+  })
+})
+
+/**
+ * Approximates the `node_modules` size of a fresh project depending on `nuxt`
+ * by walking the production dependency closure pinned by the monorepo
+ * lockfile. Platform-specific packages (with `os`/`cpu` restrictions, e.g.
+ * esbuild binaries) are excluded so the number is stable across CI and local
+ * machines. Workspace packages only count their published `files`.
+ */
+async function measureInstallSize (entryDir: string) {
+  const workspacePackagesDir = fileURLToPath(new URL('../packages', import.meta.url))
+  const seen = new Set<string>()
+  const queue = [entryDir]
+  let totalBytes = 0
+
+  while (queue.length) {
+    const dir = await fsp.realpath(queue.pop()!).catch(() => null)
+    if (!dir || seen.has(dir)) { continue }
+    seen.add(dir)
+
+    const pkg = JSON.parse(await fsp.readFile(join(dir, 'package.json'), 'utf8'))
+    if (pkg.os || pkg.cpu) { continue }
+
+    if (dir.startsWith(workspacePackagesDir)) {
+      // `files` entries can be directories, which npm includes recursively.
+      const patterns = (pkg.files ?? []).flatMap((entry: string) => [entry, `${entry}/**`])
+      const publishedFiles = await glob([...patterns, 'package.json', 'README*', 'LICENSE*'], { cwd: dir })
+      for (const file of publishedFiles) {
+        totalBytes += (await fsp.lstat(join(dir, file)).catch(() => null))?.size ?? 0
+      }
+    } else {
+      totalBytes += await dirSize(dir)
+    }
+
+    for (const dep of Object.keys({ ...pkg.dependencies, ...pkg.optionalDependencies })) {
+      queue.push(await resolveDependencyDir(dir, dep) ?? '')
+    }
+  }
+
+  return totalBytes
+}
+
+/** Resolves a dependency directory the way Node does: nearest `node_modules` ancestor first. */
+async function resolveDependencyDir (fromDir: string, dep: string) {
+  let dir = fromDir
+  while (true) {
+    const parent = join(dir, '..')
+    if (parent === dir) { return null }
+    const candidate = dir.endsWith('node_modules') ? join(dir, dep) : join(dir, 'node_modules', dep)
+    if (await fsp.lstat(candidate).then(() => true, () => false)) {
+      return candidate
+    }
+    dir = parent
+  }
+}
+
+async function dirSize (dir: string) {
+  let totalBytes = 0
+  const entries = await fsp.readdir(dir, { withFileTypes: true }).catch(() => [])
+  for (const entry of entries) {
+    if (entry.name === 'node_modules') { continue }
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      totalBytes += await dirSize(path)
+    } else if (entry.isFile()) {
+      totalBytes += (await fsp.lstat(path)).size
+    }
+  }
+  return totalBytes
+}
+
+function roundToMegabytes (bytes: number) {
+  return (bytes / 1024 / 1024).toFixed(bytes > (100 * 1024 * 1024) ? 0 : 1) + 'M'
+}
+
 async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })
   const stripPatterns = getStripPatterns(projectDir)
