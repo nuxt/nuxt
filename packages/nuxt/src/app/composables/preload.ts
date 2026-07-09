@@ -1,8 +1,10 @@
 import type { Component } from 'vue'
 import type { RouteLocationRaw, Router } from 'vue-router'
-import { useNuxtApp } from '../nuxt'
+import { tryUseNuxtApp, useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import { useRouter } from './router'
+// @ts-expect-error virtual file
+import { lazyRouteDiscovery } from '#build/nuxt.config.mjs'
 
 /**
  * Preload a component or components that have been globally registered.
@@ -45,6 +47,14 @@ export function _loadAsyncComponent (component: Component): unknown {
 /** @since 3.0.0 */
 export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>, _preloadPromises?: Array<Promise<unknown>> } = useRouter()): Promise<void> {
   if (import.meta.server) { return }
+
+  // resolve lazily discovered route records first so we preload the real components
+  if (lazyRouteDiscovery) {
+    const discover = tryUseNuxtApp()?._discoverLazyRoutes
+    if (discover) {
+      await discover(router.resolve(to).fullPath)?.catch(() => {})
+    }
+  }
 
   const { path, matched } = router.resolve(to)
 

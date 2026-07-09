@@ -22,7 +22,7 @@ import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
-import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
+import { lazyRouteDiscovery, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
 
@@ -107,6 +107,12 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
    * Overrides the global `trailingSlash` option if provided.
    */
   trailingSlash?: 'append' | 'remove'
+  /**
+   * With `experimental.lazyRouteDiscovery`, controls whether the linked route is discovered when the
+   * link renders. `'render'` (default) discovers it so it becomes navigable without a round-trip on
+   * click; `'none'` leaves it undiscovered until navigation. No effect when the feature is disabled.
+   */
+  discover?: 'render' | 'none'
 }
 
 /**
@@ -204,6 +210,17 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     const router = useRouter()
     const config = useRuntimeConfig()
 
+    // lazyRouteDiscovery: a link may target an undiscovered route (resolving a name would throw), so
+    // resolve defensively. Bumping the tick after discovery re-runs the computeds to upgrade the link.
+    const routeDiscoveryTick = shallowRef(0)
+    const resolvesLocally = (loc: RouteLocationRaw): boolean => {
+      try {
+        return router.resolve(loc).matched.length > 0
+      } catch {
+        return false
+      }
+    }
+
     const hasTarget = computed(() => !!unref(props.target) && unref(props.target) !== '_self')
 
     // Lazily check whether to.value has a protocol
@@ -237,10 +254,50 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       checkPropConflicts(props as NuxtLinkProps, 'to', 'href')
       const path = unref(props.to) || unref(props.href) || '' // Defaults to empty string (won't render any `href` attribute)
       if (isExternal.value) { return path }
+      if (lazyRouteDiscovery) {
+        // re-run once the target is discovered; keep the raw location if it can't resolve yet
+        void routeDiscoveryTick.value
+        try {
+          return resolveTrailingSlashBehavior(path, router.resolve, unref(props.trailingSlash))
+        } catch {
+          return path
+        }
+      }
       return resolveTrailingSlashBehavior(path, router.resolve, unref(props.trailingSlash))
     })
 
-    const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to, viewTransition: unref(props.viewTransition) })
+    if (import.meta.server && lazyRouteDiscovery && !isExternal.value && unref(props.discover) !== 'none') {
+      // record linked routes so the SSR payload can inline their stubs (no-op when the set is absent,
+      // i.e. the feature is off), letting the client hydrate without a discovery round-trip.
+      // `discover="none"` links are skipped so they stay lazy (and render as a plain <a>, matching the
+      // client, so hydration is deterministic)
+      const discovered = (useNuxtApp().ssrContext as { _discoveredRoutePaths?: Set<string> } | undefined)?._discoveredRoutePaths
+      if (discovered) {
+        try {
+          discovered.add(router.resolve(to.value).path)
+        } catch {
+          // ignore links that do not resolve to a route
+        }
+      }
+    }
+
+    if (import.meta.client && lazyRouteDiscovery && !isExternal.value && unref(props.discover) !== 'none') {
+      // discover the target on mount (covers client-rendered links: `ssr: false` pages, links added
+      // after navigation); SSR-rendered links are already inlined in the payload
+      const nuxtApp = useNuxtApp()
+      onMounted(() => {
+        const target = unref(props.to) || unref(props.href) || ''
+        if (!target || resolvesLocally(target)) { return }
+        Promise.resolve(nuxtApp._discoverLazyRoutes?.(target as string))
+          .then(() => { routeDiscoveryTick.value++ })
+          .catch(() => {})
+      })
+    }
+
+    // vue-router's `useLink` resolves `to` eagerly and throws for an undiscovered route (e.g. a
+    // `{ name }` target). Skip it until the target resolves; the fallbacks below keep the link usable.
+    const useLinkForTarget = !isExternal.value && (!lazyRouteDiscovery || resolvesLocally(unref(props.to) || unref(props.href) || ''))
+    const link = useLinkForTarget ? useBuiltinLink?.({ ...props, to, viewTransition: unref(props.viewTransition) }) : undefined
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
@@ -259,6 +316,18 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       }
 
       if (typeof to.value === 'object') {
+        if (lazyRouteDiscovery) {
+          // `discover="none"` stays lazy: don't resolve on the server either, so the href matches the
+          // client's (null until navigation) and hydration is deterministic
+          if (unref(props.discover) === 'none') { return null }
+          // re-run once discovered; a not-yet-discovered target has no resolvable href
+          void routeDiscoveryTick.value
+          try {
+            return router.resolve(to.value)?.href ?? null
+          } catch {
+            return null
+          }
+        }
         return router.resolve(to.value)?.href ?? null
       }
 
@@ -274,9 +343,27 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       href,
       isActive: link?.isActive ?? computed(() => to.value === router.currentRoute.value.path),
       isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
-      route: link?.route ?? computed(() => router.resolve(to.value)),
+      route: link?.route ?? computed(() => {
+        if (lazyRouteDiscovery) {
+          // re-run once discovered; fall back to the current route so an undiscovered target never throws
+          void routeDiscoveryTick.value
+          try {
+            return router.resolve(to.value)
+          } catch {
+            return router.resolve(router.currentRoute.value.fullPath)
+          }
+        }
+        return router.resolve(to.value)
+      }),
       async navigate (_e?: MouseEvent) {
         if (href.value === null) {
+          // an undiscovered target has no href yet; navigate by the raw location so the router's
+          // push wrapper discovers it (`experimental.lazyRouteDiscovery`)
+          const target = unref(props.to) || unref(props.href)
+          if (lazyRouteDiscovery && target && !isExternal.value) {
+            await navigateTo(target, { replace: unref(props.replace) })
+            return
+          }
           if (import.meta.dev) {
             console.warn(`[${componentName}] refused to navigate to a URL with a script-capable protocol.`)
           }
@@ -390,12 +477,31 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         default: undefined,
         required: false,
       },
+      discover: {
+        type: String as PropType<NuxtLinkProps['discover']>,
+        default: undefined,
+        required: false,
+      },
     },
     useLink: useNuxtLink,
     setup (props, { slots }) {
       const router = useRouter()
 
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
+
+      // `<RouterLink>` resolves `to` eagerly and throws for an undiscovered route, so render a plain
+      // anchor (still navigates + discovers on click) until the target resolves, then upgrade.
+      // `discover="none"` routes always render as a plain anchor — server skips inlining them, so this
+      // keeps the server and client output identical (deterministic hydration).
+      const isTargetResolvable = () => {
+        if (!lazyRouteDiscovery) { return true }
+        if (unref(props.discover) === 'none') { return false }
+        try {
+          return router.resolve(to.value).matched.length > 0
+        } catch {
+          return false
+        }
+      }
 
       // Prefetching
       const prefetched = shallowRef(false)
@@ -409,6 +515,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
       async function prefetch (nuxtApp = useNuxtApp()) {
         if (import.meta.server) { return }
+
+        // `discover="none"` opts out of eager discovery, so don't discover it via prefetch either
+        if (lazyRouteDiscovery && unref(props.discover) === 'none') { return }
 
         if (prefetched.value) { return }
 
@@ -464,7 +573,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value) && isTargetResolvable()) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
@@ -550,16 +659,30 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         }
 
         return h('a', {
-          ref: el,
-          href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
+          'ref': el,
+          'href': href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
           rel,
           target,
-          onClick: async (event) => {
+          // An internal link that fell through to a plain anchor under lazy discovery may have been
+          // server-rendered as <RouterLink> when its route was still known there but not inlined for
+          // the client (e.g. links inside a streamed boundary). Allow the reconciled mismatch rather
+          // than warn; `discover="none"` renders <a> on both sides so it needs no allowance.
+          'data-allow-mismatch': lazyRouteDiscovery && !isExternal.value && !hasTarget.value && unref(props.discover) !== 'none' ? '' : undefined,
+          'onClick': async (event) => {
             if (isExternal.value || hasTarget.value) {
               return
             }
 
             event.preventDefault()
+
+            // lazy discovery: an undiscovered target has no href yet — navigate by the raw location
+            // so the router's push wrapper discovers it
+            if (lazyRouteDiscovery && !href.value) {
+              const target = unref(props.to) || unref(props.href)
+              if (target) {
+                return props.replace ? router.replace(target) : router.push(target)
+              }
+            }
 
             try {
               const encodedHref = encodeRoutePath(href.value ?? '')

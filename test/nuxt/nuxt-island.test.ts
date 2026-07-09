@@ -61,6 +61,7 @@ vi.mock('#build/nuxt.config.mjs', () => {
     chunkErrorEvent: false,
     crawlLinks: false,
     spaLoadingTemplateOutside: false,
+    lazyRouteDiscovery: false,
     purgeCachedData: false,
     granularCachedData: false,
     pendingWhenIdle: false,

@@ -1,6 +1,6 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, RouteRecordRaw, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
@@ -15,12 +15,32 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
-import _routes, { handleHotUpdate } from '#build/routes'
+// @ts-expect-error virtual file
+import { lazyRouteDiscovery } from '#build/nuxt.config.mjs'
+import _routes, { handleHotUpdate, routeGroupLoaders, routeStubs } from '#build/route-table'
+import { setupLazyRouteDiscovery } from '../lazy-routes'
+import type { ResolveRemoteRoutes } from '../lazy-routes'
+import type { LazyRouteResolver } from '../lazy-routes-resolver'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 // @ts-expect-error virtual file
 import { pageIslandRoutes } from '#build/components.islands.mjs'
+
+// Keep in sync with `LAZY_ROUTE_RESOLVE_ENDPOINT` / `LAZY_ROUTE_FALLBACK_MANIFEST` in `../../module.ts`
+const LAZY_ROUTE_RESOLVE_ENDPOINT = '/__nuxt_routes'
+const LAZY_ROUTE_FALLBACK_MANIFEST = '/__nuxt_routes.json'
+
+// Server-side stub resolver used to inline the payload's initial routes. Built once per worker from
+// the (build-constant) stub table. Dynamically imported so it never enters the client bundle.
+let _serverResolver: LazyRouteResolver | undefined
+async function getServerResolver (stubs: RouteRecordRaw[]): Promise<LazyRouteResolver> {
+  if (!_serverResolver) {
+    const { createLazyRouteResolver } = await import('../lazy-routes-resolver')
+    _serverResolver = createLazyRouteResolver(stubs)
+  }
+  return _serverResolver
+}
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -60,7 +80,24 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       : createMemoryHistory(routerBase)
     )
 
-    const routes = routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes
+    let routes = _routes
+    if (import.meta.client && lazyRouteDiscovery) {
+      // The client table ships only eager routes; the SSR payload seeds the current route chain and
+      // its linked routes. Everything else is discovered on demand.
+      const seeded = nuxtApp.payload.routes as RouteRecordRaw[] | undefined
+      routes = seeded?.length ? [...(_routes ?? []), ...seeded] : _routes
+    }
+    if (routerOptions.routes) {
+      if (lazyRouteDiscovery) {
+        // applying the transform to stubs and not to lazily swapped-in records would
+        // silently half-apply it; ignoring it on both server and client keeps matching symmetric
+        if (import.meta.dev) {
+          console.warn('[nuxt] The `routes` function in `router.options` is ignored when `experimental.lazyRouteDiscovery` is enabled.')
+        }
+      } else {
+        routes = await routerOptions.routes(_routes) ?? _routes
+      }
+    }
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
 
@@ -89,6 +126,100 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     if (import.meta.hot) {
       handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
+
+    if (import.meta.client && lazyRouteDiscovery && routeGroupLoaders) {
+      // Resolve undiscovered paths against the server endpoint; on failure (e.g. static hosting
+      // with no runtime server) fall back to the prerendered full stub table, matched client-side.
+      const buildId = useRuntimeConfig().app.buildId
+      let fallbackResolver: Promise<import('../lazy-routes-resolver').LazyRouteResolver> | undefined
+      const loadFallbackResolver = async () => {
+        const { createLazyRouteResolver } = await import('../lazy-routes-resolver')
+        const res = await $fetch<{ records: RouteRecordRaw[] }>(LAZY_ROUTE_FALLBACK_MANIFEST, { query: { buildId } })
+        return createLazyRouteResolver(res.records)
+      }
+      const fetchRemote = async (query: { paths?: string[], names?: string[] }) => {
+        try {
+          return await $fetch<{ records: RouteRecordRaw[], notFound?: string[] }>(LAZY_ROUTE_RESOLVE_ENDPOINT, { query: { path: query.paths, name: query.names, buildId } })
+        } catch {
+          fallbackResolver ||= loadFallbackResolver()
+          try {
+            return (await fallbackResolver).resolveQuery(query)
+          } catch {
+            return undefined
+          }
+        }
+      }
+
+      // coalesce a burst of discovery requests (many links mounting in one tick) into one endpoint call
+      let batchPaths = new Set<string>()
+      let batchNames = new Set<string>()
+      let batch: Promise<{ records: RouteRecordRaw[], notFound?: string[] } | undefined> | undefined
+      const resolveRemote: ResolveRemoteRoutes = (query) => {
+        query.paths?.forEach(p => batchPaths.add(p))
+        query.names?.forEach(n => batchNames.add(n))
+        batch ||= new Promise((resolve) => {
+          queueMicrotask(() => {
+            const paths = [...batchPaths]
+            const names = [...batchNames]
+            batchPaths = new Set()
+            batchNames = new Set()
+            batch = undefined
+            resolve(fetchRemote({ paths, names }))
+          })
+        })
+        return batch
+      }
+
+      // register before the router is installed so the initial navigation already discovers
+      // the route groups it needs, and before the middleware guard so middleware only ever
+      // runs against fully-resolved route records
+      const discovery = setupLazyRouteDiscovery(router, routes, routeGroupLoaders, {
+        onNavigationDiscovery: () => {
+          // show the loading indicator while the group chunk is fetched
+          nuxtApp.callHook('page:loading:start')
+        },
+        resolveRemote,
+      })
+      nuxtApp._discoverLazyRoutes = discovery.discover
+
+      // Discover before starting the navigation so `beforeRouteLeave` guards run once and
+      // against real records, and the guard's redirect-retry only remains as a safety net
+      // for navigations that don't go through push/replace (e.g. popstate).
+      for (const method of ['push', 'replace'] as const) {
+        const originalMethod = router[method].bind(router)
+        router[method] = (to: Parameters<Router['push']>[0]) => {
+          let pending: Promise<unknown> | undefined
+          try {
+            // pass `to` directly (not a resolved path): a `{ name }` target for an undiscovered
+            // route would throw in `router.resolve`, and name discovery must precede the navigation
+            pending = discovery.discover(to)
+          } catch {
+            // resolution errors surface from the original method
+          }
+          return pending ? pending.catch(() => {}).then(() => originalMethod(to)) : originalMethod(to)
+        }
+      }
+
+      if (import.meta.hot) {
+        // allows the route-table HMR handler to swap in regenerated stubs and loaders
+        (router as Router & { _resetLazyRoutes?: typeof discovery.reset })._resetLazyRoutes = discovery.reset
+      }
+    }
+
+    if (import.meta.server && lazyRouteDiscovery && routeStubs) {
+      // inline the stubs the client boots with: the rendered route chain + routes linked on the page
+      // (collected by `<NuxtLink>` during render), so those links need no discovery round-trip
+      const stubs = routeStubs
+      const discoveredPaths = new Set<string>()
+      if (nuxtApp.ssrContext) {
+        (nuxtApp.ssrContext as { _discoveredRoutePaths?: Set<string> })._discoveredRoutePaths = discoveredPaths
+      }
+      nuxtApp.hook('app:rendered', async () => {
+        discoveredPaths.add(router.currentRoute.value.path)
+        const resolver = await getServerResolver(stubs)
+        ;(nuxtApp.payload as Record<string, unknown>).routes = resolver.resolveMany([...discoveredPaths]).records
+      })
     }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
@@ -176,6 +307,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     try {
       if (import.meta.server) {
         await router.push(initialURL)
+      } else if (lazyRouteDiscovery) {
+        // discover the initial route before `isReady` so the resolves below (and hydration) see it —
+        // matters for `ssr: false` pages whose SPA shell inlines nothing
+        await nuxtApp._discoverLazyRoutes?.(initialURL)?.catch(() => {})
       }
       await router.isReady()
     } catch (error: any) {
