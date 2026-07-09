@@ -244,10 +244,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           const middleware: RouteMiddleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 
           if (!middleware) {
-            if (import.meta.dev) {
-              throw navigationDiagnostics.NUXT_E2004({ entry: String(entry) })
-            }
-            throw navigationDiagnostics.NUXT_E2004({ entry: String(entry) })
+            throw navigationDiagnostics.NUXT_E2004({
+              entry: String(entry),
+              validMiddleware: import.meta.dev ? Object.keys(namedMiddleware) : undefined,
+            })
           }
 
           try {

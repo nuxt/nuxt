@@ -25,7 +25,7 @@ export const navigationDiagnostics = import.meta.client && !import.meta.dev && !
         },
         NUXT_E2004: {
           why: (p: { entry: string }) => `Unknown route middleware: '${p.entry}'.`,
-          fix: (p: { entry: string }) => `Create a \`middleware/${p.entry}.ts\` file, or check the middleware name for typos.`,
+          fix: (p: { entry: string, validMiddleware?: string[] }) => `Create a \`middleware/${p.entry}.ts\` file, or check the middleware name for typos.${p.validMiddleware?.length ? ` Valid middleware: ${p.validMiddleware.map(mw => `'${mw}'`).join(', ')}.` : ''}`,
         },
         NUXT_E2005: {
           why: (p: { middleware?: unknown, trace: string }) => `\`useRoute\` was called within middleware${typeof p.middleware === 'string' ? ` (\`${p.middleware}\`)` : ''}. This may lead to misleading results.\n${p.trace}`,
