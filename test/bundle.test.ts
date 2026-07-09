@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { tmpdir } from 'node:os'
 import fsp from 'node:fs/promises'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
@@ -126,64 +127,73 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
 
 describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt install size', () => {
   it('installed node_modules size', async () => {
-    const totalBytes = await measureInstallSize(fileURLToPath(new URL('../packages/nuxt', import.meta.url)))
+    const nuxtVersion = JSON.parse(
+      await fsp.readFile(fileURLToPath(new URL('../packages/nuxt/package.json', import.meta.url)), 'utf8'),
+    ).version
 
-    expect.soft(roundToMegabytes(totalBytes)).toMatchInlineSnapshot(`"79.8M"`)
-  })
+    // Install `nuxt` into a throwaway project outside the monorepo so the resolved
+    // dependency tree matches what an end user actually gets, rather than this
+    // repo's deduped/hoisted workspace install.
+    const installDir = join(tmpdir(), 'nuxt-install-size')
+    await fsp.rm(installDir, { recursive: true, force: true })
+    await fsp.mkdir(installDir, { recursive: true })
+    await fsp.writeFile(
+      join(installDir, 'package.json'),
+      JSON.stringify({ name: 'nuxt-install-size', private: true, dependencies: { nuxt: nuxtVersion } }),
+    )
+    await exec('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], {
+      nodeOptions: { cwd: installDir },
+      throwOnError: true,
+    })
+
+    const megabytes = await measureInstallSize(join(installDir, 'node_modules'))
+
+    // Reported as CI info rather than asserted as an exact value: the figure drifts
+    // as transitive dependencies publish patches within their semver ranges, so it's
+    // surfaced for visibility (issue #23487: "info is good enough") instead of being
+    // gated as pass/fail. Only sanity bounds are asserted.
+    const report = `Minimal \`nuxt@${nuxtVersion}\` install size (excluding platform-specific packages): ${megabytes.toFixed(1)} MB`
+    console.info(report)
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      await fsp.appendFile(process.env.GITHUB_STEP_SUMMARY, `${report}\n`)
+    }
+
+    expect.soft(megabytes).toBeGreaterThan(50)
+    expect.soft(megabytes).toBeLessThan(500)
+  }, 180 * 1000)
 })
 
 /**
- * Approximates the `node_modules` size of a fresh project depending on `nuxt`
- * by walking the production dependency closure pinned by the monorepo
- * lockfile. Platform-specific packages (with `os`/`cpu` restrictions, e.g.
- * esbuild binaries) are excluded so the number is stable across CI and local
- * machines. Workspace packages only count their published `files`.
+ * Sums the on-disk content of a real `node_modules` tree in megabytes. Platform-
+ * specific packages (with `os`/`cpu` restrictions, e.g. esbuild/rollup native
+ * binaries) are skipped so the figure is stable across CI and local machines
+ * regardless of architecture.
  */
-async function measureInstallSize (entryDir: string) {
-  const workspacePackagesDir = fileURLToPath(new URL('../packages', import.meta.url))
-  const seen = new Set<string>()
-  const queue = [entryDir]
+async function measureInstallSize (nodeModules: string) {
   let totalBytes = 0
 
-  while (queue.length) {
-    const dir = await fsp.realpath(queue.pop()!).catch(() => null)
-    if (!dir || seen.has(dir)) { continue }
-    seen.add(dir)
+  async function eachPackage (dir: string) {
+    const entries = await fsp.readdir(dir, { withFileTypes: true }).catch(() => [])
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name.startsWith('.')) { continue }
+      // Scoped packages (`@scope/*`) nest one level deeper than unscoped ones.
+      const packageDirs = entry.name.startsWith('@')
+        ? (await fsp.readdir(join(dir, entry.name), { withFileTypes: true }))
+            .filter(e => e.isDirectory())
+            .map(e => join(dir, entry.name, e.name))
+        : [join(dir, entry.name)]
 
-    const pkg = JSON.parse(await fsp.readFile(join(dir, 'package.json'), 'utf8'))
-    if (pkg.os || pkg.cpu) { continue }
-
-    if (dir.startsWith(workspacePackagesDir)) {
-      // `files` entries can be directories, which npm includes recursively.
-      const patterns = (pkg.files ?? []).flatMap((entry: string) => [entry, `${entry}/**`])
-      const publishedFiles = await glob([...patterns, 'package.json', 'README*', 'LICENSE*'], { cwd: dir })
-      for (const file of publishedFiles) {
-        totalBytes += (await fsp.lstat(join(dir, file)).catch(() => null))?.size ?? 0
+      for (const packageDir of packageDirs) {
+        const pkg = JSON.parse(await fsp.readFile(join(packageDir, 'package.json'), 'utf8').catch(() => 'null'))
+        if (!pkg || pkg.os || pkg.cpu) { continue }
+        totalBytes += await dirSize(packageDir)
+        await eachPackage(join(packageDir, 'node_modules'))
       }
-    } else {
-      totalBytes += await dirSize(dir)
-    }
-
-    for (const dep of Object.keys({ ...pkg.dependencies, ...pkg.optionalDependencies })) {
-      queue.push(await resolveDependencyDir(dir, dep) ?? '')
     }
   }
 
-  return totalBytes
-}
-
-/** Resolves a dependency directory the way Node does: nearest `node_modules` ancestor first. */
-async function resolveDependencyDir (fromDir: string, dep: string) {
-  let dir = fromDir
-  while (true) {
-    const parent = join(dir, '..')
-    if (parent === dir) { return null }
-    const candidate = dir.endsWith('node_modules') ? join(dir, dep) : join(dir, 'node_modules', dep)
-    if (await fsp.lstat(candidate).then(() => true, () => false)) {
-      return candidate
-    }
-    dir = parent
-  }
+  await eachPackage(nodeModules)
+  return totalBytes / 1024 / 1024
 }
 
 async function dirSize (dir: string) {
@@ -199,10 +209,6 @@ async function dirSize (dir: string) {
     }
   }
   return totalBytes
-}
-
-function roundToMegabytes (bytes: number) {
-  return (bytes / 1024 / 1024).toFixed(bytes > (100 * 1024 * 1024) ? 0 : 1) + 'M'
 }
 
 async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
