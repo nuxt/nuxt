@@ -1490,6 +1490,35 @@ export interface ConfigSchema {
     lazyHydration: boolean
 
     /**
+     * Lazily discover routes on navigation ("fog of war").
+     *
+     * When enabled, the client bundle ships a lightweight route table containing only the
+     * fields needed for route matching (path, name, alias, redirect). Full route records —
+     * page meta and component chunk references — are split into lazily-loaded groups that
+     * are fetched when a matching link becomes visible or a navigation targets them,
+     * reducing the initial bundle size for apps with many routes.
+     *
+     * Only applies to the client build; the server always uses the full route table.
+     * Requires `experimental.scanPageMeta` so that route matching fields can be statically
+     * extracted; pages with dynamic `path`, `name`, `alias` or `redirect` in `definePageMeta`
+     * remain in the initial bundle.
+     *
+     * Pass an object to configure how many route records are batched into each
+     * lazily-loaded group chunk (default `10`).
+     *
+     * @default false
+     * @see [Issue #32196](https://github.com/nuxt/nuxt/issues/32196)
+     */
+    lazyRouteDiscovery: boolean | {
+      /**
+       * Number of route records per lazily-loaded group chunk.
+       * Larger groups mean fewer requests but more unused route data per fetch.
+       * @default 10
+       */
+      groupSize?: number
+    }
+
+    /**
      * Disable resolving imports into Nuxt templates from the path of the module that added the template.
      *
      * By default, Nuxt attempts to resolve imports in templates relative to the module that added them. Setting this to `false` disables this behavior, which may be useful if you're experiencing resolution conflicts in certain environments.

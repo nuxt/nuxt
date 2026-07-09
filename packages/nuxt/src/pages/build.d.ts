@@ -15,3 +15,14 @@ declare module '#build/routes' {
   const _default: VueRouterOptions['routes']
   export default _default
 }
+
+declare module '#build/route-table' {
+  import type { RouterOptions } from '@nuxt/schema'
+  import type { RouteRecordRaw, Router, RouterOptions as VueRouterOptions } from 'vue-router'
+
+  export const handleHotUpdate: (_router: Router, _generateRoutes: RouterOptions['routes']) => void
+  export const routeGroupLoaders: ReadonlyArray<(() => Promise<{ default: RouteRecordRaw[] }>) | undefined> | undefined
+
+  const _default: VueRouterOptions['routes']
+  export default _default
+}

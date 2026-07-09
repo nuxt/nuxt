@@ -27,6 +27,8 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
+import { lazyRouteGroupPreload } from '#internal/nuxt/lazy-route-group-preload.mjs'
+// @ts-expect-error virtual file
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
@@ -155,6 +157,18 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   // Render app
   const renderer = await getRenderer(ssrContext)
+
+  // Emit modulepreload hints for the lazy route group chunks the client will need to
+  // hydrate this route (`experimental.lazyRouteDiscovery`)
+  if (lazyRouteGroupPreload.length && !isRenderingPayload) {
+    const path = ssrContext.url.replace(/[?#].*$/, '')
+    ssrContext.modules ||= new Set()
+    for (const [pattern, moduleKey] of lazyRouteGroupPreload) {
+      if (pattern.test(path)) {
+        ssrContext.modules.add(moduleKey)
+      }
+    }
+  }
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
