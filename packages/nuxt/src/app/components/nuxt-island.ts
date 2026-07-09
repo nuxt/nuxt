@@ -279,6 +279,9 @@ const NuxtIsland = defineComponent({
           })
         }
       } catch (e) {
+        if (import.meta.dev) {
+          console.warn(`[NuxtIsland] Failed to fetch component "${props.name}":`, e)
+        }
         error.value = e
         emit('error', e)
       }

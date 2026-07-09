@@ -29,6 +29,10 @@ describe('filterIslandProps', () => {
     // Only the prefix is stripped — keys like `extra-data-v-x` are legitimate.
     expect(filterIslandProps({ 'extra-data-v-x': 1, 'data-v-x': 2 })).toEqual({ 'extra-data-v-x': 1 })
   })
+
+  it('drops keys with undefined values', () => {
+    expect(filterIslandProps({ a: 1, b: undefined, c: 'hi' })).toEqual({ a: 1, c: 'hi' })
+  })
 })
 
 describe('serializeIslandProps', () => {
