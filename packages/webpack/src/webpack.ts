@@ -6,7 +6,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Configuration, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
-import type { NuxtBuilder } from '@nuxt/schema'
+import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
@@ -67,7 +67,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   // Configure compilers
   const compilers = builder === 'rspack' && createRsbuild
-    ? await createRsbuildCompilers(webpackConfigs)
+    ? await createRsbuildCompilers(webpackConfigs, nuxt)
     : webpackConfigs.map(config => webpack(config))
 
   // In dev, write files in memory FS
@@ -94,9 +94,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 }
 
-async function createRsbuildCompilers (configs: Configuration[]): Promise<Compiler[]> {
-  const nuxt = useNuxt()
-
+async function createRsbuildCompilers (configs: Configuration[], nuxt: Nuxt): Promise<Compiler[]> {
   // One rsbuild environment per Nuxt bundle (client → web, server → node)
   const environments: Record<string, unknown> = {}
   for (const config of configs) {
