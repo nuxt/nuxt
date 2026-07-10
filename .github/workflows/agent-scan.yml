@@ -25,7 +25,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           mode: 'labels'
-          trusted-author-associations: 'owner, member, collaborator'
+          trusted-author-associations: 'owner, member'
       - name: Handle flagged PR
         if: (contains(fromJSON('["automation","mixed"]'), steps.agentscan.outputs.classification) || steps.agentscan.outputs.community-flagged == 'true')
         env:
