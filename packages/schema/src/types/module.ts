@@ -3,6 +3,18 @@ import type { NuxtHooks } from './hooks.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { NuxtCompatibility } from './compatibility.ts'
 
+export interface ModuleAgentSkillsConfig {
+  /** Base URL serving /.well-known/skills/ (e.g., "https://ui.nuxt.com") */
+  url: string
+  /** Skill names to install (optional - if omitted, all skills offered) */
+  skills?: string[]
+}
+
+export interface ModuleAgentsConfig {
+  /** Agent skills configuration */
+  skills?: ModuleAgentSkillsConfig
+}
+
 export interface ModuleMeta {
   /** Module name. */
   name?: string
@@ -20,6 +32,11 @@ export interface ModuleMeta {
    * Constraints for the versions of Nuxt or features this module requires.
    */
   compatibility?: NuxtCompatibility
+
+  /**
+   * Agent-related configuration for AI coding assistants.
+   */
+  agents?: ModuleAgentsConfig
 
   /**
    * Fully resolved path used internally by Nuxt. Do not depend on this value.
