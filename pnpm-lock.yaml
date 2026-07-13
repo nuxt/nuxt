@@ -131,8 +131,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.1-rc.25
-        version: 2.0.1-rc.25(crossws@0.4.6(srvx@0.11.22))
+        specifier: 2.0.1-rc.22
+        version: 2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       happy-dom:
         specifier: 20.10.6
         version: 20.10.6
@@ -398,7 +398,7 @@ importers:
         specifier: ^3.0.0-beta.2
         version: 3.0.0-beta.2(magic-string@0.30.21)(oxc-parser@0.139.0)(rolldown@1.1.5)(unplugin@3.3.0(@rspack/core@2.1.3(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.1.5)(rollup@4.62.2)(vite@8.1.4)(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)))
       unstorage:
-        specifier: ^2.0.0-alpha.7
+        specifier: 2.0.0-alpha.7
         version: 2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1)(lru-cache@11.5.2)(ofetch@1.5.1)
       vue:
         specifier: 3.5.39
@@ -525,7 +525,7 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0
       ofetch:
-        specifier: ^2.0.0-alpha.3
+        specifier: 2.0.0-alpha.3
         version: 2.0.0-alpha.3
       ohash:
         specifier: ^2.0.11
@@ -757,7 +757,7 @@ importers:
         specifier: ^1.6.4
         version: 1.6.4
       unenv:
-        specifier: ^2.0.0-rc.24
+        specifier: 2.0.0-rc.24
         version: 2.0.0-rc.24
       unplugin:
         specifier: ^3.3.0
@@ -797,8 +797,8 @@ importers:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.25
-        version: h3@2.0.1-rc.25(crossws@0.4.6(srvx@0.11.22))
+        specifier: npm:h3@2.0.1-rc.22
+        version: h3@2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       rollup:
         specifier: 4.62.2
         version: 4.62.2
@@ -885,8 +885,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.17))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.17))
       h3:
-        specifier: 2.0.1-rc.25
-        version: 2.0.1-rc.25(crossws@0.4.6(srvx@0.11.22))
+        specifier: 2.0.1-rc.22
+        version: 2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       hookable:
         specifier: 6.1.1
         version: 6.1.1
@@ -1056,7 +1056,7 @@ importers:
         specifier: ^1.6.4
         version: 1.6.4
       unenv:
-        specifier: ^2.0.0-rc.24
+        specifier: 2.0.0-rc.24
         version: 2.0.0-rc.24
       vite:
         specifier: 8.1.4
@@ -1093,8 +1093,8 @@ importers:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.25
-        version: h3@2.0.1-rc.25(crossws@0.4.6(srvx@0.11.22))
+        specifier: npm:h3@2.0.1-rc.22
+        version: h3@2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       nitropack:
         specifier: 2.13.4
         version: 2.13.4(@rspack/core@2.1.3(@swc/helpers@0.5.23))(oxc-parser@0.139.0)(rolldown@1.1.5)(srvx@0.11.22)(vite@8.1.4)(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0))
@@ -1225,7 +1225,7 @@ importers:
         specifier: ^1.6.4
         version: 1.6.4
       unenv:
-        specifier: ^2.0.0-rc.24
+        specifier: 2.0.0-rc.24
         version: 2.0.0-rc.24
       unplugin:
         specifier: ^3.3.0
@@ -1271,8 +1271,8 @@ importers:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.25
-        version: h3@2.0.1-rc.25(crossws@0.4.6(srvx@0.11.22))
+        specifier: npm:h3@2.0.1-rc.22
+        version: h3@2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       rollup:
         specifier: 4.62.2
         version: 4.62.2
@@ -5965,16 +5965,6 @@ packages:
       crossws:
         optional: true
 
-  h3@2.0.1-rc.25:
-    resolution: {integrity: sha512-uIK++Up28xDt4n0+bSWfVssRivNXpUmMmA6CCiK6j9+utLcBMcFK97Gn9PlSZwAPW9oLy3CjGJ4ag40CY9YYtQ==}
-    engines: {node: '>=20.11.1'}
-    hasBin: true
-    peerDependencies:
-      crossws: ^0.4.9
-    peerDependenciesMeta:
-      crossws:
-        optional: true
-
   happy-dom@20.10.6:
     resolution: {integrity: sha512-6QD0ilzDDt93tX44y8tbmZdAcdTRYDhUP+Asgi6pC8Pp5IA3cvaZGyoVN/EGtlq9ziT65iPuBBn3ASLr6hCgVw==}
     engines: {node: '>=20.0.0'}
@@ -8239,9 +8229,6 @@ packages:
 
   rou3@0.8.1:
     resolution: {integrity: sha512-ePa+XGk00/3HuCqrEnK3LxJW7I0SdNg6EFzKUJG73hMAdDcOUC/i/aSz7LSDwLrGr33kal/rqOGydzwl6U7zBA==}
-
-  rou3@0.9.1:
-    resolution: {integrity: sha512-z/sSmzvtwMDDnxsPVhfWMuG6F6mbmhFDXoVqLmMfbpDD9qfV3GDmSQpf0+W296/ZDIpW2wcMmBfpVFzcnOi/nA==}
 
   run-applescript@7.1.0:
     resolution: {integrity: sha512-DPe5pVFaAsinSaV6QjQ6gdiedWDcRCbUuiQfQa2wmWV7+xC9bGulGI8+TdRmoFkAPaBXk8CrAbnlY2ISniJ47Q==}
@@ -14974,13 +14961,6 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.6(srvx@0.11.22)
 
-  h3@2.0.1-rc.25(crossws@0.4.6(srvx@0.11.22)):
-    dependencies:
-      rou3: 0.9.1
-      srvx: 0.11.22
-    optionalDependencies:
-      crossws: 0.4.6(srvx@0.11.22)
-
   happy-dom@20.10.6:
     dependencies:
       '@types/node': 24.13.3
@@ -17897,8 +17877,6 @@ snapshots:
       fsevents: 2.3.3
 
   rou3@0.8.1: {}
-
-  rou3@0.9.1: {}
 
   run-applescript@7.1.0: {}
 
