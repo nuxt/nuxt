@@ -25,7 +25,16 @@ import { builder, webpack } from '#builder'
 // const plugins: string[] = []
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
-  const webpackConfigs = await Promise.all([client, ...(nuxt.options.ssr ? [server] : [])].map(async (preset) => {
+  const buildClient = nuxt.options.dev || nuxt.options.build.client !== false
+  const buildServer = nuxt.options.dev || nuxt.options.build.server !== false
+  if (!buildClient) {
+    registerEmptyClientManifest()
+  }
+  const presets = [
+    ...(buildClient ? [client] : []),
+    ...(nuxt.options.ssr && buildServer ? [server] : []),
+  ]
+  const webpackConfigs = await Promise.all(presets.map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     await applyPresets(ctx, preset)
@@ -93,6 +102,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   for (const c of compilers) {
     await compile(c)
   }
+}
+
+function registerEmptyClientManifest () {
+  const nitro = useNitro()
+  nitro.options.virtual ||= {}
+  nitro.options._config.virtual ||= {}
+  nitro.options.virtual['#build/dist/server/client.manifest.mjs'] ||= 'export default undefined'
+  nitro.options.virtual['#build/dist/server/client.precomputed.mjs'] ||= 'export default undefined'
+  nitro.options._config.virtual['#build/dist/server/client.manifest.mjs'] ||= 'export default undefined'
+  nitro.options._config.virtual['#build/dist/server/client.precomputed.mjs'] ||= 'export default undefined'
 }
 
 async function createDevMiddleware (compiler: Compiler) {

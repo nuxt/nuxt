@@ -43,6 +43,8 @@ export default defineResolvers({
     },
   },
   build: {
+    client: true,
+    server: true,
     transpile: {
       $resolve: (val) => {
         const transpile: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)> = []

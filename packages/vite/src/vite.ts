@@ -43,6 +43,8 @@ import { PerfPlugin } from './plugins/perf.ts'
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
+  const buildClient = nuxt.options.dev || nuxt.options.build.client !== false
+  const buildServer = nuxt.options.dev || nuxt.options.build.server !== false
 
   nuxt.options.modulesDir.push(distDir)
 
@@ -112,7 +114,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       builder: {
         async buildApp (builder) {
           // run serially to preserve the order of client, server builds
-          const environments = Object.values(builder.environments)
+          const environments = Object.values(builder.environments).filter(environment =>
+            environment.name === 'client' ? buildClient : environment.name === 'ssr' ? buildServer : true,
+          )
           for (const environment of environments) {
             logger.restoreAll()
             nuxt._perf?.startPhase(`vite:${environment.name}`)
@@ -252,7 +256,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   config.customLogger = createViteLogger(config, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep })
   config.configFile = false
 
-  for (const environment of ['client', 'ssr']) {
+  for (const environment of [
+    ...(buildClient ? ['client'] as const : []),
+    ...(buildServer ? ['ssr'] as const : []),
+  ]) {
     const environments = { [environment]: config.environments![environment]! }
     const strippedConfig = { ...config, environments } as ViteConfig
     const ctx = { isServer: environment === 'ssr', isClient: environment === 'client' }

@@ -25,6 +25,36 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     'client.manifest.mjs': () => manifestCode,
   }
 
+  async function updateManifest (clientManifest: ViteClientManifest) {
+    const manifestEntries = Object.values(clientManifest)
+
+    const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
+    const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
+
+    for (const entry of manifestEntries) {
+      entry.file &&= entry.file.replace(BASE_RE, '')
+      for (const item of ['css', 'assets'] as const) {
+        entry[item] &&= entry[item].map((i: string) => i.replace(BASE_RE, ''))
+      }
+    }
+
+    if (disableCssCodeSplit) {
+      for (const entry of manifestEntries) {
+        if (entry.file?.endsWith('.css')) {
+          clientManifest[key]!.css ||= []
+          ;(clientManifest[key]!.css as string[]).push(entry.file)
+          break
+        }
+      }
+    }
+
+    const manifest = normalizeViteManifest(clientManifest)
+    await nuxt.callHook('build:manifest', manifest)
+
+    precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
+    manifestCode = 'export default ' + serialize(manifest)
+  }
+
   const nitro = useNitro()
   nitro.options.virtual ||= {}
   nitro.options._config.virtual ||= {}
@@ -70,34 +100,10 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       const clientDist = resolve(nuxt.options.buildDir, 'dist/client')
 
       const manifestFile = resolve(clientDist, 'manifest.json')
-      const clientManifest = nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
-      const manifestEntries = Object.values(clientManifest)
-
-      const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
-      const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
-
-      for (const entry of manifestEntries) {
-        entry.file &&= entry.file.replace(BASE_RE, '')
-        for (const item of ['css', 'assets'] as const) {
-          entry[item] &&= entry[item].map((i: string) => i.replace(BASE_RE, ''))
-        }
-      }
-
-      if (disableCssCodeSplit) {
-        for (const entry of manifestEntries) {
-          if (entry.file?.endsWith('.css')) {
-            clientManifest[key]!.css ||= []
-            ;(clientManifest[key]!.css as string[]).push(entry.file)
-            break
-          }
-        }
-      }
-
-      const manifest = normalizeViteManifest(clientManifest)
-      await nuxt.callHook('build:manifest', manifest)
-
-      precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
-      manifestCode = 'export default ' + serialize(manifest)
+      const clientManifest = nuxt.options.build.client === false && !nuxt.options.dev
+        ? {}
+        : nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
+      await updateManifest(clientManifest)
 
       if (!nuxt.options.dev) {
         if (nuxt.options.experimental.buildCache) {
