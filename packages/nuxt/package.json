@@ -120,7 +120,7 @@
     "@vue/compiler-sfc": "3.5.38",
     "rolldown": "1.1.5",
     "tsdown": "0.22.3",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "vite": "8.1.0",
     "vitest": "4.1.9",
     "vue-bundle-renderer": "2.3.1",
