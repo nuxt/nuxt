@@ -14,6 +14,7 @@ interface UnctxTransformPluginOptions {
 
 export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
   let transformer: Promise<Transformer> | undefined
+  const filter = getTransformFilter(options.transformerOptions)
 
   return {
     name: 'unctx:transform',
@@ -23,8 +24,9 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
     },
     transform: {
       filter: {
+        ...filter,
         code: {
-          include: getTransformFilter(options.transformerOptions).code,
+          include: filter.code,
           exclude: TRANSFORM_MARKER_RE,
         },
       },
