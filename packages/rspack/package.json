@@ -31,7 +31,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rsbuild/core": "~2.0.4",
+    "@rsbuild/core": "~2.1.5",
     "@vue/compiler-sfc": "3.5.39",
     "autoprefixer": "^10.5.2",
     "css-loader": "^7.1.4",
