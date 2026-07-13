@@ -216,7 +216,7 @@ Keyed state created using `useAsyncData` can be retrieved across your Nuxt appli
 
 ## Return Values
 
-This composable returns a `Promise` that can be awaited, which makes it possible to use `data` directly within the `<script setup>` (i.e. a value will be present, instead of being undefined). You can also directly pull the values without awaiting the return value, in which case `data` will be undefined within `<script setup>`.
+This composable returns a `Promise` that can be awaited, which makes it possible to use `data` directly within the `<script setup>` (i.e. a value will be present, instead of being undefined). You can also directly pull the values without awaiting the return value, in which case `data` can be undefined within `<script setup>` until the fetch completes.
 
 ::tip
 Even if you do not await the return value, during SSR Nuxt will wait for the request to finish and send the resolved data to the client.
