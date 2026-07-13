@@ -80,6 +80,14 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     close: async () => { await hooks.callHook('close', nuxt) },
     vfs: {},
     apps: {},
+    buildOutputs: {
+      ssrStyles: undefined,
+      serverEntry: () => `export default () => { throw new Error('[nuxt] nuxt/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.') }`,
+      clientManifest: () => 'export default {}',
+      clientPrecomputed: () => 'export default undefined',
+      entryChunkName: () => 'export const entryFileName = undefined',
+      entryIds: () => 'export default []',
+    },
     runWithContext: fn => runWithNuxtContext(nuxt, fn),
     options,
   }
@@ -222,11 +230,11 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.typescript.builder !== false) {
     const envMap = {
       // defaults from `builder` based on package name
-      '@nuxt/rspack-builder': '@rspack/core/module',
+      '@nuxt/rspack-builder': '@rsbuild/core/types',
       '@nuxt/vite-builder': 'vite/client',
       '@nuxt/webpack-builder': 'webpack/module',
       // simpler overrides from `typescript.builder` for better DX
-      'rspack': '@rspack/core/module',
+      'rspack': '@rsbuild/core/types',
       'vite': 'vite/client',
       'webpack': 'webpack/module',
       // default 'merged' builder environment for module authors

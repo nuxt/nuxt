@@ -65,7 +65,22 @@
       "groupSlug": "rolldown",
       "matchPackageNames": [
         "rolldown",
-        "obuild"
+        "obuild",
+        "tsdown",
+        "oxc-parser",
+        "oxc-walker",
+        "@oxc-project/types"
+      ]
+    },
+    {
+      "groupName": "nitro",
+      "groupSlug": "nitro",
+      "matchPackageNames": [
+        "nitro",
+        "h3",
+        "ofetch",
+        "unenv",
+        "unstorage"
       ]
     },
     {

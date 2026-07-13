@@ -1,15 +1,19 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import process from 'node:process'
 import { isAbsolute, normalize, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import { genArrayFromRaw, genObjectFromRawEntries } from 'knitwork'
 import type { Nuxt } from '@nuxt/schema'
-import { resolveAlias, useNitro } from '@nuxt/kit'
+import { resolveAlias, setBuildOutput, useNitro } from '@nuxt/kit'
 import { parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
-import { createHash } from 'node:crypto'
+// @ts-expect-error missing types
+import _hashSum from 'hash-sum'
+
+const hashSum = _hashSum as (value: string) => string
 
 const CSS_URL_RE = /url\((['"]?)(\/[^)]+?)\1\)/g
 
@@ -46,14 +50,22 @@ function normalizeCSSContent (css: string) {
 // Fallback to extract styles directly from .vue files
 // (for server-only components not in client build)
 // Uses vue-compiler-sfc to properly process scoped styles
-function extractVueStyles (filePath: string): string[] {
+
+// Reproduces vue-loader's scope id so styles extracted here match the ids the
+// client build emitted for the same component. Must stay in sync with:
+// https://github.com/vuejs/vue-loader/blob/v17.4.2/src/index.ts#L139-L147
+function getVueLoaderScopeId (filePath: string, source: string, rootContext: string) {
+  const rawShortFilePath = relative(rootContext || process.cwd(), filePath).replace(/^(?:\.\.[/\\])+/, '')
+  const shortFilePath = normalize(rawShortFilePath).replace(/\\/g, '/')
+  return hashSum(`${shortFilePath}\n${source.replace(/\r\n/g, '\n')}`)
+}
+
+function extractVueStyles (filePath: string, rootContext: string): string[] {
   try {
     const src = readFileSync(filePath, 'utf8')
     const { descriptor } = parse(src, { filename: filePath })
     const styles: string[] = []
-
-    // Generate scope ID using the same format as vue-loader (8-char hex hash)
-    const scopeId = createHash('sha256').update(filePath).digest('hex').slice(0, 8)
+    const scopeId = getVueLoaderScopeId(filePath, src, rootContext)
 
     for (let i = 0; i < descriptor.styles.length; i++) {
       const style = descriptor.styles[i]!
@@ -294,7 +306,7 @@ export class SSRStylesPlugin {
         if (!rel) { continue }
         if (collected.has(rel)) { continue }
 
-        const vueStyles = extractVueStyles(resolveFilePath(resource) || resource)
+        const vueStyles = extractVueStyles(resolveFilePath(resource) || resource, this.nuxt.options.rootDir)
         if (vueStyles.length) {
           collected.set(rel, new Set(vueStyles))
         }
@@ -334,11 +346,10 @@ export class SSRStylesPlugin {
       ].join('\n')
 
       compilation.emitAsset('styles.mjs', new rawSource(stylesSource))
+      setBuildOutput('ssrStyles', resolve(this.nuxt.options.buildDir, 'dist/server/styles.mjs'))
 
       const entryIds = Array.from(this.chunksWithInlinedCSS).filter(id => entryModules.has(id))
-      nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(entryIds)}`
-      nitro.options._config.virtual ||= {}
-      nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
+      setBuildOutput('entryIds', () => `export default ${JSON.stringify(entryIds)}`)
     })
   }
 

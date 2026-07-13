@@ -9,7 +9,7 @@ import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { win32 as pathWin32 } from 'node:path'
 import { dirname, isAbsolute, join, normalize } from 'pathe'
-import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { directoryToURL, resolveAlias, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -220,20 +220,15 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
 
-  const vfs = {
-    'server.mjs': `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
-    'runner.mjs': `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`,
-    'client.manifest.mjs': `import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))};export default () => viteNodeFetch.getManifest()`,
-  }
+  const serverEntryCode = `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`
+  setBuildOutput('serverEntry', () => serverEntryCode)
+  setBuildOutput('clientManifest', () => `import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))};export default () => viteNodeFetch.getManifest()`)
 
   nitro.options.virtual ||= {}
   nitro.options._config.virtual ||= {}
-
-  for (const key in vfs) {
-    const filename = `#build/dist/server/${key}`
-    nitro.options.virtual[filename] = vfs[key as keyof typeof vfs]
-    nitro.options._config.virtual[filename] = vfs[key as keyof typeof vfs]
-  }
+  const runnerCode = `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`
+  nitro.options.virtual['#build/dist/server/runner.mjs'] = runnerCode
+  nitro.options._config.virtual['#build/dist/server/runner.mjs'] = runnerCode
 
   return {
     name: 'nuxt:vite-node-server',
