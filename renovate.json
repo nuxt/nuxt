@@ -65,7 +65,11 @@
       "groupSlug": "rolldown",
       "matchPackageNames": [
         "rolldown",
-        "obuild"
+        "obuild",
+        "tsdown",
+        "oxc-parser",
+        "oxc-walker",
+        "@oxc-project/types"
       ]
     },
     {
