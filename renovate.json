@@ -73,6 +73,17 @@
       ]
     },
     {
+      "groupName": "nitro",
+      "groupSlug": "nitro",
+      "matchPackageNames": [
+        "nitro",
+        "h3",
+        "ofetch",
+        "unenv",
+        "unstorage"
+      ]
+    },
+    {
       "matchPackageNames": [
         "@nuxt/**"
       ],
