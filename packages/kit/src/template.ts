@@ -367,6 +367,8 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
+  const isV5OrHigher = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
+
   const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
@@ -388,6 +390,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       noUncheckedIndexedAccess: true,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
+      ...isV5OrHigher
+        ? {
+            noUncheckedSideEffectImports: true,
+          }
+        : {},
       /* Decorator support */
       ...useDecorators
         ? {
@@ -405,6 +412,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
         'dom.iterable',
         'webworker',
       ],
+      libReplacement: false,
       /* JSX support for Vue */
       jsx: 'preserve',
       jsxImportSource: 'vue',

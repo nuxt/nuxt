@@ -1,5 +1,4 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
-import type { RspackPluginInstance } from '@rspack/core'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import type { NuxtBuildOutputs } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
@@ -9,6 +8,10 @@ import { getUserCaller, warn } from './internal/trace.ts'
 
 type Arrayable<T> = T | T[]
 type Thenable<T> = T | Promise<T>
+type RspackCompatiblePluginInstance = {
+  apply: (...args: any[]) => void
+  [k: string]: any
+}
 
 export interface ExtendConfigOptions {
   /**
@@ -142,7 +145,7 @@ export function addWebpackPlugin (pluginOrGetter: Arrayable<WebpackPluginInstanc
 /**
  * Append rspack plugin to the config.
  */
-export function addRspackPlugin (pluginOrGetter: Arrayable<RspackPluginInstance> | (() => Thenable<Arrayable<RspackPluginInstance>>), options?: ExtendWebpackConfigOptions): void {
+export function addRspackPlugin (pluginOrGetter: Arrayable<RspackCompatiblePluginInstance> | (() => Thenable<Arrayable<RspackCompatiblePluginInstance>>), options?: ExtendWebpackConfigOptions): void {
   extendRspackConfig(async (config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
@@ -212,7 +215,7 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
 interface AddBuildPluginFactory {
   vite?: () => Thenable<Arrayable<VitePlugin>>
   webpack?: () => Thenable<Arrayable<WebpackPluginInstance>>
-  rspack?: () => Thenable<Arrayable<RspackPluginInstance>>
+  rspack?: () => Thenable<Arrayable<RspackCompatiblePluginInstance>>
 }
 
 export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions): void {

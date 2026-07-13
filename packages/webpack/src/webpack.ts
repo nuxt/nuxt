@@ -4,9 +4,9 @@ import type { H3Event as H3V2Event } from 'h3-next'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
-import type { Compiler, Stats, Watching } from 'webpack'
+import type { Compiler, Configuration, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
-import type { NuxtBuilder } from '@nuxt/schema'
+import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
@@ -21,7 +21,7 @@ import { isSameOriginRequest } from './utils/same-origin.ts'
 import { client, server } from './configs/index.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
-import { builder, webpack } from '#builder'
+import { builder, createRsbuild, webpack } from '#builder'
 
 // TODO: Support plugins
 // const plugins: string[] = []
@@ -74,17 +74,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)
 
   // Configure compilers
-  const compilers = webpackConfigs.map((config) => {
-    // Create compiler
-    const compiler = webpack(config)
+  const compilers = builder === 'rspack' && createRsbuild
+    ? await createRsbuildCompilers(webpackConfigs, nuxt)
+    : webpackConfigs.map(config => webpack(config))
 
-    // In dev, write files in memory FS
-    if (nuxt.options.dev && compiler) {
+  // In dev, write files in memory FS
+  if (nuxt.options.dev) {
+    for (const compiler of compilers) {
       compiler.outputFileSystem = mfs! as unknown as Compiler['outputFileSystem']
     }
-
-    return compiler
-  })
+  }
 
   nuxt.hook('close', async () => {
     for (const compiler of compilers) {
@@ -101,6 +100,38 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   for (const c of compilers) {
     await compile(c)
   }
+}
+
+async function createRsbuildCompilers (configs: Configuration[], nuxt: Nuxt): Promise<Compiler[]> {
+  // One rsbuild environment per Nuxt bundle (client → web, server → node)
+  const environments: Record<string, unknown> = {}
+  for (const config of configs) {
+    environments[config.name!] = {
+      output: {
+        target: config.name === 'server' ? 'node' : 'web',
+      },
+      tools: {
+        // Nuxt generates the full rspack configuration itself, so the
+        // rsbuild-generated config is replaced rather than merged into
+        rspack: () => config,
+      },
+    }
+  }
+
+  const rsbuild = await createRsbuild!({
+    callerName: 'nuxt',
+    cwd: nuxt.options.rootDir,
+    config: {
+      root: nuxt.options.rootDir,
+      mode: nuxt.options.dev ? 'development' : 'production',
+      logLevel: 'silent',
+      environments,
+    },
+  })
+
+  // Returns a MultiCompiler when more than one environment is configured
+  const compiler = await rsbuild.createCompiler()
+  return ('compilers' in compiler ? compiler.compilers : [compiler]) as Compiler[]
 }
 
 async function createDevMiddleware (compiler: Compiler) {
