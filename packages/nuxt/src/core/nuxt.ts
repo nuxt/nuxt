@@ -381,9 +381,9 @@ async function initNuxt (nuxt: Nuxt) {
     }))
   }
 
-  nuxt.hook('modules:done', () => {
+  nuxt.hook('modules:done', async () => {
     // Add unctx transform
-    addBuildPlugin(UnctxTransformPlugin({
+    addBuildPlugin(await UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
