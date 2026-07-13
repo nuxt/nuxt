@@ -19,3 +19,5 @@ export const nuxtLinkDefaults = {
 export const useStateDefaults = {
   resetOnClear: false,
 }
+
+export const lazyRouteDiscovery = false

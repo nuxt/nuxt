@@ -15,7 +15,10 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
-import _routes, { handleHotUpdate } from '#build/routes'
+// @ts-expect-error virtual file
+import { lazyRouteDiscovery } from '#build/nuxt.config.mjs'
+import _routes, { handleHotUpdate, routeGroupLoaders } from '#build/route-table'
+import { setupLazyRouteDiscovery } from '../lazy-routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
@@ -60,7 +63,18 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       : createMemoryHistory(routerBase)
     )
 
-    const routes = routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes
+    let routes = _routes
+    if (routerOptions.routes) {
+      if (lazyRouteDiscovery) {
+        // applying the transform to stubs and not to lazily swapped-in records would
+        // silently half-apply it; ignoring it on both server and client keeps matching symmetric
+        if (import.meta.dev) {
+          console.warn('[nuxt] The `routes` function in `router.options` is ignored when `experimental.lazyRouteDiscovery` is enabled.')
+        }
+      } else {
+        routes = await routerOptions.routes(_routes) ?? _routes
+      }
+    }
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
 
@@ -89,6 +103,38 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     if (import.meta.hot) {
       handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
+
+    if (import.meta.client && lazyRouteDiscovery && routeGroupLoaders) {
+      // register before the router is installed so the initial navigation already discovers
+      // the route groups it needs, and before the middleware guard so middleware only ever
+      // runs against fully-resolved route records
+      const discovery = setupLazyRouteDiscovery(router, routes, routeGroupLoaders, () => {
+        // show the loading indicator while the group chunk is fetched
+        nuxtApp.callHook('page:loading:start')
+      })
+      nuxtApp._discoverLazyRoutes = discovery.discover
+
+      // Discover before starting the navigation so `beforeRouteLeave` guards run once and
+      // against real records, and the guard's redirect-retry only remains as a safety net
+      // for navigations that don't go through push/replace (e.g. popstate).
+      for (const method of ['push', 'replace'] as const) {
+        const originalMethod = router[method].bind(router)
+        router[method] = (to: Parameters<Router['push']>[0]) => {
+          let pending: Promise<unknown> | undefined
+          try {
+            pending = discovery.discover(router.resolve(to).fullPath)
+          } catch {
+            // resolution errors surface from the original method
+          }
+          return pending ? pending.catch(() => {}).then(() => originalMethod(to)) : originalMethod(to)
+        }
+      }
+
+      if (import.meta.hot) {
+        // allows the route-table HMR handler to swap in regenerated stubs and loaders
+        (router as Router & { _resetLazyRoutes?: typeof discovery.reset })._resetLazyRoutes = discovery.reset
+      }
     }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {

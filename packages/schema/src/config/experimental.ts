@@ -243,6 +243,19 @@ export default defineResolvers({
       },
     },
     entryImportMap: true,
+    lazyRouteDiscovery: {
+      $resolve: async (val, get) => {
+        if (!val) {
+          return false as const
+        }
+        // stubs need statically extracted route matching fields
+        if (!(await get('experimental.scanPageMeta'))) {
+          return false as const
+        }
+        const groupSize = typeof val === 'object' ? (val as { groupSize?: unknown }).groupSize : undefined
+        return { groupSize: typeof groupSize === 'number' && groupSize > 0 ? Math.floor(groupSize) : 10 }
+      },
+    },
     extractAsyncDataHandlers: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false

@@ -179,6 +179,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // overridden by head module when SSR streaming is enabled
       '#internal/streaming-iife-chunk.mjs': () => `export const iifeChunkFileName = undefined`,
       '#internal/nuxt/entry-ids.mjs': () => `export default []`,
+      // overridden by the pages module when `experimental.lazyRouteDiscovery` is enabled
+      '#internal/nuxt/lazy-route-group-preload.mjs': () => `export const lazyRouteGroupPreload = []`,
       '#internal/nuxt/nitro-config.mjs': () => {
         const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)
         return [

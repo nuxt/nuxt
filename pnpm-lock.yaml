@@ -1367,6 +1367,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/lazy-route-discovery:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/minimal:
     dependencies:
       nuxt:
@@ -1374,6 +1380,18 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/minimal-pages:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/minimal-pages-lazy-routes:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/minimal-pages-many-routes:
     dependencies:
       nuxt:
         specifier: workspace:*

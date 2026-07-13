@@ -12,13 +12,17 @@ const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes('const _module = awa
 describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
+  const manyRoutesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages-many-routes', import.meta.url))
+  const lazyPagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages-lazy-routes', import.meta.url))
 
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxt', 'build', rootDir]),
       exec('pnpm', ['nuxt', 'build', pagesRootDir]),
+      exec('pnpm', ['nuxt', 'build', manyRoutesRootDir]),
+      exec('pnpm', ['nuxt', 'build', lazyPagesRootDir]),
     ])
-  }, 120 * 1000)
+  }, 240 * 1000)
 
   it('default client bundle size', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
@@ -54,11 +58,31 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     `)
   })
 
+  it('client entry size shrinks with lazy route discovery', async () => {
+    // both fixtures share the same 40+ generated routes; only the flag differs
+    const [entrySize, baselineEntrySize] = await Promise.all([
+      entryBytes(join(lazyPagesRootDir, '.output/public'), lazyPagesRootDir),
+      entryBytes(join(manyRoutesRootDir, '.output/public'), manyRoutesRootDir),
+    ])
+    expect(entrySize).toBeLessThan(baselineEntrySize)
+
+    const lazyStats = await analyzeSizes(['**/*.js'], join(lazyPagesRootDir, '.output/public'), lazyPagesRootDir)
+    const baselineStats = await analyzeSizes(['**/*.js'], join(manyRoutesRootDir, '.output/public'), manyRoutesRootDir)
+
+    // the full route table stays a single entry graph, whereas lazy discovery batches
+    // route records into lazily-loaded group chunks (default 10 records per group)
+    const extraChunks = lazyStats.files.length - baselineStats.files.length
+    expect(extraChunks).toBeGreaterThanOrEqual(4)
+
+    expect.soft(roundToKilobytes(entrySize)).toMatchInlineSnapshot(`"87.8k"`)
+    expect.soft(roundToKilobytes(baselineEntrySize)).toMatchInlineSnapshot(`"98.6k"`)
+  })
+
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"70.3k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"70.7k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"482k"`)
@@ -92,7 +116,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"172k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"173k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"483k"`)
@@ -123,6 +147,17 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     `)
   })
 })
+
+async function entryBytes (publicDir: string, projectDir: string) {
+  const [entry] = await glob(['_nuxt/entry.*.js', '_nuxt/entry.js'], { cwd: publicDir })
+  expect(entry).toBeTruthy()
+  const contents = await fsp.readFile(join(publicDir, entry!), 'utf8')
+  let normalized = contents
+  for (const pattern of getStripPatterns(projectDir)) {
+    normalized = normalized.replaceAll(pattern, '')
+  }
+  return Buffer.byteLength(normalized)
+}
 
 async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })

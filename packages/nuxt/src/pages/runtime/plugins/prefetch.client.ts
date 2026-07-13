@@ -8,6 +8,8 @@ import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { namedMiddleware } from '#build/middleware'
 import { _loadAsyncComponent } from '#app/composables/preload'
+// @ts-expect-error virtual file
+import { lazyRouteDiscovery } from '#build/nuxt.config.mjs'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:prefetch',
@@ -24,8 +26,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       })
     })
     // Prefetch layouts & middleware
-    nuxtApp.hooks.hook('link:prefetch', (url) => {
+    nuxtApp.hooks.hook('link:prefetch', async (url) => {
       if (hasProtocol(url)) { return }
+      if (lazyRouteDiscovery && nuxtApp._discoverLazyRoutes) {
+        // resolve lazily discovered route records so layout/middleware meta is available
+        await nuxtApp._discoverLazyRoutes(url)?.catch(() => {})
+      }
       const route = router.resolve(url)
       if (!route) { return }
       const layout = route.meta.layout

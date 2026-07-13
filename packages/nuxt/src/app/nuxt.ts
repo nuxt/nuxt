@@ -177,6 +177,11 @@ interface _NuxtApp {
   /** @internal */
   '_processingMiddleware'?: string | boolean
 
+  /**
+   * Load the lazy route groups needed to fully resolve a url (`experimental.lazyRouteDiscovery`).
+   * @internal */
+  '_discoverLazyRoutes'?: (url: string) => Promise<unknown> | undefined
+
   /** @internal */
   '_once': {
     [key: string]: Promise<any>

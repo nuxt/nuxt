@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
+import { genDynamicImport, genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'
 import { createRoutesContext, resolveOptions } from 'vue-router/unplugin'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
@@ -12,7 +12,7 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { logger } from '../utils.ts'
 import picomatch from 'picomatch'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, normalizeRoutesForLazyDiscovery, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
@@ -22,6 +22,24 @@ import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+const LAZY_ROUTE_GROUP_CHUNK_RE = /route-groups\/g(\d+)\.mjs$/
+const REGEXP_ESCAPE_RE = /[.*+?^${}()|[\]\\]/g
+
+// Converts a rou3 pattern from `toRou3Patterns` into a regex source usable as a
+// coarse server-side matcher for modulepreload hints. Deliberately lossy: optional
+// params become required segments and aliases are not matched, so those route shapes
+// miss the (purely perf) preload hint.
+function rou3PatternToRegExp (pattern: string): string {
+  let source = ''
+  for (const segment of pattern.split('/').filter(Boolean)) {
+    if (segment.startsWith('**')) {
+      source += '(?:/.*)?'
+      break
+    }
+    source += segment.startsWith(':') ? '/[^/]+' : `/${segment.replace(REGEXP_ESCAPE_RE, String.raw`\$&`)}`
+  }
+  return `^${source || '/'}\\/?$`
+}
 
 export const pagesImportPresets: InlinePreset[] = [
   { imports: ['definePageMeta'], from: '#app/composables/pages' },
@@ -563,6 +581,30 @@ export default defineNuxtModule({
         [relative(nuxt.options.srcDir, p.file as string), ...(p.children?.length ? getSources(p.children) : [])],
       )
 
+    // Resolved at the schema level to `{ groupSize: number } | false` (disabled without `scanPageMeta`);
+    // sync conditions with `lazyRouteDiscovery` in `packages/nuxt/src/core/templates.ts`
+    const useLazyRouteDiscovery = typeof nuxt.options.experimental.lazyRouteDiscovery === 'object'
+      ? nuxt.options.experimental.lazyRouteDiscovery as { groupSize: number }
+      : false
+
+    // route patterns and client manifest keys per lazy route group, used to emit
+    // modulepreload hints for the group chunks the rendered route will need
+    const lazyGroupPreload: { patterns: string[][], keys: (string | undefined)[] } = { patterns: [], keys: [] }
+    if (useLazyRouteDiscovery && !nuxt.options.dev) {
+      nuxt.options.nitro.virtual ||= {}
+      nuxt.options.nitro.virtual['#internal/nuxt/lazy-route-group-preload.mjs'] = () => {
+        const entries: string[] = []
+        for (const [index, patterns] of lazyGroupPreload.patterns.entries()) {
+          const key = lazyGroupPreload.keys[index]
+          if (!key) { continue }
+          for (const pattern of patterns) {
+            entries.push(`[new RegExp(${JSON.stringify(rou3PatternToRegExp(pattern))}), ${JSON.stringify(key)}]`)
+          }
+        }
+        return `export const lazyRouteGroupPreload = [${entries.join(', ')}]`
+      }
+    }
+
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', (manifest) => {
       if (nuxt.options.dev) { return }
@@ -576,6 +618,20 @@ export default defineNuxtModule({
         if (chunk.isEntry) {
           chunk.dynamicImports =
             chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
+        }
+        if (useLazyRouteDiscovery) {
+          // Do not prefetch lazy route group chunks either
+          chunk.dynamicImports =
+            chunk.dynamicImports?.filter(i => !decodeURIComponent(i).includes('route-groups/g'))
+        }
+      }
+
+      if (useLazyRouteDiscovery) {
+        for (const key of Object.keys(manifest)) {
+          const groupId = decodeURIComponent(key).match(LAZY_ROUTE_GROUP_CHUNK_RE)?.[1]
+          if (groupId !== undefined) {
+            lazyGroupPreload.keys[Number(groupId)] = key
+          }
         }
       }
     })
@@ -595,6 +651,47 @@ export default defineNuxtModule({
         })
         return ROUTES_HMR_CODE + [...imports, `export default ${routes}`].join('\n')
       },
+    })
+
+    // The client route table for lazy route discovery: lightweight stubs for matching, plus
+    // lazily importable groups holding the full records. The virtual FS tries the bare name
+    // BEFORE the `.client`/`.server` suffixes, so the per-environment variants only take
+    // effect because the bare `route-table.mjs` template is not registered in this mode —
+    // do not add one, it would shadow both.
+    if (useLazyRouteDiscovery) {
+      nuxt.hook('app:templates', (app) => {
+        if (!app.pages) { return }
+        const { routes, imports, groups } = normalizeRoutesForLazyDiscovery(app.pages, {
+          serverComponentRuntime,
+          clientComponentRuntime,
+          overrideMeta: !!nuxt.options.experimental.scanPageMeta,
+          groupSize: useLazyRouteDiscovery.groupSize,
+        })
+        lazyGroupPreload.patterns = groups.map(group => toRou3Patterns(group.pages))
+        app.templates.push({
+          filename: 'route-table.client.mjs',
+          getContents: () => [
+            LAZY_ROUTES_HMR_CODE,
+            ...imports,
+            `export default ${routes}`,
+            `export const routeGroupLoaders = [${groups.map((_group, index) => genDynamicImport(`./route-groups/g${index}.mjs`)).join(', ')}]`,
+          ].join('\n'),
+        })
+        for (const [index, group] of groups.entries()) {
+          app.templates.push({
+            filename: `route-groups/g${index}.mjs`,
+            getContents: () => [...group.imports, `export default [${group.routes.join(',\n')}]`].join('\n'),
+          })
+        }
+      })
+    }
+
+    addTemplate({
+      filename: useLazyRouteDiscovery ? 'route-table.server.mjs' : 'route-table.mjs',
+      getContents: () => [
+        'export { default, handleHotUpdate } from \'./routes.mjs\'',
+        'export const routeGroupLoaders = undefined',
+      ].join('\n'),
     })
 
     // Add vue-router import for `<NuxtLayout>` integration
@@ -730,6 +827,26 @@ export default defineNuxtModule({
     })
   },
 })
+
+const LAZY_ROUTES_HMR_CODE = /* js */`
+if (import.meta.hot) {
+  import.meta.hot.accept((mod) => {
+    const router = import.meta.hot.data.router
+    if (!router || !router._resetLazyRoutes) {
+      import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
+      return
+    }
+    router._resetLazyRoutes(mod.default || mod, mod.routeGroupLoaders)
+  })
+}
+
+export function handleHotUpdate (_router) {
+  if (import.meta.hot) {
+    import.meta.hot.data ||= {}
+    import.meta.hot.data.router = _router
+  }
+}
+`
 
 const ROUTES_HMR_CODE = /* js */`
 if (import.meta.hot) {
