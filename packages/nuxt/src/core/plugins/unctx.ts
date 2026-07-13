@@ -1,5 +1,5 @@
-import type { TransformerOptions } from 'unctx/transform'
-import { createTransformer } from 'unctx/transform'
+import type { Transformer, TransformerOptions } from 'unctx/transform'
+import { createTransformer, getTransformFilter } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
 import { isJS, isVue } from '../utils/index.ts'
@@ -12,38 +12,36 @@ interface UnctxTransformPluginOptions {
   transformerOptions: TransformerOptions
 }
 
-export const UnctxTransformPlugin = async (options: UnctxTransformPluginOptions) => {
-  const transformer = await createTransformer(options.transformerOptions)
+export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
+  let transformer: Promise<Transformer> | undefined
 
-  return createUnplugin(() => {
-    return {
-      name: 'unctx:transform',
-      enforce: 'post',
-      transformInclude (id) {
-        return isVue(id, { type: ['template', 'script'] }) || isJS(id)
-      },
-      transform: {
-        filter: {
-          ...transformer.filter,
-          code: {
-            ...transformer.filter.code,
-            exclude: TRANSFORM_MARKER_RE,
-          },
+  return {
+    name: 'unctx:transform',
+    enforce: 'post',
+    transformInclude (id) {
+      return isVue(id, { type: ['template', 'script'] }) || isJS(id)
+    },
+    transform: {
+      filter: {
+        code: {
+          include: getTransformFilter(options.transformerOptions).code,
+          exclude: TRANSFORM_MARKER_RE,
         },
-        handler (code) {
-          // TODO: needed for webpack - update transform in unctx/unplugin?
-          if (!transformer.shouldTransform(code)) { return }
-          const result = transformer.transform(code)
-          if (result) {
-            return {
-              code: TRANSFORM_MARKER + result.code,
-              map: options.sourcemap
-                ? result.magicString.generateMap({ hires: true })
-                : undefined,
-            }
+      },
+      async handler (code) {
+        const { shouldTransform, transform } = await (transformer ??= createTransformer(options.transformerOptions))
+        // TODO: needed for webpack - update transform in unctx/unplugin?
+        if (!shouldTransform(code)) { return }
+        const result = transform(code)
+        if (result) {
+          return {
+            code: TRANSFORM_MARKER + result.code,
+            map: options.sourcemap
+              ? result.magicString.generateMap({ hires: true })
+              : undefined,
           }
-        },
+        }
       },
-    }
-  })
-}
+    },
+  }
+})
