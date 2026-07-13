@@ -33,6 +33,7 @@ export default withMatrix({
     '~~/custom-modules/subpath',
     './modules/test',
     '~~/modules/example',
+    './extends/node_modules/nitro-auto-import-module',
     function (_, nuxt) {
       // Virtual CSS modules only work with Vite, not with webpack/rspack
       if (typeof nuxt.options.builder === 'string' && (nuxt.options.builder.includes('webpack') || nuxt.options.builder.includes('rspack'))) { return }

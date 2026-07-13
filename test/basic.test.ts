@@ -150,6 +150,31 @@ describe('modules', () => {
     const result = await $fetch<string>('/auto-registered-module-late')
     expect(result).toEqual('handler added from nitro:config hook')
   })
+
+  it('should auto-import Nitro utilities in modules installed under node_modules (#15621)', async () => {
+    const result = await $fetch('/nitro-auto-import-module')
+    expect(result).toEqual({
+      handler: 'nitro-auto-import-module',
+      routeRules: true,
+    })
+  })
+
+  it('should keep unrelated node_modules excluded from Nitro auto-imports (#15621)', () => {
+    const ctx = useTestContext()
+    const nuxt = ctx.nuxt
+    if (!nuxt) {
+      throw new Error('Nuxt test context is not initialized')
+    }
+    // @ts-expect-error internal test assertion
+    const exclude = nuxt._nitro.options.imports.exclude as Array<RegExp | string>
+    const isExcluded = (path: string) => exclude.some(pattern =>
+      pattern instanceof RegExp ? pattern.test(path) : path.includes(pattern),
+    )
+
+    expect(isExcluded(join(nuxt.options.rootDir, 'extends/node_modules/unrelated-package/runtime/server-handler.ts'))).toBe(true)
+    expect(isExcluded(join(nuxt.options.rootDir, 'extends/node_modules/nitro-auto-import-module/runtime/server-handler.ts'))).toBe(false)
+    expect(isExcluded(join(nuxt.options.rootDir, 'extends/node_modules/foo/server/api/foo.ts'))).toBe(false)
+  })
 })
 
 describe('pages', () => {
