@@ -264,20 +264,21 @@ export default createConfigForNuxt({
           'patterns': [
             {
               allowTypeImports: true,
-              regex: `^(?!(${[
-                // vue ecosystem
-                '@unhead',
-                '@vue/shared',
-                'ofetch',
-                'vue/server-renderer',
-                'vue',
-                'vue-router',
-                ...runtimeDependencies,
-                'errx', /* only used in dev */
-                'nostics', /* runtime diagnostics catalog */
-                // internal deps
-                'nuxt/app',
-              ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+              regex: `^(?!(${
+                [
+                  // vue ecosystem
+                  '@unhead',
+                  '@vue/shared',
+                  'ofetch',
+                  'vue/server-renderer',
+                  'vue',
+                  'vue-router',
+                  ...runtimeDependencies,
+                  'errx', /* only used in dev */
+                  'nostics', /* runtime diagnostics catalog */
+                  // internal deps
+                  'nuxt/app',
+                ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
               })($|/))(?!#)(?!\\.)[a-zA-Z@]`,
             },
           ],
