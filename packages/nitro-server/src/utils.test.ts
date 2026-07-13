@@ -1,5 +1,11 @@
-import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern } from './utils.ts'
+import { describe, expect, it, vi } from 'vitest'
+import type { PluginContext, ResolveIdResult } from 'rollup'
+import { getLayerNodeModulesExcludePattern, nitroRuntimeResolvePlugin } from './utils.ts'
+
+function callResolveId (plugin: ReturnType<typeof nitroRuntimeResolvePlugin>, id: string, ctx: Partial<PluginContext> = {}): Promise<ResolveIdResult> {
+  const handler = typeof plugin.resolveId === 'function' ? plugin.resolveId : plugin.resolveId!.handler
+  return handler.call({ resolve: vi.fn().mockResolvedValue(null), ...ctx } as unknown as PluginContext, id, undefined, {} as any) as Promise<ResolveIdResult>
+}
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -61,5 +67,38 @@ describe('getLayerNodeModulesExcludePattern', () => {
     const withSlash = getLayerNodeModulesExcludePattern(['/proj/node_modules/foo/'])
     const withoutSlash = getLayerNodeModulesExcludePattern(['/proj/node_modules/foo'])
     expect(withSlash.source).toBe(withoutSlash.source)
+  })
+})
+
+describe('nitroRuntimeResolvePlugin', () => {
+  function filterRe (plugin: ReturnType<typeof nitroRuntimeResolvePlugin>): RegExp {
+    const id = typeof plugin.resolveId === 'object' ? plugin.resolveId.filter?.id : undefined
+    return id as RegExp
+  }
+
+  it('only matches Nitro\'s implicit runtime dependencies', () => {
+    const re = filterRe(nitroRuntimeResolvePlugin())
+    for (const id of ['nitro', 'nitro/runtime-config', 'nitro/h3', 'h3', 'h3/tracing', 'srvx', 'defu', 'consola', 'ofetch', 'crossws']) {
+      expect(re.test(id), id).toBe(true)
+    }
+    for (const id of ['vue', 'nitrogen', 'h3x', 'consolation', '@scope/nitro']) {
+      expect(re.test(id), id).toBe(false)
+    }
+  })
+
+  it('falls back to Nitro\'s own copies of its implicit runtime dependencies when the project cannot resolve them', async () => {
+    const plugin = nitroRuntimeResolvePlugin()
+    for (const [id, expected] of [['nitro', '/nitro/'], ['nitro/runtime-config', '/nitro/'], ['nitro/h3', '/nitro/'], ['h3', '/h3/'], ['srvx', '/srvx/'], ['consola', '/consola/'], ['ofetch', '/ofetch/'], ['crossws', '/crossws/']] as const) {
+      const resolved = await callResolveId(plugin, id)
+      expect(resolved, id).toBeTypeOf('string')
+      expect((resolved as string).replace(/\\/g, '/'), id).toContain(expected)
+    }
+  })
+
+  it('defers to the project when it can resolve the import itself', async () => {
+    const plugin = nitroRuntimeResolvePlugin()
+    const resolve = vi.fn().mockResolvedValue({ id: '/project/node_modules/h3/index.mjs' })
+    expect(await callResolveId(plugin, 'h3', { resolve: resolve as unknown as PluginContext['resolve'] })).toBeUndefined()
+    expect(resolve).toHaveBeenCalledOnce()
   })
 })
