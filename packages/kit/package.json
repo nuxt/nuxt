@@ -44,7 +44,7 @@
     "std-env": "^4.1.0",
     "tinyglobby": "^0.2.17",
     "ufo": "^1.6.4",
-    "unctx": "^2.5.0",
+    "unctx": "^3.0.0-beta.2",
     "untyped": "^2.0.0"
   },
   "devDependencies": {
