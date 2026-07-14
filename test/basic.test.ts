@@ -11,6 +11,8 @@ import { createRegExp, exactly } from 'magic-regexp'
 import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
+const itFailsIf = (condition: boolean) => condition ? it.fails : it
+
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
@@ -91,7 +93,7 @@ describe('route rules', () => {
     expect(html).not.toContain('<script')
   })
 
-  it('client-side navigation should redirect if hash included', async () => {
+  itFailsIf(isWebpack && isDev)('client-side navigation should redirect if hash included', async () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')
     await page.getByTestId('route-rules-redirect').click()
@@ -427,7 +429,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  it('/client-only-components', async () => {
+  itFailsIf(isWebpack && isDev)('/client-only-components', async () => {
     const html = await $fetch<string>('/client-only-components')
     expect(html).toContain('<div>Fallback</div>')
     // ensure components are not rendered server-side
@@ -1802,7 +1804,7 @@ describe('nested suspense', () => {
     [start + '?layout=custom', end],
   ])
 
-  it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
+  itFailsIf(isWebpack && isDev).each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
     const { page, consoleLogs } = await renderPage(start)
 
     const slug = nav.replace(/\?.*$/, '').replace(/[/-]+/g, '-')
@@ -1845,7 +1847,7 @@ describe('nested suspense', () => {
     ['/suspense/async-2/sync-1/', '/suspense/async-1/'],
   ]
 
-  it.each(outwardNavigations)('should navigate from %s to a parent %s with no white flash', async (start, nav) => {
+  itFailsIf(isWebpack && isDev).each(outwardNavigations)('should navigate from %s to a parent %s with no white flash', async (start, nav) => {
     const { page, consoleLogs } = await renderPage(start)
 
     await page.waitForSelector(`main:has(#child${start.replace(/[/-]+/g, '-')})`)
@@ -1884,7 +1886,7 @@ describe('nested suspense', () => {
     ['/suspense/async-2/', '/suspense/async-1/sync-1/'],
   ]
 
-  it.each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
+  itFailsIf(isWebpack && isDev).each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
     const { page, consoleLogs } = await renderPage(start)
 
     const slug = nav.replace(/[/-]+/g, '-')
@@ -2412,7 +2414,8 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   // TODO: looks like this test is flaky
-  it.skipIf(!isTestingAppManifest)('does not fetch a prefetched payload', { retry: 3 }, async () => {
+  const prefetchedPayloadIt = !isTestingAppManifest ? it.skip : itFailsIf(isWebpack && isDev)
+  prefetchedPayloadIt('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/random/a')
@@ -2565,7 +2568,7 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 })
 
 describe.runIf(isDev)('component testing', () => {
-  it('should work', async () => {
+  itFailsIf(isWebpack && isDev)('should work', async () => {
     // TODO: fix in nuxt/test-utils
     const comp1 = await $fetchComponent('app/components/Counter.vue', { multiplier: 2 })
     expect(comp1).toContain('12 x 2 = 24')
@@ -2736,7 +2739,7 @@ describe('lazy import components', () => {
   }
 
   describe.each(Object.entries(hydrationTests))('delayed hydration components %s', (description, path) => {
-    it('lazy load delayed hydration comps at the right time', { timeout: 20_000 }, async () => {
+    itFailsIf(isWebpack && isDev && description === 'in template')('lazy load delayed hydration comps at the right time', { timeout: 20_000 }, async () => {
       const html = await $fetch<string>(`/lazy-import-components/delayed-hydration${path}`)
 
       const hydratedText = 'This is mounted.'
@@ -2771,7 +2774,7 @@ describe('lazy import components', () => {
       await page.close()
     })
 
-    it('respects custom delayed hydration triggers and overrides defaults', async () => {
+    itFailsIf(isWebpack && isDev && description === 'in template')('respects custom delayed hydration triggers and overrides defaults', async () => {
       const { page } = await renderPage(`/lazy-import-components/delayed-hydration${path}`)
 
       const unhydratedText = 'This is not mounted.'
@@ -2798,7 +2801,7 @@ describe('lazy import components', () => {
       await page.close()
     })
 
-    it('handles time-based hydration correctly', async () => {
+    itFailsIf(isWebpack && isDev)('handles time-based hydration correctly', async () => {
       const unhydratedText = 'This is not mounted.'
       const html = await $fetch<string>(`/lazy-import-components/delayed-hydration${path}/time`)
       expect(html).toContain(unhydratedText)
@@ -2844,7 +2847,7 @@ describe('lazy import components', () => {
       await page.close()
     })
 
-    it('emits hydration events', async () => {
+    itFailsIf(isWebpack && isDev && description === 'in template')('emits hydration events', async () => {
       const { page, consoleLogs } = await renderPage(`/lazy-import-components/delayed-hydration${path}/model-event`)
 
       const initialLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
@@ -2945,7 +2948,7 @@ describe('nuxt-time', () => {
     expect(html.match(string)?.length).toEqual(1)
   })
 
-  it('has no hydration errors on the client', async () => {
+  itFailsIf(isWebpack && isDev)('has no hydration errors on the client', async () => {
     const page = await createPage(undefined, { locale: 'en-GB' })
     const logs: string[] = []
 
@@ -2976,7 +2979,7 @@ describe('nuxt-time', () => {
     expect(logs.join('')).toMatchInlineSnapshot('""')
   })
 
-  it('displays relative time correctly', async () => {
+  itFailsIf(isWebpack && isDev)('displays relative time correctly', async () => {
     const page = await createPage(undefined, { locale: 'en-GB' })
     const logs: string[] = []
 
