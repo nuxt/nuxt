@@ -229,8 +229,8 @@ jobs:
           - name: Test (unit)
             run: vp run test:unit
 
-          - name: Check built types
-            run: vp run test:attw
+      - name: Check built types
+        run: vp run test:attw
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
