@@ -178,7 +178,7 @@ function baseResolve (ctx: WebpackConfigContext) {
   }
 }
 
-export function getWebpackModulesDir (modulesDir: string[]) {
+function getWebpackModulesDir (modulesDir: string[]) {
   const dirs = new Set(['node_modules'])
 
   for (const dir of modulesDir) {

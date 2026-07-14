@@ -11,10 +11,6 @@ packages:
 patchedDependencies:
   changelogen: patches/changelogen.patch
 
-publicHoistPattern:
-  - '*-loader'
-  - 'webpack-*'
-
 shellEmulator: true
 
 verifyDepsBeforeRun: install
