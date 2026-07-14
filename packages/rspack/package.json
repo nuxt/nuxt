@@ -69,14 +69,11 @@
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.3.1",
     "webpack-bundle-analyzer": "^5.3.0",
-    "webpack-dev-middleware": "^8.0.3",
-    "webpack-hot-middleware": "^2.26.1",
     "webpackbar": "^7.0.0"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "@types/webpack-bundle-analyzer": "4.7.0",
-    "@types/webpack-hot-middleware": "2.25.12",
     "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.22",
     "rollup": "4.62.2",
