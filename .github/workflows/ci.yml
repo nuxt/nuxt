@@ -187,6 +187,7 @@ jobs:
             run: vp run test:types
             env:
               MODULE_RESOLUTION: ${{ matrix.module }}
+
           - name: Typecheck (docs)
             run: vp run typecheck:docs
 
@@ -221,10 +222,13 @@ jobs:
       - parallel:
           - name: Lint
             run: vp run lint
+
           - name: Test (nuxt runtime)
             run: vp run test:runtime
+
           - name: Test (unit)
             run: vp run test:unit
+
           - name: Check built types
             run: vp run test:attw
 
