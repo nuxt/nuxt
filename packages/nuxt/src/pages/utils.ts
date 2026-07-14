@@ -163,6 +163,13 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
+      // A route that reuses a file already claimed by an earlier route (e.g. an extra
+      // route pushed via `pages:extend`) keeps its own explicit identity; the file's
+      // `definePageMeta` name/path belong to the owner route, not to borrowers.
+      if (ctx.augmentedPages.has(route.file)) {
+        delete routeMeta.name
+        delete routeMeta.path
+      }
       if (route.meta) {
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
       }
@@ -372,6 +379,8 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
 
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
   const nuxt = useNuxt()
+  // Files claimed by an earlier route at this level; later routes reusing them are borrowers.
+  const claimedFiles = new Set<string>()
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -412,6 +421,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
+      const isBorrowedFile = claimedFiles.has(file)
+      claimedFiles.add(file)
       const pageImportName = genSafeVariableName(filename(file) + hash(file).replace(/-/g, '_'))
       const metaImportName = pageImportName + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
@@ -422,7 +433,11 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       const isSyncImport = page._sync && page.mode !== 'client'
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
-      const metaRouteName = `${metaImportName}?.name ?? ${route.name}`
+      // A borrowed file's `definePageMeta` name belongs to the route that owns the file, so a
+      // route reusing it (e.g. pushed via `pages:extend`) keeps its own explicit name instead.
+      const metaRouteName = isBorrowedFile && route.name
+        ? route.name
+        : `${metaImportName}?.name ?? ${route.name}`
 
       // we use this to validate that a server page is rendering the correct url
       const islandKey = page.mode === 'server' && page.file
@@ -451,7 +466,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       const metaRoute: NormalizedRoute = {
         name: metaRouteName,
-        path: `${metaImportName}?.path ?? ${route.path}`,
+        path: isBorrowedFile && route.path ? route.path : `${metaImportName}?.path ?? ${route.path}`,
         props: `${metaImportName}?.props ?? ${route.props ?? false}`,
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,

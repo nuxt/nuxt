@@ -464,6 +464,38 @@ describe('page:extends', () => {
       },
     ])
   })
+
+  it('should not override an explicit name when a route reuses another route\'s file (#27358)', async () => {
+    const files: NuxtPage[] = [
+      { name: 'test', path: '/test', file: `pages/test.vue` },
+      { name: 'testExtend', path: '/testExtend', file: `pages/test.vue` },
+    ]
+    const vfs = {
+      'pages/test.vue': `<script setup lang="ts">definePageMeta({ name: 'test' })</script>`,
+    } as Record<string, string>
+    await augmentPages(files, vfs)
+    expect(files[1]!.name).toBe('testExtend')
+    expect(files[1]!.path).toBe('/testExtend')
+  })
+
+  it('should generate the explicit name for a route reusing another route\'s file (#27358)', () => {
+    const pages: NuxtPage[] = [
+      { name: 'test', path: '/test', file: `pages/test.vue` },
+      { name: 'testExtend', path: '/testExtend', file: `pages/test.vue` },
+    ]
+    const { routes } = normalizeRoutes(pages, new Set(), {
+      clientComponentRuntime: '<client>',
+      serverComponentRuntime: '<server>',
+      overrideMeta: false,
+    })
+    const owner: any = (routes as any)[0]
+    const borrower: any = (routes as any)[1]
+    // the file owner keeps the runtime `definePageMeta` name override
+    expect(owner.name).toContain('Meta?.name ??')
+    // the borrowing route uses its own explicit name, not the file's meta name
+    expect(borrower.name).not.toContain('Meta?.name')
+    expect(borrower.name).toContain('testExtend')
+  })
 })
 
 const pagesDir = 'pages'
