@@ -15,35 +15,42 @@ describe('rspack-vue-loader', () => {
     const source = `<template><h1 class="title">Hello</h1></template>
 <style scoped>.title { color: red; }</style>
 `
-    const context = await realpath(await mkdtemp(join(tmpdir(), 'nuxt-rspack-vue-loader-')))
-    const outputPath = join(context, 'dist')
     const expectedHash = createHash('sha256').update(`App.vue\n${source}`).digest('hex').substring(0, 8)
-
-    await writeFile(join(context, 'App.vue'), source)
-
-    const compiler = webpack({
-      mode: 'production',
-      context,
-      entry: './App.vue',
-      output: {
-        path: outputPath,
-        filename: 'bundle.js',
-      },
-      resolve: {
-        modules: [rootNodeModules, 'node_modules'],
-      },
-      module: {
-        rules: [
-          { test: /\.vue$/, loader: vueLoader },
-          { resourceQuery: /type=style/, type: 'asset/source' },
-        ],
-      },
-      plugins: [new VueLoaderPlugin()],
-      optimization: { minimize: false },
-      performance: false,
-    })
+    let temporaryDirectory: string | undefined
+    let closeCompiler: (() => Promise<void>) | undefined
 
     try {
+      temporaryDirectory = await mkdtemp(join(tmpdir(), 'nuxt-rspack-vue-loader-'))
+      const context = await realpath(temporaryDirectory)
+      const outputPath = join(context, 'dist')
+
+      await writeFile(join(context, 'App.vue'), source)
+
+      const compiler = webpack({
+        mode: 'production',
+        context,
+        entry: './App.vue',
+        output: {
+          path: outputPath,
+          filename: 'bundle.js',
+        },
+        resolve: {
+          modules: [rootNodeModules, 'node_modules'],
+        },
+        module: {
+          rules: [
+            { test: /\.vue$/, loader: vueLoader },
+            { resourceQuery: /type=style/, type: 'asset/source' },
+          ],
+        },
+        plugins: [new VueLoaderPlugin()],
+        optimization: { minimize: false },
+        performance: false,
+      })
+      closeCompiler = () => new Promise<void>((resolve, reject) => {
+        compiler.close(error => error ? reject(error) : resolve())
+      })
+
       type Stats = NonNullable<Parameters<Parameters<typeof compiler.run>[0]>[1]>
       const stats = await new Promise<Stats>((resolve, reject) => {
         compiler.run((error, stats) => {
@@ -58,10 +65,13 @@ describe('rspack-vue-loader', () => {
       expect(getVueLoaderHash(`App.vue\n${source}`)).toBe(expectedHash)
       await expect(readFile(join(outputPath, 'bundle.js'), 'utf8')).resolves.toContain(`data-v-${expectedHash}`)
     } finally {
-      await new Promise<void>((resolve, reject) => {
-        compiler.close(error => error ? reject(error) : resolve())
-      })
-      await rm(context, { recursive: true, force: true })
+      try {
+        await closeCompiler?.()
+      } finally {
+        if (temporaryDirectory) {
+          await rm(temporaryDirectory, { recursive: true, force: true })
+        }
+      }
     }
   })
 })
