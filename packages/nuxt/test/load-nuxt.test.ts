@@ -168,7 +168,7 @@ describe('loadNuxt', () => {
           (_options, nuxt) => {
             nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
               exampleModule: { apiKey: '' },
-            }) as typeof nuxt.options.runtimeConfig
+            }) as unknown as typeof nuxt.options.runtimeConfig
           },
         ],
       },
