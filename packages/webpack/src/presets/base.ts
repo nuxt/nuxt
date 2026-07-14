@@ -162,7 +162,7 @@ function baseAlias (ctx: WebpackConfigContext) {
 function baseResolve (ctx: WebpackConfigContext) {
   // Prioritize nested node_modules in webpack search path (#2558)
   // TODO: this might be refactored as default modulesDir?
-  const webpackModulesDir = ['node_modules'].concat(ctx.options.modulesDir)
+  const webpackModulesDir = getWebpackModulesDir(ctx.options.modulesDir)
 
   ctx.config.resolve = {
     extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
@@ -176,6 +176,17 @@ function baseResolve (ctx: WebpackConfigContext) {
     modules: webpackModulesDir,
     ...ctx.config.resolveLoader,
   }
+}
+
+export function getWebpackModulesDir (modulesDir: string[]) {
+  const dirs = new Set(['node_modules'])
+
+  for (const dir of modulesDir) {
+    dirs.add(dir)
+    dirs.add(resolve(dir, '.pnpm/node_modules'))
+  }
+
+  return [...dirs]
 }
 
 function baseTranspile (ctx: WebpackConfigContext) {
