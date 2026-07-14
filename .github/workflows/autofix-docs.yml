@@ -24,12 +24,12 @@ jobs:
           cache: true
 
       - name: Build Nuxt
-        run: pnpm build
+        run: vp run build
 
       - name: Lint (docs)
-        run: pnpm lint:docs:fix
+        run: vp run lint:docs:fix
 
       - name: Typecheck (docs)
-        run: pnpm typecheck:docs
+        run: vp run typecheck:docs
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1.3.4

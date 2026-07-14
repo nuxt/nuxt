@@ -34,13 +34,13 @@ jobs:
           cache: true
 
       - name: Build (stub)
-        run: pnpm dev:prepare
+        run: vp run dev:prepare
 
       - name: Lint (docs)
-        run: pnpm lint:docs
+        run: vp run lint:docs
 
       - name: Build Nuxt
-        run: pnpm build
+        run: vp run build
 
       - name: Typecheck (docs)
-        run: pnpm typecheck:docs
+        run: vp run typecheck:docs

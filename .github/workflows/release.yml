@@ -30,7 +30,7 @@ jobs:
           cache: false
 
       - name: Build (stub)
-        run: pnpm dev:prepare
+        run: vp run dev:prepare
 
       - name: 🛠 Build and release project
         run: node scripts/release.ts

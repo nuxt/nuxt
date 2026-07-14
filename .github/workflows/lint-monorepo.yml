@@ -39,7 +39,7 @@ jobs:
           cache: true
 
       - name: Lint monorepo
-        run: pnpm sherif -r multiple-dependency-versions
+        run: vp exec sherif -r multiple-dependency-versions
 
       - name: Check engine ranges, peer dependency ranges and installed versions
-        run: pnpm test:engines
+        run: vp run test:engines
