@@ -5,7 +5,7 @@ import type { H3Event as H3V1Event } from 'h3'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type webpackDevMiddleware from 'webpack-dev-middleware'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
-import type { Compiler, Configuration, Stats, Watching } from 'webpack'
+import type { Compiler, Configuration, MultiCompiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { pathToFileURL } from 'node:url'
@@ -181,7 +181,7 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
   // build must not be considered ready until every compiler has emitted once.
   const firstCompiles: Array<Promise<void>> = []
 
-  rsbuild.onAfterCreateCompiler(({ compiler }) => {
+  rsbuild.onAfterCreateCompiler(({ compiler }: { compiler: Compiler | MultiCompiler }) => {
     const compilers = ('compilers' in compiler ? compiler.compilers : [compiler]) as Compiler[]
     for (const c of compilers) {
       const name = c.options.name!
