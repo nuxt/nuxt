@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { join } from 'pathe'
@@ -44,7 +44,7 @@ describe('resolveDeclarationPath', () => {
 })
 
 describe('resolveTypePaths', () => {
-  const root = mkdtempSync(join(tmpdir(), 'kit-type-paths-'))
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'kit-type-paths-')))
   const dir = join(root, 'node_modules')
 
   function createPackage (name: string, files: Record<string, string>, pkg: Record<string, unknown>) {
