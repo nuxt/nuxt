@@ -30,10 +30,8 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
-// @ts-expect-error virtual file
-import entryIds from '#internal/nuxt/entry-ids.mjs'
-// @ts-expect-error virtual file
-import { entryFileName } from '#internal/entry-chunk.mjs'
+import entryIds from 'nuxt/entry-ids'
+import { entryFileName } from 'nuxt/entry-chunk'
 // @ts-expect-error virtual file
 import { iifeChunkFileName } from '#internal/streaming-iife-chunk.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../utils/paths'
