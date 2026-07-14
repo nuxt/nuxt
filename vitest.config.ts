@@ -58,10 +58,12 @@ const fixtureMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-off' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-off' },
-  // rspack: only built + manifest-on
+  // rspack: only manifest-on
+  { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rspack', context: 'default', manifest: 'manifest-on' },
-  // webpack: only built + manifest-on
+  // webpack: only manifest-on
+  { env: 'dev', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on' },
 ]

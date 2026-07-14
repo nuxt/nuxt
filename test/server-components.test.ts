@@ -10,6 +10,8 @@ import { computeIslandHash, serializeIslandProps } from '../packages/nuxt/src/ap
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
+const itFailsIf = (condition: boolean) => condition ? it.fails : it
+
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
   const ctx = opts.context ?? {}
@@ -40,7 +42,7 @@ await setup({
 })
 
 describe('server components/islands', () => {
-  it('/islands', async () => {
+  itFailsIf(isWebpack && isDev)('/islands', async () => {
     const { page } = await renderPage('/islands')
     const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
@@ -91,7 +93,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  it('lazy server components', async () => {
+  itFailsIf(isWebpack && isDev)('lazy server components', async () => {
     const { page, consoleLogs } = await renderPage('/server-components/lazy/start')
 
     await page.getByText('Go to page with lazy server component').click()
@@ -130,7 +132,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  it('non-lazy server components', async () => {
+  itFailsIf(isWebpack && isDev)('non-lazy server components', async () => {
     const { page } = await renderPage('/server-components/lazy/start')
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
@@ -162,14 +164,14 @@ describe('server components/islands', () => {
     expect(html).toContain('<title>Server Page - Fixture</title>')
   })
 
-  it('/server-page - should preserve title after hydration', async () => {
+  itFailsIf(isWebpack && isDev)('/server-page - should preserve title after hydration', async () => {
     const { page } = await renderPage('/server-page')
     await page.waitForLoadState('networkidle')
     expect(await page.title()).toBe('Server Page - Fixture')
     await page.close()
   })
 
-  it('/server-page - client side navigation', async () => {
+  itFailsIf(isWebpack && isDev)('/server-page - client side navigation', async () => {
     const { page } = await renderPage('/')
     await page.getByText('to server page').click()
     await page.waitForLoadState('networkidle')
@@ -217,7 +219,7 @@ describe('component islands', () => {
     `)
   })
 
-  it('render async component', async () => {
+  itFailsIf(isWebpack && isDev)('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
@@ -275,7 +277,7 @@ describe('component islands', () => {
     `)
   })
 
-  it('render .server async component', async () => {
+  itFailsIf(isWebpack && isDev)('render .server async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
@@ -345,7 +347,7 @@ describe('component islands', () => {
     })
   }
 
-  it('renders pure components', async () => {
+  itFailsIf(isWebpack && isDev)('renders pure components', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', {
       props: {
         bool: false,
@@ -413,7 +415,7 @@ describe('component islands', () => {
     `)
   })
 
-  it('test client-side navigation', async () => {
+  itFailsIf(isWebpack && isDev)('test client-side navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('#islands')
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/islands')
