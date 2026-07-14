@@ -27,7 +27,7 @@ jobs:
         # zizmor: ignore[artipacked] scripts/update-changelog.ts runs `git push` and requires the persisted token
         with:
           fetch-depth: 0
-      - uses: voidzero-dev/setup-vp@10c4be84517f21333b81092e67a344be1b09a202 # v1.15.0
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
         with:
           node-version: latest
           cache: true
