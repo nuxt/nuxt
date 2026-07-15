@@ -2,9 +2,8 @@ import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
 import type { $Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
-import { hash } from 'ohash'
-
 import { isPlainObject } from '@vue/shared'
+import { hashKey } from './hash'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
 import type { NuxtError } from './error'
@@ -79,21 +78,21 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
   if (opts.body) {
     const value = toValue(opts.body)
     if (!value) {
-      segments.push(hash(value))
+      segments.push(hashKey(value))
     } else if (value instanceof ArrayBuffer) {
-      segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
+      segments.push(hashKey(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
     } else if (value instanceof FormData) {
       const entries: Array<[string, string]> = []
       for (const entry of value.entries()) {
         const [key, val] = entry
         entries.push([key, val instanceof File ? `${val.name}:${val.size}:${val.lastModified}` : val])
       }
-      segments.push(hash(entries))
+      segments.push(hashKey(entries))
     } else if (isPlainObject(value)) {
-      segments.push(hash(reactive(value)))
+      segments.push(hashKey(reactive(value)))
     } else {
       try {
-        segments.push(hash(value))
+        segments.push(hashKey(value))
       } catch {
         console.warn('[useFetch] Failed to hash body', value)
       }
@@ -317,7 +316,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
 
       const _request = computed(() => toValue(request))
 
-      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
+      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
         throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')

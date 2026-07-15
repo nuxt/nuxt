@@ -497,6 +497,9 @@ importers:
       exsolve:
         specifier: ^1.1.0
         version: 1.1.0
+      fnv1a-64:
+        specifier: ^0.1.1
+        version: 0.1.1
       hookable:
         specifier: ^6.1.1
         version: 6.1.1
@@ -524,6 +527,9 @@ importers:
       nanotar:
         specifier: ^0.3.0
         version: 0.3.0
+      object-identity:
+        specifier: ^0.2.3
+        version: 0.2.3
       ofetch:
         specifier: 2.0.0-alpha.3
         version: 2.0.0-alpha.3
@@ -5780,6 +5786,9 @@ packages:
       '@nuxt/kit':
         optional: true
 
+  fnv1a-64@0.1.1:
+    resolution: {integrity: sha512-qMpkqWyaiNxwYG7Dt40Bxtp2wV6KW/1woXVJOEvR1KA2ffsZf8pyvlNwJgFHha3teh8iC3d4arvrJ0qTcU445A==}
+
   follow-redirects@1.16.0:
     resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
     engines: {node: '>=4.0'}
@@ -7221,6 +7230,9 @@ packages:
 
   object-deep-merge@2.0.1:
     resolution: {integrity: sha512-aKttDKcU3pyZqKcCkDhsMn70WmZFG2JGDQLP9EcLyTSIFQRCPWLAmBZRLJnrVUrhPG1jETEEbfdgbNtJf1LyMg==}
+
+  object-identity@0.2.3:
+    resolution: {integrity: sha512-2J8Joz2Tf7aaylhqFvIUJHNgpuGR38Hh75Voq9GzTbStBxJUaOtN0K1aOd3cV5qp+ij1pMqRbPrGCGMOyX303w==}
 
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
@@ -14792,6 +14804,8 @@ snapshots:
     optionalDependencies:
       '@nuxt/kit': link:packages/kit
 
+  fnv1a-64@0.1.1: {}
+
   follow-redirects@1.16.0: {}
 
   for-each@0.3.5:
@@ -16698,6 +16712,8 @@ snapshots:
   object-assign@4.1.1: {}
 
   object-deep-merge@2.0.1: {}
+
+  object-identity@0.2.3: {}
 
   object-inspect@1.13.4: {}
 

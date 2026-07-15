@@ -37,6 +37,7 @@ allowBuilds:
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
+  - fnv1a-64
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1
   - vue-bundle-renderer

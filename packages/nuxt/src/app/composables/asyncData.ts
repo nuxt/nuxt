@@ -1,7 +1,7 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
-import { hash } from 'ohash'
+import { hashFunction, hashKey } from './hash'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
@@ -997,10 +997,10 @@ const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtA
 
 function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Record<keyof AsyncDataOptions<any>, unknown>>) {
   return {
-    handler: hash(_handler),
-    transform: options.transform ? hash(options.transform) : undefined,
-    pick: options.pick ? hash(options.pick) : undefined,
-    getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
+    handler: hashFunction(_handler),
+    transform: options.transform ? hashFunction(options.transform as (...args: any[]) => any) : undefined,
+    pick: options.pick ? hashKey(options.pick) : undefined,
+    getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
