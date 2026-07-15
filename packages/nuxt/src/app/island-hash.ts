@@ -41,7 +41,7 @@ export function serializeIslandProps (props: Record<string, any> | null | undefi
  * `props` may be passed either as the raw props object or as the JSON string that will be sent
  * over the wire; the two produce the same hash when the round-trip is identity.
  *
- * @since 4.4.0
+ * @since 4.5.0
  */
 export function getIslandHash (input: {
   name: string

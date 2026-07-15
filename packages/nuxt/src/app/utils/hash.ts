@@ -12,16 +12,16 @@ import { identify } from 'object-identity'
  *
  * The digest is non-cryptographic and must not be used for integrity checks.
  *
- * @since 4.4.0
+ * @since 4.5.0
  */
 export function hashKey (value: unknown): string {
   return fnv1a64Base36(identify(value))
 }
 
 /**
- * Derive a stable key from a function's source. `object-identity` collapses all
- * functions to a single token, so functions are hashed from their source text
- * (or name/arity for native functions).
+ * Derive a stable key from a function's source.
+ * 
+ * Functions are hashed from their source text (or name/arity for native functions).
  *
  * @internal
  */
