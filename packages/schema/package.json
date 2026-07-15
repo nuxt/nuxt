@@ -59,7 +59,7 @@
     "obuild": "0.4.38",
     "ofetch": "1.5.1",
     "oxc-transform": "0.139.0",
-    "postcss": "8.5.17",
+    "postcss": "8.5.19",
     "rollup-plugin-visualizer": "7.0.1",
     "sass-loader": "17.0.0",
     "scule": "1.3.0",

@@ -46,7 +46,7 @@
     "nypm": "^0.6.8",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.1",
-    "postcss": "^8.5.17",
+    "postcss": "^8.5.19",
     "rolldown-string": "^0.3.0",
     "seroval": "^1.5.5",
     "std-env": "^4.2.0",

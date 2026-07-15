@@ -49,7 +49,7 @@
     "@codspeed/core": "5.7.1",
     "@codspeed/vitest-plugin": "5.7.1",
     "@eslint/markdown": "8.0.3",
-    "@nuxt/cli": "3.36.1",
+    "@nuxt/cli": "3.37.0",
     "@nuxt/eslint-config": "1.16.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
@@ -62,7 +62,7 @@
     "@types/babel__helper-plugin-utils": "7.10.3",
     "@types/node": "24.13.3",
     "@types/semver": "7.7.1",
-    "@typescript-eslint/parser": "8.63.0",
+    "@typescript-eslint/parser": "8.64.0",
     "@unhead/vue": "3.1.8",
     "@vitest/coverage-v8": "4.1.10",
     "@vue/test-utils": "2.4.11",
@@ -95,7 +95,7 @@
     "nuxt-content-twoslash": "0.4.0",
     "ofetch": "1.5.1",
     "pathe": "2.0.3",
-    "pkg-pr-new": "0.0.75",
+    "pkg-pr-new": "0.0.78",
     "playwright-core": "1.61.1",
     "rolldown-string": "0.3.0",
     "rollup": "4.62.2",
@@ -115,6 +115,6 @@
     "vue-tsc": "3.3.7",
     "webpack": "5.108.4"
   },
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@11.13.0",
   "version": ""
 }
