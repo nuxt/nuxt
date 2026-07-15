@@ -11,6 +11,8 @@ export type { AddRouteMiddlewareOptions, AnnouncerPoliteness, AsyncData, AsyncDa
 
 export { defineNuxtLink } from './components/index'
 export type { NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
+export { getIslandHash, serializeIslandProps } from './island-hash'
+export { hashKey } from './utils/hash'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
 export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
 export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, PageMeta, NuxtPageProps, NuxtLayouts } from './types'

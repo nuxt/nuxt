@@ -21,15 +21,13 @@ jobs:
     steps:
       - name: AgentScan
         id: agentscan
-        uses: MatteoGabriele/agentscan-action@51fb33d2bf6290780418ae231d7e7096ef5d8311 # v1.15.0
+        uses: MatteoGabriele/agentscan-action@c7d61446e7aece6bdd3edcee4558bbfc0392615e # v2.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          skip-members: "dependabot[bot],renovate[bot]"
-          agent-scan-comment: false
+          mode: 'labels'
+          trusted-author-associations: 'owner, member'
       - name: Handle flagged PR
-        if: |
-          !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
-          && (contains(fromJSON('["automation","mixed"]'), steps.agentscan.outputs.classification) || steps.agentscan.outputs.community-flagged == 'true')
+        if: (contains(fromJSON('["automation","mixed"]'), steps.agentscan.outputs.classification) || steps.agentscan.outputs.community-flagged == 'true')
         env:
           CLASSIFICATION: ${{ steps.agentscan.outputs.classification }}
           COMMUNITY_FLAGGED: ${{ steps.agentscan.outputs.community-flagged }}

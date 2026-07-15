@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { hash } from 'ohash'
-import { computeIslandHash, filterIslandProps, serializeIslandProps } from '#app/island-hash'
+import { filterIslandProps, getIslandHash, serializeIslandProps } from '#app/island-hash'
 
 describe('filterIslandProps', () => {
   it('returns an empty object for nullish input', () => {
@@ -59,13 +59,13 @@ describe('serializeIslandProps', () => {
   })
 })
 
-describe('computeIslandHash', () => {
+describe('getIslandHash', () => {
   it('matches the ohash-based shape the client embeds in the URL', () => {
     const name = 'PureComponent'
     const serializedProps = '{"count":3,"label":"hi"}'
     const context = { url: '/foo' }
     const expected = hash([name, JSON.parse(serializedProps), context, undefined]).replace(/[-_]/g, '')
-    expect(computeIslandHash(name, serializedProps, context, undefined)).toBe(expected)
+    expect(getIslandHash({ name, props: serializedProps, context })).toBe(expected)
   })
 
   // External island clients (e.g. `@nuxtjs/og-image`) hash the plain props object and send
@@ -74,48 +74,53 @@ describe('computeIslandHash', () => {
     const name = 'OgImageCommunityNuxtSeoSatori'
     const props = { title: 'Hello World' }
     const objectHash = hash([name, props, {}, undefined]).replace(/[-_]/g, '')
-    expect(computeIslandHash(name, JSON.stringify(props), {}, undefined)).toBe(objectHash)
+    expect(getIslandHash({ name, props: JSON.stringify(props) })).toBe(objectHash)
+  })
+
+  it('agrees whether props are passed as an object or as the serialized string', () => {
+    const props = { title: 'Hello World', count: 3 }
+    expect(getIslandHash({ name: 'X', props })).toBe(getIslandHash({ name: 'X', props: JSON.stringify(props) }))
   })
 
   // #35349
   it('is stable across the JSON round-trip for dropped values', () => {
     const serialized = serializeIslandProps({ label: 'hi', onClick: () => {}, missing: undefined })
     const objectHash = hash(['X', { label: 'hi' }, {}, undefined]).replace(/[-_]/g, '')
-    expect(computeIslandHash('X', serialized, {}, undefined)).toBe(objectHash)
+    expect(getIslandHash({ name: 'X', props: serialized })).toBe(objectHash)
   })
 
   // The server hashes attacker-controllable query input before validating it.
   it('does not throw on malformed serialized props', () => {
-    expect(() => computeIslandHash('X', '{"a":1', {}, undefined)).not.toThrow()
+    expect(() => getIslandHash({ name: 'X', props: '{"a":1' })).not.toThrow()
   })
 
   it('changes when props change', () => {
-    const a = computeIslandHash('X', '{"n":1}', {}, undefined)
-    const b = computeIslandHash('X', '{"n":2}', {}, undefined)
+    const a = getIslandHash({ name: 'X', props: '{"n":1}' })
+    const b = getIslandHash({ name: 'X', props: '{"n":2}' })
     expect(a).not.toBe(b)
   })
 
   it('changes when context changes', () => {
-    const a = computeIslandHash('X', '{}', { url: '/a' }, undefined)
-    const b = computeIslandHash('X', '{}', { url: '/b' }, undefined)
+    const a = getIslandHash({ name: 'X', props: '{}', context: { url: '/a' } })
+    const b = getIslandHash({ name: 'X', props: '{}', context: { url: '/b' } })
     expect(a).not.toBe(b)
   })
 
   it('changes when name changes', () => {
-    const a = computeIslandHash('A', '{}', {}, undefined)
-    const b = computeIslandHash('B', '{}', {}, undefined)
+    const a = getIslandHash({ name: 'A', props: '{}' })
+    const b = getIslandHash({ name: 'B', props: '{}' })
     expect(a).not.toBe(b)
   })
 
   it('changes when source changes', () => {
-    const a = computeIslandHash('X', '{}', {}, undefined)
-    const b = computeIslandHash('X', '{}', {}, 'https://remote.example')
+    const a = getIslandHash({ name: 'X', props: '{}' })
+    const b = getIslandHash({ name: 'X', props: '{}', source: 'https://remote.example' })
     expect(a).not.toBe(b)
   })
 
   it('produces URL-safe output (no - or _)', () => {
     for (let i = 0; i < 20; i++) {
-      const h = computeIslandHash('Comp', JSON.stringify({ i, salt: `${i}-${i}` }), {}, undefined)
+      const h = getIslandHash({ name: 'Comp', props: JSON.stringify({ i, salt: `${i}-${i}` }) })
       expect(h).not.toMatch(/[-_]/)
     }
   })

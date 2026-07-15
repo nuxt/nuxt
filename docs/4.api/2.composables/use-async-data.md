@@ -144,19 +144,20 @@ The `handler` function should be **side-effect free** to ensure predictable beha
 ::
 - `options` (object): Configuration for the asynchronous function call. All options can be a static value, a `ref`, or a computed value.
 
-| Option          | Type                                                                    | Default    | Description                                                                                                      |
-|-----------------|-------------------------------------------------------------------------|------------|------------------------------------------------------------------------------------------------------------------|
-| `server`        | `boolean`                                                               | `true`     | Whether to call the function on the server.                                                                      |
-| `lazy`          | `boolean`                                                               | `false`    | If true, resolves after route loads (does not block navigation).                                                 |
-| `immediate`     | `boolean`                                                               | `true`     | If false, prevents function from being called immediately.                                                       |
-| `default`       | `() => DataT`                                                           | -          | Factory for default value of `data` before async resolves.                                                       |
-| `timeout`       | `number`                                                                | -          | A number in milliseconds to wait before timing out the call (defaults to `undefined`, which means no timeout)    |
-| `transform`     | `(input: DataT) => DataT \| Promise<DataT>`                             | -          | Function to transform the result after resolving.                                                                |
-| `getCachedData` | `(key, nuxtApp, ctx) => DataT \| undefined`                             | -          | Function to return cached data. See below for default.                                                           |
-| `pick`          | `string[]`                                                              | -          | Only pick specified keys from the result.                                                                        |
-| `watch`         | `MultiWatchSources \| false`                                            | -          | Array of reactive sources to watch and auto-refresh. `false` disables watching.                                  |
-| `deep`          | `boolean`                                                               | `false`    | Return data in a deep ref object. Defaults to `false` for improved performance (shallow ref object).             |
-| `dedupe`        | `'cancel' \| 'defer'`                                                   | `'cancel'` | Policy when triggering an execution more than once at a time.                                                    |
+| Option          | Type                                         | Default    | Description                                                                                                      |
+|-----------------|----------------------------------------------|------------|------------------------------------------------------------------------------------------------------------------|
+| `server`        | `boolean`                                    | `true`     | Whether to call the function on the server.                                                                      |
+| `lazy`          | `boolean`                                    | `false`    | If true, resolves after route loads (does not block navigation).                                                 |
+| `immediate`     | `boolean`                                    | `true`     | If false, prevents function from being called immediately.                                                       |
+| `default`       | `() => DataT`                                | -          | Factory for default value of `data` before async resolves.                                                       |
+| `timeout`       | `number`                                     | -          | A number in milliseconds to wait before timing out the call (defaults to `undefined`, which means no timeout)    |
+| `transform`     | `(input: DataT) => DataT \| Promise<DataT>`  | -          | Function to transform the result after resolving.                                                                |
+| `getCachedData` | `(key, nuxtApp, ctx) => DataT \| undefined`  | -          | Function to return cached data. See below for default.                                                           |
+| `pick`          | `string[]`                                   | -          | Only pick specified keys from the result.                                                                        |
+| `watch`         | `MultiWatchSources \| false`                 | -          | Array of reactive sources to watch and auto-refresh. `false` disables watching.                                  |
+| `deep`          | `boolean`                                    | `false`    | Return data in a deep ref object. Defaults to `false` for improved performance (shallow ref object).             |
+| `dedupe`        | `'cancel' \| 'defer'`                        | `'cancel'` | Policy when triggering an execution more than once at a time.                                                    |
+| `enabled`       | `boolean`                                    | `true`     | Barrier that gates whether the `handler` may run. While `false`, every execution is blocked (initial fetch, `execute`/`refresh`, and watch triggers), and switching `true` → `false` cancels any in-flight request without clearing `data`. Re-enabling does not refetch on its own. |
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated (unless `watch` is set to `false`).
@@ -199,6 +200,7 @@ The following options **can differ** without triggering warnings:
 - `immediate`
 - `dedupe`
 - `watch`
+- `enabled`
 
 ```ts
 // ❌ This will trigger a development warning
@@ -274,6 +276,7 @@ type AsyncDataOptions<DataT> = {
   watch?: MultiWatchSources
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
   timeout?: number
+  enabled?: MaybeRefOrGetter<boolean>
 }
 
 type AsyncDataRequestContext = {

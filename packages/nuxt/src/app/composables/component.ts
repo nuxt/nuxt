@@ -1,6 +1,6 @@
 import { computed, getCurrentInstance } from 'vue'
 import type { DefineComponent, defineComponent } from 'vue'
-import { hash } from 'ohash'
+import { hashKey } from '../utils/hash'
 import type { NuxtApp } from '../nuxt'
 import { getNuxtAppCtx, useNuxtApp } from '../nuxt'
 import { useHead } from './head'
@@ -15,7 +15,7 @@ function getFetchKey () {
   const vm = getCurrentInstance()!
   const route = useRoute()
   const { _fetchKeyBase } = vm.proxy!.$options
-  return hash([
+  return hashKey([
     _fetchKeyBase,
     route.path,
     route.query,
