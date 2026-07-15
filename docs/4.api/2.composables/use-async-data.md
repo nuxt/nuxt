@@ -30,8 +30,7 @@ Need a custom `useAsyncData` with pre-defined defaults? Use `createUseAsyncData`
 ::
 
 ::note
-You do not need to await useAsyncData. Nuxt will still await the promise and server render the correct result. The difference is how it is handled on the client side.
-If you omit the `await`, navigation will happen immediately, and you will have to handle loading states on your own. This will usually result in a better UX for your app but also means more effort.
+You do not need to `await` `useAsyncData`. On the server, Nuxt waits for the promise to resolve before rendering in either case, so the returned HTML always contains the data. The `await` affects what happens after the call: with it, execution pauses until `data` is populated, and client-side navigation is blocked until the data is ready; without it, execution continues immediately, `data` starts as its default value until the request resolves, and on client-side navigation you handle the loading and error states yourself using the returned `status` and `error` refs. This has a similar effect to the [`lazy`](#parameters) option, though `lazy` is the explicit way to opt into non-blocking navigation.
 ::
 
 ::note
