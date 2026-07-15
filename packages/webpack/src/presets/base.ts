@@ -41,7 +41,7 @@ function baseConfig (ctx: WebpackConfigContext) {
 
   ctx.config = defu({}, {
     name: ctx.name,
-    entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
+    entry: { app: [resolve(ctx.options.appDir, (ctx.options.experimental.asyncEntry || ctx.isDev) ? 'entry.async' : 'entry')] },
     module: {
       rules,
       // Nuxt resolves some virtual module exports lazily (e.g. `?inline` CSS), so missing exports
