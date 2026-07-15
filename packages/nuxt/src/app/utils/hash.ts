@@ -20,7 +20,7 @@ export function hashKey (value: unknown): string {
 
 /**
  * Derive a stable key from a function's source.
- * 
+ *
  * Functions are hashed from their source text (or name/arity for native functions).
  *
  * @internal
