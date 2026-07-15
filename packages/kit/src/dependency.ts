@@ -53,7 +53,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 
   const formattedNames = missing.map(n => `\`${n}\``).join(', ')
-  configDiagnostics.NUXT_B5010({ names: formattedNames, install: missing.join(' ') }, { method: 'info' })
+  configDiagnostics.NUXT_B5010({ names: formattedNames, install: missing.join(' ') }, { method: 'log' })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
