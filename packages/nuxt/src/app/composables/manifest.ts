@@ -7,9 +7,10 @@ import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 // @ts-expect-error virtual file
 import { $fetch as _$fetch } from '#build/fetch'
-const $fetch = _$fetch as $Fetch
 // @ts-expect-error virtual file
 import _routeRulesMatcher from '#build/route-rules.mjs'
+
+const $fetch = _$fetch as $Fetch
 
 const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 

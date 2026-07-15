@@ -14,6 +14,7 @@ import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { $fetch as _$fetch } from '#build/fetch'
+
 const $fetch = _$fetch as $Fetch
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
