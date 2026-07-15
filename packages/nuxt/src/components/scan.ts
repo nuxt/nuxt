@@ -24,6 +24,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   // All scanned components
   const components: Component[] = []
 
+  // Index into `components` by pascal name to avoid a linear scan per file
+  const componentsByName = new Map<string, Array<{ component: Component, index: number }>>()
+
   // Keep resolved path to avoid duplicates
   const filePaths = new Set<string>()
 
@@ -57,7 +60,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
     for (const _file of files) {
       const filePath = join(dir.path, _file)
 
-      if (scannedPaths.find(d => filePath.startsWith(withTrailingSlash(d))) || isIgnored(filePath)) {
+      if (scannedPaths.some(d => filePath.startsWith(d)) || isIgnored(filePath)) {
         continue
       }
 
@@ -143,16 +146,18 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
-      const validModes = new Set(['all', component.mode])
-      const existingComponent = components.find(c => c.pascalName === component.pascalName && validModes.has(c.mode))
+      const existingEntries = componentsByName.get(component.pascalName)
+      const existingEntry = existingEntries?.find(e => e.component.mode === 'all' || e.component.mode === component.mode)
       // Ignore component if component is already defined (with same mode)
-      if (existingComponent) {
+      if (existingEntry) {
+        const existingComponent = existingEntry.component
         const existingPriority = existingComponent.priority ?? 0
         const newPriority = component.priority ?? 0
 
         // Replace component if priority is higher
         if (newPriority > existingPriority) {
-          components.splice(components.indexOf(existingComponent), 1, component)
+          components[existingEntry.index] = component
+          existingEntry.component = component
         }
         // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
         if (newPriority > 0 && newPriority === existingPriority) {
@@ -162,9 +167,15 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
+      const entry = { component, index: components.length }
+      if (existingEntries) {
+        existingEntries.push(entry)
+      } else {
+        componentsByName.set(component.pascalName, [entry])
+      }
       components.push(component)
     }
-    scannedPaths.push(dir.path)
+    scannedPaths.push(withTrailingSlash(dir.path))
   }
 
   return components

@@ -1,14 +1,14 @@
 import type { Plugin } from 'vite'
-import { dirname, relative } from 'pathe'
+import { dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
+import { setBuildOutput } from '@nuxt/kit'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { findStaticImports } from 'mlly'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { resolveClientEntry } from '../utils/config.ts'
-import { useNitro } from '@nuxt/kit'
 import escapeStringRegexp from 'escape-string-regexp'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
@@ -38,12 +38,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const inlinedCSSModuleIds = new Set<string>()
 
   // Remove CSS entries for files that will have inlined styles
-  const nitro = useNitro()
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
 
-    for (const { cssIds, files, inBundle } of Object.values(cssMap)) {
-      if (!cssIds || !inBundle || !files.length) { continue }
+    // `build:manifest` can fire before the styles `generateBundle` runs, so
+    // derive inlined components from `cssMap` rather than `chunksWithInlinedCSS`.
+    for (const [id, { cssIds, files, inBundle }] of Object.entries(cssMap)) {
+      if (!inBundle || !files.length) { continue }
+      chunksWithInlinedCSS.add(id)
+      if (!cssIds) { continue }
       for (const cssId of cssIds) {
         inlinedCSSModuleIds.add(cssId)
       }
@@ -97,14 +100,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       }
     }
 
-    nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
-    nitro.options._config.virtual ||= {}
-    nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
+    setBuildOutput('entryIds', () => `export default ${JSON.stringify(Array.from(entryIds))}`)
   })
 
   const cssMap: Record<string, { files: string[], inBundle?: boolean, cssIds?: Set<string> }> = {}
   // Track emitted CSS chunk refs globally to avoid duplicate emissions across transform calls.
   const emittedFileRefs: Record<string, string> = {}
+  // map for source file to a unique chunk-name prefix
+  const chunkNamePrefixes = new Map<string, string>()
+  const usedChunkNamePrefixes = new Set<string>()
 
   const options = {
     shouldInline: nuxt.options.features.inlineStyles,
@@ -150,6 +154,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       return {
         name: `nuxt:ssr-styles:${environment.name}`,
         enforce: 'pre',
+        buildStart () {
+          if (this.environment.name === 'ssr') {
+            setBuildOutput('ssrStyles', resolve(this.environment.config.build.outDir, 'styles.mjs'))
+          }
+        },
         resolveId: {
           order: 'pre',
           filter: {
@@ -177,18 +186,24 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           if (environment.name === 'client') { return }
 
           const emitted: Record<string, string> = {}
+          const usedNames = new Set<string>()
           for (const [file, { files, inBundle }] of Object.entries(cssMap)) {
             // File has been tree-shaken out of build (or there are no styles to inline)
             if (!files.length || !inBundle) { continue }
-            const fileName = filename(file)
+            const baseName = filename(file)
+            let assetName = `${baseName}-styles.mjs`
+            for (let i = 2; usedNames.has(assetName); i++) {
+              assetName = `${baseName}-styles-${i}.mjs`
+            }
+            usedNames.add(assetName)
             const base = typeof outputOptions.assetFileNames === 'string'
               ? outputOptions.assetFileNames
               : outputOptions.assetFileNames({
                   type: 'asset',
-                  name: `${fileName}-styles.mjs`,
-                  names: [`${fileName}-styles.mjs`],
-                  originalFileName: `${fileName}-styles.mjs`,
-                  originalFileNames: [`${fileName}-styles.mjs`],
+                  name: assetName,
+                  names: [assetName],
+                  originalFileName: assetName,
+                  originalFileNames: [assetName],
                   source: '',
                 })
 
@@ -210,7 +225,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             }
             emitted[file] = this.emitFile({
               type: 'asset',
-              name: `${fileName}-styles.mjs`,
+              name: assetName,
               source: [
                 ...importStatements,
                 `export default ${genArrayFromRaw([...exportNames])}`,
@@ -340,7 +355,16 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             const idCssIds = idMap.cssIds ||= new Set()
 
             const emittedIds = new Set<string>()
-            const idFilename = filename(id)
+            let chunkNamePrefix = chunkNamePrefixes.get(relativeId)
+            if (chunkNamePrefix === undefined) {
+              const baseName = filename(id) || 'styles'
+              chunkNamePrefix = baseName
+              for (let i = 2; usedChunkNamePrefixes.has(chunkNamePrefix); i++) {
+                chunkNamePrefix = `${baseName}-${i}`
+              }
+              usedChunkNamePrefixes.add(chunkNamePrefix)
+              chunkNamePrefixes.set(relativeId, chunkNamePrefix)
+            }
 
             let styleCtr = 0
             const ids = clientCSSMap[id] || []
@@ -366,7 +390,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               if (!ref) {
                 ref = this.emitFile({
                   type: 'chunk',
-                  name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                  name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
                   id: fileInline,
                 })
                 emittedFileRefs[resolvedInlineId] = ref
@@ -401,7 +425,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               if (!ref) {
                 ref = this.emitFile({
                   type: 'chunk',
-                  name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                  name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
                   id: resolvedIdInline,
                 })
                 emittedFileRefs[resolvedInlineId] = ref

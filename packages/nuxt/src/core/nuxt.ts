@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -40,7 +40,6 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
-import { resolveTypePaths } from './utils/types.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
@@ -81,6 +80,14 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     close: async () => { await hooks.callHook('close', nuxt) },
     vfs: {},
     apps: {},
+    buildOutputs: {
+      ssrStyles: undefined,
+      serverEntry: () => `export default () => { throw new Error('[nuxt] nuxt/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.') }`,
+      clientManifest: () => 'export default {}',
+      clientPrecomputed: () => 'export default undefined',
+      entryChunkName: () => 'export const entryFileName = undefined',
+      entryIds: () => 'export default []',
+    },
     runWithContext: fn => runWithNuxtContext(nuxt, fn),
     options,
   }
@@ -150,6 +157,42 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   return nuxt
 }
 
+function fullyUnwrap (value: unknown): unknown {
+  let current = value
+  let target = onChange.target(current as Record<string, any>)
+  while (target !== current) {
+    current = target
+    target = onChange.target(current as Record<string, any>)
+  }
+  return current
+}
+
+/**
+ * Deeply replace any `on-change` proxies embedded in `value` with their plain targets.
+ *
+ * When `experimental.debugModuleMutation` is enabled, reading `nuxt.options` inside a module
+ * returns an `on-change` proxy. Merging helpers like `defu` read proxied nested objects and copy
+ * those proxy references into their result, which then gets written back into the real options via
+ * a normal assignment. `on-change` only unwraps the top level of an assigned value, so the nested
+ * proxies survive and later break consumers that treat the resolved config as plain data (e.g.
+ * `structuredClone` throwing `DataCloneError`). We strip them once module setup is finished.
+ */
+function stripDebugProxies (value: unknown, seen = new WeakSet<object>()): void {
+  const target = fullyUnwrap(value)
+  if (target === null || typeof target !== 'object' || seen.has(target)) {
+    return
+  }
+  seen.add(target)
+  for (const key of Object.keys(target)) {
+    const current = (target as Record<string, unknown>)[key]
+    const unwrapped = fullyUnwrap(current)
+    if (unwrapped !== current) {
+      (target as Record<string, unknown>)[key] = unwrapped
+    }
+    stripDebugProxies(unwrapped, seen)
+  }
+}
+
 const fallbackCompatibilityDate = '2025-07-15' as DateString
 
 const nightlies = {
@@ -177,6 +220,12 @@ async function initNuxt (nuxt: Nuxt) {
     if (config.hooks) {
       nuxt.hooks.addHooks(config.hooks)
     }
+  }
+
+  if (nuxt.options.dev) {
+    nuxt.hook('listen', (server) => {
+      nuxt._devServerListener = server
+    })
   }
 
   // Prompt to set compatibility date
@@ -223,11 +272,11 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.typescript.builder !== false) {
     const envMap = {
       // defaults from `builder` based on package name
-      '@nuxt/rspack-builder': '@rspack/core/module',
+      '@nuxt/rspack-builder': '@rsbuild/core/types',
       '@nuxt/vite-builder': 'vite/client',
       '@nuxt/webpack-builder': 'webpack/module',
       // simpler overrides from `typescript.builder` for better DX
-      'rspack': '@rspack/core/module',
+      'rspack': '@rsbuild/core/types',
       'vite': 'vite/client',
       'webpack': 'webpack/module',
       // default 'merged' builder environment for module authors
@@ -652,6 +701,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   await installModules(modules, resolvedModulePaths, nuxt)
 
+  if (nuxt.options.experimental.debugModuleMutation) {
+    stripDebugProxies(nuxt.options)
+  }
+
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
   nuxt._ignore.add(resolveIgnorePatterns())
@@ -685,6 +738,11 @@ async function initNuxt (nuxt: Nuxt) {
   // Add experimental immediate page reload support
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
+  }
+  // Reload for crawlers when a chunk fails during initial hydration, so they
+  // index the server-rendered HTML rather than a blank page
+  if (nuxt.options.experimental.emitRouteChunkError) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-crawler.client'))
   }
 
   // Add experimental session restoration support

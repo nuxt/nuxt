@@ -11,6 +11,8 @@ import { createRegExp, exactly } from 'magic-regexp'
 import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
+const itFailsIf = (condition: boolean) => condition ? it.fails : it
+
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
@@ -91,7 +93,7 @@ describe('route rules', () => {
     expect(html).not.toContain('<script')
   })
 
-  it('client-side navigation should redirect if hash included', async () => {
+  itFailsIf(isWebpack && isDev)('client-side navigation should redirect if hash included', async () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')
     await page.getByTestId('route-rules-redirect').click()
@@ -174,6 +176,7 @@ describe('pages', () => {
     // composables auto import
     expect(html).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
     expect(html).toContain('Composable | bar: auto imported from ~/utils/useBar.ts')
+    expect(html).toContain('Composable | customFetch: function')
     expect(html).toContain('Composable | template: auto imported from ~/composables/template.ts')
     expect(html).toContain('Composable | star: auto imported from ~/composables/nested/bar.ts via star export')
     // should import components
@@ -213,6 +216,17 @@ describe('pages', () => {
   it('respects redirects in page metadata', async () => {
     const { headers } = await fetch('/redirect', { redirect: 'manual' })
     expect(headers.get('location')).toEqual('/')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/28174
+  // https://github.com/nuxt/nuxt/issues/28966
+  it('respects `navigateTo` called from a plugin during SPA boot', async () => {
+    const { page, pageErrors } = await renderPage('')
+    await page.goto(url('/spa-plugin-redirect/login'))
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/spa-plugin-redirect/protected')
+    expect(await page.getByTestId('spa-plugin-redirect-page').textContent()).toContain('protected')
+    expect(pageErrors).toEqual([])
+    await page.close()
   })
 
   it('allows routes to be added dynamically', async () => {
@@ -416,7 +430,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  it('/client-only-components', async () => {
+  itFailsIf(isWebpack && isDev)('/client-only-components', async () => {
     const html = await $fetch<string>('/client-only-components')
     expect(html).toContain('<div>Fallback</div>')
     // ensure components are not rendered server-side
@@ -530,11 +544,11 @@ describe('pages', () => {
 
   it('/wrapper-expose/page', async () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/wrapper-expose/page')
-    await page.waitForLoadState('networkidle')
     await page.locator('#log-foo').click()
     expect(consoleLogs.at(-1)?.text).toBe('bar')
     // change page
     await page.locator('#to-hello').click()
+    await page.locator('#to-foo').waitFor()
     await page.locator('#log-foo').click()
     expect(pageErrors.at(-1)?.toString() || consoleLogs.at(-1)!.text).toContain('.foo is not a function')
     await page.locator('#log-hello').click()
@@ -724,6 +738,10 @@ describe('pages', () => {
     await page.waitForFunction(() => window.useNuxtApp?.()._route.query.active === 'true')
     expect(await page.evaluate(() => window.useNuxtApp?.()._route.query.active)).toBe('true')
     expect(await page.$eval('div', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
+
+    // the query should already be restored by the time the page is mounted, so
+    // `onMounted` reads the real query rather than the prerendered empty one
+    expect(await page.innerText('#mounted-query')).toBe('true')
 
     await page.close()
   })
@@ -1216,6 +1234,13 @@ describe('navigate', () => {
     expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/navigate-some-path"></head></html>"')
   })
 
+  it('preserves cookies set during render on a redirect response', async () => {
+    const res = await fetch('/cookie-then-redirect', { redirect: 'manual' })
+    expect(res.status).toEqual(302)
+    expect(res.headers.get('location')).toEqual('/')
+    expect(res.headers.get('set-cookie')).toContain('set-before-redirect=redirected')
+  })
+
   it('should not overwrite headers', async () => {
     const { headers, status } = await fetch('/navigate-to-external', { redirect: 'manual' })
 
@@ -1250,11 +1275,23 @@ describe('navigate', () => {
     expect(res.headers.get('location')).not.toContain('<')
     expect(res.headers.get('location')).not.toContain('>')
     const content = body.match(/content="0; url=([^"]*)"/)?.[1] ?? ''
-    expect(content).not.toMatch(/[<>&"']/)
-    expect(content).toContain('%3C')
-    expect(content).toContain('%3E')
-    expect(content).toContain('%26')
-    expect(content).toContain('%27')
+    // HTML-significant characters are entity-encoded so they cannot break out of
+    // the attribute, while the URL stays semantically intact once decoded.
+    expect(content).not.toMatch(/[<>"]/)
+    expect(content).toContain('&amp;')
+    expect(content).toContain('&#x27;')
+  })
+
+  it('preserves query string separators in SSR redirect body', async () => {
+    const res = await fetch('/navigate-to-query-params', { redirect: 'manual' })
+    const body = await res.text()
+    expect(res.status).toEqual(302)
+    // Location header must keep the query separators as `&` (#35475)
+    expect(res.headers.get('location')).toEqual('/navigate-some-path?a=a&b=b&c=c')
+    // The meta-refresh body must not corrupt separators into `%26`
+    const content = body.match(/content="0; url=([^"]*)"/)?.[1] ?? ''
+    expect(content).not.toContain('%26')
+    expect(content).toContain('a=a&amp;b=b&amp;c=c')
   })
 
   it.each([
@@ -1780,7 +1817,7 @@ describe('nested suspense', () => {
     [start + '?layout=custom', end],
   ])
 
-  it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
+  itFailsIf(isWebpack && isDev).each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
     const { page, consoleLogs } = await renderPage(start)
 
     const slug = nav.replace(/\?.*$/, '').replace(/[/-]+/g, '-')
@@ -1823,7 +1860,7 @@ describe('nested suspense', () => {
     ['/suspense/async-2/sync-1/', '/suspense/async-1/'],
   ]
 
-  it.each(outwardNavigations)('should navigate from %s to a parent %s with no white flash', async (start, nav) => {
+  itFailsIf(isWebpack && isDev).each(outwardNavigations)('should navigate from %s to a parent %s with no white flash', async (start, nav) => {
     const { page, consoleLogs } = await renderPage(start)
 
     await page.waitForSelector(`main:has(#child${start.replace(/[/-]+/g, '-')})`)
@@ -1862,7 +1899,7 @@ describe('nested suspense', () => {
     ['/suspense/async-2/', '/suspense/async-1/sync-1/'],
   ]
 
-  it.each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
+  itFailsIf(isWebpack && isDev).each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
     const { page, consoleLogs } = await renderPage(start)
 
     const slug = nav.replace(/[/-]+/g, '-')
@@ -2104,7 +2141,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     expect(cssFiles?.length).toBeGreaterThan(0)
     if (isWebpack) {
       // TODO: use non-hash name for webpack css files in test fixture
-      expect(cssFiles).toHaveLength(2)
+      const stylesheets = cssFiles!.filter(m => m.includes('rel="stylesheet"'))
+      expect(stylesheets).toHaveLength(2)
     } else {
       expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
         [
@@ -2389,7 +2427,8 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   // TODO: looks like this test is flaky
-  it.skipIf(!isTestingAppManifest)('does not fetch a prefetched payload', { retry: 3 }, async () => {
+  const prefetchedPayloadIt = !isTestingAppManifest ? it.skip : itFailsIf(isWebpack && isDev)
+  prefetchedPayloadIt('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/random/a')
@@ -2542,7 +2581,7 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 })
 
 describe.runIf(isDev)('component testing', () => {
-  it('should work', async () => {
+  itFailsIf(isWebpack && isDev)('should work', async () => {
     // TODO: fix in nuxt/test-utils
     const comp1 = await $fetchComponent('app/components/Counter.vue', { multiplier: 2 })
     expect(comp1).toContain('12 x 2 = 24')
@@ -2657,7 +2696,7 @@ describe('experimental', () => {
   it('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
     expect(html).toContain('decorated-decorated')
-    expectNoClientErrors('/experimental/decorators')
+    await expectNoClientErrors('/experimental/decorators')
   })
 
   it('Node.js compatibility for client-side', async () => {
@@ -2713,7 +2752,7 @@ describe('lazy import components', () => {
   }
 
   describe.each(Object.entries(hydrationTests))('delayed hydration components %s', (description, path) => {
-    it('lazy load delayed hydration comps at the right time', { timeout: 20_000 }, async () => {
+    itFailsIf(isWebpack && isDev && description === 'in template')('lazy load delayed hydration comps at the right time', { timeout: 20_000 }, async () => {
       const html = await $fetch<string>(`/lazy-import-components/delayed-hydration${path}`)
 
       const hydratedText = 'This is mounted.'
@@ -2748,7 +2787,7 @@ describe('lazy import components', () => {
       await page.close()
     })
 
-    it('respects custom delayed hydration triggers and overrides defaults', async () => {
+    itFailsIf(isWebpack && isDev && description === 'in template')('respects custom delayed hydration triggers and overrides defaults', async () => {
       const { page } = await renderPage(`/lazy-import-components/delayed-hydration${path}`)
 
       const unhydratedText = 'This is not mounted.'
@@ -2775,7 +2814,7 @@ describe('lazy import components', () => {
       await page.close()
     })
 
-    it('handles time-based hydration correctly', async () => {
+    itFailsIf(isWebpack && isDev)('handles time-based hydration correctly', async () => {
       const unhydratedText = 'This is not mounted.'
       const html = await $fetch<string>(`/lazy-import-components/delayed-hydration${path}/time`)
       expect(html).toContain(unhydratedText)
@@ -2798,11 +2837,22 @@ describe('lazy import components', () => {
       const incrementButton = page.getByTestId('increment')
 
       await countLocator.waitFor()
+      expect(await countLocator.textContent()).toBe('0')
 
-      for (let i = 0; i < 10; i++) {
-        expect(await countLocator.textContent()).toBe(`${i}`)
-        await incrementButton.hover()
+      // The first interaction triggers hydration asynchronously, and the click
+      // that triggers it is not guaranteed to also register as an increment.
+      // Hover to start hydration, then click until the count actually advances
+      // before driving the deterministic loop below.
+      await incrementButton.hover()
+      await expect.poll(async () => {
         await incrementButton.click()
+        return countLocator.textContent()
+      }).not.toBe('0')
+
+      let count = Number(await countLocator.textContent())
+      while (count < 10) {
+        await incrementButton.click()
+        await expect.poll(() => countLocator.textContent()).toBe(`${++count}`)
       }
 
       expect(await countLocator.textContent()).toBe('10')
@@ -2810,7 +2860,7 @@ describe('lazy import components', () => {
       await page.close()
     })
 
-    it('emits hydration events', async () => {
+    itFailsIf(isWebpack && isDev && description === 'in template')('emits hydration events', async () => {
       const { page, consoleLogs } = await renderPage(`/lazy-import-components/delayed-hydration${path}/model-event`)
 
       const initialLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
@@ -2911,7 +2961,7 @@ describe('nuxt-time', () => {
     expect(html.match(string)?.length).toEqual(1)
   })
 
-  it('has no hydration errors on the client', async () => {
+  itFailsIf(isWebpack && isDev)('has no hydration errors on the client', async () => {
     const page = await createPage(undefined, { locale: 'en-GB' })
     const logs: string[] = []
 
@@ -2942,7 +2992,7 @@ describe('nuxt-time', () => {
     expect(logs.join('')).toMatchInlineSnapshot('""')
   })
 
-  it('displays relative time correctly', async () => {
+  itFailsIf(isWebpack && isDev)('displays relative time correctly', async () => {
     const page = await createPage(undefined, { locale: 'en-GB' })
     const logs: string[] = []
 

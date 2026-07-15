@@ -86,6 +86,28 @@ export interface NuxtApp {
   pages?: NuxtPage[]
 }
 
+/**
+ * Build artifacts consumed by the Nitro server runtime via `nuxt/*` subpath imports.
+ *
+ * Builders populate this with the `setBuildOutput()` kit helper. Function-valued
+ * keys return the module body as a string; `ssrStyles` is an absolute path to an
+ * emitted module whose own imports resolve relative to its location.
+ */
+export interface NuxtBuildOutputs {
+  /** Module body re-exporting the SSR app entry. */
+  serverEntry: () => string | Promise<string>
+  /** Path to the emitted per-component SSR styles map, or `undefined` when no inline styles are produced. */
+  ssrStyles: string | undefined
+  /** Serialized client manifest for `vue-bundle-renderer`. */
+  clientManifest: () => string | Promise<string>
+  /** Serialized precomputed client dependency data for `vue-bundle-renderer`. */
+  clientPrecomputed: () => string | Promise<string>
+  /** Module body exporting the hashed entry chunk filename for import maps. */
+  entryChunkName: () => string | Promise<string>
+  /** Module body exporting the entry module IDs used for inline style extraction. */
+  entryIds: () => string | Promise<string>
+}
+
 export interface Nuxt {
   // Private fields.
   '__name': string
@@ -109,6 +131,14 @@ export interface Nuxt {
   }
   /** Async local storage for current running Nuxt module instance. */
   '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
+
+  /**
+   * The Node HTTP(S) server the dev server is listening on, captured from the
+   * `listen` hook. Builders use it to attach their HMR websocket to the same
+   * server (and therefore the same port and certificate) as the app.
+   * @internal
+   */
+  '_devServerListener'?: import('node:http').Server | import('node:https').Server
   /**
    * Module options functions collected from moduleDependencies.
    * @internal
@@ -132,4 +162,6 @@ export interface Nuxt {
   'vfs': Record<string, string>
 
   'apps': Record<string, NuxtApp>
+
+  'buildOutputs': NuxtBuildOutputs
 }

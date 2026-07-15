@@ -52,7 +52,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
       mode: 'client',
     }]
   },
-}).raw({}, { framework: 'rollup' }) as Plugin
+}).raw({}, { framework: 'rollup', versions: {} }) as Plugin
 
 const treeshake = async (source: string): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -211,5 +211,28 @@ describe('treeshake client only in ssr', () => {
 
     expect(treeshaken).toContain('resolveComponent("AppIcon")')
     expect(treeshaken).not.toContain('caret-up')
+  })
+
+  it('should not treeshake a reused component referenced via member expression', async () => {
+    const treeshaken = await treeshake(`import { resolveComponent as _resolveComponent, withCtx as _withCtx, createVNode as _createVNode } from "vue"
+    import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "vue/server-renderer"
+
+    export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+      _push(\`<div\${_ssrRenderAttrs(_attrs)}>\`)
+      _push(_ssrRenderComponent($setup["Reused"], null, null, _parent))
+      _push(_ssrRenderComponent($setup["ClientOnly"], null, {
+        default: _withCtx((_, _push, _parent, _scopeId) => {
+          if (_push) {
+            _push(_ssrRenderComponent($setup["Reused"], null, null, _parent, _scopeId))
+          } else {
+            return [_createVNode($setup["Reused"])]
+          }
+        }),
+        _: 1 /* STABLE */
+      }, _parent))
+      _push(\`</div>\`)
+    }`)
+
+    expect(treeshaken).toContain('$setup["Reused"], null, null, _parent))')
   })
 })

@@ -29,11 +29,21 @@ export async function base (ctx: WebpackConfigContext) {
 }
 
 function baseConfig (ctx: WebpackConfigContext) {
+  const rules: NonNullable<Configuration['module']>['rules'] = []
+  if (builder === 'rspack') {
+    rules.push({
+      test: /\.m?js$/,
+      resolve: {
+        fullySpecified: false,
+      },
+    })
+  }
+
   ctx.config = defu({}, {
     name: ctx.name,
-    entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
+    entry: { app: [resolve(ctx.options.appDir, (ctx.options.experimental.asyncEntry || ctx.isDev) ? 'entry.async' : 'entry')] },
     module: {
-      rules: [],
+      rules,
       // Nuxt resolves some virtual module exports lazily (e.g. `?inline` CSS), so missing exports
       // must not fail the build under Rspack.
       ...builder === 'rspack'

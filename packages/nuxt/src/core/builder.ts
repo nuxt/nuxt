@@ -236,8 +236,14 @@ async function createParcelWatcher () {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
+  let subscribe: typeof import('@parcel/watcher').subscribe
   try {
-    const { subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', { url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) })
+    ({ subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', { url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) }))
+  } catch {
+    logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+    return false
+  }
+  try {
     const pathsToWatch = resolvePathsToWatch(nuxt, { parentDirectories: true })
     for (const dir of pathsToWatch) {
       if (!await isDirectory(dir)) { continue }
@@ -260,8 +266,8 @@ async function createParcelWatcher () {
       console.timeEnd('[nuxt] builder:parcel:watch')
     }
     return true
-  } catch {
-    logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+  } catch (error) {
+    logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` failed to set up watchers.', error)
     return false
   }
 }

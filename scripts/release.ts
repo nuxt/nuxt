@@ -114,7 +114,7 @@ async function main () {
       console.info('🌙 Bumping versions to nightly...')
       await import('./bump-nightly.ts').then(r => r.bumpNightly())
     } else {
-      execCommand('pnpm build')
+      execFile('vp', ['run', 'build'])
     }
 
     // Use absolute URLs for better rendering on npm
@@ -158,7 +158,7 @@ async function main () {
 
       // Publish with primary tag with trusted publishing
       console.info(`🏷️ Publishing ${pkgDir} with tag: ${tag}`)
-      execFile('pnpm', ['publish', '--access', 'public', '--no-git-checks', '--tag', tag])
+      execFile('vp', ['exec', 'pnpm', 'publish', '--access', 'public', '--no-git-checks', '--tag', tag])
 
       const pkg = readPackageJson('.')
       published.push({ name: pkg.name, version: pkg.version })

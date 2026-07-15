@@ -16,4 +16,29 @@ describe('typed router integration', () => {
     // Ensure params are not duplicated
     expect(typedRouterDts).not.toMatch(/\{\s*id:\s*ParamValue<\w+>,\s*id:\s*ParamValue<\w+>\s*\}/)
   })
+
+  // The keys in `_RouteFileInfoMap` are consumed by the `sfc-typed-router` Volar
+  // plugin, which resolves each SFC via `relative(rootDir, file)`. If they are
+  // generated relative to `process.cwd()` instead, they only match when
+  // `process.cwd() === rootDir`; otherwise `useRoute()` in a page silently falls
+  // back to `keyof RouteNamedMap`.
+  describe('generates _RouteFileInfoMap keys relative to rootDir, not process.cwd()', () => {
+    const readTypedRouterDts = () => readFileSync(resolve(rootDir, '.nuxt/types/typed-router.d.ts'), 'utf8')
+
+    it('when prepared from a different cwd (nuxt prepare <rootDir>)', async () => {
+      await x('nuxt', ['prepare', rootDir])
+      const dts = readTypedRouterDts()
+      // rootDir-relative key present
+      expect(dts).toMatch(/'app\/pages\/page\.vue':/)
+      // never cwd-relative (the regression prefixed keys with the fixture path)
+      expect(dts).not.toMatch(/'[^']*fixtures\/basic-types\/[^']*\.vue':/)
+    })
+
+    it('when prepared with cwd === rootDir', async () => {
+      await x('nuxt', ['prepare'], { nodeOptions: { cwd: rootDir } })
+      const dts = readTypedRouterDts()
+      expect(dts).toMatch(/'app\/pages\/page\.vue':/)
+      expect(dts).not.toMatch(/'[^']*fixtures\/basic-types\/[^']*\.vue':/)
+    })
+  })
 })

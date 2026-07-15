@@ -49,7 +49,7 @@ Awaiting `useLazyFetch` only ensures the call is initialized. On client-side nav
 export function useLazyFetch<DataT, ErrorT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
   options?: UseFetchOptions<DataT>,
-): Promise<AsyncData<DataT, ErrorT>>
+): AsyncData<DataT, ErrorT> & Promise<AsyncData<DataT, ErrorT>>
 ```
 
 ::note

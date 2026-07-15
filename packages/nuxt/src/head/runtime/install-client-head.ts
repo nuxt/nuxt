@@ -2,10 +2,15 @@ import type { createHead as createClientHead } from '@unhead/vue/client'
 import type { ActiveHeadEntry } from '@unhead/vue'
 import type { NuxtApp } from '#app/nuxt'
 
+// @ts-expect-error virtual file
+import { appHead } from '#build/nuxt.config.mjs'
+
 type ClientHead = ReturnType<typeof createClientHead>
 
 export function installClientHead (nuxtApp: NuxtApp, head: ClientHead): void {
-  // nuxt.config appHead is set server-side within the renderer
+  // re-push server-only `app.head` so `titleTemplate` survives hydration (#35468)
+  head.push(appHead)
+
   nuxtApp.vueApp.use(head)
 
   // pause dom updates until page is ready and between page transitions

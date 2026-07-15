@@ -1,7 +1,7 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
-import { hash } from 'ohash'
+import { hashFunction, hashKey } from '../utils/hash'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
@@ -94,6 +94,11 @@ interface BaseAsyncDataOptions<
    * A timeout in milliseconds after which the request will be aborted if it has not resolved yet.
    */
   timeout?: number
+  /**
+   * Controls whether to run the async function
+   * @default true
+   */
+  enabled?: MaybeRefOrGetter<boolean>
 }
 
 export interface AsyncDataOptions<
@@ -386,6 +391,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       opts.immediate ??= true
       opts.deep ??= asyncDataDefaults.deep
       opts.dedupe ??= 'cancel'
+      opts.enabled ??= true
 
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
@@ -576,10 +582,27 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
             })
           : noop
 
+        // Enabled watcher: when `enabled` becomes falsy, cancel any in-flight request
+        // (without clearing data). Only needed when `enabled` is reactive (a ref or getter).
+        const unsubEnabledWatcher = isRef(opts.enabled) || typeof opts.enabled === 'function'
+          ? watch(() => toValue(opts.enabled), (isEnabled) => {
+              const entry = nuxtApp._asyncData[key.value]
+              if (isEnabled || !entry || !nuxtApp._asyncDataPromises[key.value]) { return }
+              entry._abortController?.abort(new DOMException('AsyncData request cancelled by `enabled: false`', 'AbortError'))
+              entry._abortController = undefined
+              delete nuxtApp._asyncDataPromises[key.value]
+              if (pendingWhenIdle) {
+                entry.pending.value = false
+              }
+              entry.status.value = 'idle'
+            })
+          : noop
+
         if (hasScope) {
           onScopeDispose(() => {
             unsubKeyWatcher()
             unsubParamsWatcher()
+            unsubEnabledWatcher()
             unregister(key.value)
           })
         }
@@ -710,10 +733,13 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
     return Promise.resolve()
   }
 
-  await new Promise<void>(resolve => onNuxtReady(resolve))
+  const nuxtApp = useNuxtApp()
+  if (nuxtApp.isHydrating) {
+    await new Promise<void>(resolve => onNuxtReady(resolve))
+  }
 
   const _keys = keys ? toArray(keys) : undefined
-  await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
+  await nuxtApp.hooks.callHookParallel('app:data:refresh', _keys)
 }
 
 /** @since 3.0.0 */
@@ -832,6 +858,10 @@ function buildAsyncData<
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
         }
+      }
+      // if is not enabled, the fetch is prevented
+      if (toValue(options.enabled) === false) {
+        return Promise.resolve(asyncData.data.value)
       }
       if (pendingWhenIdle) {
         asyncData.pending.value = true
@@ -967,10 +997,10 @@ const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtA
 
 function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Record<keyof AsyncDataOptions<any>, unknown>>) {
   return {
-    handler: hash(_handler),
-    transform: options.transform ? hash(options.transform) : undefined,
-    pick: options.pick ? hash(options.pick) : undefined,
-    getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
+    handler: hashFunction(_handler),
+    transform: options.transform ? hashFunction(options.transform as (...args: any[]) => any) : undefined,
+    pick: options.pick ? hashKey(options.pick) : undefined,
+    getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
