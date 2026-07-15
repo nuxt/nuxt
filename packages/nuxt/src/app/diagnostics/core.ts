@@ -38,10 +38,6 @@ export const appDiagnostics = !import.meta.dev
           why: (p: { name: string }) => `\`${p.name}\` is a compiler macro or compiler-hint helper and cannot be called at runtime. Its arguments are meant to be compiled away.`,
           fix: 'Call it statically from inside the directories scanned by the Nuxt compiler — for a page hint, from the `<script setup>` block of a page component in `pages/`.',
         },
-        NUXT_E1008: {
-          why: 'Skipping render: a response was already set by middleware or a plugin.',
-          docs: false,
-        },
         NUXT_E1009: {
           why: 'Error while mounting app.',
           fix: 'Check your plugins and app initialization code for unhandled errors.',

@@ -39,11 +39,6 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Use only JSON-serializable values (strings, numbers, booleans, arrays, plain objects) in `defineRouteRules()`.',
       docs: false,
     },
-    NUXT_B4007: {
-      why: (p: { fnName: string }) => `\`${p.fnName}()\` could not be transformed because of a syntax error in the page file.`,
-      fix: 'Fix the syntax error reported in the code frame in the page file.',
-      docs: false,
-    },
     NUXT_B4008: {
       why: 'Server pages with `ssr: false` are not supported while component islands are auto-detected.',
       fix: 'Set `experimental.componentIslands` to `true`.',

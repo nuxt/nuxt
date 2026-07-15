@@ -264,7 +264,8 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promi
       })
     } catch (e) {
       const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
-      if ((e as Error).message === 'Invalid plugin metadata') {
+      const code = e instanceof Error ? e.name : ''
+      if (code === 'NUXT_B2001' || code === 'NUXT_B2002') {
         pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc })
       } else {
         pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc, cause: e })

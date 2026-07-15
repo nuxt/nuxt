@@ -59,7 +59,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const metaArg = node.arguments[1]
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throw new Error('Invalid plugin metadata')
+        throw pluginDiagnostics.NUXT_B2001({ name: name as string, type: metaArg.type })
       }
       meta = extractMetaFromObject(metaArg.properties)
     }
@@ -107,7 +107,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
   const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
-      throw new Error('Invalid plugin metadata')
+      throw pluginDiagnostics.NUXT_B2002()
     }
     const propertyKey = property.key.name
     if (propertyKey === 'hooks') {

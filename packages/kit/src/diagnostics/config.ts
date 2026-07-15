@@ -41,11 +41,6 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Set `target: "node"` in your webpack server configuration.',
       docs: false,
     },
-    NUXT_B5008: {
-      why: (p: { preset: string }) => `\`${p.preset}\` is not a known PostCSS order preset.`,
-      fix: 'Use one of `cssnanoLast`, `autoprefixerLast`, or `autoprefixerAndCssnanoLast`, or pass a function instead.',
-      docs: false,
-    },
     NUXT_B5009: {
       why: '`@parcel/watcher` cannot be resolved in your project, so `chokidar` is being used instead.',
       fix: 'Install `@parcel/watcher` for better file watching: `npm install -D @parcel/watcher`.',
@@ -58,11 +53,6 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5011: {
       why: (p: { name: string }) => `Package \`${p.name}\` is missing.`,
-      fix: (p: { name: string }) => `Run \`npx nuxt add ${p.name}\` to install it.`,
-      docs: false,
-    },
-    NUXT_B5012: {
-      why: (p: { name: string }) => `Package \`${p.name}\` is required but not installed.`,
       fix: (p: { name: string }) => `Run \`npx nuxt add ${p.name}\` to install it.`,
       docs: false,
     },

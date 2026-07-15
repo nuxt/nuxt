@@ -54,11 +54,6 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { install: string }) => `Run \`npm install -D ${p.install}\` to install the required Babel decorator dependencies.`,
       docs: false,
     },
-    NUXT_B7010: {
-      why: (p: { deps: string }) => `The Babel dependencies required for decorator support are missing: ${p.deps}.`,
-      fix: (p: { install: string }) => `Run \`npm install -D ${p.install}\` to install the required Babel decorator dependencies.`,
-      docs: false,
-    },
     NUXT_B7011: {
       why: (p: { pluginName: string }) => `The PostCSS plugin \`${p.pluginName}\` could not be imported, which is unexpected.`,
       fix: (p: { pluginName: string }) => `Run \`npm install -D ${p.pluginName}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.`,

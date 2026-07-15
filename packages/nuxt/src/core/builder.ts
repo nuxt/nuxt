@@ -300,9 +300,6 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err: any) {
-    if (builder === '@nuxt/webpack-builder' && err?.toString?.().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
-      throw buildDiagnostics.NUXT_B1016({ cause: err })
-    }
     throw buildDiagnostics.NUXT_B1017({ builder, cause: err })
   }
 }

@@ -84,11 +84,6 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Install `@parcel/watcher` for better performance: `npm install -D @parcel/watcher`.',
       docs: false,
     },
-    NUXT_B1016: {
-      why: 'Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies.',
-      fix: 'Run `npm install -D @nuxt/webpack-builder` to install it.',
-      docs: false,
-    },
     NUXT_B1017: {
       why: (p: { builder: string }) => `Loading \`${p.builder}\` builder failed.`,
       fix: (p: { builder: string }) => `Run \`npm install ${p.builder}\` to install it.`,
