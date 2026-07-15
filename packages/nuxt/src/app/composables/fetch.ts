@@ -89,6 +89,8 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       }
       segments.push(hashKey(entries))
     } else if (isPlainObject(value)) {
+      // `reactive` unwraps nested refs so a body like `{ id: ref(1) }` hashes by the
+      // ref's value; hashing the plain object would serialize mutable ref internals.
       segments.push(hashKey(reactive(value)))
     } else {
       try {

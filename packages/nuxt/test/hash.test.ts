@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { reactive, ref } from 'vue'
 import { hashFunction, hashKey } from '#app/composables/hash'
 
 describe('hashKey', () => {
@@ -31,6 +32,18 @@ describe('hashKey', () => {
   it('distinguishes different values', () => {
     expect(hashKey({ a: 1 })).not.toBe(hashKey({ a: 2 }))
     expect(hashKey([1, 2, 3])).not.toBe(hashKey([1, 3, 2]))
+  })
+
+  // `useFetch` wraps a plain-object body in `reactive()` so nested refs are unwrapped
+  // to their value before hashing; hashing the ref object directly would serialize its
+  // mutable internals (`version`, `dep`, ...) and drift once the ref has been written to.
+  it('hashes a reactive object by value, stable across ref mutation', () => {
+    const id = ref(1)
+    const before = hashKey(reactive({ id }))
+    id.value = 2
+    id.value = 1
+    expect(hashKey(reactive({ id }))).toBe(before)
+    expect(hashKey(reactive({ id }))).toBe(hashKey({ id: 1 }))
   })
 
   it('handles the types passed as fetch keys', () => {
