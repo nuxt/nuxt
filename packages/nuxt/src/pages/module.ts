@@ -169,7 +169,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:templates', (app) => {
       if (!nuxt.options.ssr && app.pages?.some(p => p.mode === 'server')) {
-        pageDiagnostics.NUXT_B4008({})
+        pageDiagnostics.NUXT_B4008()
       }
     })
 

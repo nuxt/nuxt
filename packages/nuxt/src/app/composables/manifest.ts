@@ -24,7 +24,7 @@ let manifest: Promise<NuxtAppManifest> | undefined
 
 function fetchManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw manifestDiagnostics.NUXT_E5001({})
+    throw manifestDiagnostics.NUXT_E5001()
   }
   let _manifest: Promise<NuxtAppManifest>
   if (import.meta.server) {
@@ -47,7 +47,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     if (manifest === _manifest) {
       manifest = undefined
     }
-    manifestDiagnostics.NUXT_E5002({ cause: e }, { method: 'error' })
+    manifestDiagnostics.NUXT_E5002({ cause: e })
   })
   return _manifest
 }
@@ -55,7 +55,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
 /** @since 3.7.4 */
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw manifestDiagnostics.NUXT_E5001({})
+    throw manifestDiagnostics.NUXT_E5001()
   }
   return manifest || fetchManifest()
 }
@@ -70,7 +70,7 @@ export function getRouteRules (arg: string | H3Event | { path: string }) {
   try {
     return routeRulesMatcher(path.toLowerCase())
   } catch (e) {
-    manifestDiagnostics.NUXT_E5003({ path, cause: e }, { method: 'error' })
+    manifestDiagnostics.NUXT_E5003({ path, cause: e })
     return {}
   }
 }

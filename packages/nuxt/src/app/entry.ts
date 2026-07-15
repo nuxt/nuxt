@@ -100,7 +100,7 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    appDiagnostics.NUXT_E1009({ cause: error }, { method: 'error' })
+    appDiagnostics.NUXT_E1009({ cause: error })
     throw error
   })
 }

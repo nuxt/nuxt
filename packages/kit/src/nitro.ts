@@ -81,7 +81,7 @@ export function addPrerenderRoutes (routes: string | string[]): void {
 export function useNitro (): Nitro {
   const nuxt = useNuxt()
   if (!(nuxt as any)._nitro) {
-    throw kitDiagnostics.NUXT_B8003({})
+    throw kitDiagnostics.NUXT_B8003()
   }
   return (nuxt as any)._nitro
 }

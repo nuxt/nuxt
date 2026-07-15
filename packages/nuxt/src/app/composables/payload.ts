@@ -221,7 +221,7 @@ export function definePayloadReviver (
   revive: (data: any) => any | undefined,
 ): void {
   if (import.meta.dev && getCurrentInstance()) {
-    stateDiagnostics.NUXT_E7004({})
+    stateDiagnostics.NUXT_E7004()
   }
   if (import.meta.client) {
     useNuxtApp()._payloadRevivers[name] = revive

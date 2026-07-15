@@ -274,7 +274,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (import.meta.dev && !isProcessingMiddleware()) {
-    throw navigationDiagnostics.NUXT_E2003({})
+    throw navigationDiagnostics.NUXT_E2003()
   }
 
   if (!err) { return false }
@@ -296,13 +296,13 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
-      navigationDiagnostics.NUXT_E2007({})
+      navigationDiagnostics.NUXT_E2007()
     }
     nuxtApp.payload.state._layout = layout
     nuxtApp.payload.state._layoutProps = props
   }
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
-    navigationDiagnostics.NUXT_E2008({})
+    navigationDiagnostics.NUXT_E2008()
   }
   const inMiddleware = isProcessingMiddleware()
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {

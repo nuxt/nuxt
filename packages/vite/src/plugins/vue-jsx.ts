@@ -41,7 +41,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
 
     if (!result) {
       installFailed = true
-      bundlerDiagnostics.NUXT_B7008({})
+      bundlerDiagnostics.NUXT_B7008()
       return undefined
     }
 

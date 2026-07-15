@@ -360,10 +360,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       // Validate arguments
       const key = (isKeyReactive ? computed(() => toValue(_key)!) : { value: _key as string }) as { readonly value: string }
       if (!key.value || typeof key.value !== 'string') {
-        throw dataDiagnostics.NUXT_E3008({})
+        throw dataDiagnostics.NUXT_E3008()
       }
       if (typeof _handler !== 'function') {
-        throw dataDiagnostics.NUXT_E3009({})
+        throw dataDiagnostics.NUXT_E3009()
       }
 
       const shouldFactoryOptionsOverride = typeof options === 'function'
@@ -470,7 +470,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
           instance.sp = []
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
-          dataDiagnostics.NUXT_E3003({})
+          dataDiagnostics.NUXT_E3003()
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
           instance._nuxtOnBeforeMountCbs = []
@@ -833,7 +833,7 @@ function buildAsyncData<
       const [_opts, newValue = undefined] = args
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
       if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
-        dataDiagnostics.NUXT_E3005({})
+        dataDiagnostics.NUXT_E3005()
       }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {

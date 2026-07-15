@@ -74,7 +74,7 @@ export function useResponseHeader (header: string): import('vue').WritableComput
     if (import.meta.dev) {
       return computed({
         get: () => undefined,
-        set: () => appDiagnostics.NUXT_E1010({}),
+        set: () => appDiagnostics.NUXT_E1010(),
       })
     }
     return ref()
@@ -121,7 +121,7 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
   if (import.meta.client) { return }
 
   if (typeof callback !== 'string') {
-    throw appDiagnostics.NUXT_E1006({})
+    throw appDiagnostics.NUXT_E1006()
   }
 
   const vm = getCurrentInstance()

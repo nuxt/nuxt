@@ -727,7 +727,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // For full-static output, ensure payload extraction is not disabled
   if (nuxt.options.ssr && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
-    bundlerDiagnostics.NUXT_B7015({})
+    bundlerDiagnostics.NUXT_B7015()
   }
 
   // Trigger Nitro reload when SPA loading template changes

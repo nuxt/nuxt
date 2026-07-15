@@ -5,7 +5,7 @@ import { docsBase, reporters } from './_shared.ts'
  * E2xxx
  * Navigation / routing / middleware runtime diagnostics.
  */
-export const navigationDiagnostics = import.meta.client && !import.meta.dev && !import.meta.test
+export const navigationDiagnostics = import.meta.env.PROD
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
   : /* #__PURE__ */ defineDiagnostics({
       docsBase,

@@ -5,7 +5,7 @@ import { docsBase, reporters } from './_shared.ts'
  * E1xxx
  * Core / Nuxt-instance / lifecycle runtime diagnostics.
  */
-export const appDiagnostics = import.meta.client && !import.meta.dev && !import.meta.test
+export const appDiagnostics = import.meta.env.PROD
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
   : /* #__PURE__ */ defineDiagnostics({
       docsBase,

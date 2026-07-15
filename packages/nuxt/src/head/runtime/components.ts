@@ -338,7 +338,7 @@ export const Title: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComp
       input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
       if (import.meta.dev) {
         if (defaultSlot && (defaultSlot.length > 1 || (defaultSlot[0] && typeof defaultSlot[0].children !== 'string'))) {
-          unheadDiagnostics.NUXT_E6002({}, { method: 'error' })
+          unheadDiagnostics.NUXT_E6002()
         }
       }
       update()
@@ -429,7 +429,7 @@ export const Style: DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefa
       const textContent = slots.default?.()?.[0]?.children
       if (textContent) {
         if (import.meta.dev && typeof textContent !== 'string') {
-          unheadDiagnostics.NUXT_E6003({}, { method: 'error' })
+          unheadDiagnostics.NUXT_E6003()
         }
         input.style![idx] = style
         style.textContent = textContent as string

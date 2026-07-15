@@ -8,7 +8,7 @@ import type { Compiler } from 'webpack'
 
 export const validate = (compiler: Compiler) => {
   if (compiler.options.target !== 'node') {
-    configDiagnostics.NUXT_B5007({})
+    configDiagnostics.NUXT_B5007()
   }
 
   if (!compiler.options.externals) {

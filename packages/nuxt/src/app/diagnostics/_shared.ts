@@ -40,6 +40,6 @@ const colors = {
 const devReporters = import.meta.dev ? [/* #__PURE__ */ (createDevReporter())] as const : [] as const
 
 export const reporters = [
-  /* #__PURE__ */ (createConsoleReporter(import.meta.client || import.meta.test ? undefined : { formatter: ansiFormatter(colors) })),
+  /* #__PURE__ */ (createConsoleReporter(import.meta.client || import.meta.test ? undefined : { formatter: ansiFormatter(colors), method: 'error' })),
   ...devReporters,
 ] as const

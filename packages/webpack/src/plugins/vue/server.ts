@@ -40,7 +40,7 @@ export default class VueSSRServerPlugin {
         const entryAssets = entryInfo.assets!.filter((asset: { name: string }) => isJS(asset.name))
 
         if (entryAssets.length > 1) {
-          throw bundlerDiagnostics.NUXT_B7003({})
+          throw bundlerDiagnostics.NUXT_B7003()
         }
 
         const [entry] = entryAssets

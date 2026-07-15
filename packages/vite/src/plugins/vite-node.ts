@@ -531,7 +531,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
   const currentSocketPath = config.socketPath
   if (!currentSocketPath) {
-    throw bundlerDiagnostics.NUXT_B7013({})
+    throw bundlerDiagnostics.NUXT_B7013()
   }
 
   listenAndRestrict(server, currentSocketPath)

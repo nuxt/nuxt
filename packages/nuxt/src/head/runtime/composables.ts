@@ -22,7 +22,7 @@ export function injectHead (nuxtApp?: NuxtApp): VueHeadClient {
       const head = inject<VueHeadClient>(headSymbol)
       // should not be possible
       if (!head) {
-        throw unheadDiagnostics.NUXT_E6001({})
+        throw unheadDiagnostics.NUXT_E6001()
       }
       return head
     }

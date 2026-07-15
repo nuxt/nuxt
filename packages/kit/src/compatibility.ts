@@ -125,7 +125,7 @@ const NUXT_VERSION_RE = /^v/g
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */): string {
   const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
   if (typeof rawVersion !== 'string') {
-    throw kitDiagnostics.NUXT_B8005({})
+    throw kitDiagnostics.NUXT_B8005()
   }
   return rawVersion.replace(NUXT_VERSION_RE, '')
 }

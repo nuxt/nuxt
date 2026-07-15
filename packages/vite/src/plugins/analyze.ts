@@ -20,7 +20,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })) {
-    bundlerDiagnostics.NUXT_B7001({})
+    bundlerDiagnostics.NUXT_B7001()
     return
   }
 
