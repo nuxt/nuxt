@@ -5,7 +5,7 @@ import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
 import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
-import { computeIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
+import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
@@ -15,7 +15,7 @@ const itFailsIf = (condition: boolean) => condition ? it.fails : it
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
   const ctx = opts.context ?? {}
-  const hashId = computeIslandHash(name, serializedProps, ctx, undefined)
+  const hashId = getIslandHash({ name, props: serializedProps, context: ctx })
   const query: Record<string, any> = { ...ctx }
   if (opts.props) { query.props = serializedProps }
   return withQuery(`/__nuxt_island/${name}_${hashId}.json`, query)
@@ -503,13 +503,13 @@ describe('hash binding', () => {
   })
 
   // External island clients (e.g. `@nuxtjs/og-image`) build the URL hash from the props object
-  // and send `JSON.stringify(props)`. `computeIslandHash` over the serialized string and the
+  // and send `JSON.stringify(props)`. `getIslandHash` over the serialized string and the
   // client's object hash converge (asserted in island-hash.test.ts); here we send the raw
   // `JSON.stringify(props)` the external client emits rather than `serializeIslandProps`.
   it('accepts a request whose props were serialized by an external client', async () => {
     const name = 'PureComponent'
     const props = { bool: false, number: 1, str: 's', obj: {} }
-    const hashId = computeIslandHash(name, JSON.stringify(props), {}, undefined)
+    const hashId = getIslandHash({ name, props: JSON.stringify(props) })
     const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
       props: JSON.stringify(props),
     }))
