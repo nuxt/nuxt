@@ -14,7 +14,6 @@ export const manifestDiagnostics = !import.meta.dev
         NUXT_E5001: {
           why: 'The app manifest is not enabled.',
           fix: 'Set `experimental.appManifest: true` in your `nuxt.config`.',
-          docs: false,
         },
         NUXT_E5002: {
           why: 'Could not fetch the app manifest.',

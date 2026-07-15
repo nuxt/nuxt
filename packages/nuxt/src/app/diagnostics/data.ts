@@ -14,7 +14,6 @@ export const dataDiagnostics = !import.meta.dev
         NUXT_E3001: {
           why: (p: { url: string }) => `The \`useFetch\` request URL must not start with "//" (received \`${p.url}\`).`,
           fix: 'Use an absolute URL with a protocol or a relative path instead.',
-          docs: false,
         },
         NUXT_E3002: {
           why: '`useFetch` failed to hash the request body for the cache key.',
@@ -22,7 +21,7 @@ export const dataDiagnostics = !import.meta.dev
           docs: false,
         },
         NUXT_E3003: {
-          why: 'Component is already mounted, so the data fetch cannot be awaited during setup.',
+          why: '`useAsyncData`/`useFetch` was called after the component had already mounted, so the data fetch cannot be awaited during setup.',
           fix: 'Use `$fetch()` for requests triggered after mount (e.g., in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.',
           docs: false,
         },
@@ -49,12 +48,10 @@ export const dataDiagnostics = !import.meta.dev
         NUXT_E3008: {
           why: '`useAsyncData` key must be a non-empty string.',
           fix: 'Pass a non-empty string as the first argument to `useAsyncData()`.',
-          docs: false,
         },
         NUXT_E3009: {
           why: '`useAsyncData` handler must be a function.',
           fix: 'Pass a function as the handler argument, e.g. `useAsyncData(\'key\', () => $fetch(\'/api/data\'))`.',
-          docs: false,
         },
       },
     })

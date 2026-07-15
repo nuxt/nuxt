@@ -14,7 +14,6 @@ export const stateDiagnostics = !import.meta.dev
         NUXT_E7001: {
           why: (p: { url: string }) => `Payload URL must not include a hostname (received \`${p.url}\`).`,
           fix: 'Use a relative path (e.g., `/page`) instead of a full URL with hostname.',
-          docs: false,
         },
         NUXT_E7002: {
           why: (p: { url: string }) => `Cannot load payload \`${p.url}\`.`,
@@ -44,22 +43,18 @@ export const stateDiagnostics = !import.meta.dev
         NUXT_E7007: {
           why: (p: { type: string }) => `\`useState\` init must be a function, but got \`${p.type}\`.`,
           fix: 'Wrap the initial value in a function: `useState(\'key\', () => value)` instead of `useState(\'key\', value)`.',
-          docs: false,
         },
         NUXT_E7008: {
           why: (p: { type: string }) => `\`callOnce\` \`fn\` must be a function, but got \`${p.type}\`.`,
           fix: 'Pass a function as the second argument: `callOnce(\'key\', () => { ... })`.',
-          docs: false,
         },
         NUXT_E7009: {
           why: (p: { key: string }) => `\`useState\` key must be a string (received \`${p.key}\`).`,
           fix: 'Pass a string key as the first argument to `useState()`, e.g. `useState(\'myKey\', () => initialValue)`.',
-          docs: false,
         },
         NUXT_E7010: {
           why: (p: { key: string }) => `\`callOnce\` key must be a string (received \`${p.key}\`).`,
           fix: 'Pass a string key as the first argument to `callOnce()`, e.g. `callOnce(\'myKey\', () => { ... })`.',
-          docs: false,
         },
       },
     })
