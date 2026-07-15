@@ -1,10 +1,9 @@
 import pify from 'pify'
 import type { H3Event as H3V1Event } from 'h3'
 import type { H3Event as H3V2Event } from 'h3-next'
+import type webpackDevMiddleware from 'webpack-dev-middleware'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
-import webpackDevMiddleware from 'webpack-dev-middleware'
-import webpackHotMiddleware from 'webpack-hot-middleware'
-import type { Compiler, Configuration, Stats, Watching } from 'webpack'
+import type { Compiler, Configuration, MultiCompiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { pathToFileURL } from 'node:url'
@@ -49,9 +48,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   await nuxt.callHook(`${builder}:config`, webpackConfigs)
 
-  // Initialize shared MFS for dev
-  const mfs = nuxt.options.dev ? createMFS() : null
-
   // In dev the SSR entry is served from the in-memory bundle via the builder compile hook.
   if (nuxt.options.ssr && !nuxt.options.dev) {
     const serverEntryFile = pathToFileURL(resolve(nuxt.options.buildDir, 'dist/server/server.mjs')).href
@@ -73,10 +69,31 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)
 
-  // Configure compilers
-  const compilers = builder === 'rspack' && createRsbuild
-    ? await createRsbuildCompilers(webpackConfigs, nuxt)
-    : webpackConfigs.map(config => webpack(config))
+  // Rsbuild owns the dev server (middleware mode) and, in production, the
+  // compiler lifecycle. Everything else falls back to plain webpack.
+  if (builder === 'rspack' && createRsbuild) {
+    const rsbuild = await createRsbuildInstance(webpackConfigs, nuxt)
+
+    if (nuxt.options.dev) {
+      await startRsbuildDevServer(rsbuild, nuxt)
+      return
+    }
+
+    const compilers = await getRsbuildCompilers(rsbuild)
+    nuxt.hook('close', async () => {
+      for (const compiler of compilers) {
+        await new Promise(resolve => compiler.close(resolve))
+      }
+    })
+    for (const c of compilers) {
+      await compile(c)
+    }
+    return
+  }
+
+  // Initialize shared MFS for dev
+  const mfs = nuxt.options.dev ? createMFS() : null
+  const compilers = webpackConfigs.map(config => webpack(config))
 
   // In dev, write files in memory FS
   if (nuxt.options.dev) {
@@ -102,13 +119,21 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 }
 
-async function createRsbuildCompilers (configs: Configuration[], nuxt: Nuxt): Promise<Compiler[]> {
+function createRsbuildInstance (configs: Configuration[], nuxt: Nuxt) {
   // One rsbuild environment per Nuxt bundle (client → web, server → node)
   const environments: Record<string, unknown> = {}
   for (const config of configs) {
+    const isServer = config.name === 'server'
+    // Rsbuild's dev server only injects its HMR client into `web` compilers.
+    if (nuxt.options.dev && !isServer) {
+      config.target ??= 'web'
+    }
     environments[config.name!] = {
       output: {
-        target: config.name === 'server' ? 'node' : 'web',
+        target: isServer ? 'node' : 'web',
+        // The dev server serves assets from `<distPath>/<url after publicPath>`,
+        // so point it at the same directory the compiler writes to.
+        distPath: { root: config.output!.path as string },
       },
       tools: {
         // Nuxt generates the full rspack configuration itself, so the
@@ -118,7 +143,7 @@ async function createRsbuildCompilers (configs: Configuration[], nuxt: Nuxt): Pr
     }
   }
 
-  const rsbuild = await createRsbuild!({
+  return createRsbuild!({
     callerName: 'nuxt',
     cwd: nuxt.options.rootDir,
     config: {
@@ -126,18 +151,109 @@ async function createRsbuildCompilers (configs: Configuration[], nuxt: Nuxt): Pr
       mode: nuxt.options.dev ? 'development' : 'production',
       logLevel: 'silent',
       environments,
+      ...nuxt.options.dev
+        ? {
+            server: { middlewareMode: true },
+            dev: {
+              // keep the HMR socket under the build-assets dir so
+              // the upgrade won't be forwarded to nitro
+              client: {
+                path: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'rsbuild-hmr'),
+              },
+            },
+          }
+        : {},
     },
   })
+}
 
+async function getRsbuildCompilers (rsbuild: Awaited<ReturnType<NonNullable<typeof createRsbuild>>>): Promise<Compiler[]> {
   // Returns a MultiCompiler when more than one environment is configured
   const compiler = await rsbuild.createCompiler()
   return ('compilers' in compiler ? compiler.compilers : [compiler]) as Compiler[]
+}
+
+async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<typeof createRsbuild>>>, nuxt: Nuxt) {
+  // Nitro reads the server bundle from the compiler's in-memory output, so the
+  // build must not be considered ready until every compiler has emitted once.
+  const firstCompiles: Array<Promise<void>> = []
+
+  rsbuild.onAfterCreateCompiler(({ compiler }: { compiler: Compiler | MultiCompiler }) => {
+    const compilers = ('compilers' in compiler ? compiler.compilers : [compiler]) as Compiler[]
+    for (const c of compilers) {
+      const name = c.options.name!
+      nuxt.callHook(`${builder}:compile`, { name, compiler: c })
+
+      let settled = false
+      firstCompiles.push(new Promise<void>((resolve, reject) => {
+        c.hooks.done.tap('load-resources', (stats) => {
+          nuxt.callHook(`${builder}:compiled`, { name, compiler: c, stats: stats as Stats })
+          if (!settled) {
+            settled = true
+            resolve()
+          }
+        })
+        c.hooks.failed.tap('nuxt-errorlog', (err) => {
+          if (!settled) {
+            settled = true
+            reject(err)
+          }
+        })
+      }))
+    }
+  })
+
+  const devServer = await rsbuild.createDevServer()
+
+  nuxt.hook('close', () => devServer.close())
+
+  // Attach the HMR websocket to the nuxt dev server, so it shares the
+  // app's port and TLS certificate rather than needing a second server.
+  const listener = nuxt._devServerListener
+  if (listener) {
+    devServer.connectWebSocket({ server: listener })
+    await devServer.afterListen()
+  } else {
+    logger.warn('Could not find the Nuxt dev server to attach Rspack HMR to; hot module replacement will be disabled.')
+  }
+
+  await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares), { cors: () => true })
+
+  await Promise.all(firstCompiles)
+}
+
+function rsbuildToH3Handler (middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void) {
+  return defineEventHandler(async (event) => {
+    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+    if (!isSameOriginRequest(req)) {
+      res!.statusCode = 403
+      res!.end('Forbidden')
+      return
+    }
+    await new Promise<void>((resolve) => {
+      let settled = false
+      const done = () => {
+        if (!settled) {
+          settled = true
+          resolve()
+        }
+      }
+      // Middlewares that serve a response end it without calling `next`, so also
+      // settle when the response finishes; `next` means Nuxt should handle it.
+      res!.on('finish', done)
+      res!.on('close', done)
+      middlewares(req as IncomingMessage, res as ServerResponse, () => done())
+    })
+  })
 }
 
 async function createDevMiddleware (compiler: Compiler) {
   const nuxt = useNuxt()
 
   logger.debug('Creating webpack middleware...')
+
+  const { default: webpackDevMiddleware } = await import('webpack-dev-middleware')
+  const { default: webpackHotMiddleware } = await import('webpack-hot-middleware')
 
   // Create webpack dev middleware
   const devMiddleware = webpackDevMiddleware(compiler, {
