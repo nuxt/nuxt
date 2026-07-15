@@ -40,8 +40,8 @@ export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B3007: {
-      why: (p: { file: string }) => `The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled, or with Vite. file: \`${p.file}\`.`,
-      fix: 'Set `experimental.componentIslands.selectiveClient` to `true` in your `nuxt.config`, or switch to the Vite builder with `builder: \'vite\'`.',
+      why: (p: { file: string }) => `Using the \`nuxt-client\` attribute (in \`${p.file}\`) to render client components within islands requires \`experimental.componentIslands.selectiveClient\` to be enabled.`,
+      fix: 'Set `experimental.componentIslands.selectiveClient` to `true` in your `nuxt.config`.',
       docs: false,
     },
     NUXT_B3008: {
@@ -67,6 +67,11 @@ export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B3012: {
       why: (p: { name: string }) => `Overriding ${p.name} component.`,
       fix: 'Specify a `priority` option when calling `addComponent` to avoid this warning.',
+      docs: false,
+    },
+    NUXT_B3013: {
+      why: (p: { file: string }) => `Rendering client components within islands via the \`nuxt-client\` attribute (in \`${p.file}\`) is only supported with the Vite builder.`,
+      fix: 'Switch to the Vite builder with `builder: \'vite\'` in your `nuxt.config`.',
       docs: false,
     },
   },

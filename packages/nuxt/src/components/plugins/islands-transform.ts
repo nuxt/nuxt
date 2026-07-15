@@ -137,7 +137,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           if (!options.selectiveClient) {
             componentDiagnostics.NUXT_B3007({ file: id })
           } else if (!isVite) {
-            componentDiagnostics.NUXT_B3007({ file: id })
+            componentDiagnostics.NUXT_B3013({ file: id })
           }
         }
 
