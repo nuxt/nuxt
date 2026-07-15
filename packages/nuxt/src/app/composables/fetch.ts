@@ -8,7 +8,6 @@ import { isPlainObject } from '@vue/shared'
 import { useRequestFetch } from './ssr'
 // @ts-expect-error virtual file
 import { $fetch as _$fetch } from '#build/fetch.mjs'
-const $fetch = _$fetch as $Fetch
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
 import type { NuxtError } from './error'
@@ -16,6 +15,8 @@ import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
 // @ts-expect-error virtual file
 import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
+
+const $fetch = _$fetch as $Fetch
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>

@@ -10,6 +10,7 @@ import { buildAssetsURL } from '#internal/nuxt/paths'
 import { outdatedBuildInterval } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { $fetch as _$fetch } from '#build/fetch.mjs'
+
 const $fetch = _$fetch as $Fetch
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {

@@ -4,12 +4,13 @@ import { computed, getCurrentInstance, ref } from 'vue'
 import type { $Fetch, H3Event$Fetch } from 'nitropack/types'
 // @ts-expect-error virtual file
 import { $fetch as _$fetch } from '#build/fetch.mjs'
-const $fetch = _$fetch as $Fetch
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import { useHead } from './head'
+
+const $fetch = _$fetch as $Fetch
 
 /** @since 3.0.0 */
 export function useRequestEvent (nuxtApp?: NuxtApp): H3Event | undefined {
