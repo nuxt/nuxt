@@ -99,7 +99,8 @@ async function _importPayload (payloadURL: string) {
     }
     return await parsePayload(await res.text())
   } catch (err) {
-    stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
+    const diagnostic = stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
+    if (!import.meta.dev) { console.warn(diagnostic.name, payloadURL, err) }
   }
   return null
 }

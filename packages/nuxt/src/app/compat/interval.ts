@@ -13,5 +13,6 @@ export const setInterval: typeof globalThis.setInterval = import.meta.client
         })
       }
 
-      appDiagnostics.NUXT_E1004()
+      const diagnostic = appDiagnostics.NUXT_E1004()
+      console.error(diagnostic.name)
     }) as any

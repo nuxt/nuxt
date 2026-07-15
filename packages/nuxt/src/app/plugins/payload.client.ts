@@ -52,7 +52,10 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         const { hostname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
-        const payload = await loadPayload(url).catch(() => { stateDiagnostics.NUXT_E7003({ url }) })
+        const payload = await loadPayload(url).catch(() => {
+          const diagnostic = stateDiagnostics.NUXT_E7003({ url })
+          if (!import.meta.dev) { console.warn(diagnostic.name, url) }
+        })
         if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(url)) {
           const entry = head.push({
             link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {

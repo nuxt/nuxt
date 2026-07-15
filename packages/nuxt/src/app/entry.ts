@@ -65,7 +65,7 @@ if (import.meta.client) {
     }
     // marker so nuxt-root.vue can skip re-invoking the default handler from
     // its onErrorCaptured (which already calls `app:error` via showError)
-    ; (handleVueError as any).__nuxt_default = true
+    ;(handleVueError as any).__nuxt_default = true
 
     vueApp.config.errorHandler = handleVueError
     // If the errorHandler is not overridden by the user, we unset it after the app is hydrated
@@ -100,7 +100,8 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    appDiagnostics.NUXT_E1009({ cause: error })
+    const diagnostic = appDiagnostics.NUXT_E1009({ cause: error })
+    if (!import.meta.dev) { console.error(diagnostic.name, error) }
     throw error
   })
 }

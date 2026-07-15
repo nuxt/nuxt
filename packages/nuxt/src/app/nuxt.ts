@@ -183,7 +183,7 @@ interface _NuxtApp {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface NuxtApp extends _NuxtApp { }
+export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
 
@@ -255,7 +255,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     static: {
       data: {},
     },
-    runWithContext<T>(fn: () => T) {
+    runWithContext <T>(fn: () => T) {
       if (nuxtApp._scope.active && !getCurrentScope()) {
         return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
       }
@@ -263,7 +263,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     },
     isHydrating: import.meta.client,
     deferHydration () {
-      if (!nuxtApp.isHydrating) { return () => { } }
+      if (!nuxtApp.isHydrating) { return () => {} }
 
       hydratingCount++
       let called = false
@@ -368,7 +368,10 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
-    const unreg = nuxtApp.hook('app:error', (...args) => { appDiagnostics.NUXT_E1005({ cause: args[0] }) })
+    const unreg = nuxtApp.hook('app:error', (...args) => {
+      const diagnostic = appDiagnostics.NUXT_E1005({ cause: args.length > 1 ? args : args[0] })
+      if (!import.meta.dev) { console.error(diagnostic.name, ...args) }
+    })
     nuxtApp.hook('app:mounted', unreg)
   }
 
@@ -508,7 +511,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 
   const _name = plugin._name || plugin.name
   delete plugin.name
-  return Object.assign(plugin.setup || (() => { }), plugin, { [NuxtPluginIndicator]: true, _name } as const)
+  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
 /* @__NO_SIDE_EFFECTS__ */
