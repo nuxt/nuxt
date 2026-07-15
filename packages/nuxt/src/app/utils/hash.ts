@@ -25,8 +25,13 @@ export function hashKey (value: unknown): string {
  *
  * @internal
  */
+// Native function bodies stringify differently across engines (V8 emits
+// `{ [native code] }` on one line, JavaScriptCore inserts newlines), so match
+// the marker loosely to keep the hash stable between server and client.
+const NATIVE_CODE_RE = /\{\s*\[native code\]\s*\}/
+
 export function hashFunction (fn: (...args: any[]) => any): string {
   const src = Function.prototype.toString.call(fn)
-  const source = src.endsWith('[native code] }') ? `${fn.name || ''}(${fn.length})[native]` : src
+  const source = NATIVE_CODE_RE.test(src) ? `${fn.name || ''}(${fn.length})[native]` : src
   return fnv1a64Base36(source)
 }

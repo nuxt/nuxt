@@ -61,4 +61,11 @@ describe('hashFunction', () => {
     const fn = (a: number, b: number) => a + b
     expect(hashFunction(fn)).toBe(hashFunction(fn))
   })
+
+  it('hashes native functions by name and arity, not their (engine-specific) source', () => {
+    // Native bodies stringify differently across engines (V8's `{ [native code] }`
+    // vs JavaScriptCore's newlines), so the hash must key on name/arity instead.
+    expect(hashFunction(Array.prototype.slice)).toBe(hashFunction(Array.prototype.slice))
+    expect(hashFunction(Array.prototype.slice)).not.toBe(hashFunction(Array.prototype.map))
+  })
 })
