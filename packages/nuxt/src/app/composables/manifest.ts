@@ -1,12 +1,13 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
-import type { NitroRouteRules } from 'nitropack/types'
+import type { $Fetch, NitroRouteRules } from 'nitropack/types'
 import { useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
 // @ts-expect-error virtual file
-import { $fetch } from '#build/fetch.mjs'
+import { $fetch as _$fetch } from '#build/fetch.mjs'
+const $fetch = _$fetch as $Fetch
 // @ts-expect-error virtual file
 import _routeRulesMatcher from '#build/route-rules.mjs'
 

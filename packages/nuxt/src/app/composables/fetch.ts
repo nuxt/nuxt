@@ -7,7 +7,8 @@ import { hash } from 'ohash'
 import { isPlainObject } from '@vue/shared'
 import { useRequestFetch } from './ssr'
 // @ts-expect-error virtual file
-import { $fetch } from '#build/fetch.mjs'
+import { $fetch as _$fetch } from '#build/fetch.mjs'
+const $fetch = _$fetch as $Fetch
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
 import type { NuxtError } from './error'
@@ -42,7 +43,7 @@ export interface UseFetchOptions<
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
-  $fetch?: typeof globalThis.$fetch
+  $fetch?: $Fetch
   watch?: MultiWatchSources | false
 }
 
