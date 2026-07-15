@@ -46,9 +46,9 @@ Awaiting `useLazyFetch` only ensures the call is initialized. On client-side nav
 ## Type
 
 ```ts [Signature]
-export function useLazyFetch<DataT, ErrorT> (
+export function useLazyFetch<ResT, ErrorT = NuxtError<unknown>, DataT = ResT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
-  options?: UseFetchOptions<DataT>,
+  options?: UseFetchOptions<ResT, DataT>,
 ): AsyncData<DataT, ErrorT> & Promise<AsyncData<DataT, ErrorT>>
 ```
 

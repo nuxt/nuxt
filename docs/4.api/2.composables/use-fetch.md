@@ -126,7 +126,7 @@ searchQuery.value = 'new search'
 ## Type
 
 ```ts [Signature]
-export function useFetch<ResT, ErrorT = unknown, DataT = ResT> (
+export function useFetch<ResT, ErrorT = NuxtError<unknown>, DataT = ResT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
   options?: UseFetchOptions<ResT, DataT>,
 ): AsyncData<DataT, ErrorT> & Promise<AsyncData<DataT, ErrorT>>
