@@ -6,6 +6,8 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import { $fetch } from '#build/fetch.mjs'
 
 function parseRevivedData (data: string) {
   try {

@@ -487,14 +487,23 @@ export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.mjs',
   getContents () {
     return [
-      'import { $fetch } from \'ofetch\'',
+      'import { $fetch as _$fetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
       'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = $fetch.create({',
+      '  globalThis.$fetch = _$fetch.create({',
       '    baseURL: baseURL()',
       '  })',
       '}',
+      'export const $fetch = globalThis.$fetch',
     ].join('\n')
+  },
+}
+
+export const dollarFetchTypeTemplate: NuxtTemplate = {
+  filename: 'fetch.d.mts',
+  write: true,
+  getContents () {
+    return 'export { $fetch } from \'ofetch\'\n'
   },
 }
 

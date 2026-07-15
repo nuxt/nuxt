@@ -6,6 +6,8 @@ import { hash } from 'ohash'
 
 import { isPlainObject } from '@vue/shared'
 import { useRequestFetch } from './ssr'
+// @ts-expect-error virtual file
+import { $fetch } from '#build/fetch.mjs'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
 import type { NuxtError } from './error'
@@ -360,7 +362,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       }
 
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
-        let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || globalThis.$fetch
+        let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || $fetch
 
         // Use fetch with request context and headers for server direct API calls
         if (import.meta.server && !fetchOptions.$fetch) {
