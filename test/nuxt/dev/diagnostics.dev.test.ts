@@ -50,7 +50,7 @@ describe('useAsyncData diagnostics (dev)', () => {
     expect(warn).not.toHaveBeenCalled()
     await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: true })
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[NUXT_E3004\] Incompatible options detected for "dedupedKey3":\n- mismatching `deep` option\n╰▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls./,
+      /\[NUXT_E3004\] Incompatible options detected for "dedupedKey3":\n- mismatching `deep` option\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\d+:\d+/,
     ))
 
     let count = 0
@@ -64,7 +64,7 @@ describe('useAsyncData diagnostics (dev)', () => {
       await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
       expect(warn).toHaveBeenCalledWith(
         expect.stringMatching(
-          new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different \`${opt}\` option\n╰▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.`),
+          new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different \`${opt}\` option\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\\d+:\\d+`),
         ))
     }
 
@@ -75,7 +75,7 @@ describe('useAsyncData diagnostics (dev)', () => {
     expect(warn).not.toHaveBeenCalled()
     await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('bob'))
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different handler\n╰▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.`),
+      new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different handler\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\\d+:\\d+`),
     ))
 
     warn.mockReset()

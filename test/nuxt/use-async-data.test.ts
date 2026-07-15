@@ -110,7 +110,7 @@ describe('useAsyncData', () => {
   it('should capture errors', async () => {
     vi.stubGlobal('__TEST_DEV__', true)
 
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
