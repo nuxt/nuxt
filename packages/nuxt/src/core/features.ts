@@ -19,7 +19,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     }
   }
 
-  configDiagnostics.NUXT_B5011({ name })
+  configDiagnostics.NUXT_B5011({ name }, { method: 'info' })
 
   if (isCI) {
     return false
