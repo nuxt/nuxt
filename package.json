@@ -27,7 +27,7 @@
     "test:fixtures": "pnpm test:prepare && vitest run --project 'fixtures:*'",
     "test:fixtures:dev": "vitest run --project 'fixtures:vite-dev-*'",
     "test:fixtures:webpack": "vitest run --project 'fixtures:webpack-*'",
-    "test:runtime": "vitest run --project nuxt --project nuxt-universal --project nuxt-legacy",
+    "test:runtime": "vitest run --project nuxt --project nuxt-universal --project nuxt-legacy --project nuxt-dev",
     "test:types": "pnpm --filter './test/fixtures/**' test:types",
     "test:bundle": "pnpm build && vitest run bundle",
     "test:unit": "vitest run --project unit",

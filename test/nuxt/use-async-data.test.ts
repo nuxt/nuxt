@@ -79,7 +79,7 @@ describe('useAsyncData', () => {
   })
 
   it('should throw TypeError when key is empty', () => {
-    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[NUXT_E3008: `useAsyncData` key must be a non-empty string.]')
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[NUXT_E3008: NUXT_E3008]')
   })
 
   it('should keep promise methods after destructuring', async () => {
@@ -125,12 +125,6 @@ describe('useAsyncData', () => {
     expect(syncedError.value).toBe(error.value)
     expect(syncedStatus.value).toBe(status.value)
     expect(syncedPending.value).toBe(false)
-
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[NUXT_E3004\] Incompatible options detected for "[^"]+":\n- different handler\n- different `default` value\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\d+:\d+/,
-    ))
-    warn.mockRestore()
-    vi.unstubAllGlobals()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -522,46 +516,6 @@ describe('useAsyncData', () => {
     useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(2)
-  })
-
-  it('should warn if incompatible options are used', async () => {
-    vi.stubGlobal('__TEST_DEV__', true)
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
-    expect(warn).not.toHaveBeenCalled()
-    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: true })
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[NUXT_E3004\] Incompatible options detected for "dedupedKey3":\n- mismatching `deep` option\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\d+:\d+/,
-    ))
-
-    let count = 0
-    for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
-      warn.mockClear()
-      count++
-
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
-      expect(warn).not.toHaveBeenCalled()
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(
-          new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different \`${opt}\` option\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\\d+:\\d+`),
-        ))
-    }
-
-    warn.mockClear()
-    count++
-
-    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
-    expect(warn).not.toHaveBeenCalled()
-    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('bob'))
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different handler\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\\d+:\\d+`),
-    ))
-
-    warn.mockReset()
-    vi.unstubAllGlobals()
   })
 
   it('should only refresh asyncdata once when watched dependency is updated', async () => {
