@@ -5,7 +5,7 @@ import { docsBase, reporters } from './_shared.ts'
  * E5xxx
  * App manifest / route-rules runtime diagnostics.
  */
-export const manifestDiagnostics = import.meta.env.PROD
+export const manifestDiagnostics = !import.meta.dev
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
   : /* #__PURE__ */ defineDiagnostics({
       docsBase,

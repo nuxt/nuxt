@@ -5,7 +5,7 @@ import { docsBase, reporters } from './_shared.ts'
  * E4xxx
  * Layout / component / island rendering runtime diagnostics.
  */
-export const renderDiagnostics = import.meta.env.PROD
+export const renderDiagnostics = !import.meta.dev
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
   : /* #__PURE__ */ defineDiagnostics({
       docsBase,

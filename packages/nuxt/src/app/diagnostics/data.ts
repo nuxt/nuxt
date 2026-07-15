@@ -5,7 +5,7 @@ import { docsBase, reporters } from './_shared.ts'
  * E3xxx
  * Data fetching (useFetch / useAsyncData) runtime diagnostics.
  */
-export const dataDiagnostics = import.meta.env.PROD
+export const dataDiagnostics = !import.meta.dev
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
   : /* #__PURE__ */ defineDiagnostics({
       docsBase,
