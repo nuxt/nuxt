@@ -4,7 +4,7 @@ import { debounce } from 'perfect-debounce'
 import { hashFunction, hashKey } from '../utils/hash'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../utils'
+import { getUserCaller, toArray } from '../utils'
 import { clientOnlySymbol } from '../components/client-only'
 import type { NuxtError } from './error'
 import { createError } from './error'
@@ -421,7 +421,8 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
           warnings.push(`mismatching \`deep\` option`)
         }
         if (warnings.length) {
-          dataDiagnostics.NUXT_E3004({ key: key.value, warnings: warnings.map(w => `- ${w}`).join('\n') })
+          const caller = getUserCaller()
+          dataDiagnostics.NUXT_E3004({ key: key.value, warnings: warnings.map(w => `- ${w}`).join('\n'), sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
         }
       }
 
@@ -899,8 +900,9 @@ function buildAsyncData<
           }
 
           if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
+            const caller = getUserCaller()
             // @ts-expect-error private property
-            dataDiagnostics.NUXT_E3006({ fn: options._functionName || 'useAsyncData' })
+            dataDiagnostics.NUXT_E3006({ fn: options._functionName || 'useAsyncData', sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
           }
 
           nuxtApp.payload.data[key] = result
