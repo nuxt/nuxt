@@ -1,5 +1,3 @@
-import type { Server as HttpServer } from 'node:http'
-import type { Http2SecureServer } from 'node:http2'
 import pify from 'pify'
 import type { H3Event as H3V1Event } from 'h3'
 import type { H3Event as H3V2Event } from 'h3-next'
@@ -157,9 +155,8 @@ function createRsbuildInstance (configs: Configuration[], nuxt: Nuxt) {
         ? {
             server: { middlewareMode: true },
             dev: {
-              // Keep the HMR socket under the build-assets dir so Nuxt's dev
-              // server leaves the upgrade for Rsbuild instead of proxying it
-              // to Nitro (it ignores upgrades below the build-assets path).
+              // keep the HMR socket under the build-assets dir so
+              // the upgrade won't be forwarded to nitro
               client: {
                 path: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'rsbuild-hmr'),
               },
@@ -210,11 +207,15 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
 
   nuxt.hook('close', () => devServer.close())
 
-  // The HMR websocket rides on Nuxt's dev server rather than a port of its own.
-  nuxt.hook('listen', (server: HttpServer | Http2SecureServer) => {
-    devServer.connectWebSocket({ server })
-    devServer.afterListen()
-  })
+  // Attach the HMR websocket to the nuxt dev server, so it shares the
+  // app's port and TLS certificate rather than needing a second server.
+  const listener = nuxt._devServerListener
+  if (listener) {
+    devServer.connectWebSocket({ server: listener })
+    await devServer.afterListen()
+  } else {
+    logger.warn('Could not find the Nuxt dev server to attach Rspack HMR to; hot module replacement will be disabled.')
+  }
 
   await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares), { cors: () => true })
 
