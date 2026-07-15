@@ -22,7 +22,7 @@ export const dataDiagnostics = !import.meta.dev
         },
         NUXT_E3003: {
           why: '`useAsyncData`/`useFetch` was called after the component had already mounted, so the data fetch cannot be awaited during setup.',
-          fix: 'Use `$fetch()` for requests triggered after mount (e.g., in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.',
+          fix: 'Use `$fetch()` for requests triggered after mount (e.g. in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.',
           docs: false,
         },
         NUXT_E3004: {
@@ -37,7 +37,7 @@ export const dataDiagnostics = !import.meta.dev
         },
         NUXT_E3006: {
           why: (p: { fn: string }) => `\`${p.fn}\` handler returned \`undefined\`, so the request may be duplicated on the client side.`,
-          fix: 'Return a value from the handler function (e.g., `return null` instead of returning nothing).',
+          fix: 'Return a value from the handler function (e.g. `return null` instead of returning nothing).',
           docs: false,
         },
         NUXT_E3007: {

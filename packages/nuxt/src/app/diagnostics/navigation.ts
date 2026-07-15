@@ -17,7 +17,7 @@ export const navigationDiagnostics = !import.meta.dev
         },
         NUXT_E2002: {
           why: (p: { toPath: string, protocol: string }) => `Cannot navigate to URL \`${p.toPath}\` with \`${p.protocol}\` protocol.`,
-          fix: 'Script protocols (e.g., `javascript:`) are blocked for security. Use a valid `http:` or `https:` URL.',
+          fix: 'Script protocols (e.g. `javascript:`) are blocked for security. Use a valid `http:` or `https:` URL.',
         },
         NUXT_E2003: {
           why: '`abortNavigation()` was called outside a route middleware handler.',

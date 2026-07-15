@@ -66,7 +66,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
     if (typeof component !== 'function') {
       continue
     }
-    // NB: deliberately swallowed — do NOT report a diagnostic here (the
+    // NB: deliberately swallowed; do NOT report a diagnostic here (the
     // reserved code NUXT_E2011 stays unused). Preloading is a best-effort
     // optimization; failures are routine (cancelled navigation, offline, a
     // lazy chunk that loads fine on actual navigation) and a warning would be

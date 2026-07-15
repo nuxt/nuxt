@@ -41,7 +41,7 @@ export const pluginDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B2007: {
       why: (p: { src: string }) => `Plugin \`${p.src}\` is not wrapped in \`defineNuxtPlugin\`.`,
-      fix: 'Wrap your plugin with `defineNuxtPlugin` - in the future this may enable enhancements.',
+      fix: 'Wrap your plugin with `defineNuxtPlugin`. This may enable enhancements in future.',
       docs: false,
     },
     NUXT_B2008: {

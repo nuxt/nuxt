@@ -36,7 +36,7 @@ export const appDiagnostics = !import.meta.dev
         },
         NUXT_E1007: {
           why: (p: { name: string }) => `\`${p.name}\` is a compiler macro or compiler-hint helper and cannot be called at runtime. Its arguments are meant to be compiled away.`,
-          fix: 'Call it statically from inside the directories scanned by the Nuxt compiler - for a page hint, from the `<script setup>` block of a page component in `pages/`.',
+          fix: 'Call it statically from inside the directories scanned by the Nuxt compiler. For a page hint, call it from the `<script setup>` block of a page component in `pages/`.',
         },
         NUXT_E1009: {
           why: 'Error while mounting app.',

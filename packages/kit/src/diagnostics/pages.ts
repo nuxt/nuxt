@@ -46,12 +46,12 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B4009: {
       why: (p: { file: string }) => `No layout name could be resolved for \`${p.file}\` (\`index\` is ignored for the purpose of creating a layout name).`,
-      fix: 'Rename the layout file to something other than `index` (e.g., `layouts/default.vue`).',
+      fix: 'Rename the layout file to something other than `index` (e.g. `layouts/default.vue`).',
       docs: false,
     },
     NUXT_B4010: {
       why: (p: { file: string }) => `No middleware name could be resolved for \`${p.file}\` (\`index\` is ignored for the purpose of creating a middleware name).`,
-      fix: 'Rename the middleware file to something other than `index` (e.g., `middleware/auth.ts`).',
+      fix: 'Rename the middleware file to something other than `index` (e.g. `middleware/auth.ts`).',
       docs: false,
     },
     NUXT_B4011: {
@@ -61,7 +61,7 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B4012: {
       why: (p: { event: string, path: string }) => `The incremental route update for \`${p.event}\` on \`${p.path}\` failed, so a full rebuild was performed.`,
-      fix: 'This is usually harmless - the full rebuild will recover. If it happens repeatedly, check for unusual file naming in `pages/`.',
+      fix: 'This is usually harmless: the full rebuild will recover. If it happens repeatedly, check for unusual file naming in `pages/`.',
       docs: false,
     },
     NUXT_B4013: {

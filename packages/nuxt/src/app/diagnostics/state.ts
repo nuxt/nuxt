@@ -13,7 +13,7 @@ export const stateDiagnostics = !import.meta.dev
       codes: {
         NUXT_E7001: {
           why: (p: { url: string }) => `Payload URL must not include a hostname (received \`${p.url}\`).`,
-          fix: 'Use a relative path (e.g., `/page`) instead of a full URL with hostname.',
+          fix: 'Use a relative path (e.g. `/page`) instead of a full URL with hostname.',
         },
         NUXT_E7002: {
           why: (p: { url: string }) => `Cannot load payload \`${p.url}\`.`,

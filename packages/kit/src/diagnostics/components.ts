@@ -31,7 +31,7 @@ export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B3005: {
       why: (p: { component: string, file: string }) => `Multiple hydration strategies are not supported in the same component \`<${p.component}>\` in \`${p.file}\`.`,
-      fix: 'Use only one hydration strategy attribute (e.g., `hydrate-on-visible` or `hydrate-on-idle`) per component.',
+      fix: 'Use only one hydration strategy attribute (e.g. `hydrate-on-visible` or `hydrate-on-idle`) per component.',
       docs: false,
     },
     NUXT_B3006: {
@@ -56,7 +56,7 @@ export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B3010: {
       why: (p: { filePath: string }) => `Component did not resolve to a file name in \`${p.filePath}\`.`,
-      fix: 'Rename the component file to something other than `index` (e.g., `MyComponent.vue`).',
+      fix: 'Rename the component file to something other than `index` (e.g. `MyComponent.vue`).',
       docs: false,
     },
     NUXT_B3011: {

@@ -18,7 +18,7 @@ export const renderDiagnostics = !import.meta.dev
         },
         NUXT_E4002: {
           why: (p: { name: string }) => `\`${p.name}\` layout does not have a single root node and will cause errors when navigating between routes.`,
-          fix: 'Wrap the layout\'s template in a single root element (e.g., a `<div>`).',
+          fix: 'Wrap the layout\'s template in a single root element (e.g. a `<div>`).',
           docs: false,
         },
         NUXT_E4003: {
@@ -28,12 +28,12 @@ export const renderDiagnostics = !import.meta.dev
         },
         NUXT_E4004: {
           why: (p: { filename: string }) => `\`${p.filename}\` does not have a single root node and will cause errors when navigating between routes.`,
-          fix: 'Wrap the page component\'s template in a single root element (e.g., a `<div>`).',
+          fix: 'Wrap the page component\'s template in a single root element (e.g. a `<div>`).',
           docs: false,
         },
         NUXT_E4005: {
           why: (p: { name: string }) => `Server component "${p.name}" must have a single root element. (HTML comments are considered elements as well.)`,
-          fix: 'Wrap the server component\'s template in a single root element (e.g., a `<div>`).',
+          fix: 'Wrap the server component\'s template in a single root element (e.g. a `<div>`).',
           docs: false,
         },
         NUXT_E4006: {

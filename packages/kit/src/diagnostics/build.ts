@@ -95,7 +95,7 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B1019: {
-      why: (p: { mode: string }) => `Unknown component mode: ${p.mode}, this might be an internal bug of Nuxt.`,
+      why: (p: { mode: string }) => `Unknown component mode \`${p.mode}\`. This might be an internal Nuxt bug.`,
       fix: 'If you are a module author, ensure the component `mode` is set to `client`, `server`, or `all`. Otherwise, please report this issue.',
       docs: false,
     },

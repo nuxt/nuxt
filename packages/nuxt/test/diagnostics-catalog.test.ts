@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-// Build-time (NUXT_B) catalogs — the public ones come through the kit barrel.
+// Build-time (NUXT_B) catalogs: the public ones come through the kit barrel.
 import {
   buildDiagnostics,
   bundlerDiagnostics,

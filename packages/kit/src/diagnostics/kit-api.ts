@@ -20,7 +20,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B8003: {
-      why: 'Nitro is not initialized yet - `useNitro()` was called before the `ready` hook ran.',
+      why: 'Nitro is not initialized yet: `useNitro()` was called before the `ready` hook ran.',
       fix: 'Move the `useNitro()` call inside a hook that runs after initialization, such as `nuxt.hook(\'ready\', () => { ... })`.',
       docs: false,
     },
@@ -30,7 +30,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B8005: {
-      why: 'The Nuxt version cannot be determined - no current instance was passed.',
+      why: 'The Nuxt version cannot be determined: no current instance was passed.',
       fix: 'Pass a valid Nuxt instance to `getNuxtVersion()`, or ensure `useNuxt()` is available in the current context.',
       docs: false,
     },
@@ -90,7 +90,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B8017: {
-      why: (p: { module: string }) => `The module \`${p.module}\` could not be loaded - it may not be installed.`,
+      why: (p: { module: string }) => `The module \`${p.module}\` could not be loaded. It may not be installed.`,
       fix: (p: { module: string }) => `Run \`npm install ${p.module}\` to install it.`,
       docs: false,
     },
