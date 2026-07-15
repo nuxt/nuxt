@@ -42,8 +42,8 @@ export const renderDiagnostics = !import.meta.dev
           docs: false,
         },
         NUXT_E4007: {
-          why: 'Your project has layouts but the `<NuxtLayout />` component has not been used.',
-          fix: 'Add `<NuxtLayout>` to your `app.vue`, or set `pages: false` in `nuxt.config` if you don\'t need layouts.',
+          why: 'Your project has layouts but the `<NuxtLayout />` component has not been used. If `<NuxtLayout>` is rendered conditionally, this warning can be triggered before it is mounted.',
+          fix: 'Add `<NuxtLayout>` to your `app.vue`, or remove the `layouts/` directory if you don\'t use layouts.',
           docs: false,
         },
         NUXT_E4008: {
@@ -62,14 +62,13 @@ export const renderDiagnostics = !import.meta.dev
           docs: false,
         },
         NUXT_E4011: {
-          why: 'Your project has pages but the `<NuxtPage />` component has not been used. You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt.',
+          why: 'Your project has pages but the `<NuxtPage />` component has not been used. You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt. If `<NuxtPage>` is rendered conditionally, this warning can be triggered before it is mounted.',
           fix: 'You can set `pages: false` in `nuxt.config` if you do not wish to use the Nuxt `vue-router` integration.',
           docs: false,
         },
         NUXT_E4012: {
           why: (p: { name: string, status: number, detail: string }) => `Failed to parse island response for \`${p.name}\` (HTTP ${p.status}): ${p.detail}`,
           fix: 'Check that the server component endpoint is returning valid HTML. The server may have returned an error page.',
-          docs: false,
         },
         NUXT_E4013: {
           why: (p: { source: number }) => `The v-for range expects an integer value but got ${p.source}.`,
@@ -79,6 +78,11 @@ export const renderDiagnostics = !import.meta.dev
         NUXT_E4014: {
           why: (p: { dir: string }) => `No pages found. \`<NuxtPage>\` requires at least one page component in the \`${p.dir}/\` directory.`,
           fix: (p: { dir: string }) => `Create an \`index.vue\` file inside the \`${p.dir}/\` directory.`,
+          docs: false,
+        },
+        NUXT_E4015: {
+          why: (p: { name: string }) => `Error captured while rendering server component \`${p.name}\`.`,
+          fix: 'Check the server component implementation for runtime errors.',
           docs: false,
         },
       },
