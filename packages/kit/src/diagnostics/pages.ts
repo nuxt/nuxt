@@ -20,7 +20,7 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B4003: {
-      why: (p: { callCount: number }) => `\`definePageMeta()\` is called ${p.callCount} times in a single page, but only one call is allowed.`,
+      why: (p: { callCount: number, file: string }) => `\`definePageMeta()\` is called ${p.callCount} times in \`${p.file}\`, but only one call is allowed.`,
       fix: 'Merge all `definePageMeta()` calls into a single call.',
       docs: false,
     },

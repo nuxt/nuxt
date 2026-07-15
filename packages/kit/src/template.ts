@@ -146,7 +146,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   if (!template.src && !template.getContents) {
-    throw kitDiagnostics.NUXT_B8010({ template: template.filename || template.src || '' })
+    throw kitDiagnostics.NUXT_B8010({ template: template.filename || template.src || JSON.stringify(template) })
   }
 
   if (!template.filename) {

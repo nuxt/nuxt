@@ -376,7 +376,7 @@ async function compile (compiler: Compiler) {
     for (const err of compilationErrors) {
       logger.error(err)
     }
-    throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name! })
+    throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name!, cause: compilationErrors })
   }
 }
 

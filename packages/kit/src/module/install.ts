@@ -306,7 +306,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    throw kitDiagnostics.NUXT_B8015({ received: typeof nuxtModule })
+    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
   }
 
   const jiti = getSharedJiti(nuxt)
