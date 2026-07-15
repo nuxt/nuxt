@@ -22,27 +22,13 @@ describe('defineKeyedFunctionFactory', () => {
     return `${a}-${b}-value`
   }
 
-  it('should produce factory that throws an error in dev when not transformed', () => {
-    // mock import.meta.dev to `true`
-    vi.stubGlobal('__TEST_DEV__', true)
-
+  it('should produce factory that throws when not transformed', () => {
     const factory = defineKeyedFunctionFactory({
       name: 'createUseFetch',
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[NUXT_E1007: \`createUseFetch\` is a compiler macro or compiler-hint helper and cannot be called at runtime. Its arguments are meant to be compiled away.]`)
-
-    vi.unstubAllGlobals()
-  })
-
-  it('should produce factory that throws in production when not transformed', () => {
-    const factory = defineKeyedFunctionFactory({
-      name: 'createUseFetch',
-      factory: fn,
-    })
-
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[NUXT_E1007: \`createUseFetch\` is a compiler macro or compiler-hint helper and cannot be called at runtime. Its arguments are meant to be compiled away.]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[NUXT_E1007: NUXT_E1007]`)
   })
 
   it('should have a non-enumerable `__nuxt_factory` property', () => {

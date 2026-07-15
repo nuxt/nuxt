@@ -4,6 +4,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 
 import { navigateTo } from '#app/composables/router'
 import { useAsyncData } from '#app/composables/asyncData'
+import { defineKeyedFunctionFactory } from '../../../packages/nuxt/src/compiler/runtime'
 
 describe('navigation diagnostics (dev)', () => {
   it('reports a full message when navigating to an external URL by default', () => {
@@ -79,5 +80,16 @@ describe('useAsyncData diagnostics (dev)', () => {
     ))
 
     warn.mockReset()
+  })
+})
+
+describe('compiler macro diagnostics (dev)', () => {
+  it('reports a full message when a keyed function factory is called at runtime', () => {
+    const factory = defineKeyedFunctionFactory({
+      name: 'createUseFetch',
+      factory: (a: string, b: number): string => `${a}-${b}`,
+    })
+
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[NUXT_E1007: \`createUseFetch\` is a compiler macro or compiler-hint helper and cannot be called at runtime. Its arguments are meant to be compiled away.]`)
   })
 })
