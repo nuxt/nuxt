@@ -23,7 +23,7 @@ export const useRoute: typeof _useRoute = (() => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     const middleware = useNuxtApp()._processingMiddleware
     const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    navigationDiagnostics.NUXT_E2005({ middleware, trace })
+    navigationDiagnostics.NUXT_E2005({ middleware: typeof middleware === 'string' ? middleware : undefined, trace })
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)

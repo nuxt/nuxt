@@ -28,7 +28,7 @@ export const navigationDiagnostics = !import.meta.dev
           fix: (p: { entry: string, validMiddleware?: string[] }) => `Create a \`middleware/${p.entry}.ts\` file, or check the middleware name for typos.${p.validMiddleware?.length ? ` Valid middleware: ${p.validMiddleware.map(mw => `'${mw}'`).join(', ')}.` : ''}`,
         },
         NUXT_E2005: {
-          why: (p: { middleware?: unknown, trace: string }) => `\`useRoute\` was called within middleware${typeof p.middleware === 'string' ? ` (\`${p.middleware}\`)` : ''}. This may lead to misleading results.\n${p.trace}`,
+          why: (p: { middleware?: string, trace: string }) => `\`useRoute\` was called within middleware${p.middleware ? ` (\`${p.middleware}\`)` : ''}. This may lead to misleading results.\n${p.trace}`,
           fix: 'Use the `to` and `from` arguments passed to the middleware function instead of `useRoute()`.',
         },
         NUXT_E2006: {
