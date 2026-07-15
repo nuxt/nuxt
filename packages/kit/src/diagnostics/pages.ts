@@ -61,7 +61,7 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B4012: {
       why: (p: { event: string, path: string }) => `The incremental route update for \`${p.event}\` on \`${p.path}\` failed, so a full rebuild was performed.`,
-      fix: 'This is usually harmless — the full rebuild will recover. If it happens repeatedly, check for unusual file naming in `pages/`.',
+      fix: 'This is usually harmless - the full rebuild will recover. If it happens repeatedly, check for unusual file naming in `pages/`.',
       docs: false,
     },
     NUXT_B4013: {

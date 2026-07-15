@@ -5,7 +5,7 @@ import { createDevReporter } from 'nostics/reporters/dev'
 /**
  * Shared configuration for the runtime (E<N>xxx) diagnostics catalogs.
  *
- * Catalogs are split by domain and imported directly where used — no barrel —
+ * Catalogs are split by domain and imported directly where used - no barrel —
  * so the browser bundle only pulls in the codes a module references. Pair the
  * pure-call annotations on each `defineDiagnostics()` with dev-guarded,
  * statement-level report calls so report-only diagnostics strip from production.
