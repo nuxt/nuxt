@@ -8,6 +8,8 @@ import { onNuxtReady } from '../composables/ready'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 // @ts-expect-error virtual file
 import { outdatedBuildInterval } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import { $fetch } from '#build/fetch'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
   if (import.meta.test) { return }
