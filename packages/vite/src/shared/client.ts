@@ -1,6 +1,8 @@
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
 
+import { getTranspileStrings } from '../utils/transpile.ts'
+
 export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
   return {
     optimizeDeps: {
@@ -61,6 +63,7 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
         '#head',
         'virtual:nuxt:',
         'virtual:nuxt:*',
+        ...getTranspileStrings({ isDev: nuxt.options.dev, isClient: true }),
       ],
     },
     define: {
@@ -73,6 +76,7 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
       'import.meta.server': false,
       'import.meta.client': true,
       'import.meta.browser': true,
+      'import.meta.envName': JSON.stringify(nuxt.options.envName),
       'import.meta.nitro': false,
       'import.meta.prerender': false,
       'module.hot': false,
@@ -82,7 +86,7 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
       sourcemap: nuxt.options.sourcemap.client ? nuxt.options.vite.build?.sourcemap ?? nuxt.options.sourcemap.client : false,
       manifest: 'manifest.json',
       outDir: resolve(nuxt.options.buildDir, 'dist/client'),
-      rollupOptions: {
+      rolldownOptions: {
         input: { entry },
       },
     },

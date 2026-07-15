@@ -1,15 +1,21 @@
-import { pathToFileURL } from 'node:url'
 import type { Component } from '@nuxt/schema'
-import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
-import { isVue } from '../../core/utils'
+import { normalize } from 'pathe'
+import { isVue, parseModuleId } from '../../core/utils/index.ts'
 
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
+  /**
+   * Returns the resolved file paths of pages that should be rendered as islands
+   * (i.e. `pages/*.server.vue`). These need the same `<slot>` / `nuxt-client`
+   * transform as island components, but they live in the pages registry rather
+   * than the components registry.
+   */
+  getServerPages?: () => string[]
   /**
    * allow using `nuxt-client` attribute on components
    */
@@ -37,13 +43,8 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     transformInclude (id) {
       if (!isVue(id)) { return false }
       if (isVite && options.selectiveClient === 'deep') { return true }
-      const components = options.getComponents()
-
-      const islands = components.filter(component =>
-        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
-      )
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return islands.some(c => c.filePath === pathname)
+      const { pathname } = parseModuleId(normalize(id))
+      return isIslandFile(pathname, options)
     },
     transform: {
       filter: {
@@ -51,18 +52,21 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           include: [HAS_SLOT_OR_CLIENT_RE],
         },
       },
-      async handler (code, id) {
+      async handler (code, id, transformMeta?: unknown) {
         const template = code.match(TEMPLATE_RE)
         if (!template) { return }
         const startingIndex = template.index || 0
-        const s = new MagicString(code)
+        const s = rolldownString(code, id, transformMeta)
+
+        const { pathname } = parseModuleId(normalize(id))
+        const isIsland = isIslandFile(pathname, options)
 
         if (!SCRIPT_RE.test(code)) {
           s.prepend('<script setup>' + IMPORT_CODE + '</script>')
         } else {
-          s.replace(SCRIPT_RE_GLOBAL, (full) => {
-            return full + IMPORT_CODE
-          })
+          for (const match of code.matchAll(SCRIPT_RE_GLOBAL)) {
+            s.appendRight(match.index + match[0].length, IMPORT_CODE)
+          }
         }
 
         let hasNuxtClient = false
@@ -73,6 +77,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             return
           }
           if (node.name === 'slot') {
+            if (!isIsland) { return }
             const { attributes, children, loc } = node
 
             const slotName = attributes.name ?? 'default'
@@ -96,6 +101,10 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             }
 
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
+            return
+          }
+
+          if (node.name === 'NuxtTeleportIslandComponent') {
             return
           }
 
@@ -131,16 +140,21 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           }
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: s.generateMap({ source: id, includeContent: true }),
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }
 })
+
+function isIslandFile (pathname: string, options: ServerOnlyComponentTransformPluginOptions): boolean {
+  const components = options.getComponents()
+  const isIslandComponent = components.some(component =>
+    component.filePath === pathname &&
+    (component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))),
+  )
+  if (isIslandComponent) { return true }
+  return options.getServerPages?.().includes(pathname) ?? false
+}
 
 /**
  * extract attributes from a node

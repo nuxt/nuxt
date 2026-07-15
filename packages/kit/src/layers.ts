@@ -1,8 +1,8 @@
-import type { NuxtConfigLayer, NuxtOptions } from '@nuxt/schema'
+import type { Nuxt, NuxtConfigLayer, NuxtOptions } from '@nuxt/schema'
 import { resolve } from 'pathe'
 
-import { useNuxt } from './context'
-import { resolveAlias } from './resolve'
+import { useNuxt } from './context.ts'
+import { resolveAlias } from './resolve.ts'
 
 export interface LayerDirectories {
   /** Nuxt rootDir (`/` by default) */
@@ -40,14 +40,14 @@ const layerMap = new WeakMap<NuxtConfigLayer, LayerDirectories>()
  * @param nuxt - The Nuxt instance to get layers from. Defaults to the current Nuxt context.
  * @returns Array of LayerDirectories objects, ordered by priority (user layer first)
  */
-export function getLayerDirectories (nuxt = useNuxt()): LayerDirectories[] {
+export function getLayerDirectories (nuxt: Nuxt = useNuxt()): LayerDirectories[] {
   return nuxt.options._layers.map((layer) => {
     if (layerMap.has(layer)) {
       return layerMap.get(layer)!
     }
 
     const isRoot = withTrailingSlash(layer.config.rootDir) === withTrailingSlash(nuxt.options.rootDir)
-    const config = isRoot ? nuxt.options : (layer.config as NuxtOptions)
+    const config = isRoot ? nuxt.options : (layer.config as Omit<NuxtOptions, '_layers'>)
 
     const src = withTrailingSlash(config.srcDir || layer.cwd)
     const root = withTrailingSlash(config.rootDir || layer.cwd)

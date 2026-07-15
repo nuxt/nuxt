@@ -23,17 +23,17 @@ It hooks into [`page:loading:start`](/docs/4.x/api/advanced/hooks#app-hooks-runt
 
 ### `isLoading`
 
-- **type**: `Ref<boolean>`
+- **type**: `Readonly<ShallowRef<boolean>>`
 - **description**: The loading state
 
 ### `error`
 
-- **type**: `Ref<boolean>`
+- **type**: `Readonly<ShallowRef<boolean>>`
 - **description**: The error state
 
 ### `progress`
 
-- **type**: `Ref<number>`
+- **type**: `Readonly<ShallowRef<number>>`
 - **description**: The progress state. From `0` to `100`.
 
 ## Methods

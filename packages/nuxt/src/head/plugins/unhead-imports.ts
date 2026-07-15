@@ -1,20 +1,20 @@
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Identifier, ImportSpecifier } from 'estree'
 import { normalize, relative } from 'pathe'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
-import { isJS, isVue } from '../../core/utils'
-import { distDir } from '../../dirs'
-import { logger } from '../../utils'
+import { isJS, isVue } from '../../core/utils/index.ts'
+import { distDir } from '../../dirs.ts'
+import { logger } from '../../utils.ts'
 
 interface UnheadImportsPluginOptions {
-  sourcemap: boolean
   rootDir: string
 }
 
 const UNHEAD_LIB_RE = /node_modules[/\\](?:@unhead[/\\][^/\\]+|unhead)[/\\]/
+const NUXT_HEAD_RE = /node_modules[/\\]nuxt[/\\]dist[/\\]head[/\\]runtime[/\\]/
 
 function toImports (specifiers: ImportSpecifier[]) {
   return specifiers.map((specifier) => {
@@ -42,15 +42,16 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         (isJS(id) || isVue(id, { type: ['script'] })) &&
         !id.startsWith('virtual:') &&
         !id.startsWith(normalize(distDir)) &&
-        !UNHEAD_LIB_RE.test(id)
+        !UNHEAD_LIB_RE.test(id) &&
+        !NUXT_HEAD_RE.test(id)
       )
     },
     transform: {
       filter: {
         code: { include: UnheadVueRE },
       },
-      handler (code, id) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         const importsToAdd: ImportSpecifier[] = []
         parseAndWalk(code, id, function (node) {
           if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
@@ -73,14 +74,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
           s.prepend(`${genImport(UnheadVue, toImports(importsFromHead))}\n`)
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

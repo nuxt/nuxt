@@ -1,34 +1,53 @@
-import process from 'node:process'
+import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
-import { useRuntimeConfig } from 'nitropack/runtime'
+import { useRuntimeConfig } from 'nitro/runtime-config'
+import type { App } from 'vue'
+
 import type { NuxtSSRContext } from 'nuxt/app'
 
 // @ts-expect-error virtual file
-import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
+import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
-import { buildAssetsURL } from '#internal/nuxt/paths'
+import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
+import { buildAssetsURL, publicAssetsURL } from '../paths'
+import { lazyCachedFunction } from './cache'
 
-const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`
-const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
+type Entry = (ssrContext: NuxtSSRContext) => Promise<App>
 
-// @ts-expect-error file will be produced after app build
-const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
+// @ts-expect-error private property consumed by vite-generated url helpers
+globalThis.__buildAssetsURL = buildAssetsURL
+// @ts-expect-error private property consumed by vite-generated url helpers
+globalThis.__publicAssetsURL = publicAssetsURL
 
-// @ts-expect-error file will be produced after app build
-const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
+export const APP_ROOT_OPEN_TAG: string = `<${appRootTag}${propsToString(appRootAttrs)}>`
+export const APP_ROOT_CLOSE_TAG: string = `</${appRootTag}>`
+
+const getServerEntry: () => Promise<Entry> = () => import('nuxt/entry').then(r => (r.default || r) as Entry)
+
+const getClientManifest: () => Promise<Manifest> = () => import('nuxt/manifest')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<Manifest>
 
-// @ts-expect-error file will be produced after app build
-const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import('#build/dist/server/client.precomputed.mjs')
-  .then(r => r.default || r)
-  .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData>
+const getPrecomputedDependencies: () => Promise<PrecomputedData | undefined> = () => import('nuxt/precomputed')
+  .then(r => 'default' in r ? r.default : r)
+  .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData | undefined>
+
+interface Renderer {
+  rendererContext: RendererContext
+  renderToString(ssrContext: NuxtSSRContext): Promise<{
+    html: string
+    renderResourceHeaders: () => Record<string, string>
+    renderResourceHints: () => string
+    renderStyles: () => string
+    renderScripts: () => string
+  }>
+}
 
 // -- SSR Renderer --
-export const getSSRRenderer = lazyCachedFunction(async () => {
+export const getSSRRenderer: () => Promise<Renderer> = lazyCachedFunction(async (): Promise<Renderer> => {
   // Load server bundle
   const createSSRApp = await getServerEntry()
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
@@ -36,8 +55,10 @@ export const getSSRRenderer = lazyCachedFunction(async () => {
   // Load precomputed dependencies
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
 
-  // Create renderer
-  const renderer = createRenderer(createSSRApp, {
+  // Create renderer. `vue-bundle-renderer`'s `CreateApp` is typed against
+  // its own `SSRContext`; Nuxt's entry expects the `NuxtSSRContext` shape
+  // (a structural superset) which Nuxt populates before invoking the renderer.
+  const renderer = createRenderer(createSSRApp as Parameters<typeof createRenderer<App>>[0], {
     precomputed,
     manifest: import.meta.dev ? await getClientManifest() : undefined,
     renderToString,
@@ -48,6 +69,7 @@ export const getSSRRenderer = lazyCachedFunction(async () => {
   async function renderToString (input: RenderToStringParams[0], context: RenderToStringParams[1]) {
     const html = await _renderToString(input, context)
     // In development with vite-node, the manifest is on-demand and will be available after rendering
+    // eslint-disable-next-line no-restricted-globals
     if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
       renderer.rendererContext.updateManifest(await getClientManifest())
     }
@@ -58,7 +80,7 @@ export const getSSRRenderer = lazyCachedFunction(async () => {
 })
 
 // -- SPA Renderer --
-const getSPARenderer = lazyCachedFunction(async () => {
+const getSPARenderer = lazyCachedFunction(async (): Promise<Renderer> => {
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
 
   // @ts-expect-error virtual file
@@ -85,7 +107,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const result = await renderer.renderToString({})
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
-    const config = useRuntimeConfig(ssrContext.event)
+    const config = useRuntimeConfig()
     ssrContext.modules ||= new Set<string>()
     ssrContext.payload.serverRendered = false
     ssrContext.config = {
@@ -101,19 +123,11 @@ const getSPARenderer = lazyCachedFunction(async () => {
   }
 })
 
-function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
-  let res: Promise<T> | null = null
-  return () => {
-    if (res === null) {
-      res = fn().catch((err) => { res = null; throw err })
-    }
-    return res
-  }
+export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
+  return (NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()
 }
 
-export function getRenderer (ssrContext: NuxtSSRContext) {
-  return (process.env.NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()
-}
+// Expose the server app factory for streaming (renderToWebStream needs it directly)
+export const getServerApp: () => Promise<Entry> = lazyCachedFunction(getServerEntry)
 
-// @ts-expect-error file will be produced after app build
-export const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
+export const getSSRStyles: () => Promise<Record<string, () => Promise<string[]>>> = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('nuxt/styles').then(r => r.default || r))

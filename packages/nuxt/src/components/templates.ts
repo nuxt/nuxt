@@ -1,6 +1,7 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { genDynamicImport, genDynamicTypeImport } from 'knitwork'
-import { distDir } from '../dirs'
+import { genDynamicImport, genDynamicTypeImport, genObjectKey } from 'knitwork'
+import { hash } from 'ohash'
+import { distDir } from '../dirs.ts'
 import type { NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 type ImportMagicCommentsOptions = {
@@ -79,7 +80,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
-      return 'export const islandComponents = {}'
+      return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)'
     }
 
     const components = app.components
@@ -90,13 +91,18 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
     )
 
-    const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
+    const serverPages = pages?.filter(p => (p.mode === 'server' && p.file && p.name)) || []
+    const pageExports = serverPages.map((p) => {
       return `"page_${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
-    }) || []
+    })
+    // map each `page_<name>` to a stable, opaque marker derived from the page's file path.
+    const pageIslandRoutes = serverPages.map((p) => {
+      return `  "page_${p.name}": ${JSON.stringify(hash(relative(nuxt.options.rootDir, p.file!)))}`
+    })
 
     return [
       'import { defineAsyncComponent } from \'vue\'',
-      'export const islandComponents = import.meta.client ? {} : {',
+      'export const islandComponents = import.meta.client ? Object.create(null) : Object.assign(Object.create(null), {',
       islands.map(
         (c) => {
           const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
@@ -104,13 +110,16 @@ export const componentsIslandsTemplate: NuxtTemplate = {
           return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
         },
       ).concat(pageExports).join(',\n'),
-      '}',
+      '})',
+      'export const pageIslandRoutes = import.meta.client ? Object.create(null) : Object.assign(Object.create(null), {',
+      pageIslandRoutes.join(',\n'),
+      '})',
     ].join('\n')
   },
 }
 
 const NON_VUE_RE = /\b\.(?!vue)\w+$/g
-function resolveComponentTypes (app: NuxtApp, baseDir: string) {
+function resolveComponentTypes (app: NuxtApp, baseDir: string, dynamic: boolean) {
   const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
   const componentTypes: Array<[string, string]> = []
   for (const c of app.components) {
@@ -119,9 +128,7 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
     }
     // Use declarationPath if provided, otherwise fall back to filePath
     const filePath = c.declarationPath || c.filePath
-    let type = genDynamicTypeImport(isAbsolute(filePath)
-      ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
-      : filePath.replace(NON_VUE_RE, ''), c.export)
+    let type = dynamic ? renderDynamicTypeImport(baseDir, filePath, c.export) : renderLegacyTypeImport(baseDir, filePath, c.export)
 
     if (c.mode === 'server') {
       if (app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')) {
@@ -136,6 +143,20 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
   }
 
   return componentTypes
+}
+
+function renderDynamicTypeImport (baseDir: string, filePath: string, exportName: string) {
+  return genDynamicTypeImport(isAbsolute(filePath)
+    ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
+    : filePath.replace(NON_VUE_RE, ''), exportName)
+}
+
+// TODO: remove when https://youtrack.jetbrains.com/issue/WEB-76306/ is fixed
+function renderLegacyTypeImport (baseDir: string, filePath: string, exportName: string) {
+  return `typeof ${genDynamicImport(isAbsolute(filePath)
+    ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
+    : filePath.replace(NON_VUE_RE, ''), { wrapper: false })
+  }['${exportName}']`
 }
 
 const islandType = 'type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T'
@@ -155,7 +176,7 @@ export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
   write: true,
   getContents: ({ app, nuxt }) => {
-    const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir)
+    const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir, nuxt.options.experimental.typescriptPlugin)
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
@@ -172,14 +193,14 @@ export const componentNames: string[]
 export const componentsTypeTemplate = {
   filename: 'types/components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
-    const componentTypes = resolveComponentTypes(app, join(nuxt.options.buildDir, 'types'))
+    const componentTypes = resolveComponentTypes(app, join(nuxt.options.buildDir, 'types'), nuxt.options.experimental.typescriptPlugin)
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 interface _GlobalComponents {
-${componentTypes.map(([pascalName, type]) => `  '${pascalName}': ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `  'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `  ${genObjectKey(pascalName)}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `  ${genObjectKey(`Lazy${pascalName}`)}: LazyComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {

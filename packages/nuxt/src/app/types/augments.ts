@@ -1,4 +1,7 @@
+/// <reference path="./build-only.d.ts" />
+
 import type { UseHeadInput } from '@unhead/vue/types'
+import type { $Fetch } from 'nitro/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 declare global {
@@ -22,6 +25,7 @@ declare global {
     browser: boolean
     client: boolean
     dev: boolean
+    envName: string
     server: boolean
     test: boolean
   }
@@ -30,6 +34,9 @@ declare global {
     __NUXT__?: Record<string, any> | Record<string, Record<string, any>>
     useNuxtApp?: typeof useNuxtApp
   }
+
+  // TODO: typed fetch
+  var $fetch: $Fetch
 }
 
 declare module 'vue' {
@@ -53,3 +60,5 @@ declare module 'vue' {
     head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
+
+export type _NuxtAugmentsAnchor = NuxtApp

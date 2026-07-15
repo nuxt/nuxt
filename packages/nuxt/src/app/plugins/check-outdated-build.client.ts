@@ -1,5 +1,6 @@
 import type { FetchError } from 'ofetch'
 import { defineNuxtPlugin } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getAppManifest } from '../composables/manifest'
 import type { NuxtAppManifestMeta } from '../composables/manifest'
 import { onNuxtReady } from '../composables/ready'
@@ -7,8 +8,10 @@ import { onNuxtReady } from '../composables/ready'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 // @ts-expect-error virtual file
 import { outdatedBuildInterval } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import { $fetch } from '#build/fetch'
 
-export default defineNuxtPlugin((nuxtApp) => {
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
   if (import.meta.test) { return }
 
   let timeout: ReturnType<typeof setTimeout>
@@ -40,3 +43,5 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   onNuxtReady(() => { timeout = setTimeout(getLatestManifest, outdatedBuildInterval) })
 })
+
+export default plugin

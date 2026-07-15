@@ -1,14 +1,13 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
 import type { App } from 'vue'
 
-// This file must be imported first as we set globalThis.$fetch via this import
 // @ts-expect-error virtual file
-import '#build/fetch.mjs'
+import '#build/fetch'
 // @ts-expect-error virtual file
 import '#build/global-polyfills.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
-import type { CreateOptions } from './nuxt'
+import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError } from './composables/error'
 
@@ -21,7 +20,9 @@ import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
 import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
-let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
+export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
+
+let entry: Entry
 
 if (import.meta.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
@@ -36,7 +37,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
-    if (ssrContext?._renderResponse) { throw new Error('skipping render') }
+    if (ssrContext?.['~renderResponse']) { throw new Error('skipping render') }
 
     return vueApp
   }
@@ -67,6 +68,9 @@ if (import.meta.client) {
       await nuxt.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
+    // marker so nuxt-root.vue can skip re-invoking the default handler from
+    // its onErrorCaptured (which already calls `app:error` via showError)
+    ;(handleVueError as any).__nuxt_default = true
 
     vueApp.config.errorHandler = handleVueError
     // If the errorHandler is not overridden by the user, we unset it after the app is hydrated
@@ -106,4 +110,4 @@ if (import.meta.client) {
   })
 }
 
-export default (ssrContext?: CreateOptions['ssrContext']) => entry(ssrContext)
+export default (ssrContext => entry(ssrContext)) as Entry

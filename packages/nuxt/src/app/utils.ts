@@ -5,25 +5,33 @@ export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
 
+const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
+
+export function isBotUserAgent (userAgent: string): boolean {
+  return BOT_RE.test(userAgent)
+}
+
 const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
-export function getUserTrace () {
+type Trace = { source: string, line?: number, column?: number }
+
+export function getUserTrace (): Trace[] {
   if (!import.meta.dev) {
     return []
   }
 
   const trace = captureStackTrace()
   const start = trace.findIndex(entry => !entry.source.startsWith(distURL))
-  const end = [...trace].reverse().findIndex(entry => !entry.source.includes('node_modules') && !entry.source.startsWith(distURL))
+  const end = trace.toReversed().findIndex(entry => !entry.source.includes('node_modules') && !entry.source.startsWith(distURL))
   if (start === -1 || end === -1) {
     return []
   }
-  return trace.slice(start, -end).map(i => ({
+  return trace.slice(start, end > 0 ? -end : undefined).map(i => ({
     ...i,
     source: i.source.replace(/^file:\/\//, ''),
   }))
 }
 
-export function getUserCaller () {
+export function getUserCaller (): Trace | null {
   if (!import.meta.dev) {
     return null
   }

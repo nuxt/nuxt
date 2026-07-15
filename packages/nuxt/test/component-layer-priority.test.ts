@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { describe, expect, it } from 'vitest'
-import { loadNuxt } from '../src'
+import { loadNuxt } from '../src/index.ts'
 import { buildNuxt } from '@nuxt/kit'
 import type { ComponentsDir } from 'nuxt/schema'
 

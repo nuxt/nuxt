@@ -8,7 +8,7 @@ import type { NuxtPayload } from '../nuxt'
  * @param set a function that will receive the data on the client-side
  * @since 3.0.0
  */
-export const useHydration = <K extends keyof NuxtPayload, T = NuxtPayload[K]> (key: K, get: () => T, set: (value: T) => void) => {
+export const useHydration = <K extends keyof NuxtPayload, T = NuxtPayload[K]> (key: K, get: () => T, set: (value: T) => void): void => {
   const nuxtApp = useNuxtApp()
 
   if (import.meta.server) {

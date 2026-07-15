@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { UnctxTransformPlugin } from '../src/core/plugins/unctx'
+import { UnctxTransformPlugin } from '../src/core/plugins/unctx.ts'
 
 describe('unctx transform in nuxt', () => {
   it('should transform nuxt plugins', async () => {

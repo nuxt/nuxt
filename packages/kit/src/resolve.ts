@@ -6,10 +6,10 @@ import { type GlobOptions, glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { parseNodeModulePath } from 'mlly'
-import { directoryToURL } from './internal/esm'
-import { tryUseNuxt } from './context'
-import { isIgnored } from './ignore'
-import { type RequirePicked, toArray } from './utils'
+import { directoryToURL } from './internal/esm.ts'
+import { tryUseNuxt } from './context.ts'
+import { isIgnored } from './ignore.ts'
+import { type RequirePicked, toArray } from './utils.ts'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -68,13 +68,14 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
  */
 export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: PathType = 'file'): Promise<string | null> {
   for (const path of toArray(paths)) {
+    // TODO: this is for backwards compatibility, remove the `pathType` argument in Nuxt 5
+    const type = opts?.type || pathType
     const res = await _resolvePathGranularly(path, {
       ...opts,
-      // TODO: this is for backwards compatibility, remove the `pathType` argument in Nuxt 5
-      type: opts?.type || pathType,
+      type,
     })
 
-    if (!res.type || (pathType && res.type !== pathType)) {
+    if (!res.type || res.type !== type) {
       continue
     }
 
@@ -163,18 +164,13 @@ async function _resolvePathType (path: string, opts: ResolvePathOptions = {}, sk
     return
   }
 
-  const fd = await fsp.open(path, 'r').catch(() => null)
-  try {
-    const stats = await fd?.stat()
-    if (stats) {
-      return {
-        path,
-        type: stats.isFile() ? 'file' : 'dir',
-        virtual: false,
-      }
+  const stats = await fsp.stat(path).catch(() => null)
+  if (stats) {
+    return {
+      path,
+      type: stats.isFile() ? 'file' : 'dir',
+      virtual: false,
     }
-  } finally {
-    fd?.close()
   }
 }
 
@@ -278,7 +274,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
  * @param opts.ignore additional glob patterns to ignore
  * @returns sorted array of absolute file paths
  */
-export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}) {
+export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}): Promise<string[]> {
   const files: string[] = []
   for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true, ignore: opts.ignore })) {
     if (!isIgnored(p)) {

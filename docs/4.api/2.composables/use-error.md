@@ -22,11 +22,12 @@ You can use this composable in your components, pages, or plugins to access or r
 
 ```ts
 interface NuxtError<DataT = unknown> {
-  statusCode: number
-  statusMessage: string
+  status: number
+  statusText?: string
   message: string
   data?: DataT
-  error?: true
+  cause?: unknown
+  fatal: boolean
 }
 
 export const useError: () => Ref<NuxtError | undefined>

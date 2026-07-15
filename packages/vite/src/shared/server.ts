@@ -1,22 +1,21 @@
-import * as vite from 'vite'
 import type { Nuxt } from 'nuxt/schema'
-import { transpile } from '../utils/transpile'
 import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
-import { useNitro } from '@nuxt/kit'
 import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
+
+import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
 
 export function ssr (nuxt: Nuxt) {
   return {
     external: [
-      'nitro/runtime',
+      'nitro/runtime-config',
       // TODO: remove in v5
       '#internal/nitro',
       '#internal/nitro/utils',
     ],
     noExternal: [
-      ...transpile({ isServer: true, isDev: nuxt.options.dev }),
+      ...getTranspilePatterns({ isServer: true, isDev: nuxt.options.dev }),
       '/__vue-jsx',
       '#app',
       /^nuxt(\/|$)/,
@@ -33,10 +32,10 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       sourcemap: nuxt.options.sourcemap.server ? nuxt.options.vite.build?.sourcemap ?? nuxt.options.sourcemap.server : false,
       outDir: resolve(nuxt.options.buildDir, 'dist/server'),
       ssr: true,
-      rollupOptions: {
+      rolldownOptions: {
         input: { server: serverEntry },
         external: [
-          'nitro/runtime',
+          'nitro/runtime-config',
           // TODO: remove in v5
           '#internal/nitro',
           'nitropack/runtime',
@@ -49,17 +48,6 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
-          ...((vite as any).rolldownVersion
-            // Wait for https://github.com/rolldown/rolldown/issues/206
-            ? {}
-            : {
-                generatedCode: {
-                  symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
-                  constBindings: true,
-                  // temporary fix for https://github.com/rollup/rollup/issues/5975
-                  arrowFunctions: true,
-                },
-              }),
         },
         onwarn (warning, rollupWarn) {
           if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
@@ -70,20 +58,24 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       },
     },
     define: {
+      'process.env.NODE_ENV': JSON.stringify(nuxt.options.vite.mode),
       'process.server': true,
       'process.client': false,
       'process.browser': false,
       'import.meta.server': true,
       'import.meta.client': false,
       'import.meta.browser': false,
+      'import.meta.envName': JSON.stringify(nuxt.options.envName),
       'window': 'undefined',
       'document': 'undefined',
       'navigator': 'undefined',
       'location': 'undefined',
       'XMLHttpRequest': 'undefined',
     },
-    resolve: {
-      conditions: useNitro().options.exportConditions,
+    optimizeDeps: {
+      noDiscovery: true,
+      include: undefined,
+      exclude: getTranspileStrings({ isDev: nuxt.options.dev, isClient: false }),
     },
   } satisfies EnvironmentOptions
 }

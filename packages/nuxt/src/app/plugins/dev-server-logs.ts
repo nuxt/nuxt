@@ -5,6 +5,7 @@ import type { ParsedTrace } from 'errx'
 
 import { h } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 
 // @ts-expect-error virtual file
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
@@ -14,13 +15,14 @@ const devRevivers: Record<string, (data: any) => any> = import.meta.server
   : {
       VNode: data => h(data.type, data.props),
       URL: data => new URL(data),
+      Symbol: data => Symbol.for(data),
     }
 
-export default defineNuxtPlugin(async (nuxtApp) => {
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin(async (nuxtApp) => {
   if (import.meta.test) { return }
 
   if (import.meta.server) {
-    nuxtApp.ssrContext!.event.context._payloadReducers = nuxtApp.ssrContext!._payloadReducers
+    nuxtApp.ssrContext!.event.context['~payloadReducers'] = nuxtApp.ssrContext!['~payloadReducers']
     return
   }
 
@@ -69,3 +71,5 @@ function normalizeServerLog (log: LogObject) {
   delete log.stack
   return log
 }
+
+export default plugin

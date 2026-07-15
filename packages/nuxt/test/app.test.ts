@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto'
 import { afterAll, describe, expect, it } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
-import { createApp, resolveApp } from '../src/core/app'
-import { loadNuxt } from '../src'
+import { createApp, resolveApp } from '../src/core/app.ts'
+import { loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -34,7 +34,7 @@ describe('resolveApp', () => {
           {
             "global": true,
             "name": "manifest-route-rule",
-            "path": "<repoRoot>/packages/nuxt/src/app/middleware/manifest-route-rule.ts",
+            "path": "<repoRoot>/packages/nuxt/src/app/middleware/route-rules.ts",
           },
         ],
         "plugins": [
@@ -60,6 +60,10 @@ describe('resolveApp', () => {
           },
           {
             "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload-crawler.client.ts",
+          },
+          {
+            "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
           {
@@ -69,8 +73,12 @@ describe('resolveApp', () => {
             "src": "<rootDir>/.nuxt/components.plugin.mjs",
           },
           {
-            "mode": "all",
-            "src": "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.ts",
+            "mode": "server",
+            "src": "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.server.ts",
+          },
+          {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.client.ts",
           },
           {
             "mode": "all",
@@ -80,6 +88,24 @@ describe('resolveApp', () => {
         "rootComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-root.vue",
         "templates": [],
       }
+    `)
+  })
+
+  it('registers the streaming client head plugin when ssrStreaming is enabled', async () => {
+    const app = await getResolvedApp([
+      {
+        name: 'nuxt.config.ts',
+        contents: 'export default defineNuxtConfig({ experimental: { ssrStreaming: true } })',
+      },
+    ])
+    const headPlugins = app.plugins
+      .filter(p => !('getContents' in p) && p.src.includes('head/runtime/plugins'))
+      .map(p => p.src)
+    expect(headPlugins).toMatchInlineSnapshot(`
+      [
+        "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.server.ts",
+        "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead-stream.client.ts",
+      ]
     `)
   })
 

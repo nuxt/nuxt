@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Component } from '@nuxt/schema'
 import { compileScript, parse } from '@vue/compiler-sfc'
 
-import { ComponentNamePlugin } from '../src/components/plugins/component-names'
+import { ComponentNamePlugin } from '../src/components/plugins/component-names.ts'
 
 describe('component names', () => {
   const components = [
@@ -16,7 +16,7 @@ describe('component names', () => {
     },
   ] as [Component, Component]
 
-  const transformPlugin = ComponentNamePlugin({ sourcemap: false, getComponents: () => components }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+  const transformPlugin = ComponentNamePlugin({ getComponents: () => components }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
   it('should ignore files that are not components ', () => {
     const res = transformPlugin.transform.handler('export default {}', 'some-other-file.ts')
