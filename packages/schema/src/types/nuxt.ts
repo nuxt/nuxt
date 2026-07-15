@@ -131,6 +131,14 @@ export interface Nuxt {
   }
   /** Async local storage for current running Nuxt module instance. */
   '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
+
+  /**
+   * The Node HTTP(S) server the dev server is listening on, captured from the
+   * `listen` hook. Builders use it to attach their HMR websocket to the same
+   * server (and therefore the same port and certificate) as the app.
+   * @internal
+   */
+  '_devServerListener'?: import('node:http').Server | import('node:https').Server
   /**
    * Module options functions collected from moduleDependencies.
    * @internal

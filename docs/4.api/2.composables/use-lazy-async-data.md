@@ -48,13 +48,13 @@ When using `useLazyAsyncData`, navigation will occur before fetching is complete
 export function useLazyAsyncData<DataT, ErrorT> (
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>,
-): AsyncData<DataT, ErrorT>
+): AsyncData<DataT, ErrorT> & Promise<AsyncData<DataT, ErrorT>>
 
 export function useLazyAsyncData<DataT, ErrorT> (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>,
-): AsyncData<DataT, ErrorT>
+): AsyncData<DataT, ErrorT> & Promise<AsyncData<DataT, ErrorT>>
 ```
 
 `useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/4.x/api/composables/use-async-data).

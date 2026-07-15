@@ -49,7 +49,7 @@
     "@codspeed/core": "5.7.1",
     "@codspeed/vitest-plugin": "5.7.1",
     "@eslint/markdown": "8.0.3",
-    "@nuxt/cli": "3.36.1",
+    "@nuxt/cli": "3.37.0",
     "@nuxt/eslint-config": "1.16.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
@@ -113,6 +113,6 @@
     "vue-tsc": "3.3.7",
     "webpack": "5.108.4"
   },
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@11.12.0",
   "version": ""
 }

@@ -129,11 +129,11 @@ export interface NavigateToOptions {
 
 const HTML_ATTR_UNSAFE_RE = /[&"'<>]/g
 const HTML_ATTR_ENCODE_MAP: Record<string, string> = {
-  '&': '%26',
-  '"': '%22',
-  '\'': '%27',
-  '<': '%3C',
-  '>': '%3E',
+  '&': '&amp;',
+  '"': '&quot;',
+  '\'': '&#x27;',
+  '<': '&lt;',
+  '>': '&gt;',
 }
 function encodeForHtmlAttr (value: string): string {
   return value.replace(HTML_ATTR_UNSAFE_RE, c => HTML_ATTR_ENCODE_MAP[c]!)

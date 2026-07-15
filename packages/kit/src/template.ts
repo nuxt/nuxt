@@ -153,7 +153,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   // Always write declaration files
-  if (template.filename.endsWith('.d.ts')) {
+  if (template.filename.endsWith('.d.ts') || template.filename.endsWith('.d.mts') || template.filename.endsWith('.d.cts')) {
     template.write = true
   }
 

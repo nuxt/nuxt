@@ -10,10 +10,8 @@ import { parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
-// @ts-expect-error missing types
-import _hashSum from 'hash-sum'
 
-const hashSum = _hashSum as (value: string) => string
+import { getVueLoaderHash } from '#builder'
 
 const CSS_URL_RE = /url\((['"]?)(\/[^)]+?)\1\)/g
 
@@ -51,13 +49,13 @@ function normalizeCSSContent (css: string) {
 // (for server-only components not in client build)
 // Uses vue-compiler-sfc to properly process scoped styles
 
-// Reproduces vue-loader's scope id so styles extracted here match the ids the
-// client build emitted for the same component. Must stay in sync with:
-// https://github.com/vuejs/vue-loader/blob/v17.4.2/src/index.ts#L139-L147
+// Reproduces the active Vue loader's scope id so styles extracted here match
+// the ids emitted by the server build. The loaders use different hash functions,
+// selected through #builder.
 function getVueLoaderScopeId (filePath: string, source: string, rootContext: string) {
   const rawShortFilePath = relative(rootContext || process.cwd(), filePath).replace(/^(?:\.\.[/\\])+/, '')
   const shortFilePath = normalize(rawShortFilePath).replace(/\\/g, '/')
-  return hashSum(`${shortFilePath}\n${source.replace(/\r\n/g, '\n')}`)
+  return getVueLoaderHash(`${shortFilePath}\n${source.replace(/\r\n/g, '\n')}`)
 }
 
 function extractVueStyles (filePath: string, rootContext: string): string[] {
@@ -306,7 +304,7 @@ export class SSRStylesPlugin {
         if (!rel) { continue }
         if (collected.has(rel)) { continue }
 
-        const vueStyles = extractVueStyles(resolveFilePath(resource) || resource, this.nuxt.options.rootDir)
+        const vueStyles = extractVueStyles(resolveFilePath(resource) || resource, compilation.compiler.context)
         if (vueStyles.length) {
           collected.set(rel, new Set(vueStyles))
         }
