@@ -1,6 +1,6 @@
 import { computed, getCurrentInstance } from 'vue'
 import type { DefineComponent, defineComponent } from 'vue'
-import { hashKey } from './hash'
+import { hashKey } from '../utils/hash'
 import type { NuxtApp } from '../nuxt'
 import { getNuxtAppCtx, useNuxtApp } from '../nuxt'
 import { useHead } from './head'

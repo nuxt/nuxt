@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { reactive, ref } from 'vue'
-import { hashFunction, hashKey } from '#app/composables/hash'
+import { hashFunction, hashKey } from '#app/utils/hash'
 
 describe('hashKey', () => {
   it('is insensitive to object key order', () => {
