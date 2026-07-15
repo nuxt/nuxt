@@ -1,3 +1,5 @@
+import { readdirSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { basename, normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
@@ -159,10 +161,33 @@ function baseAlias (ctx: WebpackConfigContext) {
   }
 }
 
+function findDependencyModulesDir (from: string | URL, id: string) {
+  return createRequire(from).resolve.paths(id)?.find((dir) => {
+    try {
+      return readdirSync(dir).some(entry => entry !== '.bin')
+    } catch {
+      return false
+    }
+  })
+}
+
+const builderModulesDir = findDependencyModulesDir(import.meta.url, `@nuxt/${builder}-builder`)
+
 function baseResolve (ctx: WebpackConfigContext) {
   // Prioritize nested node_modules in webpack search path (#2558)
   // TODO: this might be refactored as default modulesDir?
-  const webpackModulesDir = getWebpackModulesDir(ctx.options.modulesDir)
+  const webpackModulesDir = ['node_modules'].concat(ctx.options.modulesDir)
+  const nuxtModulesDir = findDependencyModulesDir(resolve(ctx.options.appDir, 'index.js'), 'nuxt')
+
+  if (nuxtModulesDir && !webpackModulesDir.includes(nuxtModulesDir)) {
+    webpackModulesDir.push(nuxtModulesDir)
+  }
+
+  const webpackLoaderModulesDir = [...webpackModulesDir]
+
+  if (builderModulesDir && !webpackLoaderModulesDir.includes(builderModulesDir)) {
+    webpackLoaderModulesDir.push(builderModulesDir)
+  }
 
   ctx.config.resolve = {
     extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
@@ -173,20 +198,9 @@ function baseResolve (ctx: WebpackConfigContext) {
   }
 
   ctx.config.resolveLoader = {
-    modules: webpackModulesDir,
+    modules: webpackLoaderModulesDir,
     ...ctx.config.resolveLoader,
   }
-}
-
-function getWebpackModulesDir (modulesDir: string[]) {
-  const dirs = new Set(['node_modules'])
-
-  for (const dir of modulesDir) {
-    dirs.add(dir)
-    dirs.add(resolve(dir, '.pnpm/node_modules'))
-  }
-
-  return [...dirs]
 }
 
 function baseTranspile (ctx: WebpackConfigContext) {
