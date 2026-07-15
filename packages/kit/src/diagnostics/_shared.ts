@@ -15,8 +15,6 @@ export const docsBase = (code: string): string =>
 // `as const` preserves the tuple shape `defineDiagnostics` reads to type each
 // reporter's call-site options; a plain array collapses them to `{}`.
 export const reporters = [
-  // Colorize the terminal; tests stay plain. Bare `process.env.NODE_ENV` (no
-  // import) lets the bundler statically replace it.
-  // eslint-disable-next-line no-restricted-globals -- statically replaced at build time
-  /* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) })),
+  // Colorize the terminal; tests stay plain.
+  /* #__PURE__ */ (createConsoleReporter(import.meta.test ? undefined : { formatter: ansiFormatter(colors) })),
 ] as const
