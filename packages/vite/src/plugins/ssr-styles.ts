@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { relative as nodeRelative } from 'node:path'
+import process from 'node:process'
 import type { Plugin } from 'vite'
 import { dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
@@ -76,8 +77,8 @@ function wrapStringGenerateScopedName (
 
     // postcss-modules replaces non-word chars and leading digits/dashes with '_'
     return name
-      .replace(/[^a-zA-Z0-9\-_\xA0-\uFFFF]/g, '-')
-      .replace(/^((-?[0-9])|(--))/u, '_$1')
+      .replace(/[^\w\-\xA0-\uFFFF]/g, '-')
+      .replace(/^(-?\d|--)/u, '_$1')
   }
 }
 
@@ -220,17 +221,19 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       // inlined `<style>` tags. Wrap the string into a function that
       // strips the query before hashing so names stay consistent.
       // See https://github.com/nuxt/nuxt/issues/35591
-      const modules = config.css?.modules as Record<string, any> | undefined
-      const generateScopedName = modules?.generateScopedName
-      const hashPrefix = typeof modules?.hashPrefix === 'string' ? modules.hashPrefix : ''
+      const modules = config.css?.modules
+      const generateScopedName = typeof modules === 'object' && modules ? modules.generateScopedName : undefined
+      const hashPrefix = typeof modules === 'object' && modules && typeof modules.hashPrefix === 'string' ? modules.hashPrefix : ''
       if (typeof generateScopedName === 'string') {
         config.css ??= {}
         config.css.modules ??= {}
-        config.css.modules.generateScopedName = wrapStringGenerateScopedName(
-          generateScopedName,
-          config.root ?? process.cwd(),
-          hashPrefix,
-        )
+        if (typeof config.css.modules === 'object' && config.css.modules) {
+          config.css.modules.generateScopedName = wrapStringGenerateScopedName(
+            generateScopedName,
+            config.root ?? process.cwd(),
+            hashPrefix,
+          )
+        }
       }
     },
     configResolved (config) {
