@@ -869,6 +869,12 @@ declare module 'nuxt/app' {
   }
 }
 
+declare module '#app' {
+  interface NuxtPayload {
+    poundAppPayloadField?: 'from-pound-app'
+  }
+}
+
 describe('module augmentation of runtime app types', () => {
   it('merges `NuxtApp` augmentations from `#app` and `nuxt/app`', () => {
     const nuxtApp = useNuxtApp()
@@ -890,6 +896,15 @@ describe('module augmentation of runtime app types', () => {
     useNuxtApp().hook('pound-app:custom-hook', (payload) => {
       expectTypeOf(payload).toEqualTypeOf<{ foo: string }>()
     })
+  })
+  it('re-exports the same leaf types through `#app` as `#app/types` declares', () => {
+    expectTypeOf<import('#app').NuxtPayload>().toEqualTypeOf<import('#app/types').NuxtPayload>()
+    expectTypeOf<import('#app').NuxtSSRContext>().toEqualTypeOf<import('#app/types').NuxtSSRContext>()
+  })
+  it('flows `#app` payload augmentations through to the `#app/types` leaf', () => {
+    // `@nuxt/nitro-server` reads `NuxtPayload` from `#app/types`; a user
+    // augmentation applied via `#app` must be visible there too.
+    expectTypeOf<import('#app/types').NuxtPayload['poundAppPayloadField']>().toEqualTypeOf<'from-pound-app' | undefined>()
   })
 })
 
