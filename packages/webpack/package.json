@@ -13,7 +13,7 @@
   "types": "./src/index.ts",
   "imports": {
     "#builder": "./builder.mjs",
-    "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
+    "#vue-module-identifier": "./src/loaders/vue-module-identifier.ts"
   },
   "exports": {
     ".": "./src/index.ts",
@@ -98,6 +98,10 @@
       "./dist/*": "./dist/*",
       "./package.json": "./package.json"
     },
-    "types": "./dist/index.d.mts"
+    "types": "./dist/index.d.mts",
+    "imports": {
+      "#builder": "./builder.mjs",
+      "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
+    }
   }
 }
