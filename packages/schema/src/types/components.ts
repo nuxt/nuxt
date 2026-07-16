@@ -41,6 +41,22 @@ export interface Component {
 
 // TODO: Move component-related properties to ComponentsDir
 
+/**
+ * Per-pattern opt-in for `components.ignoreDirPatterns`.
+ *
+ * The matched folder-name patterns are fixed for the initial release:
+ *   - `wrap`   toggles matching of `(parenthesized)` folders
+ *   - `prefix` toggles matching of `_underscore-prefixed` folders
+ *
+ * Additional patterns may be added in future releases in a non-breaking way.
+ */
+export interface IgnoreDirPatterns {
+  /** Strip folders wrapped in parentheses, e.g. `(auth)`. */
+  wrap?: boolean
+  /** Strip folders prefixed with an underscore, e.g. `_internal`. */
+  prefix?: boolean
+}
+
 export interface ScanDir extends Omit<CompilerScanDir, 'extensions'> {
   /**
    * Prefix all matched components.
@@ -74,6 +90,17 @@ export interface ScanDir extends Omit<CompilerScanDir, 'extensions'> {
    * If enabled, registers components as islands
    */
   island?: boolean
+  /**
+   * Per-directory opt-in for stripping "organizational" folder names from the
+   * generated component name. Normally inherited from the top-level
+   * `components.ignoreDirPatterns` option during config normalization, but can
+   * also be set per directory.
+   *
+   * When enabled, matched folder names are stripped from the path-derived
+   * component name without disabling other path segments (unlike
+   * `pathPrefix: false`).
+   */
+  ignoreDirPatterns?: IgnoreDirPatterns
 }
 
 export interface ComponentsDir extends ScanDir, AugmentProperty<Pick<CompilerScanDir, 'extensions'>, 'extensions', VueExtension> {
@@ -107,6 +134,26 @@ export interface ComponentsOptions {
    * This can be overridden by an individual component directory entry.
    */
   global?: boolean
+  /**
+   * Auto-detect "organizational" subdirectories within each scanned `components`
+   * directory and strip their folder names from generated component names, so the
+   * folders organize files on disk without affecting component names.
+   *
+   * Two folder-name patterns are recognized:
+   *   - wrapped in parentheses (`(auth)`) — mirrors Nuxt's pages route-group
+   *     convention
+   *   - prefixed with underscore (`_internal`) — the "private folder" convention
+   *
+   * Pass `true` to enable both, or pass an object to opt in per pattern, e.g.
+   * `{ wrap: true }` or `{ prefix: true }`.
+   *
+   * Unlike `pathPrefix: false`, other path segments still contribute to the
+   * component name. For example, with `ignoreDirPatterns: true`,
+   * `components/(auth)/forms/LoginForm.vue` resolves to `<FormsLoginForm />`.
+   *
+   * @default false
+   */
+  ignoreDirPatterns?: boolean | IgnoreDirPatterns
   /**
    * Whether to write metadata to the build directory with information about the components that
    * are auto-registered in your app.

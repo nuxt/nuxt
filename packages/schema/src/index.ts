@@ -1,6 +1,6 @@
 // Types
 export type { NuxtCompatibility, NuxtCompatibilityIssue, NuxtCompatibilityIssues } from './types/compatibility.ts'
-export type { Component, ComponentMeta, ComponentsDir, ComponentsOptions, ScanDir } from './types/components.ts'
+export type { Component, ComponentMeta, ComponentsDir, ComponentsOptions, IgnoreDirPatterns, ScanDir } from './types/components.ts'
 export type { NuxtCompilerOptions, KeyedFunction, KeyedFunctionFactory, CompilerScanDir } from './types/compiler.ts'
 export type { AppConfig, AppConfigInput, CustomAppConfig, DefineNuxtConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigLayer, NuxtOptions, PublicRuntimeConfig, RuntimeConfig, RuntimeValue, SchemaDefinition, UpperSnakeCase, ViteConfig, ViteOptions, ViewTransitionOptions, ViewTransitionPageOptions } from './types/config.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
