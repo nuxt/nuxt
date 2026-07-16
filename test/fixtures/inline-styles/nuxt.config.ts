@@ -26,4 +26,3 @@ export default withMatrix({
     },
   },
 })
-

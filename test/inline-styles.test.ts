@@ -85,7 +85,7 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
 
     // Extract class selectors from the inlined styles (e.g. ._WcviSZUO)
     const inlinedClasses = new Set(
-      [...inlinedStyleContent.matchAll(/\.([a-zA-Z_][a-zA-Z0-9_-]*)/g)].map(m => m[1]!),
+      [...inlinedStyleContent.matchAll(/\.([a-z_][\w-]*)/gi)].map(m => m[1]!),
     )
 
     // Extract class names from HTML element attributes
@@ -109,4 +109,3 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
     }
   })
 })
-
