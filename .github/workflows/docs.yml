@@ -33,14 +33,11 @@ jobs:
           node-version: lts
           cache: true
 
-      - name: Build (stub)
+      - name: Prepare
         run: vp run dev:prepare
 
       - name: Lint (docs)
         run: vp run lint:docs
-
-      - name: Build Nuxt
-        run: vp run build
 
       - name: Typecheck (docs)
         run: vp run typecheck:docs

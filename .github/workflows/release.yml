@@ -29,7 +29,7 @@ jobs:
           registry-url: "https://registry.npmjs.org/"
           cache: false
 
-      - name: Build (stub)
+      - name: Prepare
         run: vp run dev:prepare
 
       - name: 🛠 Build and release project
