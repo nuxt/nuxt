@@ -89,15 +89,17 @@ export interface NuxtApp {
 /**
  * Build artifacts consumed by the Nitro server runtime via `nuxt/*` subpath imports.
  *
- * Builders populate this with the `setBuildOutput()` kit helper. Function-valued
- * keys return the module body as a string; `ssrStyles` is an absolute path to an
- * emitted module whose own imports resolve relative to its location.
+ * Builders populate this with the `setBuildOutput()` kit helper. Each key is a
+ * (possibly async) function returning the module body as a string.
  */
 export interface NuxtBuildOutputs {
   /** Module body re-exporting the SSR app entry. */
   serverEntry: () => string | Promise<string>
-  /** Path to the emitted per-component SSR styles map, or `undefined` when no inline styles are produced. */
-  ssrStyles: string | undefined
+  /**
+   * Module body for the per-component SSR styles map. Defaults to
+   * `export default {}` when the build produces no inline styles.
+   */
+  ssrStyles: () => string | Promise<string>
   /** Serialized client manifest for `vue-bundle-renderer`. */
   clientManifest: () => string | Promise<string>
   /** Serialized precomputed client dependency data for `vue-bundle-renderer`. */

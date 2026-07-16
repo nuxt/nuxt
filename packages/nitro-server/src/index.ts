@@ -519,15 +519,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     if (specifier === 'nuxt/entry-chunk' || specifier === 'nuxt/entry-ids') {
       continue // already registered above in the virtual block
     }
-    nitroConfig.virtual![specifier] = () => {
-      const provider = nuxt.buildOutputs[key]
-      if (key === 'ssrStyles') {
-        return provider
-          ? `export { default } from ${JSON.stringify(pathToFileURL(provider as string).href)}`
-          : 'export default {}'
-      }
-      return (provider as () => string | Promise<string>)()
-    }
+    nitroConfig.virtual![specifier] = () => nuxt.buildOutputs[key]()
   }
 
   const nitroDecoratorSetup = new WeakMap<NitroConfig, Promise<void>>()

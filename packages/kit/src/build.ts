@@ -1,6 +1,6 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
-import type { NuxtBuildOutputs } from '@nuxt/schema'
+import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
 import { resolveAlias } from './resolve.ts'
@@ -235,7 +235,6 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
 /**
  * Set the build output for the given key. See {@link NuxtBuildOutputs}.
  */
-export function setBuildOutput<K extends keyof NuxtBuildOutputs> (key: K, provider: NuxtBuildOutputs[K]): void {
-  const nuxt = useNuxt()
+export function setBuildOutput<K extends keyof NuxtBuildOutputs> (key: K, provider: NuxtBuildOutputs[K], nuxt: Nuxt = useNuxt()): void {
   nuxt.buildOutputs[key] = provider
 }
