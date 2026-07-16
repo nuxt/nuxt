@@ -133,6 +133,7 @@ catalogs:
 
   # build-time deps of published packages
   build:
+    '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.3
     '@nuxt/cli': ^3.37.0
     '@nuxt/devtools': ^4.0.0-alpha.7

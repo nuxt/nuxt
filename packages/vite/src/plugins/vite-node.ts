@@ -193,6 +193,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   if (!nuxt.options.dev) {
     return
   }
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    return
+  }
 
   let socketServer: net.Server | undefined
   const { socketPath, parentDir } = generateSocketPath()

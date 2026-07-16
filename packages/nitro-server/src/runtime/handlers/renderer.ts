@@ -22,6 +22,7 @@ import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
+import { patchDevClientCss } from '../utils/renderer/dev-css'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
@@ -152,6 +153,10 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   // Render app
   const renderer = await getRenderer(ssrContext)
+
+  if (import.meta.dev) {
+    patchDevClientCss(event, renderer.rendererContext)
+  }
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
@@ -871,6 +876,12 @@ interface NuxtRequestContext {
   '~internal'?: boolean
   /** @internal */
   '~rendering-error'?: boolean
+  /**
+   * Dev-only: CSS module URLs the builder has loaded for this request, provided
+   * by a dev integration so the SSR renderer can emit the right stylesheet
+   * links / inline styles. @internal
+   */
+  '~devClientCss'?: string[]
   /** @internal */
   '~error-cause'?: SerializedErrorCause
 }

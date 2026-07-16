@@ -44,7 +44,7 @@ const nuxtTestProjects: Record<string, NuxtConfig> = {
 // Matrix combinations for fixture tests (matches CI matrix with exclusions)
 interface FixtureMatrixEntry {
   env: 'dev' | 'built'
-  builder: 'vite' | 'rspack' | 'webpack'
+  builder: 'vite' | 'rspack' | 'webpack' | 'nitro-vite'
   context: 'async' | 'default'
   manifest: 'manifest-on' | 'manifest-off'
 }
@@ -59,6 +59,9 @@ const fixtureMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-off' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-off' },
+  // nitro-vite: only default context + manifest-on
+  { env: 'dev', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on' },
+  { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on' },
   // rspack: only manifest-on
   { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
@@ -118,6 +121,10 @@ export default defineConfig({
           retry: isCI ? 2 : 0,
           benchmark: { include: [] },
           env: fixtureProjectEnv(entry),
+          // TODO: fix upstream in nitro
+          // `nitro/vite` keeps `RunnerManager` in process-global state, so all but
+          // one concurrent worker gets a 503: 'Vite environment "nitro" is unavailable'
+          ...(entry.builder === 'nitro-vite' ? { fileParallelism: false } : {}),
         },
       })),
       {

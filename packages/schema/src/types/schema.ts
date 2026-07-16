@@ -1646,6 +1646,15 @@ export interface ConfigSchema {
     }
 
     /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Only effective when using `@nuxt/vite-builder`.
+     * @default false
+     */
+    nitroViteEnvironment: boolean
+
+    /**
      * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.
      *
      * Hookable v6 may return `void` instead of `Promise<void>` when there are no registered

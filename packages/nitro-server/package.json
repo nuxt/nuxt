@@ -36,6 +36,7 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
+    "@ampproject/remapping": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
     "@vue/shared": "catalog:app-runtime",
@@ -49,6 +50,7 @@
     "impound": "catalog:build",
     "klona": "catalog:app-runtime",
     "lru-cache": "catalog:nitro-runtime",
+    "magic-string": "catalog:vite",
     "mlly": "catalog:build",
     "mocked-exports": "catalog:build",
     "nitro": "catalog:nitro-runtime",

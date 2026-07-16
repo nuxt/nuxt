@@ -73,6 +73,9 @@ catalogs:
       specifier: ^5.2.0
       version: 5.2.0
   build:
+    '@ampproject/remapping':
+      specifier: ^2.3.0
+      version: 2.3.0
     '@dxup/nuxt':
       specifier: ^0.5.3
       version: 0.5.3
@@ -869,6 +872,9 @@ importers:
 
   packages/nitro-server:
     dependencies:
+      '@ampproject/remapping':
+        specifier: catalog:build
+        version: 2.3.0
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -908,6 +914,9 @@ importers:
       lru-cache:
         specifier: catalog:nitro-runtime
         version: 11.5.2
+      magic-string:
+        specifier: catalog:vite
+        version: 1.0.0
       mlly:
         specifier: catalog:build
         version: 1.8.2
@@ -1959,6 +1968,12 @@ importers:
         specifier: catalog:dev
         version: 6.0.3
 
+  test/fixtures/nitro-vite-environment:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/nuxt-time:
     dependencies:
       nuxt:
@@ -2038,6 +2053,10 @@ importers:
         version: link:../../../packages/nuxt
 
 packages:
+
+  '@ampproject/remapping@2.3.0':
+    resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
+    engines: {node: '>=6.0.0'}
 
   '@andrewbranch/untar.js@1.0.3':
     resolution: {integrity: sha512-Jh15/qVmrLGhkKJBdXlK1+9tY4lZruYjsgkDFj08ZmDiWVBLJcqkok7Z0/R0In+i1rScBpJlSvrTS2Lm41Pbnw==}
@@ -10369,6 +10388,11 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@ampproject/remapping@2.3.0':
+    dependencies:
+      '@jridgewell/gen-mapping': 0.3.13
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@andrewbranch/untar.js@1.0.3': {}
 
