@@ -6,6 +6,8 @@ import { hash } from 'ohash'
 
 import { isPlainObject } from '@vue/shared'
 import { useRequestFetch } from './ssr'
+// @ts-expect-error virtual file
+import { $fetch as _$fetch } from '#build/fetch.mjs'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
 import type { NuxtError } from './error'
@@ -13,6 +15,8 @@ import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
 // @ts-expect-error virtual file
 import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
+
+const $fetch = _$fetch as $Fetch
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -40,7 +44,7 @@ export interface UseFetchOptions<
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
-  $fetch?: typeof globalThis.$fetch
+  $fetch?: $Fetch
   watch?: MultiWatchSources | false
 }
 
@@ -360,7 +364,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       }
 
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
-        let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || globalThis.$fetch
+        let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || $fetch
 
         // Use fetch with request context and headers for server direct API calls
         if (import.meta.server && !fetchOptions.$fetch) {

@@ -1,12 +1,16 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import type { H3Event$Fetch } from 'nitropack/types'
+import type { $Fetch, H3Event$Fetch } from 'nitropack/types'
+// @ts-expect-error virtual file
+import { $fetch as _$fetch } from '#build/fetch.mjs'
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import { useHead } from './head'
+
+const $fetch = _$fetch as $Fetch
 
 /** @since 3.0.0 */
 export function useRequestEvent (nuxtApp?: NuxtApp): H3Event | undefined {
@@ -42,11 +46,11 @@ export function useRequestHeader (header: string): string | null | undefined {
 }
 
 /** @since 3.2.0 */
-export function useRequestFetch (): H3Event$Fetch | typeof globalThis.$fetch {
+export function useRequestFetch (): H3Event$Fetch | $Fetch {
   if (import.meta.client) {
-    return globalThis.$fetch
+    return $fetch
   }
-  return useRequestEvent()?.$fetch || globalThis.$fetch
+  return useRequestEvent()?.$fetch || $fetch
 }
 
 /** @since 3.0.0 */

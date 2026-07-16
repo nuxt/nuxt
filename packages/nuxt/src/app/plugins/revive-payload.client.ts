@@ -1,3 +1,4 @@
+import type { $Fetch } from 'ofetch'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
 import { createError } from '../composables/error'
@@ -6,6 +7,10 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import { $fetch as _$fetch } from '#build/fetch.mjs'
+
+const $fetch = _$fetch as $Fetch
 
 function parseRevivedData (data: string) {
   try {
