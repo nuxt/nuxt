@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+import { relative as nodeRelative } from 'node:path'
 import type { Plugin } from 'vite'
 import { dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
@@ -16,6 +18,68 @@ const QUERY_RE = /\?.+$/
 const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 const NUXT_COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 const STYLE_QUERY_RE = /[?&]type=style/
+
+/**
+ * Wrap a string `generateScopedName` pattern into a function that strips any
+ * Vite query string (e.g. `?inline&used`) from `resourcePath` before hashing.
+ *
+ * When `features.inlineStyles` is enabled, the ssr-styles plugin imports CSS
+ * files with `?inline&used` appended to the module id. Vite passes this full
+ * id as `resourcePath` to `postcss-modules` / `generic-names`, which includes
+ * the query in the `[hash]` computation for string patterns. The client build
+ * processes the same file *without* the query, so it gets a different hash and
+ * therefore different class names — causing SSR markup to mismatch the inlined
+ * `<style>` tags (see https://github.com/nuxt/nuxt/issues/35591).
+ *
+ * The formula below reproduces the exact same hash that `generic-names@4` /
+ * `postcss-modules@9` would produce for the cleaned path, so the scoped names
+ * remain identical between the SSR inline pass and the normal client build.
+ *
+ * `generic-names` hash formula (from its source):
+ *   content = hashPrefix + path.relative(context, resourcePath) + "\0" + localName
+ *   hash    = md5(content).slice(0, <length>) encoded as base64 / base32 / hex
+ *
+ * `interpolate-name` (used by `loader-utils`) implements `[hash:<digest>:<length>]`
+ * where the default digest is base64 and default length is 20.
+ */
+function wrapStringGenerateScopedName (
+  pattern: string,
+  context: string = process.cwd(),
+  hashPrefix: string = '',
+): (localName: string, resourcePath: string) => string {
+  return (localName: string, resourcePath: string) => {
+    // Strip any Vite query (e.g. `?inline&used`) so the hash input matches the
+    // path used during the normal (non-inline) client build.
+    const cleanPath = resourcePath.replace(QUERY_RE, '')
+    const relativePath = nodeRelative(context, cleanPath).replace(/\\/g, '/')
+    const content = hashPrefix + relativePath + '\0' + localName
+    const hash = createHash('md5').update(content).digest('base64')
+
+    // Interpolate the pattern tokens. We support the same tokens that
+    // loader-utils / interpolate-name support for the common case:
+    //   [local]         – the local CSS class name
+    //   [hash]          – full base64 md5 hash
+    //   [hash:base64:N] – first N chars of base64-encoded hash
+    //   [hash:hex:N]    – first N chars of hex-encoded hash
+    let name = pattern.replace(/\[local\]/gi, localName)
+    name = name.replace(/\[hash(?::([a-z0-9]+))?(?::(\d+))?\]/gi, (_match, digest = 'base64', lengthStr?: string) => {
+      let encoded: string
+      if (digest === 'hex') {
+        encoded = createHash('md5').update(content).digest('hex')
+      } else {
+        // base64 / base32 both use base64 output here (same as generic-names)
+        encoded = hash
+      }
+      const length = lengthStr ? Number(lengthStr) : 20
+      return encoded.slice(0, length)
+    })
+
+    // postcss-modules replaces non-word chars and leading digits/dashes with '_'
+    return name
+      .replace(/[^a-zA-Z0-9\-_\xA0-\uFFFF]/g, '-')
+      .replace(/^((-?[0-9])|(--))/u, '_$1')
+  }
+}
 
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
@@ -147,6 +211,25 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
   return {
     name: 'ssr-styles',
+    config (config) {
+      // When `generateScopedName` is a string pattern, Vite's internal
+      // `generic-names` hashes the full module path — including any
+      // `?inline&used` query that the ssr-styles plugin appends. This
+      // causes a different hash (and different class names) in the SSR
+      // inline pass vs. the client build, so SSR markup mismatches the
+      // inlined `<style>` tags. Wrap the string into a function that
+      // strips the query before hashing so names stay consistent.
+      // See https://github.com/nuxt/nuxt/issues/35591
+      const generateScopedName = config.css?.modules?.generateScopedName
+      if (typeof generateScopedName === 'string') {
+        config.css ??= {}
+        config.css.modules ??= {}
+        config.css.modules.generateScopedName = wrapStringGenerateScopedName(
+          generateScopedName,
+          config.root ?? process.cwd(),
+        )
+      }
+    },
     configResolved (config) {
       entry = resolveClientEntry(config)
     },
