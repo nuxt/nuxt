@@ -875,6 +875,13 @@ describe('module augmentation of runtime app types', () => {
     expectTypeOf(nuxtApp.$augmentedViaPoundApp).toEqualTypeOf<(msg: string) => number>()
     expectTypeOf(nuxtApp.$augmentedViaNuxtApp).toEqualTypeOf<string>()
   })
+  it('sees the same `NuxtApp` interface through both specifiers', () => {
+    const viaNuxtApp: import('nuxt/app').NuxtApp = useNuxtApp()
+    expectTypeOf(viaNuxtApp.$augmentedViaPoundApp).toEqualTypeOf<(msg: string) => number>()
+    expectTypeOf(viaNuxtApp.$augmentedViaNuxtApp).toEqualTypeOf<string>()
+    const viaPoundApp: import('#app').NuxtApp = viaNuxtApp
+    expectTypeOf(viaPoundApp).toEqualTypeOf<typeof viaNuxtApp>()
+  })
   it('merges `PageMeta` augmentations from `#app`', () => {
     definePageMeta({ poundAppMetaField: true })
     expectTypeOf<PageMeta['poundAppMetaField']>().toEqualTypeOf<boolean | undefined>()
