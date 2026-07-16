@@ -29,9 +29,9 @@
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
-    "@vitejs/plugin-vue": "^6.0.7",
+    "@vitejs/plugin-vue": "^6.0.8",
     "@vitejs/plugin-vue-jsx": "^5.1.6",
-    "autoprefixer": "^10.5.2",
+    "autoprefixer": "^10.5.3",
     "consola": "^3.4.2",
     "cssnano": "^8.0.2",
     "defu": "^6.1.7",
