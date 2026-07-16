@@ -84,6 +84,11 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Install `@parcel/watcher` for better performance: `npm install -D @parcel/watcher`.',
       docs: false,
     },
+    NUXT_B1016: {
+      why: 'Failed to set up the `@parcel/watcher` file watcher.',
+      fix: 'This is likely an environment or file system issue. Watching for file changes may not work; restart the dev server and, if the problem persists, report it.',
+      docs: false,
+    },
     NUXT_B1017: {
       why: (p: { builder: string }) => `Loading \`${p.builder}\` builder failed.`,
       fix: (p: { builder: string }) => `Run \`npm install ${p.builder}\` to install it.`,
