@@ -236,8 +236,6 @@ useRenamedDefault()`
   it('should warn if there are duplicate entries in keyed functions', () => {
     vi.stubGlobal('__TEST_DEV__', true)
 
-    // The duplicate-key warning now reports through the nostics console
-    // reporter (console.warn) rather than the consola logger.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any)
