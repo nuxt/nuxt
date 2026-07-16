@@ -14,7 +14,7 @@ import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { relative } from 'pathe'
 
-import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
+import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
@@ -24,15 +24,11 @@ import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '..
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
-// @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
-// @ts-expect-error virtual file
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
-// @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import entryIds from 'nuxt/entry-ids'
 import { entryFileName } from 'nuxt/entry-chunk'
-// @ts-expect-error virtual file
 import { iifeChunkFileName } from '#internal/streaming-iife-chunk.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../utils/paths'
 import type { AppConfig } from '@nuxt/schema'
@@ -64,7 +60,6 @@ export default {
     const event = new H3Event(request)
 
     if (componentIslands && event.url.pathname.startsWith('/__nuxt_island/')) {
-      // @ts-expect-error virtual file
       return import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(request))
     }
 

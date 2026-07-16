@@ -1,9 +1,7 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
 import type { App } from 'vue'
 
-// @ts-expect-error virtual file
 import '#build/fetch'
-// @ts-expect-error virtual file
 import '#build/global-polyfills.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
@@ -11,13 +9,9 @@ import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError } from './composables/error'
 
-// @ts-expect-error virtual file
 import '#build/css'
-// @ts-expect-error virtual file
 import plugins from '#build/plugins'
-// @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
-// @ts-expect-error virtual file
 import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>

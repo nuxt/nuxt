@@ -711,6 +711,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
+  // TODO: remove in future
+  // `#app` itself is intentionally excluded from the server tsconfig, but
+  // we need these aliases as we import them directly into the renderers
+  const appDir = nuxt.options.alias['#app']
+  if (appDir) {
+    tsConfig.compilerOptions.paths['#app/island-hash'] ||= [resolve(appDir, 'island-hash')]
+    tsConfig.compilerOptions.paths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
+    tsConfig.compilerOptions.paths['#app/types'] ||= [resolve(appDir, 'types')]
+  }
+
   // Init nitro
   nuxt._perf?.startPhase('nitro:createNitro')
   const nitro = await createNitro(nitroConfig, {

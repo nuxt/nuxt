@@ -9,7 +9,6 @@ import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
-// @ts-expect-error virtual import
 import { cookieStore } from '#build/nuxt.config.mjs'
 
 function parseCookieValue (value: string) {

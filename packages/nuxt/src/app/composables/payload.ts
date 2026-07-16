@@ -9,7 +9,6 @@ import { useHead } from './head'
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
-// @ts-expect-error virtual import
 import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {

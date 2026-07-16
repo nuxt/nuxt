@@ -7,7 +7,7 @@ import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksF
 import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError } from '#app'
+import type { NuxtError, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -848,5 +848,48 @@ describe('kit utilities', () => {
     const _fake: Fromage = 'babybel'
 
     const _fromage: Fromage = 'cheese'
+  })
+})
+
+declare module '#app' {
+  interface NuxtApp {
+    $augmentedViaPoundApp: (msg: string) => number
+  }
+  interface PageMeta {
+    poundAppMetaField?: boolean
+  }
+  interface RuntimeNuxtHooks {
+    'pound-app:custom-hook': (payload: { foo: string }) => void | Promise<void>
+  }
+}
+
+declare module 'nuxt/app' {
+  interface NuxtApp {
+    $augmentedViaNuxtApp: string
+  }
+}
+
+describe('module augmentation of runtime app types', () => {
+  it('merges `NuxtApp` augmentations from `#app` and `nuxt/app`', () => {
+    const nuxtApp = useNuxtApp()
+    expectTypeOf(nuxtApp.$augmentedViaPoundApp).toEqualTypeOf<(msg: string) => number>()
+    expectTypeOf(nuxtApp.$augmentedViaNuxtApp).toEqualTypeOf<string>()
+  })
+  it('merges `PageMeta` augmentations from `#app`', () => {
+    definePageMeta({ poundAppMetaField: true })
+    expectTypeOf<PageMeta['poundAppMetaField']>().toEqualTypeOf<boolean | undefined>()
+  })
+  it('merges `RuntimeNuxtHooks` augmentations from `#app`', () => {
+    useNuxtApp().hook('pound-app:custom-hook', (payload) => {
+      expectTypeOf(payload).toEqualTypeOf<{ foo: string }>()
+    })
+  })
+})
+
+describe('error typing', () => {
+  it('useError exposes NuxtError fields', () => {
+    const error = useError()
+    expectTypeOf(error.value?.fatal).toEqualTypeOf<boolean | undefined>()
+    expectTypeOf(error.value?.__nuxt_error).toEqualTypeOf<true | undefined>()
   })
 })

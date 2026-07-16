@@ -4,7 +4,6 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
 import { useError } from '../composables/error'
 
-// @ts-expect-error virtual file
 import layouts from '#build/layouts'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({

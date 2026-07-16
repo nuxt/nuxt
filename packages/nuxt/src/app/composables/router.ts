@@ -1,10 +1,9 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
-import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
 import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
-import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
+import type { NuxtLayouts } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
@@ -15,11 +14,11 @@ import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
-  return useNuxtApp()?.$router as Router
+  return useNuxtApp()?.$router as unknown as Router
 }
 
 /** @since 3.0.0 */
-export const useRoute: typeof _useRoute = () => {
+export const useRoute: typeof _useRoute = (() => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     const middleware = useNuxtApp()._processingMiddleware
     const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
@@ -29,7 +28,7 @@ export const useRoute: typeof _useRoute = () => {
     return inject(PageRouteSymbol, useNuxtApp()._route)
   }
   return useNuxtApp()._route
-}
+}) as unknown as typeof _useRoute
 
 /** @since 3.0.0 */
 export const onBeforeRouteLeave = (guard: NavigationGuard): void => {
@@ -307,19 +306,19 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
   const inMiddleware = isProcessingMiddleware()
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
-      to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+      to.meta.layout = layout as any
       to.meta.layoutProps = props
       unsubscribe()
     })
   }
   if (!inMiddleware) {
     const route = useRoute()
-    route.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+    route.meta.layout = layout as any
     route.meta.layoutProps = props
     if (import.meta.client) {
       const unsubscribe = useRouter().beforeResolve((to, from) => {
         if (to.path === from.path) {
-          to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+          to.meta.layout = layout as any
           to.meta.layoutProps = props
         } else {
           unsubscribe()

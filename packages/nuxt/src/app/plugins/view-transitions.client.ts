@@ -3,7 +3,6 @@ import { useRouter } from '../composables/router'
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import type { ViewTransitionPageOptions } from 'nuxt/schema'
-// @ts-expect-error virtual file
 import { appViewTransition as defaultViewTransition } from '#build/nuxt.config.mjs'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {

@@ -2,7 +2,6 @@ import { defineComponent, h } from 'vue'
 import type { DefineSetupFnComponent } from 'vue'
 import { parseQuery } from 'vue-router'
 import { isAbsolute, relative, resolve } from 'pathe'
-// @ts-expect-error virtual file
 import { devRootDir } from '#build/nuxt.config.mjs'
 
 const testComponentWrapper = (url: string): DefineSetupFnComponent<{}> => defineComponent({

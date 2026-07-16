@@ -8,7 +8,6 @@ import { getRouteRules } from '../composables/manifest'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 
-// @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
 
 interface Route {

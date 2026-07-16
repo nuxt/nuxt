@@ -10,7 +10,7 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.mts",
+  "types": "./src/index.ts",
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
@@ -86,6 +86,7 @@
       ".": "./dist/index.mjs",
       "./builder-env": "./dist/builder-env.mjs",
       "./package.json": "./package.json"
-    }
+    },
+    "types": "./dist/index.d.mts"
   }
 }

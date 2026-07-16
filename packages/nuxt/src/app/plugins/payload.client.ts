@@ -6,7 +6,6 @@ import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
 import { injectHead } from '../composables/head'
 
-// @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
 // track the active head entry per URL for forwarded preload hints
@@ -64,7 +63,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           forwardedPrefetchEntries.set(url, entry)
         }
       })
-      if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {
+      // `navigator.connection` (Network Information API) is widely supported in
+      // browsers but not part of the standard TS DOM lib.
+      if (isAppManifestEnabled && (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType !== 'slow-2g') {
         setTimeout(getAppManifest, 1000)
       }
     })

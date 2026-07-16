@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -6,10 +5,7 @@ import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
 import { join } from 'pathe'
 
-const nuxtEntry = fileURLToPath(new URL('../packages/nuxt/dist/index.mjs', import.meta.url))
-const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes('const _module = await jiti')
-
-describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
 

@@ -138,7 +138,7 @@ export default defineConfig({
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
-            '#app': resolve('./packages/nuxt/dist/app'),
+            '#app': resolve('./packages/nuxt/src/app'),
           },
         },
         test: {
