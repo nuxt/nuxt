@@ -572,11 +572,7 @@ export function useNuxtApp (id?: string): NuxtApp {
   const nuxtAppInstance = tryUseNuxtApp(id)
 
   if (!nuxtAppInstance) {
-    if (import.meta.dev) {
-      throw appDiagnostics.NUXT_E1001()
-    } else {
-      throw appDiagnostics.NUXT_E1001()
-    }
+    throw appDiagnostics.NUXT_E1001()
   }
 
   return nuxtAppInstance

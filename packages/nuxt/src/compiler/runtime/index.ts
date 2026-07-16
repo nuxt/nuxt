@@ -18,9 +18,6 @@ export interface ObjectFactory<T extends Function> {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function defineKeyedFunctionFactory<T extends Function> (factory: ObjectFactory<T>): T {
   const placeholder = function () {
-    if (import.meta.dev) {
-      throw appDiagnostics.NUXT_E1007({ name: factory.name })
-    }
     throw appDiagnostics.NUXT_E1007({ name: factory.name })
   }
 
