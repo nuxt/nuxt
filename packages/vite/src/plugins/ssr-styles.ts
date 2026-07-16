@@ -220,13 +220,16 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       // inlined `<style>` tags. Wrap the string into a function that
       // strips the query before hashing so names stay consistent.
       // See https://github.com/nuxt/nuxt/issues/35591
-      const generateScopedName = config.css?.modules?.generateScopedName
+      const modules = config.css?.modules as Record<string, any> | undefined
+      const generateScopedName = modules?.generateScopedName
+      const hashPrefix = typeof modules?.hashPrefix === 'string' ? modules.hashPrefix : ''
       if (typeof generateScopedName === 'string') {
         config.css ??= {}
         config.css.modules ??= {}
         config.css.modules.generateScopedName = wrapStringGenerateScopedName(
           generateScopedName,
           config.root ?? process.cwd(),
+          hashPrefix,
         )
       }
     },
