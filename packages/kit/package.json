@@ -42,7 +42,7 @@
     "semver": "^7.8.5",
     "tinyglobby": "^0.2.17",
     "ufo": "^1.6.4",
-    "unctx": "^3.0.0-beta.2",
+    "unctx": "^3.0.0",
     "untyped": "^2.0.0"
   },
   "devDependencies": {
