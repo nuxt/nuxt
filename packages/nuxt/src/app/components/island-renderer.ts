@@ -47,8 +47,7 @@ const IslandRenderer = defineComponent({
     }
 
     onErrorCaptured((e) => {
-      const diagnostic = renderDiagnostics.NUXT_E4015({ name, cause: e })
-      if (!import.meta.dev) { console.error(diagnostic.name, e) }
+      renderDiagnostics.NUXT_E4015({ name, cause: e })
     })
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })

@@ -47,8 +47,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     if (manifest === _manifest) {
       manifest = undefined
     }
-    const diagnostic = manifestDiagnostics.NUXT_E5002({ cause: e })
-    if (!import.meta.dev) { console.error(diagnostic.name, e) }
+    manifestDiagnostics.NUXT_E5002({ cause: e })
   })
   return _manifest
 }
@@ -71,8 +70,7 @@ export function getRouteRules (arg: string | H3Event | { path: string }) {
   try {
     return routeRulesMatcher(path.toLowerCase())
   } catch (e) {
-    const diagnostic = manifestDiagnostics.NUXT_E5003({ path, cause: e })
-    if (!import.meta.dev) { console.error(diagnostic.name, e) }
+    manifestDiagnostics.NUXT_E5003({ path, cause: e })
     return {}
   }
 }

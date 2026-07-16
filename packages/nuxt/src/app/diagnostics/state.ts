@@ -1,12 +1,12 @@
 import { defineDiagnostics, defineProdDiagnostics } from 'nostics'
-import { docsBase, reporters } from './_shared.ts'
+import { docsBase, prodReporters, reporters } from './_shared.ts'
 
 /**
  * E7xxx
  * Payload / state / cookie runtime diagnostics.
  */
 export const stateDiagnostics = !import.meta.dev
-  ? /* #__PURE__ */ defineProdDiagnostics({ docsBase })
+  ? /* #__PURE__ */ defineProdDiagnostics({ docsBase, reporters: prodReporters })
   : /* #__PURE__ */ defineDiagnostics({
       docsBase,
       reporters,

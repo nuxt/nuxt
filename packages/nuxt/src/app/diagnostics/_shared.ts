@@ -1,4 +1,5 @@
 import { createConsoleReporter } from 'nostics'
+import type { DiagnosticReporter } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 import { createDevReporter } from 'nostics/reporters/dev'
 
@@ -44,3 +45,13 @@ export const reporters = [
   /* #__PURE__ */ (createConsoleReporter(import.meta.client || import.meta.test ? undefined : { formatter: ansiFormatter(colors), method: 'error' })),
   ...devReporters,
 ] as const
+
+// Production reporter. In production the catalog's `why`/`fix` strings are
+// stripped from the bundle, so only the stable code remains; print it so a
+// production error stays traceable. Replaces the manual `console.error(
+// diagnostic.name)` calls that each reporting site used to repeat.
+const prodReporter: DiagnosticReporter = (diagnostic) => {
+  console.error(`[${diagnostic.name}]`)
+}
+
+export const prodReporters = [prodReporter] as const

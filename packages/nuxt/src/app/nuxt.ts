@@ -369,8 +369,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
     const unreg = nuxtApp.hook('app:error', (...args) => {
-      const diagnostic = appDiagnostics.NUXT_E1005({ cause: args.length > 1 ? args : args[0] })
-      if (!import.meta.dev) { console.error(diagnostic.name, ...args) }
+      appDiagnostics.NUXT_E1005({ cause: args.length > 1 ? args : args[0] })
     })
     nuxtApp.hook('app:mounted', unreg)
   }
