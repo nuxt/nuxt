@@ -50,15 +50,5 @@ export const navigationDiagnostics = !import.meta.dev
           fix: 'Register an error handler with `router.onError()` or add error handling within your middleware.',
           docs: false,
         },
-        NUXT_E2010: {
-          why: (p: { path: string }) => `Failed to prefetch \`${p.path}\`.`,
-          fix: 'This may be a transient network error. Check that the target route exists and is accessible.',
-          docs: false,
-        },
-        NUXT_E2011: {
-          why: (p: { path: string }) => `Failed to preload route component for \`${p.path}\`.`,
-          fix: 'Check that the page component exists and can be imported. This may be a network issue or a missing chunk.',
-          docs: false,
-        },
       },
     })
