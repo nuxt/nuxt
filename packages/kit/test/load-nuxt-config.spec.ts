@@ -48,10 +48,10 @@ describe('loadNuxtConfig', () => {
     `)
   })
 
-  it('should respect app.layerOrdering for local layers', async () => {
+  it('should order local layers listed in extends (alias path) above unlisted ones', async () => {
     const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
-    // 'c' is listed last, so it becomes the highest-priority local layer (above 'd')
-    const config = await loadNuxtConfig({ cwd, overrides: { app: { layerOrdering: ['d', 'c'] } } })
+    // `c` is listed in extends, so it outranks the unlisted (auto-scanned) `d`; external layers stay below
+    const config = await loadNuxtConfig({ cwd, overrides: { extends: ['~/layers/c'] } })
     expect(config._layers.map(l => basename(l.cwd))).toMatchInlineSnapshot(`
       [
         "layer-fixture",
@@ -63,10 +63,24 @@ describe('loadNuxtConfig', () => {
     `)
   })
 
-  it('should keep local layers absent from app.layerOrdering at the lowest priority', async () => {
+  it('should order local layers listed in extends (relative path)', async () => {
     const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
-    // only 'c' is listed, so the unlisted 'd' falls below it while keeping its alphabetical order
-    const config = await loadNuxtConfig({ cwd, overrides: { app: { layerOrdering: ['c'] } } })
+    const config = await loadNuxtConfig({ cwd, overrides: { extends: ['./layers/c'] } })
+    expect(config._layers.map(l => basename(l.cwd))).toMatchInlineSnapshot(`
+      [
+        "layer-fixture",
+        "c",
+        "d",
+        "b",
+        "a",
+      ]
+    `)
+  })
+
+  it('should follow the extends order when all local layers are listed', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
+    // listing `c` before `d` flips the default alphabetical order (`d` before `c`)
+    const config = await loadNuxtConfig({ cwd, overrides: { extends: ['~/layers/c', '~~/layers/d'] } })
     expect(config._layers.map(l => basename(l.cwd))).toMatchInlineSnapshot(`
       [
         "layer-fixture",

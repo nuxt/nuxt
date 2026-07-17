@@ -253,24 +253,6 @@ export interface ConfigSchema {
     keepalive: NuxtAppConfig['keepalive']
 
     /**
-     * Explicitly order local layers found in the `~~/layers/` directory.
-     *
-     * Layers are listed from lowest to highest priority (the last entry wins), matching the numbered-directory
-     * convention. This takes precedence over directory numbering. Local layers not listed keep their alphabetical
-     * order at the lowest priority.
-     *
-     * @example
-     * ```ts
-     * export default defineNuxtConfig({
-     *   app: {
-     *     layerOrdering: ['common', 'auth', 'orders', 'shopping-cart']
-     *   }
-     * })
-     * ```
-     */
-    layerOrdering?: string[]
-
-    /**
      * Customize Nuxt root element id.
      *
      * @deprecated Prefer `rootAttrs.id` instead

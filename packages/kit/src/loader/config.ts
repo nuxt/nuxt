@@ -7,7 +7,7 @@ import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { basename, join, relative } from 'pathe'
+import { basename, join, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
@@ -34,6 +34,39 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     .sort((a, b) => b.localeCompare(a))
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
+  // Allow ordering `layers/` directories through `extends` (supporting `~`/`~~`/`@`/`@@` aliases).
+  // We record the order of local layers referenced in the project's `extends` and resolve alias
+  // paths ourselves, since c12 does not expand these aliases when resolving extend sources.
+  const rootCwd = resolve(opts.cwd || process.cwd())
+  const autoScanSources = new Set(localLayers)
+  const localLayerDirs = new Set(localLayers.map(dir => withoutTrailingSlash(resolve(rootCwd, dir))))
+  const extendsLocalLayerDirs: string[] = []
+  const resolveExtends: LoadConfigOptions<NuxtConfig>['resolve'] = async (id, resolveOptions) => {
+    if (typeof id !== 'string') { return undefined }
+    const base = resolveOptions.cwd ? resolve(resolveOptions.cwd) : rootCwd
+    const aliased = resolveLayerExtendsAlias(id, base)
+    // Only the root project's `extends` reorders local layers; skip the auto-scan injections
+    if (base === rootCwd && !autoScanSources.has(id)) {
+      const layerDir = withoutTrailingSlash(aliased ?? resolve(rootCwd, id))
+      if (localLayerDirs.has(layerDir)) {
+        extendsLocalLayerDirs.push(layerDir)
+      }
+    }
+    if (!aliased) { return undefined }
+    // Resolve alias-prefixed layer directories ourselves so c12 does not fail on the unexpanded path
+    const layer = await loadConfig<NuxtConfig>({
+      cwd: aliased,
+      name: 'nuxt',
+      configFile: 'nuxt.config',
+      rcFile: false,
+      extend: false,
+      jiti: resolveOptions.jiti,
+    })
+    return layer.configFile
+      ? { config: layer.config, configFile: layer.configFile, cwd: aliased, source: aliased, meta: layer.meta }
+      : undefined
+  }
+
   // populate process.env before the schema imports its env-based defaults
   if (opts.dotenv !== false) {
     await setupDotenv({
@@ -50,6 +83,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       configFile: 'nuxt.config',
       rcFile: '.nuxtrc',
       extend: { extendKey: ['theme', '_extends', 'extends'] },
+      resolve: resolveExtends,
       globalRc: true,
       // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
       merger,
@@ -126,13 +160,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     _layers.push(layer)
   }
 
-  // Apply explicit layer ordering from `app.layerOrdering`, taking precedence over directory naming
-  const configuredLayerOrdering = nuxtConfig.app?.layerOrdering
-  if (Array.isArray(configuredLayerOrdering)) {
-    const layerOrdering = configuredLayerOrdering.filter((name): name is string => typeof name === 'string')
-    if (layerOrdering.length) {
-      orderLocalLayersByConfig(_layers, layerOrdering, cwd, localRelativePaths)
-    }
+  // Reorder local layers referenced in `extends` to their listed order (first entry = highest priority);
+  // local layers not listed keep their alphabetical order at a lower priority than the listed ones.
+  if (extendsLocalLayerDirs.length) {
+    reorderLocalLayersByExtends(_layers, extendsLocalLayerDirs, localLayerDirs)
   }
 
   ;(nuxtConfig as any)._layers = _layers
@@ -152,37 +183,52 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
 }
 
+const LAYER_EXTENDS_ALIASES = ['~~', '@@', '~', '@']
+
 /**
- * Reorder local layers (from the `~~/layers/` directory) in place according to `app.layerOrdering`.
+ * Resolve a leading `~`, `~~`, `@` or `@@` alias in an `extends` source to an absolute path.
  *
- * `layerOrdering` is listed from lowest to highest priority (the last entry wins), so a layer listed
- * later becomes higher priority and moves earlier in the `_layers` array. Local layers not listed keep
- * their existing alphabetical order at the lowest priority. Root and `extends` layers are left untouched.
+ * Layers in the `layers/` directory live at the project root, so all of these aliases are resolved
+ * relative to `rootDir`. Returns `undefined` when the source is not alias-prefixed.
  */
-function orderLocalLayersByConfig (
+function resolveLayerExtendsAlias (source: string, rootDir: string): string | undefined {
+  for (const alias of LAYER_EXTENDS_ALIASES) {
+    if (source === alias) { return rootDir }
+    if (source.startsWith(`${alias}/`)) {
+      return join(rootDir, source.slice(alias.length + 1))
+    }
+  }
+  return undefined
+}
+
+/**
+ * Reorder local layers (from the `~~/layers/` directory) in place according to the order they are
+ * listed in `extends`. Listed layers come first, in `extends` order (first entry = highest priority);
+ * unlisted local layers keep their existing alphabetical order after them. Other layers are untouched.
+ */
+function reorderLocalLayersByExtends (
   layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[],
-  layerOrdering: string[],
-  cwd: string | undefined,
-  localRelativePaths: Set<string>,
+  extendsOrder: string[],
+  localLayerDirs: Set<string>,
 ) {
-  const priorityByName = new Map(layerOrdering.map((name, index) => [name, index]))
+  const priorityByDir = new Map(extendsOrder.map((dir, index) => [dir, index]))
+  const layerDir = (layer: ConfigLayer<NuxtConfig, ConfigLayerMeta>) => withoutTrailingSlash(layer.config?.rootDir ?? layer.cwd ?? '')
 
   const localSlots: number[] = []
   const localLayers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
   for (let index = 0; index < layers.length; index++) {
-    const layer = layers[index]!
-    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
+    if (localLayerDirs.has(layerDir(layers[index]!))) {
       localSlots.push(index)
-      localLayers.push(layer)
+      localLayers.push(layers[index]!)
     }
   }
 
   const orderedLocalLayers = localLayers
-    .map((layer, originalIndex) => ({ layer, originalIndex }))
+    .map((layer, index) => ({ layer, index }))
     .sort((a, b) => {
-      const priorityA = priorityByName.get(basename(a.layer.cwd!)) ?? -1
-      const priorityB = priorityByName.get(basename(b.layer.cwd!)) ?? -1
-      return priorityB - priorityA || a.originalIndex - b.originalIndex
+      const priorityA = priorityByDir.get(layerDir(a.layer)) ?? Number.POSITIVE_INFINITY
+      const priorityB = priorityByDir.get(layerDir(b.layer)) ?? Number.POSITIVE_INFINITY
+      return priorityA - priorityB || a.index - b.index
     })
     .map(entry => entry.layer)
 

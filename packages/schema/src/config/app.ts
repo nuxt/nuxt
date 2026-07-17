@@ -110,15 +110,6 @@ export default defineResolvers({
       },
     },
     keepalive: false,
-    layerOrdering: {
-      $resolve: (val) => {
-        if (!Array.isArray(val)) {
-          return undefined
-        }
-        const ordering = val.filter((item): item is string => typeof item === 'string')
-        return ordering.length ? ordering : undefined
-      },
-    },
     rootId: {
       $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : '__nuxt'),
     },
