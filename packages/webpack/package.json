@@ -10,10 +10,10 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.mts",
+  "types": "./src/index.ts",
   "imports": {
     "#builder": "./builder.mjs",
-    "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
+    "#vue-module-identifier": "./src/loaders/vue-module-identifier.ts"
   },
   "exports": {
     ".": "./src/index.ts",
@@ -69,7 +69,7 @@
     "vue-bundle-renderer": "^2.3.1",
     "vue-loader": "^17.4.2",
     "webpack": "^5.108.4",
-    "webpack-bundle-analyzer": "^5.3.0",
+    "webpack-bundle-analyzer": "^5.3.1",
     "webpack-dev-middleware": "^8.0.3",
     "webpack-hot-middleware": "^2.26.1",
     "webpackbar": "^7.0.0"
@@ -97,6 +97,11 @@
       ".": "./dist/index.mjs",
       "./dist/*": "./dist/*",
       "./package.json": "./package.json"
+    },
+    "types": "./dist/index.d.mts",
+    "imports": {
+      "#builder": "./builder.mjs",
+      "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
     }
   }
 }

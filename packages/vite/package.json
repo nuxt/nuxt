@@ -10,15 +10,15 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.mts",
+  "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
   "imports": {
-    "#vite-node": "./dist/vite-node.mjs",
-    "#vite-node-entry": "./dist/vite-node-entry.mjs",
-    "#vite-node-runner": "./dist/vite-node-runner.mjs"
+    "#vite-node": "./src/vite-node.ts",
+    "#vite-node-entry": "./src/vite-node-entry.ts",
+    "#vite-node-runner": "./src/vite-node-runner.ts"
   },
   "files": [
     "dist"
@@ -107,6 +107,12 @@
     "exports": {
       ".": "./dist/index.mjs",
       "./package.json": "./package.json"
-    }
+    },
+    "imports": {
+      "#vite-node": "./dist/vite-node.mjs",
+      "#vite-node-entry": "./dist/vite-node-entry.mjs",
+      "#vite-node-runner": "./dist/vite-node-runner.mjs"
+    },
+    "types": "./dist/index.d.mts"
   }
 }

@@ -3,20 +3,16 @@ import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, o
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { NitroRouteRules } from 'nitro/types'
 
-import type { PageMeta } from '../../pages/runtime/composables'
+import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { _mergeTransitionProps, _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
-// @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
-// @ts-expect-error virtual file
 import layouts from '#build/layouts'
-// @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
 const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
@@ -31,7 +27,7 @@ const LayoutLoader = defineComponent({
   setup (props, context) {
     // This is a deliberate hack - this component must always be called with an explicit key to ensure
     // that setup reruns when the name changes.
-    return () => h(layouts[props.name], props.layoutProps, context.slots)
+    return () => h(layouts[props.name! as keyof typeof layouts], props.layoutProps, context.slots)
   },
 })
 
@@ -61,13 +57,14 @@ export default defineComponent({
     const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     const layout = computed(() => {
-      let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
+      type LayoutName = keyof NuxtLayouts | false | 'default'
+      let layout: LayoutName = unref(props.name as LayoutName) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
           console.warn(`[nuxt] Invalid layout \`${layout}\` selected.`)
         }
         if (props.fallback) {
-          layout = unref(props.fallback)
+          layout = unref(props.fallback as MaybeRef<LayoutName>)
         }
       }
       return layout

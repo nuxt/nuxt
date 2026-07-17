@@ -2,11 +2,9 @@ import type { H3Event } from 'nitro/h3'
 import { FastResponse } from 'srvx'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { createHead } from '@unhead/vue/server'
-import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
+import type { NuxtPayload, NuxtSSRContext } from '#app/types'
 import { sharedPrerenderCache } from '../cache'
-// @ts-expect-error virtual file
 import unheadOptions from '#internal/unhead-options.mjs'
-// @ts-expect-error virtual file
 import { NUXT_NO_SSR, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])

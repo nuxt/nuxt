@@ -70,10 +70,12 @@ export default defineResolvers({
     },
     vueJsx: {
       $resolve: async (val, get) => {
+        const options: { defineComponentName?: string[] } = val && typeof val === 'object' ? val : {}
         return {
           // TODO: investigate type divergence between types for @vue/compiler-core and @vue/babel-plugin-jsx
           isCustomElement: (await get('vue')).compilerOptions?.isCustomElement as undefined | ((tag: string) => boolean),
-          ...typeof val === 'object' ? val : {},
+          defineComponentName: [...new Set([...options.defineComponentName ?? ['defineComponent'], 'defineNuxtComponent'])],
+          ...options,
         }
       },
     },

@@ -4,8 +4,8 @@ import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
-import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
-import type { PageMeta } from '../composables'
+import type { NuxtApp, Plugin } from '#app/nuxt'
+import type { RouteMiddleware } from '#app/composables/router'
 
 import { generateRouteKey, toArray } from '../utils'
 import type { RouterViewSlotProps } from '../utils'
@@ -17,9 +17,7 @@ import { navigateTo } from '#app/composables/router'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
-// @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
-// @ts-expect-error virtual file
 import { pageIslandRoutes } from '#build/components.islands.mjs'
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
@@ -214,7 +212,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.callHook('page:loading:start')
       to.meta = reactive(to.meta)
       if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
-        to.meta.layout = initialLayout as Exclude<PageMeta['layout'], Ref | false>
+        to.meta.layout = initialLayout as any
       }
       nuxtApp._processingMiddleware = true
 
@@ -325,7 +323,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
         if ('name' in resolvedInitialRoute) {
-          resolvedInitialRoute.name = undefined
+          // clear the resolved route name so `router.replace` re-resolves it
+          ;(resolvedInitialRoute as { name: unknown }).name = undefined
         }
 
         // respect a plugin that navigated away during boot
@@ -338,7 +337,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           // real route once the page has hydrated.
           const payloadRoute = router.resolve(nuxtApp.payload.path!)
           if ('name' in payloadRoute) {
-            payloadRoute.name = undefined
+            ;(payloadRoute as { name: unknown }).name = undefined
           }
           await router.replace({ ...payloadRoute, force: true })
 

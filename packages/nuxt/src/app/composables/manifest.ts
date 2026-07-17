@@ -1,13 +1,9 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { $Fetch, NitroRouteRules } from 'nitro/types'
 import { useRuntimeConfig } from '../nuxt'
-// @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
-// @ts-expect-error virtual file
 import { $fetch as _$fetch } from '#build/fetch'
-// @ts-expect-error virtual file
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
 const $fetch = _$fetch as $Fetch
@@ -31,8 +27,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   }
   let _manifest: Promise<NuxtAppManifest>
   if (import.meta.server) {
-    // @ts-expect-error virtual file
-    _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest')
+    _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest') as unknown as Promise<NuxtAppManifest>
   } else {
     _manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
       responseType: 'json',

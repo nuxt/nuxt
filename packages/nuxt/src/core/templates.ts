@@ -193,7 +193,7 @@ export const schemaTemplate: NuxtTemplate = {
   getContents: async ({ nuxt }) => {
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public') {
+      if (key !== 'public' && key !== 'nitro') {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
@@ -537,7 +537,7 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
 }
 
 export const dollarFetchTypeTemplate: NuxtTemplate = {
-  filename: 'fetch.d.mts',
+  filename: 'fetch.d.ts',
   getContents () {
     return 'export { $fetch } from \'ofetch\'\n'
   },
@@ -638,7 +638,13 @@ export const buildTypeTemplate: NuxtTemplate = {
         }
       }
 
-      declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
+      // declare both extensioned (`#build/foo.mjs`) and bare (`#build/foo`) module specifiers
+      const fullSpecifier = join('#build', file.filename)
+      declarations += 'declare module ' + JSON.stringify(fullSpecifier) + ';\n'
+      const bareSpecifier = fullSpecifier.replace(/\.m?js$/, '')
+      if (bareSpecifier !== fullSpecifier) {
+        declarations += 'declare module ' + JSON.stringify(bareSpecifier) + ';\n'
+      }
     }
 
     return declarations

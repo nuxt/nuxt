@@ -3,7 +3,7 @@ import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitro/types'
-import type { NuxtError } from 'nuxt/app'
+import type { NuxtError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
 import type { SerializableValue } from './utils'
 

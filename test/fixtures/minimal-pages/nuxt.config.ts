@@ -1,9 +1,3 @@
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-
-const nuxtEntry = fileURLToPath(new URL('../../../packages/nuxt/dist/index.mjs', import.meta.url))
-const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes('const _module = await jiti')
-
 export default defineNuxtConfig({
   $production: {
     vite: {
@@ -23,7 +17,7 @@ export default defineNuxtConfig({
   sourcemap: false,
   compatibilityDate: 'latest',
   typescript: {
-    typeCheck: isStubbed ? false : 'build',
+    typeCheck: 'build',
   },
   // eslint-disable-next-line nuxt/no-nuxt-config-test-key
   test: false,

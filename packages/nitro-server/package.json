@@ -10,9 +10,12 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.mts",
+  "types": "./src/index.ts",
   "typesVersions": {
     "*": {
+      "augments": [
+        "./dist/augments.d.mts"
+      ],
       "h3": [
         "./dist/h3.d.mts"
       ]
@@ -20,6 +23,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./augments": "./src/augments.ts",
     "./h3": "./src/h3.ts",
     "./package.json": "./package.json"
   },
@@ -92,8 +96,10 @@
   "publishConfig": {
     "exports": {
       ".": "./dist/index.mjs",
+      "./augments": "./dist/augments.mjs",
       "./h3": "./dist/h3.mjs",
       "./package.json": "./package.json"
-    }
+    },
+    "types": "./dist/index.d.mts"
   }
 }

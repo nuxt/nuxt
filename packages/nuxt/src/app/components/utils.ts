@@ -4,7 +4,6 @@ import { defu } from 'defu'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
-// @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
 /**
@@ -24,7 +23,7 @@ function generateRouteKey (route: RouteLocationNormalized) {
   const source = route?.meta.key ?? route.path
     .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
     .replace(ROUTE_KEY_SYMBOLS_RE, '$1')
-    .replace(ROUTE_KEY_NORMAL_RE, r => route.params[r.slice(1)]?.toString() || '')
+    .replace(ROUTE_KEY_NORMAL_RE, r => (route.params as Record<string, unknown>)[r.slice(1)]?.toString() || '')
   return typeof source === 'function' ? source(route) : source
 }
 

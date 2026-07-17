@@ -3,7 +3,6 @@ import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 
-// @ts-expect-error virtual file
 import { useStateDefaults } from '#build/nuxt.config.mjs'
 
 const useStateKeyPrefix = '$s'

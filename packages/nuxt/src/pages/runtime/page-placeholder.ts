@@ -1,6 +1,5 @@
 import { defineComponent } from 'vue'
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
-// @ts-expect-error virtual file
 import { devPagesDir } from '#build/nuxt.config.mjs'
 
 type PagePlaceholderSlots = SlotsType<{

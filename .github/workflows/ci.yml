@@ -86,21 +86,11 @@ jobs:
           node-version: lts
           cache: true
 
-      - name: Build (stub)
-        run: vp run dev:prepare
-
       - name: Typecheck
         run: vp run typecheck
 
-      - name: Build
-        run: vp run build
-
-      - name: Cache dist
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          retention-days: 3
-          name: dist
-          path: packages/*/dist
+      - name: Build and check built types
+        run: vp run test:attw
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -149,14 +139,13 @@ jobs:
 
   typecheck:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    if: github.event_name != 'push' || github.ref_name != 'main'
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     permissions:
       actions: write
       contents: read
-    needs:
-      - build
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
@@ -175,12 +164,6 @@ jobs:
         with:
           node-version: lts
           cache: true
-
-      - name: Restore dist cache
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: dist
-          path: packages
 
       - parallel:
           - name: Test (types)
@@ -216,7 +199,7 @@ jobs:
           node-version: lts
           cache: true
 
-      - name: Build (stub)
+      - name: Prepare
         run: vp run dev:prepare
 
       - parallel:
@@ -229,9 +212,6 @@ jobs:
           - name: Test (unit)
             run: vp run test:unit
 
-      - name: Check built types
-        run: vp run test:attw
-
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
         run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
@@ -240,13 +220,12 @@ jobs:
 
   test-size:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    if: github.event_name != 'push' || github.ref_name != 'main'
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
     runs-on: ubuntu-24.04-arm
     permissions:
       actions: write
       contents: read
-    needs:
-      - build
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -256,12 +235,6 @@ jobs:
         with:
           node-version: lts
           cache: true
-
-      - name: Restore dist cache
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: dist
-          path: packages
 
       - name: Check bundle size
         run: vp exec vitest run bundle
@@ -274,9 +247,8 @@ jobs:
 
   test-benchmark:
     runs-on: ubuntu-latest
-    if: github.event_name != 'merge_group' && github.repository_owner == 'nuxt'
-    needs:
-      - build
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && github.event_name != 'merge_group' && github.repository_owner == 'nuxt'
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -286,12 +258,6 @@ jobs:
         with:
           node-version: lts
           cache: true
-
-      - name: Restore dist cache
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: dist
-          path: packages
 
       - name: Prepare test fixtures
         run: vp run test:prepare
@@ -305,13 +271,12 @@ jobs:
 
   test-fixtures:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    if: github.event_name != 'push' || github.ref_name != 'main'
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
       contents: read
-    needs:
-      - build
 
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
@@ -342,12 +307,6 @@ jobs:
       - name: Install Playwright
         run: vp exec playwright-core install chromium
 
-      - name: Restore dist cache
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: dist
-          path: packages
-
       - name: Prepare test fixtures
         run: vp run test:prepare
 
@@ -367,13 +326,12 @@ jobs:
 
   test-e2e:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    if: github.event_name != 'push' || github.ref_name != 'main'
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
       contents: read
-    needs:
-      - build
 
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
@@ -393,12 +351,6 @@ jobs:
 
       - name: Install Playwright
         run: vp exec playwright-core install chromium
-
-      - name: Restore dist cache
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: dist
-          path: packages
 
       - name: Prepare test fixtures
         run: vp run test:prepare
@@ -458,8 +410,7 @@ jobs:
       github.repository_owner == 'nuxt' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
-    needs:
-      - build
+    needs: changes
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
 
@@ -473,12 +424,6 @@ jobs:
           node-version: latest
           cache: true
 
-      - name: Restore dist cache
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: dist
-          path: packages
-
       - name: Release nightly
         run: node scripts/release.ts --nightly
         env:
@@ -486,8 +431,7 @@ jobs:
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
-    needs:
-      - build
+    needs: changes
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
 
@@ -500,11 +444,5 @@ jobs:
         with:
           node-version: lts
           cache: true
-
-      - name: Restore dist cache
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: dist
-          path: packages
 
       - run: vp exec pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step

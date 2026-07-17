@@ -5,7 +5,6 @@ import { viewDepthKey } from 'vue-router'
 import { createError } from '../composables/error'
 import { useRoute } from '../composables/router'
 
-// @ts-expect-error virtual file
 import { islandComponents, pageIslandRoutes } from '#build/components.islands.mjs'
 
 interface IslandRendererProps {

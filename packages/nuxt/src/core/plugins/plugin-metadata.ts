@@ -5,7 +5,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
-import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
+import type { NuxtAppLiterals, PluginMeta } from '../../app/types'
 
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
@@ -32,7 +32,7 @@ const internalOrderMap = {
   'nuxt-post-all': 30,
 }
 
-export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
+export const orderMap: Record<NonNullable<PluginMeta['enforce']>, number> = {
   pre: internalOrderMap['user-pre'],
   default: internalOrderMap['user-default'],
   post: internalOrderMap['user-post'],

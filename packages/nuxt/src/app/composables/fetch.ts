@@ -9,9 +9,7 @@ import { useAsyncData } from './asyncData'
 import type { NuxtError } from './error'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
-// @ts-expect-error virtual file
 import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
 import { $fetch as _$fetch } from '#build/fetch'
 
 const $fetch = _$fetch as $Fetch

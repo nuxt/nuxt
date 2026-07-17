@@ -29,10 +29,7 @@ export default defineResolvers({
               ? runtimeConfig.app.baseURL.slice(1)
               : runtimeConfig.app.baseURL,
           },
-          nitro: {
-            envPrefix: 'NUXT_',
-            ...runtimeConfig.nitro,
-          },
+          nitro: Object.assign({ envPrefix: 'NUXT_' }, runtimeConfig.nitro),
         }
       },
     },

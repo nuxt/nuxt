@@ -3,6 +3,7 @@ import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import type { NuxtApp, NuxtPayload } from '../nuxt'
+import type { NuxtError as _NuxtErrorContract } from '../types'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
 
@@ -82,7 +83,7 @@ export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError
   return !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 }
 
-export class NuxtError<DataT = unknown> extends HTTPError<DataT> {
+export class NuxtError<DataT = unknown> extends HTTPError<DataT> implements _NuxtErrorContract<DataT> {
   readonly __nuxt_error = true as const
   readonly fatal: boolean
 

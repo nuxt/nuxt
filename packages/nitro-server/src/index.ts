@@ -519,15 +519,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     if (specifier === 'nuxt/entry-chunk' || specifier === 'nuxt/entry-ids') {
       continue // already registered above in the virtual block
     }
-    nitroConfig.virtual![specifier] = () => {
-      const provider = nuxt.buildOutputs[key]
-      if (key === 'ssrStyles') {
-        return provider
-          ? `export { default } from ${JSON.stringify(pathToFileURL(provider as string).href)}`
-          : 'export default {}'
-      }
-      return (provider as () => string | Promise<string>)()
-    }
+    nitroConfig.virtual![specifier] = () => nuxt.buildOutputs[key]()
   }
 
   const nitroDecoratorSetup = new WeakMap<NitroConfig, Promise<void>>()
@@ -709,6 +701,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     if (isDirectory) {
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
     }
+  }
+
+  // TODO: remove in future
+  // `#app` itself is intentionally excluded from the server tsconfig, but
+  // we need these aliases as we import them directly into the renderers
+  const appDir = nuxt.options.alias['#app']
+  if (appDir) {
+    tsConfig.compilerOptions.paths['#app/island-hash'] ||= [resolve(appDir, 'island-hash')]
+    tsConfig.compilerOptions.paths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
+    tsConfig.compilerOptions.paths['#app/types'] ||= [resolve(appDir, 'types')]
   }
 
   // Init nitro

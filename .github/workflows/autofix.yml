@@ -30,7 +30,7 @@ jobs:
         run: vp run test:engines:fix
         continue-on-error: true
 
-      - name: Build (stub)
+      - name: Prepare
         run: vp run dev:prepare
 
       - parallel:
@@ -42,9 +42,6 @@ jobs:
 
           - name: Lint (code)
             run: vp run lint:fix
-
-      - name: Build
-        run: vp run build
 
       - name: Assert bundle size (renovate)
         if: ${{ contains(github.head_ref, 'renovate') }}

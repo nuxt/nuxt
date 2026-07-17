@@ -23,8 +23,8 @@ jobs:
           node-version: lts
           cache: true
 
-      - name: Build Nuxt
-        run: vp run build
+      - name: Prepare
+        run: vp run dev:prepare
 
       - name: Lint (docs)
         run: vp run lint:docs:fix

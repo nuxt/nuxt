@@ -113,8 +113,6 @@ async function main () {
       // Bump versions to nightly
       console.info('🌙 Bumping versions to nightly...')
       await import('./bump-nightly.ts').then(r => r.bumpNightly())
-    } else {
-      execFile('vp', ['run', 'build'])
     }
 
     // Use absolute URLs for better rendering on npm

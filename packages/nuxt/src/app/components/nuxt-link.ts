@@ -21,10 +21,10 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
-// @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
+import type { NuxtLinkOptions } from '../types'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
@@ -52,6 +52,8 @@ function sanitizeExternalHref (value: string): string | null {
 }
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
+
+export type { NuxtLinkOptions } from '../types'
 
 /**
  * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
@@ -107,34 +109,6 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
    * Overrides the global `trailingSlash` option if provided.
    */
   trailingSlash?: 'append' | 'remove'
-}
-
-/**
- * Create a NuxtLink component with given options as defaults.
- * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
- */
-export interface NuxtLinkOptions extends
-  Partial<Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>>,
-  Partial<Pick<NuxtLinkProps, 'prefetch' | 'prefetchedClass'>> {
-  /**
-   * The name of the component.
-   * @default "NuxtLink"
-   */
-  componentName?: string
-  /**
-   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
-   */
-  externalRelAttribute?: string | null
-  /**
-   * An option to either add or remove trailing slashes in the `href`.
-   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
-   */
-  trailingSlash?: 'append' | 'remove'
-
-  /**
-   * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
-   */
-  prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
 }
 
 type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
@@ -515,7 +489,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
               redirectedFrom: undefined,
               meta: {},
               href: href.value,
-            } satisfies RouteLocation & { href: string }
+            } as unknown as RouteLocation & { href: string }
           },
           rel,
           target,

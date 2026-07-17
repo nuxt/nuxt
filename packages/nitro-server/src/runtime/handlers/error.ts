@@ -1,6 +1,6 @@
 import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
-import type { NuxtPayload } from 'nuxt/app'
+import type { NuxtPayload } from '#app/types'
 import type { H3Event } from 'nitro/h3'
 import { serverFetch } from 'nitro'
 
