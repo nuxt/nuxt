@@ -48,6 +48,36 @@ describe('loadNuxtConfig', () => {
     `)
   })
 
+  it('should respect app.layerOrdering for local layers', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
+    // 'c' is listed last, so it becomes the highest-priority local layer (above 'd')
+    const config = await loadNuxtConfig({ cwd, overrides: { app: { layerOrdering: ['d', 'c'] } } })
+    expect(config._layers.map(l => basename(l.cwd))).toMatchInlineSnapshot(`
+      [
+        "layer-fixture",
+        "c",
+        "d",
+        "b",
+        "a",
+      ]
+    `)
+  })
+
+  it('should keep local layers absent from app.layerOrdering at the lowest priority', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
+    // only 'c' is listed, so the unlisted 'd' falls below it while keeping its alphabetical order
+    const config = await loadNuxtConfig({ cwd, overrides: { app: { layerOrdering: ['c'] } } })
+    expect(config._layers.map(l => basename(l.cwd))).toMatchInlineSnapshot(`
+      [
+        "layer-fixture",
+        "c",
+        "d",
+        "b",
+        "a",
+      ]
+    `)
+  })
+
   describe('with .env file', () => {
     let tempDir: string
 

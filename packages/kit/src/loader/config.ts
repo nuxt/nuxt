@@ -126,6 +126,12 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     _layers.push(layer)
   }
 
+  // Apply explicit layer ordering from `app.layerOrdering`, taking precedence over directory naming
+  const layerOrdering = nuxtConfig.app?.layerOrdering
+  if (Array.isArray(layerOrdering) && layerOrdering.length) {
+    orderLocalLayersByConfig(_layers, layerOrdering, cwd, localRelativePaths)
+  }
+
   ;(nuxtConfig as any)._layers = _layers
 
   // Ensure at least one layer remains (without nuxt.config)
@@ -141,6 +147,45 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+}
+
+/**
+ * Reorder local layers (from the `~~/layers/` directory) in place according to `app.layerOrdering`.
+ *
+ * `layerOrdering` is listed from lowest to highest priority (the last entry wins), so a layer listed
+ * later becomes higher priority and moves earlier in the `_layers` array. Local layers not listed keep
+ * their existing alphabetical order at the lowest priority. Root and `extends` layers are left untouched.
+ */
+function orderLocalLayersByConfig (
+  layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[],
+  layerOrdering: string[],
+  cwd: string | undefined,
+  localRelativePaths: Set<string>,
+) {
+  const priorityByName = new Map(layerOrdering.map((name, index) => [name, index]))
+
+  const localSlots: number[] = []
+  const localLayers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
+  for (let index = 0; index < layers.length; index++) {
+    const layer = layers[index]!
+    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
+      localSlots.push(index)
+      localLayers.push(layer)
+    }
+  }
+
+  const orderedLocalLayers = localLayers
+    .map((layer, originalIndex) => ({ layer, originalIndex }))
+    .sort((a, b) => {
+      const priorityA = priorityByName.get(basename(a.layer.cwd!)) ?? -1
+      const priorityB = priorityByName.get(basename(b.layer.cwd!)) ?? -1
+      return priorityB - priorityA || a.originalIndex - b.originalIndex
+    })
+    .map(entry => entry.layer)
+
+  localSlots.forEach((slot, index) => {
+    layers[slot] = orderedLocalLayers[index]!
+  })
 }
 
 function loadNuxtSchema (cwd: string) {
