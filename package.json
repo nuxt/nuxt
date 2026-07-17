@@ -87,7 +87,7 @@
     "installed-check": "10.0.1",
     "knip": "6.27.0",
     "magic-regexp": "0.11.0",
-    "magic-string": "0.30.21",
+    "magic-string": "1.0.0",
     "markdownlint-cli": "0.49.1",
     "memfs": "4.64.0",
     "nitropack": "2.13.4",
