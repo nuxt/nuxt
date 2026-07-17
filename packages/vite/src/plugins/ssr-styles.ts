@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto'
+import { relative as nodeRelative } from 'node:path'
+import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 import { dirname, relative, resolve } from 'pathe'
