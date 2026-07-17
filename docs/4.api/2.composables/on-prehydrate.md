@@ -1,6 +1,7 @@
 ---
 title: "onPrehydrate"
 description: "Use onPrehydrate to run a callback on the client immediately before Nuxt hydrates the page."
+minimalVersion: "3.12"
 links:
   - label: Source
     icon: i-simple-icons-github
