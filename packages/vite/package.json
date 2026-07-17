@@ -32,7 +32,7 @@
     "@rollup/plugin-replace": "^6.0.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitejs/plugin-vue-jsx": "^5.1.6",
-    "autoprefixer": "^10.5.3",
+    "autoprefixer": "^10.5.4",
     "consola": "^3.4.2",
     "cssnano": "^7.1.9",
     "defu": "^6.1.7",
@@ -69,7 +69,7 @@
     "rolldown": "1.2.0",
     "rollup": "4.62.2",
     "rollup-plugin-visualizer": "7.0.1",
-    "vue": "3.5.39"
+    "vue": "3.5.40"
   },
   "peerDependencies": {
     "nuxt": "workspace:*",

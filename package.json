@@ -67,7 +67,7 @@
     "@vitest/coverage-v8": "4.1.10",
     "@vue/test-utils": "2.4.11",
     "acorn": "8.17.0",
-    "autoprefixer": "10.5.3",
+    "autoprefixer": "10.5.4",
     "case-police": "2.2.1",
     "changelogen": "0.6.2",
     "consola": "3.4.2",
@@ -110,10 +110,10 @@
     "vite": "7.3.6",
     "vitest": "4.1.10",
     "vitest-environment-nuxt": "2.0.0",
-    "vue": "3.5.39",
+    "vue": "3.5.40",
     "vue-tsc": "3.3.7",
     "webpack": "5.108.4"
   },
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@11.13.1",
   "version": ""
 }
