@@ -28,7 +28,7 @@ export function resolveLayoutName (route: Pick<RouteLocationNormalizedLoaded, 'm
 export function useLayout (): Readonly<ComputedRef<LayoutName>> {
   const injected = inject(LayoutSymbol, null)
   if (injected) {
-    return injected
+    return injected as Readonly<ComputedRef<LayoutName>>
   }
   const route = useRoute()
   return computed(() => resolveLayoutName(route))
