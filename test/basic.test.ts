@@ -2221,6 +2221,24 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
+  it.skipIf(!isTestingAppManifest)('should evict forwarded prefetch hints for routes that are never visited', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+    )
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
+    await page.waitForFunction(
+      () => !Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+    )
+
+    await page.close()
+  })
+
   it('should not prefetch certain dynamic imports by default', async () => {
     const html = await $fetch<string>('/auth')
     // should not prefetch global components
