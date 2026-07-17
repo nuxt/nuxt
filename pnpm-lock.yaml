@@ -745,8 +745,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0(rolldown@1.2.0)
       rspack-vue-loader:
-        specifier: ^17.5.1
-        version: 17.5.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.39)(vue@3.5.39(typescript@6.0.3))
+        specifier: ^17.6.1
+        version: 17.6.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.39)(vue@3.5.39(typescript@6.0.3))
       seroval:
         specifier: ^1.5.5
         version: 1.5.5
@@ -775,8 +775,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       webpack-bundle-analyzer:
-        specifier: ^5.3.0
-        version: 5.3.0
+        specifier: ^5.3.1
+        version: 5.3.1
       webpackbar:
         specifier: ^7.0.0
         version: 7.0.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
@@ -1237,8 +1237,8 @@ importers:
         specifier: ^5.108.4
         version: 5.108.4(cssnano@8.0.2(postcss@8.5.19))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
       webpack-bundle-analyzer:
-        specifier: ^5.3.0
-        version: 5.3.0
+        specifier: ^5.3.1
+        version: 5.3.1
       webpack-dev-middleware:
         specifier: ^8.0.3
         version: 8.0.3(tslib@2.8.1)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
@@ -8378,10 +8378,10 @@ packages:
   rou3@0.8.1:
     resolution: {integrity: sha512-ePa+XGk00/3HuCqrEnK3LxJW7I0SdNg6EFzKUJG73hMAdDcOUC/i/aSz7LSDwLrGr33kal/rqOGydzwl6U7zBA==}
 
-  rspack-vue-loader@17.5.1:
-    resolution: {integrity: sha512-1pXdeqYM95P0T8DO2ZcOCBnfMp62W5IG2c0RICn1rFYjHcja41IYSQLzcdc1uePEq0n4JZwvfR2lVs8wRZuwzA==}
+  rspack-vue-loader@17.6.1:
+    resolution: {integrity: sha512-jeeqh2wLcJLTd6AwYJjiEv62Bo6A7+OH4c7kGi4S2BF3E996cLtdY6ybAu8lG82EyUcr2lgV3kHoRnfD5QPUgA==}
     peerDependencies:
-      '@rspack/core': ^1.0.0 || ^2.0.0-0
+      '@rspack/core': ^1.0.0 || ^2.0.0
       '@vue/compiler-sfc': '*'
       vue: '*'
     peerDependenciesMeta:
@@ -9671,8 +9671,8 @@ packages:
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
-  webpack-bundle-analyzer@5.3.0:
-    resolution: {integrity: sha512-PEhAoqiJ+47d0uLMx/+zo5XOvaU+Vk6N2ZLht7H3n09QLy/fhyvqGNwjdRUHJDgMN8crBR2ZwVHkIswT3Xuawg==}
+  webpack-bundle-analyzer@5.3.1:
+    resolution: {integrity: sha512-wP2EusncRGL1tZyMHC/umLkjPdYMkTL9nPEKh8G8dkYCJ9TyF6xnXFqjhdqmv5J900irN/g0P5jMvLT22krEXQ==}
     engines: {node: '>= 20.9.0'}
     hasBin: true
 
@@ -18370,7 +18370,7 @@ snapshots:
 
   rou3@0.8.1: {}
 
-  rspack-vue-loader@17.5.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.39)(vue@3.5.39(typescript@6.0.3)):
+  rspack-vue-loader@17.6.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.39)(vue@3.5.39(typescript@6.0.3)):
     dependencies:
       '@rspack/lite-tapable': 1.1.2
       chalk: 4.1.2
@@ -19882,7 +19882,7 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
-  webpack-bundle-analyzer@5.3.0:
+  webpack-bundle-analyzer@5.3.1:
     dependencies:
       '@discoveryjs/json-ext': 0.6.3
       acorn: 8.17.0
