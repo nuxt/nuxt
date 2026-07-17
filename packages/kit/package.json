@@ -44,7 +44,7 @@
     "std-env": "^4.2.0",
     "tinyglobby": "^0.2.17",
     "ufo": "^1.6.4",
-    "unctx": "^3.0.0-beta.2",
+    "unctx": "^3.0.0",
     "untyped": "^2.0.0"
   },
   "devDependencies": {
@@ -55,7 +55,7 @@
     "nitropack": "2.13.4",
     "tsdown": "0.22.8",
     "unimport": "6.3.0",
-    "vite": "8.1.4",
+    "vite": "8.1.5",
     "vitest": "4.1.10",
     "webpack": "5.108.4"
   },

@@ -108,6 +108,7 @@ describe('route rules', () => {
   it('should set layout defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
+    expect(html).toContain('useLayout: custom')
   })
 
   it('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
@@ -2217,6 +2218,24 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
       () => document.head.querySelectorAll('link[rel="preload"][href$="/public.svg"]').length,
     )
     expect(preloadCount).toBe(0)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should evict forwarded prefetch hints for routes that are never visited', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+    )
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
+    await page.waitForFunction(
+      () => !Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+    )
 
     await page.close()
   })

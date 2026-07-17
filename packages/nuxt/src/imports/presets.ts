@@ -102,6 +102,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/preview',
   },
   {
+    imports: ['useLayout'],
+    from: '#app/composables/layout',
+  },
+  {
     imports: ['useRouteAnnouncer'],
     from: '#app/composables/route-announcer',
   },
