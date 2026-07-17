@@ -11,11 +11,22 @@ describe('loadNuxtConfig', () => {
     const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
     const config = await loadNuxtConfig({ cwd })
     for (const alias in config.alias) {
-      config.alias[alias] = config.alias[alias]!.replace(cwd, '<rootDir>')
+      const val = config.alias[alias]
+      if (typeof val === 'string') {
+        config.alias[alias] = val.replace(cwd, '<rootDir>')
+      } else if (val && typeof val === 'object' && 'path' in val) {
+        val.path = val.path.replace(cwd, '<rootDir>')
+      }
     }
     expect(config.alias).toMatchInlineSnapshot(`
       {
         "#build": "<rootDir>/.nuxt/",
+        "#contextual": {
+          "context": [
+            "app",
+          ],
+          "path": "./contextual",
+        },
         "#internal/nuxt/paths": "<rootDir>/.nuxt/paths.mjs",
         "#layers/c": "<rootDir>/layers/c/",
         "#layers/d": "<rootDir>/layers/d/",

@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { resolveAlias } from '@nuxt/kit'
-import type { Nuxt } from '@nuxt/schema'
+import { filterAliases, resolveAlias } from '@nuxt/kit'
+import type { AliasValue, Nuxt } from '@nuxt/schema'
 import { dirname, isAbsolute, relative, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
@@ -22,13 +22,16 @@ export function fromVirtualId (id: string, nuxt: Nuxt): string {
 
 interface VirtualFSPluginOptions {
   mode: 'client' | 'server'
-  alias?: Record<string, string>
+  alias?: Record<string, AliasValue>
 }
 
 const RELATIVE_ID_RE = /^\.{1,2}[\\/]/
 export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => createUnplugin((_, meta) => {
   const extensions = ['', ...nuxt.options.extensions]
-  const alias = { ...nuxt.options.alias, ...options.alias }
+  const alias = {
+    ...filterAliases(nuxt.options.alias, options.mode === 'server' ? 'server' : 'app'),
+    ...options.alias ? filterAliases(options.alias, options.mode === 'server' ? 'server' : 'app') : {},
+  }
 
   const resolveWithExt = (id: string) => {
     for (const suffix of ['', '.' + options.mode]) {

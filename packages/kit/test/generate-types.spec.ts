@@ -183,6 +183,44 @@ describe('tsConfig generation', () => {
       ],
     })
   })
+
+  it('should handle context-aware aliases', async () => {
+    const nuxt = mockNuxtWithOptions({
+      alias: {
+        '#app-only': { path: '/my-app/app-only', context: 'app' },
+        '#server-only': { path: '/my-app/server-only', context: 'server' },
+        '#shared-alias': { path: '/my-app/shared-alias', context: ['app', 'server'] },
+        '#all-alias': '/my-app/all-alias',
+      },
+    })
+    const { tsConfig, nodeTsConfig } = await _generateTypes(nuxt)
+
+    expect(tsConfig.compilerOptions?.paths).toMatchObject({
+      '#app-only': [
+        '../app-only',
+      ],
+      '#shared-alias': [
+        '../shared-alias',
+      ],
+      '#all-alias': [
+        '../all-alias',
+      ],
+    })
+    expect(tsConfig.compilerOptions?.paths).not.toHaveProperty('#server-only')
+
+    expect(nodeTsConfig.compilerOptions?.paths).toMatchObject({
+      '#server-only': [
+        '../server-only',
+      ],
+      '#shared-alias': [
+        '../shared-alias',
+      ],
+      '#all-alias': [
+        '../all-alias',
+      ],
+    })
+    expect(nodeTsConfig.compilerOptions?.paths).not.toHaveProperty('#app-only')
+  })
 })
 
 describe('resolveLayerPaths', async () => {
