@@ -45,3 +45,4 @@ minimumReleaseAgeExclude:
   # Renovate security update: undici@8.5.0
   - undici@8.5.0
   - unctx@3.0.0
+  - magic-string@1.0.0
