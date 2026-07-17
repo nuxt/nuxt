@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 import { createConsoleReporter } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 import { colors } from 'consola/utils'
@@ -16,5 +18,5 @@ export const docsBase = (code: string): string =>
 // reporter's call-site options; a plain array collapses them to `{}`.
 export const reporters = [
   // Colorize the terminal; tests stay plain.
-  /* #__PURE__ */ (createConsoleReporter(import.meta.test ? undefined : { formatter: ansiFormatter(colors) })),
+  /* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) })),
 ] as const
