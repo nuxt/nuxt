@@ -86,6 +86,14 @@ jobs:
               core.info('Possible-bot comment already exists - skipping comment.')
             }
 
+            const unlinkIssues = body => body?.replace(
+              /\b(close[sd]?|fix(?:e[sd])?|resolve[sd]?)(\s*:?\s*)(?=(?:[\w.-]+\/[\w.-]+)?#\d+|GH-\d+|https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/gi,
+              (_, keyword, separator) => {
+                const refs = keyword === keyword.toUpperCase() ? 'REFS' : keyword[0] === keyword[0].toUpperCase() ? 'Refs' : 'refs'
+                return `${refs}${separator}`
+              },
+            )
+
             if (shouldClose && issue.state === 'open' && !alreadyCommented) {
               await github.rest.pulls.update({
                 owner: context.repo.owner,
@@ -93,6 +101,7 @@ jobs:
                 pull_number: prNumber,
                 state: 'closed',
                 title: '🚨 unwelcome pr from bot 🚨',
+                body: unlinkIssues(issue.body),
               })
             }
 

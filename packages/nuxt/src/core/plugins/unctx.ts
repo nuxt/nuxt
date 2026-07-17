@@ -36,8 +36,9 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
         if (!shouldTransform(code)) { return }
         const result = transform(code)
         if (result) {
+          result.magicString.prepend(TRANSFORM_MARKER)
           return {
-            code: TRANSFORM_MARKER + result.code,
+            code: result.magicString.toString(),
             map: options.sourcemap
               ? result.magicString.generateMap({ hires: true })
               : undefined,

@@ -58,7 +58,7 @@
     "pug-plain-loader": "^1.1.0",
     "raw-loader": "^4.0.2",
     "rolldown-string": "^0.3.0",
-    "rspack-vue-loader": "^17.5.1",
+    "rspack-vue-loader": "^17.6.1",
     "seroval": "^1.5.5",
     "time-fix-plugin": "^2.0.7",
     "tinyglobby": "^0.2.17",
@@ -68,7 +68,7 @@
     "unplugin": "^3.3.0",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.3.1",
-    "webpack-bundle-analyzer": "^5.3.0",
+    "webpack-bundle-analyzer": "^5.3.1",
     "webpackbar": "^7.0.0"
   },
   "devDependencies": {
