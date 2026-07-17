@@ -127,9 +127,12 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   // Apply explicit layer ordering from `app.layerOrdering`, taking precedence over directory naming
-  const layerOrdering = nuxtConfig.app?.layerOrdering
-  if (Array.isArray(layerOrdering) && layerOrdering.length) {
-    orderLocalLayersByConfig(_layers, layerOrdering, cwd, localRelativePaths)
+  const configuredLayerOrdering = nuxtConfig.app?.layerOrdering
+  if (Array.isArray(configuredLayerOrdering)) {
+    const layerOrdering = configuredLayerOrdering.filter((name): name is string => typeof name === 'string')
+    if (layerOrdering.length) {
+      orderLocalLayersByConfig(_layers, layerOrdering, cwd, localRelativePaths)
+    }
   }
 
   ;(nuxtConfig as any)._layers = _layers
