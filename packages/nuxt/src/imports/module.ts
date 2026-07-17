@@ -162,7 +162,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
               const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
-              headDiagnostics.NUXT_B6002({ name: value, file: relativePath }, { method: 'error' })
+              headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
             }
           }
         }

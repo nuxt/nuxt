@@ -19,7 +19,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     }
   }
 
-  configDiagnostics.NUXT_B5011({ name }, { method: 'log' })
+  configDiagnostics.NUXT_B5011({ name })
 
   if (isCI) {
     return false
@@ -44,7 +44,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     logger.success(`Installed ${name}`)
     return true
   } catch (err) {
-    buildDiagnostics.NUXT_B1004({ packages: name, cause: err }, { method: 'error' })
+    buildDiagnostics.NUXT_B1004({ packages: name, cause: err })
     return false
   }
 }

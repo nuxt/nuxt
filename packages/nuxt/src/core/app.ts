@@ -69,7 +69,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const contents = await compileTemplate(template, templateContext).catch((e) => {
       // already-coded template failures (e.g. B1002/B1003) were reported in `compileTemplate`
       if (!(e instanceof Diagnostic)) {
-        buildDiagnostics.NUXT_B1001({ filename: template.filename!, src: template.src, cause: e }, { method: 'error' })
+        buildDiagnostics.NUXT_B1001({ filename: template.filename!, src: template.src, cause: e })
       }
       throw e
     })
@@ -127,7 +127,7 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     try {
       return await fsp.readFile(template.src, 'utf-8')
     } catch (err) {
-      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err }, { method: 'error' })
+      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err })
     }
   }
   if (template.getContents) {
@@ -376,7 +376,7 @@ export function checkForCircularDependencies (_plugins: AnnotatedPlugin[]) {
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
     if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.has(name))) {
-      pluginDiagnostics.NUXT_B2008({ name: plugin.name!, missing: plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ') }, { method: 'error' })
+      pluginDiagnostics.NUXT_B2008({ name: plugin.name!, missing: plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ') })
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {
@@ -385,7 +385,7 @@ export function checkForCircularDependencies (_plugins: AnnotatedPlugin[]) {
   }
   const checkDeps = (name: string, visited: string[] = []): string[] => {
     if (visited.includes(name)) {
-      pluginDiagnostics.NUXT_B2009({ cycle: `${visited.join(' -> ')} -> ${name}` }, { method: 'error' })
+      pluginDiagnostics.NUXT_B2009({ cycle: `${visited.join(' -> ')} -> ${name}` })
       return []
     }
     visited.push(name)

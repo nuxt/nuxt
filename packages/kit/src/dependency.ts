@@ -53,7 +53,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 
   const formattedNames = missing.map(n => `\`${n}\``).join(', ')
-  configDiagnostics.NUXT_B5010({ names: formattedNames, install: missing.join(' ') }, { method: 'log' })
+  configDiagnostics.NUXT_B5010({ names: formattedNames, install: missing.join(' ') })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
@@ -87,7 +87,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
     logger.success(`Installed ${formattedNames}`)
     return true
   } catch (err) {
-    buildDiagnostics.NUXT_B1004({ packages: missing.join(' '), cause: err }, { method: 'error' })
+    buildDiagnostics.NUXT_B1004({ packages: missing.join(' '), cause: err })
     return Array.isArray(names) ? missing : false
   }
 }

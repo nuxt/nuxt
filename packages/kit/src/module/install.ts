@@ -399,7 +399,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
       )
     }
   } catch (e) {
-    kitDiagnostics.NUXT_B8019({ phase: !previousVersion ? 'install' : 'upgrade', name: meta.name, error: String(e) }, { method: 'error' })
+    kitDiagnostics.NUXT_B8019({ phase: !previousVersion ? 'install' : 'upgrade', name: meta.name, error: String(e) })
   }
 }
 

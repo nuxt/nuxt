@@ -133,7 +133,7 @@ function createFactoryProcessor (
     for (const parsedFactoryCall of parsedFactoryCalls) {
       const factoryMeta = getFactoryByLocalName(parsedFactoryCall.factoryName)
       if (!factoryMeta) {
-        buildDiagnostics.NUXT_B1008({ function: parsedFactoryCall.functionName, file: filePath }, { method: 'error' })
+        buildDiagnostics.NUXT_B1008({ function: parsedFactoryCall.functionName, file: filePath })
         continue
       }
 

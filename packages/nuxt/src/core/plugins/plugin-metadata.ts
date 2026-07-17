@@ -196,7 +196,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           }
         })
       } catch (e) {
-        pluginDiagnostics.NUXT_B2006({ src: plugin.src, cause: e }, { method: 'error' })
+        pluginDiagnostics.NUXT_B2006({ src: plugin.src, cause: e })
         return
       }
 

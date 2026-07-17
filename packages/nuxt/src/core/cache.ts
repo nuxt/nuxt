@@ -305,7 +305,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
-      buildDiagnostics.NUXT_B1013({ file: file.name, cause: err }, { method: 'error' })
+      buildDiagnostics.NUXT_B1013({ file: file.name, cause: err })
     } finally {
       await fd?.close()
     }

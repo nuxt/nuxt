@@ -125,11 +125,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              buildDiagnostics.NUXT_B1005({ plugin: plugin.name, file: filePath, cause: e }, { method: 'error' })
+              buildDiagnostics.NUXT_B1005({ plugin: plugin.name, file: filePath, cause: e })
             }
           }))
         } catch (e) {
-          buildDiagnostics.NUXT_B1006({ file: filePath, cause: e }, { method: 'error' })
+          buildDiagnostics.NUXT_B1006({ file: filePath, cause: e })
         }
       }
 
@@ -138,7 +138,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         try {
           await plugin.afterScan(nuxt)
         } catch (e) {
-          buildDiagnostics.NUXT_B1007({ plugin: plugin.name, cause: e }, { method: 'error' })
+          buildDiagnostics.NUXT_B1007({ plugin: plugin.name, cause: e })
         }
       }))
     }
