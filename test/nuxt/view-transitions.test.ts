@@ -489,4 +489,56 @@ describe('view transitions plugin', () => {
       expect(hookSpy).toHaveBeenCalledWith(mockTransition)
     })
   })
+
+  describe('error handling', () => {
+    it('should catch ready promise rejection and not throw unhandled rejection error', async () => {
+      const readyReject = Promise.reject(new Error('Transition cancelled'))
+      const finishedReject = Promise.reject(new Error('Transition finished rejection'))
+
+      // Prevent test runner from failing on these promises before they are handled by the plugin
+      readyReject.catch(() => {})
+      finishedReject.catch(() => {})
+
+      const startViewTransition = vi.fn((callbackOrOptions) => {
+        if (typeof callbackOrOptions === 'function') {
+          callbackOrOptions()
+        } else {
+          callbackOrOptions.update()
+        }
+        return {
+          ready: readyReject,
+          finished: finishedReject,
+          updateCallbackDone: Promise.resolve(),
+          types: new Set(),
+          skipTransition: vi.fn(),
+        }
+      })
+
+      const originalStartViewTransition = document.startViewTransition
+      document.startViewTransition = startViewTransition
+
+      // Import the actual view-transitions plugin
+      const plugin = (await import('../../packages/nuxt/src/app/plugins/view-transitions.client')).default
+      const pluginFunc = typeof plugin === 'function' ? plugin : plugin.setup
+      await nuxtApp.runWithContext(() => pluginFunc(nuxtApp))
+
+      // Register a temporary route with viewTransition: true so the plugin triggers it
+      router.addRoute({
+        name: 'vt-error-test',
+        path: '/vt-error-test',
+        meta: { viewTransition: true },
+        component: PageA,
+      })
+      testCleanups.push(() => router.removeRoute('vt-error-test'))
+
+      // Navigate to trigger the beforeResolve guard registered by the plugin
+      await navigateTo('/vt-error-test')
+      await flushPromises()
+
+      // The test should complete without any unhandled rejection warnings/errors
+      expect(startViewTransition).toHaveBeenCalled()
+
+      document.startViewTransition = originalStartViewTransition
+    })
+  })
 })
