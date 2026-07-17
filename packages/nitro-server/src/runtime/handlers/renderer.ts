@@ -64,7 +64,7 @@ export default {
     }
 
     // Whether we're rendering an error page
-    const ssrError = event.url.pathname.startsWith('/__nuxt_error')
+    let ssrError = event.url.pathname.startsWith('/__nuxt_error')
       ? getQuery<NuxtPayload['error'] & { url: string }>(event)
       : undefined
 
@@ -73,6 +73,17 @@ export default {
         status: 404,
         statusText: 'Page Not Found: /__nuxt_error',
       })
+    }
+
+    // `/404.html` has no real route - fake a 404 so error.vue renders
+    // and its `useHead` lands in the prerendered HTML
+    if (!ssrError && import.meta.prerender && event.url.pathname === '/404.html') {
+      ssrError = {
+        statusCode: 404,
+        statusMessage: 'Page Not Found',
+        message: 'Page Not Found',
+        url: event.url.toString(),
+      } as NuxtPayload['error'] & { url: string }
     }
 
     // During prerender, refuse to recurse into a URL that is already rendering
@@ -124,7 +135,9 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   }
 
   // Whether we are prerendering route or using ISR/SWR caching
-  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
+  // Error pages skip payload extraction - `<route>/_payload.json` would
+  // collide with the static file output (e.g. `404.html`)
+  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && !ssrError && (
     (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
     || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
   )
