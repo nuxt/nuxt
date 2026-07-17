@@ -24,7 +24,7 @@ Unlike reading `route.meta.layout` directly, this accounts for a layout set thro
 
 ```vue [app.vue]
 <script setup lang="ts">
-const layout = useLayout();
+const layout = useLayout()
 </script>
 
 <template>
