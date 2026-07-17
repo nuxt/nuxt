@@ -57,7 +57,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"73.5k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"495k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"496k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
@@ -78,8 +78,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "unhead",
         "unstorage",
         "vue",
-        "vue+vue__server-renderer",
         "vue-bundle-renderer",
+        "vue__server-renderer",
       ]
     `)
   })
@@ -91,7 +91,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"177k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"496k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"497k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
@@ -113,8 +113,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "unhead",
         "unstorage",
         "vue",
-        "vue+vue__server-renderer",
         "vue-bundle-renderer",
+        "vue__server-renderer",
       ]
     `)
   })

@@ -83,7 +83,7 @@
     "h3": "2.0.1-rc.22",
     "happy-dom": "20.10.6",
     "installed-check": "10.0.1",
-    "knip": "6.26.0",
+    "knip": "6.27.0",
     "magic-regexp": "0.11.0",
     "magic-string": "1.0.0",
     "markdownlint-cli": "0.49.1",
@@ -106,13 +106,13 @@
     "ts-blank-space": "0.9.0",
     "typescript": "6.0.3",
     "ufo": "1.6.4",
-    "vite": "8.1.4",
+    "vite": "8.1.5",
     "vitest": "4.1.10",
     "vitest-environment-nuxt": "2.0.0",
-    "vue": "3.5.39",
+    "vue": "3.5.40",
     "vue-tsc": "3.3.7",
     "webpack": "5.108.4"
   },
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@11.13.1",
   "version": ""
 }
