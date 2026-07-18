@@ -183,6 +183,37 @@ describe('tsConfig generation', () => {
       ],
     })
   })
+
+  // https://github.com/nuxt/nuxt/issues/33528
+  it('should sort aliases pointing into layer directories before ~ and @', async () => {
+    const nuxt = mockNuxtWithOptions({
+      alias: {
+        '~': '/my-app/',
+        '@': '/my-app/',
+        '#build': '/my-app/.nuxt/',
+        'vue': '/my-app/node_modules/vue/',
+        '#layers/foo': '/my-app/layers/foo/',
+        '@layer-foo': '/my-app/layers/foo/app/',
+      },
+      typescript: {
+        hoist: ['vue'],
+      },
+    })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app' }, cwd: '/my-app' },
+      { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo' }, cwd: '/my-app/layers/foo' },
+    ] as unknown as Nuxt['options']['_layers']
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    const pathKeys = Object.keys(tsConfig.compilerOptions?.paths ?? {})
+
+    expect(pathKeys.indexOf('vue')).toBeLessThan(pathKeys.indexOf('#layers/foo'))
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('~'))
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('@'))
+    expect(pathKeys.indexOf('@layer-foo')).toBeLessThan(pathKeys.indexOf('~'))
+    expect(pathKeys.indexOf('@layer-foo')).toBeLessThan(pathKeys.indexOf('@'))
+    expect(pathKeys.filter(key => key.startsWith('#build')).at(-1)).toBe(pathKeys.at(-1))
+  })
 })
 
 describe('resolveLayerPaths', async () => {
