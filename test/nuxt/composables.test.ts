@@ -683,12 +683,12 @@ describe('routing utilities: `navigateTo`', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     try {
       const urls = [
-        ['javascript:alert("hi")', 'javascript'],
-        ['data:alert("hi")', 'data'],
-        ['vbscript:alert("hi")', 'vbscript'],
-        ['\0javascript:alert("hi")', 'javascript'],
+        'javascript:alert("hi")',
+        'data:alert("hi")',
+        'vbscript:alert("hi")',
+        '\0javascript:alert("hi")',
       ]
-      for (const [url, protocol] of urls) {
+      for (const url of urls) {
         expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow('NUXT_E2002')
       }
       expect(open).not.toHaveBeenCalled()
