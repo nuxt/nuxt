@@ -45,8 +45,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // and content-security-policy (would disable JS execution in the error page)
   mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
 
-  // Skip SSR error rendering if we're already inside one, to avoid recursion.
-  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!(event as H3Event).context.nuxt?.['~rendering-error']
+  // Recursion guard: only the internal error-render fetch sets this flag, so a
+  // direct `/__nuxt_error` request renders `error.vue` instead of the fallback (#20623).
+  const isRenderingError = !!(event as H3Event).context.nuxt?.['~rendering-error']
 
   if (!isRenderingError) {
     const eventContext = (event as H3Event).context
