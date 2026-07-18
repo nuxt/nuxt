@@ -1369,6 +1369,16 @@ describe('errors', () => {
     expect(error).not.toHaveProperty('url')
   })
 
+  it('renders the custom error page for a direct visit to the error route (#20623)', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(404)
+    expect(await res.text()).toContain('This is the error page 😱')
+  })
+
   it('should not recursively throw an error when there is an error rendering the error page', async () => {
     const res = await $fetch<string>('/', {
       headers: {
