@@ -9,9 +9,15 @@ import {
   userOptimizeDepsInclude,
 } from '../src/plugins/optimize-deps-hint.ts'
 
-vi.mock('@nuxt/kit', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-}))
+vi.mock('@nuxt/kit', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@nuxt/kit')>()
+  return {
+    logger: { info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+    // Use the real diagnostics catalog so NUXT_B7002 reports through its
+    // console reporter (the stale-only hint path depends on it).
+    bundlerDiagnostics: actual.bundlerDiagnostics,
+  }
+})
 
 const { logger } = await import('@nuxt/kit')
 
@@ -69,6 +75,32 @@ describe('formatIncludeSnippet', () => {
     const result = formatIncludeSnippet(['lodash', 'radash'], cjs)
     expect(result).toContain('\'lodash\', // CJS')
     expect(result).not.toContain('\'radash\', // CJS')
+  })
+
+  it('sorts deps in expected order (scoped first, then alphabetical)', () => {
+    const result = formatIncludeSnippet([
+      'zod',
+      'b-pkg',
+      '@vueuse/core',
+      'lodash',
+      '@nuxt/kit',
+      'a-pkg',
+    ])
+    const order = [...result.matchAll(/'([^']+)'/g)].map(m => m[1])
+    expect(order).toEqual([
+      '@nuxt/kit',
+      '@vueuse/core',
+      'a-pkg',
+      'b-pkg',
+      'lodash',
+      'zod',
+    ])
+  })
+
+  it('does not mutate the input array', () => {
+    const deps = ['zod', 'vue']
+    formatIncludeSnippet(deps)
+    expect(deps).toEqual(['zod', 'vue'])
   })
 })
 
@@ -279,15 +311,20 @@ describe('OptimizeDepsHintPlugin', () => {
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('module-dep'))
     })
 
-    it('shows stale-only hint via logger.warn when no new deps', async () => {
+    it('warns about stale optimized deps when there are no new deps', async () => {
+      // The stale-only path reports through the NUXT_B7002 diagnostic
+      // (nostics console reporter → console.warn) rather than a bespoke
+      // logger.warn, and must list the unresolvable entries by name.
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
       const { callbacks } = setupPlugin({ userInclude: ['stale'] })
 
       callbacks.onStaleDep('stale')
+      callbacks.onStaleDep('mod-dep')
       await flushHint()
-      expect(logger.warn).toHaveBeenCalledTimes(1)
-      const warnMsg = stripAnsi(String(vi.mocked(logger.warn).mock.calls[0]![0]))
-      expect(warnMsg).toContain('Unresolvable')
-      expect(warnMsg).toContain('defineNuxtConfig')
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('`stale`'))
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('`mod-dep` (from a Nuxt module)'))
+      expect(logger.warn).not.toHaveBeenCalled()
+      warn.mockRestore()
     })
 
     it('shows stale hint only once', async () => {

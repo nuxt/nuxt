@@ -18,46 +18,43 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          node-version: lts/*
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+        with:
+          node-version: lts
+          cache: true
 
       - name: Check engine ranges, peer dependency ranges and installed versions
-        run: pnpm test:engines:fix
+        run: vp run test:engines:fix
+        continue-on-error: true
 
-      - name: Build (stub)
-        run: pnpm dev:prepare
+      - name: Prepare
+        run: vp run dev:prepare
 
-      - name: Test (nuxt runtime)
-        run: pnpm test:runtime -u
+      - parallel:
+          - name: Test (nuxt runtime)
+            run: vp run test:runtime -u
 
-      - name: Test (unit)
-        run: pnpm test:unit -u
+          - name: Test (unit)
+            run: vp run test:unit -u
 
-      - name: Lint (code)
-        run: pnpm lint:fix
-
-      - name: Build
-        run: pnpm build
+          - name: Lint (code)
+            run: vp run lint:fix
 
       - name: Assert bundle size (renovate)
         if: ${{ contains(github.head_ref, 'renovate') }}
-        run: pnpm vitest run bundle
+        run: vp exec vitest run bundle
 
       - name: Update bundle size (renovate)
         if: failure()
         run: |
-          pnpm vitest run bundle -u
-          pnpm dedupe
+          vp exec vitest run bundle -u
+          vp dedupe
 
       - name: Update bundle size
         if: ${{ !contains(github.head_ref, 'renovate') }}
-        run: pnpm vitest run bundle -u
+        run: vp exec vitest run bundle -u
 
-      - uses: autofix-ci/action@7a166d7532b277f34e16238930461bf77f9d7ed8 # 7a166d7532b277f34e16238930461bf77f9d7ed8
+      - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1.3.4

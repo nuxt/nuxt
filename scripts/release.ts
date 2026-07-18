@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import process from 'node:process'
-import { execSync } from 'node:child_process'
+import { execFileSync, execSync } from 'node:child_process'
 import { copyFileSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -12,6 +12,11 @@ interface PackageJson {
 function execCommand (command: string, cwd?: string): void {
   console.info(`🔧 Running: ${command}`)
   execSync(command, { stdio: 'inherit', cwd })
+}
+
+function execFile (file: string, args: string[], cwd?: string): void {
+  console.info(`🔧 Running: ${file} ${args.join(' ')}`)
+  execFileSync(file, args, { stdio: 'inherit', cwd })
 }
 
 function readPackageJson (dir: string): PackageJson {
@@ -93,7 +98,7 @@ async function main () {
   const allTags = tagsInput
     .split(',')
     .map(tag => tag.trim())
-    .filter(Boolean)
+    .filter(Boolean) as [string, ...string[]]
 
   console.info(`🚀 ${isNightly ? 'Nightly' : 'Regular'} release with tags: ${allTags.join(', ')}`)
 
@@ -108,8 +113,6 @@ async function main () {
       // Bump versions to nightly
       console.info('🌙 Bumping versions to nightly...')
       await import('./bump-nightly.ts').then(r => r.bumpNightly())
-    } else {
-      execCommand('pnpm build')
     }
 
     // Use absolute URLs for better rendering on npm
@@ -153,7 +156,7 @@ async function main () {
 
       // Publish with primary tag with trusted publishing
       console.info(`🏷️ Publishing ${pkgDir} with tag: ${tag}`)
-      execCommand(`pnpm publish --access public --no-git-checks --tag ${tag}`)
+      execFile('vp', ['exec', 'pnpm', 'publish', '--access', 'public', '--no-git-checks', '--tag', tag])
 
       const pkg = readPackageJson('.')
       published.push({ name: pkg.name, version: pkg.version })

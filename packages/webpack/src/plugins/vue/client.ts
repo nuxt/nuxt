@@ -12,7 +12,6 @@ import { serialize } from 'seroval'
 
 import type { Nuxt } from '@nuxt/schema'
 import type { Compilation, Compiler } from 'webpack'
-import { useNitro } from '@nuxt/kit'
 
 import { isCSS, isHotUpdate, isJS } from './util.ts'
 
@@ -26,24 +25,14 @@ export default class VueSSRClientPlugin {
   precomputedCode = 'export default undefined'
   manifestCode?: string
 
-  vfs = {
-    'client.precomputed.mjs': () => this.precomputedCode,
-    'client.manifest.mjs': () => this.manifestCode,
-  }
-
   constructor (options: PluginOptions) {
     this.serverDist = resolve(options.nuxt.options.buildDir, 'dist/server')
     this.nuxt = options.nuxt
 
-    const nitro = useNitro()
-    nitro.options.virtual ||= {}
-    nitro.options._config.virtual ||= {}
-
-    for (const key in this.vfs) {
-      const filename = `#build/dist/server/${key}`
-      nitro.options.virtual[filename] = this.vfs[key as keyof typeof this.vfs] as () => string
-      nitro.options._config.virtual[filename] = this.vfs[key as keyof typeof this.vfs] as () => string
-    }
+    // Assigned directly (not via `setBuildOutput`) because the plugin is
+    // constructed during webpack config assembly, outside an active Nuxt context.
+    this.nuxt.buildOutputs.clientManifest = () => this.manifestCode || 'export default {}'
+    this.nuxt.buildOutputs.clientPrecomputed = () => this.precomputedCode
   }
 
   private getRelativeModuleId (identifier: string, context: string): string {
@@ -58,7 +47,13 @@ export default class VueSSRClientPlugin {
 
   apply (compiler: Compiler) {
     compiler.hooks.afterEmit.tap('VueSSRClientPlugin', async (compilation: Compilation) => {
-      const stats = compilation.getStats().toJson()
+      const stats = compilation.getStats().toJson({
+        modules: true,
+        assets: true,
+        chunks: true,
+        chunkGroups: true,
+        entrypoints: true,
+      })
       const context = this.nuxt.options.srcDir
 
       const initialFiles = new Set<string>()
@@ -108,7 +103,7 @@ export default class VueSSRClientPlugin {
 
         const [cid] = m.chunks
         const chunk = stats.chunks!.find(c => c.id === cid)
-        if (!chunk || !chunk.files || !cid) {
+        if (!chunk || !chunk.files || cid == null) {
           continue
         }
         const relativeId = this.getRelativeModuleId(m.identifier!, context)

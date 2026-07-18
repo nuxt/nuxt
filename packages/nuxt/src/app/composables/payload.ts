@@ -1,5 +1,6 @@
 import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
+import { defineLink } from '@unhead/vue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
@@ -7,8 +8,8 @@ import { useHead } from './head'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
+import { stateDiagnostics } from '../diagnostics/state.ts'
 
-// @ts-expect-error virtual import
 import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
@@ -25,8 +26,8 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   }
   return null
 }
-let linkRelType: string | undefined
-function detectLinkRelType () {
+let linkRelType: 'preload' | 'prefetch' | undefined
+function detectLinkRelType (): 'preload' | 'prefetch' {
   if (import.meta.server) { return 'preload' }
   if (linkRelType) { return linkRelType }
   const relList = document.createElement('link').relList
@@ -41,19 +42,27 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
       return
     }
     const payloadURL = await _getPayloadURL(url, opts)
-    const link = { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
+    const rel = detectLinkRelType()
+    const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
 
     if (import.meta.server) {
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
     } else {
       const linkEl = document.createElement('link')
-      for (const key of Object.keys(link) as Array<keyof typeof link>) {
-        linkEl[key === 'crossorigin' ? 'crossOrigin' : key] = link[key]!
-      }
+      linkEl.rel = rel
+      linkEl.setAttribute('as', 'fetch')
+      linkEl.crossOrigin = 'anonymous'
+      linkEl.href = payloadURL
       document.head.appendChild(linkEl)
       return new Promise<void>((resolve, reject) => {
-        linkEl.addEventListener('load', () => resolve())
-        linkEl.addEventListener('error', () => reject())
+        const cleanup = () => {
+          linkEl.removeEventListener('load', onLoad)
+          linkEl.removeEventListener('error', onError)
+        }
+        const onLoad = () => { cleanup(); resolve() }
+        const onError = () => { cleanup(); reject() }
+        linkEl.addEventListener('load', onLoad)
+        linkEl.addEventListener('error', onError)
       })
     }
   })
@@ -69,7 +78,7 @@ const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
-    throw new Error('Payload URL must not include hostname: ' + url)
+    throw stateDiagnostics.NUXT_E7001({ url })
   }
   const config = useRuntimeConfig()
   const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
@@ -84,13 +93,13 @@ async function _importPayload (payloadURL: string) {
     const res = await fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' })
     if (!res.ok) {
       if (import.meta.dev) {
-        console.warn(`[nuxt] Cannot load payload ${payloadURL}: ${res.status} ${res.statusText}`)
+        stateDiagnostics.NUXT_E7002({ url: payloadURL })
       }
       return null
     }
     return await parsePayload(await res.text())
   } catch (err) {
-    console.warn('[nuxt] Cannot load payload ', payloadURL, err)
+    stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
   }
   return null
 }
@@ -110,14 +119,19 @@ async function _isPrerenderedInManifest (url: string) {
     return false
   }
   url = url === '/' ? url : url.replace(/\/$/, '')
-  const manifest = await getAppManifest()
-  return manifest.prerendered.includes(url)
+  try {
+    const manifest = await getAppManifest()
+    return manifest.prerendered.includes(url)
+  } catch {
+    // handle errors fetching manifest
+    return false
+  }
 }
 
 /**
  * @internal
  */
-export async function shouldLoadPayload (url = useRoute().path) {
+export async function shouldLoadPayload (url: string = useRoute().path): Promise<boolean> {
   const rules = getRouteRules({ path: url })
   if (rules.ssr === false) {
     return false
@@ -136,7 +150,7 @@ export async function shouldLoadPayload (url = useRoute().path) {
 }
 
 /** @since 3.0.0 */
-export async function isPrerendered (url = useRoute().path) {
+export async function isPrerendered (url: string = useRoute().path): Promise<boolean> {
   const res = _shouldLoadPrerenderedPayload(getRouteRules({ path: url }))
   if (res !== undefined) {
     return res
@@ -149,7 +163,7 @@ export async function isPrerendered (url = useRoute().path) {
 let payloadCache: NuxtPayload | null = null
 
 /** @since 3.4.0 */
-export async function getNuxtClientPayload () {
+export async function getNuxtClientPayload (): Promise<NuxtPayload | Partial<NuxtPayload> | null> {
   if (import.meta.server) {
     return null
   }
@@ -179,7 +193,7 @@ export async function getNuxtClientPayload () {
   return payloadCache
 }
 
-export async function parsePayload (payload: string) {
+export async function parsePayload (payload: string): Promise<any> {
   return await parse(payload, useNuxtApp()._payloadRevivers)
 }
 
@@ -190,7 +204,7 @@ export async function parsePayload (payload: string) {
 export function definePayloadReducer (
   name: string,
   reduce: (data: any) => any,
-) {
+): void {
   if (import.meta.server) {
     useNuxtApp().ssrContext!['~payloadReducers'][name] = reduce
   }
@@ -205,9 +219,9 @@ export function definePayloadReducer (
 export function definePayloadReviver (
   name: string,
   revive: (data: any) => any | undefined,
-) {
+): void {
   if (import.meta.dev && getCurrentInstance()) {
-    console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')
+    stateDiagnostics.NUXT_E7004()
   }
   if (import.meta.client) {
     useNuxtApp()._payloadRevivers[name] = revive

@@ -1,25 +1,19 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { NitroRouteRules } from 'nitro/types'
 
-import type { PageMeta } from '../../pages/runtime/composables'
+import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 
+import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 import { _mergeTransitionProps, _wrapInTransition } from './utils'
-import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
+import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
-// @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
-// @ts-expect-error virtual file
 import layouts from '#build/layouts'
-// @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
-import _routeRulesMatcher from '#build/route-rules.mjs'
-
-const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
@@ -31,7 +25,7 @@ const LayoutLoader = defineComponent({
   setup (props, context) {
     // This is a deliberate hack - this component must always be called with an explicit key to ensure
     // that setup reruns when the name changes.
-    return () => h(layouts[props.name], props.layoutProps, context.slots)
+    return () => h(layouts[props.name! as keyof typeof layouts], props.layoutProps, context.slots)
   },
 })
 
@@ -61,17 +55,20 @@ export default defineComponent({
     const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     const layout = computed(() => {
-      let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
+      type LayoutName = keyof NuxtLayouts | false | 'default'
+      let layout = resolveLayoutName(route, props.name) as LayoutName
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          console.warn(`[nuxt] Invalid layout \`${layout}\` selected.`)
+          renderDiagnostics.NUXT_E4001({ layout, available: Object.keys(layouts).join(', ') || 'none' })
         }
         if (props.fallback) {
-          layout = unref(props.fallback)
+          layout = unref(props.fallback as MaybeRef<LayoutName>)
         }
       }
       return layout
     })
+
+    provide(LayoutSymbol, layout)
 
     const layoutRef = shallowRef()
     context.expose({ layoutRef })
@@ -173,13 +170,19 @@ const LayoutProvider = defineComponent({
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
         // When name=false, always return true so NuxtPage doesn't skip rendering
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? 'default'),
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === resolveLayoutName(route),
       })
     }
 
     // this route waits to update until the page has finished changing
     const injectedRoute = inject(PageRouteSymbol)
     const isNotWithinNuxtPage = injectedRoute && injectedRoute === useRoute()
+
+    // The enclosing layout chain, if this layout is nested inside another `<NuxtLayout>`.
+    // When the eager route no longer selects that enclosing layout, this layout is being
+    // re-rendered in the old suspense fork while the destination page is still pending, so
+    // it must keep reading the deferred route rather than jumping ahead to the eager one (#32904).
+    const enclosingLayout = inject(LayoutMetaSymbol, null)
 
     if (isNotWithinNuxtPage) {
       // this route updates immediately
@@ -192,7 +195,9 @@ const LayoutProvider = defineComponent({
           get: () => {
             // we want to use the eager route if we are rendering a layout for the first time
             // and only swap back to the lazy route if the route has already changed from the first render
-            return props.isRenderingNewLayout(props.name) ? vueRouterRoute[key] : injectedRoute[key]
+            const useEagerRoute = props.isRenderingNewLayout(props.name) &&
+              (!enclosingLayout || enclosingLayout.isCurrent(vueRouterRoute))
+            return useEagerRoute ? vueRouterRoute[key] : injectedRoute[key]
           },
         })
       }
@@ -205,9 +210,9 @@ const LayoutProvider = defineComponent({
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
-              console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+              renderDiagnostics.NUXT_E4002({ name })
             } else {
-              console.warn('[nuxt] `<NuxtLayout>` needs to be passed a single root node in its default slot.')
+              renderDiagnostics.NUXT_E4003()
             }
           }
         })

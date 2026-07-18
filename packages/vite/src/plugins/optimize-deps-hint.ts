@@ -1,12 +1,12 @@
 import { relative } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { logger } from '@nuxt/kit'
+import { bundlerDiagnostics, logger } from '@nuxt/kit'
 import { colorize } from 'consola/utils'
 
 export function formatIncludeSnippet (deps: string[], cjsDeps?: Set<string>): string {
   if (!deps.length) { return '[]' }
-  const lines = deps.map((d) => {
+  const lines = deps.toSorted().map((d) => {
     const comment = cjsDeps?.has(d) ? ' // CJS' : ''
     return `        '${d}',${comment}`
   })
@@ -125,13 +125,11 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         }
       } else if (hasStale) {
         hasShownStaleHint = true
-        const parts: string[] = []
-        parts.push(formatStaleDepsHint([...userStale], [...moduleStale]))
-        parts.push(
-          `Update your \`nuxt.config.ts\`:\n\n` +
-          configBlock(getSnippetDeps()),
-        )
-        logger.warn(parts.join('\n\n'))
+        const deps = [
+          ...[...userStale].map(d => `\`${d}\``),
+          ...[...moduleStale].map(d => `\`${d}\` (from a Nuxt module)`),
+        ].join(', ')
+        bundlerDiagnostics.NUXT_B7002({ deps })
       }
     }, 3000)
   }

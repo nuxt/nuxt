@@ -1,14 +1,13 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
-import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
-import type { H3Event } from 'h3'
 
 import { $fetch } from 'ofetch'
-import type { AppConfig } from 'nuxt/schema'
+import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
+import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError } from '#app'
+import type { NuxtError, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -27,6 +26,30 @@ declare module 'nuxt/app' {
     }
   }
 }
+
+// Hook augmentation bridge between `@nuxt/schema` and `nuxt/schema`.
+//
+// `_local-modules/hook-augmenting-module/types.d.mts` augments
+// `@nuxt/schema { interface NuxtHooks }` with `'hook-augmenting-module:ping'`
+// and is pulled in via `<reference types="hook-augmenting-module" />` in
+// `.nuxt/nuxt*.d.ts` (the path real published modules take).
+//
+// Regression test for the bug where `declare module '@nuxt/schema'` augments
+// of `NuxtHooks` were visible on `NuxtHooks` directly but not on
+// `NuxtConfig['hooks']` when read via `nuxt/schema` — the path
+// `defineNuxtConfig` types take. See `packages/nuxt/schema.d.ts`.
+expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NuxtHooksFromAt>()
+expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NuxtHooksFromNuxt>()
+expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NonNullable<NuxtConfigFromAt['hooks']>>()
+expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NonNullable<NuxtConfigFromNuxt['hooks']>>()
+
+defineNuxtConfig({
+  hooks: {
+    'hook-augmenting-module:ping' (payload) {
+      expectTypeOf(payload).toEqualTypeOf<{ value: number }>()
+    },
+  },
+})
 
 describe('API routes', () => {
   // TODO: https://github.com/nitrojs/nitro/issues/2758
@@ -110,7 +133,8 @@ describe('API routes', () => {
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
+    // https://github.com/nuxt/nuxt/issues/22753
+    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
 
     // TODO: https://github.com/nitrojs/nitro/issues/2758
@@ -122,7 +146,7 @@ describe('API routes', () => {
     expectTypeOf(useLazyFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useLazyFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
   })
 
@@ -135,11 +159,51 @@ describe('API routes', () => {
       },
     })
   })
+
+  // https://github.com/nuxt/nuxt/issues/35341
+  it('accepts MaybeRefOrGetter for documented option fields', () => {
+    const method = ref<'POST'>('POST')
+    const base = ref('/api')
+    const search = ref('x')
+    const state = reactive({ name: 'a' })
+
+    for (const useFn of [useFetch, useLazyFetch]) {
+      useFn('/x', {
+        method,
+        baseURL: base,
+        query: { q: search },
+        params: { q: search },
+        headers: { 'x-test': search },
+        body: state,
+      })
+      useFn('/x', {
+        method: computed(() => method.value),
+        baseURL: computed(() => base.value),
+        query: computed(() => ({ q: search.value })),
+        params: computed(() => ({ q: search.value })),
+        headers: computed(() => ({ 'x-test': search.value })),
+        body: computed(() => ({ ...state })),
+      })
+      useFn('/x', {
+        method: () => method.value,
+        baseURL: () => base.value,
+        query: () => ({ q: search.value }),
+        params: () => ({ q: search.value }),
+        headers: () => ({ 'x-test': search.value }),
+        body: () => ({ ...state }),
+      })
+    }
+
+    // @ts-expect-error wrong shape: number is not a method
+    useFetch('/x', { method: 123 })
+    // @ts-expect-error wrong shape: getter must return a method
+    useFetch('/x', { method: () => 123 })
+  })
 })
 
 describe('nitro compatible APIs', () => {
   it('useRuntimeConfig', () => {
-    useRuntimeConfig({} as H3Event)
+    useRuntimeConfig()
   })
 })
 
@@ -147,6 +211,12 @@ describe('aliases', () => {
   it('allows importing from path aliases', () => {
     expectTypeOf(useRouter).toEqualTypeOf<typeof vueUseRouter>()
     expectTypeOf(isVue3).toEqualTypeOf<boolean>()
+  })
+})
+
+describe('import meta', () => {
+  it('types envName', () => {
+    expectTypeOf(import.meta.envName).toEqualTypeOf<string>()
   })
 })
 
@@ -622,6 +692,117 @@ describe('composables', () => {
       getCachedData: () => ({ bar: 2 }),
     })
   })
+
+  it('infers transformed data independently from typed cached data', () => {
+    const asyncData = useAsyncData(
+      () => Promise.resolve({
+        foo: 'bar',
+      }),
+      {
+        transform: data => data.foo,
+        getCachedData: () => 'bar',
+      },
+    )
+
+    expectTypeOf(asyncData.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
+
+  it('propagates factory transform type through createUseAsyncData (#35128)', () => {
+    interface Foo { a: number, b: string }
+
+    // defaults mode
+    const useFooData = createUseAsyncData({
+      transform: (res: Foo) => ({ count: res.a }),
+    })
+    const r1 = useFooData('key', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(r1.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    const r1NoKey = useFooData(() => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(r1NoKey.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    // override mode (function form)
+    const useFooDataOverride = createUseAsyncData(() => ({
+      transform: (res: Foo) => ({ count: res.a }),
+    }))
+    const r2 = useFooDataOverride('key', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(r2.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    // no factory transform: falls back to handler return type
+    const useBareData = createUseAsyncData({})
+    const r3 = useBareData('key', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(r3.data).toEqualTypeOf<Ref<Foo | DefaultAsyncDataValue>>()
+
+    // caller transform still wins over factory transform default
+    const r4 = useFooData('key', () => Promise.resolve({ a: 1, b: 'x' } as Foo), {
+      transform: res => res.b,
+    })
+    expectTypeOf(r4.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
+
+  it('propagates factory transform type through createUseFetch (#35128)', () => {
+    interface Foo { a: number, b: string }
+
+    // defaults mode
+    const useFooFetch = createUseFetch({
+      transform: (res: Foo) => ({ count: res.a }),
+    })
+    const r1 = useFooFetch<Foo>('/api/foo')
+    expectTypeOf(r1.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    // override mode (function form)
+    const useFooFetchOverride = createUseFetch(() => ({
+      transform: (res: Foo) => ({ count: res.a }),
+    }))
+    const r2 = useFooFetchOverride<Foo>('/api/foo')
+    expectTypeOf(r2.data).toEqualTypeOf<Ref<{ count: number } | DefaultAsyncDataValue>>()
+
+    // no factory transform: falls back to fetch result type
+    const useBareFetch = createUseFetch({})
+    const r3 = useBareFetch<Foo>('/api/foo')
+    expectTypeOf(r3.data).toEqualTypeOf<Ref<Foo | DefaultAsyncDataValue>>()
+
+    // caller transform overrides factory transform default
+    // (only works without an explicit `ResT` generic, due to microsoft/TypeScript#14400)
+    const r4 = useFooFetch('/api/foo', { transform: (res: Foo) => res.b })
+    expectTypeOf(r4.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
+
+  it('propagates factory `default` / `pick` types through createUseAsyncData / createUseFetch (#35128)', () => {
+    interface Foo { a: number, b: string }
+
+    // createUseAsyncData: factory `default` widens the returned data type
+    const useWithDefault = createUseAsyncData({ default: () => 'fallback' as const })
+    const d1 = useWithDefault('k', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(d1.data.value).toEqualTypeOf<Foo | 'fallback'>()
+
+    // factory transform + default together: data is the transform output (or factory default)
+    const useWithBoth = createUseAsyncData({
+      transform: (res: Foo) => ({ count: res.a }),
+      default: () => ({ count: 0 }),
+    })
+    const d2 = useWithBoth('k', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(d2.data.value).toEqualTypeOf<{ count: number }>()
+
+    // factory pick narrows the returned data type.
+    // The factory `pick` option doesn't infer FPickKeys (array literals widen to `string[]`),
+    // so the user passes it explicitly as a generic.
+    const useWithPick = createUseAsyncData<Foo, Foo, ['a']>({ pick: ['a'] })
+    const d3 = useWithPick('k', () => Promise.resolve({ a: 1, b: 'x' } as Foo))
+    expectTypeOf(d3.data.value).toEqualTypeOf<Pick<Foo, 'a'> | undefined>()
+
+    // createUseFetch: factory `default` widens the returned data type
+    const useFetchWithDefault = createUseFetch({ default: () => 'fallback' as const })
+    const f1 = useFetchWithDefault<Foo>('/api/foo')
+    expectTypeOf(f1.data.value).toEqualTypeOf<Foo | 'fallback'>()
+
+    // createUseFetch: factory transform + default
+    const useFetchBoth = createUseFetch({
+      transform: (res: Foo) => ({ count: res.a }),
+      default: () => ({ count: 0 }),
+    })
+    const f2 = useFetchBoth<Foo>('/api/foo')
+    expectTypeOf(f2.data.value).toEqualTypeOf<{ count: number }>()
+  })
 })
 
 describe('app config', () => {
@@ -667,5 +848,70 @@ describe('kit utilities', () => {
     const _fake: Fromage = 'babybel'
 
     const _fromage: Fromage = 'cheese'
+  })
+})
+
+declare module '#app' {
+  interface NuxtApp {
+    $augmentedViaPoundApp: (msg: string) => number
+  }
+  interface PageMeta {
+    poundAppMetaField?: boolean
+  }
+  interface RuntimeNuxtHooks {
+    'pound-app:custom-hook': (payload: { foo: string }) => void | Promise<void>
+  }
+}
+
+declare module 'nuxt/app' {
+  interface NuxtApp {
+    $augmentedViaNuxtApp: string
+  }
+}
+
+declare module '#app' {
+  interface NuxtPayload {
+    poundAppPayloadField?: 'from-pound-app'
+  }
+}
+
+describe('module augmentation of runtime app types', () => {
+  it('merges `NuxtApp` augmentations from `#app` and `nuxt/app`', () => {
+    const nuxtApp = useNuxtApp()
+    expectTypeOf(nuxtApp.$augmentedViaPoundApp).toEqualTypeOf<(msg: string) => number>()
+    expectTypeOf(nuxtApp.$augmentedViaNuxtApp).toEqualTypeOf<string>()
+  })
+  it('sees the same `NuxtApp` interface through both specifiers', () => {
+    const viaNuxtApp: import('nuxt/app').NuxtApp = useNuxtApp()
+    expectTypeOf(viaNuxtApp.$augmentedViaPoundApp).toEqualTypeOf<(msg: string) => number>()
+    expectTypeOf(viaNuxtApp.$augmentedViaNuxtApp).toEqualTypeOf<string>()
+    const viaPoundApp: import('#app').NuxtApp = viaNuxtApp
+    expectTypeOf(viaPoundApp).toEqualTypeOf<typeof viaNuxtApp>()
+  })
+  it('merges `PageMeta` augmentations from `#app`', () => {
+    definePageMeta({ poundAppMetaField: true })
+    expectTypeOf<PageMeta['poundAppMetaField']>().toEqualTypeOf<boolean | undefined>()
+  })
+  it('merges `RuntimeNuxtHooks` augmentations from `#app`', () => {
+    useNuxtApp().hook('pound-app:custom-hook', (payload) => {
+      expectTypeOf(payload).toEqualTypeOf<{ foo: string }>()
+    })
+  })
+  it('re-exports the same leaf types through `#app` as `#app/types` declares', () => {
+    expectTypeOf<import('#app').NuxtPayload>().toEqualTypeOf<import('#app/types').NuxtPayload>()
+    expectTypeOf<import('#app').NuxtSSRContext>().toEqualTypeOf<import('#app/types').NuxtSSRContext>()
+  })
+  it('flows `#app` payload augmentations through to the `#app/types` leaf', () => {
+    // `@nuxt/nitro-server` reads `NuxtPayload` from `#app/types`; a user
+    // augmentation applied via `#app` must be visible there too.
+    expectTypeOf<import('#app/types').NuxtPayload['poundAppPayloadField']>().toEqualTypeOf<'from-pound-app' | undefined>()
+  })
+})
+
+describe('error typing', () => {
+  it('useError exposes NuxtError fields', () => {
+    const error = useError()
+    expectTypeOf(error.value?.fatal).toEqualTypeOf<boolean | undefined>()
+    expectTypeOf(error.value?.__nuxt_error).toEqualTypeOf<true | undefined>()
   })
 })

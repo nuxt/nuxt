@@ -9,6 +9,9 @@ export function createIsIgnored (nuxt: Nuxt | null | undefined = tryUseNuxt()): 
   return (pathname, stats) => isIgnored(pathname, stats, nuxt)
 }
 
+// cache of layer root paths sorted by descending length per Nuxt instance.
+const layerRootsCache = new WeakMap<Nuxt, string[]>()
+
 /**
  * Return a filter function to filter an array of paths
  */
@@ -23,11 +26,23 @@ export function isIgnored (pathname: string, _stats?: unknown, nuxt: Nuxt | null
     nuxt._ignore.add(resolveIgnorePatterns())
   }
 
-  const cwds = getLayerDirectories(nuxt)
-    .map(dirs => dirs.root)
-    .sort((a, b) => b.length - a.length)
-  const layer = cwds.find(cwd => pathname.startsWith(cwd))
-  const relativePath = relative(layer ?? nuxt.options.rootDir, pathname)
+  let cwds = layerRootsCache.get(nuxt)
+  if (!cwds) {
+    cwds = getLayerDirectories(nuxt)
+      .map(dirs => dirs.root)
+      .sort((a, b) => b.length - a.length)
+    layerRootsCache.set(nuxt, cwds)
+  }
+  // layer roots are stored with a trailing slash, so when `pathname`
+  // is below a layer root the relative path is exactly the suffix after
+  // that prefix
+  for (const cwd of cwds) {
+    if (pathname.startsWith(cwd)) {
+      const relativePath = pathname.slice(cwd.length)
+      return !!(relativePath && nuxt._ignore.ignores(relativePath))
+    }
+  }
+  const relativePath = relative(nuxt.options.rootDir, pathname)
   if (relativePath[0] === '.' && relativePath[1] === '.') {
     return false
   }

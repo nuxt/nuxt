@@ -3,13 +3,13 @@ import process from 'node:process'
 import { performance } from 'node:perf_hooks'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
-
-import type { PluginMeta } from 'nuxt/app'
+import { Diagnostic } from 'nostics'
+import { buildDiagnostics, findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, pageDiagnostics, pluginDiagnostics, resolveFiles, resolvePath } from '@nuxt/kit'
 
 import { logger, resolveToAlias } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
+import type { ExtractedPluginMeta } from './plugins/plugin-metadata.ts'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
@@ -67,8 +67,10 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const start = performance.now()
     const oldContents = nuxt.vfs[fullPath]
     const contents = await compileTemplate(template, templateContext).catch((e) => {
-      logger.error(`Could not compile template \`${template.filename}\`.`)
-      logger.error(e)
+      // already-coded template failures (e.g. B1002/B1003) were reported in `compileTemplate`
+      if (!(e instanceof Diagnostic)) {
+        buildDiagnostics.NUXT_B1001({ filename: template.filename!, src: template.src, cause: e })
+      }
       throw e
     })
 
@@ -125,21 +127,20 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     try {
       return await fsp.readFile(template.src, 'utf-8')
     } catch (err) {
-      logger.error(`[nuxt] Error reading template from \`${template.src}\``)
-      throw err
+      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err })
     }
   }
   if (template.getContents) {
     return template.getContents({ ...ctx, options: template.options! })
   }
 
-  throw new Error('[nuxt] Invalid template. Templates must have either `src` or `getContents`: ' + JSON.stringify(template))
+  throw buildDiagnostics.NUXT_B1003()
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // resolve layer
   const layerDirs = getLayerDirectories(nuxt)
-  const reversedLayerDirs = [...layerDirs].reverse()
+  const reversedLayerDirs = layerDirs.toReversed()
 
   // Resolve main (app.vue)
   app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.app, 'App'), join(d.app, 'app')]))
@@ -161,7 +162,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file, dirs.appLayouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
-        logger.warn(`No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
+        pageDiagnostics.NUXT_B4009({ file: resolveToAlias(file, nuxt) })
         continue
       }
       layouts[name] ||= { name, file }
@@ -179,7 +180,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
-        logger.warn(`No middleware name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
+        pageDiagnostics.NUXT_B4010({ file: resolveToAlias(file, nuxt) })
         continue
       }
       middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
@@ -202,7 +203,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Add back plugins not specified in layers or user config
-  for (const p of [...nuxt.options.plugins].reverse()) {
+  for (const p of nuxt.options.plugins.toReversed()) {
     const plugin = normalizePlugin(p)
     if (!plugins.some(p => p.src === plugin.src)) {
       plugins.unshift(plugin)
@@ -210,7 +211,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  middleware = uniqueBy(await resolvePaths(nuxt, [...middleware].reverse(), 'path'), 'name').reverse()
+  middleware = uniqueBy(await resolvePaths(nuxt, middleware.toReversed(), 'path'), 'name').reverse()
   plugins = uniqueBy(await resolvePaths(nuxt, plugins, 'src'), 'src')
 
   // Resolve app.config
@@ -250,8 +251,10 @@ function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item
 
 const IS_TSX = /\.[jt]sx$/
 
-export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
-  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
+export type AnnotatedPlugin = NuxtPlugin & ExtractedPluginMeta
+
+export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promise<AnnotatedPlugin[]> {
+  const _plugins: AnnotatedPlugin[] = []
   for (const plugin of plugins) {
     try {
       const code = nuxt.vfs[plugin.src] ?? await fsp.readFile(plugin.src!, 'utf-8')
@@ -261,25 +264,119 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
       })
     } catch (e) {
       const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
-      if ((e as Error).message === 'Invalid plugin metadata') {
-        logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`, falling back to non-optimized runtime meta. Learn more: https://nuxt.com/docs/4.x/directory-structure/app/plugins#object-syntax-plugins`)
+      const code = e instanceof Error ? e.name : ''
+      if (code === 'NUXT_B2001' || code === 'NUXT_B2002') {
+        pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc })
       } else {
-        logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
+        pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc, cause: e })
       }
-      _plugins.push(plugin)
+      _plugins.push({ ...plugin, _metaUnknown: true })
     }
   }
 
   return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
 }
 
-export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>>) {
+/**
+ * Reorder `order`-sorted plugins so each plugin's `dependsOn` entries appear earlier in the array.
+ * The original (order-sorted) sequence is preserved as the stable tiebreaker. Unknown dependency
+ * names are ignored to match the runtime resolver. Cycles are not resolved here; any plugin still
+ * pending after the walk is emitted in its original position. `checkForCircularDependencies`
+ * surfaces those graphs separately.
+ */
+export function sortPluginsByDependsOn<T extends AnnotatedPlugin> (plugins: T[]): T[] {
+  const known = new Set<string>()
+  for (const plugin of plugins) {
+    if (plugin.name) { known.add(plugin.name) }
+  }
+
+  const emitted = new Set<string>()
+  const result: T[] = []
+  const pending: T[] = []
+
+  const tryEmit = (plugin: T): boolean => {
+    const deps = plugin.dependsOn
+    if (deps) {
+      for (const dep of deps) {
+        if (known.has(dep) && !emitted.has(dep)) { return false }
+      }
+    }
+    result.push(plugin)
+    if (plugin.name) { emitted.add(plugin.name) }
+    return true
+  }
+
+  const flushPending = () => {
+    let progressed = true
+    while (progressed) {
+      progressed = false
+      for (let i = 0; i < pending.length;) {
+        if (tryEmit(pending[i]!)) {
+          pending.splice(i, 1)
+          progressed = true
+        } else {
+          i++
+        }
+      }
+    }
+  }
+
+  for (const plugin of plugins) {
+    if (!tryEmit(plugin)) {
+      pending.push(plugin)
+    } else {
+      flushPending()
+    }
+  }
+
+  // Any leftover entries are part of a cycle (or transitively depend on one).
+  // Preserve their original relative order.
+  for (const plugin of pending) {
+    result.push(plugin)
+  }
+
+  return result
+}
+
+export function hasPluginDependencies (plugins: Array<{ dependsOn?: string[], _metaUnknown?: boolean }>): boolean {
+  for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
+    if (plugin.dependsOn && plugin.dependsOn.length > 0) { return true }
+  }
+  return false
+}
+
+export function hasParallelPlugins (plugins: Array<{ parallel?: boolean, _metaUnknown?: boolean }>): boolean {
+  for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
+    if (plugin.parallel) { return true }
+  }
+  return false
+}
+
+export function hasPluginHooks (plugins: Array<{ hasHooks?: boolean, _metaUnknown?: boolean }>): boolean {
+  for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
+    if (plugin.hasHooks) { return true }
+  }
+  return false
+}
+
+export function hasIslandOptOutPlugins (plugins: Array<{ hasEnv?: boolean, _metaUnknown?: boolean }>): boolean {
+  for (const plugin of plugins) {
+    if (plugin._metaUnknown) { return true }
+    if (plugin.hasEnv) { return true }
+  }
+  return false
+}
+
+export function checkForCircularDependencies (_plugins: AnnotatedPlugin[]) {
   const deps: Record<string, string[]> = Object.create(null)
   const pluginNames = new Set(_plugins.map(plugin => plugin.name))
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
     if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.has(name))) {
-      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ')}\` but they are not registered.`)
+      pluginDiagnostics.NUXT_B2008({ name: plugin.name!, missing: plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ') })
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {
@@ -288,7 +385,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   }
   const checkDeps = (name: string, visited: string[] = []): string[] => {
     if (visited.includes(name)) {
-      console.error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
+      pluginDiagnostics.NUXT_B2009({ cycle: `${visited.join(' -> ')} -> ${name}` })
       return []
     }
     visited.push(name)

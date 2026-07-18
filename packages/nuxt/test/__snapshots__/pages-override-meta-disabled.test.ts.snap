@@ -662,6 +662,29 @@
       "redirect": "mockMeta?.redirect",
     },
   ],
+  "should preserve named views from the `name@view.vue` filename convention": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "children": [
+        {
+          "alias": "mockMeta?.alias || []",
+          "component": "() => import("pages/foo/bar.vue")",
+          "components": "{ default: () => import("pages/foo/bar.vue"), "left": () => import("pages/foo/bar@left.vue") }",
+          "meta": "mockMeta || {}",
+          "name": "mockMeta?.name ?? "foo-bar"",
+          "path": "mockMeta?.path ?? "bar"",
+          "props": "mockMeta?.props ?? false",
+          "redirect": "mockMeta?.redirect",
+        },
+      ],
+      "component": "() => import("pages/foo.vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "foo"",
+      "path": "mockMeta?.path ?? "/foo"",
+      "props": "mockMeta?.props ?? false",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "should properly override route name if definePageMeta name override is defined.": [
     {
       "alias": "mockMeta?.alias || []",

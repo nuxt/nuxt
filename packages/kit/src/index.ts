@@ -19,7 +19,7 @@ export type { LayerDirectories } from './layers.ts'
 export { setGlobalHead } from './head.ts'
 export { addImports, addImportsDir, addImportsSources } from './imports.ts'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config.ts'
-export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig } from './build.ts'
+export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig, setBuildOutput } from './build.ts'
 export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigOptions } from './build.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNuxtCompatibility, isNuxtMajorVersion, normalizeSemanticVersion, isNuxt2, isNuxt3 } from './compatibility.ts'
@@ -38,7 +38,21 @@ export { createResolver, findPath, resolveAlias, resolveFiles, resolveNuxtModule
 export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
+export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
 export { logger, useLogger } from './logger.ts'
+
+// Build-time diagnostics catalogs (split by domain; imported directly, no barrel).
+// Re-exported here for use from other packages (nuxt, vite, webpack, nitro-server);
+// the B8xxx kit-api catalog is intentionally kit-internal. All catalogs are tagged
+// `@internal`: they are not public API and third-party modules should not report
+// or throw `NUXT_B` codes.
+export { buildDiagnostics } from './diagnostics/build.ts'
+export { pluginDiagnostics } from './diagnostics/plugins.ts'
+export { componentDiagnostics } from './diagnostics/components.ts'
+export { pageDiagnostics } from './diagnostics/pages.ts'
+export { configDiagnostics } from './diagnostics/config.ts'
+export { headDiagnostics } from './diagnostics/head.ts'
+export { bundlerDiagnostics } from './diagnostics/bundler.ts'
 
 // Dependencies
 export { ensureDependencyInstalled } from './dependency.ts'

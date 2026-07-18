@@ -19,21 +19,18 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
         with:
-          node-version: current
+          node-version: latest
           registry-url: "https://registry.npmjs.org/"
-          package-manager-cache: false
+          cache: false
 
-      - name: 📦 Install dependencies
-        run: pnpm install
-
-      - name: Build (stub)
-        run: pnpm dev:prepare
+      - name: Prepare
+        run: vp run dev:prepare
 
       - name: 🛠 Build and release project
         run: node scripts/release.ts

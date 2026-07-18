@@ -12,8 +12,10 @@ import { captureStackTrace } from 'errx'
 
 import { distDirURL, filterInPlace } from './utils.ts'
 import { directoryToURL } from './internal/esm.ts'
+import { resolveDeclarationPath } from './types.ts'
 import { getDirectory } from './module/install.ts'
 import { tryUseNuxt, useNuxt } from './context.ts'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
 import { resolveNuxtModule } from './resolve.ts'
 import { getLayerDirectories } from './layers.ts'
 import type { LayerDirectories } from './layers.ts'
@@ -75,7 +77,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
   const template = addTemplate(_template)
 
   if (!template.filename.endsWith('.d.ts')) {
-    throw new Error(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`)
+    throw kitDiagnostics.NUXT_B8007({ template: template.filename })
   }
 
   // Add template to types reference
@@ -122,7 +124,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
  */
 export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
   if (!template) {
-    throw new Error('Invalid template: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8008({ template: JSON.stringify(template) })
   }
 
   // Normalize
@@ -135,7 +137,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   // Use src if provided
   if (template.src) {
     if (!existsSync(template.src)) {
-      throw new Error('Template not found: ' + template.src)
+      throw kitDiagnostics.NUXT_B8009({ template: template.src })
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
@@ -144,15 +146,15 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   if (!template.src && !template.getContents) {
-    throw new Error('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8010({ template: template.filename || template.src || JSON.stringify(template) })
   }
 
   if (!template.filename) {
-    throw new Error('Invalid template. `filename` must be provided: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8011({ template: JSON.stringify(template) })
   }
 
   // Always write declaration files
-  if (template.filename.endsWith('.d.ts')) {
+  if (template.filename.endsWith('.d.ts') || template.filename.endsWith('.d.mts') || template.filename.endsWith('.d.cts')) {
     template.write = true
   }
 
@@ -205,7 +207,8 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `.config/nuxt.*`),
       join(relativeRootDir, `layers/*/nuxt.config.*`),
       join(relativeRootDir, `layers/*/.config/nuxt.*`),
-      join(relativeRootDir, `layers/*/modules/**/*`),
+      join(relativeRootDir, `layers/*/modules/*.*`),
+      join(relativeRootDir, `layers/*/modules/*/*.*`),
     ],
     shared: [
       join(relativeSharedDir, `**/*`),
@@ -224,7 +227,9 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   }
 }
 
-const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
+async function getPathSubstitution (absolutePath: string, buildDir: string): Promise<string> {
+  return relativeWithDot(buildDir, await resolveDeclarationPath(absolutePath))
+}
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
@@ -346,7 +351,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   }
 
   const nestedModulesDirs: string[] = []
-  for (const dir of [...nuxt.options.modulesDir].sort()) {
+  for (const dir of nuxt.options.modulesDir.toSorted()) {
     const withSlash = withTrailingSlash(dir)
     if (nestedModulesDirs.every(d => !d.startsWith(withSlash))) {
       nestedModulesDirs.push(withSlash)
@@ -363,6 +368,10 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
+  const isV5OrHigher = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
+
+  const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
+
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -371,6 +380,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: true,
       target: 'ESNext',
       allowJs: true,
+      allowImportingTsExtensions: true,
       resolveJsonModule: true,
       moduleDetection: 'force',
       isolatedModules: true,
@@ -381,6 +391,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       noUncheckedIndexedAccess: true,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
+      ...isV5OrHigher
+        ? {
+            noUncheckedSideEffectImports: true,
+          }
+        : {},
       /* Decorator support */
       ...useDecorators
         ? {
@@ -398,6 +413,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
         'dom.iterable',
         'webworker',
       ],
+      libReplacement: false,
       /* JSX support for Vue */
       jsx: 'preserve',
       jsxImportSource: 'vue',
@@ -423,6 +439,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
       target: tsConfig.compilerOptions?.target,
       allowJs: tsConfig.compilerOptions?.allowJs,
+      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
       resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
@@ -458,6 +475,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
       target: tsConfig.compilerOptions?.target,
       allowJs: tsConfig.compilerOptions?.allowJs,
+      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
       resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
@@ -487,13 +505,18 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const aliases: Record<string, string> = nuxt.options.alias
 
+  // TODO: remove support for baseUrl in nuxt v5
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = tsConfig.compilerOptions!.baseUrl
+    // TODO: remove support for baseUrl in nuxt v5
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
+  tsConfig.exclude ||= []
 
   const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
@@ -521,8 +544,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
     } else {
       const path = stats?.isFile()
-        // remove extension
-        ? relativePath.replace(EXTENSION_RE, '')
+        ? await getPathSubstitution(absolutePath, nuxt.options.buildDir)
         // non-existent file probably shouldn't be resolved
         : aliases[alias]!
 
@@ -559,7 +581,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
     include: [...tsConfig.include, ...legacyInclude],
-    exclude: [...legacyExclude],
+    exclude: [...userExclude, ...legacyExclude],
   })
 
   async function resolveConfig (tsConfig: TSConfig) {
@@ -568,7 +590,9 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
         if (!isAbsolute(path)) { return path }
         const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-        return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(EXTENSION_RE, '') /* remove extension */ : path)
+        return stats?.isFile()
+          ? getPathSubstitution(path, nuxt.options.buildDir)
+          : relativeWithDot(nuxt.options.buildDir, path)
       })))]
     }
 

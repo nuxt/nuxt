@@ -8,10 +8,10 @@ function renderStubMessage (name: string): never {
   })
 }
 
-export const NuxtImg = {
-  setup: () => renderStubMessage('<NuxtImg>'),
+export const NuxtImg: { setup: () => never } = {
+  setup: (): never => renderStubMessage('<NuxtImg>'),
 }
 
-export const NuxtPicture = {
-  setup: () => renderStubMessage('<NuxtPicture>'),
+export const NuxtPicture: { setup: () => never } = {
+  setup: (): never => renderStubMessage('<NuxtPicture>'),
 }

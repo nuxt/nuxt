@@ -3,11 +3,12 @@ import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { HTTPError } from '@nuxt/nitro-server/h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
+import { navigationDiagnostics } from '../diagnostics/navigation.ts'
 
-// @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
 
 interface Route {
@@ -98,7 +99,7 @@ interface Router {
   removeRoute: (name: string) => void
 }
 
-export default defineNuxtPlugin<{ route: Route, router: Router }>({
+const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: Route, router: Router }> = defineNuxtPlugin<{ route: Route, router: Router }>({
   name: 'nuxt:router',
   enforce: 'pre',
   setup (nuxtApp) {
@@ -117,7 +118,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
     const registerHook = <T extends keyof RouterHooks> (hook: T, guard: RouterHooks[T]) => {
       hooks[hook].push(guard)
-      return () => hooks[hook].splice(hooks[hook].indexOf(guard), 1)
+      return () => {
+        const index = hooks[hook].indexOf(guard)
+        if (index !== -1) { hooks[hook].splice(index, 1) }
+      }
     }
     const baseURL = useRuntimeConfig().app.baseURL
 
@@ -154,7 +158,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
       } catch (err) {
         if (import.meta.dev && !hooks.error.length) {
-          console.warn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`', err)
+          navigationDiagnostics.NUXT_E2009({ cause: err })
         }
         for (const handler of hooks.error) {
           await handler(err)
@@ -303,3 +307,5 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     }
   },
 })
+
+export default plugin

@@ -8,13 +8,13 @@ import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
-import { isTest } from 'std-env'
 import { defu } from 'defu'
 import type { WarningFilter } from '../plugins/warning-ignore.ts'
 import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets, fileName } from '../utils/config.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
+import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
 import { WebpackBarPlugin, builder, webpack } from '#builder'
 
@@ -29,10 +29,27 @@ export async function base (ctx: WebpackConfigContext) {
 }
 
 function baseConfig (ctx: WebpackConfigContext) {
+  const rules: NonNullable<Configuration['module']>['rules'] = []
+  if (builder === 'rspack') {
+    rules.push({
+      test: /\.m?js$/,
+      resolve: {
+        fullySpecified: false,
+      },
+    })
+  }
+
   ctx.config = defu({}, {
     name: ctx.name,
-    entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
-    module: { rules: [] },
+    entry: { app: [resolve(ctx.options.appDir, (ctx.options.experimental.asyncEntry || ctx.isDev) ? 'entry.async' : 'entry')] },
+    module: {
+      rules,
+      // Nuxt resolves some virtual module exports lazily (e.g. `?inline` CSS), so missing exports
+      // must not fail the build under Rspack.
+      ...builder === 'rspack'
+        ? { parser: { javascript: { exportsPresence: 'auto' as const } } }
+        : {},
+    },
     plugins: [],
     externals: [],
     optimization: {
@@ -123,6 +140,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   // Emit explicit dynamic import statements for rollup compatibility
   if (ctx.isServer && !ctx.isDev) {
     ctx.config.plugins.push(new RollupCompatDynamicImportPlugin())
+    ctx.config.plugins.push(new StripInvalidPureAnnotationsPlugin())
   }
 }
 
@@ -233,14 +251,15 @@ function getEnv (ctx: WebpackConfigContext) {
     '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.dev': ctx.options.dev,
-    'process.test': isTest,
+    'process.test': ctx.nuxt.options.test,
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
     'process.server': ctx.isServer,
     'import.meta.dev': ctx.options.dev,
-    'import.meta.test': isTest,
+    'import.meta.test': ctx.nuxt.options.test,
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
+    'import.meta.envName': JSON.stringify(ctx.options.envName),
     'import.meta.server': ctx.isServer,
   }
 

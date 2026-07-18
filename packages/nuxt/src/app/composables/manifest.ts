@@ -1,12 +1,13 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
-import type { NitroRouteRules } from 'nitro/types'
+import type { $Fetch, NitroRouteRules } from 'nitro/types'
 import { useRuntimeConfig } from '../nuxt'
-// @ts-expect-error virtual file
+import { manifestDiagnostics } from '../diagnostics/manifest.ts'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
-// @ts-expect-error virtual file
+import { $fetch as _$fetch } from '#build/fetch'
 import _routeRulesMatcher from '#build/route-rules.mjs'
+
+const $fetch = _$fetch as $Fetch
 
 const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
@@ -23,15 +24,20 @@ let manifest: Promise<NuxtAppManifest> | undefined
 
 function fetchManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+    throw manifestDiagnostics.NUXT_E5001()
   }
   let _manifest: Promise<NuxtAppManifest>
   if (import.meta.server) {
-    // @ts-expect-error virtual file
-    _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest')
+    _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest') as unknown as Promise<NuxtAppManifest>
   } else {
     _manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
       responseType: 'json',
+    }).then((res) => {
+      // handle errors fetching manifest, e.g. from an improperly configured proxy
+      if (!res || typeof res !== 'object' || !Array.isArray((res as NuxtAppManifest).prerendered)) {
+        throw manifestDiagnostics.NUXT_E5004()
+      }
+      return res
     })
   }
   manifest = _manifest
@@ -41,7 +47,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     if (manifest === _manifest) {
       manifest = undefined
     }
-    console.error('[nuxt] Error fetching app manifest.', e)
+    manifestDiagnostics.NUXT_E5002({ cause: e })
   })
   return _manifest
 }
@@ -49,7 +55,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
 /** @since 3.7.4 */
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+    throw manifestDiagnostics.NUXT_E5001()
   }
   return manifest || fetchManifest()
 }
@@ -62,9 +68,9 @@ export function getRouteRules (url: string): Record<string, any>
 export function getRouteRules (arg: string | H3Event | { path: string }) {
   const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   try {
-    return routeRulesMatcher(path)
+    return routeRulesMatcher(path.toLowerCase())
   } catch (e) {
-    console.error('[nuxt] Error matching route rules.', e)
+    manifestDiagnostics.NUXT_E5003({ path, cause: e })
     return {}
   }
 }
