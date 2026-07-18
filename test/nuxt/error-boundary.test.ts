@@ -48,4 +48,37 @@ describe('NuxtErrorBoundary', () => {
     el.unmount()
     vi.resetAllMocks()
   })
+
+  it('clears the error on navigation (#15781)', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    let thrown = false
+    const el = mount({
+      setup () {
+        return () => h('div', {}, h(NuxtErrorBoundary, {}, {
+          default: () => h(defineComponent({
+            setup () {
+              if (!thrown) {
+                thrown = true
+                throw new Error('test error')
+              }
+              return () => h('span', 'default')
+            },
+          })),
+          error: (
+            { error }: Parameters<InstanceType<typeof NuxtErrorBoundary>['$slots']['error']>[0],
+          ) => h('span', error.toString()),
+        }))
+      },
+    })
+    await nextTick()
+    expect(el.html()).toContain('Error: test error')
+
+    // Navigating away should reset the boundary error -> default slot renders again.
+    await useRouter().push('/?navigated=1')
+    await nextTick()
+    expect(el.html()).toContain('default')
+
+    el.unmount()
+    vi.resetAllMocks()
+  })
 })
