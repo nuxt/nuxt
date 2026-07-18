@@ -199,9 +199,9 @@ describe('tsConfig generation', () => {
       },
     })
     nuxt.options._layers = [
-        ...nuxt.options._layers,
-        { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo/app' }, cwd: '/my-app/layers/foo', configFile: '/my-app/layers/foo/nuxt.config.ts' },
-    ] 
+      ...nuxt.options._layers,
+      { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo/app' }, cwd: '/my-app/layers/foo', configFile: '/my-app/layers/foo/nuxt.config.ts' },
+    ]
 
     const { tsConfig } = await _generateTypes(nuxt)
     const pathKeys = Object.keys(tsConfig.compilerOptions?.paths ?? {})
