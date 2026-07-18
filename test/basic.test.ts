@@ -266,6 +266,11 @@ describe('pages', () => {
     await page.getByText('should throw a 404 error').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /catchall/forbidden"')
     expect(await page.getByTestId('path').textContent()).toMatchInlineSnapshot('" Path: /catchall/forbidden"')
+    expect(new URL(page.url()).pathname).toBe('/catchall/forbidden')
+
+    await page.goBack()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/navigate-to-forbidden')
+    expect(new URL(page.url()).pathname).toBe('/navigate-to-forbidden')
 
     await gotoPath(page, '/navigate-to-forbidden')
     await page.getByText('should be caught by catchall').click()
