@@ -601,8 +601,8 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
     tsConfig.compilerOptions!.paths = sortTsPaths(
       tsConfig.compilerOptions!.paths,
-      nuxt.options.buildDir,
       nonRootLayerDirs,
+      nuxt.options.buildDir,
       nuxt.options.typescript.hoist,
     )
 
@@ -681,7 +681,7 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
  * - Generic `~`/`@` aliases come after layer aliases
  * - `#build` alias is at the bottom (https://github.com/nuxt/nuxt/issues/30325)
  */
-function sortTsPaths (paths: Record<string, string[]>, buildDir: string, layerDirs: string[], hoist: string[]) {
+function sortTsPaths (paths: Record<string, string[]>, layerDirs: string[], buildDir: string,  hoist: string[]) {
   const hoistKeys = new Set(hoist)
   const hoistPaths: Record<string, string[]> = {}
   const customLayerPaths: Record<string, string[]> = {}
