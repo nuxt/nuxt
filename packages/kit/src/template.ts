@@ -583,7 +583,6 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...userExclude, ...legacyExclude],
   })
 
-  console.log('layerDirs', layerDirs)
   const nonRootLayerDirs = layerDirs
     .map(dirs => dirs.root)
     .filter(root => root !== rootDirWithSlash)
