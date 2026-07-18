@@ -1,6 +1,6 @@
 import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
-import type { NuxtPayload } from '#app/types'
+import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 import type { H3Event } from 'nitro/h3'
 import { serverFetch } from 'nitro'
 
@@ -124,13 +124,6 @@ function mergeHeaders (target: Headers, overrides: Headers | [string, string][] 
     }
   }
   return target
-}
-
-type SerializedErrorCause = string | number | boolean | null | {
-  name: string
-  message: string
-  stack?: string
-  cause?: SerializedErrorCause
 }
 
 function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {

@@ -14,7 +14,7 @@ import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { relative } from 'pathe'
 
-import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from '#app/types'
+import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
@@ -115,7 +115,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
       }
     }
     if (import.meta.dev && event.context.nuxt?.['~error-cause'] !== undefined) {
-      Object.assign(ssrError, { cause: event.context.nuxt['~error-cause'] })
+      (ssrError as { cause?: SerializedErrorCause }).cause = event.context.nuxt['~error-cause']
     }
     setSSRError(ssrContext, ssrError)
   }
@@ -871,7 +871,7 @@ interface NuxtRequestContext {
   /** @internal */
   '~rendering-error'?: boolean
   /** @internal */
-  '~error-cause'?: unknown
+  '~error-cause'?: SerializedErrorCause
 }
 
 declare module 'srvx' {

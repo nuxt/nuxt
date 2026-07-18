@@ -28,15 +28,9 @@
 </template>
 
 <script setup lang="ts">
-import type { NuxtError } from '#app'
-
-interface ErrorCause {
-  message: string
-  stack?: string
-  cause?: ErrorCause
-}
+import type { NuxtError, SerializedErrorCause } from '#app'
 
 defineProps({
-  error: Object as () => NuxtError & { cause?: ErrorCause },
+  error: Object as () => NuxtError & { cause?: Extract<SerializedErrorCause, object> },
 })
 </script>

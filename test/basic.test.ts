@@ -1360,9 +1360,9 @@ describe('errors', () => {
     expect(html).toContain('createError message')
     if (isDev) {
       expect(html).toContain('Cause: inner error')
-      expect(html).toContain('Cause stack: inner error\nat setup')
+      expect(html).toMatch(/Cause stack:[^<]*inner error[^<]*at setup/)
       expect(html).toContain('Root cause: root cause')
-      expect(html).toContain('Root cause stack: root cause\nat setup')
+      expect(html).toMatch(/Root cause stack:[^<]*root cause[^<]*at setup/)
     } else {
       expect(html).not.toContain('inner error')
       expect(html).not.toContain('root cause')
