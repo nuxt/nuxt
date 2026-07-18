@@ -1,13 +1,12 @@
-import { defineComponent, h, nextTick } from 'vue'
+import { defineComponent, h } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { flushPromises } from '@vue/test-utils'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { NuxtPage } from '#components'
 import { useNuxtApp } from '#app/nuxt'
 import { navigateTo, useRouter } from '#app/composables/router'
 
-import plugin, { findUnrenderedNestedPage } from '../../../packages/nuxt/src/pages/runtime/plugins/check-if-page-unused'
+import plugin, { NESTED_PAGE_CONFIRMATION_DELAY, findUnrenderedNestedPage } from '../../../packages/nuxt/src/pages/runtime/plugins/check-if-page-unused'
 
 describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', () => {
   let router: ReturnType<typeof useRouter>
@@ -27,10 +26,12 @@ describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', ()
     })
   }
 
-  // the check only warns when the condition persists past its confirmation delay
-  async function waitForConfirmationDelay () {
-    await new Promise<void>(resolve => setTimeout(resolve, 1100))
-    await flushPromises()
+  async function navigateAndSettle (path: string) {
+    const finished = new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    let done = false
+    void Promise.all([navigateTo(path), finished]).then(() => { done = true })
+    await vi.waitUntil(() => done)
+    await vi.advanceTimersByTimeAsync(NESTED_PAGE_CONFIRMATION_DELAY + 100)
   }
 
   async function mountAndNavigate (path: string) {
@@ -41,12 +42,8 @@ describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', ()
       pluginInstalled = true
       await nuxtApp.runWithContext(() => plugin.setup!(nuxtApp))
     }
-    await navigateTo(path)
-    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
-    await flushPromises()
-    await nextTick()
-    await flushPromises()
-    await waitForConfirmationDelay()
+    vi.useFakeTimers()
+    await navigateAndSettle(path)
     return el
   }
 
@@ -57,8 +54,8 @@ describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', ()
   })
 
   afterEach(async () => {
+    vi.useRealTimers()
     await navigateTo('/')
-    await flushPromises()
     warn.mockRestore()
   })
 
@@ -93,14 +90,8 @@ describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', ()
 
     const el = await mountAndNavigate('/dedup-parent/child')
 
-    await navigateTo('/')
-    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
-    await navigateTo('/dedup-parent/child')
-    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
-    await flushPromises()
-    await nextTick()
-    await flushPromises()
-    await waitForConfirmationDelay()
+    await navigateAndSettle('/')
+    await navigateAndSettle('/dedup-parent/child')
 
     const messages = warn.mock.calls.map(args => args.join(' ')).filter(m => m.includes('NUXT_E4016'))
     expect(messages).toHaveLength(1)

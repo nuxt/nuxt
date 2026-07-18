@@ -13,12 +13,14 @@ export function findUnrenderedNestedPage (route: RouteLocationNormalizedLoaded):
     // vue-router renders the child directly at the parent's depth for records without a component
     if (!record.components?.default) { continue }
     if (!Object.values(record.instances ?? {}).some(Boolean)) {
-      // an unrendered record without a rendered parent is covered by the global check below
+      // an unrendered record without a rendered parent is covered by the E4011 check
       return parent ? { parent, child: record } : undefined
     }
     parent = record
   }
 }
+
+export const NESTED_PAGE_CONFIRMATION_DELAY = 1000
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:checkIfPageUnused',
@@ -42,14 +44,14 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
       const router = useRouter()
       const warnedPaths = new Set<string>()
-      nuxtApp.hook('page:finish', (component) => {
+      nuxtApp.hook('page:finish', (vnode) => {
         const route = router.currentRoute.value
         // `page:finish` can fire for a superseded navigation (its hook chain is async), in which
         // case the finished component no longer belongs to the current route and the matched
         // records may not have registered instances yet
-        if (component && !route.matched.some(record => record.components?.default === component.type)) { return }
-        // `page:finish` fires when the incoming page's async deps resolve, which precedes DOM
-        // insertion by the whole leave duration when a page transition is active — wait for the
+        if (vnode && !route.matched.some(record => record.components?.default === vnode.type)) { return }
+        // `page:finish` fires when the incoming page's async deps resolve. When a page transition
+        // is active, that precedes DOM insertion by the whole leave duration, so wait for the
         // transition, then for vue-router to register the mounted instances of matched records.
         // Deliberately not awaited: blocking the hook chain would delay `page:loading:end`.
         void Promise.resolve(nuxtApp['~transitionPromise']).then(() => nextTick()).then(() => {
@@ -66,7 +68,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
             if (!confirmed || confirmed.child !== candidate.child || warnedPaths.has(confirmed.child.path)) { return }
             warnedPaths.add(confirmed.child.path)
             renderDiagnostics.NUXT_E4016({ fullPath: route.fullPath, childPath: confirmed.child.path, parentPath: confirmed.parent.path })
-          }, 1000)
+          }, NESTED_PAGE_CONFIRMATION_DELAY)
         })
       })
     }
