@@ -1765,7 +1765,7 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
-   * @note `sensitive` (case-sensitive routing) defaults to `true` with compatibilityVersion >= 5.
+   * @note `sensitive` defaults to `true` with `future.compatibilityVersion >= 5`.
    *
    * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */

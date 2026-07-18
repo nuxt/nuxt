@@ -68,7 +68,7 @@ export function getRouteRules (url: string): Record<string, any>
 export function getRouteRules (arg: string | H3Event | { path: string }) {
   const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   try {
-    return routeRulesMatcher(path.toLowerCase())
+    return routeRulesMatcher(path)
   } catch (e) {
     manifestDiagnostics.NUXT_E5003({ path, cause: e })
     return {}

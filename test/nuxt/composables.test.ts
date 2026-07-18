@@ -581,14 +581,17 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       }
     `)
   })
-  it('matches case-insensitively to mirror vue-router defaults', () => {
-    expect(getRouteRules({ path: '/Pre/spa/thing' })).toMatchObject({
-      prerender: true,
-      ssr: false,
-    })
-    expect(getRouteRules({ path: '/PRE/test' })).toMatchObject({
-      redirect: '/',
-    })
+  it('matches route-rule casing consistently with vue-router', () => {
+    const spaRules = getRouteRules({ path: '/Pre/spa/thing' })
+    const redirectRules = getRouteRules({ path: '/PRE/test' })
+
+    if (process.env.PROJECT === 'nuxt-legacy') {
+      expect(spaRules).toMatchObject({ prerender: true, ssr: false })
+      expect(redirectRules).toMatchObject({ redirect: '/' })
+    } else {
+      expect(spaRules).not.toHaveProperty('prerender')
+      expect(redirectRules).not.toHaveProperty('redirect')
+    }
   })
 })
 
@@ -665,6 +668,12 @@ describe('routing utilities: `navigateTo`', () => {
   function waitForPageChange () {
     return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
   }
+
+  it('matches routes with compatibility-version casing', () => {
+    router.addRoute({ name: 'case-sensitive-test', path: '/case-sensitive-test', component: defineComponent({}) })
+    expect(router.resolve('/Case-Sensitive-Test').name === 'case-sensitive-test').toBe(process.env.PROJECT === 'nuxt-legacy')
+    router.removeRoute('case-sensitive-test')
+  })
 
   it('navigateTo should disallow navigation to external URLs by default', () => {
     expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[NUXT_E2001: NUXT_E2001]')

@@ -14,8 +14,8 @@ describe('router.options.sensitive default', () => {
     expect((result as unknown as NuxtOptions).router.options.sensitive).toBe(true)
   })
 
-  it('defaults to `false` for v3', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 3 } })
+  it('defaults to `false` when compatibilityVersion is 4', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 } })
     expect((result as unknown as NuxtOptions).router.options.sensitive).toBe(false)
   })
 
@@ -24,8 +24,8 @@ describe('router.options.sensitive default', () => {
     expect((result as unknown as NuxtOptions).router.options.sensitive).toBe(false)
   })
 
-  it('respects an explicit `true` value in v3', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 3 }, router: { options: { sensitive: true } } })
+  it('respects an explicit `true` value in v4', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 }, router: { options: { sensitive: true } } })
     expect((result as unknown as NuxtOptions).router.options.sensitive).toBe(true)
   })
 })
