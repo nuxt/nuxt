@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { createConsoleReporter, defineDiagnostics } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 
@@ -21,7 +22,7 @@ const docsBase = (code: string): string =>
 
 export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
-  reporters: [/* #__PURE__ */ (createConsoleReporter(import.meta.dev && !import.meta.test ? { formatter: ansiFormatter(colors) } : undefined))] as const,
+  reporters: [/* #__PURE__ */ (createConsoleReporter(import.meta.dev && process.env.NODE_ENV !== 'test' ? { formatter: ansiFormatter(colors) } : undefined))] as const,
   codes: {
     NUXT_E8001: {
       why: (p: { path: string }) => `\`render:html\` mutated \`body\`/\`bodyAppend\` while streaming (\`${p.path}\`). These fields are silently dropped because the body is about to stream.`,
