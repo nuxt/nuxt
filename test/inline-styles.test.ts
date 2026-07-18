@@ -3,9 +3,9 @@ import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { join } from 'pathe'
-import { builder, isBuilt, projectSuffix } from './matrix'
+import { projectSuffix, runsOnceInMatrix } from './matrix'
 
-describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
+describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/inline-styles', import.meta.url))
 
   beforeAll(async () => {

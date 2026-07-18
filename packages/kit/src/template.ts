@@ -584,6 +584,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...userExclude, ...legacyExclude],
   })
 
+  // layer directories containing the project root would match every alias, so we ignore them
+  const nonRootLayerDirs = layerDirs
+    .map(dirs => dirs.root)
+    .filter(root => !rootDirWithSlash.startsWith(root))
+
   async function resolveConfig (tsConfig: TSConfig) {
     for (const alias in tsConfig.compilerOptions!.paths) {
       const paths = tsConfig.compilerOptions!.paths[alias]
@@ -596,9 +601,12 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       })))]
     }
 
-    // Ensure `#build` is placed at the end of the paths object.
-    // https://github.com/nuxt/nuxt/issues/30325
-    sortTsPaths(tsConfig.compilerOptions!.paths)
+    tsConfig.compilerOptions!.paths = sortTsPaths(
+      tsConfig.compilerOptions!.paths,
+      nonRootLayerDirs,
+      nuxt.options.buildDir,
+      nuxt.options.typescript?.hoist ?? [],
+    )
 
     tsConfig.include = [...new Set(tsConfig.include!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
     tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
@@ -668,15 +676,60 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
   ])
 }
 
-function sortTsPaths (paths: Record<string, string[]>) {
+/**
+ * Sort the paths in the tsconfig.json file, so
+ * - Hoisted package paths stay at the top (`typescript.hoist`)
+ * - Custom layer aliases follow, then generic `#layers/*` aliases
+ * - Generic `~`/`@` aliases come after layer aliases
+ * - `#build` alias is at the bottom (https://github.com/nuxt/nuxt/issues/30325)
+ */
+function sortTsPaths (paths: Record<string, string[]>, layerDirs: string[], buildDir: string, hoist: string[]) {
+  const hoistKeys = new Set(hoist)
+  const hoistPaths: Record<string, string[]> = {}
+  const customLayerPaths: Record<string, string[]> = {}
+  const genericLayerPaths: Record<string, string[]> = {}
+  const otherPaths: Record<string, string[]> = {}
+  const buildPaths: Record<string, string[]> = {}
+
   for (const pathKey in paths) {
     if (pathKey.startsWith('#build')) {
-      const pathValue = paths[pathKey]!
-      // Delete & Reassign to ensure key is inserted at the end of object.
-      delete paths[pathKey]
-      paths[pathKey] = pathValue
+      buildPaths[pathKey] = paths[pathKey]!
+      continue
+    }
+
+    if (isHoistPathKey(pathKey, hoistKeys)) {
+      hoistPaths[pathKey] = paths[pathKey]!
+      continue
+    }
+
+    if (layerDirs.length && paths[pathKey]!.some(target => isPathUnderLayerDirs(target, buildDir, layerDirs))) {
+      if (pathKey.startsWith('#layers')) {
+        genericLayerPaths[pathKey] = paths[pathKey]!
+      } else {
+        customLayerPaths[pathKey] = paths[pathKey]!
+      }
+    } else {
+      otherPaths[pathKey] = paths[pathKey]!
     }
   }
+
+  return {
+    ...hoistPaths,
+    ...customLayerPaths,
+    ...genericLayerPaths,
+    ...otherPaths,
+    ...buildPaths,
+  }
+}
+
+const PATH_WILDCARD_RE = /\/?\*$/
+function isHoistPathKey (pathKey: string, hoistKeys: Set<string>) {
+  return hoistKeys.has(pathKey.replace(PATH_WILDCARD_RE, ''))
+}
+
+function isPathUnderLayerDirs (target: string, buildDir: string, layerDirs: string[]) {
+  const absolute = withTrailingSlash(resolve(buildDir, target.replace(PATH_WILDCARD_RE, '')))
+  return layerDirs.some(dir => absolute.startsWith(dir))
 }
 
 function renderReference (ref: TSReference, baseDir: string) {
