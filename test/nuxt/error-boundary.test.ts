@@ -79,6 +79,6 @@ describe('NuxtErrorBoundary', () => {
     expect(el.html()).toContain('default')
 
     el.unmount()
-    vi.resetAllMocks()
+    vi.restoreAllMocks()
   })
 })
