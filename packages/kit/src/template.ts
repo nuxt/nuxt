@@ -584,9 +584,10 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...userExclude, ...legacyExclude],
   })
 
+  // layer directories containing the project root would match every alias, so we ignore them
   const nonRootLayerDirs = layerDirs
     .map(dirs => dirs.root)
-    .filter(root => root !== rootDirWithSlash && !rootDirWithSlash.startsWith(root))
+    .filter(root => !rootDirWithSlash.startsWith(root))
 
   async function resolveConfig (tsConfig: TSConfig) {
     for (const alias in tsConfig.compilerOptions!.paths) {

@@ -214,6 +214,32 @@ describe('tsConfig generation', () => {
     expect(pathKeys.indexOf('@layer-foo')).toBeLessThan(pathKeys.indexOf('@'))
     expect(pathKeys.filter(key => key.startsWith('#build')).at(-1)).toBe(pathKeys.at(-1))
   })
+
+  it('should not treat ~ and @ as layer aliases when a layer contains the root directory', async () => {
+    const nuxt = mockNuxtWithOptions({
+      rootDir: '/repo/apps/web',
+      srcDir: '/repo/apps/web',
+      buildDir: '/repo/apps/web/.nuxt',
+      alias: {
+        '~': '/repo/apps/web/',
+        '@': '/repo/apps/web/',
+        '#layers/base': '/repo/',
+        '#layers/foo': '/repo/apps/web/layers/foo/',
+      },
+    })
+    nuxt.options._layers = [
+      { config: { rootDir: '/repo/apps/web', srcDir: '/repo/apps/web' }, cwd: '/repo/apps/web', configFile: '/repo/apps/web/nuxt.config.ts' },
+      { config: { rootDir: '/repo', srcDir: '/repo' }, cwd: '/repo', configFile: '/repo/nuxt.config.ts' },
+      { config: { rootDir: '/repo/apps/web/layers/foo', srcDir: '/repo/apps/web/layers/foo' }, cwd: '/repo/apps/web/layers/foo', configFile: '/repo/apps/web/layers/foo/nuxt.config.ts' },
+    ] as typeof nuxt.options._layers
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    const pathKeys = Object.keys(tsConfig.compilerOptions?.paths ?? {})
+
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('~'))
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('@'))
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('#layers/base'))
+  })
 })
 
 describe('resolveLayerPaths', async () => {
