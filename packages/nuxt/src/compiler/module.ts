@@ -60,6 +60,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         alias: nuxt.options.alias,
         getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
         appDir: nuxt.options.appDir,
+        requireSource: nuxt.options.future.compatibilityVersion >= 5,
         dev: nuxt.options.dev,
       }))
     })

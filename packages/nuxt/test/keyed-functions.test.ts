@@ -15,6 +15,7 @@ describe('keyed functions plugin - reactive getter (dev mode)', () => {
       alias: {},
       getAutoImports: () => Promise.resolve([]),
       appDir: '/nuxt/dist/app/',
+      requireSource: false,
       dev: true,
     }).raw({}, {} as any) as {
       transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
@@ -53,6 +54,7 @@ useNewComposable()
       alias: {},
       getAutoImports: () => Promise.resolve([]),
       appDir: '/nuxt/dist/app/',
+      requireSource: false,
       dev: true,
     }).raw({}, {} as any) as {
       transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
@@ -81,6 +83,7 @@ useExisting()
       alias: {},
       getAutoImports: () => Promise.resolve([]),
       appDir: '/nuxt/dist/app/',
+      requireSource: false,
       dev: false,
     }).raw({}, {} as any) as {
       transform: { filter: { code?: { include: RegExp } }, handler: (code: string, id: string) => Promise<{ code: string } | null> }
@@ -151,7 +154,7 @@ describe('keyed functions plugin', () => {
     },
   ]
 
-  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should add hash when there is none already provided', async () => {
     const code = `
@@ -238,7 +241,7 @@ useRenamedDefault()`
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any)
+    KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
       /Duplicate keyed function name `useKeyTwo`.* with the same source `#app` found\. Overwriting the existing entry\./,
@@ -883,6 +886,34 @@ pkg.app.useKey()
           useRegexKey('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
+
+  describe('with `requireSource`', () => {
+    const strictPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/', requireSource: true }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+
+    it('should still inject keys for functions with a matching source', async () => {
+      const code = `
+import { useKey } from '#app'
+useKey()
+    `
+      expect((await strictPlugin.transform.handler(code, 'plugin.ts'))?.code).toContain('/* nuxt-injected */')
+    })
+
+    it('should not inject keys for auto-imported functions without a source', async () => {
+      const code = `
+    import { useAutoImported } from '#app'
+    useAutoImported()
+    `
+      expect(await strictPlugin.transform.handler(code, 'plugin.ts')).toBeUndefined()
+    })
+
+    it('should not inject keys for regex-matched function sources', async () => {
+      const code = `
+    import { useRegexKey } from 'some-regex-matched-source'
+    useRegexKey()
+    `
+      expect(await strictPlugin.transform.handler(code, 'plugin.ts')).toBeUndefined()
+    })
+  })
 })
 
 describe('core keyed functions', () => {
@@ -898,7 +929,7 @@ describe('core keyed functions', () => {
     { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
     { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
   ]
-  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve([]), appDir: '/nuxt/dist/app/' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve([]), appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should detect string type keys and not add a hash', async () => {
     const code = `
