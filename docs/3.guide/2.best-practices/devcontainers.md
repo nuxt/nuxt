@@ -70,7 +70,7 @@ If a project already includes a dev container configuration, you can open it usi
 
 When you open the project in VS Code, you should see a notification in the bottom right corner:
 
-**"Reopen in Dev Containers"**
+> "Reopen in Dev Containers"
 
 Click this button to build and open the project in a dev container.
 
