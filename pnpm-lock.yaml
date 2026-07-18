@@ -261,6 +261,9 @@ importers:
       mlly:
         specifier: ^1.8.2
         version: 1.8.2
+      nostics:
+        specifier: ^1.1.4
+        version: 1.1.4
       nypm:
         specifier: ^0.6.8
         version: 0.6.8
@@ -379,6 +382,9 @@ importers:
       nitro:
         specifier: ^3.0.260610-beta
         version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
+      nostics:
+        specifier: ^1.1.4
+        version: 1.1.4
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -527,6 +533,9 @@ importers:
       nanotar:
         specifier: ^0.3.0
         version: 0.3.0
+      nostics:
+        specifier: ^1.1.4
+        version: 1.1.4
       object-identity:
         specifier: ^0.2.3
         version: 0.2.3
@@ -811,6 +820,9 @@ importers:
       defu:
         specifier: ^6.1.7
         version: 6.1.7
+      nostics:
+        specifier: ^1.1.4
+        version: 1.1.4
       pathe:
         specifier: ^2.0.3
         version: 2.0.3

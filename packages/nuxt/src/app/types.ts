@@ -108,6 +108,19 @@ export interface NuxtError<DataT = unknown> extends HTTPError<DataT> {
   readonly fatal: boolean
 }
 
+/**
+ * Serialized form of an error's `cause` chain, attached to the error page
+ * error in development. Error causes are serialized to their name, message,
+ * stack and nested cause; primitive causes are passed through as-is, and any
+ * other values are omitted.
+ */
+export type SerializedErrorCause = string | number | boolean | null | {
+  name: string
+  message: string
+  stack?: string
+  cause?: SerializedErrorCause
+}
+
 export interface NuxtPayload {
   path?: string
   serverRendered?: boolean

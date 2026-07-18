@@ -9,7 +9,7 @@ links:
 ---
 
 This composable provides a convenient wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) and [`$fetch`](/docs/4.x/api/utils/dollarfetch).
-It automatically generates a key based on URL and fetch options, provides type hints for request url based on server routes, and infers API response type.
+It automatically generates a key for the request, provides type hints for request url based on server routes, and infers API response type.
 
 ::note
 `useFetch` is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
@@ -84,7 +84,25 @@ const { data: post } = await useFetch(() => `/api/posts/${id.value}`)
 </script>
 ```
 
-When using `useFetch` with the same URL and options in multiple components, they will share the same `data`, `error` and `status` refs. This ensures consistency across components.
+The auto-generated key is unique to each call site, so calling `useFetch` with the same URL and options in different components will **not** share state and each call performs its own request. Multiple instances of the same component do share state, since they use the same call site. To share the same `data`, `error` and `status` refs across different components, provide the same explicit `key` to each call:
+
+::code-group
+
+```vue [app/components/ComponentA.vue]
+<script setup lang="ts">
+// shares the data with ComponentB - only one request is made
+const { data } = await useFetch('/api/random', { key: 'random' })
+</script>
+```
+
+```vue [app/components/ComponentB.vue]
+<script setup lang="ts">
+// shares the data with ComponentA - only one request is made
+const { data } = await useFetch('/api/random', { key: 'random' })
+</script>
+```
+
+::
 
 ::tip
 Keyed state created using `useFetch` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/4.x/api/composables/use-nuxt-data).
@@ -191,7 +209,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 | Option                                                                    | Type                                                                    | Default    | Description                                                                                                                                                                                                                                                                        |
 |---------------------------------------------------------------------------|-------------------------------------------------------------------------|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `key`                                                                     | `MaybeRefOrGetter<string>`                                              | auto-gen   | Unique key for de-duplication. If not provided, generated from URL and options.                                                                                                                                                                                                    |
+| `key`                                                                     | `MaybeRefOrGetter<string>`                                              | auto-gen   | Unique key for de-duplication. If not provided, generated from the URL, options and call site location in the source code.                                                                                                                                                         |
 | `method`                                                                  | `MaybeRefOrGetter<string>`                                              | `'GET'`    | HTTP request method.                                                                                                                                                                                                                                                               |
 | `query`                                                                   | `MaybeRefOrGetter<SearchParams>`                                        | -          | Query/search params to append to the URL. Alias: `params`.                                                                                                                                                                                                                         |
 | `params`                                                                  | `MaybeRefOrGetter<SearchParams>`                                        | -          | Alias for `query`.                                                                                                                                                                                                                                                                 |

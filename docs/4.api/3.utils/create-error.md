@@ -35,6 +35,24 @@ if (!data.value) {
 </script>
 ```
 
+### Error Causes
+
+You can pass a `cause` when creating an error to preserve the original error you are wrapping:
+
+```ts
+try {
+  await fetchMovie(route.params.slug)
+} catch (cause) {
+  throw createError({
+    status: 500,
+    message: 'Could not load movie',
+    cause,
+  })
+}
+```
+
+In development, the cause chain is exposed to your [error page](/docs/4.x/getting-started/error-handling#error-page) via the `cause` property of the error, serialized as `{ name, message, stack, cause }` (primitive causes are passed through as-is; other values are omitted). In production, causes are never included in error responses or in the error page payload.
+
 ## In API Routes
 
 Use `createError` to trigger error handling in server API routes.
