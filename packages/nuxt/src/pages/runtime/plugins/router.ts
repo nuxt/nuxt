@@ -211,6 +211,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       return { provide: { router } }
     }
 
+    // Reflect the target route in the URL (matching SSR) so the back button
+    // returns to the previous page after a fatal middleware error (#19954).
+    function pushErroredRoute (to: { fullPath: string }) {
+      if (import.meta.client && !nuxtApp.isHydrating && to.fullPath !== createCurrentLocation(routerBase, window.location)) {
+        history.push(to.fullPath)
+      }
+    }
+
     const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
       await nuxtApp.callHook('page:loading:start')
@@ -279,6 +287,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (result) {
               if (isNuxtError(result) && result.fatal) {
                 await nuxtApp.runWithContext(() => showError(result))
+                pushErroredRoute(to)
               }
               return result
             }
@@ -286,6 +295,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             const error = createError(err)
             if (error.fatal) {
               await nuxtApp.runWithContext(() => showError(error))
+              pushErroredRoute(to)
             }
             return error
           }

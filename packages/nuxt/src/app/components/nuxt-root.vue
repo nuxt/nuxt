@@ -22,7 +22,7 @@ import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from
 import { useNuxtApp } from '../nuxt'
 import { _notifyCrawlerError, isNuxtError, showError, useError } from '../composables/error'
 import { isBotUserAgent } from '../utils'
-import { appDiagnostics } from '../diagnostics/core.ts'
+import { appDiagnostics } from '../diagnostics/core'
 import { useRoute, useRouter } from '../composables/router'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'

@@ -2,7 +2,7 @@ import { createError } from '#app/composables/error'
 import { defineNuxtRouteMiddleware } from '#app/composables/router'
 import type { RouteMiddleware } from '#app/composables/router'
 
-const middleware: RouteMiddleware = defineNuxtRouteMiddleware(async (to, from) => {
+const middleware: RouteMiddleware = defineNuxtRouteMiddleware(async (to) => {
   if (!to.meta?.validate) { return }
 
   const result = await Promise.resolve(to.meta.validate(to))
@@ -18,13 +18,6 @@ const middleware: RouteMiddleware = defineNuxtRouteMiddleware(async (to, from) =
       path: to.fullPath,
     },
   })
-
-  // We pretend to have navigated to the invalid route so
-  // that the user can return to the previous page with
-  // the back button.
-  if (typeof window !== 'undefined') {
-    window.history.pushState({}, '', from.fullPath)
-  }
 
   return error
 })
