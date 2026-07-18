@@ -619,7 +619,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add <NuxtLink>
   addComponent({
-    name: 'NuxtLink',
+    name: nuxt.options.experimental.defaults.nuxtLink.componentName || 'NuxtLink',
     priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-link'),
   })
