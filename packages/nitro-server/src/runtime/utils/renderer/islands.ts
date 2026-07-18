@@ -35,8 +35,7 @@ export function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIsland
     // remove teleport anchor to avoid hydration issues
     let html = ssrContext.teleports?.[clientUid]?.replaceAll('<!--teleport start anchor-->', '') || ''
 
-    // nested islands use a teleport key containing both the island and component UID.
-    // we need to find that one instead of the component UID alone
+    // when theres no matching teleport for the component UID, we use the teleport key (includes both island and component UID)
     if (!html && ssrContext.teleports) {
       for (const [key, value] of Object.entries(ssrContext.teleports)) {
         if (key.match(SSR_CLIENT_TELEPORT_MARKER)?.[2] === clientUid) {
