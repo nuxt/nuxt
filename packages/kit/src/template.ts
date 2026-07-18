@@ -677,13 +677,15 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
 /**
  * Sort the paths in the tsconfig.json file, so
  * - Hoisted package paths stay at the top (`typescript.hoist`)
- * - Layer aliases follow, so IDEs suggest them over the generic `~`/`@` aliases
+ * - Custom layer aliases follow, then generic `#layers/*` aliases
+ * - Generic `~`/`@` aliases come after layer aliases
  * - `#build` alias is at the bottom (https://github.com/nuxt/nuxt/issues/30325)
  */
 function sortTsPaths (paths: Record<string, string[]>, buildDir: string, layerDirs: string[], hoist: string[]) {
   const hoistKeys = new Set(hoist)
   const hoistPaths: Record<string, string[]> = {}
-  const layerPaths: Record<string, string[]> = {}
+  const customLayerPaths: Record<string, string[]> = {}
+  const genericLayerPaths: Record<string, string[]> = {}
   const otherPaths: Record<string, string[]> = {}
   const buildPaths: Record<string, string[]> = {}
 
@@ -699,7 +701,11 @@ function sortTsPaths (paths: Record<string, string[]>, buildDir: string, layerDi
     }
 
     if (layerDirs.length && paths[pathKey]!.some(target => isPathUnderLayerDirs(target, buildDir, layerDirs))) {
-      layerPaths[pathKey] = paths[pathKey]!
+      if (pathKey.startsWith('#layers')) {
+        genericLayerPaths[pathKey] = paths[pathKey]!
+      } else {
+        customLayerPaths[pathKey] = paths[pathKey]!
+      }
     } else {
       otherPaths[pathKey] = paths[pathKey]!
     }
@@ -707,7 +713,8 @@ function sortTsPaths (paths: Record<string, string[]>, buildDir: string, layerDi
 
   return {
     ...hoistPaths,
-    ...layerPaths,
+    ...customLayerPaths,
+    ...genericLayerPaths,
     ...otherPaths,
     ...buildPaths,
   }

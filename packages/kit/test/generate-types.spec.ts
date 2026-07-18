@@ -206,7 +206,8 @@ describe('tsConfig generation', () => {
     const { tsConfig } = await _generateTypes(nuxt)
     const pathKeys = Object.keys(tsConfig.compilerOptions?.paths ?? {})
 
-    expect(pathKeys.indexOf('vue')).toBeLessThan(pathKeys.indexOf('#layers/foo'))
+    expect(pathKeys.indexOf('vue')).toBeLessThan(pathKeys.indexOf('@layer-foo'))
+    expect(pathKeys.indexOf('@layer-foo')).toBeLessThan(pathKeys.indexOf('#layers/foo'))
     expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('~'))
     expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('@'))
     expect(pathKeys.indexOf('@layer-foo')).toBeLessThan(pathKeys.indexOf('~'))
