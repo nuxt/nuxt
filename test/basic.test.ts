@@ -2295,6 +2295,7 @@ describe('public directories', () => {
 
 describe.skipIf(isDev)('non-ascii public asset files in output', () => {
   it('should exist in output directory with correct filenames', async () => {
+    // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
 
     expect(await readdir(publicDir)).toContain('测试.md')
