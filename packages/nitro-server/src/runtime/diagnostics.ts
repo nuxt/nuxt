@@ -21,7 +21,7 @@ const docsBase = (code: string): string =>
 
 export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
-  // eslint-disable-next-line 
+  // eslint-disable-next-line
   reporters: [/* #__PURE__ */ (createConsoleReporter(import.meta.dev && process.env.NODE_ENV !== 'test' ? { formatter: ansiFormatter(colors) } : undefined))] as const,
   codes: {
     NUXT_E8001: {
