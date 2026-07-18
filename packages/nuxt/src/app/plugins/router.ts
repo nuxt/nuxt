@@ -125,7 +125,10 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
     const baseURL = useRuntimeConfig().app.baseURL
 
     const route: Route = reactive(getRouteFromPath(initialURL))
+    let navigationCounter = 0
     async function handleNavigation (url: string | Partial<Route>, replace?: boolean): Promise<void> {
+      // Track this navigation so a later one can supersede it (last-navigation-wins).
+      const navigationId = ++navigationCounter
       try {
         // Resolve route
         const to = getRouteFromPath(url)
@@ -142,6 +145,8 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         for (const handler of hooks['resolve:before']) {
           await handler(to, route)
         }
+        // Bail if a later navigation superseded this one while awaiting middleware (#31762).
+        if (navigationId !== navigationCounter) { return }
         // Perform navigation
         Object.assign(route, to)
         if (import.meta.client) {
