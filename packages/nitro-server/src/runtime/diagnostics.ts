@@ -1,7 +1,14 @@
-import process from 'node:process'
 import { createConsoleReporter, defineDiagnostics } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
-import { colors } from 'consola/utils'
+
+const colors = {
+  red: ansi(31, 39),
+  yellow: ansi(33, 39),
+  cyan: ansi(36, 39),
+  gray: ansi(90, 39),
+  bold: ansi(1, 22),
+  dim: ansi(2, 22),
+}
 
 /**
  * E8xxx
@@ -13,7 +20,7 @@ const docsBase = (code: string): string =>
 
 export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
-  reporters: [/* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) }))] as const,
+  reporters: [/* #__PURE__ */ (createConsoleReporter(import.meta.dev && !import.meta.test ? { formatter: ansiFormatter(colors) } : undefined))] as const,
   codes: {
     NUXT_E8001: {
       why: (p: { path: string }) => `\`render:html\` mutated \`body\`/\`bodyAppend\` while streaming (\`${p.path}\`). These fields are silently dropped because the body is about to stream.`,
