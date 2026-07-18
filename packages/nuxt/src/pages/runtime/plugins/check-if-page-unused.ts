@@ -54,10 +54,19 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         // Deliberately not awaited: blocking the hook chain would delay `page:loading:end`.
         void Promise.resolve(nuxtApp['~transitionPromise']).then(() => nextTick()).then(() => {
           if (error.value || router.currentRoute.value !== route) { return }
-          const unrendered = findUnrenderedNestedPage(route)
-          if (!unrendered || warnedPaths.has(unrendered.child.path)) { return }
-          warnedPaths.add(unrendered.child.path)
-          renderDiagnostics.NUXT_E4016({ fullPath: route.fullPath, childPath: unrendered.child.path, parentPath: unrendered.parent.path })
+          const candidate = findUnrenderedNestedPage(route)
+          if (!candidate || warnedPaths.has(candidate.child.path)) { return }
+          // Suspense keeps the previous tree mounted while the incoming one resolves, and swapping
+          // subtrees (e.g. when a parent route param changes) briefly leaves matched records with
+          // no registered instance. A missing `<NuxtPage />` is permanent, so only warn when the
+          // record is still unrendered on the same route after a confirmation delay.
+          setTimeout(() => {
+            if (error.value || router.currentRoute.value !== route) { return }
+            const confirmed = findUnrenderedNestedPage(route)
+            if (!confirmed || confirmed.child !== candidate.child || warnedPaths.has(confirmed.child.path)) { return }
+            warnedPaths.add(confirmed.child.path)
+            renderDiagnostics.NUXT_E4016({ fullPath: route.fullPath, childPath: confirmed.child.path, parentPath: confirmed.parent.path })
+          }, 1000)
         })
       })
     }

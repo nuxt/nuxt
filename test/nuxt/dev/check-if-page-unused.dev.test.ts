@@ -27,6 +27,12 @@ describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', ()
     })
   }
 
+  // the check only warns when the condition persists past its confirmation delay
+  async function waitForConfirmationDelay () {
+    await new Promise<void>(resolve => setTimeout(resolve, 1100))
+    await flushPromises()
+  }
+
   async function mountAndNavigate (path: string) {
     const el = await mountSuspended({
       setup: () => () => h(NuxtPage),
@@ -40,6 +46,7 @@ describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', ()
     await flushPromises()
     await nextTick()
     await flushPromises()
+    await waitForConfirmationDelay()
     return el
   }
 
@@ -93,6 +100,7 @@ describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', ()
     await flushPromises()
     await nextTick()
     await flushPromises()
+    await waitForConfirmationDelay()
 
     const messages = warn.mock.calls.map(args => args.join(' ')).filter(m => m.includes('NUXT_E4016'))
     expect(messages).toHaveLength(1)
