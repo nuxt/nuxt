@@ -153,6 +153,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
       router.afterEach(async (to, _from, failure) => {
         delete nuxtApp._processingMiddleware
+        delete nuxtApp._middlewareTo
 
         if (import.meta.client && !nuxtApp.isHydrating && error.value) {
           // Clear any existing errors
@@ -215,6 +216,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         to.meta.layout = initialLayout as any
       }
       nuxtApp._processingMiddleware = true
+      if (import.meta.server) {
+        nuxtApp._middlewareTo = to
+      }
 
       if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
         type MiddlewareDef = string | RouteMiddleware
@@ -253,17 +257,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
             }
-            if (import.meta.server) {
-              nuxtApp._middlewareTo = to
-            }
-            let result: Awaited<ReturnType<RouteMiddleware>>
-            try {
-              result = await nuxtApp.runWithContext(() => middleware(to, from))
-            } finally {
-              if (import.meta.server) {
-                delete nuxtApp._middlewareTo
-              }
-            }
+            const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
@@ -314,6 +308,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     router.onError(async () => {
       delete nuxtApp._processingMiddleware
+      delete nuxtApp._middlewareTo
       await nuxtApp.callHook('page:loading:end')
     })
 
