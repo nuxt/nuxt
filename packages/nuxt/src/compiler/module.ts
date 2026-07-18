@@ -51,14 +51,13 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       // Maintained as a mutable list so HMR can add/remove entries
       normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
         ...rest,
-        source: typeof source === 'string' ? await resolvePath(source, { fallbackToOriginal: true }) : source,
+        source: await resolvePath(source, { fallbackToOriginal: true }),
       })))
 
       addBuildPlugin(KeyedFunctionsPlugin({
         keyedFunctions: normalizedKeyedFunctions,
         getKeyedFunctions: () => normalizedKeyedFunctions,
         alias: nuxt.options.alias,
-        getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
         appDir: nuxt.options.appDir,
         dev: nuxt.options.dev,
       }))
