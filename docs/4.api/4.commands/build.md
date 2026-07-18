@@ -46,3 +46,5 @@ This command sets `process.env.NODE_ENV` to `production`.
 ::note
 `--prerender` will always set the `preset` to `static`
 ::
+
+:read-more{title="Build Memory Usage" to="/docs/4.x/guide/best-practices/build-memory"}

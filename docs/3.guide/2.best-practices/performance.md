@@ -6,6 +6,8 @@ description: Best practices for improving performance of Nuxt apps.
 
 Nuxt comes with built-in features designed to improve your application's performance and contribute to better [Core Web Vitals](https://web.dev/articles/vitals). There are also multiple Nuxt core modules that assist in improving performance in specific areas. This guide outlines best practices to optimize performance of your Nuxt application.
 
+For heap size and OOM during `nuxt build`, see [Build Memory Usage](/docs/4.x/guide/best-practices/build-memory).
+
 ## Built-in Features
 
 Nuxt offers several built-in features that help you optimize performance of your website. Understanding how these features work is crucial for achieving blazingly-fast performance.
