@@ -1,0 +1,4 @@
+title: Errors
+titleTemplate: '%s · Nuxt Errors'
+icon: i-lucide-triangle-alert
+navigation: false

@@ -20,6 +20,8 @@ import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../c
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
+import { renderDiagnostics } from '../diagnostics/render.ts'
+import { navigationDiagnostics } from '../diagnostics/navigation.ts'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
@@ -160,7 +162,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
   function checkPropConflicts (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void {
     if (import.meta.dev && props[main] !== undefined && props[sub] !== undefined) {
-      console.warn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`)
+      renderDiagnostics.NUXT_E4010({ componentName, main, sub })
     }
   }
 
@@ -269,7 +271,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       async navigate (_e?: MouseEvent) {
         if (href.value === null) {
           if (import.meta.dev) {
-            console.warn(`[${componentName}] refused to navigate to a URL with a script-capable protocol.`)
+            navigationDiagnostics.NUXT_E2011({ componentName })
           }
           return
         }
@@ -448,7 +450,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       if (import.meta.dev && import.meta.server && !props.custom) {
         const isNuxtLinkChild = inject(NuxtLinkDevKeySymbol, false)
         if (isNuxtLinkChild) {
-          console.log('[nuxt] [NuxtLink] You can\'t nest one <a> inside another <a>. This will cause a hydration error on client-side. You can pass the `custom` prop to take full control of the markup.')
+          renderDiagnostics.NUXT_E4009()
         } else {
           provide(NuxtLinkDevKeySymbol, true)
         }
