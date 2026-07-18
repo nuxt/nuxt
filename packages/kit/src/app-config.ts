@@ -3,7 +3,7 @@ import { useNuxt } from './context.ts'
 
 /**
  * Update Nuxt app configuration.
- * @since 4.5.0
+ * @since 4.6.0
  */
 export function updateAppConfig (appConfig: Record<string, unknown>): void {
   const nuxt = useNuxt()
