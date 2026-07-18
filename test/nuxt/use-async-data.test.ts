@@ -11,6 +11,7 @@ import { Transition } from 'vue'
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
+import type { AsyncDataRefreshCause } from '#app/composables/asyncData'
 import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
@@ -1761,5 +1762,35 @@ describe('useAsyncData', () => {
     clear()
     expect(data.value).toBeUndefined()
     expect(status.value).toBe('idle')
+  })
+
+  it('does not cross-pollute cache slots when the reactive key changes (#32836)', async () => {
+    const keyA = `${uniqueKey}-a`
+    const keyB = `${uniqueKey}-b`
+    const handler = vi.fn((param: string) => Promise.resolve(`hello ${param}`))
+    // caching strategy that always respects the per-key cache via `useNuxtData`
+    const getCachedData = (key: string, nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause }) => {
+      if (nuxtApp.isHydrating) {
+        return nuxtApp.payload.data[key]
+      }
+      const { data } = useNuxtData<string>(key)
+      if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook' && data.value) {
+        return data.value
+      }
+    }
+
+    const keyRef = ref(keyA)
+    const { data } = await useAsyncData(keyRef, () => handler(keyRef.value), { getCachedData })
+    expect(data.value).toBe(`hello ${keyA}`)
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    keyRef.value = keyB
+    await flushPromises()
+
+    // the new key's slot must hold the new key's data, not the previous key's
+    const { data: nuxtDataB } = useNuxtData(keyB)
+    expect(nuxtDataB.value).toBe(`hello ${keyB}`)
+    expect(data.value).toBe(`hello ${keyB}`)
+    expect(handler).toHaveBeenCalledTimes(2)
   })
 })
