@@ -21,7 +21,6 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
-import { PageRouteSymbol } from '#app/components/injections'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
@@ -944,33 +943,50 @@ describe('routing utilities: `useRoute`', () => {
     router.removeRoute('parent-test')
   })
 
-  it('should return the global route in a detached effect scope', async () => {
-    const pageRoute = shallowReactive({ path: '/page-route' }) as unknown as ReturnType<typeof useRoute>
+  it('should update a route created in a detached scope across navigation', async () => {
+    // minimal `createSharedComposable` from the reproduction in #18903
+    let sharedRoute: ReturnType<typeof useRoute> | undefined
+    const useSharedRoute = () => (sharedRoute ||= effectScope(true).run(() => useRoute())!)
+
     let injectedRoute: ReturnType<typeof useRoute>
     let childScopeRoute: ReturnType<typeof useRoute>
-    let detachedScopeRoute: ReturnType<typeof useRoute>
 
-    const el = await mountSuspended(defineComponent({
-      setup () {
-        provide(PageRouteSymbol, pageRoute)
-        return () => h(defineComponent({
-          setup () {
-            injectedRoute = useRoute()
-            childScopeRoute = effectScope().run(() => useRoute())!
-            detachedScopeRoute = effectScope(true).run(() => useRoute())!
-            return () => h('div')
-          },
-        }))
-      },
-    }))
+    router.addRoute({
+      name: 'shared-a',
+      path: '/shared-a',
+      component: defineComponent({
+        template: '<div />',
+        setup: () => {
+          injectedRoute = useRoute()
+          childScopeRoute = effectScope().run(() => useRoute())!
+          useSharedRoute()
+        },
+      }),
+    })
+    router.addRoute({
+      name: 'shared-b',
+      path: '/shared-b',
+      component: defineComponent({ template: '<div />' }),
+    })
 
-    expect(injectedRoute!).toBe(pageRoute)
-    expect(childScopeRoute!).toBe(pageRoute)
-    expect(detachedScopeRoute!).toBe(nuxtApp._route)
+    const el = await mountSuspended({ setup: () => () => h(NuxtPage) })
+
+    await navigateTo('/shared-a')
+    await waitForPageChange()
+    expect(sharedRoute!.name).toBe('shared-a')
+
+    await navigateTo('/shared-b?q=test')
+    await waitForPageChange()
+    // the detached scope outlives the page, so it follows the current route
+    expect(sharedRoute!.name).toBe('shared-b')
+    expect(sharedRoute!.query).toMatchObject({ q: 'test' })
+    // routes obtained within the page's own scope stay frozen at that page's route
+    expect(injectedRoute!.name).toBe('shared-a')
+    expect(childScopeRoute!.name).toBe('shared-a')
 
     el.unmount()
-    // mounting without registered routes raises a 404 error
-    await clearError()
+    router.removeRoute('shared-a')
+    router.removeRoute('shared-b')
   })
 })
 
