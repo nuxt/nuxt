@@ -188,7 +188,6 @@ describe('tsConfig generation', () => {
   it('should sort aliases pointing into layer directories before ~ and @', async () => {
     const nuxt = mockNuxtWithOptions({
       alias: {
-        '~': '/my-app/',
         '@': '/my-app/',
         '#build': '/my-app/.nuxt/',
         'vue': '/my-app/node_modules/vue/',
@@ -200,9 +199,9 @@ describe('tsConfig generation', () => {
       },
     })
     nuxt.options._layers = [
-      { config: { rootDir: '/my-app', srcDir: '/my-app' }, cwd: '/my-app' },
-      { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo' }, cwd: '/my-app/layers/foo' },
-    ] as unknown as Nuxt['options']['_layers']
+        ...nuxt.options._layers,
+        { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo/app' }, cwd: '/my-app/layers/foo', configFile: '/my-app/layers/foo/nuxt.config.ts' },
+    ] 
 
     const { tsConfig } = await _generateTypes(nuxt)
     const pathKeys = Object.keys(tsConfig.compilerOptions?.paths ?? {})
