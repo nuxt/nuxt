@@ -20,7 +20,7 @@ export const showError = <DataT = unknown>(
     statusText?: string
   }),
 ): NuxtError<DataT> => {
-  const nuxtError = createError<DataT>(error)
+  const nuxtError = isNuxtError<DataT>(error) ? error : createError<DataT>(error)
 
   try {
     const error = useError()
@@ -86,9 +86,11 @@ export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError
 export class NuxtError<DataT = unknown> extends HTTPError<DataT> implements _NuxtErrorContract<DataT> {
   readonly __nuxt_error = true as const
   readonly fatal: boolean
+  override readonly cause: unknown
 
   constructor (message = '', opts: Partial<NuxtError<DataT>> = {}) {
     super(message, opts)
+    this.cause = opts instanceof Error ? opts : opts.cause
     this.fatal = opts.fatal ?? !!opts.unhandled
   }
 }

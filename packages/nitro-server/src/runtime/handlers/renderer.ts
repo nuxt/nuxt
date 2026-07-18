@@ -113,6 +113,9 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
         // ignore
       }
     }
+    if (import.meta.dev && event.context.nuxt?.['~error-cause'] !== undefined) {
+      Object.assign(ssrError, { cause: event.context.nuxt['~error-cause'] })
+    }
     setSSRError(ssrContext, ssrError)
   }
 
@@ -868,6 +871,8 @@ interface NuxtRequestContext {
   '~internal'?: boolean
   /** @internal */
   '~rendering-error'?: boolean
+  /** @internal */
+  '~error-cause'?: unknown
 }
 
 declare module 'srvx' {
