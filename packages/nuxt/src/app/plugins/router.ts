@@ -270,7 +270,17 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || true
             }
-            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            if (import.meta.server) {
+              nuxtApp._middlewareTo = to
+            }
+            let result: RouteGuardReturn
+            try {
+              result = await nuxtApp.runWithContext(() => middleware(to, from))
+            } finally {
+              if (import.meta.server) {
+                delete nuxtApp._middlewareTo
+              }
+            }
             if (import.meta.server) {
               if (result === false || result instanceof Error) {
                 const error = result || new HTTPError({

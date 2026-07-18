@@ -304,7 +304,11 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
     console.warn('[nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
   }
   const inMiddleware = isProcessingMiddleware()
-  if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
+  const middlewareTo = import.meta.server && inMiddleware && nuxtApp._middlewareTo
+  if (middlewareTo) {
+    middlewareTo.meta.layout = layout as any
+    middlewareTo.meta.layoutProps = props
+  } else if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
       to.meta.layout = layout as any
       to.meta.layoutProps = props

@@ -253,7 +253,17 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
             }
-            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            if (import.meta.server) {
+              nuxtApp._middlewareTo = to
+            }
+            let result: Awaited<ReturnType<RouteMiddleware>>
+            try {
+              result = await nuxtApp.runWithContext(() => middleware(to, from))
+            } finally {
+              if (import.meta.server) {
+                delete nuxtApp._middlewareTo
+              }
+            }
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
