@@ -21,6 +21,7 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 import { renderDiagnostics } from '../diagnostics/render.ts'
+import { navigationDiagnostics } from '../diagnostics/navigation.ts'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
@@ -270,7 +271,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       async navigate (_e?: MouseEvent) {
         if (href.value === null) {
           if (import.meta.dev) {
-            console.warn(`[${componentName}] refused to navigate to a URL with a script-capable protocol.`)
+            navigationDiagnostics.NUXT_E2011({ componentName })
           }
           return
         }

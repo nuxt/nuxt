@@ -48,5 +48,15 @@ export const appDiagnostics = !import.meta.dev
           fix: 'Guard this code with `import.meta.server` or move it to a server-only context.',
           docs: false,
         },
+        NUXT_E1011: {
+          why: 'Error in `vue:setup`. Callbacks must be synchronous.',
+          fix: 'Remove `async` from your `vue:setup` hook callbacks, or move asynchronous work to another hook such as `app:created`.',
+          docs: false,
+        },
+        NUXT_E1012: {
+          why: (p: { userAgent: string }) => `Not rendering error page for bot with user agent \`${p.userAgent}\`.`,
+          fix: 'Crawlers receive the server-rendered HTML instead of the error page so they index the content. No action is needed unless you did not expect this request to be treated as a bot.',
+          docs: false,
+        },
       },
     })

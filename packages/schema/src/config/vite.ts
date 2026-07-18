@@ -1,5 +1,6 @@
 import { resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
 
 export default defineResolvers({
   vite: {
@@ -29,7 +30,7 @@ export default defineResolvers({
     publicDir: {
       $resolve: (val) => {
         if (val) {
-          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/4.x/api/nuxt-config#public`.')
+          schemaDiagnostics.NUXT_B5014()
         }
         // this is missing from our `vite` types deliberately, so users do not configure it
         return false as never

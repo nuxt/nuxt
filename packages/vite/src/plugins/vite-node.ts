@@ -559,7 +559,7 @@ export function listenAndRestrict (server: net.Server, socketPath: string): void
       try {
         fs.chmodSync(socketPath, 0o600)
       } catch (error) {
-        console.error('[nuxt] Failed to restrict vite-node socket permissions; closing.', error)
+        bundlerDiagnostics.NUXT_B7018({ cause: error })
         server.close()
         try {
           fs.rmSync(dirname(socketPath), { recursive: true, force: true })

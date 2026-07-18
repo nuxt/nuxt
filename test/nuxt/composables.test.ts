@@ -689,7 +689,7 @@ describe('routing utilities: `navigateTo`', () => {
         ['\0javascript:alert("hi")', 'javascript'],
       ]
       for (const [url, protocol] of urls) {
-        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow('NUXT_E2002')
       }
       expect(open).not.toHaveBeenCalled()
     } finally {
@@ -712,7 +712,7 @@ describe('routing utilities: `navigateTo`', () => {
       '\0data:alert("hi")',
     ]
     for (const url of urls) {
-      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with a different host: '${url}'.`)
+      expect(() => reloadNuxtApp({ path: url })).toThrow('NUXT_E2010')
     }
   })
   it('reloadNuxtApp should disallow cross-origin paths', () => {
@@ -722,7 +722,7 @@ describe('routing utilities: `navigateTo`', () => {
       '\\\\evil.com',
     ]
     for (const url of urls) {
-      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with a different host: '${url}'.`)
+      expect(() => reloadNuxtApp({ path: url })).toThrow('NUXT_E2010')
     }
   })
   it('reloadNuxtApp should allow same-origin paths', () => {

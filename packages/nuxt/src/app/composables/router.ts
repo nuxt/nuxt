@@ -158,7 +158,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (import.meta.client && options?.open) {
     const { protocol } = new URL(toPath, window.location.href)
     if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+      throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
 
     const { target = '_blank', windowFeatures = {} } = options.open

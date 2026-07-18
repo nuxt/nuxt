@@ -214,7 +214,7 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
     devServer.connectWebSocket({ server: listener })
     await devServer.afterListen()
   } else {
-    logger.warn('Could not find the Nuxt dev server to attach Rspack HMR to; hot module replacement will be disabled.')
+    bundlerDiagnostics.NUXT_B7017()
   }
 
   await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares), { cors: () => true })

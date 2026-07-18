@@ -12,6 +12,7 @@ import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../paths'
 import { lazyCachedFunction } from './cache'
+import { serverDiagnostics } from '../../diagnostics'
 
 type Entry = (ssrContext: NuxtSSRContext) => Promise<App>
 
@@ -48,7 +49,7 @@ interface Renderer {
 export const getSSRRenderer: () => Promise<Renderer> = lazyCachedFunction(async (): Promise<Renderer> => {
   // Load server bundle
   const createSSRApp = await getServerEntry()
-  if (!createSSRApp) { throw new Error('Server bundle is not available') }
+  if (!createSSRApp) { throw serverDiagnostics.NUXT_E8004() }
 
   // Load precomputed dependencies
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()

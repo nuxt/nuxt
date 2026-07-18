@@ -19,5 +19,15 @@ export const headDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { name: string, file: string }) => `Rename \`${p.name}\` in \`${p.file}\` so it no longer collides with the built-in auto-import.`,
       docs: false,
     },
+    NUXT_B6003: {
+      why: '`unhead.legacy` is deprecated and will be removed.',
+      fix: 'Remove deprecated head patterns (`hid`, `vmid`, `children`, `body: true`) and resolve promise values before passing them to `useHead`.',
+      docs: false,
+    },
+    NUXT_B6004: {
+      why: '`experimental.headNext` is deprecated. CAPO sorting is now the default.',
+      fix: 'Remove `experimental.headNext` from your `nuxt.config`, or set `unhead.legacy: true` to opt out temporarily.',
+      docs: false,
+    },
   },
 })

@@ -35,7 +35,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     }).then((res) => {
       // handle errors fetching manifest, e.g. from an improperly configured proxy
       if (!res || typeof res !== 'object' || !Array.isArray((res as NuxtAppManifest).prerendered)) {
-        throw new Error('[nuxt] Received malformed app manifest. Ensure that `builds/meta/*.json` is served as JSON by your hosting/proxy and not rewritten to an HTML fallback.')
+        throw manifestDiagnostics.NUXT_E5004()
       }
       return res
     })

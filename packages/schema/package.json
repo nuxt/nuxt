@@ -31,6 +31,7 @@
   "dependencies": {
     "@vue/shared": "^3.5.40",
     "defu": "^6.1.7",
+    "nostics": "^1.1.4",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.1",
     "std-env": "^4.2.0"

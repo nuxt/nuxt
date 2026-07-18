@@ -50,5 +50,15 @@ export const navigationDiagnostics = !import.meta.dev
           fix: 'Register an error handler with `router.onError()` or add error handling within your middleware.',
           docs: false,
         },
+        NUXT_E2010: {
+          why: (p: { path: string }) => `\`reloadNuxtApp\` cannot navigate to \`${p.path}\` because it is on a different host.`,
+          fix: 'Pass a path on the same host, or use `navigateTo(path, { external: true })` for cross-origin navigation.',
+          docs: false,
+        },
+        NUXT_E2011: {
+          why: (p: { componentName: string }) => `\`<${p.componentName}>\` refused to navigate to a URL with a script-capable protocol.`,
+          fix: 'Script protocols (e.g. `javascript:`) are blocked for security. Use a valid `http:` or `https:` URL.',
+          docs: false,
+        },
       },
     })

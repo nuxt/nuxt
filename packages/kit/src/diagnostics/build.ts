@@ -104,5 +104,10 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'If you are a module author, ensure the component `mode` is set to `client`, `server`, or `all`. Otherwise, please report this issue.',
       docs: false,
     },
+    NUXT_B1020: {
+      why: '`experimental.watcher: "builder"` is set but the active builder does not implement `setupWatcher`. Falling back to the default file watcher.',
+      fix: 'Remove `experimental.watcher` from your `nuxt.config`, or use a builder that supports its own watcher.',
+      docs: false,
+    },
   },
 })

@@ -84,5 +84,20 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Point `spaLoadingTemplate` in `nuxt.config` at an existing HTML file, or set it to `true` to use the default template.',
       docs: false,
     },
+    NUXT_B7017: {
+      why: 'Could not find the Nuxt dev server to attach Rspack HMR to; hot module replacement will be disabled.',
+      fix: 'This is likely an internal Nuxt bug. Please report it with a reproduction.',
+      docs: false,
+    },
+    NUXT_B7018: {
+      why: 'Failed to restrict vite-node socket permissions; closing the socket.',
+      fix: 'Check that the temporary directory used for the vite-node socket is writable and supports `chmod`.',
+      docs: false,
+    },
+    NUXT_B7019: {
+      why: 'The server webpack build does not externalize dependencies.',
+      fix: 'Externalize dependencies in the server build (`externals`) for better build performance.',
+      docs: false,
+    },
   },
 })

@@ -25,5 +25,10 @@ export const manifestDiagnostics = !import.meta.dev
           fix: 'Check your `routeRules` in `nuxt.config` for invalid patterns.',
           docs: false,
         },
+        NUXT_E5004: {
+          why: 'Received a malformed app manifest.',
+          fix: 'Ensure that `builds/meta/*.json` is served as JSON by your hosting/proxy and not rewritten to an HTML fallback.',
+          docs: false,
+        },
       },
     })
