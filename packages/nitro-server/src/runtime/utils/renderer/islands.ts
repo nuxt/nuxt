@@ -38,7 +38,8 @@ export function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIsland
     // when theres no matching teleport for the component UID, we use the teleport key (includes both island and component UID)
     if (!html && ssrContext.teleports) {
       for (const [key, value] of Object.entries(ssrContext.teleports)) {
-        if (key.match(SSR_CLIENT_TELEPORT_MARKER)?.[2] === clientUid) {
+        const [, componentUid] = key.match(SSR_CLIENT_TELEPORT_MARKER) ?? []
+        if (componentUid === clientUid) {
           html = value.replaceAll('<!--teleport start anchor-->', '')
           break
         }
