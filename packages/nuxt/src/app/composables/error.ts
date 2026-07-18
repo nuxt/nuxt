@@ -20,7 +20,7 @@ export const showError = <DataT = unknown>(
     statusText?: string
   }),
 ): NuxtError<DataT> => {
-  const nuxtError = isNuxtError<DataT>(error) ? error : createError<DataT>(error)
+  const nuxtError = createError<DataT>(error)
 
   try {
     const error = useError()
@@ -97,6 +97,7 @@ export class NuxtError<DataT = unknown> extends HTTPError<DataT> implements _Nux
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>): NuxtError<DataT> => {
+  if (isNuxtError<DataT>(error)) { return error }
   return typeof error === 'string'
     ? new NuxtError<DataT>(error)
     : new NuxtError<DataT>(error.message, error)
