@@ -1,6 +1,7 @@
 import { createConsoleReporter, defineDiagnostics } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 
+const ansi = (open: number, close: number) => (s: string) => `\x1B[${open}m${s}\x1B[${close}m`
 const colors = {
   red: ansi(31, 39),
   yellow: ansi(33, 39),
