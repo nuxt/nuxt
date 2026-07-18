@@ -132,7 +132,7 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     }
     if (withoutSlots) {
       const clone = element.cloneNode(true)
-      clone.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
+      clone.querySelectorAll?.('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
       return [clone.outerHTML]
     }
     return [element.outerHTML]
