@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo(to.path.slice('/redirect/'.length - 1))
   }
   if (to.path === '/catchall/redirect-infinite') {
-    // the path will be the same in this new route and vue-router should send a 500 response
+    // the path will be the same in this new route and Nuxt should send a 500 response
     return navigateTo('/catchall/redirect-infinite?test=true')
   }
   if (to.path === '/navigate-to-external') {

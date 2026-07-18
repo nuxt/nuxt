@@ -5,7 +5,8 @@ import { HTTPError } from '@nuxt/nitro-server/h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
-import { clearError, showError } from '../composables/error'
+import { checkRedirectChain } from '../utils/redirect-loop'
+import { clearError, createError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 import { navigationDiagnostics } from '../diagnostics/navigation.ts'
 
@@ -126,16 +127,24 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
     const baseURL = useRuntimeConfig().app.baseURL
 
     const route: Route = reactive(getRouteFromPath(initialURL))
+    const redirectChain = new Set<string>()
     async function handleNavigation (url: string | Partial<Route>, replace?: boolean): Promise<void> {
       try {
         // Resolve route
         const to = getRouteFromPath(url)
 
+        if (import.meta.server || import.meta.dev) {
+          checkRedirectChain(redirectChain, to.fullPath)
+        }
+
         // Run beforeEach hooks
         for (const middleware of hooks['navigate:before']) {
           const result = await middleware(to, route)
           // Cancel navigation
-          if (result === false || result instanceof Error) { return }
+          if (result === false || result instanceof Error) {
+            redirectChain.clear()
+            return
+          }
           // Redirect
           if (typeof result === 'string' && result.length) { return await handleNavigation(result, true) }
         }
@@ -156,10 +165,19 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         for (const middleware of hooks['navigate:after']) {
           await middleware(to, route)
         }
-      } catch (err) {
+        redirectChain.clear()
+      } catch (err: any) {
+        redirectChain.clear()
+        const normalized = createError(err)
+
+        if (import.meta.server && normalized.fatal) {
+          await nuxtApp.runWithContext(() => showError(normalized))
+        }
+
         if (import.meta.dev && !hooks.error.length) {
           navigationDiagnostics.NUXT_E2009({ cause: err })
         }
+
         for (const handler of hooks.error) {
           await handler(err)
         }

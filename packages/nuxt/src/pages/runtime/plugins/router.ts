@@ -15,6 +15,7 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 import { navigationDiagnostics } from '../../../app/diagnostics/navigation.ts'
+import { checkRedirectChain } from '../../../app/utils/redirect-loop'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
@@ -149,10 +150,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     const error = useError()
+    const redirectChain = new Set<string>()
+    const resetRedirectChain = () => redirectChain.clear()
     // we only skip redirect handlers for component islands, not page islands
     const isServerPage = import.meta.server && nuxtApp.ssrContext?.islandContext?.name?.startsWith('page_')
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
       router.afterEach(async (to, _from, failure) => {
+        resetRedirectChain()
         delete nuxtApp._processingMiddleware
 
         if (import.meta.client && !nuxtApp.isHydrating && error.value) {
@@ -271,9 +275,18 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return result
             }
             if (result) {
-              if (isNuxtError(result) && result.fatal) {
-                await nuxtApp.runWithContext(() => showError(result))
+              if (isNuxtError(result)) {
+                if (result.fatal) {
+                  await nuxtApp.runWithContext(() => showError(result))
+                }
+                return result
               }
+
+              if ((import.meta.server || import.meta.dev) && !(result instanceof Error)) {
+                const targetPath = router.resolve(result).fullPath
+                checkRedirectChain(redirectChain, targetPath)
+              }
+
               return result
             }
           } catch (err: any) {
@@ -304,6 +317,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     router.onError(async () => {
+      resetRedirectChain()
       delete nuxtApp._processingMiddleware
       await nuxtApp.callHook('page:loading:end')
     })
