@@ -25,7 +25,8 @@ Create a `.devcontainer/` folder in your project root with these two files:
 {
   "name": "nuxt-devcontainer",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    "context": "../"
   },
   "forwardPorts": [3000],
   "portsAttributes": {
@@ -91,16 +92,10 @@ For advanced users or CI workflows, you can use the Dev Containers CLI directly:
 npm install -g @devcontainers/cli
 
 # Build and open the project in a container
-devcontainer up
+devcontainer up --workspace-folder .
 
 # After making changes to .devcontainer, rebuild
 devcontainer build
-```
-
-To attach to an already-running container:
-
-```bash
-devcontainer open --workspace-folder .
 ```
 
 ## Next Steps
