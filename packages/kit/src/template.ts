@@ -586,7 +586,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const nonRootLayerDirs = layerDirs
     .map(dirs => dirs.root)
-    .filter(root => root !== rootDirWithSlash)
+    .filter(root => root !== rootDirWithSlash && !rootDirWithSlash.startsWith(root))
 
   async function resolveConfig (tsConfig: TSConfig) {
     for (const alias in tsConfig.compilerOptions!.paths) {
@@ -604,7 +604,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       tsConfig.compilerOptions!.paths,
       nonRootLayerDirs,
       nuxt.options.buildDir,
-      nuxt.options.typescript.hoist,
+      nuxt.options.typescript?.hoist ?? [],
     )
 
     tsConfig.include = [...new Set(tsConfig.include!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
