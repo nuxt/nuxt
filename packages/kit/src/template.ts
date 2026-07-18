@@ -681,7 +681,7 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
  * - Generic `~`/`@` aliases come after layer aliases
  * - `#build` alias is at the bottom (https://github.com/nuxt/nuxt/issues/30325)
  */
-function sortTsPaths (paths: Record<string, string[]>, layerDirs: string[], buildDir: string,  hoist: string[]) {
+function sortTsPaths (paths: Record<string, string[]>, layerDirs: string[], buildDir: string, hoist: string[]) {
   const hoistKeys = new Set(hoist)
   const hoistPaths: Record<string, string[]> = {}
   const customLayerPaths: Record<string, string[]> = {}
