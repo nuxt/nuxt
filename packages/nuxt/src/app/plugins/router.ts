@@ -133,9 +133,11 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         // Resolve route
         const to = getRouteFromPath(url)
 
-        // Run beforeEach hooks
+        // Run beforeEach hooks. Bail as soon as a later navigation supersedes
+        // this one so superseded navigations stop running middleware (#31762).
         for (const middleware of hooks['navigate:before']) {
           const result = await middleware(to, route)
+          if (navigationId !== navigationCounter) { return }
           // Cancel navigation
           if (result === false || result instanceof Error) { return }
           // Redirect
@@ -144,9 +146,8 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
 
         for (const handler of hooks['resolve:before']) {
           await handler(to, route)
+          if (navigationId !== navigationCounter) { return }
         }
-        // Bail if a later navigation superseded this one while awaiting middleware (#31762).
-        if (navigationId !== navigationCounter) { return }
         // Perform navigation
         Object.assign(route, to)
         if (import.meta.client) {

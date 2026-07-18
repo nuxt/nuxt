@@ -20,8 +20,6 @@ describe('built-in mini-router concurrency (#31762)', () => {
     const older = router.push('/slow')
     const newer = router.push('/fast')
     await Promise.all([older, newer])
-    // Give the delayed navigation time to (previously) overwrite the newer one.
-    await new Promise(resolve => setTimeout(resolve, 100))
 
     // Last navigation wins: the delayed older call must NOT overwrite /fast.
     expect(router.currentRoute.value.path).toBe('/fast')
