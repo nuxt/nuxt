@@ -105,6 +105,8 @@ export const isNuxtError = <DataT = unknown>(
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>): NuxtError<DataT> => {
+  if (isNuxtError<DataT>(error)) { return error }
+
   if (typeof error !== 'string' && (error as Partial<NuxtError<DataT>>).statusText) {
     error.message ??= (error as Partial<NuxtError<DataT>>).statusText
   }

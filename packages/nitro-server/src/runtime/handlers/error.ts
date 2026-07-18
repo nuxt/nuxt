@@ -1,7 +1,7 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack/types'
 import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
-import type { NuxtPayload } from '#app/types'
+import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
@@ -39,6 +39,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // we will be rendering this error internally so we can pass along the error.data safely
   errorObject.data ||= error.data
   errorObject.statusText ||= (error as any).statusText || error.statusMessage
+  const errorCause = import.meta.dev ? serializeErrorCause(error.cause) : undefined
 
   delete defaultRes.headers['content-type'] // this would be set to application/json
   delete defaultRes.headers['content-security-policy'] // this would disable JS execution in the error page
@@ -55,7 +56,10 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const res = isRenderingError
     ? null
     : await useNitroApp().localFetch(
-        withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
+        withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), {
+          ...errorObject,
+          ...(errorCause !== undefined && { cause: JSON.stringify(errorCause) }),
+        }),
         {
           headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
           redirect: 'manual',
@@ -93,4 +97,21 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   return send(event, html)
+}
+
+function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {
+  if (depth >= 10 || (cause instanceof Error && seen.has(cause))) { return }
+  if (cause instanceof Error) {
+    seen.add(cause)
+    const nestedCause = serializeErrorCause(cause.cause, depth + 1, seen)
+    return {
+      name: cause.name,
+      message: cause.message,
+      ...(cause.stack && { stack: cause.stack }),
+      ...(nestedCause !== undefined && { cause: nestedCause }),
+    }
+  }
+  if (cause === null || typeof cause === 'string' || typeof cause === 'number' || typeof cause === 'boolean') {
+    return cause
+  }
 }

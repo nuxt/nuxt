@@ -12,7 +12,7 @@ import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
 import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runtime'
-import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from '#app/types'
+import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
@@ -110,6 +110,9 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
       } catch {
         // ignore
       }
+    }
+    if (import.meta.dev && typeof (ssrError as { cause?: unknown }).cause === 'string') {
+      (ssrError as { cause?: SerializedErrorCause }).cause = destr((ssrError as { cause?: string }).cause)
     }
     setSSRError(ssrContext, ssrError)
   }

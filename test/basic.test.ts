@@ -1178,6 +1178,32 @@ describe('errors', () => {
     expect(await res.text()).toContain('This is a custom error')
   })
 
+  it('should expose error causes only to development error pages', async () => {
+    const htmlResponse = await fetch('/error-cause', {
+      headers: { accept: 'text/html' },
+    })
+    const html = await htmlResponse.text()
+
+    expect(html).toContain('createError message')
+    if (isDev) {
+      expect(html).toContain('Cause: inner error')
+      expect(html).toMatch(/Cause stack:[^<]*inner error[^<]*at setup/)
+      expect(html).toContain('Root cause: root cause')
+      expect(html).toMatch(/Root cause stack:[^<]*root cause[^<]*at setup/)
+    } else {
+      expect(html).not.toContain('inner error')
+      expect(html).not.toContain('root cause')
+    }
+
+    const jsonResponse = await fetch('/error-cause', {
+      headers: { accept: 'application/json' },
+    })
+    const json = await jsonResponse.json()
+    expect(json).not.toHaveProperty('cause')
+    expect(JSON.stringify(json)).not.toContain('inner error')
+    expect(JSON.stringify(json)).not.toContain('root cause')
+  })
+
   it('should not allow accessing error route directly', async () => {
     const res = await fetch('/__nuxt_error', {
       headers: {
