@@ -22,7 +22,7 @@ function parseCookieValue (value: string) {
   } catch { return value }
 }
 
-type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
+type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode' | 'expires'>
 
 export interface CookieOptions<T = any> extends _CookieOptions {
   decode?(value: string | null | undefined): T
@@ -30,6 +30,15 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
   readonly?: boolean
+
+  /**
+   * Expiration date for the cookie, or a getter that returns one.
+   *
+   * When a function is provided, it is evaluated on every cookie write
+   * so the expiration can be refreshed when the value is re-set.
+   * The getter should be pure (no side effects).
+   */
+  expires?: Date | (() => Date | undefined)
 
   /**
    * Refresh cookie expiration even when the value remains unchanged.
@@ -45,6 +54,10 @@ export interface CookieOptions<T = any> extends _CookieOptions {
    * @default false
    */
   refresh?: boolean
+}
+
+function resolveExpires (expires?: Date | (() => Date | undefined)): Date | undefined {
+  return typeof expires === 'function' ? expires() : expires
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -88,8 +101,18 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   if (opts.maxAge !== undefined) {
     delay = opts.maxAge * 1000 // convert to ms for setTimeout
   } else if (opts.expires) {
-    // getTime() already returns time in ms
-    delay = opts.expires.getTime() - Date.now()
+    const expires = resolveExpires(opts.expires)
+    if (expires) {
+      // getTime() already returns time in ms
+      delay = expires.getTime() - Date.now()
+    }
+  }
+
+  const getDelay = () => {
+    if (opts.maxAge !== undefined) { return opts.maxAge * 1000 }
+    if (!opts.expires) { return undefined }
+    const expires = resolveExpires(opts.expires)
+    return expires ? expires.getTime() - Date.now() : undefined
   }
 
   const hasExpired = delay !== undefined && delay <= 0
@@ -97,8 +120,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
-  const cookie = import.meta.client && delay && !hasExpired
-    ? cookieRef<T | undefined>(cookieValue, delay, opts.watch && opts.watch !== 'shallow')
+  const cookie = import.meta.client && (typeof opts.expires === 'function' || (delay && !hasExpired))
+    ? cookieRef<T | undefined>(cookieValue, delay, getDelay, opts.watch && opts.watch !== 'shallow')
     : import.meta.server
       ? cookieServerRef<T | undefined>(name, cookieValue)
       : ref<T | undefined>(cookieValue)
@@ -248,8 +271,12 @@ function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | un
 const identityEncode = (val: string) => val
 
 function toSerializeOptions (opts: CookieOptions): CookieSerializeOptions {
-  const { encode: _encode, decode: _decode, ...rest } = opts
-  return { ...rest, encode: identityEncode }
+  const { encode: _encode, decode: _decode, expires, ...rest } = opts
+  return {
+    ...rest,
+    expires: resolveExpires(expires),
+    encode: identityEncode,
+  }
 }
 
 function serializeCookie (name: string, value: string | undefined, opts: CookieOptions = {}) {
@@ -291,10 +318,11 @@ function writeServerCookie (event: H3Event, name: string, value: string | undefi
 const MAX_TIMEOUT_DELAY = 2_147_483_647
 
 // custom ref that will update the value to undefined if the cookie expires
-function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean) {
+function cookieRef<T> (value: T | undefined, initialDelay: number | undefined, getDelay: () => number | undefined, shouldWatch: boolean) {
   let timeout: NodeJS.Timeout
   let unsubscribe: (() => void) | undefined
   let elapsed = 0
+  let delay = initialDelay
   const internalRef = shouldWatch ? ref(value) : { value }
   if (getCurrentScope()) {
     onScopeDispose(() => {
@@ -307,11 +335,13 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
     if (shouldWatch) { unsubscribe = watch(internalRef, trigger) }
 
     function scheduleTimeout () {
-      const timeRemaining = delay - elapsed
+      const currentDelay = delay
+      if (currentDelay === undefined) { return }
+      const timeRemaining = currentDelay - elapsed
       const timeoutLength = timeRemaining < MAX_TIMEOUT_DELAY ? timeRemaining : MAX_TIMEOUT_DELAY
       timeout = setTimeout(() => {
         elapsed += timeoutLength
-        if (elapsed < delay) { return scheduleTimeout() }
+        if (elapsed < currentDelay) { return scheduleTimeout() }
 
         internalRef.value = undefined
         trigger()
@@ -320,6 +350,7 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
 
     function createExpirationTimeout () {
       elapsed = 0
+      delay = getDelay()
       clearTimeout(timeout)
       scheduleTimeout()
     }
