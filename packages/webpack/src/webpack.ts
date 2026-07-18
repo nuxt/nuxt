@@ -9,7 +9,7 @@ import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
-import { logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
+import { bundlerDiagnostics, logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
@@ -214,7 +214,7 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
     devServer.connectWebSocket({ server: listener })
     await devServer.afterListen()
   } else {
-    logger.warn('Could not find the Nuxt dev server to attach Rspack HMR to; hot module replacement will be disabled.')
+    bundlerDiagnostics.NUXT_B7017()
   }
 
   await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares), { cors: () => true })
@@ -376,9 +376,7 @@ async function compile (compiler: Compiler) {
     for (const err of compilationErrors) {
       logger.error(err)
     }
-    const error = new Error('Nuxt build error')
-    error.stack = formatted || compilationErrors.map(e => e.stack || e.message || String(e)).join('\n\n') || error.stack
-    throw error
+    throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name!, cause: compilationErrors })
   }
 }
 
