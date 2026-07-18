@@ -85,5 +85,9 @@ export const renderDiagnostics = !import.meta.dev
           fix: 'Check the server component implementation for runtime errors.',
           docs: false,
         },
+        NUXT_E4016: {
+          why: (p: { fullPath: string, childPath: string, parentPath: string }) => `The route \`${p.fullPath}\` matches a nested page (\`${p.childPath}\`), but the parent page (\`${p.parentPath}\`) does not render \`<NuxtPage />\`, so the nested page cannot be displayed. If \`<NuxtPage />\` is rendered conditionally, this warning can be triggered before it is mounted.`,
+          fix: (p: { parentPath: string }) => `Add \`<NuxtPage />\` to the page component for \`${p.parentPath}\`, or restructure your \`pages/\` directory if you did not intend nesting.`,
+        },
       },
     })
