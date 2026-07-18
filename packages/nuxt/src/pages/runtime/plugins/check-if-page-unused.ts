@@ -42,10 +42,17 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
       const router = useRouter()
       const warnedPaths = new Set<string>()
-      nuxtApp.hook('page:finish', () => {
+      nuxtApp.hook('page:finish', (component) => {
         const route = router.currentRoute.value
-        // wait for vue-router to register the mounted instances of matched records
-        nextTick(() => {
+        // `page:finish` can fire for a superseded navigation (its hook chain is async), in which
+        // case the finished component no longer belongs to the current route and the matched
+        // records may not have registered instances yet
+        if (component && !route.matched.some(record => record.components?.default === component.type)) { return }
+        // `page:finish` fires when the incoming page's async deps resolve, which precedes DOM
+        // insertion by the whole leave duration when a page transition is active — wait for the
+        // transition, then for vue-router to register the mounted instances of matched records.
+        // Deliberately not awaited: blocking the hook chain would delay `page:loading:end`.
+        void Promise.resolve(nuxtApp['~transitionPromise']).then(() => nextTick()).then(() => {
           if (error.value || router.currentRoute.value !== route) { return }
           const unrendered = findUnrenderedNestedPage(route)
           if (!unrendered || warnedPaths.has(unrendered.child.path)) { return }
