@@ -105,7 +105,7 @@ export default defineConfig({
       },
       ...fixtureMatrix.map(entry => ({
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         test: {
           name: fixtureProjectName(entry),
@@ -130,7 +130,7 @@ export default defineConfig({
       },
       {
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         resolve: {
           alias: {
@@ -165,12 +165,12 @@ export default defineConfig({
       }),
       ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
           environment: 'nuxt',
           setupFiles: ['./test/setup-runtime.ts'],
           env: {
@@ -183,6 +183,22 @@ export default defineConfig({
           },
         },
       }))),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': 'true',
+        },
+        test: {
+          name: 'nuxt-dev',
+          dir: './test/nuxt/dev',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu(nuxtTestProjects.nuxt, commonSettings),
+            },
+          },
+        },
+      }),
     ],
   },
 })

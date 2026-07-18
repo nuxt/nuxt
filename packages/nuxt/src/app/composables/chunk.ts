@@ -1,5 +1,6 @@
 import { isScriptProtocol } from 'ufo'
 import { useNuxtApp } from '../nuxt'
+import { navigationDiagnostics } from '../diagnostics/navigation.ts'
 
 export interface ReloadNuxtAppOptions {
   /**
@@ -34,10 +35,10 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}): void {
 
   const url = new URL(path, window.location.href)
   if (url.host !== window.location.host) {
-    throw new Error(`Cannot navigate to a URL with a different host: '${path}'.`)
+    throw navigationDiagnostics.NUXT_E2010({ path })
   }
   if (url.protocol && isScriptProtocol(url.protocol)) {
-    throw new Error(`Cannot navigate to a URL with '${url.protocol}' protocol.`)
+    throw navigationDiagnostics.NUXT_E2002({ toPath: path, protocol: url.protocol })
   }
 
   let handledPath: Record<string, any> = {}

@@ -14,7 +14,7 @@ import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { relative } from 'pathe'
 
-import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from '#app/types'
+import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
@@ -24,6 +24,7 @@ import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '..
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
+import { serverDiagnostics } from '../diagnostics'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
@@ -112,6 +113,9 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
       } catch {
         // ignore
       }
+    }
+    if (import.meta.dev && event.context.nuxt?.['~error-cause'] !== undefined) {
+      (ssrError as { cause?: SerializedErrorCause }).cause = event.context.nuxt['~error-cause']
     }
     setSSRError(ssrContext, ssrError)
   }
@@ -546,7 +550,7 @@ async function renderStreamedResponse (ctx: {
     const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
     if (r instanceof Promise) { await r }
     if (shellContext.body.length !== initialBodyLen || shellContext.bodyAppend.length !== initialAppendLen) {
-      console.warn(`[nuxt] \`render:html\` mutated \`body\`/\`bodyAppend\` while streaming (${event.url.pathname}). These fields are silently dropped because the body is about to stream - use the \`render:html:close\` hook instead.`)
+      serverDiagnostics.NUXT_E8001({ path: event.url.pathname })
     }
   } else {
     const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
@@ -774,9 +778,7 @@ async function renderStreamedResponse (ctx: {
             lateMutations.push(`response headers changed during render (e.g. \`useCookie\`, \`useResponseHeader\`, \`setHeader\`)`)
           }
           if (lateMutations.length) {
-            console.warn(
-              `[nuxt] SSR streaming committed the response before render completed. The following mutations did not reach the client and were dropped:\n  - ${lateMutations.join('\n  - ')}\n  Path: ${event.url.pathname}\n  Move the mutation into a plugin (which runs before the shell is flushed), or opt this route out of streaming with \`routeRules: { '${event.url.pathname}': { streaming: false } }\` or the \`render:route\` hook.`,
-            )
+            serverDiagnostics.NUXT_E8002({ mutations: lateMutations.join('\n  - '), path: event.url.pathname })
           }
         }
       } catch (error) {
@@ -868,6 +870,8 @@ interface NuxtRequestContext {
   '~internal'?: boolean
   /** @internal */
   '~rendering-error'?: boolean
+  /** @internal */
+  '~error-cause'?: SerializedErrorCause
 }
 
 declare module 'srvx' {

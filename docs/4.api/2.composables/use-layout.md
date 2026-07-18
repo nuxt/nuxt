@@ -1,16 +1,13 @@
 ---
 title: "useLayout"
 description: useLayout returns the layout resolved for the current route.
+minimalVersion: "4.5"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/layout.ts
     size: xs
 ---
-
-::important
-This composable is available in Nuxt v4.5+.
-::
 
 ## Description
 

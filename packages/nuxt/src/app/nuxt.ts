@@ -19,6 +19,7 @@ import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
+import { appDiagnostics } from './diagnostics/core.ts'
 import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
 export type { NuxtPayload, NuxtSSRContext, PluginMeta } from './types'
@@ -367,7 +368,9 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
-    const unreg = nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+    const unreg = nuxtApp.hook('app:error', (...args) => {
+      appDiagnostics.NUXT_E1005({ cause: args.length > 1 ? args : args[0] })
+    })
     nuxtApp.hook('app:mounted', unreg)
   }
 
@@ -568,11 +571,7 @@ export function useNuxtApp (id?: string): NuxtApp {
   const nuxtAppInstance = tryUseNuxtApp(id)
 
   if (!nuxtAppInstance) {
-    if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/4.x/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
-    } else {
-      throw new Error('[nuxt] instance unavailable')
-    }
+    throw appDiagnostics.NUXT_E1001()
   }
 
   return nuxtAppInstance
@@ -609,7 +608,7 @@ function wrappedConfig (runtimeConfig: Record<string, unknown>) {
       if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         if (!loggedKeys.has(p)) {
           loggedKeys.add(p)
-          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/4.x/guide/going-further/runtime-config for more information.`)
+          appDiagnostics.NUXT_E1003({ key: p, keys: keys.join(', '), lastKey: lastKey! })
         }
       }
       return Reflect.get(target, p, receiver)

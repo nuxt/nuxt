@@ -6,6 +6,7 @@ import { isPlainObject } from '@vue/shared'
 import { hashKey } from '../utils/hash'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
+import { dataDiagnostics } from '../diagnostics/data.ts'
 import type { NuxtError } from './error'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
@@ -94,7 +95,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       try {
         segments.push(hashKey(value))
       } catch {
-        console.warn('[useFetch] Failed to hash body', value)
+        dataDiagnostics.NUXT_E3002({ cause: value })
       }
     }
   }
@@ -307,6 +308,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         deep,
         dedupe,
         timeout,
+        enabled,
         ...fetchOptions
       } = {
         ...(typeof options === 'function' ? {} : factoryOptions),
@@ -319,7 +321,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
-        throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
+        throw dataDiagnostics.NUXT_E3001({ url: _request.value })
       }
 
       const _fetchOptions = reactive<typeof fetchOptions>({
@@ -339,6 +341,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         deep,
         dedupe,
         timeout,
+        enabled,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
       }
 
