@@ -8,11 +8,9 @@ description: Set up or open a Nuxt project in a dev container for a consistent d
 
 If you're starting a new Nuxt project and want to develop inside a dev container, you can add the configuration yourself.
 
-
 ::read-more{to="https://code.visualstudio.com/docs/devcontainers/containers" target="_blank"}
 Read more about dev containers
 ::
-
 
 ### Prerequisites
 
