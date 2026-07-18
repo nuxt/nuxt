@@ -43,7 +43,9 @@ export { logger, useLogger } from './logger.ts'
 
 // Build-time diagnostics catalogs (split by domain; imported directly, no barrel).
 // Re-exported here for use from other packages (nuxt, vite, webpack, nitro-server);
-// the B8xxx kit-api catalog is intentionally kit-internal.
+// the B8xxx kit-api catalog is intentionally kit-internal. All catalogs are tagged
+// `@internal`: they are not public API and third-party modules should not report
+// or throw `NUXT_B` codes.
 export { buildDiagnostics } from './diagnostics/build.ts'
 export { pluginDiagnostics } from './diagnostics/plugins.ts'
 export { componentDiagnostics } from './diagnostics/components.ts'

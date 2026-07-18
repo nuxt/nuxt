@@ -4,6 +4,8 @@ import { docsBase, reporters } from './_shared.ts'
 /**
  * B7xxx
  * Bundler (Vite / webpack / Nitro) diagnostics.
+ *
+ * @internal
  */
 export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,

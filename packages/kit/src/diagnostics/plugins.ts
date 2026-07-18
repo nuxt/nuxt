@@ -4,6 +4,8 @@ import { docsBase, reporters } from './_shared.ts'
 /**
  * B2xxx
  * Plugin diagnostics (`addPlugin`, plugin metadata, plugin ordering).
+ *
+ * @internal
  */
 export const pluginDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,

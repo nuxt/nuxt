@@ -4,6 +4,8 @@ import { docsBase, reporters } from './_shared.ts'
 /**
  * B3xxx
  * Component diagnostics.
+ *
+ * @internal
  */
 export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,

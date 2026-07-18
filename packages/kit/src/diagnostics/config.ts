@@ -4,6 +4,8 @@ import { docsBase, reporters } from './_shared.ts'
 /**
  * B5xxx
  * Configuration diagnostics.
+ *
+ * @internal
  */
 export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,

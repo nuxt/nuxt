@@ -4,6 +4,8 @@ import { docsBase, reporters } from './_shared.ts'
 /**
  * B6xxx
  * Head / auto-import diagnostics.
+ *
+ * @internal
  */
 export const headDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,

@@ -4,6 +4,8 @@ import { docsBase, reporters } from './_shared.ts'
 /**
  * B1xxx
  * Build / compilation diagnostics.
+ *
+ * @internal
  */
 export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
