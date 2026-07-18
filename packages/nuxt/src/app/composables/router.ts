@@ -306,23 +306,23 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
   const inMiddleware = isProcessingMiddleware()
   const middlewareTo = import.meta.server && inMiddleware && nuxtApp._middlewareTo
   if (middlewareTo) {
-    middlewareTo.meta.layout = layout as any
+    middlewareTo.meta.layout = layout
     middlewareTo.meta.layoutProps = props
   } else if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
-      to.meta.layout = layout as any
+      to.meta.layout = layout
       to.meta.layoutProps = props
       unsubscribe()
     })
   }
   if (!inMiddleware) {
     const route = useRoute()
-    route.meta.layout = layout as any
+    route.meta.layout = layout
     route.meta.layoutProps = props
     if (import.meta.client) {
       const unsubscribe = useRouter().beforeResolve((to, from) => {
         if (to.path === from.path) {
-          to.meta.layout = layout as any
+          to.meta.layout = layout
           to.meta.layoutProps = props
         } else {
           unsubscribe()
