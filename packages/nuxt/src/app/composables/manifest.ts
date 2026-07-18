@@ -1,6 +1,7 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { $Fetch, NitroRouteRules } from 'nitro/types'
 import { useRuntimeConfig } from '../nuxt'
+import { manifestDiagnostics } from '../diagnostics/manifest.ts'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 import { $fetch as _$fetch } from '#build/fetch'
@@ -23,7 +24,7 @@ let manifest: Promise<NuxtAppManifest> | undefined
 
 function fetchManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+    throw manifestDiagnostics.NUXT_E5001()
   }
   let _manifest: Promise<NuxtAppManifest>
   if (import.meta.server) {
@@ -34,7 +35,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     }).then((res) => {
       // handle errors fetching manifest, e.g. from an improperly configured proxy
       if (!res || typeof res !== 'object' || !Array.isArray((res as NuxtAppManifest).prerendered)) {
-        throw new Error('[nuxt] Received malformed app manifest. Ensure that `builds/meta/*.json` is served as JSON by your hosting/proxy and not rewritten to an HTML fallback.')
+        throw manifestDiagnostics.NUXT_E5004()
       }
       return res
     })
@@ -46,7 +47,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     if (manifest === _manifest) {
       manifest = undefined
     }
-    console.error('[nuxt] Error fetching app manifest.', e)
+    manifestDiagnostics.NUXT_E5002({ cause: e })
   })
   return _manifest
 }
@@ -54,7 +55,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
 /** @since 3.7.4 */
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+    throw manifestDiagnostics.NUXT_E5001()
   }
   return manifest || fetchManifest()
 }
@@ -69,7 +70,7 @@ export function getRouteRules (arg: string | H3Event | { path: string }) {
   try {
     return routeRulesMatcher(path.toLowerCase())
   } catch (e) {
-    console.error('[nuxt] Error matching route rules.', e)
+    manifestDiagnostics.NUXT_E5003({ path, cause: e })
     return {}
   }
 }

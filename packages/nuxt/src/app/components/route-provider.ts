@@ -1,6 +1,7 @@
 import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { DefineSetupFnComponent, Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 import { PageRouteSymbol } from './injections'
 
 interface RouteProviderProps {
@@ -47,7 +48,7 @@ export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderCompon
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             const filename = (vnode?.type as any)?.__file
-            console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
+            renderDiagnostics.NUXT_E4004({ filename })
           }
         })
       })
