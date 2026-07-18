@@ -273,6 +273,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (result) {
               if (isNuxtError(result) && result.fatal) {
                 await nuxtApp.runWithContext(() => showError(result))
+                // Reflect the target route in the URL (matching SSR) so the back button
+                // returns to the previous page after a fatal middleware error (#19954).
+                if (import.meta.client) { window.history.pushState({}, '', to.fullPath) }
               }
               return result
             }
@@ -280,6 +283,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             const error = createError(err)
             if (error.fatal) {
               await nuxtApp.runWithContext(() => showError(error))
+              if (import.meta.client) { window.history.pushState({}, '', to.fullPath) }
             }
             return error
           }
