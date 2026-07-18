@@ -325,6 +325,11 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
     navigationDiagnostics.NUXT_E2008()
   }
   const inMiddleware = isProcessingMiddleware()
+  const middlewareTo = import.meta.server && inMiddleware && nuxtApp._middlewareTo
+  if (middlewareTo) {
+    middlewareTo.meta.layout = layout as any
+    middlewareTo.meta.layoutProps = props
+  }
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
       to.meta.layout = layout as any
