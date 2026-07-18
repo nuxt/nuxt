@@ -160,7 +160,9 @@ interface AugmentPagesContext {
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
-    if (route.file && !ctx.pagesToSkip?.has(route.file)) {
+    // Augment each file once per pass: a `pages:extend` route reusing a scanned page's file keeps
+    // its own name/meta, else the file's `definePageMeta` clobbers it into a duplicate (#27358).
+    if (route.file && !ctx.pagesToSkip?.has(route.file) && !ctx.augmentedPages.has(route.file)) {
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
