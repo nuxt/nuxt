@@ -14,6 +14,9 @@ export default defineNuxtConfig({
     },
   },
   pages: false,
+  nitro: {
+    minify: true,
+  },
   devtools: { enabled: false },
   sourcemap: false,
   compatibilityDate: 'latest',
