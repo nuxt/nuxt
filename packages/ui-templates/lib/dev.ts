@@ -3,8 +3,8 @@ import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promises as fsp } from 'node:fs'
 import type { Plugin } from 'vite'
-import genericMessages from '../templates/messages.json'
-import { version } from '../../nuxt/package.json'
+import genericMessages from '../templates/messages.json' with { type: 'json' }
+import pkg from '../../nuxt/package.json' with { type: 'json' }
 
 const templatesRoot = fileURLToPath(new URL('..', import.meta.url))
 
@@ -28,11 +28,11 @@ export const DevRenderingPlugin = () => {
 
       const messages = JSON.parse(await fsp.readFile(r(page, 'messages.json'), 'utf-8'))
 
-      const chunks = contents.split(/\{{2,3}[^{}]+\}{2,3}/g)
+      const chunks = contents.split(/\{{2,3}[^{}]+\}{2,3}/)
       let templateString = chunks.shift()
       for (const expression of contents.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
         const value = runInNewContext(expression[1]!.trim(), {
-          version,
+          version: pkg.version,
           messages: { ...genericMessages, ...messages },
         })
         templateString += `${value}${chunks.shift()}`

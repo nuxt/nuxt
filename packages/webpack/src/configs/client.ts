@@ -1,14 +1,15 @@
 import querystring from 'node:querystring'
-import { resolve } from 'pathe'
+import { normalize, resolve } from 'pathe'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-import { logger } from '@nuxt/kit'
+import { logger, resolveAlias } from '@nuxt/kit'
+import type { Module } from 'webpack'
 import { joinURL } from 'ufo'
 import { defineEnv } from 'unenv'
 
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets } from '../utils/config'
-import { nuxt } from '../presets/nuxt'
-import { TsCheckerPlugin, webpack } from '#builder'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets } from '../utils/config.ts'
+import { nuxt } from '../presets/nuxt.ts'
+import { TsCheckerPlugin, builder, webpack } from '#builder'
 
 export async function client (ctx: WebpackConfigContext) {
   ctx.name = 'client'
@@ -75,6 +76,14 @@ function clientHMR (ctx: WebpackConfigContext) {
     return
   }
 
+  ctx.config.plugins ||= []
+  ctx.config.plugins.push(new webpack.HotModuleReplacementPlugin())
+
+  // Rsbuild's dev server injects its own HMR client
+  if (builder === 'rspack') {
+    return
+  }
+
   const clientOptions = ctx.userConfig.hotMiddleware?.client || {}
   const hotMiddlewareClientOptions = {
     reload: true,
@@ -90,21 +99,53 @@ function clientHMR (ctx: WebpackConfigContext) {
   // Add HMR support
   const app = (ctx.config.entry as any).app as any
   app.unshift(
-    // https://github.com/glenjamin/webpack-hot-middleware#config
+    // https://github.com/webpack/webpack-hot-middleware#config
     `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`,
   )
-
-  ctx.config.plugins ||= []
-  ctx.config.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 
-function clientOptimization (_ctx: WebpackConfigContext) {
-  // TODO: Improve optimization.splitChunks.cacheGroups
+function clientOptimization (ctx: WebpackConfigContext) {
+  if (!ctx.nuxt.options.features.inlineStyles) {
+    return
+  }
+
+  // separate global CSS into a dedicated chunk
+  const globalCSSPaths = new Set<string>()
+
+  // Resolve global CSS paths from nuxt.options.css
+  for (const css of ctx.options.css) {
+    if (typeof css === 'string') {
+      const resolved = resolveAlias(css, ctx.options.alias)
+      globalCSSPaths.add(normalize(resolved))
+    }
+  }
+
+  if (globalCSSPaths.size > 0) {
+    ctx.config.optimization ||= {}
+    ctx.config.optimization.splitChunks ||= {}
+    ctx.config.optimization.splitChunks.cacheGroups ||= {}
+
+    ctx.config.optimization.splitChunks.cacheGroups.nuxtGlobalCSS = {
+      name: 'nuxt-global-css',
+      chunks: 'all',
+      enforce: true,
+      test: (module: Module) => {
+        if (module.type !== 'css/mini-extract') { return false }
+        const identifier = normalize(module.identifier())
+        for (const globalPath of globalCSSPaths) {
+          if (identifier.includes(globalPath)) {
+            return true
+          }
+        }
+        return false
+      },
+    }
+  }
 }
 
 function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
-  // https://github.com/webpack-contrib/webpack-bundle-analyzer
+  // https://github.com/webpack/webpack-bundle-analyzer
   if (!ctx.isDev && !ctx.nuxt.options.test && ctx.name === 'client' && ctx.userConfig.analyze && (ctx.userConfig.analyze === true || ctx.userConfig.analyze.enabled)) {
     const statsDir = resolve(ctx.options.analyzeDir)
 

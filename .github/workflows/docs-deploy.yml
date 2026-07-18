@@ -5,16 +5,18 @@ on:
     paths:
       - "docs/**"
     branches:
+      - main
+      - 4.x
       - 3.x
 
 # Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
 jobs:
   deploy-docs:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-slim
+    if: ${{ github.repository_owner == 'nuxt' }}
     steps:
-      - if: ${{ github.repository_owner == 'nuxt' && github.event_name == 'push' }}
-        run: curl "${{ secrets.DOCS_WEBHOOK }}"
+      - name: trigger docs deployment
+        run: curl -fsS --max-time 30 --retry 3 --retry-delay 5 --retry-connrefused "${{ secrets.DOCS_WEBHOOK }}"

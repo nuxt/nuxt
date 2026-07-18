@@ -1,7 +1,7 @@
 import type { Defu } from 'defu'
-import type { NuxtHooks } from './hooks'
-import type { Nuxt } from './nuxt'
-import type { NuxtCompatibility } from './compatibility'
+import type { NuxtHooks } from './hooks.ts'
+import type { Nuxt } from './nuxt.ts'
+import type { NuxtCompatibility } from './compatibility.ts'
 
 export interface ModuleMeta {
   /** Module name. */
@@ -26,6 +26,12 @@ export interface ModuleMeta {
    * @internal
    */
   rawPath?: string
+
+  /**
+   * Whether the module has been disabled in the Nuxt configuration.
+   * @internal
+   */
+  disabled?: boolean
 
   [key: string]: unknown
 }
@@ -63,6 +69,17 @@ export type ResolvedModuleOptions<
     >
   >
 
+export interface ModuleDependencyMeta<T = Record<string, unknown>> {
+  version?: string
+  overrides?: Partial<T>
+  defaults?: Partial<T>
+  optional?: boolean
+}
+
+export interface ModuleDependencies {
+  [key: string]: ModuleDependencyMeta<Record<string, unknown>>
+}
+
 /** Module definition passed to 'defineNuxtModule(...)' or 'defineNuxtModule().with(...)'. */
 export interface ModuleDefinition<
   TOptions extends ModuleOptions,
@@ -73,12 +90,15 @@ export interface ModuleDefinition<
   defaults?: TOptionsDefaults | ((nuxt: Nuxt) => Awaitable<TOptionsDefaults>)
   schema?: TOptions
   hooks?: Partial<NuxtHooks>
+  moduleDependencies?: ModuleDependencies | ((nuxt: Nuxt) => Awaitable<ModuleDependencies>)
+  onInstall?: (nuxt: Nuxt) => Awaitable<void>
+  onUpgrade?: (nuxt: Nuxt, options: TOptions, previousVersion: string) => Awaitable<void>
   setup?: (
     this: void,
     resolvedOptions: TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions,
-    nuxt: Nuxt
+    nuxt: Nuxt,
   ) => ModuleSetupReturn
 }
 
@@ -96,11 +116,20 @@ export interface NuxtModule<
   ): ModuleSetupReturn
   getOptions?: (
     inlineOptions?: Partial<TOptions>,
-    nuxt?: Nuxt
+    nuxt?: Nuxt,
   ) => Promise<
     TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions
   >
+  getModuleDependencies?: (nuxt: Nuxt) => Awaitable<ModuleDependencies> | undefined
   getMeta?: () => Promise<ModuleMeta>
+  onInstall?: (nuxt: Nuxt) => Awaitable<void>
+  onUpgrade?: (
+    nuxt: Nuxt,
+    options: TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions,
+    previousVersion: string,
+  ) => Awaitable<void>
 }

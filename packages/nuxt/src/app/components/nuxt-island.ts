@@ -1,20 +1,18 @@
-import type { Component, PropType, RendererNode, VNode } from 'vue'
+import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsType, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
-import { hash } from 'ohash'
-import { appendResponseHeader } from 'h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
-import type { FetchResponse } from 'ofetch'
 
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
+import { getIslandHash, serializeIslandProps } from '../island-hash'
 
-// @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
@@ -47,7 +45,26 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
   await Promise.all(promises)
 }
 
-export default defineComponent({
+interface NuxtIslandProps {
+  name: string
+  lazy?: boolean
+  props?: Record<string, any>
+  context?: Record<string, any>
+  scopeId?: string | undefined | null
+  source?: string
+  dangerouslyLoadClientComponents?: boolean
+}
+
+type NuxtIslandEmits = {
+  error: (error: unknown) => void
+}
+
+type NuxtIslandSlots = SlotsType<{
+  fallback?: (props: { error: unknown }) => VNode[]
+  [name: string]: ((props: any) => VNode[]) | undefined
+}>
+
+const NuxtIsland = defineComponent({
   name: 'NuxtIsland',
   inheritAttrs: false,
   props: {
@@ -86,15 +103,13 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
-    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
+    const serializedProps = computed(() => serializeIslandProps(props.props))
+    const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
     let activeHead: ActiveHeadEntry<SerializableHead>
 
-    // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
@@ -109,7 +124,7 @@ export default defineComponent({
           key,
           ...(import.meta.server && import.meta.prerender)
             ? {}
-            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
+            : { params: { ...props.context, props: props.props ? serializedProps.value : undefined } },
           result: toRevive,
         },
         ...result,
@@ -195,32 +210,33 @@ export default defineComponent({
 
       if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
-      const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
-
+      const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
-      // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
+      const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
-        props: props.props ? JSON.stringify(props.props) : undefined,
+        props: props.props ? serializedProps.value : undefined,
       }))
+      if (!r.ok) {
+        throw createError({ status: r.status, statusText: r.statusText })
+      }
       try {
-        const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+        const result = await r.json()
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')
           if (hints) {
-            appendResponseHeader(event!, 'x-nitro-prerender', hints)
+            event!.res.headers.append('x-nitro-prerender', hints)
           }
         }
         setPayload(key, result)
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          throw new Error(e.toString(), { cause: e })
         }
         throw e
       }
@@ -279,6 +295,14 @@ export default defineComponent({
 
     if (import.meta.client) {
       watch(props, debounce(() => fetchComponent(), 100), { deep: true })
+    }
+
+    // Restore head entries from SSR payload during hydration
+    if (import.meta.client && instance.vnode.el) {
+      const headData = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.head
+      if (headData) {
+        activeHead = head.push(headData)
+      }
     }
 
     if (import.meta.client && !instance.vnode.el && props.lazy) {
@@ -350,4 +374,6 @@ export default defineComponent({
       ]
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits, NuxtIslandSlots>
+
+export default NuxtIsland

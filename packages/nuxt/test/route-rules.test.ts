@@ -1,55 +1,56 @@
 import { describe, expect, it } from 'vitest'
 
-import { extractRouteRules } from '../src/pages/route-rules'
+import { globRouteRulesFromPages, removePagesRules } from '../src/pages/route-rules.ts'
 
-describe('route-rules', () => {
-  it('should extract route rules from pages', () => {
-    for (const [path, code] of Object.entries(examples)) {
-      const result = extractRouteRules(code, path)
+describe('routeRules from page meta', () => {
+  const getPages = () => [
+    {
+      path: '/',
+      rules: { prerender: true },
+    },
+    // parent without routeRules
+    {
+      path: '/users',
+      children: [{ path: ':id', rules: { prerender: true } }],
+    },
+    // nested paths
+    {
+      path: '/some',
+      children: [
+        {
+          path: 'nested',
+          children: [{ path: 'page', rules: { prerender: true } }],
+        },
+      ],
+    },
+    // page with empty routeRules
+    {
+      path: '/contact',
+      rules: {},
+    },
+  ]
 
-      expect(result).toStrictEqual({
-        'prerender': true,
-      })
-    }
+  it('extracts route rules from pages', () => {
+    const pages = getPages()
+    const result = globRouteRulesFromPages(pages)
+    expect(result).toEqual({
+      '/': { prerender: true },
+      '/some/nested/page': { prerender: true },
+      '/users/**': { prerender: true },
+    })
+  })
+
+  it('removes route rules from pages', () => {
+    const pages = getPages()
+    removePagesRules(pages)
+    expect(pages).toEqual([
+      { path: '/' },
+      { path: '/users', children: [{ path: ':id' }] },
+      {
+        path: '/some',
+        children: [{ path: 'nested', children: [{ path: 'page' }] }],
+      },
+      { path: '/contact' },
+    ])
   })
 })
-
-const examples = {
-  // vue component with two script blocks
-  'app.vue': `
-<template>
-  <div></div>
-</template>
-
-<script>
-export default {}
-</script>
-
-<script setup lang="ts">
-defineRouteRules({
-  prerender: true
-})
-</script>
-      `,
-  // vue component with a normal script block, and defineRouteRules ambiently
-  'component.vue': `
-<script>
-defineRouteRules({
-  prerender: true
-})
-export default {
-  setup() {}
-}
-</script>
-      `,
-  // JS component with defineRouteRules within a setup function
-  'component.ts': `
-export default {
-  setup() {
-    defineRouteRules({
-      prerender: true
-    })
-  }
-}
-    `,
-}

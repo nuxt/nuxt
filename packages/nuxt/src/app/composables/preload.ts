@@ -9,7 +9,7 @@ import { useRouter } from './router'
  * @param components Pascal-cased name or names of components to prefetch
  * @since 3.0.0
  */
-export const preloadComponents = async (components: string | string[]) => {
+export const preloadComponents = async (components: string | string[]): Promise<void> => {
   if (import.meta.server) { return }
   const nuxtApp = useNuxtApp()
 
@@ -27,7 +27,7 @@ export const preloadComponents = async (components: string | string[]) => {
  * @param components Pascal-cased name or names of components to prefetch
  * @since 3.0.0
  */
-export const prefetchComponents = (components: string | string[]) => {
+export const prefetchComponents = (components: string | string[]): Promise<void> | undefined => {
   if (import.meta.server) { return }
 
   // TODO
@@ -36,7 +36,7 @@ export const prefetchComponents = (components: string | string[]) => {
 
 // --- Internal ---
 
-export function _loadAsyncComponent (component: Component) {
+export function _loadAsyncComponent (component: Component): unknown {
   if ((component as any)?.__asyncLoader && !(component as any).__asyncResolved) {
     return (component as any).__asyncLoader()
   }
@@ -61,14 +61,14 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
 
   router._routePreloaded.add(path)
 
-  const components = matched
-    .map(component => component.components?.default)
-    .filter(component => typeof component === 'function')
-
-  for (const component of components) {
+  for (const route of matched) {
+    const component = route.components?.default
+    if (typeof component !== 'function') {
+      continue
+    }
     const promise = Promise.resolve((component as () => unknown)())
       .catch(() => {})
-      .finally(() => promises.splice(promises.indexOf(promise)))
+      .finally(() => promises.splice(promises.indexOf(promise), 1))
     promises.push(promise)
   }
 

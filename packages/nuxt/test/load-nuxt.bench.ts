@@ -1,18 +1,20 @@
-import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { beforeAll, bench, describe } from 'vitest'
-import { join, normalize } from 'pathe'
-import { withoutTrailingSlash } from 'ufo'
+import { join } from 'pathe'
 import { loadNuxt } from 'nuxt'
+import { findWorkspaceDir } from 'pkg-types'
 
-const emptyDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../node_modules/fixture', import.meta.url))))
-const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url))))
+const repoRoot = await findWorkspaceDir()
+
+const emptyDir = join(repoRoot, 'node_modules/fixture')
+const basicTestFixtureDir = join(repoRoot, 'test/fixtures/basic')
 
 describe('loadNuxt', () => {
   beforeAll(async () => {
     await Promise.all([
       rm(join(emptyDir, 'node_modules/load-nuxt/.nuxt'), { recursive: true, force: true }),
       rm(join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'), { recursive: true, force: true }),
+      rm(join(basicTestFixtureDir, 'node_modules/load-nuxt-dev/.nuxt'), { recursive: true, force: true }),
     ])
   })
 
@@ -33,6 +35,18 @@ describe('loadNuxt', () => {
       ready: true,
       overrides: {
         buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'),
+      },
+    })
+    await nuxt.close()
+  })
+
+  bench('loadNuxt in the basic test fixture (dev)', async () => {
+    const nuxt = await loadNuxt({
+      cwd: basicTestFixtureDir,
+      ready: true,
+      overrides: {
+        dev: true,
+        buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt-dev/.nuxt'),
       },
     })
     await nuxt.close()

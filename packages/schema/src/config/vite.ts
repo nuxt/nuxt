@@ -1,21 +1,19 @@
-import { consola } from 'consola'
-import defu from 'defu'
 import { resolve } from 'pathe'
-import { isTest } from 'std-env'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   vite: {
     root: {
-      $resolve: async (val, get) => typeof val === 'string' ? val : (await get('srcDir')),
+      $resolve: (val, get) => typeof val === 'string' ? val : (get('srcDir')),
     },
     mode: {
       $resolve: async (val, get) => typeof val === 'string' ? val : (await get('dev') ? 'development' : 'production'),
     },
     define: {
       $resolve: async (_val, get) => {
-        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')])
+        const [isDev, isTest, isDebug] = await Promise.all([get('dev'), get('test'), get('debug')])
         return {
+          '__VUE_PROD_DEVTOOLS__': false,
           '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(isDebug && (isDebug === true || isDebug.hydration)),
           'process.dev': isDev,
           'import.meta.dev': isDev,
@@ -29,12 +27,12 @@ export default defineResolvers({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
     },
     publicDir: {
-      // @ts-expect-error this is missing from our `vite` types deliberately, so users do not configure it
       $resolve: (val) => {
         if (val) {
-          consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
+          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/4.x/api/nuxt-config#public`.')
         }
-        return false
+        // this is missing from our `vite` types deliberately, so users do not configure it
+        return false as never
       },
     },
     vue: {
@@ -72,28 +70,21 @@ export default defineResolvers({
     },
     vueJsx: {
       $resolve: async (val, get) => {
+        const options: { defineComponentName?: string[] } = val && typeof val === 'object' ? val : {}
         return {
           // TODO: investigate type divergence between types for @vue/compiler-core and @vue/babel-plugin-jsx
           isCustomElement: (await get('vue')).compilerOptions?.isCustomElement as undefined | ((tag: string) => boolean),
-          ...typeof val === 'object' ? val : {},
+          defineComponentName: [...new Set([...options.defineComponentName ?? ['defineComponent'], 'defineNuxtComponent'])],
+          ...options,
         }
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        $resolve: async (val, get) => defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options')),
-      },
       exclude: {
-        $resolve: async (val, get) => [
+        $resolve: val => [
           ...Array.isArray(val) ? val : [],
-          ...(await get('build.transpile')).filter(i => typeof i === 'string'),
           'vue-demi',
         ],
-      },
-    },
-    esbuild: {
-      $resolve: async (val, get) => {
-        return defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options'))
       },
     },
     clearScreen: true,

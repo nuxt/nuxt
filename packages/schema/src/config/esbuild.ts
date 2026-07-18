@@ -1,6 +1,6 @@
 import { defu } from 'defu'
 import type { TransformOptions } from 'esbuild'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   esbuild: {
@@ -9,6 +9,13 @@ export default defineResolvers({
         $resolve: async (val, get) => {
           if (typeof val === 'string') {
             return val
+          }
+          // Only lower to es2024 for non-vite builders (webpack/rspack) where
+          // esbuild handles decorator lowering. The vite builder uses Babel instead.
+          const builder = await get('builder')
+          const isVite = !builder || builder === 'vite' || (builder as any) === '@nuxt/vite-builder'
+          if (isVite) {
+            return 'esnext'
           }
           // https://github.com/vitejs/vite-plugin-vue/issues/528
           const useDecorators = await get('experimental').then(r => r?.decorators === true)

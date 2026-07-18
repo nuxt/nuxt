@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 4.x
       - 3.x
 
 permissions: {}
@@ -14,26 +15,23 @@ concurrency:
 
 jobs:
   update:
-    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.') && !contains(github.event.head_commit.message, 'v4.')
-    runs-on: ubuntu-latest
+    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.') && !contains(github.event.head_commit.message, 'v4.') && !contains(github.event.head_commit.message, 'v5.')
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       pull-requests: write
       contents: write
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        # zizmor: ignore[artipacked] scripts/update-changelog.ts runs `git push` and requires the persisted token
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
         with:
-          node-version: lts/*
-          cache: "pnpm"
+          node-version: latest
+          cache: true
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - run: pnpm jiti ./scripts/update-changelog.ts
+      - run: node ./scripts/update-changelog.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

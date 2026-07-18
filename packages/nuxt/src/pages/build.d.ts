@@ -1,4 +1,4 @@
-declare module '#build/router.options' {
+declare module '#build/router.options.mjs' {
   import type { RouterOptions } from '@nuxt/schema'
 
   export const hashMode: boolean

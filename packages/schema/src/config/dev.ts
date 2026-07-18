@@ -1,5 +1,6 @@
-import { defineResolvers } from '../utils/definition'
-import { template as loadingTemplate } from '../../../ui-templates/dist/templates/loading'
+import process from 'node:process'
+import { defineResolvers } from '../utils/definition.ts'
+import { template as loadingTemplate } from '../../../ui-templates/dist/templates/loading.ts'
 
 export default defineResolvers({
   devServer: {

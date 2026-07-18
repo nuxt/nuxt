@@ -1,5 +1,5 @@
-import { computed, getCurrentScope, onScopeDispose, shallowRef } from 'vue'
-import type { Ref } from 'vue'
+import { getCurrentScope, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
+import type { ShallowRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
 
 export type LoadingIndicatorOpts = {
@@ -21,9 +21,9 @@ export type LoadingIndicatorOpts = {
 
 export type LoadingIndicator = {
   _cleanup: () => void
-  progress: Ref<number>
-  isLoading: Ref<boolean>
-  error: Ref<boolean>
+  progress: Readonly<ShallowRef<number>>
+  isLoading: Readonly<ShallowRef<boolean>>
+  error: Readonly<ShallowRef<boolean>>
   start: (opts?: { force?: boolean }) => void
   set: (value: number, opts?: { force?: boolean }) => void
   finish: (opts?: { force?: boolean, error?: boolean }) => void
@@ -141,21 +141,22 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     const unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
       finish()
     })
-    const unsubError = nuxtApp.hook('vue:error', () => finish())
+    const unsubError = nuxtApp.hook('vue:error', () => finish({ error: true }))
 
     _cleanup = () => {
       unsubError()
       unsubLoadingStartHook()
       unsubLoadingFinishHook()
       clear()
+      _clearTimeouts()
     }
   }
 
   return {
     _cleanup,
-    progress: computed(() => progress.value),
-    isLoading: computed(() => isLoading.value),
-    error: computed(() => error.value),
+    progress: shallowReadonly(progress),
+    isLoading: shallowReadonly(isLoading),
+    error: shallowReadonly(error),
     start,
     set,
     finish,

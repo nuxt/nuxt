@@ -1,14 +1,13 @@
-import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
-import { join, normalize, resolve } from 'pathe'
-import { withoutTrailingSlash } from 'ufo'
+import { join, resolve } from 'pathe'
 import type { Nuxt } from 'nuxt/schema'
 import { loadNuxt, writeTypes } from '@nuxt/kit'
+import { findWorkspaceDir } from 'pkg-types'
 
-describe('writeTypes', () => {
-  const relativeDir = join('../../..', 'test/fixtures/basic-types')
-  const path = withoutTrailingSlash(normalize(fileURLToPath(new URL(relativeDir, import.meta.url))))
+describe('writeTypes', async () => {
+  const repoRoot = await findWorkspaceDir()
+  const path = join(repoRoot, 'test/fixtures/basic-types')
 
   let nuxt: Nuxt
 

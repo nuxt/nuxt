@@ -1,12 +1,10 @@
-import { Script, createContext } from 'node:vm'
-import { expect } from 'vitest'
+import { expect, vi } from 'vitest'
 import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
-
-export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
+import { isCI } from 'std-env'
 
 export async function renderPage (path = '/', opts?: { retries?: number }) {
   const ctx = useTestContext()
@@ -71,35 +69,10 @@ export function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, tex
   expect(consoleLogWarnings).toEqual([])
 }
 
-export async function gotoPath (page: Page, path: string, retries = 0) {
-  for (let retry = 0; retry <= retries; retry++) {
-    try {
-      await page.goto(url(path), { timeout: 3000 })
-    } catch (error) {
-      if (retry === retries) {
-        throw error
-      }
-    }
-  }
+const BASE_TIMEOUT = isCI ? 6_000 : 3_000
+export async function gotoPath (page: Page, path: string, retries = 2) {
+  await vi.waitFor(() => page.goto(url(path), { timeout: BASE_TIMEOUT }), { timeout: BASE_TIMEOUT * retries || BASE_TIMEOUT })
   await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
-}
-
-type EqualityVal = string | number | boolean | null | undefined | RegExp
-export async function expectWithPolling (
-  get: () => Promise<EqualityVal> | EqualityVal,
-  expected: EqualityVal,
-  retries = process.env.CI ? 100 : 30,
-  delay = process.env.CI ? 500 : 100,
-) {
-  let result: EqualityVal
-  for (let i = retries; i >= 0; i--) {
-    result = await get()
-    if (result?.toString() === expected?.toString()) {
-      break
-    }
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
-  expect(result?.toString(), `"${result?.toString()}" did not equal "${expected?.toString()}" in ${retries * delay}ms`).toEqual(expected?.toString())
 }
 
 const revivers = {
@@ -118,15 +91,6 @@ export function parsePayload (payload: string) {
   return parse(payload || '', revivers)
 }
 export function parseData (html: string) {
-  if (!isRenderingJson) {
-    const { script = '' } = html.match(/<script>(?<script>window.__NUXT__.*?)<\/script>/)?.groups || {}
-    const _script = new Script(script)
-    return {
-      script: _script.runInContext(createContext({ window: {} })),
-      attrs: {},
-    }
-  }
-
   const regexp = /<script type="application\/json" data-nuxt-data="[^"]+"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/
   const { script, attrs = '' } = html.match(regexp)?.groups || {}
   const _attrs: Record<string, string> = {}

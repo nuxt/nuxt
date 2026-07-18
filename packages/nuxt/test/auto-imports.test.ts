@@ -7,8 +7,8 @@ import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
-import { TransformPlugin } from '../src/imports/transform'
-import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets'
+import { TransformPlugin } from '../src/imports/transform.ts'
+import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets.ts'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -22,7 +22,7 @@ describe('imports:transform', () => {
     imports,
   })
 
-  const transformPlugin = TransformPlugin({ ctx, options: { transform: { exclude: [/node_modules/] } } }).raw({}, { framework: 'rollup' }) as Plugin
+  const transformPlugin = TransformPlugin({ ctx, options: { transform: { exclude: [/node_modules/] } } }).raw({}, { framework: 'rollup', versions: {} }) as Plugin
   const transform = async (source: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const result = await (transformPlugin.transform! as Function).call({ error: null, warn: null } as any, source, '')
@@ -138,6 +138,7 @@ const excludedVueHelpers = [
   'isRuntimeOnly',
   'isVNode',
   'mergeDefaults',
+  'mergeModels',
   'mergeProps',
   'openBlock',
   'popScopeId',
@@ -193,6 +194,9 @@ const excludedVueHelpers = [
   'hydrateOnIdle',
   'onWatcherCleanup',
   'getCurrentWatcher',
+  'patchProp',
+  'nodeOps',
+  'module.exports',
 ]
 
 describe('imports:vue', () => {

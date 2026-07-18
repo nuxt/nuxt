@@ -40,6 +40,26 @@ describe('modules', () => {
       },
     })
   })
+
+  it('correctly types moduleDependencies', () => {
+    defineNuxtModule({
+      moduleDependencies: {
+        'unknown': {
+          overrides: {
+            foo: 'bar',
+          },
+        },
+        // TODO: add back when we reenable @nuxt/devtools
+        // '@nuxt/devtools': {
+        //   defaults: {
+        //     enabled: true,
+        //     // @ts-expect-error not a valid option
+        //     foo: 'bar',
+        //   },
+        // },
+      },
+    })
+  })
 })
 
 describe('runtimeConfig', () => {

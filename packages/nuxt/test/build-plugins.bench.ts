@@ -1,12 +1,12 @@
-import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
-import { join, normalize } from 'pathe'
-import { withoutTrailingSlash } from 'ufo'
+import { join } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import { build, loadNuxt } from 'nuxt'
+import { findWorkspaceDir } from 'pkg-types'
 
-const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../test/fixtures/minimal', import.meta.url))))
+const repoRoot = await findWorkspaceDir()
+const basicTestFixtureDir = join(repoRoot, 'test/fixtures/minimal')
 
 describe('build', () => {
   let nuxt: Nuxt
@@ -19,6 +19,7 @@ describe('build', () => {
         buildDir: join(basicTestFixtureDir, 'node_modules/build-plugins/.nuxt'),
         ssr: false,
         sourcemap: false,
+        experimental: { clearBuildHooks: false },
         hooks: {
           'build:done': () => {
             throw new Error('bypass nitro build')

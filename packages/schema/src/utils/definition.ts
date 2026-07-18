@@ -1,6 +1,6 @@
 import type { InputObject } from 'untyped'
 
-import type { ConfigSchema } from '../types/schema'
+import type { ConfigSchema } from '../types/schema.ts'
 
 type KeysOf<T, Prefix extends string | unknown = unknown> = keyof T extends string
   ?
@@ -31,10 +31,33 @@ type ReturnFromKey<T, K extends string> = keyof T extends string
       : never
   : never
 
-type Awaitable<T> = T | Promise<T>
+export type Awaitable<T> = T | Promise<T>
+export type MaybeArray<T> = T | T[]
+
+export type JavascriptExtension = 'js' | 'ts' | 'tsx' | 'jsx' | 'mjs' | 'cjs' | 'mts' | 'cts'
+export type VueExtension = 'vue'
+
+/**
+ * Allows adding additional types to a property of an object.
+ * If the property is an array, the type will be added to the array items.
+ */
+export type AugmentProperty<T extends Record<string, any>, K extends keyof T, V> = {
+  [key in keyof T]: key extends K
+    ? NonNullable<T[key]> extends Array<infer U>
+      ? (U | V)[]
+      : T[key]
+    : T[key]
+}
+
+/**
+ * Callback signature for the second argument of a `$resolve` resolver, exposed
+ * so resolvers can annotate the parameter when declaration emit forbids the
+ * implicit `any` that contextual typing would otherwise leave.
+ */
+export type ResolverGetter = <K extends KeysOf<ConfigSchema>>(key: K) => Promise<ReturnFromKey<ConfigSchema, K>>
 
 interface Resolvers<ReturnValue> {
-  $resolve: (val: unknown, get: <K extends KeysOf<ConfigSchema>>(key: K) => Promise<ReturnFromKey<ConfigSchema, K>>) => Awaitable<ReturnValue>
+  $resolve: (val: unknown, get: ResolverGetter) => Awaitable<ReturnValue>
   $schema?: InputObject['$schema']
   $default?: ReturnValue
 }

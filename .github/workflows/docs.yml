@@ -2,47 +2,42 @@ name: docs
 
 on:
   merge_group:
+  # autofix workflow will be triggered instead for PRs
   push:
-    paths:
-      - "docs/**"
-      - ".github/workflows/docs.yml"
-      - "*.md"
-  pull_request:
-    paths:
-      - "docs/**"
-    # autofix workflow will be triggered instead for PRs
     branches:
       - main
+      - 4.x
       - 3.x
-      - "!v[0-9]*"
+      - '!v[0-9]*'
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - '*.md'
 
 # Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
 jobs:
   lint-docs:
-    runs-on: ubuntu-latest
+    # autofix workflow handles PRs; run in merge queue and on push to maintenance branches
+    if: github.event_name == 'merge_group' || (github.event_name == 'push' && github.ref_name != 'main')
+    runs-on: ubuntu-24.04-arm
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          node-version: lts/*
-          cache: "pnpm"
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+        with:
+          node-version: lts
+          cache: true
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build (stub)
-        run: pnpm dev:prepare
+      - name: Prepare
+        run: vp run dev:prepare
 
       - name: Lint (docs)
-        run: pnpm lint:docs
-
-      - name: Build Nuxt
-        run: pnpm build
+        run: vp run lint:docs
 
       - name: Typecheck (docs)
-        run: pnpm typecheck:docs
+        run: vp run typecheck:docs

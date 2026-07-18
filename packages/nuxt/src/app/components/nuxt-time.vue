@@ -27,7 +27,11 @@ export interface NuxtTimeProps {
   dateStyle?: 'full' | 'long' | 'medium' | 'short'
   timeStyle?: 'full' | 'long' | 'medium' | 'short'
   hourCycle?: 'h11' | 'h12' | 'h23' | 'h24'
+
   relative?: boolean
+  numeric?: 'always' | 'auto'
+  relativeStyle?: 'long' | 'short' | 'narrow'
+
   title?: boolean | string
 }
 
@@ -58,32 +62,45 @@ if (import.meta.client && props.relative) {
 }
 
 const formatter = computed(() => {
-  const { locale: propsLocale, relative, ...rest } = props
+  const { locale: propsLocale, relative, relativeStyle, ...rest } = props
   if (relative) {
-    return new Intl.RelativeTimeFormat(_locale ?? propsLocale, rest)
+    return new Intl.RelativeTimeFormat(_locale ?? propsLocale, { ...rest, style: relativeStyle })
   }
   return new Intl.DateTimeFormat(_locale ?? propsLocale, rest)
 })
 
 const formattedDate = computed(() => {
-  if (props.relative) {
-    const diffInSeconds = (date.value.getTime() - now.value.getTime()) / 1000
-    const units: Array<{ unit: Intl.RelativeTimeFormatUnit, value: number }> = [
-      { unit: 'second', value: diffInSeconds },
-      { unit: 'minute', value: diffInSeconds / 60 },
-      { unit: 'hour', value: diffInSeconds / 3600 },
-      { unit: 'day', value: diffInSeconds / 86400 },
-      { unit: 'month', value: diffInSeconds / 2592000 },
-      { unit: 'year', value: diffInSeconds / 31536000 },
-    ]
-    const { unit, value } = units.find(({ value }) => Math.abs(value) < 60) || units[units.length - 1]!
-    return formatter.value.format(Math.round(value), unit)
+  if (isInvalidDate.value) {
+    return date.value.toString()
   }
 
-  return (formatter.value as Intl.DateTimeFormat).format(date.value)
+  if (!props.relative) {
+    return (formatter.value as Intl.DateTimeFormat).format(date.value)
+  }
+
+  const diffInSeconds = (date.value.getTime() - now.value.getTime()) / 1000
+
+  const units: Array<{
+    unit: Intl.RelativeTimeFormatUnit
+    seconds: number
+    threshold: number
+  }> = [
+    { unit: 'second', seconds: 1, threshold: 60 }, // 60 seconds → minute
+    { unit: 'minute', seconds: 60, threshold: 60 }, // 60 minutes → hour
+    { unit: 'hour', seconds: 3600, threshold: 24 }, // 24 hours → day
+    { unit: 'day', seconds: 86400, threshold: 30 }, // ~30 days → month
+    { unit: 'month', seconds: 2592000, threshold: 12 }, // 12 months → year
+    { unit: 'year', seconds: 31536000, threshold: Infinity },
+  ]
+
+  const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
+
+  const value = diffInSeconds / seconds
+  return (formatter.value as Intl.RelativeTimeFormat).format(Math.round(value), unit)
 })
 
-const isoDate = computed(() => date.value.toISOString())
+const isInvalidDate = computed(() => Number.isNaN(date.value.getTime()))
+const isoDate = computed(() => isInvalidDate.value ? undefined : date.value.toISOString())
 const title = computed(() => props.title === true ? isoDate.value : typeof props.title === 'string' ? props.title : undefined)
 const dataset: Record<string, string | number | boolean | Date | undefined> = {}
 
@@ -91,7 +108,7 @@ if (import.meta.server) {
   for (const prop in props) {
     if (prop !== 'datetime') {
       const value = props?.[prop as keyof typeof props]
-      if (value) {
+      if (value !== undefined && value !== null) {
         const propInKebabCase = prop.split(/(?=[A-Z])/).join('-')
         dataset[`data-${propInKebabCase}`] = props?.[prop as keyof typeof props]
       }
@@ -106,27 +123,45 @@ if (import.meta.server) {
       return name
     }
 
-    const date = new Date(el.getAttribute('datetime')!)
-    const options: Intl.DateTimeFormatOptions & { locale?: Intl.LocalesArgument, relative?: boolean } = {}
+    const datetime = el.getAttribute('datetime')
+    if (!datetime) {
+      return
+    }
+    const date = new Date(datetime)
+    if (Number.isNaN(date.getTime())) {
+      return
+    }
+
+    const options: Intl.DateTimeFormatOptions & Intl.RelativeTimeFormatOptions & { locale?: Intl.LocalesArgument, relative?: boolean } = {}
     for (const name of el.getAttributeNames()) {
       if (name.startsWith('data-')) {
-        const optionName = name.slice(5).split('-').map(toCamelCase).join('') as keyof Intl.DateTimeFormatOptions
+        let optionName = name.slice(5).split('-').map(toCamelCase).join('') as keyof (Intl.DateTimeFormatOptions & Intl.RelativeTimeFormatOptions)
 
-        options[optionName] = el.getAttribute(name) as any
+        if ((optionName as string) === 'relativeStyle') {
+          optionName = 'style'
+        }
+
+        const attrValue = el.getAttribute(name)
+        options[optionName] = (attrValue === 'true' ? true : attrValue === 'false' ? false : attrValue) as any
       }
     }
 
     if (options.relative) {
       const diffInSeconds = (date.getTime() - now) / 1000
-      const units: Array<{ unit: Intl.RelativeTimeFormatUnit, value: number }> = [
-        { unit: 'second', value: diffInSeconds },
-        { unit: 'minute', value: diffInSeconds / 60 },
-        { unit: 'hour', value: diffInSeconds / 3600 },
-        { unit: 'day', value: diffInSeconds / 86400 },
-        { unit: 'month', value: diffInSeconds / 2592000 },
-        { unit: 'year', value: diffInSeconds / 31536000 },
+      const units: Array<{
+        unit: Intl.RelativeTimeFormatUnit
+        seconds: number
+        threshold: number
+      }> = [
+        { unit: 'second', seconds: 1, threshold: 60 }, // 60 seconds → minute
+        { unit: 'minute', seconds: 60, threshold: 60 }, // 60 minutes → hour
+        { unit: 'hour', seconds: 3600, threshold: 24 }, // 24 hours → day
+        { unit: 'day', seconds: 86400, threshold: 30 }, // ~30 days → month
+        { unit: 'month', seconds: 2592000, threshold: 12 }, // 12 months → year
+        { unit: 'year', seconds: 31536000, threshold: Infinity },
       ]
-      const { unit, value } = units.find(({ value }) => Math.abs(value) < 60) || units[units.length - 1]!
+      const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
+      const value = diffInSeconds / seconds
       const formatter = new Intl.RelativeTimeFormat(options.locale, options)
       el.textContent = formatter.format(Math.round(value), unit)
     } else {
