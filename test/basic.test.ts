@@ -1351,6 +1351,32 @@ describe('errors', () => {
     expect(await res.text()).toContain('This is a custom error')
   })
 
+  it('should expose error causes only to development error pages', async () => {
+    const htmlResponse = await fetch('/error-cause', {
+      headers: { accept: 'text/html' },
+    })
+    const html = await htmlResponse.text()
+
+    expect(html).toContain('createError message')
+    if (isDev) {
+      expect(html).toContain('Cause: inner error')
+      expect(html).toMatch(/Cause stack:[^<]*inner error[^<]*at setup/)
+      expect(html).toContain('Root cause: root cause')
+      expect(html).toMatch(/Root cause stack:[^<]*root cause[^<]*at setup/)
+    } else {
+      expect(html).not.toContain('inner error')
+      expect(html).not.toContain('root cause')
+    }
+
+    const jsonResponse = await fetch('/error-cause', {
+      headers: { accept: 'application/json' },
+    })
+    const json = await jsonResponse.json()
+    expect(json).not.toHaveProperty('cause')
+    expect(JSON.stringify(json)).not.toContain('inner error')
+    expect(JSON.stringify(json)).not.toContain('root cause')
+  })
+
   it('should not allow accessing error route directly', async () => {
     const res = await fetch('/__nuxt_error', {
       headers: {
@@ -2276,6 +2302,34 @@ describe('public directories', () => {
     const html = await $fetch<string>('/assets-custom')
     expect(html).toContain('"/public.svg"')
     expect(html).toContain('"/custom/file.svg"')
+  })
+
+  it('should serve non-ascii filename public assets', async () => {
+    const chinese = await $fetch<string>('/测试.md')
+    expect(chinese).toContain('中文')
+
+    const japanese = await $fetch<string>('/日本語.txt')
+    expect(japanese).toContain('日本語')
+
+    const cyrillicJson = await $fetch('/каталог/файл.json')
+    expect(cyrillicJson).toEqual({ lang: 'ru', text: 'Привет мир' })
+
+    const greek = await $fetch<string>('/Ελληνικά.html')
+    expect(greek).toContain('Ελληνικά')
+  })
+})
+
+describe.skipIf(isDev)('non-ascii public asset files in output', () => {
+  it('should exist in output directory with correct filenames', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+
+    expect(await readdir(publicDir)).toContain('测试.md')
+    expect(await readdir(publicDir)).toContain('日本語.txt')
+    expect(await readdir(publicDir)).toContain('Ελληνικά.html')
+
+    const subdir = join(publicDir, 'каталог')
+    expect(await readdir(subdir)).toContain('файл.json')
   })
 })
 

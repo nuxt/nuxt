@@ -1,6 +1,6 @@
 import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
-import type { NuxtPayload } from '#app/types'
+import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 import type { H3Event } from 'nitro/h3'
 import { serverFetch } from 'nitro'
 
@@ -40,6 +40,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ??= error.data
   errorObject.url = event.req.url
+  const errorCause = import.meta.dev ? serializeErrorCause(error.cause) : undefined
 
   // Merge defaultRes headers, skipping content-type (would be application/json)
   // and content-security-policy (would disable JS execution in the error page)
@@ -65,6 +66,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       nuxt: {
         '~internal': true,
         '~rendering-error': true,
+        ...(errorCause !== undefined && { '~error-cause': errorCause }),
       },
     },
   ).catch(() => null)
@@ -122,4 +124,21 @@ function mergeHeaders (target: Headers, overrides: Headers | [string, string][] 
     }
   }
   return target
+}
+
+function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {
+  if (depth >= 10 || (cause instanceof Error && seen.has(cause))) { return }
+  if (cause instanceof Error) {
+    seen.add(cause)
+    const nestedCause = serializeErrorCause(cause.cause, depth + 1, seen)
+    return {
+      name: cause.name,
+      message: cause.message,
+      ...(cause.stack && { stack: cause.stack }),
+      ...(nestedCause !== undefined && { cause: nestedCause }),
+    }
+  }
+  if (cause === null || typeof cause === 'string' || typeof cause === 'number' || typeof cause === 'boolean') {
+    return cause
+  }
 }
