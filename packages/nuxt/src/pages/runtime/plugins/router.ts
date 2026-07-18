@@ -153,7 +153,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
       router.afterEach(async (to, _from, failure) => {
         delete nuxtApp._processingMiddleware
-        delete nuxtApp._middlewareTo
+        if (import.meta.server) {
+          delete nuxtApp._middlewareTo
+        }
 
         if (import.meta.client && !nuxtApp.isHydrating && error.value) {
           // Clear any existing errors
@@ -308,7 +310,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     router.onError(async () => {
       delete nuxtApp._processingMiddleware
-      delete nuxtApp._middlewareTo
+      if (import.meta.server) {
+        delete nuxtApp._middlewareTo
+      }
       await nuxtApp.callHook('page:loading:end')
     })
 

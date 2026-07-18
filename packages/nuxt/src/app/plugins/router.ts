@@ -296,7 +296,9 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
 
       router.afterEach(() => {
         delete nuxtApp._processingMiddleware
-        delete nuxtApp._middlewareTo
+        if (import.meta.server) {
+          delete nuxtApp._middlewareTo
+        }
       })
 
       await router.replace(initialURL)
