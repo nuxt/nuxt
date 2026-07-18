@@ -24,6 +24,22 @@ export const projectSuffix = [
   process.env.TEST_MANIFEST,
 ].filter(Boolean).join('-') || 'default'
 
+const isMatrixRun = !!process.env.TEST_BUILDER
+const isCanonicalCombo = builder === 'vite' && !asyncContext && isTestingAppManifest
+
+/**
+ * True in exactly one fixture-matrix project (vite/built/default/manifest-on), and always true
+ * outside the matrix. Guard suites that do not depend on any matrix axis with
+ * `describe.skipIf(!runsOnceInMatrix)` so they run a single time instead of once per project.
+ */
+export const runsOnceInMatrix = !isMatrixRun || (isCanonicalCombo && isBuilt)
+
+/**
+ * Like `runsOnceInMatrix` but keeps the dev/built axis: true in exactly one dev project and one
+ * built project.
+ */
+export const runsOncePerEnvInMatrix = !isMatrixRun || isCanonicalCombo
+
 export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
 
 export function withMatrix (config: NuxtConfig) {
