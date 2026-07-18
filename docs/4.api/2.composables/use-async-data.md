@@ -161,7 +161,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
 | `watch`         | `MultiWatchSources`                          | -          | Array of reactive sources to watch and auto-refresh.                                                            |
 | `deep`          | `boolean`                                    | `false`    | Return data in a deep ref object. Defaults to `false` for improved performance (shallow ref object).             |
 | `dedupe`        | `'cancel' \| 'defer'`                        | `'cancel'` | Policy when triggering an execution more than once at a time.                                                    |
-| `enabled`       | `boolean`                                    | `true`     | Barrier that gates whether the `handler` may run. While `false`, every execution is blocked (initial fetch, `execute`/`refresh`, and watch triggers), and switching `true` → `false` cancels any in-flight request without clearing `data`. Re-enabling does not refetch on its own. |
+| `enabled` :badge[v4.5]{color="info" size="xs" class="align-middle"} | `boolean`                                    | `true`     | Barrier that gates whether the `handler` may run. While `false`, every execution is blocked (initial fetch, `execute`/`refresh`, and watch triggers), and switching `true` → `false` cancels any in-flight request without clearing `data`. Re-enabling does not refetch on its own. |
 
 ::note
 All options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
