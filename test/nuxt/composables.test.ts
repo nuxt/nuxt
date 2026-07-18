@@ -21,6 +21,7 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
+import { PageRouteSymbol } from '#app/components/injections'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
@@ -941,6 +942,35 @@ describe('routing utilities: `useRoute`', () => {
 
     el.unmount()
     router.removeRoute('parent-test')
+  })
+
+  it('should return the global route in a detached effect scope', async () => {
+    const pageRoute = shallowReactive({ path: '/page-route' }) as unknown as ReturnType<typeof useRoute>
+    let injectedRoute: ReturnType<typeof useRoute>
+    let childScopeRoute: ReturnType<typeof useRoute>
+    let detachedScopeRoute: ReturnType<typeof useRoute>
+
+    const el = await mountSuspended(defineComponent({
+      setup () {
+        provide(PageRouteSymbol, pageRoute)
+        return () => h(defineComponent({
+          setup () {
+            injectedRoute = useRoute()
+            childScopeRoute = effectScope().run(() => useRoute())!
+            detachedScopeRoute = effectScope(true).run(() => useRoute())!
+            return () => h('div')
+          },
+        }))
+      },
+    }))
+
+    expect(injectedRoute!).toBe(pageRoute)
+    expect(childScopeRoute!).toBe(pageRoute)
+    expect(detachedScopeRoute!).toBe(nuxtApp._route)
+
+    el.unmount()
+    // mounting without registered routes raises a 404 error
+    await clearError()
   })
 })
 
