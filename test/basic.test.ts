@@ -277,11 +277,8 @@ describe('pages', () => {
   it('updates the URL after a fatal middleware error on client navigation (#19954)', async () => {
     const { page } = await renderPage('/navigate-to-middleware-error')
     await page.getByText('trigger middleware error').click()
-    // error.vue renders an h1
     await page.waitForSelector('h1')
-    // The URL reflects the target route (matching SSR), not the previous page.
     expect(new URL(page.url()).pathname).toBe('/middleware-error')
-    // The back button returns to the previous page.
     await page.goBack()
     expect(new URL(page.url()).pathname).toBe('/navigate-to-middleware-error')
     await page.close()
