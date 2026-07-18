@@ -9,7 +9,7 @@ export function TypeCheckPlugin (nuxt: Nuxt): Plugin {
   let entry: string
   return {
     name: 'nuxt:type-check',
-    applyToEnvironment: environment => environment.name === 'client' && !environment.config.isProduction,
+    applyToEnvironment: environment => environment.config.consumer === 'client' && !environment.config.isProduction,
     apply: () => {
       return !nuxt.options.test && nuxt.options.typescript.typeCheck === true
     },

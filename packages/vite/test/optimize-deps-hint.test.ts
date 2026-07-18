@@ -177,11 +177,11 @@ describe('OptimizeDepsHintPlugin', () => {
     expect(plugin.apply).toBe('serve')
   })
 
-  it('applies only to client environment', () => {
+  it('applies only to client-consumer environments', () => {
     const plugin = OptimizeDepsHintPlugin(createNuxt()) as any
-    expect(plugin.applyToEnvironment({ name: 'client' })).toBe(true)
-    expect(plugin.applyToEnvironment({ name: 'server' })).toBe(false)
-    expect(plugin.applyToEnvironment({ name: 'ssr' })).toBe(false)
+    expect(plugin.applyToEnvironment({ name: 'client', config: { consumer: 'client' } })).toBe(true)
+    expect(plugin.applyToEnvironment({ name: 'ssr', config: { consumer: 'server' } })).toBe(false)
+    expect(plugin.applyToEnvironment({ name: 'custom', config: { consumer: 'client' } })).toBe(true)
   })
 
   it('early returns when no optimizer', () => {

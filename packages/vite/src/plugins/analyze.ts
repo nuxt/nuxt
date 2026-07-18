@@ -33,7 +33,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
       config = _config
     },
     applyToEnvironment (environment) {
-      if (environment.name !== 'client') {
+      if (environment.config.consumer !== 'client') {
         return false
       }
       return [

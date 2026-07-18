@@ -12,7 +12,7 @@ export function DevStyleSSRPlugin (options: DevStyleSSRPluginOptions): Plugin {
     name: 'nuxt:dev-style-ssr',
     apply: 'serve',
     enforce: 'post',
-    applyToEnvironment: environment => environment.name === 'client',
+    applyToEnvironment: environment => environment.config.consumer === 'client',
     transform (code, id) {
       if (!isCSS(id) || !code.includes('import.meta.hot')) {
         return

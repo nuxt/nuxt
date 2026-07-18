@@ -158,7 +158,7 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:optimize-deps-hint',
     apply: 'serve',
-    applyToEnvironment: environment => environment.name === 'client',
+    applyToEnvironment: environment => environment.config.consumer === 'client',
 
     resolveId: {
       order: 'pre',

@@ -187,7 +187,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
       addVitePlugin({
         name: 'nuxt:streaming-iife-chunk',
-        applyToEnvironment: (env: any) => env.name === 'client',
+        applyToEnvironment: (env: any) => env.config.consumer === 'client',
 
         buildStart () {
           if (nuxt.options.dev) { return }

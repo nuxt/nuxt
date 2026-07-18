@@ -9,7 +9,7 @@ export function ModulePreloadPolyfillPlugin (): Plugin {
   let entry: string
   return {
     name: 'nuxt:module-preload-polyfill',
-    applyToEnvironment: environment => environment.name === 'client',
+    applyToEnvironment: environment => environment.config.consumer === 'client',
     configResolved (config) {
       try {
         isDisabled = config.build.modulePreload === false || config.build.modulePreload.polyfill === false
