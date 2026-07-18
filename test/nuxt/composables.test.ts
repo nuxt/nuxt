@@ -1151,6 +1151,85 @@ describe('useCookie', () => {
 
     expect(document.cookie).not.toContain('no-refresh-test=original')
   })
+
+  it('should re-evaluate expires getter on each cookie write', async () => {
+    const { nextTick } = await import('vue')
+    let callCount = 0
+    const cookie = useCookie('expires-getter', {
+      expires: () => {
+        callCount++
+        return new Date(Date.now() + 60_000)
+      },
+    })
+
+    // Initial write of default/undefined may or may not happen; start from a known count
+    const baseline = callCount
+    cookie.value = 'first'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(baseline)
+
+    const afterFirst = callCount
+    cookie.value = 'second'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(afterFirst)
+    expect(document.cookie).toContain('expires-getter=second')
+  })
+
+  it('should re-evaluate expires getter on same-value assignment when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+    let callCount = 0
+    document.cookie = 'expires-refresh=token'
+    const cookie = useCookie('expires-refresh', {
+      refresh: true,
+      expires: () => {
+        callCount++
+        return new Date(Date.now() + 60_000)
+      },
+    })
+    expect(cookie.value).toBe('token')
+
+    const baseline = callCount
+    cookie.value = 'token'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(baseline)
+    expect(document.cookie).toContain('expires-refresh=token')
+  })
+
+  it('should support a static Date for expires without a getter', async () => {
+    const { nextTick } = await import('vue')
+    const cookie = useCookie('expires-static', {
+      expires: new Date(Date.now() + 60_000),
+    })
+    cookie.value = 'static-value'
+    await nextTick()
+    expect(document.cookie).toContain('expires-static=static-value')
+  })
+
+  it('should not treat an expires getter returning undefined as expired', () => {
+    const cookie = useCookie('expires-undefined-getter', {
+      default: () => 'fallback',
+      expires: () => undefined,
+    })
+    expect(cookie.value).toBe('fallback')
+  })
+
+  it('should keep session cookies without expires or maxAge as plain refs', async () => {
+    const { nextTick } = await import('vue')
+    vi.useFakeTimers()
+    try {
+      const cookie = useCookie('session-no-expiry', {
+        default: () => 'session',
+      })
+      cookie.value = 'session'
+      await nextTick()
+      expect(cookie.value).toBe('session')
+
+      vi.advanceTimersByTime(60_000)
+      expect(cookie.value).toBe('session')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
 
 describe('callOnce', () => {
