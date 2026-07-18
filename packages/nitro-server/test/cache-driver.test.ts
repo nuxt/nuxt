@@ -1,7 +1,8 @@
+import { promises as fsp } from 'node:fs'
 import { mkdtemp, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import cacheDriver from '../src/runtime/utils/cache-driver.mjs'
 
 describe('cache-driver', () => {
@@ -35,5 +36,42 @@ describe('cache-driver', () => {
 
     const reader = cacheDriver({ base })
     expect(await reader.getItem('/_payload.json', {})).toBe('updated')
+  })
+
+  it('never exposes a partially written payload to concurrent readers', async () => {
+    const oldValue = 'old-complete-payload'
+    const newValue = 'new-complete-payload'
+
+    const writer = cacheDriver({ base })
+    await writer.setItem!('/_payload.json', oldValue, {})
+
+    const originalWriteFile = fsp.writeFile
+    let releaseWrite!: () => void
+    const writeStalled = new Promise<void>((resolve) => { releaseWrite = resolve })
+    let partialWritten!: () => void
+    const partialOnDisk = new Promise<void>((resolve) => { partialWritten = resolve })
+
+    // simulate a nonatomic write interrupted midway
+    const spy = vi.spyOn(fsp, 'writeFile').mockImplementation(async (path, data, options) => {
+      await originalWriteFile.call(fsp, path, String(data).slice(0, Math.floor(String(data).length / 2)), options as never)
+      partialWritten()
+      await writeStalled
+      return originalWriteFile.call(fsp, path, data, options as never)
+    })
+
+    try {
+      const write = writer.setItem!('/_payload.json', newValue, {})
+      await Promise.race([partialOnDisk, write])
+
+      const reader = cacheDriver({ base })
+      const observed = await reader.getItem('/_payload.json', {})
+      expect([oldValue, newValue, null]).toContain(observed)
+
+      releaseWrite()
+      await write
+    } finally {
+      releaseWrite()
+      spy.mockRestore()
+    }
   })
 })
