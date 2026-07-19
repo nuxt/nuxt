@@ -113,9 +113,7 @@ describe('head', () => {
 })
 
 describe('app config', () => {
-  // the node context must not reference `app.config` files, which are app-context
-  // sources (https://github.com/nuxt/nuxt/issues/34140) - the merged type is
-  // asserted in `app/app-types.ts` instead
+  // node context must not see `app.config` sources (#34140); merged type asserted in `app/app-types.ts`
   it('is not typed from app-context `app.config` files in the node context', () => {
     expectTypeOf<AppConfig>().toEqualTypeOf<{ [key: string]: unknown }>()
   })

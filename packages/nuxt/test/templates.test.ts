@@ -41,7 +41,7 @@ describe('appConfigTemplate', () => {
 
 describe('sharedAppConfigDeclarationTemplate', () => {
   it('does not import user `app.config` files, unlike the app-context declaration (#34140)', async () => {
-    const nuxt = makeNuxt({ buildDir: '/project/.nuxt' } as Partial<Nuxt['options']>)
+    const nuxt = makeNuxt({ buildDir: '/project/.nuxt' })
     const app = makeApp(['/project/app/app.config.ts'])
 
     const appContents = await appConfigDeclarationTemplate.getContents!({ nuxt, app, options: {} })

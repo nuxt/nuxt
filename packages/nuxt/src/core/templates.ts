@@ -435,11 +435,8 @@ declare module '@nuxt/schema' {
   },
 }
 
-// A variant of `app.config.d.ts` for the shared context which does not import
-// user `app.config` files, as those are app-context sources whose import graph
-// would otherwise be type-checked without app auto-import globals
-// (https://github.com/nuxt/nuxt/issues/34140). Only inline config and
-// `CustomAppConfig` augmentations are typed here.
+// Like `app.config.d.ts` but never imports user `app.config` files — their app-context
+// import graph would be checked without app globals (https://github.com/nuxt/nuxt/issues/34140)
 export const sharedAppConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/shared-app.config.d.ts',
   getContents ({ nuxt }) {
