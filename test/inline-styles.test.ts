@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { join } from 'pathe'
-import { projectSuffix, runsOnceInMatrix } from './matrix'
+import { isBuilt, projectSuffix, runsOnceInMatrix } from './matrix'
 
 describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/inline-styles', import.meta.url))
@@ -29,6 +29,15 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
 
     const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
     expect(cssLinks, page).toEqual([])
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35715
+  it.runIf(isBuilt)('inline entry component CSS including not rendered in SSR', async () => {
+    const html = await readFile(join(outputDir, 'public', 'hidden-v-if', 'index.html'), 'utf-8')
+    expect(html).toContain('--inline-some-component-token:some-component')
+
+    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    expect(cssLinks).toEqual([])
   })
 
   // https://github.com/nuxt/nuxt/issues/35255
