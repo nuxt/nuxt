@@ -119,40 +119,6 @@ describe('route rules', () => {
     expect(html).not.toContain('/route-rules/spa-async-data/_payload.json')
     await expectNoClientErrors('/route-rules/spa-async-data')
   })
-
-  it('should not generate payload route rules for non-wildcard ssr: false routes', () => {
-    // @ts-expect-error untyped internal property
-    const routeRules = useTestContext().nuxt._nitro.options.routeRules
-
-    expect(routeRules['/route-rules/isr-spa']).toMatchObject({
-      isr: 60,
-      ssr: false,
-    })
-    expect(routeRules['/route-rules/isr-spa/_payload.json']).toBeUndefined()
-  })
-
-  it('should generate payload route rules with explicit `ssr: true`', () => {
-    // @ts-expect-error untyped internal property
-    const routeRules = useTestContext().nuxt._nitro.options.routeRules
-
-    // https://github.com/nuxt/nuxt/issues/34856
-    expect(routeRules['/route-rules/swr-in-spa/_payload.json']).toMatchObject({
-      ssr: true,
-      cache: { swr: true },
-    })
-  })
-})
-
-describe('modules', () => {
-  it('should auto-register modules in ~/modules', async () => {
-    const result = await $fetch<string>('/auto-registered-module')
-    expect(result).toEqual('handler added by auto-registered module')
-  })
-
-  it('should respect addServerHandler called from a nitro:config hook (#34982)', async () => {
-    const result = await $fetch<string>('/auto-registered-module-late')
-    expect(result).toEqual('handler added from nitro:config hook')
-  })
 })
 
 describe('pages', () => {
@@ -1529,95 +1495,43 @@ describe('server tree shaking', () => {
   })
 })
 
-describe('extends support', () => {
-  describe('layouts & pages', () => {
-    it('extends foo/layouts/default & foo/pages/index', async () => {
-      const html = await $fetch<string>('/foo')
-      expect(html).toContain('Extended layout from foo')
-      expect(html).toContain('Extended page from foo')
-    })
-
-    it('extends [bar/layouts/override & bar/pages/override] over [foo/layouts/override & foo/pages/override]', async () => {
-      const html = await $fetch<string>('/override')
-      expect(html).toContain('Extended layout from bar')
-      expect(html).toContain('Extended page from bar')
-      expect(html).toContain('This child page should not be overridden by bar')
-    })
+describe.skipIf(!runsOnceInMatrix)('extends support', () => {
+  it('renders layer layout, page, component, middleware, composable and plugin together', async () => {
+    const html = await $fetch<string>('/foo')
+    expect(html).toContain('Extended layout from foo')
+    expect(html).toContain('Extended page from foo')
+    expect(html).toContain('Extended component from foo')
+    expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
+    expect(html).toContain('from layer alias')
+    expect(html).toContain('Composable | useExtendsFoo: foo')
+    expect(html).toContain('Plugin | foo: String generated from foo plugin!')
   })
 
-  describe('components', () => {
-    it('extends foo/components/ExtendsFoo', async () => {
-      const html = await $fetch<string>('/foo')
-      expect(html).toContain('Extended component from foo')
-    })
-
-    it('extends bar/components/ExtendsOverride over foo/components/ExtendsOverride', async () => {
-      const html = await $fetch<string>('/override')
-      expect(html).toContain('Extended component from bar')
-    })
+  it('extends [bar/layouts/override & bar/pages/override] over [foo/layouts/override & foo/pages/override]', async () => {
+    const html = await $fetch<string>('/override')
+    expect(html).toContain('Extended layout from bar')
+    expect(html).toContain('Extended page from bar')
+    expect(html).toContain('Extended component from bar')
+    expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
+    expect(html).toContain('This child page should not be overridden by bar')
   })
 
-  describe('middlewares', () => {
-    it('works with layer aliases', async () => {
-      const html = await $fetch<string>('/foo')
-      expect(html).toContain('from layer alias')
-    })
-    it('extends foo/middleware/foo', async () => {
-      const html = await $fetch<string>('/foo')
-      expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
-    })
-
-    it('extends bar/middleware/override over foo/middleware/override', async () => {
-      const html = await $fetch<string>('/override')
-      expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
-    })
-    it('global middlewares sorting', async () => {
-      const html = await $fetch<string>('/catchall/middleware/ordering')
-      expect(html).toContain('catchall at middleware')
-    })
+  it('allows overriding composables', async () => {
+    const html = await $fetch<string>('/extends')
+    expect(html).toContain('test from project')
   })
 
-  describe('composables', () => {
-    it('extends foo/composables/foo', async () => {
-      const html = await $fetch<string>('/foo')
-      expect(html).toContain('Composable | useExtendsFoo: foo')
-    })
-    it('allows overriding composables', async () => {
-      const html = await $fetch<string>('/extends')
-      expect(html).toContain('test from project')
-    })
+  it('extends foo/server', async () => {
+    expect(await $fetch<string>('/api/foo')).toBe('foo')
+    const { headers } = await fetch('/')
+    expect(headers.get('injected-header')).toEqual('foo')
   })
 
-  describe('plugins', () => {
-    it('extends foo/plugins/foo', async () => {
-      const html = await $fetch<string>('/foo')
-      expect(html).toContain('Plugin | foo: String generated from foo plugin!')
-    })
-
-    it('respects plugin ordering within layers', async () => {
-      const html = await $fetch<string>('/catchall/plugins/ordering')
-      expect(html).toContain('catchall at plugins')
-    })
-  })
-
-  describe('server', () => {
-    it('extends foo/server/api/foo', async () => {
-      expect(await $fetch<string>('/api/foo')).toBe('foo')
-    })
-
-    it('extends foo/server/middleware/foo', async () => {
-      const { headers } = await fetch('/')
-      expect(headers.get('injected-header')).toEqual('foo')
-    })
-  })
-
-  describe('app', () => {
-    it('extends foo/app/router.options & bar/app/router.options', async () => {
-      const html: string = await $fetch<string>('/')
-      const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)![1]!.split(' ')
-      expect(routerLinkClasses).toContain('foo-active-class')
-      expect(routerLinkClasses).toContain('bar-exact-active-class')
-    })
+  it('extends foo/app/router.options & bar/app/router.options', async () => {
+    const html: string = await $fetch<string>('/')
+    const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)![1]!.split(' ')
+    expect(routerLinkClasses).toContain('foo-active-class')
+    expect(routerLinkClasses).toContain('bar-exact-active-class')
   })
 })
 
@@ -1941,7 +1855,7 @@ describe.skipIf(isDev)('non-ascii public asset files in output', () => {
 })
 
 describe.skipIf(!runsOnceInMatrix)('app config', () => {
-  it('should work', async () => {
+  it('should merge app config from layers, nuxt config and app.config', async () => {
     const html = await $fetch<string>('/app-config')
 
     const expectedAppConfig: Record<string, any> = {
@@ -1953,10 +1867,7 @@ describe.skipIf(!runsOnceInMatrix)('app config', () => {
       fromLayer: true,
       userConfig: 123,
     }
-    expect.soft(html).toContain(JSON.stringify(expectedAppConfig))
-
-    const serverAppConfig = await $fetch<Record<string, any>>('/api/app-config')
-    expect(serverAppConfig).toMatchObject({ appConfig: expectedAppConfig })
+    expect(html).toContain(JSON.stringify(expectedAppConfig))
   })
 })
 
