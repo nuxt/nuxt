@@ -1923,6 +1923,19 @@ describe.skipIf(isWindows)('payload rendering', () => {
     expect(Array.isArray(data.data['swr-data'])).toBe(true)
   })
 
+  it('preserves query parameters in extracted payloads for cached routes', async () => {
+    const html = await $fetch<string>('/payload-query?page=2')
+    const { attrs } = parseData(html)
+    const payloadURL = new URL(attrs['data-src']!.replaceAll('&amp;', '&'), url('/'))
+
+    expect.soft(payloadURL.searchParams.get('page')).toBe('2')
+
+    const payload = await $fetch<string>('/payload-query/_payload.json?page=2', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data['payload-query-2']).toEqual({ page: 2 })
+    expect(data.data['payload-query-1']).toBeUndefined()
+  })
+
   // https://github.com/nuxt/nuxt/issues/34856
   it('should render payload for SSR+SWR routes that opt out of a catch-all `ssr: false` rule', async () => {
     const payload = await $fetch<string>('/route-rules/swr-in-spa/_payload.json', { responseType: 'text' })
