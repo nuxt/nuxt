@@ -10,7 +10,7 @@ export interface ResolveModuleOptions {
   /** @deprecated use `url` with URLs pointing at a file - never a directory */
   paths?: string | string[]
   url?: URL | URL[]
-  /** @default ['.js', '.mjs', '.ts', '.cjs', '.tsx', '.jsx', '.mts', '.cts'] */
+  /** @default ['.mjs', '.js', '.cjs', '.mts', '.ts', '.cts', '.tsx', '.jsx'] */
   extensions?: string[]
 }
 
