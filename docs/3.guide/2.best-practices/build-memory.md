@@ -90,15 +90,7 @@ This helps when Node throws `FATAL ERROR: Reached heap limit` and the host still
 
 `--expose-gc` only exposes `global.gc()`. It does not free objects the build still holds.
 
-### Shrink What the Bundler Sees
-
-- Lazy-load i18n locales when your module supports it.
-- Drop unused modules; prefer focused imports over full barrels.
-- Use [`nuxt analyze`](/docs/4.x/api/commands/analyze) to spot unexpected client chunks (useful for the graph, not a full heap profile).
-
-### Nuxt 4.5 and Rolldown
-
-Nuxt 4.5 uses [Rolldown](https://rolldown.rs) via Vite 8 for the client pipeline. Nitro still builds the server separately, so a faster client build alone does not guarantee a lower total peak. Measure again after upgrading. See [Migration to Vite 8](/docs/4.x/getting-started/upgrade#migration-to-vite-8).
+If a very large dependency (for example Puppeteer) lands in the client graph, [`nuxt analyze`](/docs/4.x/api/commands/analyze) can show that. For most apps, prerendering dominates peak memory more than the module graph.
 
 ## Sizing CI
 
