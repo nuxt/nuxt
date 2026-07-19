@@ -23,7 +23,7 @@ describe('shared folder', () => {
     expectTypeOf(config).not.toBeAny()
   })
 
-  it('types inline and schema app config but not app-context `app.config` files (#34140)', () => {
+  it('types inline and schema app config but not app-context `app.config` files', () => {
     const config = useAppConfig()
     expectTypeOf(config.fromNuxtConfig).toEqualTypeOf<boolean>()
     expectTypeOf(config.userConfig).toEqualTypeOf<123 | 456 | undefined>()

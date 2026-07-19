@@ -341,8 +341,7 @@ async function initNuxt (nuxt: Nuxt) {
     // Add module augmentations directly to NuxtConfig
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/modules.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
-    // no `types/app.config.d.ts` here: it imports user `app.config` sources, and
-    // `AppConfigInput` for `nuxt.config` comes from the schema (https://github.com/nuxt/nuxt/issues/34140)
+    opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/shared-app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
     opts.nodeReferences.push({ path: resolveModulePath('@nuxt/vite-builder', { from: import.meta.url }).replace('.mjs', '.d.mts') })
     if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
@@ -359,8 +358,6 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
-    // not `types/app.config.d.ts`, which would drag user `app.config` sources
-    // into the shared program (https://github.com/nuxt/nuxt/issues/34140)
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/shared-app.config.d.ts') })
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/shared-imports.d.ts') })
 
@@ -384,7 +381,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add nitro types
   nuxt.hook('nitro:prepare:types', (opts) => {
-    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/shared-app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
 
     const serverBuilderReference = getServerBuilderReference()

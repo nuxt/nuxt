@@ -113,9 +113,10 @@ describe('head', () => {
 })
 
 describe('app config', () => {
-  // node context must not see `app.config` sources (#34140); merged type asserted in `app/app-types.ts`
-  it('is not typed from app-context `app.config` files in the node context', () => {
-    expectTypeOf<AppConfig>().toEqualTypeOf<{ [key: string]: unknown }>()
+  it('types inline and schema app config but not app-context `app.config` files', () => {
+    expectTypeOf<AppConfig['fromNuxtConfig']>().toEqualTypeOf<boolean>()
+    expectTypeOf<AppConfig['userConfig']>().toEqualTypeOf<123 | 456 | undefined>()
+    expectTypeOf<AppConfig['fromLayer']>().toEqualTypeOf<unknown>()
   })
 })
 
