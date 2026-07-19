@@ -146,7 +146,9 @@ describe('errors', () => {
   it('createError', () => {
     expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
       {
+        "__nuxt_error": true,
         "data": undefined,
+        "fatal": false,
         "message": "HTTPError 404",
         "status": 404,
         "statusText": undefined,
@@ -155,7 +157,9 @@ describe('errors', () => {
     `)
     expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
       {
+        "__nuxt_error": true,
         "data": undefined,
+        "fatal": false,
         "message": "Message",
         "status": 500,
         "statusText": undefined,
