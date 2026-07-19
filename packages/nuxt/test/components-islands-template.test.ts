@@ -32,7 +32,7 @@ function makeComponent (overrides: Partial<Component>): Component {
 }
 
 describe('componentsIslandsTemplate', () => {
-  it('emits parseable module output for island component names starting with a digit', () => {
+  it('emits parseable module output for island component names starting with a digit', async () => {
     const app = {
       components: [makeComponent({
         filePath: '/root/components/1thing.island.vue',
@@ -44,7 +44,7 @@ describe('componentsIslandsTemplate', () => {
       pages: [],
     } as unknown as NuxtApp
 
-    const contents = componentsIslandsTemplate.getContents!({ app, nuxt: makeNuxt(), options: {} })
+    const contents = await componentsIslandsTemplate.getContents!({ app, nuxt: makeNuxt(), options: {} })
 
     expect(contents).toContain('"1thing": defineAsyncComponent(')
     expect(() => Parser.parse(contents, { ecmaVersion: 'latest', sourceType: 'module' })).not.toThrow()

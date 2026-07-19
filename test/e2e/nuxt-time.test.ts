@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
+import type { Page } from '@playwright/test'
 import { expect, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
@@ -13,8 +14,10 @@ test.use({
   },
 })
 
-function hydrationLogs (page: { _consoleLogs?: Array<{ type: string, text: string }> }) {
-  return (page._consoleLogs ?? []).filter(log => !log.text.includes('<Suspense>') && !log.text.includes('[vite]'))
+function hydrationLogs (page: Page) {
+  // @ts-expect-error untyped
+  const logs = (page._consoleLogs ?? []) as Array<{ type: string, text: string }>
+  return logs.filter(log => !log.text.includes('<Suspense>') && !log.text.includes('[vite]'))
 }
 
 test.describe('nuxt-time', () => {
