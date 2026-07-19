@@ -1,7 +1,0 @@
-{
-  "private": true,
-  "name": "fixture-plugin-dependencies",
-  "dependencies": {
-    "nuxt": "workspace:*"
-  }
-}

@@ -1404,12 +1404,6 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
-  test/fixtures/plugin-dependencies:
-    dependencies:
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-
   test/fixtures/runtime-compiler:
     dependencies:
       nuxt:

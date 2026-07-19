@@ -122,37 +122,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   })
 })
 
-describe.skipIf(process.env.ECOSYSTEM_CI)('plugin dependency bundles', () => {
-  const rootDir = fileURLToPath(new URL('./fixtures/plugin-dependencies', import.meta.url))
-  let buildOutput = ''
-
-  beforeAll(async () => {
-    const result = await exec('pnpm', ['nuxt', 'build', rootDir])
-    buildOutput = result.stdout + result.stderr
-  }, 120 * 1000)
-
-  it('filters dependencies that are unavailable in each build target', async () => {
-    const clientBundle = await readFiles(['**/*.js'], join(rootDir, '.output/public'))
-    expect(clientBundle).toContain('target-client-25401')
-    expect(clientBundle).toContain('target-universal-25401')
-    expect(clientBundle).toContain('target-dependent-25401')
-    expect(clientBundle).not.toContain('target-server-25401')
-
-    const serverBundle = await readFiles(['**/*.mjs'], join(rootDir, '.output/server'))
-    expect(serverBundle).toContain('target-server-25401')
-    expect(serverBundle).toContain('target-universal-25401')
-    expect(serverBundle).toContain('target-dependent-25401')
-    expect(serverBundle).not.toContain('target-client-25401')
-
-    expect(buildOutput).not.toContain('NUXT_B2008')
-  })
-})
-
-async function readFiles (pattern: string[], rootDir: string) {
-  const files = await glob(pattern, { cwd: rootDir })
-  return (await Promise.all(files.map(file => fsp.readFile(join(rootDir, file), 'utf8')))).join('\n')
-}
-
 async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })
   const stripPatterns = getStripPatterns(projectDir)

@@ -97,7 +97,7 @@ describe('plugin-metadata', () => {
       apps: { default: { plugins: [{ src: 'my-plugin.mjs' }] } },
     } as any
     setPluginDependenciesForMode(filterNuxt, 'client', [{ src: 'my-plugin.mjs', dependsOn: ['client-plugin'] }])
-    const filterTransformPlugin: any = RemovePluginMetadataPlugin(filterNuxt, 'client').raw({}, {} as any)
+    setPluginDependenciesForMode(filterNuxt, 'server', [{ src: 'my-plugin.mjs', dependsOn: ['server-plugin'] }])
     const plugin = `
       export default defineNuxtPlugin({
         name: 'test',
@@ -105,14 +105,27 @@ describe('plugin-metadata', () => {
         setup: () => {},
       })
     `
-    expect(filterTransformPlugin.transform(plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
-      "
+    const transform = (mode: 'client' | 'server') => (RemovePluginMetadataPlugin(filterNuxt, mode).raw({}, {} as any) as any).transform(plugin, 'my-plugin.mjs').code
+    expect({
+      client: transform('client'),
+      server: transform('server'),
+    }).toMatchInlineSnapshot(`
+      {
+        "client": "
             export default defineNuxtPlugin({
               name: 'test',
               dependsOn: ["client-plugin"],
               setup: () => {},
             })
-          "
+          ",
+        "server": "
+            export default defineNuxtPlugin({
+              name: 'test',
+              dependsOn: ["server-plugin"],
+              setup: () => {},
+            })
+          ",
+      }
     `)
   })
 })
@@ -142,11 +155,13 @@ describe('plugin sanity checking', () => {
 
   it('filters non-existent dependencies without warning in production', () => {
     vi.spyOn(console, 'warn')
-    const plugins = filterPluginDependencies([
+    const source = [
       { name: 'A', src: '' },
       { name: 'B', dependsOn: ['A', 'D'], src: '' },
-    ])
+    ]
+    const plugins = filterPluginDependencies(source)
     expect(plugins[1]?.dependsOn).toEqual(['A'])
+    expect(source[1]?.dependsOn).toEqual(['A', 'D'])
     expect(console.warn).not.toHaveBeenCalled()
     vi.restoreAllMocks()
   })
