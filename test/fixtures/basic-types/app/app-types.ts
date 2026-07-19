@@ -18,6 +18,22 @@ type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
 
+type FetchMethod<T> = T extends { data: Ref<infer Data> }
+  ? NonNullable<Data> extends { method: infer Method } ? Method : never
+  : never
+
+declare module 'nitro/types' {
+  interface InternalApi {
+    '/api/method-inference': {
+      get: { method: 'get' }
+      post: { method: 'post' }
+    }
+    '/api/method-inference/post-only': {
+      post: { method: 'post' }
+    }
+  }
+}
+
 declare module 'nuxt/app' {
   interface NuxtLayouts {
     withFunction: {
@@ -118,6 +134,25 @@ describe('API routes', () => {
 
   // TODO: https://github.com/nitrojs/nitro/issues/2758
   it('works with useFetch', () => {
+    const defaultFetch = useFetch('/api/method-inference')
+    const postFetch = useLazyFetch('/api/method-inference', { method: 'post' })
+    const transformedPostFetch = useFetch('/api/method-inference', { method: 'post', transform: data => data })
+    const defaultedPostFetch = useFetch('/api/method-inference', { method: 'post', default: () => ({ method: 'post' as const }) })
+    const keyedPostFetch = useFetch('/api/method-inference', { method: 'post' }, 'key')
+    const explicitResponseFetch = useFetch<{ explicit: true }>('/api/method-inference')
+    const postOnlyFetch = useFetch('/api/method-inference/post-only')
+    const usePostFetch = createUseFetch<void, '/api/method-inference', 'post'>({ method: 'post' })
+    const factoryFetch = usePostFetch('/api/method-inference')
+
+    expectTypeOf<FetchMethod<typeof defaultFetch>>().toEqualTypeOf<'get'>()
+    expectTypeOf<FetchMethod<typeof postFetch>>().toEqualTypeOf<'post'>()
+    expectTypeOf<FetchMethod<typeof transformedPostFetch>>().toEqualTypeOf<'post'>()
+    expectTypeOf<FetchMethod<typeof defaultedPostFetch>>().toEqualTypeOf<'post'>()
+    expectTypeOf<FetchMethod<typeof keyedPostFetch>>().toEqualTypeOf<'post'>()
+    expectTypeOf(explicitResponseFetch.data).toEqualTypeOf<Ref<{ explicit: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(postOnlyFetch.data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf<FetchMethod<typeof factoryFetch>>().toEqualTypeOf<'post'>()
+
     // expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     // expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
     // expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
