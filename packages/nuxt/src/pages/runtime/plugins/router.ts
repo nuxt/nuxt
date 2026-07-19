@@ -14,7 +14,7 @@ import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
-import { navigationDiagnostics } from '../../../app/diagnostics/navigation.ts'
+import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'

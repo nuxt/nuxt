@@ -7,7 +7,7 @@ import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { renderDiagnostics } from '../diagnostics/render.ts'
+import { renderDiagnostics } from '../diagnostics/render'
 import { _mergeTransitionProps, _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 

@@ -11,7 +11,7 @@ import { createError } from './error'
 import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
-import { dataDiagnostics } from '../diagnostics/data.ts'
+import { dataDiagnostics } from '../diagnostics/data'
 
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 

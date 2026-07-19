@@ -5,7 +5,7 @@ import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { onNuxtReady } from '#app/composables/ready'
 import { useError } from '#app/composables/error'
 import { useRouter } from '#app/composables/router'
-import { renderDiagnostics } from '../../../app/diagnostics/render.ts'
+import { renderDiagnostics } from '../../../app/diagnostics/render'
 
 export function findUnrenderedNestedPage (route: RouteLocationNormalizedLoaded): { parent: RouteRecordNormalized, child: RouteRecordNormalized } | undefined {
   let parent: RouteRecordNormalized | undefined

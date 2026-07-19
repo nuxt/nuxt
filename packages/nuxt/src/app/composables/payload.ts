@@ -8,7 +8,7 @@ import { useHead } from './head'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
-import { stateDiagnostics } from '../diagnostics/state.ts'
+import { stateDiagnostics } from '../diagnostics/state'
 
 import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
 
