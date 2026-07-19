@@ -28,7 +28,7 @@ export function refreshNuxtData (keys?: string | string[])
 
 `refreshNuxtData` returns a promise, resolving when all or specific `asyncData` instances have been refreshed.
 
-## Examples
+## Example
 
 ### Refresh All Data
 

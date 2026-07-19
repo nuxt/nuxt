@@ -410,7 +410,8 @@ async function initNuxt (nuxt: Nuxt) {
   }), { server: false })
 
   // Add plugin normalization plugin
-  addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
+  addBuildPlugin(RemovePluginMetadataPlugin(nuxt, 'server'), { client: false })
+  addBuildPlugin(RemovePluginMetadataPlugin(nuxt, 'client'), { server: false })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin())

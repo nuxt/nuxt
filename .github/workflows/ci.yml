@@ -290,8 +290,6 @@ jobs:
             projects: '--project "fixtures:vite-dev-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-built-*"'
-          - os: windows-latest
-            projects: '--project "fixtures:rspack-*" --project "fixtures:webpack-*"'
 
     timeout-minutes: 45
 
@@ -336,7 +334,13 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
-        os: [ubuntu-24.04-arm, windows-latest]
+        include:
+          - os: ubuntu-24.04-arm
+            shard: ''
+          - os: windows-latest
+            shard: '--shard=1/2'
+          - os: windows-latest
+            shard: '--shard=2/2'
 
     timeout-minutes: 25
 
@@ -356,7 +360,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Test (e2e)
-        run: vp run test:e2e
+        run: vp run test:e2e ${{ matrix.shard }}
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
