@@ -8,7 +8,7 @@ import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } fr
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack } from './matrix'
+import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
@@ -33,7 +33,7 @@ await setup({
   },
 })
 
-describe('server api', () => {
+describe.skipIf(!runsOnceInMatrix)('server api', () => {
   it('should serialize', async () => {
     expect(await $fetch<string>('/api/hello')).toBe('Hello API')
     expect(await $fetch('/api/hey')).toEqual({
@@ -963,7 +963,7 @@ describe('nuxt composables', () => {
   })
 })
 
-describe('rich payloads', () => {
+describe.skipIf(!runsOnceInMatrix)('rich payloads', () => {
   it('correctly serializes and revivifies complex types', async () => {
     const html = await $fetch<string>('/json-payload')
     for (const test of [
@@ -1235,7 +1235,7 @@ describe('head tags', () => {
   // })
 })
 
-describe('navigate', () => {
+describe.skipIf(!runsOnceInMatrix)('navigate', () => {
   it('should redirect to index with navigateTo', async () => {
     const { headers, status } = await fetch('/navigate-to/', { redirect: 'manual' })
 
@@ -1461,7 +1461,7 @@ describe('errors', () => {
   })
 })
 
-describe('navigate external', () => {
+describe.skipIf(!runsOnceInMatrix)('navigate external', () => {
   it('should redirect to example.com', async () => {
     const { headers } = await fetch('/navigate-to-external/', { redirect: 'manual' })
 
@@ -2313,7 +2313,7 @@ describe.runIf(isDev && (!isWindows || !isCI))('detecting invalid root nodes', (
   })
 })
 
-describe('public directories', () => {
+describe.skipIf(!runsOnceInMatrix)('public directories', () => {
   it('should directly return public directory paths', async () => {
     const html = await $fetch<string>('/assets-custom')
     expect(html).toContain('"/public.svg"')
@@ -2470,7 +2470,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
   })
 })
 
-describe('app config', () => {
+describe.skipIf(!runsOnceInMatrix)('app config', () => {
   it('should work', async () => {
     const html = await $fetch<string>('/app-config')
 
@@ -2764,7 +2764,7 @@ describe('keepalive', () => {
   })
 })
 
-describe('teleports', () => {
+describe.skipIf(!runsOnceInMatrix)('teleports', () => {
   it('should append teleports to body', async () => {
     const html = await $fetch<string>('/teleport')
 
