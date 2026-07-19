@@ -19,6 +19,7 @@ import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } f
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
+import { RouteStylesMapPlugin } from './plugins/route-styles-map.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
 import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize.ts'
@@ -204,6 +205,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ReplacePlugin(),
         LayerDepOptimizePlugin(nuxt),
         SSRStylesPlugin(nuxt),
+        RouteStylesMapPlugin(nuxt),
         EnvironmentsPlugin(nuxt),
         // Add type-checking
         VitePluginCheckerPlugin(nuxt),

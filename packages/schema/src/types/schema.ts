@@ -1619,6 +1619,24 @@ export interface ConfigSchema {
     nitroAutoImports: boolean
 
     /**
+     * Disable stylesheets belonging to unmounted pages and layouts after client-side navigation.
+     *
+     * By default, CSS for a lazy-loaded page or layout chunk stays in the document forever
+     * once loaded, so global (non-scoped) styles from a previously visited route can leak
+     * into other routes. When enabled, Nuxt emits a map of page/layout stylesheets at build
+     * time and toggles the `disabled` property of their `<link>` tags on navigation so only
+     * the current route's styles apply.
+     *
+     * Only supported with the Vite builder in production builds. Works best with
+     * `features.inlineStyles: false`. Styles for layouts rendered via
+     * `<NuxtLayout name="...">` (rather than route metadata) are not tracked.
+     *
+     * @default false
+     * @see https://github.com/nuxt/nuxt/issues/22817
+     */
+    cleanupRouteStyles: boolean
+
+    /**
      * Enable SSR streaming to improve Time to First Byte (TTFB).
      *
      * When enabled, the server sends the HTML shell (head, styles, preload hints)
