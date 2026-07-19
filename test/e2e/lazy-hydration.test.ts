@@ -26,30 +26,9 @@ test.describe('lazy hydration styles', () => {
     await expect(styleLinks.first()).toBeAttached()
 
     // The linked CSS should contain our component styles
-    let css = ''
-    for (const href of await styleLinks.evaluateAll(links => links.map(l => l.getAttribute('href')))) {
-      expect(href).toBeTruthy()
-      css += await page.request.get(href!).then(r => r.text())
-    }
+    const hrefs = await styleLinks.evaluateAll(links => links.map(l => (l as HTMLLinkElement).href))
+    const css = (await Promise.all(hrefs.map(href => page.request.get(href).then(r => r.text())))).join('')
     expect(css).toContain('.hydrate-never-component')
-  })
-
-  // https://github.com/nuxt/nuxt/issues/33339
-  test('should render blocking stylesheet for page CSS when a lazy hydrated component shares a chunk', async ({ page, fetch }) => {
-    const html = await fetch('/').then(r => r.text())
-    const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
-    const stylesheets = [...head.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"|<link[^>]+href="([^"]+)"[^>]+rel="stylesheet"/g)].map(m => m[1] ?? m[2]!)
-    let css = ''
-    for (const href of stylesheets) {
-      css += await page.request.get(href).then(r => r.text())
-    }
-    // Page CSS and CSS for all server-rendered components (including the
-    // lazy hydrated one and its shared child) must load in a blocking way,
-    // not as prefetch-only, to avoid a flash of unstyled content
-    expect(css).toContain('.index-page')
-    expect(css).toContain('.base-a')
-    expect(css).toContain('.base-b')
-    expect(css).toContain('.base-c')
   })
 
   // https://github.com/nuxt/nuxt/issues/35145
@@ -60,6 +39,31 @@ test.describe('lazy hydration styles', () => {
     for (const href of modulepreloads) {
       const js = await page.request.get(href).then(r => r.text())
       expect(js).not.toContain('hydrate-on-visible-component')
+    }
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33339
+  test('should render blocking stylesheet for page CSS when a lazy hydrated component shares a chunk', async ({ fetch }) => {
+    const html = await fetch('/').then(r => r.text())
+    const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
+    const stylesheets = [...head.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
+    const css = (await Promise.all(stylesheets.map(href => fetch(href).then(r => r.text())))).join('')
+    // Page CSS and CSS for all server-rendered components (including the
+    // lazy hydrated one and its shared child) must load in a blocking way,
+    // not as prefetch-only, to avoid a flash of unstyled content
+    expect(css).toContain('.index-page')
+    expect(css).toContain('.base-a')
+    expect(css).toContain('.base-b')
+    expect(css).toContain('.base-c')
+  })
+
+  test('should not duplicate rendered stylesheets as resource hints', async ({ fetch }) => {
+    const html = await fetch('/').then(r => r.text())
+    const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
+    const stylesheets = [...head.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
+    const hints = [...head.matchAll(/<link[^>]+rel="(?:preload|modulepreload|prefetch)"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
+    for (const href of stylesheets) {
+      expect(hints).not.toContain(href)
     }
   })
 })
