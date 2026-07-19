@@ -1,7 +1,19 @@
 import { defineComponent, h } from 'vue'
+import type { DefineSetupFnComponent } from 'vue'
 import { useLoadingIndicator } from '../composables/loading-indicator'
 
-export default defineComponent({
+interface NuxtLoadingIndicatorProps {
+  throttle?: number
+  duration?: number
+  hideDelay?: number
+  resetDelay?: number
+  height?: number
+  color?: string | boolean
+  errorColor?: string
+  estimatedProgress?: (duration: number, elapsed: number) => number
+}
+
+const NuxtLoadingIndicator = defineComponent({
   name: 'NuxtLoadingIndicator',
   props: {
     throttle: {
@@ -70,4 +82,6 @@ export default defineComponent({
       },
     }, slots)
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtLoadingIndicatorProps>
+
+export default NuxtLoadingIndicator

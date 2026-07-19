@@ -1,6 +1,7 @@
 ---
 title: 'useNuxtData'
 description: 'Access the current cached value of data fetching composables.'
+minimalVersion: "3.1"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -28,7 +29,7 @@ To use `useNuxtData`, ensure that the data-fetching composable (`useFetch`, `use
 
 ## Return Values
 
-- `data`: A reactive reference to the cached data associated with the provided key. If no cached data exists, the value will be `null`. This `Ref` automatically updates if the cached data changes, allowing seamless reactivity in your components.
+- `data`: A reactive reference to the cached data associated with the provided key. If no cached data exists, the value will be `undefined`. This `Ref` automatically updates if the cached data changes, allowing seamless reactivity in your components.
 
 ## Example
 

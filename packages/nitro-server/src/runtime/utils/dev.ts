@@ -88,7 +88,7 @@ const parentStorageBridge = (nonce: string) => /* js */ `
 
   // Handle clipboard copy from iframe
   window.addEventListener('message', function(e) {
-    if (isValid(e) && e.data.type === 'clipboard-copy') {
+    if (isValid(e.data) && e.data.type === 'clipboard-copy') {
       navigator.clipboard.writeText(e.data.text).catch(function() {});
     }
   });
@@ -360,7 +360,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
     iframe.id = 'frame';
     iframe.src = 'data:text/html;base64,${base64HTML}';
     iframe.title = 'Detailed error stack trace';
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-top-navigation-by-user-activation');
 
     const preview = el('div');
     preview.id = 'preview';

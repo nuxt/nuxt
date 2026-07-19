@@ -46,10 +46,10 @@ Awaiting `useLazyFetch` only ensures the call is initialized. On client-side nav
 ## Type
 
 ```ts [Signature]
-export function useLazyFetch<DataT, ErrorT> (
+export function useLazyFetch<ResT, ErrorT = NuxtError<unknown>, DataT = ResT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
-  options?: UseFetchOptions<DataT>,
-): Promise<AsyncData<DataT, ErrorT>>
+  options?: UseFetchOptions<ResT, DataT>,
+): AsyncData<DataT, ErrorT> & Promise<AsyncData<DataT, ErrorT>>
 ```
 
 ::note
@@ -76,6 +76,7 @@ Returns the same `AsyncData` object as [`useFetch`](/docs/4.x/api/composables/us
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`.                                                                                             |
 | `error`   | `Ref<ErrorT \| undefined>`                          | Error object if the data fetching failed.                                                                        |
 | `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the data request.                                                                                      |
+| `pending` | `Ref<boolean>`                                      | Boolean flag indicating whether the current request is in progress.                                              |
 | `clear`   | `() => void`                                        | Resets `data` to `undefined`, `error` to `undefined`, sets `status` to `idle`, and cancels any pending requests. |
 
 :read-more{to="/docs/4.x/api/composables/use-fetch#return-values"}

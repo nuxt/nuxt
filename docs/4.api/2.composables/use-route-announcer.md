@@ -1,6 +1,7 @@
 ---
 title: 'useRouteAnnouncer'
 description: This composable observes the page title changes and updates the announcer message accordingly.
+minimalVersion: "3.12"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -56,3 +57,7 @@ const { message, politeness, set, polite, assertive } = useRouteAnnouncer({
 })
 </script>
 ```
+
+::callout
+For announcing dynamic in-page content changes (form validation, toasts, loading states), use [`useAnnouncer`](/docs/4.x/api/composables/use-announcer) instead.
+::
