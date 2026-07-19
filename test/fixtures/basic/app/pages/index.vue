@@ -34,12 +34,6 @@
       Immediate remove unmounted
     </NuxtLink>
     <NuxtLink
-      no-prefetch
-      to="/chunk-error"
-    >
-      Chunk error
-    </NuxtLink>
-    <NuxtLink
       id="to-client-only-components"
       to="/client-only-components"
     >
@@ -59,10 +53,6 @@
     >
       Middleware abort navigation with error
     </NuxtLink>
-    Some value: {{ someValue }}
-    <button @click="someValue++">
-      Increment state
-    </button>
     <NuxtLink to="/no-scripts">
       to no script
     </NuxtLink>
@@ -107,8 +97,6 @@ toDisplayString(useRoute())
 setupDevtoolsPlugin({}, () => {}) as any
 const island = ref<InstanceType<typeof ServerOnlyComponent>>()
 const config = useRuntimeConfig()
-
-const someValue = useState('val', () => 1)
 
 const NestedCounter = resolveComponent('NestedCounter')
 if (!NestedCounter) {
