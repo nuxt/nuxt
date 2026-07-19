@@ -43,6 +43,8 @@ describe('loadNuxtConfig layer identity canonicalisation', () => {
   const tempDir = join(repoRoot, 'temp', 'layer-identity')
 
   beforeAll(async () => {
+    // remove leftovers from an aborted previous run - `symlink` throws EEXIST
+    await rm(tempDir, { recursive: true, force: true })
     await mkdir(join(tempDir, 'layers', 'base'), { recursive: true })
     await mkdir(join(tempDir, 'real-layer'), { recursive: true })
     await writeFile(
