@@ -10,7 +10,7 @@ Nuxt does not publish a fixed memory budget. Peak usage depends on your source, 
 
 ## Examples From the Community
 
-These Nuxt 4.x peaks were reported in [nuxt/nuxt#34849](https://github.com/nuxt/nuxt/issues/34849):
+These peaks were reported in [nuxt/nuxt#34849](https://github.com/nuxt/nuxt/issues/34849) on Nuxt 4.4.x (before Vite 8). Treat them as historical planning anchors, not current limits. Peaks may be lower after Nuxt 4.5+.
 
 | Project | Peak during `nuxt build` |
 | --- | --- |
@@ -18,7 +18,7 @@ These Nuxt 4.x peaks were reported in [nuxt/nuxt#34849](https://github.com/nuxt/
 | Large app (421k LOC + 82k lines of i18n JSON) | ~10–11 GB |
 | Large app with client/server sourcemaps and thousands of prerendered routes | 12+ GB |
 
-Use them as planning anchors, not as official limits. Runtime memory after deploy is a different number. Do not size production hosts from build peaks.
+Runtime memory after deploy is a different number. Do not size production hosts from build peaks.
 
 ## What Uses Memory
 
@@ -96,9 +96,9 @@ This helps when Node throws `FATAL ERROR: Reached heap limit` and the host still
 - Drop unused modules; prefer focused imports over full barrels.
 - Use [`nuxt analyze`](/docs/4.x/api/commands/analyze) to spot unexpected client chunks (useful for the graph, not a full heap profile).
 
-### Nuxt 5 and Rolldown
+### Nuxt 4.5 and Rolldown
 
-Nuxt 5 uses [Rolldown](https://rolldown.rs) via Vite 8 for the client pipeline. Nitro still builds the server separately, so a faster client build alone does not guarantee a lower total peak. Measure again after upgrading. See [Migration to Vite 8](/docs/4.x/getting-started/upgrade#migration-to-vite-8).
+Nuxt 4.5 uses [Rolldown](https://rolldown.rs) via Vite 8 for the client pipeline. Nitro still builds the server separately, so a faster client build alone does not guarantee a lower total peak. Measure again after upgrading. See [Migration to Vite 8](/docs/4.x/getting-started/upgrade#migration-to-vite-8).
 
 ## Sizing CI
 
