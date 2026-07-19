@@ -25,10 +25,12 @@ export default createConfigForNuxt({
       ignores: [
         '.goff/**',
         'packages/schema/schema/**',
+        'packages/nuxt/stubs/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
         'packages/nitro-server/src/runtime/templates/error-*',
+        'packages/kit/test/types-fixture/**',
       ],
     },
     {
@@ -113,6 +115,8 @@ export default createConfigForNuxt({
     },
     rules: {
       '@typescript-eslint/no-deprecated': 'error',
+      '@typescript-eslint/return-await': ['error', 'in-try-catch'],
+      'no-return-await': 'off',
     },
   })
 
@@ -162,7 +166,6 @@ export default createConfigForNuxt({
         ],
       },
     },
-    // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
@@ -231,6 +234,27 @@ export default createConfigForNuxt({
         'no-console': 'off',
       },
     },
+    {
+      // `DefineSetupFnComponent<Props, Emits, Slots>` uses
+      // `{}` as the default for `Emits`/`Slots` so we suppress
+      // the warning in our runtime/ dirs.
+      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/{components,head,imports,pages}/runtime/**'],
+      name: 'local/disables/empty-object-type',
+      rules: {
+        '@typescript-eslint/no-empty-object-type': ['error', { allowObjectTypes: 'always' }],
+      },
+    },
+    // diagnostics catalogs keep an inline `/* #__PURE__ */` annotation on the
+    // reporter factory call inside the `reporters` array literal (for
+    // tree-shaking). array-bracket-spacing's autofix would strip a comment that
+    // sits right after `[`, so it is disabled in these dirs.
+    {
+      files: ['packages/**/diagnostics/**', 'packages/**/diagnostics.ts'],
+      name: 'local/diagnostics-pure-annotations',
+      rules: {
+        '@stylistic/array-bracket-spacing': 'off',
+      },
+    },
     // manually specify dependencies for nuxt browser app
     {
       files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/(components,head,imports,pages)/runtime/**'],
@@ -240,26 +264,22 @@ export default createConfigForNuxt({
           'patterns': [
             {
               allowTypeImports: true,
-              group: [
-                // disallow everything
-                '[@a-z]*',
-                // except certain dependencies
-                ...[
+              regex: `^(?!(${
+                [
                   // vue ecosystem
                   '@unhead',
-                  '@vue',
                   '@vue/shared',
+                  'ofetch',
                   'vue/server-renderer',
                   'vue',
                   'vue-router',
                   ...runtimeDependencies,
                   'errx', /* only used in dev */
+                  'nostics', /* runtime diagnostics catalog */
                   // internal deps
                   'nuxt/app',
-                ].map(r => `!${r}`),
-                '!#[a-z]*/**', // aliases
-                '!.*/**', // relative imports
-              ],
+                ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+              })($|/))(?!#)(?!\\.)[a-zA-Z@]`,
             },
           ],
         }],
@@ -271,6 +291,7 @@ export default createConfigForNuxt({
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/triple-slash-reference': 'off',
+        'nuxt/no-nuxt-config-test-key': 'off',
         'vue/multi-word-component-names': 'off',
         'vue/valid-v-for': 'off',
       },
@@ -330,8 +351,4 @@ export default createConfigForNuxt({
   )
 
   // Generate type definitions for the eslint config
-  // @ts-expect-error type issues in eslint
-  .onResolved((configs) => {
-    // @ts-expect-error type issues in eslint
-    return typegen(configs)
-  })
+  .onResolved(configs => typegen(configs))

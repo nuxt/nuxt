@@ -1,8 +1,6 @@
-import type { Component, PropType, RendererNode, VNode } from 'vue'
+import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsType, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
-import { hash } from 'ohash'
-import { appendResponseHeader } from 'h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -13,8 +11,9 @@ import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
+import { getIslandHash, serializeIslandProps } from '../island-hash'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 
-// @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
@@ -47,7 +46,26 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
   await Promise.all(promises)
 }
 
-export default defineComponent({
+interface NuxtIslandProps {
+  name: string
+  lazy?: boolean
+  props?: Record<string, any>
+  context?: Record<string, any>
+  scopeId?: string | undefined | null
+  source?: string
+  dangerouslyLoadClientComponents?: boolean
+}
+
+type NuxtIslandEmits = {
+  error: (error: unknown) => void
+}
+
+type NuxtIslandSlots = SlotsType<{
+  fallback?: (props: { error: unknown }) => VNode[]
+  [name: string]: ((props: any) => VNode[]) | undefined
+}>
+
+const NuxtIsland = defineComponent({
   name: 'NuxtIsland',
   inheritAttrs: false,
   props: {
@@ -86,14 +104,13 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
-    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
+    const serializedProps = computed(() => serializeIslandProps(props.props))
+    const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
     let activeHead: ActiveHeadEntry<SerializableHead>
 
-    const eventFetch = import.meta.server ? event!.fetch : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
@@ -108,7 +125,7 @@ export default defineComponent({
           key,
           ...(import.meta.server && import.meta.prerender)
             ? {}
-            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
+            : { params: { ...props.context, props: props.props ? serializedProps.value : undefined } },
           result: toRevive,
         },
         ...result,
@@ -137,7 +154,7 @@ export default defineComponent({
         while (currentEl) {
           if (isEndFragment(currentEl)) {
             if (startEl !== currentEl.previousSibling) {
-              console.warn(`[\`Server components(and islands)\`] "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`)
+              renderDiagnostics.NUXT_E4005({ name: props.name })
             }
             break
           } else if (!isStartFragment(currentEl) && isFirstElement) {
@@ -200,10 +217,9 @@ export default defineComponent({
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
-      // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
+      const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
-        props: props.props ? JSON.stringify(props.props) : undefined,
+        props: props.props ? serializedProps.value : undefined,
       }))
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
@@ -214,14 +230,14 @@ export default defineComponent({
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')
           if (hints) {
-            appendResponseHeader(event!, 'x-nitro-prerender', hints)
+            event!.res.headers.append('x-nitro-prerender', hints)
           }
         }
         setPayload(key, result)
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          throw renderDiagnostics.NUXT_E4012({ name: props.name, status: r.status, detail: e.message, cause: e })
         }
         throw e
       }
@@ -280,6 +296,14 @@ export default defineComponent({
 
     if (import.meta.client) {
       watch(props, debounce(() => fetchComponent(), 100), { deep: true })
+    }
+
+    // Restore head entries from SSR payload during hydration
+    if (import.meta.client && instance.vnode.el) {
+      const headData = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.head
+      if (headData) {
+        activeHead = head.push(headData)
+      }
     }
 
     if (import.meta.client && !instance.vnode.el && props.lazy) {
@@ -351,4 +375,6 @@ export default defineComponent({
       ]
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits, NuxtIslandSlots>
+
+export default NuxtIsland

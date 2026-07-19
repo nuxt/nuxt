@@ -1,12 +1,12 @@
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { hash } from 'ohash'
 
 import { parseAndWalk } from 'oxc-walker'
 import { transformAndMinify } from '../../core/utils/parse.ts'
 import { isJS, isVue } from '../utils/index.ts'
 
-export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}) {
+export function PrehydrateTransformPlugin () {
   return createUnplugin(() => ({
     name: 'nuxt:prehydrate-transform',
     transformInclude (id) {
@@ -16,8 +16,8 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
       filter: {
         code: { include: /onPrehydrate\(/ },
       },
-      handler (code, id) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
 
         parseAndWalk(code, id, (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
@@ -39,14 +39,7 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
           }
         })
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }))

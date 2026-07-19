@@ -3,6 +3,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import type { Plugin } from 'postcss'
+import { bundlerDiagnostics } from '@nuxt/kit'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -18,6 +19,10 @@ export async function getPostcssConfig (nuxt: Nuxt) {
 
   const postcssOptions = defu({}, nuxt.options.postcss, {
     plugins: {
+      'autoprefixer': {},
+
+      'cssnano': nuxt.options.dev ? false : {},
+
       /**
        * https://github.com/postcss/postcss-import
        */
@@ -56,7 +61,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       }
 
       if (typeof pluginFn !== 'function') {
-        console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\`. Please report this as a bug.`)
+        bundlerDiagnostics.NUXT_B7011({ pluginName })
       }
     }
 

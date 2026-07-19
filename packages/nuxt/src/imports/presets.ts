@@ -30,7 +30,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/component',
   },
   {
-    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
+    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData', 'createUseAsyncData'],
     from: '#app/composables/asyncData',
   },
   {
@@ -50,8 +50,12 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/error',
   },
   {
-    imports: ['useFetch', 'useLazyFetch'],
+    imports: ['useFetch', 'useLazyFetch', 'createUseFetch'],
     from: '#app/composables/fetch',
+  },
+  {
+    imports: ['$fetch'],
+    from: '#build/fetch',
   },
   {
     imports: ['useCookie', 'refreshCookie'],
@@ -98,8 +102,16 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/preview',
   },
   {
+    imports: ['useLayout'],
+    from: '#app/composables/layout',
+  },
+  {
     imports: ['useRouteAnnouncer'],
     from: '#app/composables/route-announcer',
+  },
+  {
+    imports: ['useAnnouncer'],
+    from: '#app/composables/announcer',
   },
   {
     imports: ['useRuntimeHook'],
@@ -122,13 +134,20 @@ export const scriptsStubsPreset = {
     'useScriptCrisp',
     'useScriptClarity',
     'useScriptCloudflareWebAnalytics',
+    'useScriptVercelAnalytics',
+    'useScriptPostHog',
     'useScriptFathomAnalytics',
     'useScriptMatomoAnalytics',
+    'useScriptMixpanelAnalytics',
+    'useScriptBingUet',
     'useScriptGoogleTagManager',
     'useScriptGoogleAdsense',
+    'useScriptGoogleRecaptcha',
+    'useScriptGoogleSignIn',
     'useScriptSegment',
     'useScriptMetaPixel',
     'useScriptXPixel',
+    'useScriptTikTokPixel',
     'useScriptIntercom',
     'useScriptHotjar',
     'useScriptStripe',
@@ -143,6 +162,12 @@ export const scriptsStubsPreset = {
     'useScriptDatabuddyAnalytics',
     'useScriptRedditPixel',
     'useScriptPayPal',
+    'useScriptGravatar',
+    'useScriptAhrefsAnalytics',
+    'useScriptLinkedInInsight',
+    'useScriptCalendly',
+    'useScriptUsercentrics',
+    'useScriptSpeedCurve',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',

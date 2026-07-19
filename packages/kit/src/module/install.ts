@@ -13,8 +13,8 @@ import semver from 'semver'
 import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
-import { logger } from '../logger.ts'
 import { getLayerDirectories } from '../layers.ts'
+import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
@@ -46,13 +46,35 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
 
   nuxt._moduleOptionsFunctions ||= new Map<ModuleToInstall, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
   const resolvedModules: Array<ResolvedModule> = []
+  // allow moduleDependencies to reference modules by their meta.name
+  const modulesByMetaName = new Map<string, ModuleToInstall>()
+
+  // preload known modules in parallel
+  const moduleLoadCache = new Map<ModuleToInstall, Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }>>()
+  for (const [key] of modulesToInstall) {
+    moduleLoadCache.set(key, loadNuxtModuleInstance(key, nuxt))
+  }
+
   const inlineConfigKeys = new Set(
-    await Promise.all([...modulesToInstall].map(([mod]) => typeof mod !== 'string' && Promise.resolve(mod.getMeta?.())?.then(r => r?.configKey))),
+    await Promise.all([...modulesToInstall].map(async ([mod]) => {
+      if (typeof mod === 'string') { return }
+      const meta = await Promise.resolve(mod.getMeta?.())
+      if (meta?.name) {
+        modulesByMetaName.set(meta.name, mod)
+      }
+      if (meta?.configKey) {
+        if (meta.configKey !== meta.name) {
+          modulesByMetaName.set(meta.configKey, mod)
+        }
+        return meta.configKey
+      }
+    })),
   )
   let error: Error | undefined
   const dependencyMap = new Map<ModuleToInstall, string>()
   for (const [key, options] of modulesToInstall) {
-    const res = await loadNuxtModuleInstance(key, nuxt).catch((err) => {
+    const loadPromise = moduleLoadCache.get(key) || loadNuxtModuleInstance(key, nuxt)
+    const res = await loadPromise.catch((err) => {
       if (dependencyMap.has(key) && typeof key === 'string') {
         (err as Error).cause = `Could not resolve \`${key}\` (specified as a dependency of ${dependencyMap.get(key)!}).`
       }
@@ -65,7 +87,13 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         continue
       }
 
-      const resolvedModule = resolveModuleWithOptions(name, nuxt)
+      // Try to resolve by path/package name first.
+      // If the name matches a meta.name/configKey of an already-loaded module,
+      // resolve using the original module key instead (supports local modules and
+      // modules where meta.name differs from the npm package name).
+      const resolvedModule = modulesByMetaName.has(name)
+        ? resolveModuleWithOptions(modulesByMetaName.get(name)!, nuxt)
+        : resolveModuleWithOptions(name, nuxt)
       const moduleToAttribute = typeof key === 'string' ? `\`${key}\`` : 'a module in `nuxt.options`'
 
       if (!resolvedModule?.module) {
@@ -77,7 +105,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       if (value.version) {
         const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
         const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
-        if (pkg?.version && !semver.satisfies(pkg.version, value.version)) {
+        if (pkg?.version && !semver.satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
           error = new TypeError(message)
         }
@@ -130,13 +158,13 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     const configKey = meta.configKey as keyof NuxtOptions | undefined
 
     // Merge options
-    const optionsFns = [
+    const optionsFns = new Set([
       ...nuxt._moduleOptionsFunctions.get(moduleToInstall) || [],
       ...meta?.name ? nuxt._moduleOptionsFunctions.get(meta.name) || [] : [],
       // TODO: consider dropping options functions keyed by config key
       ...configKey ? nuxt._moduleOptionsFunctions.get(configKey) || [] : [],
-    ]
-    if (optionsFns.length > 0) {
+    ])
+    if (optionsFns.size > 0) {
       const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
       const defaults: Array<Record<string, unknown> | undefined> = []
       for (const fn of optionsFns) {
@@ -255,6 +283,18 @@ export function resolveModuleWithOptions (
   }
 }
 
+let _jitiCache: WeakMap<Nuxt, ReturnType<typeof createJiti>> | undefined
+
+function getSharedJiti (nuxt: Nuxt): ReturnType<typeof createJiti> {
+  _jitiCache ||= new WeakMap()
+  let jiti = _jitiCache.get(nuxt)
+  if (!jiti) {
+    jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+    _jitiCache.set(nuxt, jiti)
+  }
+  return jiti
+}
+
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()): Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }> {
   let buildTimeModuleMeta: ModuleMeta = {}
 
@@ -266,10 +306,10 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    throw new TypeError(`Nuxt module should be a function or a string to import. Received: ${nuxtModule}.`)
+    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
   }
 
-  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+  const jiti = getSharedJiti(nuxt)
 
   // Import if input is string
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
@@ -288,7 +328,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     const resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
 
     if (typeof resolvedNuxtModule !== 'function') {
-      throw new TypeError(`Nuxt module should be a function: ${nuxtModule}.`)
+      throw kitDiagnostics.NUXT_B8016({ module: nuxtModule })
     }
 
     // nuxt-module-builder generates a module.json with metadata including the version
@@ -301,19 +341,19 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   } catch (error: unknown) {
     const code = (error as Error & { code?: string }).code
     if (code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
-      throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+      throw kitDiagnostics.NUXT_B8017({ module: nuxtModule, cause: error })
     }
     if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
       const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
       // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
       // i.e. module is importing a module that is missing
       if (module && !module.includes(nuxtModule as string)) {
-        throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`)
+        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(error), cause: error })
       }
     }
   }
 
-  throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+  throw kitDiagnostics.NUXT_B8017({ module: nuxtModule })
 }
 
 // --- Internal ---
@@ -359,9 +399,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
       )
     }
   } catch (e) {
-    logger.error(
-      `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module \`${meta.name}\`: ${e}`,
-    )
+    kitDiagnostics.NUXT_B8019({ phase: !previousVersion ? 'install' : 'upgrade', name: meta.name, error: String(e) })
   }
 }
 
