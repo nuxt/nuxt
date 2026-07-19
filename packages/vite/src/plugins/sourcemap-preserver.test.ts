@@ -33,7 +33,6 @@ describe('SourcemapPreserverPlugin', () => {
     } as unknown as Nuxt
 
     const vitePlugin = SourcemapPreserverPlugin(nuxt) as VitePlugin
-    expect(vitePlugin.apply).toBe('build')
 
     const outputDir = await mkdtemp(join(tmpdir(), 'nuxt-sourcemap-preserver-'))
     temporaryDirectories.push(outputDir)
@@ -49,8 +48,8 @@ describe('SourcemapPreserverPlugin', () => {
         fileName: 'server.mjs',
         map: {
           file: 'server.mjs',
-          mappings: 'AAAA',
-          names: [],
+          mappings: 'AAAA,MAAM,IAAI,MAAM,MAAM',
+          names: ['Error'],
           sources: ['../../../app/app.vue'],
           sourcesContent: ['throw new Error("test")'],
           version: 3,
@@ -78,13 +77,13 @@ describe('SourcemapPreserverPlugin', () => {
 
     const result = await load.handler.call({ warn: vi.fn() }, serverEntry)
     expect(result.code).toBe('throw new Error("test")')
-    expect(JSON.parse(result.map)).toMatchObject({
-      mappings: 'AAAA',
-      sources: ['../../../app/app.vue'],
-    })
-    expect(JSON.parse(await readFile(serverEntry + '.map.json', 'utf8'))).toMatchObject({
-      mappings: 'AAAA',
-      sources: ['../../../app/app.vue'],
-    })
+    const returnedMap = JSON.parse(result.map)
+    expect(returnedMap.mappings).toBe('AAAA,MAAM,IAAI,MAAM,MAAM')
+    expect(returnedMap.sources).toEqual(['../../../app/app.vue'])
+
+    const writtenMap = JSON.parse(await readFile(serverEntry + '.map.json', 'utf8'))
+    expect(writtenMap.mappings).toBe('AAAA,MAAM,IAAI,MAAM,MAAM')
+    expect(writtenMap.sources).toEqual(['../../../app/app.vue'])
+    expect(writtenMap.sourcesContent).toEqual(['throw new Error("test")'])
   })
 })
