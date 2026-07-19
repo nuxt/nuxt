@@ -96,6 +96,10 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/29232
+  // SSR inline styles bypass Vite plugin transforms because @vitejs/plugin-vue
+  // extracts CSS directly from its parsed SFC cache and doesn't call next() for style blocks.
+  // External CSS files (in .output/public/_nuxt/*.css) ARE correctly transformed.
+  // This test documents the expected behavior once the issue is fixed.
   it.fails('SSR inline styles are transformed by Vite plugins for custom style attributes', async () => {
     const html = await readFile(join(outputDir, 'public', 'custom-layout/index.html'), 'utf-8')
 
