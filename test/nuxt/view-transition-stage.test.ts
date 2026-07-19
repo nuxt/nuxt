@@ -3,7 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 
 import { ViewTransitionStage } from '#app/components/view-transition-stage'
-import { claimPendingViewTransition, createPendingViewTransition, supersedePendingViewTransition } from '#app/view-transitions'
+import { claimPendingViewTransition, createPendingViewTransition, preparePendingViewTransition, supersedePendingViewTransition } from '#app/view-transitions'
 
 describe('view transition stage', () => {
   it('keeps the stage claimed by the same page through the commit render', () => {
@@ -19,6 +19,15 @@ describe('view transition stage', () => {
 
     expect(claimPendingViewTransition(nuxtApp, route, owner)).toBe(session)
     expect(claimPendingViewTransition(nuxtApp, route, {})).toBeUndefined()
+  })
+
+  it('does not revive a cancelled session during preparation', () => {
+    const session = createPendingViewTransition({ fullPath: '/destination' } as any, { fullPath: '/' } as any, [])
+    supersedePendingViewTransition(session)
+
+    preparePendingViewTransition(session)
+
+    expect(session.status).toBe('cancelled')
   })
 
   it('prepares the destination before releasing the visible Suspense commit', async () => {

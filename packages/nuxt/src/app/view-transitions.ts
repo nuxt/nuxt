@@ -110,6 +110,10 @@ export function claimPendingViewTransition (nuxtApp: NuxtApp, route: RouteLocati
 }
 
 export function preparePendingViewTransition (session: PendingViewTransition): Promise<void> {
+  if (session.status === 'cancelled' || session.status === 'finished') {
+    return session.gate
+  }
+
   session.status = 'preparing'
 
   // resolve the gates of any superseded sessions

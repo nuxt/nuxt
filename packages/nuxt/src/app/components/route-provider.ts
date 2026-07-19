@@ -73,11 +73,8 @@ export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderCompon
       if (!props.vnode) {
         return props.vnode
       }
-      if (import.meta.dev && import.meta.client) {
-        vnode = h(props.vnode, { ref: props.vnodeRef })
-      } else {
-        vnode = h(props.vnode, { ref: props.vnodeRef })
-      }
+
+      vnode = h(props.vnode, { ref: props.vnodeRef })
 
       return props.stage
         ? h(ViewTransitionStage, { session: props.stage }, { default: () => vnode })
