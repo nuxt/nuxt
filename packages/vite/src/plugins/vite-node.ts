@@ -1,23 +1,24 @@
 import process from 'node:process'
-import { mkdir, unlink, writeFile } from 'node:fs/promises'
+import { rm } from 'node:fs/promises'
 import type { Socket } from 'node:net'
 import net from 'node:net'
 import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
-import { isAbsolute, join, normalize } from 'pathe'
-import { directoryToURL, resolveAlias, tryUseNuxt } from '@nuxt/kit'
+import { randomUUID } from 'node:crypto'
+import { win32 as pathWin32 } from 'node:path'
+import { dirname, isAbsolute, join, normalize } from 'pathe'
+import { bundlerDiagnostics, directoryToURL, resolveAlias, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
-import { provider } from 'std-env'
 import { resolveModulePath } from 'exsolve'
 
-import { isCSS } from '../utils/index.ts'
+import { isCSS, toVirtualId } from '../utils/index.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 import type { ErrorPartial } from '../types.ts'
 
@@ -95,7 +96,7 @@ function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string
           from: nuxt.options.modulesDir.map(d => directoryToURL(d)),
         })
         if (!resolved) { continue }
-        css.add('/@fs' + resolved)
+        css.add('/@fs' + resolved.replace(/^(?!\/)/, '/'))
       } else {
         css.add(resolved)
       }
@@ -124,34 +125,43 @@ function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string
   return manifest
 }
 
-function generateSocketPath () {
-  const uniqueSuffix = `${process.pid}-${Date.now()}`
-  const socketName = `nuxt-vite-node-${uniqueSuffix}`
+export interface SocketPathInfo {
+  socketPath: string
+  /** mkdtemp directory we own; cleaned up on close. Undefined for Windows pipes. */
+  parentDir?: string
+}
 
-  // Windows: pipe
-  if (process.platform === 'win32') {
-    return join(String.raw`\\.\pipe`, socketName)
+// only exported for tests
+export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.tmpdir()): SocketPathInfo {
+  const socketName = 'nuxt.sock'
+  const socketDir = `nuxt-vite-`
+
+  if (platform === 'win32') {
+    // use `node:path/win32` so the `\\.\pipe\...` separators stay as backslashes
+    // (for deno compatibility) plus enough randomness to avoid collisions and being predictable
+    return { socketPath: pathWin32.join(String.raw`\\.\pipe`, socketDir + randomUUID().slice(0, 8)) }
   }
-  // Linux: abstract namespace
-  if (process.platform === 'linux') {
-    const nodeMajor = Number.parseInt(process.versions.node.split('.')[0]!, 10)
-    if (nodeMajor >= 20 && provider !== 'stackblitz') {
-      // We avoid abstract sockets in Docker due to performance issues
-      let isDocker = false
 
-      try {
-        isDocker = fs.existsSync('/.dockerenv') || (fs.existsSync('/proc/1/cgroup') && fs.readFileSync('/proc/1/cgroup', 'utf8').includes('docker'))
-      } catch {
-        // Ignore errors checking Docker status
-      }
+  // creates a random suffix and avoids collisions
+  let parentDir = fs.mkdtempSync(join(tmpdir, socketDir))
 
-      if (!isDocker) {
-        return `\0${socketName}.sock`
-      }
-    }
+  // macOS's per-user $TMPDIR can be too long so fall back to /tmp when the
+  // full path exceeds the limit
+  if (Buffer.byteLength(join(parentDir, socketName)) >
+    (platform === 'linux' ? 108 : /* macOS */ 104)) {
+    parentDir = join('/tmp', socketDir + randomUUID().slice(0, 8))
+    // The socket needs its own 0700 directory to gate access on macOS/BSD.
+    // See https://github.com/advisories/GHSA-534h-c3cw-v3h9
+    fs.mkdirSync(parentDir, { mode: 0o700 })
   }
-  // Unix socket
-  return join(os.tmpdir(), `${socketName}.sock`)
+
+  fs.chmodSync(parentDir, 0o700)
+
+  return { socketPath: join(parentDir, socketName), parentDir }
+}
+
+function generateSocketPath (): SocketPathInfo {
+  return pickSocketPath(process.platform)
 }
 
 function useInvalidates () {
@@ -179,23 +189,46 @@ function useInvalidates () {
   }
 }
 
-export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
+export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
+  if (!nuxt.options.dev) {
+    return
+  }
+
   let socketServer: net.Server | undefined
-  const socketPath = generateSocketPath()
+  const { socketPath, parentDir } = generateSocketPath()
   const { invalidates, markInvalidate, markInvalidates } = useInvalidates()
 
+  let cleanedUp = false
   async function cleanupSocket () {
+    if (cleanedUp) { return }
+    cleanedUp = true
     if (socketServer && socketServer.listening) {
       await new Promise<void>(resolveClose => socketServer!.close(() => resolveClose()))
     }
-    if (socketPath && !socketPath.startsWith('\\\\.\\pipe\\')) {
+    if (parentDir) {
       try {
-        await unlink(socketPath)
+        await rm(parentDir, { recursive: true, force: true })
       } catch {
-        // Error is ignored if the file doesn't exist or cannot be unlinked
+        // mkdtemp directory cleanup is best-effort
       }
     }
   }
+
+  const nitro = useNitro()
+
+  const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
+  const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
+  const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
+
+  const serverEntryCode = `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`
+  setBuildOutput('serverEntry', () => serverEntryCode)
+  setBuildOutput('clientManifest', () => `import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))};export default () => viteNodeFetch.getManifest()`)
+
+  nitro.options.virtual ||= {}
+  nitro.options._config.virtual ||= {}
+  const runnerCode = `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`
+  nitro.options.virtual['#build/dist/server/runner.mjs'] = runnerCode
+  nitro.options._config.virtual['#build/dist/server/runner.mjs'] = runnerCode
 
   return {
     name: 'nuxt:vite-node-server',
@@ -206,12 +239,93 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
         return
       }
 
+      // The SSR module graph isn't reachable from the file watcher or the
+      // `app:templatesGenerated` hook for modules invalidated by user plugins
+      // (e.g. virtual modules invalidated via `handleHotUpdate`). Track the
+      // most recent invalidation/HMR timestamp we've observed so we can pick
+      // up any module whose timestamp advanced since the previous SSR render.
+      // See https://github.com/nuxt/nuxt/issues/30169.
+      let lastSeenTimestamp = 0
+
+      // Files the watcher saw change but couldn't map to an SSR module yet:
+      // the SSR graph is populated lazily by `fetchModule` on render, so a
+      // file in an extended layer often isn't present at watch time and never
+      // gets its SSR timestamp advanced by Vite's HMR. We resolve these against
+      // the (now-populated) SSR graph at render time and invalidate them along
+      // with their importers, so an edit to e.g. a sibling-layer component
+      // reaches the page that renders it.
+      //
+      // The value counts down the renders a file may stay unresolved before we
+      // give up on it, so files that are never SSR-relevant don't accumulate.
+      const pendingChangedFiles = new Map<string, number>()
+      const PENDING_CHANGED_FILE_RENDERS = 2
+
+      function collectInvalidatedSsrModules (ssrServer: ViteDevServer) {
+        const ssrModuleGraph = ssrServer.environments.ssr.moduleGraph
+        let maxSeen = lastSeenTimestamp
+        for (const mod of ssrModuleGraph.idToModuleMap.values()) {
+          const modTimestamp = Math.max(mod.lastHMRTimestamp, mod.lastInvalidationTimestamp)
+          if (modTimestamp > lastSeenTimestamp) {
+            markInvalidate(mod)
+            if (modTimestamp > maxSeen) {
+              maxSeen = modTimestamp
+            }
+          }
+        }
+        lastSeenTimestamp = maxSeen
+
+        for (const [file, remaining] of pendingChangedFiles) {
+          const mods = ssrModuleGraph.getModulesByFile(file)
+          if (!mods?.size) {
+            if (remaining <= 1) {
+              pendingChangedFiles.delete(file)
+            } else {
+              pendingChangedFiles.set(file, remaining - 1)
+            }
+            continue
+          }
+
+          // A `handleHotUpdate` hook reacting to this edit invalidates virtual
+          // modules only in the client graph (`server.moduleGraph`), so the SSR
+          // copy keeps serving a stale evaluation. Re-evaluate any virtual
+          // module the changed file imports. The SSR graph fills lazily, so the
+          // import may not exist yet on the first render; stay pending until it
+          // surfaces or the countdown runs out.
+          // See https://github.com/nuxt/nuxt/issues/30169.
+          let invalidatedVirtual = false
+          const seen = new Set<EnvironmentModuleNode>()
+          const invalidateVirtualImports = (mod: EnvironmentModuleNode) => {
+            for (const imported of mod.importedModules) {
+              if (seen.has(imported)) { continue }
+              seen.add(imported)
+              if (imported.id?.startsWith('\0')) {
+                ssrModuleGraph.invalidateModule(imported)
+                markInvalidate(imported)
+                invalidatedVirtual = true
+              }
+              invalidateVirtualImports(imported)
+            }
+          }
+          for (const mod of mods) {
+            invalidateVirtualImports(mod)
+            ssrModuleGraph.invalidateModule(mod)
+          }
+          markInvalidates(mods)
+
+          if (invalidatedVirtual || remaining <= 1) {
+            pendingChangedFiles.delete(file)
+          } else {
+            pendingChangedFiles.set(file, remaining - 1)
+          }
+        }
+      }
+
       function resolveServer (ssrServer: ViteDevServer) {
         const viteNodeServerOptions = {
           socketPath,
           root: nuxt.options.srcDir,
           entryPath: resolveServerEntry(ssrServer.config),
-          base: ssrServer.config.base || '/_nuxt/',
+          base: '/',
           maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
           baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
           maxRetryDelay: nuxt.options.vite.viteNode?.maxRetryDelay,
@@ -222,7 +336,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
 
         process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
-        socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, viteNodeServerOptions)
+        socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, () => collectInvalidatedSsrModules(ssrServer), viteNodeServerOptions)
       }
 
       resolveServer(clientServer)
@@ -232,7 +346,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
       const client = clientServer.environments.client
       nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
         for (const template of changedTemplates) {
-          const mods = client.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
+          const mods = client.moduleGraph.getModulesByFile(toVirtualId(template.dst, nuxt))
           for (const mod of mods || []) {
             markInvalidate(mod)
           }
@@ -241,7 +355,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
 
       clientServer.watcher.on('all', (_event, file) => {
         invalidates.add(file)
-        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalize(file)))
+        const normalized = normalize(file)
+        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalized))
+        pendingChangedFiles.set(normalized, PENDING_CHANGED_FILE_RENDERS)
       })
     },
     async buildEnd () {
@@ -250,7 +366,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
   }
 }
 
-function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {
+function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, collectInvalidatedSsrModules: () => void, config: ViteNodeServerOptions) {
   const server = net.createServer((socket) => {
     const INITIAL_BUFFER_SIZE = 64 * 1024 // 64kB
     const MAX_BUFFER_SIZE = 1024 * 1024 * 1024 // 1GB
@@ -272,6 +388,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
             return
           }
           case 'invalidates': {
+            collectInvalidatedSsrModules()
             const responsePayload = Array.from(invalidates)
             invalidates.clear()
             sendResponse<typeof request.type>(socket, request.id, responsePayload)
@@ -305,7 +422,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                     errorData.frame = await ssrServer.environments.client.transformRequest(request.payload.moduleId)
                       .then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
                   } catch {
-                  // Ignore transform errors
+                    // Ignore transform errors
                   }
                 }
                 throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
@@ -342,7 +459,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
       const requiredSize = writeOffset + additionalBytes
 
       if (requiredSize > MAX_BUFFER_SIZE) {
-        throw new Error(`Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`)
+        throw bundlerDiagnostics.NUXT_B7012({ requiredSize, maxSize: MAX_BUFFER_SIZE })
       }
 
       if (requiredSize > buffer.length) {
@@ -414,27 +531,46 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
   const currentSocketPath = config.socketPath
   if (!currentSocketPath) {
-    throw new Error('Socket path not configured for ViteNodeSocketServer.')
+    throw bundlerDiagnostics.NUXT_B7013()
   }
 
-  // Clean up existing socket file (Unix only)
-  if (!currentSocketPath.startsWith('\\\\.\\pipe\\')) {
-    try {
-      fs.unlinkSync(currentSocketPath)
-    } catch (unlinkError: any) {
-      if (unlinkError.code !== 'ENOENT') {
-        // Socket cleanup failed, but continue anyway
-      }
-    }
-  }
+  listenAndRestrict(server, currentSocketPath)
 
-  server.listen(currentSocketPath)
-
-  server.on('error', () => {
-    // Server error - will be handled by calling code
-  })
+  server.on('error', () => { })
 
   return server
+}
+
+export function listenAndRestrict (server: net.Server, socketPath: string): void {
+  const isWindowsPipe = socketPath.startsWith('\\\\.\\pipe\\')
+  if (isWindowsPipe) {
+    server.listen(socketPath)
+    return
+  }
+  // 1. the 0700 parent directory (created by pickSocketPath) is the access-control
+  //    boundary, since AF_UNIX connect requires +x on every parent.
+  // 2. The post-listen chmod 0600 protects the socket file itself.
+  // 3. The umask wrap tightens the in-process window between bind(2) and the chmod,
+  //    where the file would otherwise briefly exist with the default umask
+  //    and be observable to other code.
+  const previousUmask = process.umask(0o077)
+  try {
+    server.listen(socketPath, () => {
+      try {
+        fs.chmodSync(socketPath, 0o600)
+      } catch (error) {
+        bundlerDiagnostics.NUXT_B7018({ cause: error })
+        server.close()
+        try {
+          fs.rmSync(dirname(socketPath), { recursive: true, force: true })
+        } catch {
+          // mkdtemp directory cleanup is best-effort
+        }
+      }
+    })
+  } finally {
+    process.umask(previousUmask)
+  }
 }
 
 function sendResponse<T extends keyof ViteNodeRequestMap> (
@@ -502,24 +638,4 @@ export type ViteNodeServerOptions = {
   baseRetryDelay?: number
   maxRetryDelay?: number
   requestTimeout?: number
-}
-
-export async function writeDevServer (nuxt: Nuxt): Promise<void> {
-  const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
-  const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
-  const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
-
-  const serverDist = join(nuxt.options.buildDir, 'dist/server')
-
-  await mkdir(serverDist, { recursive: true })
-
-  await Promise.all([
-    writeFile(join(serverDist, 'server.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`),
-    writeFile(join(serverDist, 'runner.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`),
-    writeFile(join(serverDist, 'client.precomputed.mjs'), `export default undefined`),
-    writeFile(join(serverDist, 'client.manifest.mjs'), `
-import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))}
-export default () => viteNodeFetch.getManifest()
-    `),
-  ])
 }

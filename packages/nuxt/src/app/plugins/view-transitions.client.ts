@@ -1,11 +1,11 @@
 import { isChangingPage } from '../components/utils'
 import { useRouter } from '../composables/router'
 import { defineNuxtPlugin } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 import type { ViewTransitionPageOptions } from 'nuxt/schema'
-// @ts-expect-error virtual file
 import { appViewTransition as defaultViewTransition } from '#build/nuxt.config.mjs'
 
-export default defineNuxtPlugin((nuxtApp) => {
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
   if (!document.startViewTransition) {
     return
   }
@@ -93,7 +93,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       ? document.startViewTransition!({ update, types: allTypes })
       : document.startViewTransition!(update)
 
-    transition.finished.then(resetTransitionState)
+    transition.finished.catch(() => {}).finally(resetTransitionState)
 
     await nuxtApp.callHook('page:view-transition:start', transition)
 
@@ -120,3 +120,5 @@ export default defineNuxtPlugin((nuxtApp) => {
     resetTransitionState()
   })
 })
+
+export default plugin

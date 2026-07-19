@@ -20,8 +20,7 @@ export function LayerDepOptimizePlugin (nuxt: Nuxt): Plugin | undefined {
 
   if (layerDirs.length > 0) {
     // Reverse so longest/most specific directories are searched first
-    layerDirs.sort().reverse()
-    const dirs = [...layerDirs]
+    const dirs = layerDirs.toSorted().reverse()
     return {
       name: 'nuxt:optimize-layer-deps',
       enforce: 'pre',

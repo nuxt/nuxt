@@ -1,9 +1,7 @@
-import type { Component, InjectionKey } from 'vue'
+import type { Component, DefineSetupFnComponent, InjectionKey, SlotsType, VNode } from 'vue'
 import { Teleport, defineComponent, h, inject, provide, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
-// @ts-expect-error virtual file
 import paths from '#build/component-chunk'
-// @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
 
 type ExtendedComponent = Component & {
@@ -17,8 +15,15 @@ export const NuxtTeleportIslandSymbol = Symbol('NuxtTeleportIslandComponent') as
  * component only used with componentsIsland
  * this teleport the component in SSR only if it needs to be hydrated on client
  */
-/* @__PURE__ */
-export default defineComponent({
+interface NuxtTeleportIslandComponentProps {
+  nuxtClient?: boolean
+}
+
+type NuxtTeleportIslandComponentSlots = SlotsType<{
+  default?: () => VNode[]
+}>
+
+const NuxtTeleportIslandComponent = /* @__PURE__ */ defineComponent({
   name: 'NuxtTeleportIslandComponent',
   inheritAttrs: false,
   props: {
@@ -54,4 +59,6 @@ export default defineComponent({
       }, []), h(Teleport, { to }, slot)]
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtTeleportIslandComponentProps, {}, NuxtTeleportIslandComponentSlots>
+
+export default NuxtTeleportIslandComponent

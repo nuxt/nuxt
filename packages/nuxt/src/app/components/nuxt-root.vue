@@ -20,23 +20,23 @@
 <script setup>
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { isNuxtError, showError, useError } from '../composables/error'
+import { _notifyCrawlerError, isNuxtError, showError, useError } from '../composables/error'
+import { isBotUserAgent } from '../utils'
+import { appDiagnostics } from '../diagnostics/core'
 import { useRoute, useRouter } from '../composables/router'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
-// @ts-expect-error virtual file
-import { componentIslands } from '#build/nuxt.config.mjs'
-
-const IslandRenderer = import.meta.server && componentIslands
-  ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
-  : () => null
+import IslandRenderer from '#build/island-renderer.mjs'
 
 const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
 if (import.meta.client && nuxtApp.isHydrating) {
   const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', onResolve)
-  useRouter().beforeEach(removeErrorHook)
+  const removeGuard = useRouter().beforeEach(() => {
+    removeErrorHook()
+    removeGuard()
+  })
 }
 
 const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathname
@@ -47,26 +47,37 @@ const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server
 provide(PageRouteSymbol, useRoute())
 
 // vue:setup hook
-const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup')
+const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup', [])
 if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
-  console.error('[nuxt] Error in `vue:setup`. Callbacks must be synchronous.')
+  appDiagnostics.NUXT_E1011()
 }
 
 // error handling
 const error = useError()
 // render an empty <div> when plugins have thrown an error but we're not yet rendering the error page
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
-const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
+// returning `false` from onErrorCaptured below stops Vue from invoking
+// `app.config.errorHandler`, so call it explicitly (#22691)
+function invokeAppErrorHandler (err, target, info) {
+  const errorHandler = nuxtApp.vueApp.config.errorHandler
+  if (errorHandler && !errorHandler.__nuxt_default) {
+    try {
+      errorHandler(err, target, info)
+    } catch (handlerError) {
+      console.error('[nuxt] Error in `app.config.errorHandler`', handlerError)
+    }
+  }
+}
 onErrorCaptured((err, target, info) => {
   nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
-  if (import.meta.client && BOT_RE.test(navigator.userAgent)) {
-    nuxtApp.hooks.callHook('app:error', err)
-    console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, err)
+  if (import.meta.client && isBotUserAgent(navigator.userAgent)) {
+    _notifyCrawlerError(nuxtApp, err)
     return false
   }
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
     const p = nuxtApp.runWithContext(() => showError(err))
     onServerPrefetch(() => p)
+    invokeAppErrorHandler(err, target, info)
     return false // suppress error from breaking render
   }
 })

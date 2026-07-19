@@ -9,7 +9,7 @@ type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
 // Default router options
 // https://router.vuejs.org/api/interfaces/routeroptions
-export default <RouterConfig> {
+export default <RouterConfig>{
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
     // @ts-expect-error untyped, nuxt-injected option
@@ -18,7 +18,7 @@ export default <RouterConfig> {
     // Hash routes on the same page, no page hook is fired so resolve here
     if (to.path.replace(/\/$/, '') === from.path.replace(/\/$/, '')) {
       if (from.hash && !to.hash) {
-        return { left: 0, top: 0 }
+        return savedPosition ?? { left: 0, top: 0 }
       }
       if (to.hash) {
         return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior: hashScrollBehaviour }
@@ -75,14 +75,12 @@ function _calculatePosition (
     return savedPosition
   }
 
-  const isPageNavigation = isChangingPage(to, from)
-
   // Scroll to the element specified in the URL hash, if present
   if (to.hash) {
     return {
       el: to.hash,
       top: _getHashElementScrollMarginTop(to.hash),
-      behavior: isPageNavigation ? defaultHashScrollBehaviour : 'instant',
+      behavior: isChangingPage(to, from) ? defaultHashScrollBehaviour : 'instant',
     }
   }
 

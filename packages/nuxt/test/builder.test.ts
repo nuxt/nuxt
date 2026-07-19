@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
 
+import type { FSWatcher } from 'vite'
 import { join, relative, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
@@ -49,6 +50,59 @@ describe('builder:watch', { sequential: true }, async () => {
 
     expect.soft(restarts).toBe(3)
     expect.soft(events.sort()).toStrictEqual([
+      '../higher',
+      'other',
+      'test',
+    ])
+  })
+
+  it('should restart Nuxt when a file is added with builder strategy', async () => {
+    const rootDir = join(tmpDir, 'project')
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        experimental: { watcher: 'builder' },
+        dev: true,
+        watch: ['test', join(rootDir, 'other'), resolve(rootDir, '../higher')],
+      },
+    })
+    const targets = new Set(['../higher', 'other', 'test'])
+    const seenAdds = new Set<string>()
+    let resolveAll: () => void
+    const allSeen = new Promise<void>((resolve) => { resolveAll = resolve })
+
+    nuxt.hook('builder:watch', (event, path) => {
+      if (event !== 'add') { return }
+      const rel = relative(rootDir, path)
+      if (targets.has(rel) && !seenAdds.has(rel)) {
+        seenAdds.add(rel)
+        if (seenAdds.size === targets.size) { resolveAll() }
+      }
+    })
+
+    let viteWatcher: FSWatcher | undefined
+    nuxt.hook('vite:serverCreated', (server, { isClient }) => {
+      if (isClient) {
+        viteWatcher = server.watcher
+      }
+    })
+
+    await build(nuxt)
+
+    const watcher = viteWatcher!
+    if (!(watcher as FSWatcher & { _readyEmitted?: boolean })._readyEmitted) {
+      await new Promise<void>(r => watcher.once('ready', r))
+    }
+
+    writeFileSync(resolve(rootDir, '../higher'), 'something')
+    writeFileSync(join(rootDir, 'test'), 'something')
+    writeFileSync(join(rootDir, 'other'), 'something')
+    await allSeen
+
+    await nuxt.close()
+
+    expect.soft([...seenAdds].sort()).toStrictEqual([
       '../higher',
       'other',
       'test',

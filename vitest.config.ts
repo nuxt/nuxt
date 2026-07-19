@@ -24,14 +24,64 @@ const commonSettings: NuxtConfig = {
   },
 }
 
-const projects: Record<string, NuxtConfig> = {
-  'nuxt': {},
+const nuxtTestProjects: Record<string, NuxtConfig> = {
+  'nuxt': {
+    future: {
+      compatibilityVersion: 5,
+    },
+  },
   'nuxt-legacy': {
+    future: {
+      compatibilityVersion: 4,
+    },
     experimental: {
       alwaysRunFetchOnKeyChange: true,
     },
   },
 }
+
+// Matrix combinations for fixture tests (matches CI matrix with exclusions)
+interface FixtureMatrixEntry {
+  env: 'dev' | 'built'
+  builder: 'vite' | 'rspack' | 'webpack'
+  context: 'async' | 'default'
+  manifest: 'manifest-on' | 'manifest-off'
+}
+
+const fixtureMatrix: FixtureMatrixEntry[] = [
+  // vite: all combinations
+  { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-on' },
+  { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-off' },
+  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on' },
+  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-off' },
+  { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-on' },
+  { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-off' },
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on' },
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-off' },
+  // rspack: only manifest-on
+  { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
+  { env: 'built', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
+  { env: 'built', builder: 'rspack', context: 'default', manifest: 'manifest-on' },
+  // webpack: only manifest-on
+  { env: 'dev', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
+  { env: 'built', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
+  { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on' },
+]
+
+function fixtureProjectName (entry: FixtureMatrixEntry) {
+  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}`
+}
+
+function fixtureProjectEnv (entry: FixtureMatrixEntry) {
+  return {
+    TEST_ENV: entry.env,
+    TEST_BUILDER: entry.builder,
+    TEST_CONTEXT: entry.context,
+    TEST_MANIFEST: entry.manifest,
+  }
+}
+
+const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js']
 
 export default defineConfig({
   test: {
@@ -53,24 +103,34 @@ export default defineConfig({
           },
         },
       },
-      {
+      ...fixtureMatrix.map(entry => ({
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         test: {
-          name: 'fixtures',
+          name: fixtureProjectName(entry),
           include: ['test/*.test.ts'],
+          exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           setupFiles: ['./test/setup-env.ts'],
-          testTimeout: isWindows ? 60000 : 10000,
+          testTimeout: isWindows ? 60000 : 20000,
           retry: isCI ? 2 : 0,
-          // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-          exclude: [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
+          benchmark: { include: [] },
+          env: fixtureProjectEnv(entry),
+        },
+      })),
+      {
+        test: {
+          name: 'bundle',
+          include: ['test/bundle.test.ts'],
+          setupFiles: ['./test/setup-env.ts'],
+          testTimeout: 180_000,
+          retry: isCI ? 2 : 0,
           benchmark: { include: [] },
         },
       },
       {
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         resolve: {
           alias: {
@@ -78,7 +138,7 @@ export default defineConfig({
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
-            '#app': resolve('./packages/nuxt/dist/app'),
+            '#app': resolve('./packages/nuxt/src/app'),
           },
         },
         test: {
@@ -88,7 +148,7 @@ export default defineConfig({
           include: ['packages/**/*.{test,spec}.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-          exclude: [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
+          exclude: fixtureExclude,
         },
       },
       await defineVitestProject({
@@ -103,14 +163,14 @@ export default defineConfig({
           },
         },
       }),
-      ...await Promise.all(Object.entries(projects).map(([project, config]) => defineVitestProject({
+      ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
           environment: 'nuxt',
           setupFiles: ['./test/setup-runtime.ts'],
           env: {
@@ -123,6 +183,22 @@ export default defineConfig({
           },
         },
       }))),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': 'true',
+        },
+        test: {
+          name: 'nuxt-dev',
+          dir: './test/nuxt/dev',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu(nuxtTestProjects.nuxt, commonSettings),
+            },
+          },
+        },
+      }),
     ],
   },
 })

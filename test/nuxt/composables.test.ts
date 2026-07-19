@@ -9,7 +9,8 @@ import { createClientPage } from '../../packages/nuxt/src/components/runtime/cli
 
 import * as composables from '#app/composables'
 import { refreshNuxtData } from '#app/composables/asyncData'
-import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { useNuxtApp } from '#app/nuxt'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
@@ -27,8 +28,8 @@ import { NuxtPage } from '#components'
 import { isTestingAppManifest } from '../matrix'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
 describe('app config', () => {
@@ -121,14 +122,15 @@ describe('composables', () => {
       'useFetch',
       'useHead',
       'useHeadSafe',
+      'useServerHead',
+      'useServerHeadSafe',
+      'useServerSeoMeta',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
-      'useServerHead',
-      'useServerHeadSafe',
-      'useServerSeoMeta',
       'usePreviewMode',
+      'useLayout',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
@@ -138,31 +140,22 @@ describe('errors', () => {
   it('createError', () => {
     expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
       {
-        "message": "",
-        "statusCode": 404,
+        "data": undefined,
+        "message": "HTTPError 404",
+        "status": 404,
+        "statusText": undefined,
+        "unhandled": undefined,
       }
     `)
     expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
       {
+        "data": undefined,
         "message": "Message",
-        "statusCode": 500,
+        "status": 500,
+        "statusText": undefined,
+        "unhandled": undefined,
       }
     `)
-  })
-
-  // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
-  it('supports status/statusText getters', () => {
-    const error = createError({ status: 404, statusText: 'Not Found' })
-    expect(error.status).toBe(404)
-    expect(error.statusText).toBe('Not Found')
-    // backwards compat
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(error.statusCode).toBe(404)
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(error.statusMessage).toBe('Not Found')
-    // non-enumerable (no duplicate in toJSON)
-    expect(Object.keys(error.toJSON())).not.toContain('status')
-    expect(Object.keys(error.toJSON())).not.toContain('statusText')
   })
 
   it('isNuxtError', () => {
@@ -175,9 +168,39 @@ describe('errors', () => {
     const error = useError()
     expect(error.value).toBeUndefined()
     showError('new error')
-    expect(error.value).toMatchInlineSnapshot('[Error: new error]')
+    expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
+  })
+
+  describe('_showErrorUnlessCrawler', () => {
+    afterEach(async () => {
+      vi.unstubAllGlobals()
+      vi.restoreAllMocks()
+      await clearError()
+    })
+
+    it('shows the error page for a regular user agent', async () => {
+      vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0' })
+      const error = useError()
+      await _showErrorUnlessCrawler(useNuxtApp(), new Error('chunk failed'))
+      expect(error.value).toMatchInlineSnapshot('[HTTPError: chunk failed]')
+    })
+
+    it('suppresses the error page and fires `app:error` for a crawler', async () => {
+      vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' })
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      const appError = vi.fn()
+      const nuxtApp = useNuxtApp()
+      const off = nuxtApp.hook('app:error', appError)
+
+      const error = useError()
+      await _showErrorUnlessCrawler(nuxtApp, new Error('chunk failed'))
+
+      expect(error.value).toBeUndefined()
+      expect(appError).toHaveBeenCalledWith(expect.objectContaining({ message: 'chunk failed' }))
+      off()
+    })
   })
 })
 
@@ -219,7 +242,7 @@ describe('useHydration', () => {
 describe('useState', () => {
   // be sure to not have colliding keys in tests
   afterEach(() => {
-    clearNuxtState()
+    clearNuxtState(undefined, { reset: false })
   })
 
   it('expect providing only init function to use autoKey default', () => {
@@ -254,7 +277,7 @@ describe('useState', () => {
 describe('clearNuxtState', () => {
   // be sure to not have colliding keys in tests
   afterEach(() => {
-    clearNuxtState()
+    clearNuxtState(undefined, { reset: false })
   })
 
   it('expect state in payload for single key to be removed', () => {
@@ -262,7 +285,9 @@ describe('clearNuxtState', () => {
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
     clearNuxtState(key)
-    expect(state.value).toBeUndefined()
+    // In v5 (resetOnClear: true), clearNuxtState resets to init value by default
+    // In v4 (resetOnClear: false), clearNuxtState sets to undefined
+    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
   })
 
   it('expect state in payload for array of keys to be removed', () => {
@@ -273,11 +298,13 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState([key1, 'other'])
-    expect(state1.value).toBeUndefined()
+    // In v5, resetOnClear resets to init value; in v4, it sets to undefined
+    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
+    expect(state1.value).toBe(cleared)
     expect(state2.value).toBe('test')
     clearNuxtState([key1, key2])
-    expect(state1.value).toBeUndefined()
-    expect(state2.value).toBeUndefined()
+    expect(state1.value).toBe(cleared)
+    expect(state2.value).toBe(cleared)
   })
 
   it('expect state in payload for function to be removed', () => {
@@ -287,7 +314,7 @@ describe('clearNuxtState', () => {
     clearNuxtState(() => false)
     expect(state.value).toBe('test')
     clearNuxtState(k => k === key)
-    expect(state.value).toBeUndefined()
+    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
   })
 
   it('expect all states to be removed when no key is provided', () => {
@@ -296,8 +323,9 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState(undefined)
-    expect(state1.value).toBeUndefined()
-    expect(state2.value).toBeUndefined()
+    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
+    expect(state1.value).toBe(cleared)
+    expect(state2.value).toBe(cleared)
   })
 
   it('expect state in payload for single key to reset', () => {
@@ -370,6 +398,46 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     const state3 = useState('clearNuxtState-test', () => 'test')
     expect(state3.value).toBe('test')
+  })
+
+  it('should only enumerate useState keys, ignoring internal payload.state entries', () => {
+    const nuxtApp = useNuxtApp()
+    // Simulate internal state entries that don't use the useState prefix
+    nuxtApp.payload.state._layout = 'default'
+    nuxtApp.payload.state._layoutProps = { foo: 'bar' }
+
+    const state = useState('clearNuxtState-test', () => 'test')
+    expect(state.value).toBe('test')
+
+    const matchedKeys: string[] = []
+    clearNuxtState((key) => {
+      matchedKeys.push(key)
+      return true
+    })
+
+    // Filter function should only receive actual useState keys, not garbled internal keys
+    expect(matchedKeys).not.toContain('ayout')
+    expect(matchedKeys).not.toContain('ayoutProps')
+    expect(matchedKeys).toContain('clearNuxtState-test')
+
+    // Internal state entries should not be affected
+    expect(nuxtApp.payload.state._layout).toBe('default')
+    expect(nuxtApp.payload.state._layoutProps).toEqual({ foo: 'bar' })
+
+    // Clean up
+    delete nuxtApp.payload.state._layout
+    delete nuxtApp.payload.state._layoutProps
+  })
+
+  it('removes the key from payload.state rather than setting it to undefined', () => {
+    const nuxtApp = useNuxtApp()
+    const key = 'clearNuxtState-test'
+    useState(key, () => 'test')
+    expect(`$s${key}` in nuxtApp.payload.state).toBe(true)
+
+    clearNuxtState(key, { reset: false })
+
+    expect(`$s${key}` in nuxtApp.payload.state).toBe(false)
   })
 })
 
@@ -488,10 +556,15 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     `)
   })
   it('getRouteRules', () => {
-    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot(`
+      {
+        "ssr": true,
+      }
+    `)
     expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
+        "ssr": true,
       }
     `)
     expect(getRouteRules({ path: '/pre/spa/thing' })).toMatchInlineSnapshot(`
@@ -504,8 +577,21 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       {
         "prerender": true,
         "redirect": "/",
+        "ssr": true,
       }
     `)
+  })
+  it('matches route-rule casing consistently with vue-router', () => {
+    const spaRules = getRouteRules({ path: '/Pre/spa/thing' })
+    const redirectRules = getRouteRules({ path: '/PRE/test' })
+
+    if (process.env.PROJECT === 'nuxt-legacy') {
+      expect(spaRules).toMatchObject({ prerender: true, ssr: false })
+      expect(redirectRules).toMatchObject({ redirect: '/' })
+    } else {
+      expect(spaRules).not.toHaveProperty('prerender')
+      expect(redirectRules).not.toHaveProperty('redirect')
+    }
   })
 })
 
@@ -583,8 +669,14 @@ describe('routing utilities: `navigateTo`', () => {
     return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
   }
 
+  it('matches routes with compatibility-version casing', () => {
+    router.addRoute({ name: 'case-sensitive-test', path: '/case-sensitive-test', component: defineComponent({}) })
+    expect(router.resolve('/Case-Sensitive-Test').name === 'case-sensitive-test').toBe(process.env.PROJECT === 'nuxt-legacy')
+    router.removeRoute('case-sensitive-test')
+  })
+
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[Error: Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.]')
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[NUXT_E2001: NUXT_E2001]')
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
@@ -592,9 +684,58 @@ describe('routing utilities: `navigateTo`', () => {
       ['data:alert("hi")', 'data'],
       ['\0data:alert("hi")', 'data'],
     ]
-    for (const [url, protocol] of urls) {
-      expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+    for (const [url] of urls) {
+      expect(() => navigateTo(url, { external: true })).toThrow('NUXT_E2002')
     }
+  })
+  it('navigateTo should disallow opening data/script URLs via the `open` option', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      const urls = [
+        'javascript:alert("hi")',
+        'data:alert("hi")',
+        'vbscript:alert("hi")',
+        '\0javascript:alert("hi")',
+      ]
+      for (const url of urls) {
+        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow('NUXT_E2002')
+      }
+      expect(open).not.toHaveBeenCalled()
+    } finally {
+      open.mockRestore()
+    }
+  })
+  it('navigateTo should still allow opening safe URLs via the `open` option', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      expect(() => navigateTo('https://example.com', { open: { target: '_blank' } })).not.toThrow()
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+    } finally {
+      open.mockRestore()
+    }
+  })
+  it('reloadNuxtApp should disallow paths with data/script URLs', () => {
+    const urls = [
+      'javascript:alert("hi")',
+      'data:alert("hi")',
+      '\0data:alert("hi")',
+    ]
+    for (const url of urls) {
+      expect(() => reloadNuxtApp({ path: url })).toThrow('NUXT_E2010')
+    }
+  })
+  it('reloadNuxtApp should disallow cross-origin paths', () => {
+    const urls = [
+      '//evil.com',
+      'https://evil.com',
+      '\\\\evil.com',
+    ]
+    for (const url of urls) {
+      expect(() => reloadNuxtApp({ path: url })).toThrow('NUXT_E2010')
+    }
+  })
+  it('reloadNuxtApp should allow same-origin paths', () => {
+    expect(() => reloadNuxtApp({ path: '/legit/path' })).not.toThrow()
   })
   it('navigateTo should replace current navigation state if called within middleware', () => {
     const nuxtApp = useNuxtApp()
@@ -654,6 +795,18 @@ describe('routing utilities: `encodeURL`', () => {
     expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
     expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
     expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
+  })
+
+  it.each([
+    '/..//evil.com',
+    '/.//evil.com',
+    '/%2e%2e//evil.com',
+    '/app/..//evil.com',
+    '/..//evil.com/path?q=1#h',
+  ])('does not produce a protocol-relative URL for path-normalization bypass %s', (input) => {
+    const result = encode(input)
+    expect(result.startsWith('//')).toBe(false)
+    expect(new URL(result, 'http://app.test').origin).toBe('http://app.test')
   })
 })
 
@@ -794,7 +947,7 @@ describe('routing utilities: `useRoute`', () => {
 describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
-    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[HTTPError: Page not found]')
     expect(error.value).toBe(undefined)
   })
   it('should block navigation if no error is provided', () => {
@@ -818,6 +971,24 @@ describe('routing utilities: `setPageLayout`', () => {
     setPageLayout('custom')
     expect(route.meta.layout).toBeUndefined()
     nuxtApp._processingMiddleware = false
+  })
+
+  it('should preserve layout and props on same-path (query-only) navigation', async () => {
+    const router = useRouter()
+    router.addRoute({
+      name: 'layout-props-test',
+      path: '/layout-props-test',
+      component: defineComponent({ template: '<div />' }),
+    })
+    await router.push('/layout-props-test')
+    const route = useRoute()
+    setPageLayout('with-props', { someProp: 'hello' })
+    expect(route.meta.layout).toEqual('with-props')
+    expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
+    await router.push({ query: { tab: 'b' } })
+    expect(route.meta.layout).toEqual('with-props')
+    expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
+    router.removeRoute('layout-props-test')
   })
 })
 
@@ -980,6 +1151,85 @@ describe('useCookie', () => {
 
     expect(document.cookie).not.toContain('no-refresh-test=original')
   })
+
+  it('should re-evaluate expires getter on each cookie write', async () => {
+    const { nextTick } = await import('vue')
+    let callCount = 0
+    const cookie = useCookie('expires-getter', {
+      expires: () => {
+        callCount++
+        return new Date(Date.now() + 60_000)
+      },
+    })
+
+    // Initial write of default/undefined may or may not happen; start from a known count
+    const baseline = callCount
+    cookie.value = 'first'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(baseline)
+
+    const afterFirst = callCount
+    cookie.value = 'second'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(afterFirst)
+    expect(document.cookie).toContain('expires-getter=second')
+  })
+
+  it('should re-evaluate expires getter on same-value assignment when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+    let callCount = 0
+    document.cookie = 'expires-refresh=token'
+    const cookie = useCookie('expires-refresh', {
+      refresh: true,
+      expires: () => {
+        callCount++
+        return new Date(Date.now() + 60_000)
+      },
+    })
+    expect(cookie.value).toBe('token')
+
+    const baseline = callCount
+    cookie.value = 'token'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(baseline)
+    expect(document.cookie).toContain('expires-refresh=token')
+  })
+
+  it('should support a static Date for expires without a getter', async () => {
+    const { nextTick } = await import('vue')
+    const cookie = useCookie('expires-static', {
+      expires: new Date(Date.now() + 60_000),
+    })
+    cookie.value = 'static-value'
+    await nextTick()
+    expect(document.cookie).toContain('expires-static=static-value')
+  })
+
+  it('should not treat an expires getter returning undefined as expired', () => {
+    const cookie = useCookie('expires-undefined-getter', {
+      default: () => 'fallback',
+      expires: () => undefined,
+    })
+    expect(cookie.value).toBe('fallback')
+  })
+
+  it('should keep session cookies without expires or maxAge as plain refs', async () => {
+    const { nextTick } = await import('vue')
+    vi.useFakeTimers()
+    try {
+      const cookie = useCookie('session-no-expiry', {
+        default: () => 'session',
+      })
+      cookie.value = 'session'
+      await nextTick()
+      expect(cookie.value).toBe('session')
+
+      vi.advanceTimersByTime(60_000)
+      expect(cookie.value).toBe('session')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
 
 describe('callOnce', () => {
@@ -1032,6 +1282,43 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(1)
 
       await navigateTo('/test')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation')('should rerun on every consecutive navigation', async () => {
+      const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
+      const execute = () => options ? callOnce('consecutive-nav', fn, options) : callOnce('consecutive-nav', fn)
+
+      // First execution with page:start firing during async fn (simulates Suspense.onPending)
+      const p1 = execute()
+      await nuxtApp.callHook('page:start')
+      await p1
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      // First navigation
+      await navigateTo('/page-2')
+      const p2 = execute()
+      await nuxtApp.callHook('page:start')
+      await p2
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      // Second navigation - should NOT be skipped
+      await navigateTo('/page-3')
+      const p3 = execute()
+      await nuxtApp.callHook('page:start')
+      await p3
+      expect(fn).toHaveBeenCalledTimes(3)
+    })
+
+    it('should retry after a rejected promise', async () => {
+      const fn = vi.fn()
+        .mockRejectedValueOnce(new Error('fail'))
+        .mockResolvedValueOnce(undefined)
+      const execute = () => options ? callOnce('retry-key', fn, options) : callOnce('retry-key', fn)
+      await expect(execute()).rejects.toThrow('fail')
+      expect(fn).toHaveBeenCalledTimes(1)
+
       await execute()
       expect(fn).toHaveBeenCalledTimes(2)
     })

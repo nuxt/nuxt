@@ -6,7 +6,6 @@ import { basename, dirname, join, resolve } from 'pathe'
 import type { NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
 import { sanitizeFilePath } from 'mlly'
-import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
@@ -18,6 +17,7 @@ import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
+import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
@@ -33,11 +33,14 @@ import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
+import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
-import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
+import { ViteNodePlugin } from './plugins/vite-node.ts'
+import { ServerEntryPlugin } from './plugins/server-entry.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
+import { PerfPlugin } from './plugins/perf.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -51,7 +54,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
     nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
-    nitro.options.virtual['#internal/nuxt/vite-node-runner'] = () => `export { default } from ${JSON.stringify(resolve(distDir, 'vite-node-runner'))}`
+    nitro.options.virtual['#internal/nuxt/vite-node-runner.mjs'] = () => `export { default } from ${JSON.stringify(resolve(distDir, 'vite-node-runner'))}`
   }
 
   let allowDirs = [
@@ -69,9 +72,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ]),
   ].filter(d => d && existsSync(d))
 
-  for (const dir of allowDirs) {
-    allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
-  }
+  allowDirs = allowDirs.filter(d =>
+    !allowDirs.some(other => other !== d && d.startsWith(other + '/')),
+  )
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
@@ -114,7 +117,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           const environments = Object.values(builder.environments)
           for (const environment of environments) {
             logger.restoreAll()
+            nuxt._perf?.startPhase(`vite:${environment.name}`)
             await builder.build(environment)
+            nuxt._perf?.endPhase(`vite:${environment.name}`)
             logger.wrapAll()
             await nuxt.callHook('vite:compiled')
           }
@@ -176,14 +181,19 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         watch: { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] },
       },
       plugins: [
+        // per-plugin timing when profiling is enabled
+        PerfPlugin(nuxt),
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
         vuePlugin(viteConfig.vue),
-        viteJsxPlugin(viteConfig.vueJsx),
-        ViteNodePlugin(nuxt),
+        ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
         ClientManifestPlugin(nuxt),
+        // After ClientManifestPlugin so its dev `clientManifest` override wins.
+        ViteNodePlugin(nuxt),
+        ServerEntryPlugin(nuxt),
         DevServerPlugin(nuxt),
+        TemplateHMRPlugin(nuxt),
         // lower decorators after Vue SFC compilation and TypeScript stripping
         DecoratorsPlugin(nuxt),
         // add resolver for files in public assets directories
@@ -261,12 +271,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     return
   }
 
+  nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
+    nuxt.hook('close', () => server.close())
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
-
-  await writeDevServer(nuxt)
+  nuxt._perf?.endPhase('vite:dev-server')
 }
 
 async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
