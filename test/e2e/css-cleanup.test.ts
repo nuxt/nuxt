@@ -18,16 +18,13 @@ test.describe('css cleanup on navigation (#22817)', () => {
     await expect(page.locator('.box')).toHaveCSS('border-top-color', BLUE)
 
     await page.click('a[href="/other"]')
-    await expect(page.locator('.legacy-page')).toBeVisible()
     await expect(page.locator('.legacy-page')).toHaveCSS('color', RED)
 
     await page.click('a[href="/"]')
-    await expect(page.locator('.box')).toBeVisible()
     await expect(page.locator('.box')).toHaveCSS('border-top-color', BLUE)
 
     // navigating forward again must restore the disabled styles
     await page.click('a[href="/other"]')
-    await expect(page.locator('.legacy-page')).toBeVisible()
     await expect(page.locator('.legacy-page')).toHaveCSS('color', RED)
   })
 

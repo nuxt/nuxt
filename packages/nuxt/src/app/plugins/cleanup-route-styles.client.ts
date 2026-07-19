@@ -22,42 +22,24 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     const router = useRouter()
     const config = useRuntimeConfig()
 
-    let map: RouteStylesMap | false | undefined
-    let managed: Set<string>
-    let loading: Promise<void> | undefined
-    const loadMap = () => loading ||= (async () => {
-      let loaded: RouteStylesMap | false = false
-      try {
-        const res = await fetch(buildAssetsURL('route-styles.json') + '?' + config.app.buildId)
-        if (res.ok) {
-          loaded = await res.json() as RouteStylesMap
-        }
-      } catch {
-        // if the map cannot be loaded the plugin is a no-op
-      }
-      map = loaded
-      managed = new Set(loaded ? [...Object.values(loaded.layouts), ...Object.values(loaded.pages)].flat() : [])
-    })()
+    interface LoadedStyles { map: RouteStylesMap, managed: Set<string> }
 
-    function activeStyles (route: RouteLocationNormalized) {
-      const active = new Set<string>()
-      if (!map) { return active }
+    // resolves to undefined (and the plugin no-ops) if the map cannot be loaded
+    let styles: Promise<LoadedStyles | undefined> | undefined
+    const loadStyles = () => styles ||= fetch(buildAssetsURL('route-styles.json') + '?' + config.app.buildId)
+      .then(async (res) => {
+        if (!res.ok) { return }
+        const map = await res.json() as RouteStylesMap
+        return { map, managed: new Set([...Object.values(map.layouts), ...Object.values(map.pages)].flat()) }
+      })
+      .catch(() => undefined)
+
+    function toggleStyles ({ map, managed }: LoadedStyles, route: RouteLocationNormalized, { disable }: { disable: boolean }) {
       const layout = resolveLayoutName(route)
-      for (const file of (layout && map.layouts[layout]) || []) {
-        active.add(file)
-      }
-      for (const record of route.matched) {
-        if (typeof record.name === 'string') {
-          for (const file of map.pages[record.name] || []) {
-            active.add(file)
-          }
-        }
-      }
-      return active
-    }
-
-    function toggleStyles (route: RouteLocationNormalized, { disable }: { disable: boolean }) {
-      const active = activeStyles(route)
+      const active = new Set([
+        ...(layout && map.layouts[layout]) || [],
+        ...route.matched.flatMap(record => (typeof record.name === 'string' && map.pages[record.name]) || []),
+      ])
       for (const link of document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')) {
         const file = link.href.split('/').pop()?.replace(/\?.*$/, '')
         if (!file || !managed.has(file)) { continue }
@@ -73,15 +55,17 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     // flash of unstyled content when returning to a previously visited route.
     router.beforeResolve(async (to) => {
       if (nuxtApp.isHydrating) { return }
-      await loadMap()
-      if (map) {
-        toggleStyles(to, { disable: false })
+      const loaded = await loadStyles()
+      if (loaded) {
+        toggleStyles(loaded, to, { disable: false })
       }
     })
 
-    nuxtApp.hook('page:finish', () => {
-      if (nuxtApp.isHydrating || !map) { return }
-      toggleStyles(router.currentRoute.value, { disable: true })
+    nuxtApp.hook('page:finish', async () => {
+      const loaded = !nuxtApp.isHydrating && await styles
+      if (loaded) {
+        toggleStyles(loaded, router.currentRoute.value, { disable: true })
+      }
     })
   },
 })

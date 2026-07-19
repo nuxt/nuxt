@@ -3,8 +3,6 @@ import { joinURL, withoutLeadingSlash } from 'ufo'
 import { normalize } from 'pathe'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 
-const QUERY_RE = /\?.+$/
-
 /**
  * Emits `<buildAssetsDir>/route-styles.json`, mapping each layout name and page
  * (route name) to the basenames of the CSS assets its chunk graph owns, excluding
@@ -23,46 +21,34 @@ export function RouteStylesMapPlugin (nuxt: Nuxt): Plugin | undefined {
       const chunksByFacade = new Map<string, Rollup.OutputChunk>()
       for (const chunk of chunks) {
         if (chunk.facadeModuleId) {
-          chunksByFacade.set(normalize(chunk.facadeModuleId.replace(QUERY_RE, '')), chunk)
+          chunksByFacade.set(normalize(chunk.facadeModuleId.replace(/\?.+$/, '')), chunk)
         }
       }
 
       // CSS owned by a chunk = its own emitted CSS + that of its static import graph,
       // mirroring the set vite's preload helper injects when the chunk is loaded.
-      const cssCache = new Map<string, Set<string>>()
-      const collectCss = (chunk: Rollup.OutputChunk, seen = new Set<string>()): Set<string> => {
-        const cached = cssCache.get(chunk.fileName)
-        if (cached) { return cached }
+      const collectCss = (chunk: Rollup.OutputChunk, css = new Set<string>(), seen = new Set<string>()): Set<string> => {
+        if (seen.has(chunk.fileName)) { return css }
         seen.add(chunk.fileName)
-        const css = new Set<string>()
         for (const file of chunk.viteMetadata?.importedCss || []) {
           css.add(file.split('/').pop()!)
         }
         for (const imported of chunk.imports) {
           const importedChunk = chunksByFileName.get(imported)
-          if (importedChunk && !seen.has(imported)) {
-            for (const file of collectCss(importedChunk, seen)) {
-              css.add(file)
-            }
-          }
+          if (importedChunk) { collectCss(importedChunk, css, seen) }
         }
-        cssCache.set(chunk.fileName, css)
         return css
       }
 
       const entryCss = new Set<string>()
       for (const chunk of chunks) {
-        if (chunk.isEntry) {
-          for (const file of collectCss(chunk)) {
-            entryCss.add(file)
-          }
-        }
+        if (chunk.isEntry) { collectCss(chunk, entryCss) }
       }
 
       const cssForFile = (file?: string | null) => {
         const chunk = file && chunksByFacade.get(normalize(file))
         if (!chunk) { return }
-        const css = [...collectCss(chunk)].filter(file => !entryCss.has(file))
+        const css = [...collectCss(chunk)].filter(name => !entryCss.has(name))
         return css.length ? css : undefined
       }
 
