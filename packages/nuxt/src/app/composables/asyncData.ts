@@ -11,6 +11,7 @@ import { createError } from './error'
 import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
+import { dataDiagnostics } from '../diagnostics/data'
 
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
@@ -359,10 +360,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       // Validate arguments
       const key = (isKeyReactive ? computed(() => toValue(_key)!) : { value: _key as string }) as { readonly value: string }
       if (!key.value || typeof key.value !== 'string') {
-        throw new TypeError('[nuxt] [useAsyncData] key must be a non-empty string.')
+        throw dataDiagnostics.NUXT_E3008()
       }
       if (typeof _handler !== 'function') {
-        throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')
+        throw dataDiagnostics.NUXT_E3009()
       }
 
       const shouldFactoryOptionsOverride = typeof options === 'function'
@@ -400,11 +401,6 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         }
       }
 
-      // internal property (dev-only, used for warning messages)
-      const functionName = import.meta.dev
-        ? (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useAsyncData'
-        : ''
-
       // check and warn if different defaults/fetcher are provided
       const currentData = nuxtApp._asyncData[key.value]
       if (import.meta.dev && currentData) {
@@ -426,8 +422,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         }
         if (warnings.length) {
           const caller = getUserCaller()
-          const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
-          console.warn(`[nuxt] [${functionName}] Incompatible options detected for "${key.value}"${explanation}:\n${warnings.map(w => `- ${w}`).join('\n')}\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`)
+          dataDiagnostics.NUXT_E3004({ key: key.value, warnings: warnings.map(w => `- ${w}`).join('\n'), sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
         }
       }
 
@@ -476,7 +471,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
           instance.sp = []
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
-          console.warn(`[nuxt] [${functionName}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/4.x/getting-started/data-fetching`)
+          dataDiagnostics.NUXT_E3003()
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
           instance._nuxtOnBeforeMountCbs = []
@@ -533,16 +528,15 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
                 // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
                 if (!nuxtApp._asyncData[newKey]?._init) {
-                  let initialValue: NoInfer<DataT> | undefined
-
-                  if (oldKey && hadData) {
-                    initialValue = nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
-                  } else {
-                    initialValue = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-                    initialFetchOptions.cachedData = initialValue
-                  }
-
+                  // Resolve the new key's cached data before seeding the container, so getCachedData
+                  // cannot see the previous key's display-only data as a cache hit for the new key.
+                  const cachedData = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+                  initialFetchOptions.cachedData = cachedData
+                  const initialValue = (oldKey && hadData && cachedData === undefined)
+                    ? nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
+                    : cachedData
                   nuxtApp._asyncData[newKey] = buildAsyncData(nuxtApp, newKey, _handler, opts, initialValue)
+                  nuxtApp._asyncData[newKey]!._initialCachedData = cachedData
                 }
 
                 nuxtApp._asyncData[newKey]._deps++
@@ -839,8 +833,7 @@ function buildAsyncData<
       const [_opts, newValue = undefined] = args
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
       if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
-        // @ts-expect-error private property
-        console.warn(`[nuxt] [${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`)
+        dataDiagnostics.NUXT_E3005()
       }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
@@ -907,9 +900,8 @@ function buildAsyncData<
 
           if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
             const caller = getUserCaller()
-            const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
             // @ts-expect-error private property
-            console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
+            dataDiagnostics.NUXT_E3006({ fn: options._functionName || 'useAsyncData', sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
           }
 
           nuxtApp.payload.data[key] = result

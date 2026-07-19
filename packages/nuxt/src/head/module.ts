@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, useLogger } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, headDiagnostics } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { streamingIifeCode } from 'unhead/stream/iife'
@@ -16,7 +16,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     configKey: 'unhead',
   },
   setup (options, nuxt) {
-    const logger = useLogger('nuxt:unhead')
     const runtimeDir = resolve(distDir, 'head/runtime')
 
     /* eslint-disable @typescript-eslint/no-deprecated */
@@ -56,6 +55,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }
 
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
+    const resolveNuxtUnhead = (id: string) => resolveModulePath(id, { from: import.meta.url })
 
     // Register @unhead/vue/vite plugin for v5 compat mode
     // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
@@ -96,8 +96,8 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    const unheadLegacy = resolveModulePath('@unhead/vue/legacy', { try: true, from: importPaths }) || '@unhead/vue/legacy'
-    const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
+    const unheadLegacy = resolveNuxtUnhead('@unhead/vue/legacy')
+    const unheadPlugins = resolveNuxtUnhead('@unhead/vue/plugins')
 
     addTemplate({
       filename: 'unhead-options.mjs',
@@ -106,11 +106,11 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
         // legacy is forced false on v5 by the schema resolver (which warns there), so only v4 reaches this
         if (legacy) {
-          logger.warn('`unhead.legacy` is deprecated and will be removed. Remove deprecated head patterns (hid, vmid, children, body:true) and migrate promise values to resolved values before passing to useHead.')
+          headDiagnostics.NUXT_B6003()
         }
 
         if (headNext === false) {
-          logger.warn('`experimental.headNext` is deprecated. CAPO sorting is now the default; set `unhead.legacy: true` to opt out temporarily.')
+          headDiagnostics.NUXT_B6004()
         }
 
         const disableCapoSorting = !isV5 && (legacy || headNext === false)

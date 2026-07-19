@@ -3,9 +3,9 @@ import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { join } from 'pathe'
-import { builder, isBuilt, projectSuffix } from './matrix'
+import { projectSuffix, runsOnceInMatrix } from './matrix'
 
-describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
+describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/inline-styles', import.meta.url))
 
   beforeAll(async () => {
@@ -29,6 +29,17 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
 
     const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
     expect(cssLinks, page).toEqual([])
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35255
+  it.fails('drops duplicate stylesheet links for fully inlined CSS in a shared chunk', async () => {
+    for (const page of ['shared-a', 'shared-b']) {
+      const html = await readFile(join(outputDir, 'public', page, 'index.html'), 'utf-8')
+      expect(html, page).toContain('--inline-shared-box-token:shared-box')
+
+      const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+      expect(cssLinks, page).toEqual([])
+    }
   })
 
   // https://github.com/nuxt/nuxt/issues/31558

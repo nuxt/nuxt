@@ -103,6 +103,37 @@ describe('useFetch', () => {
     expect(data.value).toStrictEqual({ count: 0 })
   })
 
+  it('should not fetch when `enabled` is false', async () => {
+    let count = 0
+    registerEndpoint('/api/enabled-false', defineEventHandler(() => ({ count: count++ })))
+
+    const { data, status } = await useFetch('/api/enabled-false', { enabled: false })
+
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+    expect(count).toBe(0)
+  })
+
+  it('should work with reactive `enabled`', async () => {
+    let count = 0
+    registerEndpoint('/api/enabled-reactive', defineEventHandler(() => ({ count: count++ })))
+
+    const enabled = ref(false)
+    const { data, status, execute } = await useFetch('/api/enabled-reactive', { enabled, immediate: false })
+
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+
+    // execute is blocked while `enabled` is false
+    await execute()
+    expect(data.value).toBe(undefined)
+    expect(count).toBe(0)
+
+    enabled.value = true
+    await execute()
+    expect(data.value).toStrictEqual({ count: 0 })
+  })
+
   it.runIf(process.env.PROJECT === 'nuxt-legacy')('should work with reactive keys and immediate: false', async () => {
     registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
 

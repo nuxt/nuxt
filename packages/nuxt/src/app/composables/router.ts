@@ -1,4 +1,5 @@
-import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
+import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
+import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
 import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
@@ -10,6 +11,7 @@ import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
+import { navigationDiagnostics } from '../diagnostics/navigation'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */
@@ -17,15 +19,34 @@ export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as unknown as Router
 }
 
+/**
+ * Whether the current effect scope is (a descendant of) the component instance's scope.
+ * A detached scope (e.g. `createSharedComposable`) outlives the component, so the
+ * per-page route injected there would freeze after navigation (#18903).
+ */
+function isScopeWithinInstance (instance: ComponentInternalInstance): boolean {
+  // `scope`/`parent` are internal, but stable across vue versions
+  const instanceScope = (instance as ComponentInternalInstance & { scope: EffectScope }).scope
+  let scope: (EffectScope & { parent?: EffectScope }) | undefined = getCurrentScope()
+  while (scope) {
+    if (scope === instanceScope) { return true }
+    scope = scope.parent
+  }
+  return false
+}
+
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = (() => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     const middleware = useNuxtApp()._processingMiddleware
     const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    console.warn(`[nuxt] \`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/directory-structure/app/middleware#accessing-route-in-middleware` + ('\n' + trace))
+    navigationDiagnostics.NUXT_E2005({ middleware: typeof middleware === 'string' ? middleware : undefined, trace })
   }
   if (hasInjectionContext()) {
-    return inject(PageRouteSymbol, useNuxtApp()._route)
+    const instance = getCurrentInstance()
+    if (!instance || isScopeWithinInstance(instance)) {
+      return inject(PageRouteSymbol, useNuxtApp()._route)
+    }
   }
   return useNuxtApp()._route
 }) as unknown as typeof _useRoute
@@ -70,7 +91,7 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
   const global = options.global || typeof name !== 'string'
   const mw = typeof name !== 'string' ? name : middleware
   if (!mw) {
-    console.warn('[nuxt] No route middleware passed to `addRouteMiddleware`.', name)
+    navigationDiagnostics.NUXT_E2006({ cause: name })
     return
   }
   if (global) {
@@ -157,7 +178,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (import.meta.client && options?.open) {
     const { protocol } = new URL(toPath, window.location.href)
     if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+      throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
 
     const { target = '_blank', windowFeatures = {} } = options.open
@@ -177,11 +198,11 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
-      throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
+      throw navigationDiagnostics.NUXT_E2001({ toPath })
     }
     const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+      throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
   }
 
@@ -273,7 +294,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (import.meta.dev && !isProcessingMiddleware()) {
-    throw new Error('abortNavigation() is only usable inside a route middleware handler.')
+    throw navigationDiagnostics.NUXT_E2003()
   }
 
   if (!err) { return false }
@@ -295,15 +316,20 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
-      console.warn('[nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
+      navigationDiagnostics.NUXT_E2007()
     }
     nuxtApp.payload.state._layout = layout
     nuxtApp.payload.state._layoutProps = props
   }
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
-    console.warn('[nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
+    navigationDiagnostics.NUXT_E2008()
   }
   const inMiddleware = isProcessingMiddleware()
+  const middlewareTo = import.meta.server && inMiddleware && nuxtApp._middlewareTo
+  if (middlewareTo) {
+    middlewareTo.meta.layout = layout as any
+    middlewareTo.meta.layoutProps = props
+  }
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
       to.meta.layout = layout as any

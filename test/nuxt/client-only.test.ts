@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ComponentOptions } from 'vue'
-import { Suspense, createSSRApp, defineComponent, h, toDisplayString, useAttrs } from 'vue'
+import { Suspense, createSSRApp, defineComponent, h, ref, toDisplayString, useAttrs, vShow, withDirectives } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises, mount } from '@vue/test-utils'
@@ -126,6 +126,66 @@ describe('createClientOnly', () => {
     })
     const wrapper = await mountSuspended(component)
     expect(wrapper.html()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+  })
+})
+
+describe('createClientOnly - interaction', () => {
+  it('preserves reactivity and exposes methods through a template ref', async () => {
+    const Inner = defineComponent({
+      setup (_props, { expose }) {
+        const count = ref(0)
+        expose({ add: () => count.value++ })
+        return () => h('div', { class: 'count' }, count.value)
+      },
+    })
+    const Wrapped = createClientOnly(Inner)
+    const inner = ref<{ add: () => void }>()
+    const wrapper = mount(defineComponent({
+      setup: () => () => h(Wrapped, { ref: inner }),
+    }))
+    await flushPromises()
+
+    expect(wrapper.find('.count').text()).toBe('0')
+    inner.value!.add()
+    await flushPromises()
+    expect(wrapper.find('.count').text()).toBe('1')
+  })
+
+  it('reacts to its own internal state after mounting', async () => {
+    const Inner = defineComponent({
+      setup () {
+        const count = ref(0)
+        return () => h('button', { class: 'count', onClick: () => count.value++ }, count.value)
+      },
+    })
+    const Wrapped = createClientOnly(Inner)
+    const wrapper = mount(defineComponent({
+      setup: () => () => h('div', [h(Wrapped)]),
+    }))
+    await flushPromises()
+
+    expect(wrapper.find('.count').text()).toBe('0')
+    await wrapper.find('button').trigger('click')
+    expect(wrapper.find('.count').text()).toBe('1')
+  })
+
+  it('stays rendered but hidden under a reactive `v-show`', async () => {
+    const Inner = defineComponent({
+      setup: () => () => h('div', { class: 'inner' }, 'content'),
+    })
+    const Wrapped = createClientOnly(Inner)
+    const show = ref(false)
+    const wrapper = mount(defineComponent({
+      setup: () => () => withDirectives(h(Wrapped), [[vShow, show.value]]),
+    }))
+    await flushPromises()
+
+    expect(wrapper.find('.inner').exists()).toBe(true)
+    expect(wrapper.find('.inner').attributes('style')).toContain('display: none')
+
+    show.value = true
+    await flushPromises()
+    expect(wrapper.find('.inner').attributes('style') ?? '').not.toContain('display: none')
   })
 })
 

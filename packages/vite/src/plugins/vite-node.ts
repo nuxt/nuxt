@@ -9,7 +9,7 @@ import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { win32 as pathWin32 } from 'node:path'
 import { dirname, isAbsolute, join, normalize } from 'pathe'
-import { directoryToURL, resolveAlias, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { bundlerDiagnostics, directoryToURL, resolveAlias, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -459,7 +459,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
       const requiredSize = writeOffset + additionalBytes
 
       if (requiredSize > MAX_BUFFER_SIZE) {
-        throw new Error(`Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`)
+        throw bundlerDiagnostics.NUXT_B7012({ requiredSize, maxSize: MAX_BUFFER_SIZE })
       }
 
       if (requiredSize > buffer.length) {
@@ -531,7 +531,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
   const currentSocketPath = config.socketPath
   if (!currentSocketPath) {
-    throw new Error('Socket path not configured for ViteNodeSocketServer.')
+    throw bundlerDiagnostics.NUXT_B7013()
   }
 
   listenAndRestrict(server, currentSocketPath)
@@ -559,7 +559,7 @@ export function listenAndRestrict (server: net.Server, socketPath: string): void
       try {
         fs.chmodSync(socketPath, 0o600)
       } catch (error) {
-        console.error('[nuxt] Failed to restrict vite-node socket permissions; closing.', error)
+        bundlerDiagnostics.NUXT_B7018({ cause: error })
         server.close()
         try {
           fs.rmSync(dirname(socketPath), { recursive: true, force: true })

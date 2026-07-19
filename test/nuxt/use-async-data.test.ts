@@ -11,6 +11,7 @@ import { Transition } from 'vue'
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
+import type { AsyncDataRefreshCause } from '#app/composables/asyncData'
 import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
@@ -79,7 +80,7 @@ describe('useAsyncData', () => {
   })
 
   it('should throw TypeError when key is empty', () => {
-    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[TypeError: [nuxt] [useAsyncData] key must be a non-empty string.]')
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[NUXT_E3008: NUXT_E3008]')
   })
 
   it('should keep promise methods after destructuring', async () => {
@@ -110,7 +111,7 @@ describe('useAsyncData', () => {
   it('should capture errors', async () => {
     vi.stubGlobal('__TEST_DEV__', true)
 
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
@@ -125,12 +126,6 @@ describe('useAsyncData', () => {
     expect(syncedError.value).toBe(error.value)
     expect(syncedStatus.value).toBe(status.value)
     expect(syncedPending.value).toBe(false)
-
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt\] \[useAsyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
-    ))
-    warn.mockRestore()
-    vi.unstubAllGlobals()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -522,46 +517,6 @@ describe('useAsyncData', () => {
     useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(2)
-  })
-
-  it('should warn if incompatible options are used', async () => {
-    vi.stubGlobal('__TEST_DEV__', true)
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
-    expect(warn).not.toHaveBeenCalled()
-    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: true })
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt\] \[useAsyncData\] Incompatible options detected for "dedupedKey3" \(used at .*:\d+:\d+\):\n- mismatching `deep` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
-    ))
-
-    let count = 0
-    for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
-      warn.mockClear()
-      count++
-
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
-      expect(warn).not.toHaveBeenCalled()
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(
-          new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "${uniqueKey}-${count}" \\(used at .*:\\d+:\\d+\\):\n- different \`${opt}\` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
-        ))
-    }
-
-    warn.mockClear()
-    count++
-
-    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
-    expect(warn).not.toHaveBeenCalled()
-    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('bob'))
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "${uniqueKey}-${count}" \\(used at .*:\\d+:\\d+\\):\n- different handler\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
-    ))
-
-    warn.mockReset()
-    vi.unstubAllGlobals()
   })
 
   it('should only refresh asyncdata once when watched dependency is updated', async () => {
@@ -1807,5 +1762,35 @@ describe('useAsyncData', () => {
     clear()
     expect(data.value).toBeUndefined()
     expect(status.value).toBe('idle')
+  })
+
+  it('does not cross-pollute cache slots when the reactive key changes (#32836)', async () => {
+    const keyA = `${uniqueKey}-a`
+    const keyB = `${uniqueKey}-b`
+    const handler = vi.fn((param: string) => Promise.resolve(`hello ${param}`))
+    // caching strategy that always respects the per-key cache via `useNuxtData`
+    const getCachedData = (key: string, nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause }) => {
+      if (nuxtApp.isHydrating) {
+        return nuxtApp.payload.data[key]
+      }
+      const { data } = useNuxtData<string>(key)
+      if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook' && data.value) {
+        return data.value
+      }
+    }
+
+    const keyRef = ref(keyA)
+    const { data } = await useAsyncData(keyRef, () => handler(keyRef.value), { getCachedData })
+    expect(data.value).toBe(`hello ${keyA}`)
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    keyRef.value = keyB
+    await flushPromises()
+
+    // the new key's slot must hold the new key's data, not the previous key's
+    const { data: nuxtDataB } = useNuxtData(keyB)
+    expect(nuxtDataB.value).toBe(`hello ${keyB}`)
+    expect(data.value).toBe(`hello ${keyB}`)
+    expect(handler).toHaveBeenCalledTimes(2)
   })
 })

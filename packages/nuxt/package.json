@@ -108,6 +108,7 @@
     "magic-string": "^1.0.0",
     "mlly": "^1.8.2",
     "nanotar": "^0.3.0",
+    "nostics": "^1.1.4",
     "object-identity": "^0.2.3",
     "ofetch": "2.0.0-alpha.3",
     "ohash": "^2.0.11",

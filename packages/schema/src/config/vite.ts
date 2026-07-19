@@ -1,5 +1,8 @@
-import { resolve } from 'pathe'
+import { existsSync } from 'node:fs'
+import { relative, resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export default defineResolvers({
   vite: {
@@ -24,12 +27,12 @@ export default defineResolvers({
       },
     },
     resolve: {
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
+      extensions: [...DEFAULT_JS_FILE_EXTENSIONS, '.vue', '.json'],
     },
     publicDir: {
       $resolve: (val) => {
         if (val) {
-          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/4.x/api/nuxt-config#public`.')
+          schemaDiagnostics.NUXT_B5014()
         }
         // this is missing from our `vite` types deliberately, so users do not configure it
         return false as never
@@ -111,7 +114,24 @@ export default defineResolvers({
       },
     },
     cacheDir: {
-      $resolve: async (val, get) => typeof val === 'string' ? val : resolve(await get('rootDir'), 'node_modules/.cache/vite'),
+      $resolve: async (val, get) => {
+        if (typeof val === 'string') {
+          return val
+        }
+
+        const rootDir = await get('rootDir')
+        if (existsSync(resolve(rootDir, 'node_modules'))) {
+          return resolve(rootDir, 'node_modules/.cache/vite')
+        }
+
+        const workspaceDir = await get('workspaceDir')
+        const relativeRoot = relative(workspaceDir, rootDir)
+        if (!relativeRoot || relativeRoot.startsWith('..')) {
+          return resolve(rootDir, 'node_modules/.cache/vite')
+        }
+
+        return resolve(workspaceDir, 'node_modules/.cache/vite', relativeRoot)
+      },
     },
   },
 })
