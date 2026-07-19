@@ -68,3 +68,13 @@ const prehydrateId = onPrehydrate((el) => {})
   </div>
 </template>
 ```
+
+Under the hood, the callback is stringified and minified at build time, then inlined as a `<script>` tag in the server-rendered HTML, just before the closing `</body>` tag. For the example above, the rendered HTML includes something like:
+
+```html
+<div data-prehydrate-id=":b3qlvSiBeH:"> Hi there </div>
+<script>(()=>{console.log(window)})()</script>
+<script>document.querySelectorAll('[data-prehydrate-id*=":b3qlvSiBeH:"]').forEach(el=>{console.log(el.outerHTML)})</script>
+```
+
+When the callback accepts an `el` parameter, the component's root element is tagged with a `data-prehydrate-id` attribute so the inlined script can find it.
