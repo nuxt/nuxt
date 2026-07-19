@@ -1458,15 +1458,6 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
-  test/fixtures/unhead-major-resolution:
-    dependencies:
-      '@unhead/vue':
-        specifier: 2.1.15
-        version: 2.1.15(vue@3.5.40(typescript@7.0.2))
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-
 packages:
 
   '@andrewbranch/untar.js@1.0.3':
@@ -3948,11 +3939,6 @@ packages:
         optional: true
       webpack:
         optional: true
-
-  '@unhead/vue@2.1.15':
-    resolution: {integrity: sha512-SSByXfEjhzPn8gXdEdgpYqpLMPSkLUH2HVE0GxZfOtNsJ0GgOHQs0g9T67ZZ1z0kTELLKdtOtYrzrbv9+ffF7g==}
-    peerDependencies:
-      vue: 3.5.40
 
   '@unhead/vue@3.1.8':
     resolution: {integrity: sha512-mmcvZ2gchM+sG+M8HjOl+MAHRhyqTEBCrvsR3ymjTEPQDhHGQJqKwW1i5UJzYa2xNubj7AmSMOQF2OvMGIuuQQ==}
@@ -9076,9 +9062,6 @@ packages:
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
 
-  unhead@2.1.15:
-    resolution: {integrity: sha512-MCt5T90mCWyr3Z6pUCdM9lVRXoMoVBlL7z7U4CYVIiaDiuzad/UCfLuMqz5MeNmpZUgoBCQnrucJimU7EZR+XA==}
-
   unhead@3.1.8:
     resolution: {integrity: sha512-8YcZ88tTvVV+CxYsqKg9O2E0h/tR7PsUHQ22tc4xodVOoUcz/Pl5OHC3Ab3IKhLIy/8OcyAWoS4LCPN7kGvwSg==}
     peerDependencies:
@@ -12491,12 +12474,6 @@ snapshots:
       - typescript
       - unloader
       - utf-8-validate
-
-  '@unhead/vue@2.1.15(vue@3.5.40(typescript@7.0.2))':
-    dependencies:
-      hookable: 6.1.1
-      unhead: 2.1.15
-      vue: 3.5.40(typescript@7.0.2)
 
   '@unhead/vue@3.1.8(@rspack/core@2.1.4(@swc/helpers@0.5.23))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(lightningcss@1.32.0)(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0))':
     dependencies:
@@ -19107,10 +19084,6 @@ snapshots:
   unenv@2.0.0-rc.24:
     dependencies:
       pathe: 2.0.3
-
-  unhead@2.1.15:
-    dependencies:
-      hookable: 6.1.1
 
   unhead@3.1.8(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)):
     dependencies:
