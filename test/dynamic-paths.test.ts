@@ -42,7 +42,7 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
   // https://github.com/nuxt/nuxt/issues/14766
   it.skipIf(isWebpack)('resolves dynamic and glob asset imports during SSR', async () => {
     const testIds = ['dynamic-import-asset', 'lazy-glob-asset', 'eager-glob-asset'] as const
-    const html = await $fetch<string>('/assets?asset=two')
+    const html = await $fetch<string>('/dynamic-assets?asset=two')
 
     for (const testId of testIds) {
       const image = html.match(new RegExp(`<img[^>]*data-testid="${testId}"[^>]*>`))?.[0]
