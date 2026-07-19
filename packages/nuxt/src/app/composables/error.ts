@@ -94,6 +94,14 @@ export class NuxtError<DataT = unknown> extends HTTPError<DataT> implements _Nux
     this.cause = opts instanceof Error ? opts : opts.cause
     this.fatal = opts.fatal ?? !!opts.unhandled
   }
+
+  override toJSON () {
+    return {
+      ...super.toJSON(),
+      __nuxt_error: true,
+      fatal: this.fatal,
+    }
+  }
 }
 
 /** @since 3.0.0 */
