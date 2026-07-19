@@ -134,7 +134,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    opts?: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
   // Auto-key, opts with transform, default = DataT
   <
@@ -148,7 +148,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    opts?: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
   // Auto-key, default = undefined
   <
@@ -162,7 +162,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
   ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
   // Auto-key, default = DataT
   <
@@ -176,7 +176,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
   ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
   // Explicit auto-key as positional arg
   <
@@ -190,7 +190,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = undefined,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    arg1: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
     arg2?: string,
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 }
