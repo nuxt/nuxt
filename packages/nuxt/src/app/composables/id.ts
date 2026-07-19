@@ -6,7 +6,7 @@ export const useId: typeof _useId = import.meta.server && componentIslands
   ? (): string => {
       const nuxtApp = useNuxtApp()
       if (nuxtApp.ssrContext?.islandContext) {
-        return nuxtApp.ssrContext.islandContext.id + useId()
+        return nuxtApp.ssrContext.islandContext.id + _useId()
       }
       return _useId()
     }
