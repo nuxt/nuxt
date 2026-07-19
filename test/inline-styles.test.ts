@@ -94,4 +94,15 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const markupClasses = new Set([...html.matchAll(/\bclass="([^"]+)"/g)].flatMap(m => m[1]!.split(/\s+/)))
     expect(markupClasses).toContain(scopedClass)
   })
+
+  // https://github.com/nuxt/nuxt/issues/29232
+  it.fails('SSR inline styles are transformed by Vite plugins for custom style attributes', async () => {
+    const html = await readFile(join(outputDir, 'public', 'custom-layout/index.html'), 'utf-8')
+
+    const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
+    // The Vite plugin transforms `.layout-container { ... }` to `.xs .layout-container { ... }`
+    expect(inlinedStyles).toContain('--inline-custom-layout-token:custom-layout')
+    // The key assertion: the style should have .xs prefix from Vite plugin transformation
+    expect(inlinedStyles).toMatch(/\.xs\s+\.layout-container/)
+  })
 })
