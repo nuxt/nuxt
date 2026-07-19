@@ -47,7 +47,7 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
 <script setup lang="ts">
 declare const window: Window
 // ---cut---
-// Run code before Nuxt hydrates
+// Runs in the browser, right before Nuxt hydrates
 onPrehydrate(() => {
   console.log(window)
 })
