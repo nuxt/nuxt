@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, pageDiagnostics, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
@@ -8,7 +8,7 @@ import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
 import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 
-import type { NitroRouteConfig, NitroRouteRules } from 'nitropack/types'
+import type { Nitro, NitroRouteConfig, NitroRouteRules } from 'nitropack/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
@@ -17,6 +17,7 @@ import picomatch from 'picomatch'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
+import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
 import { normalizeRouteRulePath } from '../core/utils/route-rules.ts'
@@ -527,6 +528,44 @@ export default defineNuxtModule({
       prerenderRoutes.clear()
       processPages(pages)
     })
+
+    const warnedConflicts = new Set<string>()
+    let publicAssets: Nitro['options']['publicAssets'] = []
+    nuxt.hook('nitro:init', (nitro) => {
+      const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
+      publicAssets = nitro.options.publicAssets.filter((asset) => {
+        const dir = resolve(asset.dir)
+        return dir !== clientBuildDir && !dir.startsWith(clientBuildDir + '/')
+      })
+    })
+
+    const warnPublicAssetConflicts = () => {
+      // Public directories can be large, so check only paths matching known routes.
+      for (const [route, page] of collectStaticPageRoutes(nuxt.apps.default?.pages || [])) {
+        for (const asset of publicAssets) {
+          for (const path of getAssetPathsForRoute(route, asset.baseURL) || []) {
+            const file = resolve(asset.dir, path)
+            try {
+              if (!statSync(file, { throwIfNoEntry: false })?.isFile()) { continue }
+            } catch {
+              continue
+            }
+
+            const key = `${file}:${route}`
+            if (warnedConflicts.has(key)) { continue }
+            warnedConflicts.add(key)
+
+            pageDiagnostics.NUXT_B4015({
+              asset: relative(nuxt.options.rootDir, file),
+              route,
+              page: page && relative(nuxt.options.rootDir, page),
+            })
+          }
+        }
+      }
+    }
+
+    nuxt.hook('nitro:build:before', () => warnPublicAssetConflicts())
 
     nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
