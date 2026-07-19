@@ -8,7 +8,7 @@ import { componentIslands } from '#build/nuxt.config.mjs'
 import { isValidIslandKey } from './utils'
 
 const reducers: [string, (data: any) => any][] = [
-  ['NuxtError', data => isNuxtError(data) && data.toJSON()],
+  ['NuxtError', data => isNuxtError(data) && typeof data.toJSON === 'function' && data.toJSON()],
   ['EmptyShallowRef', data => isRef(data) && isShallow(data) && !data.value && (typeof data.value === 'bigint' ? '0n' : (JSON.stringify(data.value) || '_'))],
   ['EmptyRef', data => isRef(data) && !data.value && (typeof data.value === 'bigint' ? '0n' : (JSON.stringify(data.value) || '_'))],
   ['ShallowRef', data => isRef(data) && isShallow(data) && data.value],
