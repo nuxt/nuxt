@@ -108,6 +108,7 @@ describe('route rules', () => {
   it('should set layout defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
+    expect(html).toContain('useLayout: custom')
   })
 
   it('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
@@ -265,11 +266,26 @@ describe('pages', () => {
     await page.getByText('should throw a 404 error').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /catchall/forbidden"')
     expect(await page.getByTestId('path').textContent()).toMatchInlineSnapshot('" Path: /catchall/forbidden"')
+    expect(new URL(page.url()).pathname).toBe('/catchall/forbidden')
+
+    await page.goBack()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/navigate-to-forbidden')
+    expect(new URL(page.url()).pathname).toBe('/navigate-to-forbidden')
 
     await gotoPath(page, '/navigate-to-forbidden')
     await page.getByText('should be caught by catchall').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
 
+    await page.close()
+  })
+
+  it('updates the URL after a fatal middleware error on client navigation (#19954)', async () => {
+    const { page } = await renderPage('/navigate-to-middleware-error')
+    await page.getByText('trigger middleware error').click()
+    await page.waitForSelector('h1')
+    expect(new URL(page.url()).pathname).toBe('/middleware-error')
+    await page.goBack()
+    expect(new URL(page.url()).pathname).toBe('/navigate-to-middleware-error')
     await page.close()
   })
 
@@ -1350,6 +1366,32 @@ describe('errors', () => {
     expect(await res.text()).toContain('This is a custom error')
   })
 
+  it('should expose error causes only to development error pages', async () => {
+    const htmlResponse = await fetch('/error-cause', {
+      headers: { accept: 'text/html' },
+    })
+    const html = await htmlResponse.text()
+
+    expect(html).toContain('createError message')
+    if (isDev) {
+      expect(html).toContain('Cause: inner error')
+      expect(html).toMatch(/Cause stack:[^<]*inner error[^<]*at setup/)
+      expect(html).toContain('Root cause: root cause')
+      expect(html).toMatch(/Root cause stack:[^<]*root cause[^<]*at setup/)
+    } else {
+      expect(html).not.toContain('inner error')
+      expect(html).not.toContain('root cause')
+    }
+
+    const jsonResponse = await fetch('/error-cause', {
+      headers: { accept: 'application/json' },
+    })
+    const json = await jsonResponse.json()
+    expect(json).not.toHaveProperty('cause')
+    expect(JSON.stringify(json)).not.toContain('inner error')
+    expect(JSON.stringify(json)).not.toContain('root cause')
+  })
+
   it('should not allow accessing error route directly', async () => {
     const res = await fetch('/__nuxt_error', {
       headers: {
@@ -1613,6 +1655,7 @@ describe('layouts', () => {
     expect(html).toContain('with-dynamic-layout')
     expect(html).toContain('Custom Layout:')
     expect(html).toContain('set from sets-layouts middleware')
+    expect(html).toContain('middleware layout: custom')
     await expectNoClientErrors('/with-dynamic-layout')
   })
   it('should work with a computed layout', async () => {
@@ -2221,6 +2264,24 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
+  it.skipIf(!isTestingAppManifest)('should evict forwarded prefetch hints for routes that are never visited', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+    )
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
+    await page.waitForFunction(
+      () => !Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+    )
+
+    await page.close()
+  })
+
   it('should not prefetch certain dynamic imports by default', async () => {
     const html = await $fetch<string>('/auth')
     // should not prefetch global components
@@ -2257,6 +2318,34 @@ describe('public directories', () => {
     const html = await $fetch<string>('/assets-custom')
     expect(html).toContain('"/public.svg"')
     expect(html).toContain('"/custom/file.svg"')
+  })
+
+  it('should serve non-ascii filename public assets', async () => {
+    const chinese = await $fetch<string>('/测试.md')
+    expect(chinese).toContain('中文')
+
+    const japanese = await $fetch<string>('/日本語.txt')
+    expect(japanese).toContain('日本語')
+
+    const cyrillicJson = await $fetch('/каталог/файл.json')
+    expect(cyrillicJson).toEqual({ lang: 'ru', text: 'Привет мир' })
+
+    const greek = await $fetch<string>('/Ελληνικά.html')
+    expect(greek).toContain('Ελληνικά')
+  })
+})
+
+describe.skipIf(isDev)('non-ascii public asset files in output', () => {
+  it('should exist in output directory with correct filenames', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+
+    expect(await readdir(publicDir)).toContain('测试.md')
+    expect(await readdir(publicDir)).toContain('日本語.txt')
+    expect(await readdir(publicDir)).toContain('Ελληνικά.html')
+
+    const subdir = join(publicDir, 'каталог')
+    expect(await readdir(subdir)).toContain('файл.json')
   })
 })
 

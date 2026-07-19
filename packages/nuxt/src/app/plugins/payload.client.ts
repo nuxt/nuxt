@@ -5,10 +5,11 @@ import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
 import { injectHead } from '../composables/head'
+import { stateDiagnostics } from '../diagnostics/state.ts'
 
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
-// track the active head entry per URL for forwarded preload hints
+// track the active head entry per path for forwarded preload hints
 interface ActiveHeadEntryLike { dispose: () => void }
 const forwardedPrefetchEntries = new Map<string, ActiveHeadEntryLike>()
 
@@ -17,16 +18,18 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   setup (nuxtApp) {
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
-    useRouter().beforeResolve(async (to, from) => {
-      if (to.path === from.path) { return }
-      if (prefetchPreloadTags) {
-        // drop forwarded `rel="prefetch" hints so they don't linger indefinitely.
-        const entry = forwardedPrefetchEntries.get(to.path)
-        if (entry) {
+    const router = useRouter()
+    if (prefetchPreloadTags) {
+      // drop forwarded `rel="prefetch" hints so they don't linger indefinitely.
+      router.afterEach(() => {
+        for (const entry of forwardedPrefetchEntries.values()) {
           entry.dispose()
-          forwardedPrefetchEntries.delete(to.path)
         }
-      }
+        forwardedPrefetchEntries.clear()
+      })
+    }
+    router.beforeResolve(async (to, from) => {
+      if (to.path === from.path) { return }
       const payload = await loadPayload(to.path)
       if (!payload) { return }
       if (purgeCachedData) {
@@ -48,11 +51,13 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       // Load payload into cache
       const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
-        const { hostname } = new URL(url, window.location.href)
+        const { hostname, pathname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
-        const payload = await loadPayload(url).catch(() => { console.warn('[nuxt] Error preloading payload for', url) })
-        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(url)) {
+        const payload = await loadPayload(url).catch(() => {
+          stateDiagnostics.NUXT_E7003({ url })
+        })
+        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(pathname)) {
           const entry = head.push({
             link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {
               // downgrade preload (and modulepreload) to prefetch
@@ -60,7 +65,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
               return { ...rest, rel: 'prefetch' }
             }),
           })
-          forwardedPrefetchEntries.set(url, entry)
+          forwardedPrefetchEntries.set(pathname, entry)
         }
       })
       // `navigator.connection` (Network Information API) is widely supported in

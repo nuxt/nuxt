@@ -1,21 +1,19 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { NitroRouteRules } from 'nitro/types'
 
 import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 
+import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 import { _mergeTransitionProps, _wrapInTransition } from './utils'
-import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
+import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
 import { useRoute as useVueRouterRoute } from '#build/pages'
 import layouts from '#build/layouts'
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
-import _routeRulesMatcher from '#build/route-rules.mjs'
-
-const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
@@ -58,10 +56,10 @@ export default defineComponent({
 
     const layout = computed(() => {
       type LayoutName = keyof NuxtLayouts | false | 'default'
-      let layout: LayoutName = unref(props.name as LayoutName) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
+      let layout = resolveLayoutName(route, props.name) as LayoutName
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          console.warn(`[nuxt] Invalid layout \`${layout}\` selected.`)
+          renderDiagnostics.NUXT_E4001({ layout, available: Object.keys(layouts).join(', ') || 'none' })
         }
         if (props.fallback) {
           layout = unref(props.fallback as MaybeRef<LayoutName>)
@@ -69,6 +67,8 @@ export default defineComponent({
       }
       return layout
     })
+
+    provide(LayoutSymbol, layout)
 
     const layoutRef = shallowRef()
     context.expose({ layoutRef })
@@ -170,7 +170,7 @@ const LayoutProvider = defineComponent({
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
         // When name=false, always return true so NuxtPage doesn't skip rendering
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? 'default'),
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === resolveLayoutName(route),
       })
     }
 
@@ -210,9 +210,9 @@ const LayoutProvider = defineComponent({
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
-              console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+              renderDiagnostics.NUXT_E4002({ name })
             } else {
-              console.warn('[nuxt] `<NuxtLayout>` needs to be passed a single root node in its default slot.')
+              renderDiagnostics.NUXT_E4003()
             }
           }
         })

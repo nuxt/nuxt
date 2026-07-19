@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { $fetch, setup } from '@nuxt/test-utils/e2e'
 
-import { builder, isDev } from './matrix'
+import { isDev, runsOncePerEnvInMatrix } from './matrix'
 
-if (builder === 'vite') {
+if (runsOncePerEnvInMatrix) {
   await setup({
     rootDir: fileURLToPath(new URL('./fixtures/build-assets-dir-collision', import.meta.url)),
     dev: isDev,
@@ -15,7 +15,7 @@ if (builder === 'vite') {
   })
 }
 
-describe.skipIf(builder !== 'vite')('buildAssetsDir collision with source dir (#24035)', () => {
+describe.skipIf(!runsOncePerEnvInMatrix)('buildAssetsDir collision with source dir (#24035)', () => {
   it('renders without crashing on SSR', async () => {
     const html = await $fetch<string>('/')
     expect(html).toContain('data-testid="hello"')

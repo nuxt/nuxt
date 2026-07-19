@@ -26,6 +26,8 @@ export { useRequestURL } from './url'
 export { usePreviewMode } from './preview'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { useId } from './id'
+export { useLayout } from './layout'
+export type { LayoutName } from './layout'
 export { useRouteAnnouncer } from './route-announcer'
 export type { Politeness } from './route-announcer'
 export { useAnnouncer } from './announcer'

@@ -32,8 +32,8 @@
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
     "@rsbuild/core": "~2.1.6",
-    "@vue/compiler-sfc": "3.5.39",
-    "autoprefixer": "^10.5.3",
+    "@vue/compiler-sfc": "3.5.40",
+    "autoprefixer": "^10.5.4",
     "css-loader": "^7.1.4",
     "css-minimizer-webpack-plugin": "^8.0.0",
     "cssnano": "^8.0.2",
@@ -58,7 +58,7 @@
     "pug-plain-loader": "^1.1.0",
     "raw-loader": "^4.0.2",
     "rolldown-string": "^0.3.0",
-    "rspack-vue-loader": "^17.5.1",
+    "rspack-vue-loader": "^17.6.1",
     "seroval": "^1.5.5",
     "time-fix-plugin": "^2.0.7",
     "tinyglobby": "^0.2.17",
@@ -68,7 +68,7 @@
     "unplugin": "^3.3.0",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.3.1",
-    "webpack-bundle-analyzer": "^5.3.0",
+    "webpack-bundle-analyzer": "^5.3.1",
     "webpackbar": "^7.0.0"
   },
   "devDependencies": {
@@ -78,7 +78,7 @@
     "h3-next": "npm:h3@2.0.1-rc.22",
     "rollup": "4.62.2",
     "tsdown": "0.22.8",
-    "vue": "3.5.39"
+    "vue": "3.5.40"
   },
   "peerDependencies": {
     "nuxt": "workspace:*",
