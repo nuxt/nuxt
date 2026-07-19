@@ -1,16 +1,18 @@
 <template>
   <div class="dedupe-app">
     <SomeComponent v-if="visible" />
-    <button @click="toggle">Toggle Component</button>
+    <button @click="toggle">
+      Toggle Component
+    </button>
     <NuxtPage />
   </div>
 </template>
 
 <script setup lang="ts">
-const visible = ref(false);
+const visible = ref(false)
 
-function toggle() {
-  visible.value = !visible.value;
+function toggle () {
+  visible.value = !visible.value
 }
 </script>
 

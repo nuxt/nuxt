@@ -1,5 +1,7 @@
 <template>
-  <h1 class="some-styling">Some Text Content</h1>
+  <h1 class="some-styling">
+    Some Text Content
+  </h1>
 </template>
 
 <style>
