@@ -4,7 +4,7 @@ import { defu } from 'defu'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
-import { renderDiagnostics } from '../diagnostics/render.ts'
+import { renderDiagnostics } from '../diagnostics/render'
 import { START_LOCATION } from '#build/pages'
 
 /**

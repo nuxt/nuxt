@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
@@ -233,5 +233,52 @@ describe('NuxtLayout', () => {
     resolveDeferredPage()
     await flushPromises()
     expect.soft(el.html()).toMatchInlineSnapshot(`"<h3>Current route: /deferred</h3>"`)
+  })
+})
+
+describe('layout switching', () => {
+  // #13309
+  it('does not cause TypeError: Cannot read properties of null', async () => {
+    const router = useRouter()
+    const consoleError = vi.spyOn(console, 'error')
+
+    layouts['layout-async'] = defineAsyncComponent(() => Promise.resolve(defineComponent({
+      setup: (_, ctx) => () => h('div', [h('h1', 'async layout'), ...ctx.slots.default?.() || []]),
+    })))
+    router.addRoute({
+      name: 'layout-switch-start',
+      path: '/layout-switch-start',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: { layout: 'layout-async' },
+      component: defineComponent({
+        setup: () => () => h('div', 'start'),
+      }),
+    })
+    router.addRoute({
+      name: 'layout-switch-end',
+      path: '/layout-switch-end',
+      component: defineComponent({
+        setup: () => () => h('div', { id: 'end' }),
+      }),
+    })
+
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/layout-switch-start')
+    await flushPromises()
+    expect(el.html()).toContain('async layout')
+
+    await navigateTo('/layout-switch-end')
+    await flushPromises()
+    expect(el.html()).toContain('id="end"')
+    expect(consoleError).not.toHaveBeenCalled()
+
+    consoleError.mockRestore()
+    el.unmount()
+    router.removeRoute('layout-switch-start')
+    router.removeRoute('layout-switch-end')
+    delete layouts['layout-async']
   })
 })
