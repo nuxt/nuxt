@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, reactive, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hashFunction, hashKey } from '../utils/hash'
@@ -761,9 +761,15 @@ function setRefValueSilently (data: unknown, value: unknown): boolean {
     return false
   }
   const dataRef = data as { _value: unknown, _rawValue?: unknown }
-  dataRef._value = value
   if ('_rawValue' in dataRef) {
     dataRef._rawValue = value
+    // Deep refs store a reactive proxy in `_value`; mirror the conversion a normal setter
+    // would apply so an object default isn't left as a raw (untracked) object.
+    dataRef._value = !isShallow(data) && value !== null && typeof value === 'object'
+      ? reactive(value)
+      : value
+  } else {
+    dataRef._value = value
   }
   return true
 }
@@ -780,9 +786,7 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, opts: { silent?: boo
       // Bypass triggers to avoid stale `v-once` effects reading cleared data (`#32154`).
       // Held computed wrappers can remain transiently stale until they invalidate.
       if (!setRefValueSilently(data.data, defaultValue)) {
-        if (import.meta.dev) {
-          console.warn('[nuxt] asyncData silent clear fallback: ref internals changed, using reactive setter')
-        }
+        dataDiagnostics.NUXT_E3010()
         data.data.value = defaultValue
       }
     } else {
@@ -997,9 +1001,7 @@ function buildAsyncData<
         const dataRef = nuxtApp._asyncData[key]!.data as { dep?: { subs?: unknown } }
         nuxtApp._asyncData[key]!._preserveOnInit = reason === 'scope' && Boolean(dataRef.dep?.subs)
         if (nuxtApp._asyncData[key]!._preserveOnInit) {
-          if (key in nuxtApp.payload.data) {
-            nuxtApp.payload.data[key] = undefined
-          }
+          delete nuxtApp.payload.data[key]
           nuxtApp._asyncData[key]!.status.value = 'idle'
           nuxtApp._asyncData[key]!.error.value = undefined
           if (pendingWhenIdle) {

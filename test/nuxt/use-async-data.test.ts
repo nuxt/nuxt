@@ -758,6 +758,18 @@ describe('useAsyncData', () => {
     expect(dataRef.value).toBe('test')
   })
 
+  it('exposes dep.subs on a subscribed asyncData ref (pins the vue internal used for v-once teardown)', async () => {
+    const res = await mountWithAsyncData(uniqueKey, () => Promise.resolve('test'))
+    const dataRef = useNuxtApp()._asyncData[uniqueKey]!.data as { dep?: { subs?: unknown } }
+
+    expect(dataRef.dep?.subs).toBeTruthy()
+
+    res.unmount()
+    await nextTick()
+
+    expect(dataRef.dep?.subs).toBeFalsy()
+  })
+
   // https://github.com/nuxt/nuxt/issues/35322
   it('should not leave a new subscriber stuck at idle when the previous subscriber unregisters during an in-flight deferred request', async () => {
     const key = `stranded-idle-${++counter}`
