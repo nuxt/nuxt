@@ -39,9 +39,8 @@ export interface UseFetchOptions<
   DefaultT = undefined,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
-> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'method' | 'timeout'> {
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
-  method?: MaybeRefOrGetter<M>
   $fetch?: $Fetch
   watch?: MultiWatchSources | false
 }
