@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto'
-import { relative as nodeRelative } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
@@ -10,6 +8,7 @@ import { setBuildOutput } from '@nuxt/kit'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { findStaticImports } from 'mlly'
+import genericNames from 'generic-names'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { resolveClientEntry } from '../utils/config.ts'
@@ -23,64 +22,28 @@ const STYLE_QUERY_RE = /[?&]type=style/
 
 /**
  * Wrap a string `generateScopedName` pattern into a function that strips any
- * Vite query string (e.g. `?inline&used`) from `resourcePath` before hashing.
+ * Vite query string (e.g. `?inline&used`) from the resource path before it is
+ * hashed.
  *
- * When `features.inlineStyles` is enabled, the ssr-styles plugin imports CSS
- * files with `?inline&used` appended to the module id. Vite passes this full
- * id as `resourcePath` to `postcss-modules` / `generic-names`, which includes
- * the query in the `[hash]` computation for string patterns. The client build
- * processes the same file *without* the query, so it gets a different hash and
- * therefore different class names — causing SSR markup to mismatch the inlined
- * `<style>` tags (see https://github.com/nuxt/nuxt/issues/35591).
+ * When `features.inlineStyles` is enabled, this plugin imports CSS files with
+ * `?inline&used` appended to the module id. For string patterns Vite delegates
+ * scoped-name generation to `generic-names`, which folds the full resource path
+ * (query included) into the `[hash]`. The client build processes the same file
+ * without the query, so it produces a different hash and therefore different
+ * class names, leaving the SSR markup mismatched against the inlined `<style>`
+ * tags (see https://github.com/nuxt/nuxt/issues/35591 and
+ * https://github.com/vitejs/vite/issues/22957).
  *
- * The formula below reproduces the exact same hash that `generic-names@4` /
- * `postcss-modules@9` would produce for the cleaned path, so the scoped names
- * remain identical between the SSR inline pass and the normal client build.
- *
- * `generic-names` hash formula (from its source):
- *   content = hashPrefix + path.relative(context, resourcePath) + "\0" + localName
- *   hash    = md5(content).slice(0, <length>) encoded as base64 / base32 / hex
- *
- * `interpolate-name` (used by `loader-utils`) implements `[hash:<digest>:<length>]`
- * where the default digest is base64 and default length is 20.
+ * Delegating to `generic-names` with `process.cwd()` (the same context Vite
+ * uses) means the generated names stay byte-identical to the client build for
+ * every supported token, not just `[local]`/`[hash]`.
  */
 function wrapStringGenerateScopedName (
   pattern: string,
-  context: string = process.cwd(),
-  hashPrefix: string = '',
+  hashPrefix: string,
 ): (localName: string, resourcePath: string) => string {
-  return (localName: string, resourcePath: string) => {
-    // Strip any Vite query (e.g. `?inline&used`) so the hash input matches the
-    // path used during the normal (non-inline) client build.
-    const cleanPath = resourcePath.replace(QUERY_RE, '')
-    const relativePath = nodeRelative(context, cleanPath).replace(/\\/g, '/')
-    const content = hashPrefix + relativePath + '\0' + localName
-    const hash = createHash('md5').update(content).digest('base64')
-
-    // Interpolate the pattern tokens. We support the same tokens that
-    // loader-utils / interpolate-name support for the common case:
-    //   [local]         – the local CSS class name
-    //   [hash]          – full base64 md5 hash
-    //   [hash:base64:N] – first N chars of base64-encoded hash
-    //   [hash:hex:N]    – first N chars of hex-encoded hash
-    let name = pattern.replace(/\[local\]/gi, localName)
-    name = name.replace(/\[hash(?::([a-z0-9]+))?(?::(\d+))?\]/gi, (_match, digest = 'base64', lengthStr?: string) => {
-      let encoded: string
-      if (digest === 'hex') {
-        encoded = createHash('md5').update(content).digest('hex')
-      } else {
-        // base64 / base32 both use base64 output here (same as generic-names)
-        encoded = hash
-      }
-      const length = lengthStr ? Number(lengthStr) : 20
-      return encoded.slice(0, length)
-    })
-
-    // postcss-modules replaces non-word chars and leading digits/dashes with '_'
-    return name
-      .replace(/[^\w\-\xA0-\uFFFF]/g, '-')
-      .replace(/^(-?\d|--)/u, '_$1')
-  }
+  const generate = genericNames(pattern, { context: process.cwd(), hashPrefix })
+  return (localName, resourcePath) => generate(localName, resourcePath.replace(QUERY_RE, ''))
 }
 
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
@@ -214,28 +177,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   return {
     name: 'ssr-styles',
     config (config) {
-      // When `generateScopedName` is a string pattern, Vite's internal
-      // `generic-names` hashes the full module path — including any
-      // `?inline&used` query that the ssr-styles plugin appends. This
-      // causes a different hash (and different class names) in the SSR
-      // inline pass vs. the client build, so SSR markup mismatches the
-      // inlined `<style>` tags. Wrap the string into a function that
-      // strips the query before hashing so names stay consistent.
-      // See https://github.com/nuxt/nuxt/issues/35591
+      if (!nuxt.options.features.inlineStyles) { return }
       const modules = config.css?.modules
-      const generateScopedName = typeof modules === 'object' && modules ? modules.generateScopedName : undefined
-      const hashPrefix = typeof modules === 'object' && modules && typeof modules.hashPrefix === 'string' ? modules.hashPrefix : ''
-      if (typeof generateScopedName === 'string') {
-        config.css ??= {}
-        config.css.modules ??= {}
-        if (typeof config.css.modules === 'object' && config.css.modules) {
-          config.css.modules.generateScopedName = wrapStringGenerateScopedName(
-            generateScopedName,
-            config.root ?? process.cwd(),
-            hashPrefix,
-          )
-        }
-      }
+      if (typeof modules !== 'object' || !modules || typeof modules.generateScopedName !== 'string') { return }
+      const hashPrefix = typeof modules.hashPrefix === 'string' ? modules.hashPrefix : ''
+      modules.generateScopedName = wrapStringGenerateScopedName(modules.generateScopedName, hashPrefix)
     },
     configResolved (config) {
       entry = resolveClientEntry(config)

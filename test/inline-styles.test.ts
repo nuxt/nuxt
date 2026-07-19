@@ -75,37 +75,12 @@ describe.skipIf(builder !== 'vite' || !isBuilt)('inline styles', () => {
   it('inlined SSR CSS class names match rendered markup when generateScopedName is a string pattern', async () => {
     const html = await readFile(join(outputDir, 'public', 'css-modules-scoped/index.html'), 'utf-8')
 
-    // The page should contain the CSS custom property token set on the CSS Module class
-    expect(html).toContain('--inline-css-modules-scoped-token:css-modules-scoped')
+    const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
+    const rule = inlinedStyles.match(/\.([\w-]+)\s*\{[^}]*--inline-css-modules-scoped-token:\s*css-modules-scoped[^}]*\}/)
+    expect(rule, 'CSS module rule was not inlined into the SSR response').toBeTruthy()
 
-    // Extract all class names from the inlined <style> tags
-    const inlinedStyleContent = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
-      .map(m => m[1]!)
-      .join('\n')
-
-    // Extract class selectors from the inlined styles (e.g. ._WcviSZUO)
-    const inlinedClasses = new Set(
-      [...inlinedStyleContent.matchAll(/\.([a-z_][\w-]*)/gi)].map(m => m[1]!),
-    )
-
-    // Extract class names from HTML element attributes
-    const markupClasses = new Set(
-      [...html.matchAll(/\bclass="([^"]+)"/g)]
-        .flatMap(m => m[1]!.split(/\s+/)),
-    )
-
-    // Every class name used in the markup must appear in the inlined styles.
-    // Before the fix, the SSR inline pass hashed with `?inline&used` in the
-    // resourcePath, producing a different hash than the client build \u2013 so the
-    // markup class (e.g. `_y-mt7Qbg`) would not appear in the inlined style
-    // (which used e.g. `_WcviSZUO`).
-    for (const cls of markupClasses) {
-      if (cls.startsWith('_') || cls.startsWith('page-')) {
-        // Only check CSS-module-style classes (prefixed with '_' per our pattern)
-        if (cls.startsWith('_')) {
-          expect(inlinedClasses, `class "${cls}" from markup not found in inlined <style>`).toContain(cls)
-        }
-      }
-    }
+    const scopedClass = rule![1]!
+    const markupClasses = new Set([...html.matchAll(/\bclass="([^"]+)"/g)].flatMap(m => m[1]!.split(/\s+/)))
+    expect(markupClasses).toContain(scopedClass)
   })
 })
