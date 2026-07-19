@@ -12,11 +12,20 @@
       :src="logo"
       class="h-20 mb-4"
     >
+    <img
+      data-testid="dynamic-import-asset"
+      :src="dynamicAsset"
+      class="h-20 mb-4"
+    >
   </div>
 </template>
 
 <script setup>
 import logo from '~/assets/logo.svg'
+
+const route = useRoute()
+const dynamicAssetName = route.query.asset === 'two' ? 'two' : 'one'
+const dynamicAsset = (await import(`../assets/dynamic/${dynamicAssetName}.svg?url&no-inline`)).default
 </script>
 
 <style>

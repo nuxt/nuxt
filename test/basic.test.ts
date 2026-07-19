@@ -9,7 +9,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
 import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack } from './matrix'
-import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+import { expectNoClientErrors, expectNoErrorsOrWarnings, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
 
@@ -2371,6 +2371,24 @@ describe.skipIf(isDev)('dynamic paths', () => {
       if (url.startsWith('data:')) { continue }
       expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
     }
+  })
+
+  // https://github.com/nuxt/nuxt/issues/14766
+  it.skipIf(isWebpack)('resolves a constrained dynamic asset import during SSR and hydration', async () => {
+    const html = await $fetch<string>('/assets?asset=two')
+    const image = html.match(/<img[^>]*data-testid="dynamic-import-asset"[^>]*>/)?.[0]
+    const src = image?.match(/src="([^"]+)"/)?.[1]
+
+    expect(src).toMatch(/^\/_nuxt\/.+\.svg$/)
+    const asset = await fetch(src!)
+    expect(await asset.text()).toContain('dynamic-two')
+
+    const { page, pageErrors, consoleLogs } = await renderPage('/assets?asset=two')
+    const clientSrc = await page.getByTestId('dynamic-import-asset').getAttribute('src')
+    expect(new URL(clientSrc!).pathname).toBe(src)
+    expect(pageErrors).toEqual([])
+    expectNoErrorsOrWarnings(consoleLogs)
+    await page.close()
   })
 
   // webpack injects CSS differently
