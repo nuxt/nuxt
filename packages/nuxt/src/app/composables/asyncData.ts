@@ -528,14 +528,15 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
                 // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
                 if (!nuxtApp._asyncData[newKey]?._init) {
-                  // Pin the new key's own cached data so execute() won't re-run getCachedData
-                  // against a slot seeded below with the previous key's display-only data (#32836).
+                  // Resolve the new key's cached data before seeding the container, so getCachedData
+                  // cannot see the previous key's display-only data as a cache hit for the new key.
                   const cachedData = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
                   initialFetchOptions.cachedData = cachedData
                   const initialValue = (oldKey && hadData && cachedData === undefined)
                     ? nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
                     : cachedData
                   nuxtApp._asyncData[newKey] = buildAsyncData(nuxtApp, newKey, _handler, opts, initialValue)
+                  nuxtApp._asyncData[newKey]!._initialCachedData = cachedData
                 }
 
                 nuxtApp._asyncData[newKey]._deps++
