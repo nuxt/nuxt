@@ -1924,11 +1924,25 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   it('preserves query parameters in extracted payloads for cached routes', async () => {
-    const html = await $fetch<string>('/payload-query?page=2')
-    const { attrs } = parseData(html)
-    const payloadURL = new URL(attrs['data-src']!.replaceAll('&amp;', '&'), url('/'))
+    const { page, requests } = await renderPage('/payload-query?page=1')
 
+    requests.length = 0
+    await page.getByTestId('payload-query-next').click()
+    await page.waitForURL(url('/payload-query?page=2'))
+    await page.waitForLoadState('networkidle')
+
+    const payloadRequest = requests.find(request => request.includes('/payload-query/_payload.json'))
+    expect(payloadRequest).toBeDefined()
+    const payloadURL = new URL(payloadRequest!, url('/'))
     expect.soft(payloadURL.searchParams.get('page')).toBe('2')
+    expect(await page.locator('#payload-query').textContent()).toContain('2')
+
+    requests.length = 0
+    await page.getByTestId('payload-query-hash').click()
+    await page.waitForURL(url('/payload-query?page=2#section'))
+    expect(requests.filter(request => request.includes('/payload-query/_payload.json'))).toHaveLength(0)
+
+    await page.close()
 
     const payload = await $fetch<string>('/payload-query/_payload.json?page=2', { responseType: 'text' })
     const data = parsePayload(payload)

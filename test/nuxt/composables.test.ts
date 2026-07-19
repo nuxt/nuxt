@@ -679,6 +679,9 @@ describe('compiled route rules', () => {
       // cached (isr/swr/cache) payloads can change within a deploy, so the browser cache must be revalidated
       await loadPayload('/isr/thing')
       expect(fetchSpy.mock.calls[1]![1]).toMatchObject({ cache: 'default' })
+
+      await loadPayload('/isr/thing?page=2')
+      expect(fetchSpy.mock.calls[2]![1]).toMatchObject({ cache: 'default' })
     } finally {
       fetchSpy.mockRestore()
     }

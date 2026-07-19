@@ -1,3 +1,5 @@
+import { withoutFragment } from 'ufo'
+
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { loadPayload } from '../composables/payload'
@@ -29,8 +31,10 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       })
     }
     router.beforeResolve(async (to, from) => {
-      if (to.path === from.path) { return }
-      const payload = await loadPayload(to.path)
+      const toPathAndQuery = withoutFragment(to.fullPath)
+      const fromPathAndQuery = withoutFragment(from.fullPath)
+      if (toPathAndQuery === fromPathAndQuery) { return }
+      const payload = await loadPayload(to.fullPath)
       if (!payload) { return }
       if (purgeCachedData) {
         for (const key of staticKeysToRemove) {

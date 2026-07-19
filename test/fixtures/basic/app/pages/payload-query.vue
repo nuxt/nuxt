@@ -1,7 +1,22 @@
 <template>
   <div id="payload-query">
-    {{ data }}
+    {{ data?.page }}
   </div>
+  <NuxtLink
+    data-testid="payload-query-next"
+    :to="{ query: { page: page + 1 } }"
+    no-prefetch
+  >
+    Next page
+  </NuxtLink>
+  <NuxtLink
+    data-testid="payload-query-hash"
+    :to="{ query: { page }, hash: '#section' }"
+    no-prefetch
+  >
+    Section
+  </NuxtLink>
+  <div id="section" />
 </template>
 
 <script setup lang="ts">
