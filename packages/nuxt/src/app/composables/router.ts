@@ -11,7 +11,7 @@ import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
-import { navigationDiagnostics } from '../diagnostics/navigation.ts'
+import { navigationDiagnostics } from '../diagnostics/navigation'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */

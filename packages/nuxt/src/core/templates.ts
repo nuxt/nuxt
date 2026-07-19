@@ -10,7 +10,8 @@ import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { useNitro } from '@nuxt/kit'
 
-import { annotatePlugins, checkForCircularDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
+import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
+import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
@@ -81,7 +82,9 @@ const PLUGIN_TEMPLATE_RE = /_(?:45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins.client.mjs',
   async getContents (ctx) {
-    const clientPlugins = sortPluginsByDependsOn(await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')))
+    const allPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => ctx.nuxt.options.dev || !p.mode || p.mode !== 'server'))
+    const clientPlugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => !p.mode || p.mode !== 'server'), { warn: ctx.nuxt.options.dev, mode: 'client', allPlugins }))
+    setPluginDependenciesForMode(ctx.nuxt, 'client', clientPlugins)
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
     const imports: string[] = []
@@ -101,7 +104,9 @@ export const clientPluginTemplate: NuxtTemplate = {
 export const serverPluginTemplate: NuxtTemplate = {
   filename: 'plugins.server.mjs',
   async getContents (ctx) {
-    const serverPlugins = sortPluginsByDependsOn(await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')))
+    const allPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => ctx.nuxt.options.dev || !p.mode || p.mode !== 'client'))
+    const serverPlugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => !p.mode || p.mode !== 'client'), { warn: ctx.nuxt.options.dev, mode: 'server', allPlugins }))
+    setPluginDependenciesForMode(ctx.nuxt, 'server', serverPlugins)
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = []
     const imports: string[] = []

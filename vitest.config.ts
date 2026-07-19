@@ -137,6 +137,7 @@ export default defineConfig({
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
+            '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),

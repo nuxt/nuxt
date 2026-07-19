@@ -106,28 +106,68 @@ export function renderStreamedIslandTeleports (ssrContext: NuxtSSRContext, nonce
   return templates + `<script${nonceAttr}>${ISLAND_TELEPORT_RELOCATE_SCRIPT}</script>`
 }
 
+const ISLAND_TELEPORT_ANCHOR_RE = / data-island-uid="([^"]*)" data-island-(component|slot)="([^"]*)"[^>]*>/g
+
 export function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string): string {
   const { teleports, islandContext } = ssrContext
 
   if (islandContext || !teleports) { return html }
+
+  const contentsByAnchor = new Map<string, string>()
+  const uids = new Set<string>()
+
   for (const key in teleports) {
     const matchClientComp = key.match(SSR_CLIENT_TELEPORT_MARKER)
+
     if (matchClientComp) {
       const [, uid, clientId] = matchClientComp
+
       if (!uid || !clientId) { continue }
-      html = html.replace(new RegExp(` data-island-uid="${uid}" data-island-component="${clientId}"[^>]*>`), (full) => {
-        return full + teleports[key]
-      })
+
+      contentsByAnchor.set(`${uid};component;${clientId}`, teleports[key]!)
+      uids.add(uid)
+
       continue
     }
+
     const matchSlot = key.match(SSR_SLOT_TELEPORT_MARKER)
+
     if (matchSlot) {
       const [, uid, slot] = matchSlot
+
       if (!uid || !slot) { continue }
-      html = html.replace(new RegExp(` data-island-uid="${uid}" data-island-slot="${slot}"[^>]*>`), (full) => {
-        return full + teleports[key]
-      })
+
+      contentsByAnchor.set(`${uid};slot;${slot}`, teleports[key]!)
+      uids.add(uid)
     }
   }
-  return html
+
+  if (!contentsByAnchor.size) { return html }
+
+  const stitch = (html: string): string => {
+    // fresh regex instance per level: recursion below would corrupt a shared lastIndex
+    const anchorRE = new RegExp(ISLAND_TELEPORT_ANCHOR_RE)
+    let out = ''
+    let cursor = 0
+    let m
+
+    while (contentsByAnchor.size && (m = anchorRE.exec(html))) {
+      if (!uids.has(m[1]!)) { continue }
+
+      const anchor = `${m[1]};${m[2]};${m[3]}`
+      const content = contentsByAnchor.get(anchor)
+
+      if (content === undefined) { continue }
+
+      contentsByAnchor.delete(anchor)
+
+      const end = m.index + m[0]!.length
+      out += html.slice(cursor, end) + stitch(content)
+      cursor = end
+    }
+
+    return cursor ? out + html.slice(cursor) : html
+  }
+
+  return stitch(html)
 }

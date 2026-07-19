@@ -19,7 +19,7 @@ import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
-import { appDiagnostics } from './diagnostics/core.ts'
+import { appDiagnostics } from './diagnostics/core'
 import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
 export type { NuxtPayload, NuxtSSRContext, PluginMeta } from './types'

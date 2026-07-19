@@ -12,7 +12,7 @@ import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
-import { renderDiagnostics } from '../diagnostics/render.ts'
+import { renderDiagnostics } from '../diagnostics/render'
 
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 

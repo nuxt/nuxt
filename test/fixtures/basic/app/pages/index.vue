@@ -86,13 +86,6 @@
       class="server-only"
       style="background-color: gray;"
     />
-    <NuxtLink to="/big-page-1">
-      to big 1
-    </NuxtLink>
-    <NuxtLink to="/page-load-hook">
-      to page load hook
-    </NuxtLink>
-
     <NuxtLink
       data-testid="route-rules-redirect"
       to="/route-rules/redirect#hello"

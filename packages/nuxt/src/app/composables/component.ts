@@ -7,7 +7,7 @@ import { useHead } from './head'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
 import { createError } from './error'
-import { dataDiagnostics } from '../diagnostics/data.ts'
+import { dataDiagnostics } from '../diagnostics/data'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
