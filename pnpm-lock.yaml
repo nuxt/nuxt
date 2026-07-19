@@ -1404,6 +1404,16 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/nested-suspense:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   test/fixtures/runtime-compiler:
     dependencies:
       nuxt:
