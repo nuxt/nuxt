@@ -7,7 +7,7 @@ import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { basename, join, relative } from 'pathe'
+import { basename, join, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
@@ -44,6 +44,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const schemaPromise = loadNuxtSchema(opts.cwd || process.cwd())
 
+  // Dedupe local layer directories reached more than once (auto-scanned from
+  // `layers/` and also listed in `extends`) to avoid merging them twice (#34667)
+  const seenLayerDirs = new Set<string>()
+
   const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await withDefineNuxtConfig(
     () => loadConfig<NuxtConfig>({
       name: 'nuxt',
@@ -55,6 +59,20 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       merger,
       ...opts,
       dotenv: false, // already loaded above
+      async resolve (source, resolveOptions) {
+        // Respect a user-provided resolver
+        const resolved = await opts.resolve?.(source, resolveOptions)
+        if (resolved) { return resolved }
+        // Only dedupe local sources; packages/remote sources are left to c12
+        const layerDir = resolve(resolveOptions.cwd || process.cwd(), source)
+        if (!existsSync(layerDir)) { return }
+        if (seenLayerDirs.has(layerDir)) {
+          // Empty layer so the repeat contributes nothing to the merge; a nullish
+          // return would let c12 resolve and merge the same layer again
+          return { config: {}, cwd: layerDir, source }
+        }
+        seenLayerDirs.add(layerDir)
+      },
     }),
   )
 
