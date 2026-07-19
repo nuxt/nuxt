@@ -347,15 +347,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (options.routesId && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
             const routesModule = server.moduleGraph.getModuleById(options.routesId)
-            // The `?macro=true` page variants share the same file as the real
-            // page modules, so `@vitejs/plugin-vue`'s `handleHotUpdate` can end
-            // up selecting a macro sub-module (e.g.
-            // `?macro=true&vue&type=script&lang.tsx`) instead of the real one,
-            // leaving the rendered component stale. This is most visible for
-            // render-function SFCs (`<script lang="[jt]sx">`) which have no
-            // `<template>` block to fall back on. Pair every affected macro
-            // module with its real counterpart so the page still reloads.
-            // See https://github.com/nuxt/nuxt/issues/30709
+            // Reload the real module when Vite selects its macro counterpart (#30709).
             const realModules = []
             for (const mod of modules) {
               if (mod.id && MACRO_STRIP_RE.test(mod.id)) {
@@ -387,9 +379,6 @@ function rewriteQuery (id: string) {
 }
 
 const MACRO_QUERY_RE = /[?&]macro=true(?:&|$)/
-// Strips the `?macro=true` query added by `rewriteQuery`, turning a macro
-// module id back into its real page counterpart (e.g.
-// `page.vue?macro=true&vue&type=script&lang.tsx` -> `page.vue?vue&type=script&lang.tsx`).
 const MACRO_STRIP_RE = /\?macro=true&?/
 const TYPE_PARAM_RE = /[?&]type=([^?&]+)/
 const LANG_PARAM_RE = /[?&]lang=([^?&]+)/

@@ -10,8 +10,6 @@ export default withMatrix({
   // `virtual:hmr-counter` is a Vite plugin module and the regression it guards
   // (#30169) is Vite-only. webpack/Rspack don't resolve the `virtual:` scheme,
   // so exclude the page there rather than ship a bespoke scheme handler.
-  // `jsx.vue` guards a Vite-only HMR regression (#30709) and is exercised only
-  // by the Vite test, so exclude it from the other builders too.
   ...builder === 'vite'
     ? { vite: { plugins: [virtualCounterPlugin()] } }
     : { ignore: ['**/virtual-module.vue', '**/jsx.vue'] },

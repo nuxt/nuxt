@@ -240,10 +240,6 @@ test.describe('vite-only HMR tests', () => {
     await goto('/jsx')
     await expect(page.getByTestId('jsx-content')).toHaveText('jsx: original')
 
-    // A `<script lang="tsx">` page has no `<template>` block, so its only HMR
-    // signal is the script change. Nuxt's `?macro=true` page variants used to
-    // shadow the real script module, so the update never reached the rendered
-    // component.
     writeFileSync(pagePath, pageContents.replace('jsx: original', 'jsx: updated'))
     await expect(page.getByTestId('jsx-content')).toHaveText('jsx: updated', { timeout: 10000 })
 
