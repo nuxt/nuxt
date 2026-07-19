@@ -391,3 +391,5 @@ export const useLazyFetch: UseFetch = (createUseFetch as unknown as { __nuxt_fac
   // @ts-expect-error private property
   _functionName: 'useLazyFetch',
 }) as ReturnType<typeof createUseFetch>
+
+export type { $Fetch }
