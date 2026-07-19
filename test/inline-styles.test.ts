@@ -33,7 +33,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
 
   // https://github.com/nuxt/nuxt/issues/35715
   it.runIf(isBuilt)('inline entry component CSS including not rendered in SSR', async () => {
-    const html = await readFile(join(outputDir, 'public', 'hidden-v-if', 'index.html'), 'utf-8')
+    const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
     expect(html).toContain('--inline-some-component-token:some-component')
 
     const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
