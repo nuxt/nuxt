@@ -20,7 +20,7 @@ This is an advanced utility and should be used with care. For example, [`nuxt-ti
 
 ## Usage
 
-Call `onPrehydrate` in the setup function of a Vue component (e.g., in `<script setup>`) or in a plugin. It only has an effect when called on the server and will not be included in your client build.
+Call `onPrehydrate` in the setup function of a Vue component (e.g., in `<script setup>`) or in a plugin. The call itself only has an effect when made on the server and is stripped from your client build. The callback you pass, however, is serialized and inlined into the HTML, so it runs in the **browser** immediately before Nuxt hydrates. This means it can access browser globals like `window` and the DOM.
 
 ## Type
 
