@@ -7,7 +7,7 @@ export { useState, clearNuxtState } from './state'
 export { clearError, createError, isNuxtError, showError, useError } from './error'
 export type { NuxtError } from './error'
 export { useFetch, useLazyFetch } from './fetch'
-export type { FetchResult, UseFetchOptions } from './fetch'
+export type { FetchResult, UseFetchOptions, $Fetch } from './fetch'
 export { useCookie, refreshCookie } from './cookie'
 export type { CookieOptions, CookieRef } from './cookie'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
