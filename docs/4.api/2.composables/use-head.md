@@ -92,7 +92,7 @@ See [@unhead/schema](https://github.com/unjs/unhead/blob/main/packages/vue/src/t
 
 This composable does not return any value. It registers the head metadata with Unhead, which manages the actual DOM updates.
 
-## Examples
+## Example
 
 ### Basic Meta Tags
 

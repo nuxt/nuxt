@@ -83,7 +83,7 @@ export const useAPI = createUseFetch(callerOptions => ({
 
 This is useful for enforcing settings like authentication headers or a specific base URL that should not be changed by the caller.
 
-## Combining with a Custom `$fetch`
+## Combining With a Custom `$fetch`
 
 You can pass a custom `$fetch` instance to `createUseFetch`:
 
