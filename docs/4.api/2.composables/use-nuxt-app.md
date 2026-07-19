@@ -136,7 +136,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   It is also possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
 
-#### Custom Reducer/Reviver
+#### Custom Reducer/Reviver :badge[v3.4]{color="info" size="xs" class="align-middle"}
 
   Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own reducer/reviver for types that are not supported by Nuxt.
 

@@ -18,6 +18,7 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
+import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
@@ -194,6 +195,35 @@ export default defineNuxtModule({
       }
     })
 
+    // layouts can be used without pages (e.g. `<NuxtLayout>`), so always generate their types
+    addTypeTemplate({
+      filename: 'types/layouts.d.ts',
+      getContents: ({ app }) => {
+        return [
+          'import type { ComputedRef, MaybeRef } from \'vue\'',
+          '',
+          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
+          '  : T extends (props: infer P, ...args: any) => any ? P',
+          '  : {}',
+          '',
+          'declare module \'nuxt/app\' {',
+          '  interface NuxtLayouts {',
+          ...Object.values(app.layouts).map(layout => `    ${genObjectKey(layout.name)}: ComponentProps<${genInlineTypeImport(layout.file)}>`),
+          '  }',
+          '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
+          '  interface PageMeta {',
+          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false> | {',
+          '      [K in LayoutKey]: {',
+          '        name?: MaybeRef<K | false> | ComputedRef<K | false>',
+          '        props?: NuxtLayouts[K]',
+          '      }',
+          '    }[LayoutKey]',
+          '  }',
+          '}',
+        ].join('\n')
+      },
+    })
+
     if (!options.enabled) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
@@ -233,6 +263,7 @@ export default defineNuxtModule({
         name: 'NuxtPage',
         priority: 10, // built-in that we do not expect the user to override
         filePath: resolve(distDir, 'pages/runtime/page-placeholder'),
+        meta: getBuiltinComponentMeta('NuxtPage'),
       })
       // Prerender index if pages integration is not enabled
       nuxt.hook('nitro:init', (nitro) => {
@@ -716,34 +747,6 @@ export default defineNuxtModule({
       },
     }, { nuxt: true, nitro: true, node: true })
 
-    addTypeTemplate({
-      filename: 'types/layouts.d.ts',
-      getContents: ({ app }) => {
-        return [
-          'import type { ComputedRef, MaybeRef } from \'vue\'',
-          '',
-          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
-          '  : T extends (props: infer P, ...args: any) => any ? P',
-          '  : {}',
-          '',
-          'declare module \'nuxt/app\' {',
-          '  interface NuxtLayouts {',
-          ...Object.values(app.layouts).map(layout => `    ${genObjectKey(layout.name)}: ComponentProps<${genInlineTypeImport(layout.file)}>`),
-          '  }',
-          '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
-          '  interface PageMeta {',
-          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false> | {',
-          '      [K in LayoutKey]: {',
-          '        name?: MaybeRef<K | false> | ComputedRef<K | false>',
-          '        props?: NuxtLayouts[K]',
-          '      }',
-          '    }[LayoutKey]',
-          '  }',
-          '}',
-        ].join('\n')
-      },
-    })
-
     // add page meta types if enabled
     if (nuxt.options.experimental.viewTransition) {
       addTypeTemplate({
@@ -767,6 +770,7 @@ export default defineNuxtModule({
       name: 'NuxtPage',
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(distDir, 'pages/runtime/page'),
+      meta: getBuiltinComponentMeta('NuxtPage'),
     })
   },
 })

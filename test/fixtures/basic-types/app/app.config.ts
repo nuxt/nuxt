@@ -1,5 +1,7 @@
+import { defaultUserConfig } from './utils/app-config-value'
+
 export default defineAppConfig({
-  userConfig: 123,
+  userConfig: defaultUserConfig,
   nested: {
     val: 2,
   },
