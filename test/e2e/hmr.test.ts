@@ -302,11 +302,13 @@ test.describe('vite-only HMR tests', () => {
 
       renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
 
-      // Let the watcher emit unlink/create before the follow-up write (rename + write in one turn can coalesce to a single update in Vite)
-      await new Promise(resolve => setTimeout(resolve, 50))
+      const renamedPath = join(fixtureDir, 'app/components/example/example-test.vue')
+      // Wait until the rename is visible on disk so the watcher can emit unlink/create before the follow-up write
+      await expect(() => existsSync(renamedPath)).toBeWithPolling(true, { timeout: 5000, interval: 20 })
+      await new Promise(resolve => setTimeout(resolve, 20))
 
       writeFileSync(
-        join(fixtureDir, 'app/components/example/example-test.vue'),
+        renamedPath,
         `<template><div data-testid="example">example-test.vue</div></template>`,
       )
 

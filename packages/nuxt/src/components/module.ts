@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, componentDiagnostics, defineNuxtModule, findPath, getLayerDirectories, resolveAlias, tryUseNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, componentDiagnostics, defineNuxtModule, findPath, getLayerDirectories, resolveAlias } from '@nuxt/kit'
 import type { DevEnvironment, EnvironmentModuleNode } from 'vite'
 
 import { resolveModulePath } from 'exsolve'
@@ -197,21 +197,53 @@ export default defineNuxtModule<ComponentsOptions>({
     const getComponentDirs = () => componentDirs
     const UNLINK_INVALIDATE_DELAY_MS = 200
     if (nuxt.options.dev && nuxt.options.builder === '@nuxt/vite-builder') {
-      const pendingUnlinkInvalidations = new Map<string, { importers: EnvironmentModuleNode[], timeoutId?: ReturnType<typeof setTimeout> }>()
+      type PendingUnlinkInvalidation = { importers: EnvironmentModuleNode[], timeoutId?: ReturnType<typeof setTimeout> }
+      // Environment-scoped so client and SSR each keep their own pending rename maps/timers
+      const pendingUnlinkInvalidations = new Map<string, Map<string, PendingUnlinkInvalidation>>()
 
-      const getComponentDirForFile = (filePath: string): string | null => {
+      const getPendingMapForEnvironment = (envName: string) => {
+        let envMap = pendingUnlinkInvalidations.get(envName)
+        if (!envMap) {
+          envMap = new Map()
+          pendingUnlinkInvalidations.set(envName, envMap)
+        }
+        return envMap
+      }
+
+      const getComponentDirForFile = (filePath: string): ComponentsDir | null => {
         const normalized = normalize(filePath)
         for (const dir of getComponentDirs()) {
           const dirPath = normalize(dir.path)
           if (normalized === dirPath || normalized.startsWith(dirPath + '/')) {
-            return dirPath
+            return dir
           }
         }
         return null
       }
 
+      const getFileExtension = (filePath: string) => {
+        const base = filePath.split('/').pop() ?? ''
+        const idx = base.lastIndexOf('.')
+        return idx >= 0 ? base.slice(idx + 1) : ''
+      }
+
+      const isComponentFileForDir = (filePath: string, dir: ComponentsDir) => {
+        const extensions = (dir.extensions?.length
+          ? dir.extensions
+          : nuxt.options.extensions.map(e => e.replace(STARTER_DOT_RE, '')))
+        return extensions.includes(getFileExtension(filePath))
+      }
+
+      const invalidateAndReloadModules = async (environment: DevEnvironment, modules: Iterable<EnvironmentModuleNode>) => {
+        await Promise.all([...modules].map(async (mod) => {
+          environment.moduleGraph.invalidateModule(mod)
+          await environment.reloadModule(mod)
+        }))
+      }
+
       const scheduleUnlinkInvalidation = (dirPath: string, importers: EnvironmentModuleNode[], environment: DevEnvironment) => {
-        const existing = pendingUnlinkInvalidations.get(dirPath)
+        const envMap = getPendingMapForEnvironment(environment.name)
+        const existing = envMap.get(dirPath)
         if (existing?.timeoutId) {
           clearTimeout(existing.timeoutId)
         }
@@ -220,18 +252,26 @@ export default defineNuxtModule<ComponentsOptions>({
           merged.add(m)
         }
         const timeoutId = setTimeout(async () => {
-          pendingUnlinkInvalidations.delete(dirPath)
-          const nuxtInstance = tryUseNuxt()
-          if (nuxtInstance) {
-            await nuxtInstance.callHook('builder:generateApp', {})
+          envMap.delete(dirPath)
+          if (envMap.size === 0) {
+            pendingUnlinkInvalidations.delete(environment.name)
           }
-          for (const mod of merged) {
-            environment.moduleGraph.invalidateModule(mod)
-            await environment.reloadModule(mod)
-          }
+          await nuxt.callHook('builder:generateApp', {})
+          await invalidateAndReloadModules(environment, merged)
         }, UNLINK_INVALIDATE_DELAY_MS)
-        pendingUnlinkInvalidations.set(dirPath, { importers: [...merged], timeoutId })
+        envMap.set(dirPath, { importers: [...merged], timeoutId })
       }
+
+      nuxt.hook('close', () => {
+        for (const envMap of pendingUnlinkInvalidations.values()) {
+          for (const pending of envMap.values()) {
+            if (pending.timeoutId) {
+              clearTimeout(pending.timeoutId)
+            }
+          }
+        }
+        pendingUnlinkInvalidations.clear()
+      })
 
       const collectModulesForPath = (environment: DevEnvironment, file: string): EnvironmentModuleNode[] => {
         const seen = new Set<EnvironmentModuleNode>()
@@ -283,6 +323,8 @@ export default defineNuxtModule<ComponentsOptions>({
           }
 
           const environment = this.environment
+          const componentDirPath = normalize(componentDir.path)
+          const envMap = getPendingMapForEnvironment(environment.name)
 
           if (options.type === 'delete') {
             let componentModules = options.modules
@@ -291,30 +333,24 @@ export default defineNuxtModule<ComponentsOptions>({
             }
             const importers = collectImportersOfComponentModules(componentModules)
             if (importers.size === 0) {
-              const nuxtInstance = tryUseNuxt()
-              const srcRoot = nuxtInstance && normalize(nuxtInstance.options.srcDir!)
-              if (srcRoot) {
-                for (const mod of collectPageLayoutVueModules(environment, srcRoot)) {
-                  importers.add(mod)
-                }
+              const srcRoot = normalize(nuxt.options.srcDir!)
+              for (const mod of collectPageLayoutVueModules(environment, srcRoot)) {
+                importers.add(mod)
               }
             }
             if (importers.size > 0) {
-              scheduleUnlinkInvalidation(componentDir, [...importers], environment)
+              scheduleUnlinkInvalidation(componentDirPath, [...importers], environment)
             }
             return []
           }
 
           // For 'create' or 'update' — check for a pending rename in the same component dir
-          const pending = pendingUnlinkInvalidations.get(componentDir)
+          const pending = envMap.get(componentDirPath)
           if (!pending?.importers.length) {
             // Atomic rename can leave no pending invalidation when delete had no module nodes (path mismatch)
             // or importers were not wired yet. Regenerate the registry and reload the new file + pages that use components.
-            if (options.type === 'create' && normalizedFile.endsWith('.vue')) {
-              const nuxtInstance = tryUseNuxt()
-              if (nuxtInstance) {
-                await nuxtInstance.callHook('builder:generateApp', {})
-              }
+            if (options.type === 'create' && isComponentFileForDir(normalizedFile, componentDir)) {
+              await nuxt.callHook('builder:generateApp', {})
               const mods = new Set<EnvironmentModuleNode>(options.modules)
               for (const m of collectModulesForPath(environment, options.file)) {
                 mods.add(m)
@@ -327,20 +363,15 @@ export default defineNuxtModule<ComponentsOptions>({
                 }
               }
               if (toReload.size === 0) {
-                const srcRoot = normalize(nuxtInstance?.options.srcDir ?? '')
-                if (srcRoot) {
-                  for (const mod of collectPageLayoutVueModules(environment, srcRoot)) {
-                    toReload.add(mod)
-                  }
+                const srcRoot = normalize(nuxt.options.srcDir!)
+                for (const mod of collectPageLayoutVueModules(environment, srcRoot)) {
+                  toReload.add(mod)
                 }
               }
               if (toReload.size === 0) {
                 return
               }
-              for (const mod of toReload) {
-                environment.moduleGraph.invalidateModule(mod)
-                await environment.reloadModule(mod)
-              }
+              await invalidateAndReloadModules(environment, toReload)
               return [...toReload]
             }
             return
@@ -348,13 +379,13 @@ export default defineNuxtModule<ComponentsOptions>({
           if (pending.timeoutId) {
             clearTimeout(pending.timeoutId)
           }
-          pendingUnlinkInvalidations.delete(componentDir)
-
-          await tryUseNuxt()?.callHook('builder:generateApp', {})
-          for (const mod of pending.importers) {
-            environment.moduleGraph.invalidateModule(mod)
-            await environment.reloadModule(mod)
+          envMap.delete(componentDirPath)
+          if (envMap.size === 0) {
+            pendingUnlinkInvalidations.delete(environment.name)
           }
+
+          await nuxt.callHook('builder:generateApp', {})
+          await invalidateAndReloadModules(environment, pending.importers)
           return [...new Set([...options.modules, ...pending.importers])]
         },
       })
