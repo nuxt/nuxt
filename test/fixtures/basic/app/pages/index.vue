@@ -7,6 +7,7 @@
     <div>RuntimeConfig | testConfig: {{ config.public.testConfig }}</div>
     <div>Composable | foo: {{ foo }}</div>
     <div>Composable | bar: {{ bar }}</div>
+    <div>Composable | customFetch: {{ typeof customFetch }}</div>
     <div>Composable | template: {{ templateAutoImport }}</div>
     <div>Composable | star: {{ useNestedBar() }}</div>
     <DevOnly>Some dev-only info</DevOnly>

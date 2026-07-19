@@ -6,7 +6,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises, mount } from '@vue/test-utils'
 
 import { createClientOnly } from '../../packages/nuxt/src/app/components/client-only'
-import { createClientPage } from '../../packages/nuxt/dist/components/runtime/client-component'
+import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import ServerPlaceholder from '../../packages/nuxt/src/app/components/server-placeholder'
 import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 import { useNuxtApp } from '#app/nuxt'

@@ -193,7 +193,7 @@ export const schemaTemplate: NuxtTemplate = {
   getContents: async ({ nuxt }) => {
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public') {
+      if (key !== 'public' && key !== 'nitro') {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
@@ -506,15 +506,16 @@ export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.server.mjs',
   getContents () {
     return [
-      'import { $fetch } from \'ofetch\'',
+      'import { $fetch as _$fetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
       'import { serverFetch } from "nitro";',
       'globalThis.fetch = serverFetch',
       'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = $fetch.create({',
+      '  globalThis.$fetch = _$fetch.create({',
       '    baseURL: baseURL()',
       '  })',
       '}',
+      'export const $fetch = globalThis.$fetch',
     ].join('\n')
   },
 }
@@ -523,14 +524,22 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
   filename: 'fetch.client.mjs',
   getContents () {
     return [
-      'import { $fetch } from \'ofetch\'',
+      'import { $fetch as _$fetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
       'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = $fetch.create({',
+      '  globalThis.$fetch = _$fetch.create({',
       '    baseURL: baseURL()',
       '  })',
       '}',
+      'export const $fetch = globalThis.$fetch',
     ].join('\n')
+  },
+}
+
+export const dollarFetchTypeTemplate: NuxtTemplate = {
+  filename: 'fetch.d.ts',
+  getContents () {
+    return 'export { $fetch } from \'ofetch\'\n'
   },
 }
 
@@ -629,7 +638,13 @@ export const buildTypeTemplate: NuxtTemplate = {
         }
       }
 
-      declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
+      // declare both extensioned (`#build/foo.mjs`) and bare (`#build/foo`) module specifiers
+      const fullSpecifier = join('#build', file.filename)
+      declarations += 'declare module ' + JSON.stringify(fullSpecifier) + ';\n'
+      const bareSpecifier = fullSpecifier.replace(/\.m?js$/, '')
+      if (bareSpecifier !== fullSpecifier) {
+        declarations += 'declare module ' + JSON.stringify(bareSpecifier) + ';\n'
+      }
     }
 
     return declarations

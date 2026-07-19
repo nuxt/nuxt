@@ -12,6 +12,7 @@ const commonSettings: NuxtConfig = {
   pages: true,
   routeRules: {
     '/specific-prerendered': { prerender: true },
+    '/isr/**': { isr: 60 },
     '/pre/test': { redirect: '/' },
     '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
@@ -58,10 +59,12 @@ const fixtureMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-off' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-off' },
-  // rspack: only built + manifest-on
+  // rspack: only manifest-on
+  { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rspack', context: 'default', manifest: 'manifest-on' },
-  // webpack: only built + manifest-on
+  // webpack: only manifest-on
+  { env: 'dev', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on' },
 ]
@@ -103,7 +106,7 @@ export default defineConfig({
       },
       ...fixtureMatrix.map(entry => ({
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         test: {
           name: fixtureProjectName(entry),
@@ -128,7 +131,7 @@ export default defineConfig({
       },
       {
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         resolve: {
           alias: {
@@ -136,7 +139,7 @@ export default defineConfig({
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
-            '#app': resolve('./packages/nuxt/dist/app'),
+            '#app': resolve('./packages/nuxt/src/app'),
           },
         },
         test: {
@@ -163,12 +166,12 @@ export default defineConfig({
       }),
       ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
         define: {
-          'import.meta.dev': 'globalThis.__TEST_DEV__',
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
           environment: 'nuxt',
           setupFiles: ['./test/setup-runtime.ts'],
           env: {
@@ -181,6 +184,22 @@ export default defineConfig({
           },
         },
       }))),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': 'true',
+        },
+        test: {
+          name: 'nuxt-dev',
+          dir: './test/nuxt/dev',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu(nuxtTestProjects.nuxt, commonSettings),
+            },
+          },
+        },
+      }),
     ],
   },
 })

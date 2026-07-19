@@ -13,8 +13,8 @@ import semver from 'semver'
 import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
-import { logger } from '../logger.ts'
 import { getLayerDirectories } from '../layers.ts'
+import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
@@ -306,7 +306,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    throw new TypeError(`Nuxt module should be a function or a string to import. Received: ${nuxtModule}.`)
+    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
   }
 
   const jiti = getSharedJiti(nuxt)
@@ -333,10 +333,10 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
       // i.e. module is importing a module that is missing
       if (module && !module.includes(nuxtModule as string)) {
-        throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`, { cause: error })
+        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(error), cause: error })
       }
     }
-    throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`, { cause: error })
+    throw kitDiagnostics.NUXT_B8017({ module: nuxtModule, cause: error })
   }
 
   // module is resolved on disk, so import failures are real load errors, not a missing install
@@ -345,11 +345,11 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   try {
     resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
   } catch (error: unknown) {
-    throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`, { cause: error })
+    throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(error), cause: error })
   }
 
   if (typeof resolvedNuxtModule !== 'function') {
-    throw new TypeError(`Nuxt module should be a function: ${nuxtModule}.`)
+    throw kitDiagnostics.NUXT_B8016({ module: nuxtModule })
   }
 
   // nuxt-module-builder generates a module.json with metadata including the version
@@ -404,9 +404,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
       )
     }
   } catch (e) {
-    logger.error(
-      `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module \`${meta.name}\`: ${e}`,
-    )
+    kitDiagnostics.NUXT_B8019({ phase: !previousVersion ? 'install' : 'upgrade', name: meta.name, error: String(e) })
   }
 }
 

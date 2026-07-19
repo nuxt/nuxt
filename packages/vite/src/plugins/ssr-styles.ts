@@ -1,14 +1,15 @@
+import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
-import { dirname, relative } from 'pathe'
+import { dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
+import { setBuildOutput } from '@nuxt/kit'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { findStaticImports } from 'mlly'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { resolveClientEntry } from '../utils/config.ts'
-import { useNitro } from '@nuxt/kit'
 import escapeStringRegexp from 'escape-string-regexp'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
@@ -38,12 +39,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const inlinedCSSModuleIds = new Set<string>()
 
   // Remove CSS entries for files that will have inlined styles
-  const nitro = useNitro()
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
 
-    for (const { cssIds, files, inBundle } of Object.values(cssMap)) {
-      if (!cssIds || !inBundle || !files.length) { continue }
+    // `build:manifest` can fire before the styles `generateBundle` runs, so
+    // derive inlined components from `cssMap` rather than `chunksWithInlinedCSS`.
+    for (const [id, { cssIds, files, inBundle }] of Object.entries(cssMap)) {
+      if (!inBundle || !files.length) { continue }
+      chunksWithInlinedCSS.add(id)
+      if (!cssIds) { continue }
       for (const cssId of cssIds) {
         inlinedCSSModuleIds.add(cssId)
       }
@@ -97,9 +101,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       }
     }
 
-    nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
-    nitro.options._config.virtual ||= {}
-    nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
+    setBuildOutput('entryIds', () => `export default ${JSON.stringify(Array.from(entryIds))}`, nuxt)
   })
 
   const cssMap: Record<string, { files: string[], inBundle?: boolean, cssIds?: Set<string> }> = {}
@@ -153,6 +155,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       return {
         name: `nuxt:ssr-styles:${environment.name}`,
         enforce: 'pre',
+        buildStart () {
+          if (this.environment.name === 'ssr') {
+            const stylesPath = resolve(this.environment.config.build.outDir, 'styles.mjs')
+            setBuildOutput('ssrStyles', () => `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`, nuxt)
+          }
+        },
         resolveId: {
           order: 'pre',
           filter: {

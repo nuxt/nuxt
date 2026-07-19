@@ -18,7 +18,7 @@ export default <RouterConfig>{
     // Hash routes on the same page, no page hook is fired so resolve here
     if (to.path.replace(/\/$/, '') === from.path.replace(/\/$/, '')) {
       if (from.hash && !to.hash) {
-        return { left: 0, top: 0 }
+        return savedPosition ?? { left: 0, top: 0 }
       }
       if (to.hash) {
         return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior: hashScrollBehaviour }

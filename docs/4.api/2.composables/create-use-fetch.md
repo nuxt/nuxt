@@ -1,6 +1,7 @@
 ---
 title: 'createUseFetch'
 description: A factory function to create a custom useFetch composable with pre-defined default options.
+minimalVersion: "4.2"
 links:
   - label: Source
     icon: i-simple-icons-github
