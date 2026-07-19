@@ -73,9 +73,6 @@ importers:
       '@types/node':
         specifier: 24.13.3
         version: 24.13.3
-      '@types/semver':
-        specifier: 7.7.1
-        version: 7.7.1
       '@typescript-eslint/parser':
         specifier: 8.64.0
         version: 8.64.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3)
@@ -181,9 +178,6 @@ importers:
       rollup:
         specifier: 4.62.2
         version: 4.62.2
-      semver:
-        specifier: 7.8.5
-        version: 7.8.5
       sherif:
         specifier: 1.13.0
         version: 1.13.0
@@ -208,6 +202,9 @@ importers:
       ufo:
         specifier: 1.6.4
         version: 1.6.4
+      verkit:
+        specifier: 0.1.1
+        version: 0.1.1
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
@@ -282,9 +279,6 @@ importers:
       scule:
         specifier: ^1.3.0
         version: 1.3.0
-      semver:
-        specifier: ^7.8.5
-        version: 7.8.5
       std-env:
         specifier: ^4.2.0
         version: 4.2.0
@@ -304,9 +298,6 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
-      '@types/semver':
-        specifier: 7.7.1
-        version: 7.7.1
       hookable:
         specifier: 6.1.1
         version: 6.1.1
@@ -322,6 +313,9 @@ importers:
       unimport:
         specifier: 6.3.0
         version: 6.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.140.0)(rolldown@1.1.5)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0))
+      verkit:
+        specifier: 0.1.1
+        version: 0.1.1
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
@@ -572,9 +566,6 @@ importers:
       scule:
         specifier: ^1.3.0
         version: 1.3.0
-      semver:
-        specifier: ^7.8.5
-        version: 7.8.5
       std-env:
         specifier: ^4.2.0
         version: 4.2.0
@@ -611,6 +602,9 @@ importers:
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
+      verkit:
+        specifier: ^0.1.1
+        version: 0.1.1
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
@@ -3681,9 +3675,6 @@ packages:
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
-
-  '@types/semver@7.7.1':
-    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -9427,6 +9418,10 @@ packages:
     resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
+  verkit@0.1.1:
+    resolution: {integrity: sha512-cZkglQpdcADQLTV88UEB8ogySmvby1H//AIbq8Se5BzUKYR8Jc6C05c1ABYgjyHkOakUG/GYmgUJdGktjMnxzw==}
+    engines: {node: ^22.18.0 || >=24.11.0}
+
   version-guard@1.1.3:
     resolution: {integrity: sha512-JwPr6erhX53EWH/HCSzfy1tTFrtPXUe927wdM1jqBBeYp1OM+qPHjWbsvv6pIBduqdgxxS+ScfG7S28pzyr2DQ==}
     engines: {node: '>=0.10.48'}
@@ -12132,8 +12127,6 @@ snapshots:
   '@types/relateurl@0.2.33': {}
 
   '@types/resolve@1.20.2': {}
-
-  '@types/semver@7.7.1': {}
 
   '@types/unist@2.0.11': {}
 
@@ -19519,6 +19512,8 @@ snapshots:
       spdx-expression-parse: 3.0.1
 
   validate-npm-package-name@5.0.1: {}
+
+  verkit@0.1.1: {}
 
   version-guard@1.1.3: {}
 

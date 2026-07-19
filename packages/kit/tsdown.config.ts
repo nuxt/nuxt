@@ -6,7 +6,7 @@ export default defineConfig({
   dts: {},
   exports: { devExports: true },
   deps: {
-    onlyBundle: [],
+    onlyBundle: ['verkit'],
     neverBundle: [
       '@nuxt/schema',
       'nitro/types',
