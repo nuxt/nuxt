@@ -464,6 +464,25 @@ describe('page:extends', () => {
       },
     ])
   })
+
+  it('keeps an explicit route name/path when reusing a file with a `definePageMeta` name (#27358)', async () => {
+    const files: NuxtPage[] = [
+      { path: '/test', file: 'pages/test.vue' },
+      { path: '/testExtend', name: 'testExtend', file: 'pages/test.vue' },
+    ]
+    const vfs: Record<string, string> = {
+      'pages/test.vue': `
+        <script setup lang="ts">
+        definePageMeta({ name: 'test' })
+        </script>
+      `,
+    }
+    await augmentPages(files, vfs)
+    // first route takes the file's name; the second keeps its own, else both are `test` -> dropped
+    expect(files[0]!.name).toBe('test')
+    expect(files[1]!.name).toBe('testExtend')
+    expect(files[1]!.path).toBe('/testExtend')
+  })
 })
 
 const pagesDir = 'pages'
