@@ -22,7 +22,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-import { shouldLoadPayload } from '#app/composables/payload'
+import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 
 import { isTestingAppManifest } from '../matrix'
@@ -31,6 +31,12 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.req.method,
   headers: Object.fromEntries(event.req.headers.entries()),
 })))
+
+// the test environment builds with `ssr: false`, which disables payload extraction
+vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
+  ...await importOriginal<Record<string, unknown>>(),
+  payloadExtraction: true,
+}))
 
 describe('app config', () => {
   it('can be updated', () => {
@@ -542,6 +548,9 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             },
           },
           "wildcard": {
+            "/isr": {
+              "isr": 60,
+            },
             "/pre": {
               "prerender": true,
             },
@@ -623,6 +632,20 @@ describe('compiled route rules', () => {
     expect(redirectRoute.redirect).toBe('/')
     const shouldLoadRedirect = await shouldLoadPayload('/pre/test')
     expect(shouldLoadRedirect).toBe(false)
+  })
+
+  it('should only use `force-cache` for immutable prerendered payloads', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('[{"data":1},{}]')))
+    try {
+      await loadPayload('/pre/thing')
+      expect(fetchSpy.mock.calls[0]![1]).toMatchObject({ cache: 'force-cache' })
+
+      // cached (isr/swr/cache) payloads can change within a deploy, so the browser cache must be revalidated
+      await loadPayload('/isr/thing')
+      expect(fetchSpy.mock.calls[1]![1]).toMatchObject({ cache: 'default' })
+    } finally {
+      fetchSpy.mockRestore()
+    }
   })
 })
 
