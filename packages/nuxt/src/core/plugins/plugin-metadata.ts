@@ -153,7 +153,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       }
 
       const exports = findExports(code)
-      const defaultExport = exports.find(e => e.type === 'default' || e.name === 'default')
+      const defaultExport = exports.find(e => e.type === 'default' || e.names.includes('default'))
       if (!defaultExport) {
         pluginDiagnostics.NUXT_B2005({ src: plugin.src })
         return {
