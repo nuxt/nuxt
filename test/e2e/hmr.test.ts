@@ -232,6 +232,24 @@ test.describe('vite-only HMR tests', () => {
     await expect.soft(button).toHaveText('1')
   })
 
+  test('HMR for pages using a JSX render function (#30709)', async ({ page, goto }) => {
+    const pagePath = join(fixtureDir, 'app/pages/jsx.vue')
+    const pageContents = readFileSync(join(sourceDir, 'app/pages/jsx.vue'), 'utf8')
+    writeFileSync(pagePath, pageContents)
+
+    await goto('/jsx')
+    await expect(page.getByTestId('jsx-content')).toHaveText('jsx: original')
+
+    // A `<script lang="tsx">` page has no `<template>` block, so its only HMR
+    // signal is the script change. Nuxt's `?macro=true` page variants used to
+    // shadow the real script module, so the update never reached the rendered
+    // component.
+    writeFileSync(pagePath, pageContents.replace('jsx: original', 'jsx: updated'))
+    await expect(page.getByTestId('jsx-content')).toHaveText('jsx: updated', { timeout: 10000 })
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
   test('HMR for routes', async ({ page, goto }) => {
     await goto('/routes')
 
