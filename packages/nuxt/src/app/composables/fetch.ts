@@ -110,19 +110,6 @@ type FetchFactoryDataT<FDataT, _ResT> = [unknown] extends [FDataT] ? _ResT : FDa
 type FetchFactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
 type FetchFactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
 export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined> {
-  // Auto-key, no options (runtime default = GET)
-  <
-    ResT = void,
-    ErrorT = NuxtError<unknown>,
-    ReqT extends NitroFetchRequest = NitroFetchRequest,
-    const Method extends 'get' = 'get',
-    _ResT = ResT extends void ? FetchResult<ReqT, Method & AvailableRouterMethod<ReqT>> : ResT,
-    DataT = FetchFactoryDataT<FDataT, _ResT>,
-    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-    DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
-  >(
-    request: Ref<ReqT> | ReqT | (() => ReqT),
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
   // Auto-key, opts with transform, default = undefined
   <
     ResT = void,
