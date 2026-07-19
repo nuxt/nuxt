@@ -4,6 +4,7 @@ import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../src/constants.ts'
 import { loadNuxtConfig } from '../src/loader/config.ts'
 import { _generateTypes, resolveLayerPaths } from '../src/template.ts'
 import { getLayerDirectories } from 'nuxt/kit'
@@ -26,7 +27,7 @@ const mockNuxt = {
     buildDir: '/my-app/.nuxt',
     modulesDir: ['/my-app/node_modules', '/node_modules'],
     modules: [],
-    extensions: ['.ts', '.mjs', '.js'],
+    extensions: [...DEFAULT_JS_FILE_EXTENSIONS],
     _layers: [{ config: { rootDir: '/my-app', srcDir: '/my-app' } }],
     _installedModules: [],
     _modules: [],

@@ -6,7 +6,7 @@ import { resolveModulePath } from 'exsolve'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
-import { directoryToURL, logger } from '@nuxt/kit'
+import { DEFAULT_JS_FILE_EXTENSIONS, directoryToURL, logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
@@ -223,7 +223,7 @@ function baseResolve (ctx: WebpackConfigContext) {
   }
 
   ctx.config.resolve = {
-    extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
+    extensions: ['.wasm', ...DEFAULT_JS_FILE_EXTENSIONS, '.json', '.vue'],
     alias: ctx.alias,
     modules: resolveModules,
     fullySpecified: false,

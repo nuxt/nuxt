@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { relative, resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
 import { schemaDiagnostics } from '../diagnostics.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export default defineResolvers({
   vite: {
@@ -26,7 +27,7 @@ export default defineResolvers({
       },
     },
     resolve: {
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
+      extensions: [...DEFAULT_JS_FILE_EXTENSIONS, '.vue', '.json'],
     },
     publicDir: {
       $resolve: (val) => {
