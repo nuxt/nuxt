@@ -203,8 +203,8 @@ importers:
         specifier: 1.6.4
         version: 1.6.4
       verkit:
-        specifier: 0.1.1
-        version: 0.1.1
+        specifier: 0.1.2
+        version: 0.1.2
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
@@ -294,6 +294,9 @@ importers:
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
+      verkit:
+        specifier: ^0.1.2
+        version: 0.1.2
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -313,9 +316,6 @@ importers:
       unimport:
         specifier: 6.3.0
         version: 6.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.140.0)(rolldown@1.1.5)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0))
-      verkit:
-        specifier: 0.1.1
-        version: 0.1.1
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
@@ -603,8 +603,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       verkit:
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.1.2
+        version: 0.1.2
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
@@ -9418,9 +9418,9 @@ packages:
     resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  verkit@0.1.1:
-    resolution: {integrity: sha512-cZkglQpdcADQLTV88UEB8ogySmvby1H//AIbq8Se5BzUKYR8Jc6C05c1ABYgjyHkOakUG/GYmgUJdGktjMnxzw==}
-    engines: {node: ^22.18.0 || >=24.11.0}
+  verkit@0.1.2:
+    resolution: {integrity: sha512-WqkT8n3hqizuCu71W3bUzf5fjBmkbXcudsehe/NbxA8PgqoKnSOY5K0Ba2ckg1qaRaSpSz7as/n9K1R9JXjQKg==}
+    engines: {node: '>=18.12.0'}
 
   version-guard@1.1.3:
     resolution: {integrity: sha512-JwPr6erhX53EWH/HCSzfy1tTFrtPXUe927wdM1jqBBeYp1OM+qPHjWbsvv6pIBduqdgxxS+ScfG7S28pzyr2DQ==}
@@ -19513,7 +19513,7 @@ snapshots:
 
   validate-npm-package-name@5.0.1: {}
 
-  verkit@0.1.1: {}
+  verkit@0.1.2: {}
 
   version-guard@1.1.3: {}
 

@@ -133,7 +133,7 @@
     "unplugin": "^3.3.0",
     "unrouting": "^0.1.7",
     "untyped": "^2.0.0",
-    "verkit": "^0.1.1",
+    "verkit": "^0.1.2",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0"
   },
