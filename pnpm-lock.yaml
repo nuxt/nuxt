@@ -1356,6 +1356,28 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/chunk-error:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  test/fixtures/dynamic-paths:
+    dependencies:
+      '@nuxt/rspack-builder':
+        specifier: workspace:*
+        version: link:../../../packages/rspack
+      '@nuxt/webpack-builder':
+        specifier: workspace:*
+        version: link:../../../packages/webpack
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/external-vue-resolution:
     dependencies:
       nuxt:
@@ -1399,6 +1421,34 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/minimal-types:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/nested-suspense:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  test/fixtures/nuxt-time:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/preview:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/route-scroll:
     dependencies:
       nuxt:
         specifier: workspace:*

@@ -1532,3 +1532,14 @@ describe('announcer', () => {
     expect(nuxtApp._announcer).toBeUndefined()
   })
 })
+
+describe('namespace access to useNuxtApp', () => {
+  it('should return the nuxt instance when used with correct appId', () => {
+    const nuxtApp = useNuxtApp()
+    expect(useNuxtApp(nuxtApp._id)).toBe(nuxtApp)
+  })
+
+  it('should throw an error when used with wrong appId', () => {
+    expect(() => useNuxtApp('nuxt-app-unknown')).toThrow()
+  })
+})

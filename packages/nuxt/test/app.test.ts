@@ -245,6 +245,24 @@ describe('resolveApp', () => {
     `)
   })
 
+  it('resolves layer app configs in order', async () => {
+    const app = await getResolvedApp([
+      'layer/app.config.ts',
+      'layer/nuxt.config.ts',
+      'app.config.ts',
+      {
+        name: 'nuxt.config.ts',
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer\'] })',
+      },
+    ])
+    expect(app.configs).toMatchInlineSnapshot(`
+      [
+        "<rootDir>/app.config.ts",
+        "<rootDir>/layer/app.config.ts",
+      ]
+    `)
+  })
+
   it('resolves nested layouts correctly', async () => {
     const app = await getResolvedApp([
       'layouts/default.vue',
@@ -397,6 +415,8 @@ async function getResolvedApp (files: Array<string | { name: string, contents: s
   for (const layout of Object.values(app.layouts)) {
     layout.file = normaliseToRepo(layout.file)!
   }
+
+  app.configs = app.configs.map(config => normaliseToRepo(config)!)
 
   await nuxt.close()
 

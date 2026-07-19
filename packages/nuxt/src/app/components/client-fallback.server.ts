@@ -5,7 +5,7 @@ import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'v
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
 import { createBuffer, sanitizeTag } from './utils'
-import { renderDiagnostics } from '../diagnostics/render.ts'
+import { renderDiagnostics } from '../diagnostics/render'
 
 interface NuxtClientFallbackProps {
   fallbackTag?: string

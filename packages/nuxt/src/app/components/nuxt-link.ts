@@ -20,8 +20,8 @@ import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../c
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
-import { renderDiagnostics } from '../diagnostics/render.ts'
-import { navigationDiagnostics } from '../diagnostics/navigation.ts'
+import { renderDiagnostics } from '../diagnostics/render'
+import { navigationDiagnostics } from '../diagnostics/navigation'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 

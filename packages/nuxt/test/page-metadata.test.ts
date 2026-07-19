@@ -131,6 +131,21 @@ export default {
     })
   })
 
+  it('should extract metadata from `lang="tsx"` vue files using multiple macros', () => {
+    const fileContents = `
+<template><PageContent /></template>
+<script setup lang="tsx">
+definePageMeta({ name: 'bar' })
+defineRouteRules({})
+const PageContent = () => (<div>Home Page</div>)
+</script>`
+    const meta = getRouteMeta(fileContents, `/app/pages/index.vue`)
+    expect(meta).toStrictEqual({
+      name: 'bar',
+      rules: {},
+    })
+  })
+
   it('should handle experimental decorators', () => {
     const fileContents = `
 <script setup lang="ts">

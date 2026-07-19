@@ -13,8 +13,9 @@ const e2eMatrix = [
 ] as const
 
 const devOnlyTests = ['**/hmr.test.ts']
-const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/lazy-hydration.test.ts', '**/server-page-css.test.ts']
-const viteOnlyTests = ['**/lazy-hydration.test.ts', '**/server-page-css.test.ts']
+const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/server-page-css.test.ts', '**/chunk-error.test.ts']
+const viteOnlyTests = ['**/server-page-css.test.ts']
+const rspackExcludedTests = ['**/chunk-error.test.ts']
 
 function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
   const ignore: string[] = []
@@ -25,6 +26,9 @@ function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
   }
   if (entry.builder !== 'vite') {
     ignore.push(...viteOnlyTests)
+  }
+  if (entry.builder === 'rspack') {
+    ignore.push(...rspackExcludedTests)
   }
   return ignore
 }

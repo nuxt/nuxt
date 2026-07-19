@@ -18,7 +18,7 @@ import type {
   Target,
 } from './types'
 import { useHead } from '#app/composables/head'
-import { unheadDiagnostics } from '../../app/diagnostics/head.ts'
+import { unheadDiagnostics } from '../../app/diagnostics/head'
 
 interface HeadComponents {
   base?: UnheadBase | null
