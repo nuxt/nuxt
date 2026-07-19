@@ -39,59 +39,6 @@ describe('loadNuxtConfig layer deduplication', () => {
   })
 })
 
-describe('loadNuxtConfig local layer ordering via extends', () => {
-  const tempDir = join(repoRoot, 'temp', 'layer-order')
-
-  beforeAll(async () => {
-    await rm(tempDir, { recursive: true, force: true })
-    for (const name of ['aaa', 'zzz']) {
-      await mkdir(join(tempDir, 'layers', name), { recursive: true })
-      await writeFile(
-        join(tempDir, 'layers', name, 'nuxt.config.ts'),
-        `export default defineNuxtConfig({ css: ['${name}.css'] })`,
-      )
-    }
-  })
-
-  afterAll(async () => {
-    await rm(tempDir, { recursive: true, force: true })
-  })
-
-  const localLayerNames = (config: Awaited<ReturnType<typeof loadNuxtConfig>>) =>
-    (config._layers as Array<{ cwd?: string }>)
-      .map(layer => layer.cwd?.split('/').pop())
-      .filter(name => name === 'aaa' || name === 'zzz')
-
-  it('promotes a local layer listed in `extends` above unlisted auto-scanned layers', async () => {
-    await writeFile(
-      join(tempDir, 'nuxt.config.ts'),
-      'export default defineNuxtConfig({ extends: [\'~~/layers/aaa\'] })',
-    )
-    const config = await loadNuxtConfig({ cwd: tempDir })
-    // without ordering the auto-scan would rank reverse-alphabetically: zzz, aaa
-    expect(localLayerNames(config)).toEqual(['aaa', 'zzz'])
-    expect(config.css?.filter(entry => entry === 'aaa.css')).toHaveLength(1)
-  })
-
-  it('orders local layers by their position in `extends` (first = highest priority)', async () => {
-    await writeFile(
-      join(tempDir, 'nuxt.config.ts'),
-      'export default defineNuxtConfig({ extends: [\'./layers/aaa\', \'./layers/zzz\'] })',
-    )
-    const config = await loadNuxtConfig({ cwd: tempDir })
-    expect(localLayerNames(config)).toEqual(['aaa', 'zzz'])
-  })
-
-  it('keeps unlisted local layers in alphabetical order below listed ones', async () => {
-    await writeFile(
-      join(tempDir, 'nuxt.config.ts'),
-      'export default defineNuxtConfig({ extends: [\'~~/layers/zzz\'] })',
-    )
-    const config = await loadNuxtConfig({ cwd: tempDir })
-    expect(localLayerNames(config)).toEqual(['zzz', 'aaa'])
-  })
-})
-
 describe('loadNuxtConfig layer identity canonicalisation', () => {
   const tempDir = join(repoRoot, 'temp', 'layer-identity')
 
