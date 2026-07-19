@@ -1,6 +1,6 @@
 import { isReactive, isRef, isShallow, toRaw } from 'vue'
 import { definePayloadReducer } from '../composables/payload'
-import { isNuxtError } from '../composables/error'
+import { NUXT_ERROR_SIGNATURE, isNuxtError } from '../composables/error'
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
@@ -8,7 +8,7 @@ import { componentIslands } from '#build/nuxt.config.mjs'
 import { isValidIslandKey } from './utils'
 
 const reducers: [string, (data: any) => any][] = [
-  ['NuxtError', data => isNuxtError(data) && data.toJSON()],
+  ['NuxtError', data => isNuxtError(data) && { ...data.toJSON(), [NUXT_ERROR_SIGNATURE]: true }],
   ['EmptyShallowRef', data => isRef(data) && isShallow(data) && !data.value && (typeof data.value === 'bigint' ? '0n' : (JSON.stringify(data.value) || '_'))],
   ['EmptyRef', data => isRef(data) && !data.value && (typeof data.value === 'bigint' ? '0n' : (JSON.stringify(data.value) || '_'))],
   ['ShallowRef', data => isRef(data) && isShallow(data) && data.value],
