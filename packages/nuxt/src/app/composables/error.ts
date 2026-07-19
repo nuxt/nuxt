@@ -85,7 +85,7 @@ export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError
 }
 
 export class NuxtError<DataT = unknown> extends HTTPError<DataT> implements _NuxtErrorContract<DataT> {
-  readonly __nuxt_error = true as const
+  readonly [NUXT_ERROR_SIGNATURE] = true as const
   readonly fatal: boolean
   override readonly cause: unknown
 
@@ -98,7 +98,7 @@ export class NuxtError<DataT = unknown> extends HTTPError<DataT> implements _Nux
   override toJSON () {
     return {
       ...super.toJSON(),
-      __nuxt_error: true,
+      [NUXT_ERROR_SIGNATURE]: true,
       fatal: this.fatal,
     }
   }
