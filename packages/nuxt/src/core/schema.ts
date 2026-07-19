@@ -45,6 +45,10 @@ export default defineNuxtModule({
       }
     })
 
+    nuxt.hook('nitro:prepare:types', (ctx) => {
+      ctx.references.push({ path: resolve(nuxt.options.buildDir, 'schema/nuxt.schema.d.ts') })
+    })
+
     // Resolve schema after all modules initialized
     let schema: Schema
     nuxt.hook('modules:done', async () => {

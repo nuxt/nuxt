@@ -567,6 +567,32 @@ describe('useAsyncData', () => {
     })
   })
 
+  it('should batch watched dependency updates cascading within the same flush into a single refresh', async () => {
+    const a = ref(0)
+    const b = ref(0)
+    const promiseFn = vi.fn(() => Promise.resolve(`${a.value}-${b.value}`))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [a, b] })
+        // registered after useAsyncData, so it runs after the params watcher within the same flush
+        watch(a, val => (b.value = val))
+        return () => h('div', [data.value])
+      },
+    })
+
+    const c = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    a.value = 1
+    await nextTick()
+
+    // the fetch is deferred to the post-flush, so it observes the cascaded update of `b`
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    await vi.waitFor(() => {
+      expect(c.html()).toBe('<div>1-1</div>')
+    })
+  })
+
   it('should work correctly with nested components accessing the same asyncData', async () => {
     const useCustomData = () => useAsyncData(uniqueKey, async () => {
       await Promise.resolve()

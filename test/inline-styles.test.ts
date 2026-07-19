@@ -82,4 +82,16 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
     expect(cssLinks).toEqual([])
   })
+  // https://github.com/nuxt/nuxt/issues/35591
+  it('inlined SSR CSS class names match rendered markup when generateScopedName is a string pattern', async () => {
+    const html = await readFile(join(outputDir, 'public', 'css-modules-scoped/index.html'), 'utf-8')
+
+    const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
+    const rule = inlinedStyles.match(/\.([\w-]+)\s*\{[^}]*--inline-css-modules-scoped-token:\s*css-modules-scoped[^}]*\}/)
+    expect(rule, 'CSS module rule was not inlined into the SSR response').toBeTruthy()
+
+    const scopedClass = rule![1]!
+    const markupClasses = new Set([...html.matchAll(/\bclass="([^"]+)"/g)].flatMap(m => m[1]!.split(/\s+/)))
+    expect(markupClasses).toContain(scopedClass)
+  })
 })
