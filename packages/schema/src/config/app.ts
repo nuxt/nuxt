@@ -2,6 +2,7 @@ import process from 'node:process'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
 import type { AppHeadMetaObject } from '../types/head.ts'
 import type { NuxtAppConfig, ViewTransitionOptions } from '../types/config.ts'
 
@@ -173,9 +174,21 @@ export default defineResolvers({
     },
   },
   unhead: {
-    legacy: false,
+    legacy: {
+      $resolve: async (val, get) => {
+        if (typeof val !== 'boolean') { return false }
+        if ((await get('future.compatibilityVersion') as number) >= 5) {
+          if (val) {
+            schemaDiagnostics.NUXT_B5013()
+          }
+          return false
+        }
+        return val
+      },
+    },
+    vite: {},
     renderSSRHeadOptions: {
-      $resolve: val => ({
+      $resolve: (val: unknown) => ({
         omitLineBreaks: true,
         ...typeof val === 'object' ? val : {},
       }),

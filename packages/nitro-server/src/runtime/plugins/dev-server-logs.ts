@@ -13,14 +13,14 @@ import type { ParsedTrace } from 'errx'
 
 import { isVNode } from 'vue'
 
-// @ts-expect-error virtual file
+import { serverDiagnostics } from '../diagnostics'
 import { rootDir } from '#internal/dev-server-logs-options'
-// @ts-expect-error virtual file
 import { appId } from '#internal/nuxt.config.mjs'
 
 const devReducers: Record<string, (data: any) => any> = {
   VNode: data => isVNode(data) ? { type: data.type, props: data.props } : undefined,
   URL: data => data instanceof URL ? data.toString() : undefined,
+  Symbol: data => typeof data === 'symbol' ? data.description ?? '' : undefined,
 }
 
 interface NuxtDevAsyncContext {
@@ -89,8 +89,7 @@ const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
       const reducers = Object.assign(Object.create(null), devReducers, ctx.request.context?.['~payloadReducers'])
       htmlContext.bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
     } catch (e) {
-      const shortError = e instanceof Error && 'toString' in e ? ` Received \`${e.toString()}\`.` : ''
-      console.warn(`[nuxt] Failed to stringify dev server logs.${shortError} You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/4.x/api/composables/use-nuxt-app#payload.`)
+      serverDiagnostics.NUXT_E8003({ error: e instanceof Error ? e.toString() : undefined, cause: e })
     }
   })
 })

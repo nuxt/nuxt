@@ -77,7 +77,7 @@ interface PageMeta {
 
     Aliases for the record. Allows defining extra paths that will behave like a copy of the record. Allows having paths shorthands like `/users/:id` and `/u/:id`. All `alias` and `path` values must share the same params.
 
-  **`groups`**
+  **`groups`** :badge[v4.3]{color="info" size="xs" class="align-middle"}
 
   - **Type**: `string[]`
 
@@ -151,7 +151,7 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/4.x/guide/recipes/custom-routing#using-routeroptions)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. Navigation is independent from rendering, so scroll behavior is always triggered even when the page doesn't re-render (e.g. when using a fixed [`key`](/docs/4.x/api/utils/define-page-meta#key)). Set `scrollToTop: false` to disable scrolling in such cases. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/4.x/guide/recipes/custom-routing#using-routeroptions)) for more info.
 
   **`[key: string]`**
 

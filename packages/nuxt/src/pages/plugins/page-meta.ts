@@ -2,19 +2,19 @@ import { createUnplugin } from 'unplugin'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
-import { logger } from '../../utils.ts'
+import { pageDiagnostics } from '@nuxt/kit'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isSerializable } from '../utils.ts'
-import type { ObjectPropertyKind, ParserOptions } from 'oxc-parser'
+import type { ESTree, ParserOptions } from 'rolldown/utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
-  sourcemap?: boolean
   isPage?: (file: string) => boolean
-  routesPath?: string
+  routesId?: string
   extractedKeys?: string[]
 }
 
@@ -63,20 +63,13 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           ],
         },
       },
-      handler (code, id) {
+      handler (code, id, transformMeta?: unknown) {
         const query = parseMacroQuery(id)
         if (query.type && query.type !== 'script') { return }
 
-        const s = new MagicString(code)
+        const s = rolldownString(code, id, transformMeta)
         function result () {
-          if (s.hasChanged()) {
-            return {
-              code: s.toString(),
-              map: options.sourcemap
-                ? s.generateMap({ hires: true })
-                : undefined,
-            }
-          }
+          return generateTransform(s, id)
         }
 
         const hasMacro = HAS_MACRO_RE.test(code)
@@ -111,7 +104,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!code) {
             s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
             const { pathname } = parseModuleId(id)
-            logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
+            pageDiagnostics.NUXT_B4001({ pathname })
           } else {
             s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           }
@@ -192,8 +185,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
               walk(decl.init, {
                 enter: (node, parent) => {
                   if (node.type === 'AwaitExpression') {
-                    logger.error(`Await expressions are not supported in definePageMeta. File: '${id}'`)
-                    throw new Error('await in definePageMeta')
+                    const codeSnippet = code.slice(node.start, Math.min(node.end, node.start + 80))
+                    throw pageDiagnostics.NUXT_B4002({ codeSnippet, offset: node.start })
                   }
                   if (
                     isBindingIdentifier(node, parent)
@@ -243,7 +236,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             const m = new MagicString(metaCode)
 
             if (meta.type === 'ObjectExpression') {
-              const omitProp = (prop: ObjectPropertyKind, i: number) => {
+              const omitProp = (prop: ESTree.ObjectPropertyKind, i: number) => {
                 const nextProperty = meta.properties[i + 1]
                 if (nextProperty) {
                   m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
@@ -337,7 +330,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id.replace(/\?.+$/, ''))
+          throw pageDiagnostics.NUXT_B4003({ callCount: instances, file: id })
         }
 
         if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
@@ -351,9 +344,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       handleHotUpdate: {
         order: 'post',
         handler: ({ file, modules, server }) => {
-          if (options.routesPath && options.isPage?.(file)) {
+          if (options.routesId && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
-            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + encodeURIComponent(options.routesPath))
+            const routesModule = server.moduleGraph.getModuleById(options.routesId)
             return [
               ...modules,
               ...macroModule ? [macroModule] : [],

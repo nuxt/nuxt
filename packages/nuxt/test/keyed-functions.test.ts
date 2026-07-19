@@ -1,8 +1,6 @@
 import type { KeyedFunction } from '@nuxt/schema'
 import { describe, expect, it, vi } from 'vitest'
 import { KeyedFunctionsPlugin } from '../src/compiler/plugins/keyed-functions'
-import { logger } from '../src/utils'
-import type { Import } from 'unimport'
 
 describe('keyed functions plugin - reactive getter (dev mode)', () => {
   it('should pick up dynamically added keyed functions', async () => {
@@ -11,11 +9,9 @@ describe('keyed functions plugin - reactive getter (dev mode)', () => {
     ]
 
     const plugin = KeyedFunctionsPlugin({
-      sourcemap: false,
       keyedFunctions,
       getKeyedFunctions: () => keyedFunctions,
       alias: {},
-      getAutoImports: () => Promise.resolve([]),
       appDir: '/nuxt/dist/app/',
       dev: true,
     }).raw({}, {} as any) as {
@@ -50,11 +46,9 @@ useNewComposable()
     ]
 
     const plugin = KeyedFunctionsPlugin({
-      sourcemap: false,
       keyedFunctions,
       getKeyedFunctions: () => keyedFunctions,
       alias: {},
-      getAutoImports: () => Promise.resolve([]),
       appDir: '/nuxt/dist/app/',
       dev: true,
     }).raw({}, {} as any) as {
@@ -79,11 +73,9 @@ useExisting()
     ]
 
     const plugin = KeyedFunctionsPlugin({
-      sourcemap: false,
       keyedFunctions,
       getKeyedFunctions: () => keyedFunctions,
       alias: {},
-      getAutoImports: () => Promise.resolve([]),
       appDir: '/nuxt/dist/app/',
       dev: false,
     }).raw({}, {} as any) as {
@@ -133,29 +125,9 @@ describe('keyed functions plugin', () => {
       source: 'composables/use-default-key.ts',
       argumentLength: 1,
     },
-    // TODO: remove entries without source in Nuxt 5
-    // @ts-expect-error - `source` wasn't required before
-    {
-      name: 'useAutoImported',
-      argumentLength: 1,
-    },
-    {
-      name: 'useRegexKey',
-      argumentLength: 1,
-      // @ts-expect-error - regex was supported before
-      source: /regex/,
-    },
   ]
 
-  const autoImports: Import[] = [
-    {
-      from: '#app',
-      name: 'useAutoImported',
-      as: 'useAutoImported',
-    },
-  ]
-
-  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, appDir: '/nuxt/dist/app/' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should add hash when there is none already provided', async () => {
     const code = `
@@ -240,12 +212,12 @@ useRenamedDefault()`
   it('should warn if there are duplicate entries in keyed functions', () => {
     vi.stubGlobal('__TEST_DEV__', true)
 
-    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any)
+    KeyedFunctionsPlugin({ keyedFunctions, alias: {}, appDir: '/nuxt/dist/app/' }).raw({}, {} as any)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt:compiler\] \[keyed-functions\] Duplicate function name `useKeyTwo` with the same source `#app` found. Overwriting the existing entry./,
+      /Duplicate keyed function name `useKeyTwo`.* with the same source `#app` found\. Overwriting the existing entry\./,
     ))
     warn.mockRestore()
     vi.unstubAllGlobals()
@@ -862,31 +834,6 @@ pkg.app.useKey()
 
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
-
-  // backwards compatibility
-  it('should inject keys for auto-imported functions', async () => {
-    const code = `
-    import { useAutoImported } from '#app'
-    useAutoImported()
-    `
-
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
-      "import { useAutoImported } from '#app'
-          useAutoImported('$HJiaryoL2y' /* nuxt-injected */)"
-    `)
-  })
-
-  it('should inject keys for regex-matched function sources', async () => {
-    const code = `
-    import { useRegexKey } from 'some-regex-matched-source'
-    useRegexKey()
-    `
-
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
-      "import { useRegexKey } from 'some-regex-matched-source'
-          useRegexKey('$HJiaryoL2y' /* nuxt-injected */)"
-    `)
-  })
 })
 
 describe('core keyed functions', () => {
@@ -902,7 +849,7 @@ describe('core keyed functions', () => {
     { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
     { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
   ]
-  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve([]), appDir: '/nuxt/dist/app/' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, appDir: '/nuxt/dist/app/' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should detect string type keys and not add a hash', async () => {
     const code = `

@@ -1,6 +1,7 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { parseAndWalk } from 'oxc-walker'
 import type { ParsedStaticImport } from 'mlly'
+import type { ParseResult } from 'rolldown/utils'
 
 type Awaitable<T> = T | Promise<T>
 
@@ -18,7 +19,7 @@ export interface ScanPluginHandlerContext {
 /** A context object scoped to the current file, shared across all plugins that scan it. */
 export interface ScanPluginHandlerThisContext {
   /** A shared walk function from `oxc-walker` that re-uses the same AST in all plugins for the same file. */
-  walkParsed: (options: Parameters<typeof parseAndWalk>[2]) => ReturnType<typeof parseAndWalk>
+  walkParsed: (options: Parameters<typeof parseAndWalk>[2]) => ParseResult | null
   /** A shared utility to get the parsed static imports that re-uses the same result in all plugins for the same file. */
   getParsedStaticImports: () => ParsedStaticImport[]
 }

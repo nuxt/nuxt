@@ -1,6 +1,7 @@
-import { resolve } from 'pathe'
-import { isTest } from 'std-env'
+import { existsSync } from 'node:fs'
+import { relative, resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
 
 export default defineResolvers({
   vite: {
@@ -12,8 +13,9 @@ export default defineResolvers({
     },
     define: {
       $resolve: async (_val, get) => {
-        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')])
+        const [isDev, isTest, isDebug] = await Promise.all([get('dev'), get('test'), get('debug')])
         return {
+          '__VUE_PROD_DEVTOOLS__': false,
           '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(isDebug && (isDebug === true || isDebug.hydration)),
           'process.dev': isDev,
           'import.meta.dev': isDev,
@@ -29,7 +31,7 @@ export default defineResolvers({
     publicDir: {
       $resolve: (val) => {
         if (val) {
-          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/4.x/api/nuxt-config#public`.')
+          schemaDiagnostics.NUXT_B5014()
         }
         // this is missing from our `vite` types deliberately, so users do not configure it
         return false as never
@@ -70,10 +72,12 @@ export default defineResolvers({
     },
     vueJsx: {
       $resolve: async (val, get) => {
+        const options: { defineComponentName?: string[] } = val && typeof val === 'object' ? val : {}
         return {
           // TODO: investigate type divergence between types for @vue/compiler-core and @vue/babel-plugin-jsx
           isCustomElement: (await get('vue')).compilerOptions?.isCustomElement as undefined | ((tag: string) => boolean),
-          ...typeof val === 'object' ? val : {},
+          defineComponentName: [...new Set([...options.defineComponentName ?? ['defineComponent'], 'defineNuxtComponent'])],
+          ...options,
         }
       },
     },
@@ -109,7 +113,24 @@ export default defineResolvers({
       },
     },
     cacheDir: {
-      $resolve: async (val, get) => typeof val === 'string' ? val : resolve(await get('rootDir'), 'node_modules/.cache/vite'),
+      $resolve: async (val, get) => {
+        if (typeof val === 'string') {
+          return val
+        }
+
+        const rootDir = await get('rootDir')
+        if (existsSync(resolve(rootDir, 'node_modules'))) {
+          return resolve(rootDir, 'node_modules/.cache/vite')
+        }
+
+        const workspaceDir = await get('workspaceDir')
+        const relativeRoot = relative(workspaceDir, rootDir)
+        if (!relativeRoot || relativeRoot.startsWith('..')) {
+          return resolve(rootDir, 'node_modules/.cache/vite')
+        }
+
+        return resolve(workspaceDir, 'node_modules/.cache/vite', relativeRoot)
+      },
     },
   },
 })

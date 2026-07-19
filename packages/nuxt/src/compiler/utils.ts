@@ -1,7 +1,8 @@
-import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
+import { findStaticImports, parseStaticImport } from 'mlly'
+import type { ParsedStaticImport } from 'mlly'
 import { parseAndWalk, walk } from 'oxc-walker'
 import type { ScanPlugin } from './types.ts'
-import type { ParseResult } from 'oxc-parser'
+import type { ParseResult } from 'rolldown/utils'
 
 /**
  * Creates a context object for scan plugins scoped to a specific file being scanned.

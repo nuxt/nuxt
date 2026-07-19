@@ -1,5 +1,5 @@
 import type { Plugin, ResolvedConfig } from 'vite'
-import { ensureDependencyInstalled, logger } from '@nuxt/kit'
+import { bundlerDiagnostics, ensureDependencyInstalled } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { Options } from '@vitejs/plugin-vue-jsx'
 
@@ -41,7 +41,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
 
     if (!result) {
       installFailed = true
-      logger.warn('Install `@vitejs/plugin-vue-jsx` to enable JSX support.')
+      bundlerDiagnostics.NUXT_B7008()
       return undefined
     }
 
@@ -62,6 +62,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
       resolvedConfig = config
     },
     transform: {
+      order: 'pre',
       filter: {
         id: {
           include: [JSX_RE],

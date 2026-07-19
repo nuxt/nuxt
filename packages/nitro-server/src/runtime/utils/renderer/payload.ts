@@ -1,15 +1,13 @@
-import type { RenderResponse } from 'nitro/types'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
-import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
+import type { NuxtPayload, NuxtSSRContext } from '#app/types'
+import type { CachedResponse } from '../cache'
 
-// @ts-expect-error virtual file
 import { appId, multiApp } from '#internal/nuxt.config.mjs'
-// @ts-expect-error virtual file
 import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 
-export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
+export function renderPayloadResponse (ssrContext: NuxtSSRContext): CachedResponse {
   return {
     body: encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])),
     status: ssrContext.event.res.status || 200,
@@ -56,17 +54,22 @@ function encodeForwardSlashes (str: string): string {
 }
 
 interface SplitPayload {
-  initial: Omit<NuxtPayload, 'data'>
+  initial: Omit<NuxtPayload, 'data' | 'prefetchLinks'>
   payload: {
     data?: NuxtPayload['data']
     prerenderedAt?: NuxtPayload['prerenderedAt']
+    prefetchLinks?: NuxtPayload['prefetchLinks']
   }
 }
 
 export function splitPayload (ssrContext: NuxtSSRContext): SplitPayload {
-  const { data, prerenderedAt, ...initial } = ssrContext.payload
+  const { data, prerenderedAt, prefetchLinks, ...initial } = ssrContext.payload
+  const payload: SplitPayload['payload'] = { data, prerenderedAt }
+  if (prefetchLinks?.length) {
+    payload.prefetchLinks = prefetchLinks
+  }
   return {
     initial: { ...initial, prerenderedAt },
-    payload: { data, prerenderedAt },
+    payload,
   }
 }

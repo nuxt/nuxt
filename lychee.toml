@@ -26,6 +26,9 @@ user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
 timeout = 20
 retry_wait_time = 2
 max_retries = 6
+# Throttle per host to reduce rate limits / connection failures from external docs in CI
+host_request_interval = "50ms"
+host_concurrency = 5
 
 # Explicitly exclude some URLs
 exclude = [
@@ -46,6 +49,8 @@ exclude = [
   "https://nuxt.new/c/v4",
   "https://nuxt.new/s/v4",
   "https://www.npmjs.com/",
+  'https://nuxt\.com/docs/4\.x/api/composables/\$%7BkebabCase\(factory\.name\)%7D.*',
+  'https://nuxt\.com/docs/4\.x/errors/\$%7B.*',
   # TODO: fix upstream API issues
   "https://nuxt.com/modules",
   # single-quotes are required for regexp

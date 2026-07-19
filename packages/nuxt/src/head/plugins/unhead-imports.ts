@@ -1,16 +1,15 @@
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Identifier, ImportSpecifier } from 'estree'
 import { normalize, relative } from 'pathe'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
+import { headDiagnostics } from '@nuxt/kit'
 import { isJS, isVue } from '../../core/utils/index.ts'
 import { distDir } from '../../dirs.ts'
-import { logger } from '../../utils.ts'
 
 interface UnheadImportsPluginOptions {
-  sourcemap: boolean
   rootDir: string
 }
 
@@ -51,8 +50,8 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
       filter: {
         code: { include: UnheadVueRE },
       },
-      handler (code, id) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         const importsToAdd: ImportSpecifier[] = []
         parseAndWalk(code, id, function (node) {
           if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
@@ -67,7 +66,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         if (importsFromUnhead.length) {
           // warn if user has imported from @unhead/vue themselves
           if (!normalize(id).includes('node_modules')) {
-            logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(normalize(options.rootDir), normalize(id))}\`. Please import from \`#imports\` instead for full type safety.`)
+            headDiagnostics.NUXT_B6001({ module: UnheadVue, file: `./${relative(normalize(options.rootDir), normalize(id))}` })
           }
           s.prepend(`${genImport('#app/composables/head', toImports(importsFromUnhead))}\n`)
         }
@@ -75,14 +74,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
           s.prepend(`${genImport(UnheadVue, toImports(importsFromHead))}\n`)
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

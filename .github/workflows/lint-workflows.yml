@@ -24,13 +24,17 @@ permissions:
 jobs:
   lint-workflows:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    if: github.event_name != 'push' || github.ref_name != 'main'
+    # if: github.event_name != 'push' || github.ref_name != 'main'
+    # temporarily disabled until https://github.com/rhysd/actionlint/pull/694 is merged
+    if: false
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
       # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
       - name: Check workflow files
-        uses: docker://rhysd/actionlint:1.7.11@sha256:6f03470d0152251d7f07f7c4dc019dbe7024c72cd952f839544c7798843efa8f
+        uses: docker://rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
         with:
           args: -color

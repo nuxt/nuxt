@@ -12,9 +12,7 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "//#region virtual:nuxt:%2F.nuxt%2Ffoo
-      const foo = "hello world";
-      //#endregion
+      "const foo = "hello world";
       export { foo };"
     `)
   })
@@ -28,9 +26,7 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "//#region virtual:nuxt:%2F.nuxt%2Ffoo.client.ts
-      const foo = "foo client file";
-      //#endregion
+      "const foo = "foo client file";
       export { foo };"
     `)
   })
@@ -43,9 +39,7 @@ describe('virtual fs plugin', () => {
       },
     })
     expect(code).toMatchInlineSnapshot(`
-      "//#region virtual:nuxt:%2F.nuxt%2Fbar
-      const foo = "relative import";
-      //#endregion
+      "const foo = "relative import";
       export { foo };"
     `)
   })
@@ -55,6 +49,7 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
   const stubNuxt = {
     options: {
       extensions: ['.ts', '.js'],
+      rootDir: '/',
       buildDir: '/.nuxt',
       alias: {
         '~': '/',
@@ -66,6 +61,9 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
 
   const bundle = await rolldown({
     input: 'entry.ts',
+    experimental: {
+      attachDebugInfo: 'none',
+    },
     plugins: [
       {
         name: 'entry',
@@ -83,7 +81,6 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
       VirtualFSPlugin(stubNuxt, { mode: options.mode || 'client', alias: stubNuxt.options.alias }).rolldown(),
     ],
   })
-  const { output: [chunk] } = await bundle.generate({})
-  // Rolldown may wrap output in an IIFE or add runtime code; extract the meaningful part
+  const { output: [chunk] } = await bundle.generate()
   return chunk.code.trim()
 }

@@ -8,11 +8,24 @@ export function toArray<T> (value: T | T[]): T[] {
 }
 
 export async function isDirectory (path: string) {
-  return (await fsp.lstat(path)).isDirectory()
+  try {
+    return (await fsp.lstat(path)).isDirectory()
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    // A missing path (ENOENT) or a non-directory ancestor (ENOTDIR) is simply not a directory
+    if (code === 'ENOENT' || code === 'ENOTDIR') { return false }
+    throw err
+  }
 }
 
 export function isDirectorySync (path: string) {
-  try { return statSync(path).isDirectory() } catch { return false }
+  try {
+    return statSync(path, { throwIfNoEntry: false })?.isDirectory() ?? false
+  } catch (err) {
+    // ENOTDIR should be treated as "not a directory" instead of an error
+    if ((err as NodeJS.ErrnoException).code === 'ENOTDIR') { return false }
+    throw err
+  }
 }
 
 const LEADING_DOT_RE = /^\.+/g

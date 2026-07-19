@@ -1,4 +1,4 @@
-import { Fragment, Suspense, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { Fragment, Suspense, createCommentVNode, defineComponent, h, inject, isVNode, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
@@ -10,7 +10,6 @@ import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 import { _mergeTransitionProps, _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
-// @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 export interface NuxtPageProps extends RouterViewProps {
@@ -59,15 +58,20 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
+    const keepAliveInclude = new Set<string>()
+
     let previousPageKey: string | undefined | false
 
     expose({ pageRef })
 
     const _layoutMeta = inject(LayoutMetaSymbol, null)
-    let vnode: VNode
+    let vnode: VNode | undefined
 
     const done = nuxtApp.deferHydration()
     let isSuspensePending = false
+    let hasResolvedOnce = false
+    let pageStartPromise: ReturnType<typeof nuxtApp.callHook>
+
     let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
@@ -102,7 +106,7 @@ export default defineComponent({
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
-        default: import.meta.server
+        default: markStableSlot(import.meta.server
           ? (routeProps: RouterViewSlotProps) => {
               return h(Suspense, { suspensible: true }, {
                 default () {
@@ -121,7 +125,7 @@ export default defineComponent({
               if (!routeProps.Component) {
               // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
               // we'll render the old vnode until the new route finishes resolving
-                if (vnode && !hasSameChildren) {
+                if (vnode && !hasSameChildren && !isStaleVNode(vnode)) {
                   return vnode
                 }
                 done()
@@ -129,13 +133,13 @@ export default defineComponent({
               }
 
               // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
-              if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+              if (vnode && _layoutMeta && !isStaleVNode(vnode) && !_layoutMeta.isCurrent(routeProps.route)) {
                 return vnode
               }
 
               if (isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
               // if leaving a route with an existing child route, render the old vnode
-                if (hasSameChildren || vnode) {
+                if ((hasSameChildren || vnode) && !isStaleVNode(vnode)) {
                   return vnode
                 }
                 // If _leaving_ null child route, return null vnode
@@ -154,9 +158,9 @@ export default defineComponent({
                 })
               }
 
-              // force suspense remount and restart async tracking
-              // if suspense is already pending and page key changed
-              if (isSuspensePending && previousPageKey !== key) {
+              // remount suspense on rapid navigation, but not before the first resolve:
+              // tearing down a never-resolved suspensible Suspense strands its parent. See #28425, #34683.
+              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce) {
                 suspenseKey++
               }
 
@@ -177,7 +181,45 @@ export default defineComponent({
                 },
               ])
 
-              const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
+              const routeKeepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as boolean | KeepAliveProps)
+
+              const routerComponentType = routeProps.Component.type as any
+              const componentName = routerComponentType.name || routerComponentType.__name
+
+              if (routeProps.route.meta.keepalive && componentName) {
+                keepAliveInclude.add(componentName)
+              }
+
+              // Pages that opt into keepalive via `definePageMeta` should stay cached when navigating to
+              // pages that don't (#33610). We accumulate their component names in `keepAliveInclude` and
+              // inject it into the effective `<KeepAlive>` config so the wrapper stays present across
+              // navigations and Vue's cache is preserved.
+              let keepaliveConfig: boolean | KeepAliveProps
+
+              const shouldAugmentInclude =
+                keepAliveInclude.size > 0 &&
+                props.keepalive == null &&
+                (
+                  !routeKeepaliveConfig ||
+                  (typeof routeKeepaliveConfig === 'object' && routeKeepaliveConfig && routeKeepaliveConfig.include)
+                )
+
+              if (shouldAugmentInclude) {
+                const baseConfig = typeof routeKeepaliveConfig === 'object' && routeKeepaliveConfig
+                  ? { ...routeKeepaliveConfig }
+                  : {}
+
+                const existingInclude = baseConfig.include
+                  ? Array.isArray(baseConfig.include)
+                    ? baseConfig.include
+                    : [baseConfig.include]
+                  : []
+
+                keepaliveConfig = { ...baseConfig, include: Array.from(new Set([...existingInclude, ...keepAliveInclude])) }
+              } else {
+                keepaliveConfig = routeKeepaliveConfig
+              }
+
               vnode = _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
                   key: suspenseKey,
@@ -189,13 +231,18 @@ export default defineComponent({
                         nuxtApp['~transitionFinish'] = resolve
                       })
                     }
-                    nuxtApp.callHook('page:start', routeProps.Component)
+                    pageStartPromise = nuxtApp.callHook('page:start', routeProps.Component)
                   },
                   onResolve: async () => {
                     isSuspensePending = false
+                    hasResolvedOnce = true
+                    if (import.meta.client && nuxtApp.isHydrating) {
+                      nuxtApp['~restoreDeferredRoute']?.()
+                    }
                     try {
                       await nextTick()
                       nuxtApp._route.sync?.()
+                      await pageStartPromise
                       await nuxtApp.callHook('page:finish', routeProps.Component)
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true
@@ -220,12 +267,11 @@ export default defineComponent({
                       return h(RouteProvider, routeProviderProps)
                     }
 
-                    const routerComponentType = routeProps.Component.type as any
-                    const routeProviderKey = import.meta.dev ? routerComponentType.name || routerComponentType.__name : routerComponentType
+                    const routeProviderKey = import.meta.dev ? componentName : routerComponentType
                     let PageRouteProvider = _routeProviders.get(routeProviderKey)
 
                     if (!PageRouteProvider) {
-                      PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
+                      PageRouteProvider = defineRouteProvider(componentName)
                       _routeProviders.set(routeProviderKey, PageRouteProvider)
                     }
 
@@ -235,7 +281,7 @@ export default defineComponent({
                 )).default()
 
               return vnode
-            },
+            }),
       })
     }
   },
@@ -262,12 +308,16 @@ function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, n
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
-  if (!index || index === -1) { return false }
+  if (index === -1) { return false }
+
+  // Parent routes without a component are transparent — Vue Router renders the child directly
+  // at the parent's depth (see #34967), so they don't contribute a "parent render" above us.
+  const newParents = newRoute.matched.slice(0, index).filter(m => m.components?.default)
+  if (!newParents.length) { return false }
+  const forkParents = fork.matched.filter(m => m.components?.default)
 
   // we only care whether the parent route components have had to rerender
-  return newRoute.matched.slice(0, index)
-    .some(
-      (c, i) => c.components?.default !== fork.matched[i]?.components?.default) ||
+  return newParents.some((c, i) => c.components?.default !== forkParents[i]?.components?.default) ||
     (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
 }
 
@@ -278,7 +328,30 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
   return index < newRoute.matched.length - 1
 }
 
+// Flag the slot as precompiled (`_n`) so Vue skips its slot wrapper, which is what emits the
+// dev-only "slot invoked outside render" warning. The warning otherwise misfires when a page
+// using top-level `await` (e.g. `navigateTo()`) re-renders before Vue's `withAsyncContext`
+// cleanup clears `currentInstance`. We replicate Vue's array coercion here so vue-router's
+// `slotContent.length` path still works. See #34683.
+function markStableSlot<T extends (routeProps: RouterViewSlotProps) => VNode | VNode[] | null | undefined> (fn: T): T {
+  const wrapped = ((routeProps: RouterViewSlotProps) => {
+    const result = fn(routeProps)
+    if (Array.isArray(result)) { return result }
+    if (result == null || !isVNode(result)) { return [createCommentVNode()] }
+    return [result]
+  }) as unknown as T
+  ;(wrapped as any)._n = true
+  return wrapped
+}
+
 function normalizeSlot (slot: Slot, data: RouterViewSlotProps) {
   const slotContent = slot(data)
   return slotContent.length === 1 ? h(slotContent[0]!) : h(Fragment, undefined, slotContent)
+}
+
+// A previously-stored Suspense vnode whose boundary has already been unmounted carries a stale
+// `el` reference; returning it would put Vue on the hydration code path during a fresh mount and
+// throw `Cannot read properties of null (reading 'nodeType' / 'exposed')`. See nuxt/nuxt#23232.
+function isStaleVNode (vnode: VNode | undefined): boolean {
+  return !!vnode && (!!vnode.suspense?.isUnmounted || !!vnode.component?.isUnmounted)
 }
