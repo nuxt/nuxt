@@ -7,7 +7,7 @@ import { resolve } from 'pathe'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigTemplate, publicPathTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -36,6 +36,20 @@ describe('appConfigTemplate', () => {
     const resolved = match![1]!
     expect(resolve(resolved)).toBe(resolved)
     expect(existsSync(resolved)).toBe(true)
+  })
+})
+
+describe('sharedAppConfigDeclarationTemplate', () => {
+  it('does not import user `app.config` files, unlike the app-context declaration (#34140)', async () => {
+    const nuxt = makeNuxt({ buildDir: '/project/.nuxt' } as Partial<Nuxt['options']>)
+    const app = makeApp(['/project/app/app.config.ts'])
+
+    const appContents = await appConfigDeclarationTemplate.getContents!({ nuxt, app, options: {} })
+    expect(appContents).toMatch(/import cfg0 from/)
+
+    const sharedContents = await sharedAppConfigDeclarationTemplate.getContents!({ nuxt, app, options: {} })
+    expect(sharedContents).not.toMatch(/app\.config/)
+    expect(sharedContents).toMatch(/interface AppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig>/)
   })
 })
 

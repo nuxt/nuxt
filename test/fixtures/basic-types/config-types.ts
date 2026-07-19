@@ -113,22 +113,11 @@ describe('head', () => {
 })
 
 describe('app config', () => {
-  it('merges app config as expected', () => {
-    interface ExpectedMergedAppConfig {
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-      nuxt: {}
-      fromLayer: boolean
-      fromNuxtConfig: boolean
-      nested: {
-        val: number
-      }
-      userConfig: 123 | 456
-      someThing?: {
-        value?: string | false
-      }
-      [key: string]: unknown
-    }
-    expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
+  // the node context must not reference `app.config` files, which are app-context
+  // sources (https://github.com/nuxt/nuxt/issues/34140) - the merged type is
+  // asserted in `app/app-types.ts` instead
+  it('is not typed from app-context `app.config` files in the node context', () => {
+    expectTypeOf<AppConfig>().toEqualTypeOf<{ [key: string]: unknown }>()
   })
 })
 
