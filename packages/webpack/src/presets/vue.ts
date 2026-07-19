@@ -1,13 +1,12 @@
-import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
 import { resolveModulePath } from 'exsolve'
 import VueSSRClientPlugin from '../plugins/vue/client.ts'
 import VueSSRServerPlugin from '../plugins/vue/server.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 
-import { builder, webpack } from '#builder'
+import { VueLoaderPlugin, builder, vueLoader, webpack } from '#builder'
 
 export function vue (ctx: WebpackConfigContext) {
-  // ensure vue-loader is always the first plugin, regardless of plugin ordering.
+  // ensure the Vue loader is always the first plugin, regardless of plugin ordering.
   ctx.nuxt.hooks.hookOnce(`${builder}:config`, () => {
     ctx.nuxt.hook(`${builder}:configResolved`, (configs) => {
       for (const config of configs) {
@@ -22,7 +21,7 @@ export function vue (ctx: WebpackConfigContext) {
 
   ctx.config.module!.rules!.push({
     test: /\.vue$/i,
-    loader: 'vue-loader',
+    loader: vueLoader,
     options: { ...ctx.userConfig.loaders.vue, isServerBuild: ctx.isServer },
   })
 

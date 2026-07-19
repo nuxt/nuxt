@@ -5,7 +5,6 @@ import { useNuxtApp } from '../nuxt'
 import ServerPlaceholder from './server-placeholder'
 import { elToStaticVNode, sanitizeTag } from './utils'
 
-// @ts-expect-error virtual file
 import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')

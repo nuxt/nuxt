@@ -10,7 +10,6 @@ import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 import { _mergeTransitionProps, _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
-// @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 export interface NuxtPageProps extends RouterViewProps {

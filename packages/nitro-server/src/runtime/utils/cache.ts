@@ -1,7 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import type { Storage } from 'unstorage'
 import { useStorage } from 'nitro/storage'
-// @ts-expect-error virtual file
 import { NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
 export interface CachedResponse {

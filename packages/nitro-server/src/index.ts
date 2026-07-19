@@ -2,19 +2,18 @@ import { performance } from 'node:perf_hooks'
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
-import process from 'node:process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import type { Nuxt, NuxtBuildOutputs, NuxtOptions } from '@nuxt/schema'
 import { join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
-import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
+import { createNitro, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
+import { defineEventHandler } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
@@ -24,6 +23,7 @@ import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, toArray } from './utils.ts'
+import { setupLegacyDevAndBuild } from './legacy.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -36,6 +36,14 @@ const logLevelMapReverse = {
   verbose: 3,
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
+const NUXT_BUILD_OUTPUT_MAP: Record<string, keyof NuxtBuildOutputs> = {
+  'nuxt/entry': 'serverEntry',
+  'nuxt/manifest': 'clientManifest',
+  'nuxt/precomputed': 'clientPrecomputed',
+  'nuxt/styles': 'ssrStyles',
+  'nuxt/entry-chunk': 'entryChunkName',
+  'nuxt/entry-ids': 'entryIds',
+}
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
@@ -174,11 +182,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
-      // this will be overridden in vite plugin
-      '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
+      // Build output defaults; overridden by builders via setBuildOutput(). Kept
+      // here (rather than in the loop below) so they resolve in the nitro
+      // environment even when the loop is scoped away from it.
+      'nuxt/entry-chunk': () => nuxt.buildOutputs.entryChunkName(),
+      'nuxt/entry-ids': () => nuxt.buildOutputs.entryIds(),
       // overridden by head module when SSR streaming is enabled
       '#internal/streaming-iife-chunk.mjs': () => `export const iifeChunkFileName = undefined`,
-      '#internal/nuxt/entry-ids.mjs': () => `export default []`,
       '#internal/nuxt/nitro-config.mjs': () => {
         const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)
         return [
@@ -383,8 +393,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       })
       return `
       import { defu } from 'defu'
+      import routerOptions from '#build/router.options.mjs'
       const matcher = ${matcher}
-      export default (path) => defu({}, ...matcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())
+      export default (path) => defu({}, ...matcher('', typeof path === 'string' && !routerOptions.sensitive ? path.toLowerCase() : path).map(r => r.data).reverse())
       `
     },
   })
@@ -505,22 +516,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.options.alias['#app-manifest'] = mockProxy
   }
 
-  // Add fallback server for `ssr: false`
-  const FORWARD_SLASH_RE = /\//g
-  if (!nuxt.options.ssr) {
-    nitroConfig.virtual!['#build/dist/server/server.mjs'] = 'export default () => {}'
-    // In case a non-normalized absolute path is called for on Windows
-    if (process.platform === 'win32') {
-      nitroConfig.virtual!['#build/dist/server/server.mjs'.replace(FORWARD_SLASH_RE, '\\')] = 'export default () => {}'
+  for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
+    if (specifier === 'nuxt/entry-chunk' || specifier === 'nuxt/entry-ids') {
+      continue // already registered above in the virtual block
     }
-  }
-
-  if (nuxt.options.dev || !nuxt.options.ssr) {
-    nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
-    // In case a non-normalized absolute path is called for on Windows
-    if (process.platform === 'win32') {
-      nitroConfig.virtual!['#build/dist/server/styles.mjs'.replace(FORWARD_SLASH_RE, '\\')] = 'export default {}'
-    }
+    nitroConfig.virtual![specifier] = () => nuxt.buildOutputs[key]()
   }
 
   const nitroDecoratorSetup = new WeakMap<NitroConfig, Promise<void>>()
@@ -539,7 +539,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       })
 
       if (result !== true) {
-        logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), install: result.join(' ') })
       }
 
       if (result === true) {
@@ -704,6 +704,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
+  // TODO: remove in future
+  // `#app` itself is intentionally excluded from the server tsconfig, but
+  // we need these aliases as we import them directly into the renderers
+  const appDir = nuxt.options.alias['#app']
+  if (appDir) {
+    tsConfig.compilerOptions.paths['#app/island-hash'] ||= [resolve(appDir, 'island-hash')]
+    tsConfig.compilerOptions.paths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
+    tsConfig.compilerOptions.paths['#app/types'] ||= [resolve(appDir, 'types')]
+  }
+
   // Init nitro
   nuxt._perf?.startPhase('nitro:createNitro')
   const nitro = await createNitro(nitroConfig, {
@@ -718,7 +728,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // For full-static output, ensure payload extraction is not disabled
   if (nuxt.options.ssr && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
-    logger.warn('Payload extraction is recommended for full-static output. You can enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.')
+    bundlerDiagnostics.NUXT_B7015()
   }
 
   // Trigger Nitro reload when SPA loading template changes
@@ -865,9 +875,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // Setup handlers
-  const devMiddlewareHandler = dynamicEventHandler()
-  nitro.options.devHandlers.unshift({ route: '', handler: devMiddlewareHandler })
   nitro.options.devHandlers.push(...nuxt.options.devServerHandlers)
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
@@ -966,77 +973,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  // Copy public assets after prerender so app manifest can be present
-  if (!nuxt.options.dev) {
-    nitro.hooks.hook('rollup:before', async (nitro) => {
-      await copyPublicAssets(nitro)
-      await nuxt.callHook('nitro:build:public-assets', nitro)
-    })
-  }
-
-  async function symlinkDist () {
-    if (nitro.options.static) {
-      const distDir = resolve(nuxt.options.rootDir, 'dist')
-      if (!existsSync(distDir)) {
-        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
-      }
-    }
-  }
-
-  // nuxt dev
-  let waitUntilCompile: Promise<void> | undefined
-  if (nuxt.options.dev) {
-    for (const builder of ['webpack', 'rspack'] as const) {
-      nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
-        if (name === 'server') {
-          const memfs = compiler.outputFileSystem as typeof import('node:fs')
-          nitro.options.virtual['#build/dist/server/server.mjs'] = () => memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
-        }
-      })
-      nuxt.hook(`${builder}:compiled`, () => { nuxt.server.reload() })
-    }
-    nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
-
-    nuxt.hook('server:devHandler', (h, options) => {
-      devMiddlewareHandler.set(defineEventHandler((event) => {
-        if (options.cors(event.url.pathname)) {
-          const isPreflight = handleCors(event, nuxt.options.devServer.cors)
-          if (isPreflight) {
-            return null
-          }
-          event.res.headers.set('Vary', 'Origin')
-        }
-        return h(event)
-      }))
-    })
-    nuxt.server = createDevServer(nitro)
-
-    waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
-  }
-
-  // nuxt build/dev
-  nuxt.hook('build:done', async () => {
-    nuxt._perf?.startPhase('nitro:build')
-    try {
-      await nuxt.callHook('nitro:build:before', nitro)
-      await prepare(nitro)
-      if (nuxt.options.dev) {
-        await build(nitro)
-        await waitUntilCompile
-        return
-      }
-
-      await prerender(nitro)
-
-      logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
-
-      await symlinkDist()
-    } finally {
-      nuxt._perf?.endPhase('nitro:build')
-    }
-  })
+  setupLegacyDevAndBuild(nuxt, nitro)
 }
 
 const RELATIVE_RE = /^([^.])/
@@ -1116,7 +1053,7 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   if (nuxt.options.spaLoadingTemplate) {
-    logger.warn(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
+    bundlerDiagnostics.NUXT_B7016({ path: nuxt.options.spaLoadingTemplate })
   }
 
   return ''

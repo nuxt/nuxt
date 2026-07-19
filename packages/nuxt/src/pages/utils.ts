@@ -2,7 +2,7 @@ import fs from 'node:fs'
 
 import { normalize, relative } from 'pathe'
 import { joinURL } from 'ufo'
-import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
+import { getLayerDirectories, pageDiagnostics, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
@@ -44,11 +44,11 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   const treeOptions: BuildTreeOptions = {
     roots: options.roots,
     modes,
-    warn: msg => logger.warn(msg),
+    warn: message => pageDiagnostics.NUXT_B4011({ message }),
   }
   const emitOptions: VueRouterEmitOptions = {
     onDuplicateRouteName: (_name, file, existingFile) => {
-      logger.warn(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+      pageDiagnostics.NUXT_B4004({ file, existingFile })
     },
     attrs: { mode: modes },
   }
@@ -170,6 +170,13 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
         routeMeta.rules = defu({}, routeMeta.rules, route.rules)
       }
 
+      // Only the first route per file takes the file's `name`/`path`; a `pages:extend` route
+      // reusing that file keeps its own, else the duplicate route name drops the original (#27358).
+      if (ctx.augmentedPages.has(route.file)) {
+        delete routeMeta.name
+        delete routeMeta.path
+      }
+
       Object.assign(route, routeMeta)
       ctx.augmentedPages.add(route.file)
     }
@@ -270,14 +277,14 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       const pageExtractArgument = unwrapStaticExpression(node.expression.arguments[0])
 
       if (pageExtractArgument?.type !== 'ObjectExpression') {
-        logger.warn(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`)
+        pageDiagnostics.NUXT_B4005({ fnName, file: absolutePath, receivedType: String(pageExtractArgument?.type) })
         return
       }
 
       if (fnName === 'defineRouteRules') {
         const { value, serializable } = isSerializable(code, pageExtractArgument)
         if (!serializable) {
-          logger.warn(`\`${fnName}\` must be called with a serializable object literal (reading \`${absolutePath}\`).`)
+          pageDiagnostics.NUXT_B4006({ fnName, file: absolutePath })
           return
         }
 

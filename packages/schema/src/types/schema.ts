@@ -12,7 +12,7 @@ import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
-import type { NuxtLinkOptions } from 'nuxt/app'
+import type { NuxtLinkOptions } from '#app/types'
 import type { FetchOptions } from 'ofetch'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
@@ -1764,6 +1764,8 @@ export interface ConfigSchema {
    *
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
+   *
+   * @note `sensitive` defaults to `true` with `future.compatibilityVersion >= 5`.
    *
    * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */
