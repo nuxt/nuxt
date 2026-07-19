@@ -58,6 +58,19 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
   const stripQuery = (id: string) => id.replace(QUERY_RE, '')
 
+  // Add the `inline&used` params used to extract a module's CSS for SSR
+  // inlining. Vite/plugin-vue keep the `lang.<ext>` marker last so the id ends
+  // in a CSS extension, which is what vite's `isCSSRequest` and user plugins
+  // gate on. Insert the params *before* that trailing marker so the id keeps its
+  // CSS suffix and stays visible to extension-gated transforms. (#29232)
+  const withInlineQuery = (id: string) => {
+    const match = id.match(/([?&])lang\.[^&?]+$/)
+    if (match) {
+      return id.slice(0, match.index) + match[1] + 'inline&used&' + id.slice(match.index! + 1)
+    }
+    return id + (id.includes('?') ? '&' : '?') + 'inline&used'
+  }
+
   // CSS source module ids (with `?...` query stripped) whose styles will be
   // inlined into the SSR response. Built up in `build:manifest` from the
   // components whose styles are actually emitted as inline `<style>` tags
@@ -361,7 +374,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                 const s = rolldownString(code, id, meta)
                 for (const file of options.globalCSS) {
                   const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-                  const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
+                  const fileInline = withInlineQuery(file)
+                  const res = await this.resolve(fileInline) ?? await this.resolve(fileInline, id)
                   if (!resolved || !res) {
                     if (!warnCache.has(file)) {
                       warnCache.add(file)
@@ -407,7 +421,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             const ids = clientCSSMap[id] || []
             for (const file of ids) {
               if (emittedIds.has(file)) { continue }
-              const fileInline = file + '?inline&used'
+              const fileInline = withInlineQuery(file)
               const resolved = await this.resolve(file) ?? await this.resolve(file, id)
               const res = await this.resolve(fileInline) ?? await this.resolve(fileInline, id)
               if (!resolved || !res) {
@@ -443,7 +457,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
               const resolved = await this.resolve(i.specifier, id)
               if (!resolved) { continue }
-              const resolvedIdInline = resolved.id + '?inline&used'
+              const resolvedIdInline = withInlineQuery(resolved.id)
               const res = await this.resolve(resolvedIdInline)
               if (!res) {
                 if (!warnCache.has(resolved.id)) {
