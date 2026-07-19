@@ -101,6 +101,66 @@ describe('tsConfig generation', () => {
     expect(legacyTsConfig.exclude).not.toContain('../nuxt.config.*')
   })
 
+  it('should propagate global tsConfig compiler options to node and shared tsconfigs', async () => {
+    const { tsConfig, nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } } },
+    }))
+    expect(tsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
+    expect(nodeTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
+    expect(sharedTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
+  })
+
+  it('should apply appTsConfig to the app tsconfig only', async () => {
+    const { tsConfig, nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } },
+        appTsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false, exactOptionalPropertyTypes: true } },
+      },
+    }))
+    expect(tsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
+    expect(tsConfig.compilerOptions?.exactOptionalPropertyTypes).toBe(true)
+    for (const config of [nodeTsConfig, sharedTsConfig]) {
+      expect(config.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
+      expect(config.compilerOptions?.exactOptionalPropertyTypes).toBeUndefined()
+    }
+  })
+
+  it('should let per-context options override the global tsConfig', async () => {
+    const { nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } },
+        nodeTsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false } },
+        sharedTsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false } },
+      },
+    }))
+    expect(nodeTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
+    expect(sharedTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
+  })
+
+  it('should not propagate global include, exclude or vueCompilerOptions to node and shared tsconfigs', async () => {
+    const { nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: {
+          include: ['my-global-include'],
+          exclude: ['my-global-exclude'],
+          vueCompilerOptions: { strictTemplates: true },
+        },
+      },
+    }))
+    for (const config of [nodeTsConfig, sharedTsConfig]) {
+      expect(config.include).not.toContain('my-global-include')
+      expect(config.exclude).not.toContain('my-global-exclude')
+      expect(config).not.toHaveProperty('vueCompilerOptions')
+    }
+  })
+
+  it('should propagate appTsConfig excludes to legacy tsconfig', async () => {
+    const { legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { appTsConfig: { exclude: ['my-app-exclude'] } },
+    }))
+    expect(legacyTsConfig.exclude).toContain('my-app-exclude')
+  })
+
   it('should rewrite `paths` substitutions so TS resolves them to declarations', async () => {
     const fixtureAliases = {
       'nitro/h3': `${typesFixtureDir}/h3.d.mts`,

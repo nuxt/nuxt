@@ -9,7 +9,7 @@ import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { read as readRc, update as updateRc } from 'rc9'
-import semver from 'semver'
+import { isGreater, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
@@ -106,7 +106,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       if (value.version) {
         const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
         const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
-        if (pkg?.version && !semver.satisfies(pkg.version, value.version, { includePrerelease: true })) {
+        if (pkg?.version && !satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
           error = new TypeError(message)
         }
@@ -384,7 +384,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   try {
     if (!previousVersion) {
       await nuxtModule.onInstall?.(nuxt)
-    } else if (semver.gt(meta.version, previousVersion)) {
+    } else if (isGreater(meta.version, previousVersion)) {
       await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion)
     }
     if (previousVersion !== meta.version) {

@@ -30,6 +30,8 @@ import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/impo
 import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 
+type NitroTSConfig = NonNullable<NonNullable<NitroConfig['typescript']>['tsConfig']>
+
 const logLevelMapReverse = {
   silent: 0,
   info: 3,
@@ -125,7 +127,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
 
+  // `nuxt.options.nitro.typescript.tsConfig` is a portal onto `typescript.serverTsConfig`,
+  // so this baseline sits under whichever of the two the user set. `types`, `paths` and
+  // `noEmit` are managed per-context and are not propagated from the global config.
+  const globalCompilerOptions = { ...nuxt.options.typescript?.tsConfig?.compilerOptions }
+  delete globalCompilerOptions.types
+  delete globalCompilerOptions.paths
+  delete globalCompilerOptions.noEmit
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
+    typescript: {
+      tsConfig: { compilerOptions: globalCompilerOptions } as NitroTSConfig,
+    },
+  }, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,

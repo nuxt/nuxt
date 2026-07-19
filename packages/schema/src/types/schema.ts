@@ -1810,14 +1810,30 @@ export interface ConfigSchema {
     typeCheck: boolean | 'build'
 
     /**
-     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
+     * Extend the generated tsconfig files with shared options.
+     *
+     * `compilerOptions` set here apply to all generated tsconfigs (`.nuxt/tsconfig.app.json`, `.nuxt/tsconfig.server.json`, `.nuxt/tsconfig.node.json` and `.nuxt/tsconfig.shared.json`), while `include`, `exclude` and `vueCompilerOptions` apply only to `.nuxt/tsconfig.app.json` (and the legacy `.nuxt/tsconfig.json`).
+     *
+     * Two groups of `compilerOptions` are exceptions: DOM- and Vue-specific options (such as `lib`, `jsx` and `jsxImportSource`) apply only to `.nuxt/tsconfig.app.json`, and `types`, `paths` and `noEmit` are managed by Nuxt per context, so they cannot be set globally for the `node`, `shared` and `server` tsconfigs.
+     *
+     * Use `appTsConfig`, `serverTsConfig`, `nodeTsConfig` or `sharedTsConfig` for context-specific overrides; they take precedence over this option.
      */
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option. Options set here take precedence over `tsConfig`.
+     */
+    appTsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
     /**
      * You can extend the generated `.nuxt/tsconfig.node.json` using this option.
      */
     nodeTsConfig: TSConfig
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.server.json` using this option. Options set here take precedence over `tsConfig`.
+     */
+    serverTsConfig: TSConfig
 
     /**
      * You can extend the generated `.nuxt/tsconfig.shared.json` using this option.
