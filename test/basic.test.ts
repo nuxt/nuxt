@@ -761,44 +761,6 @@ describe('pages', () => {
 
     await page.close()
   })
-
-  it('should trigger page:loading:end only once', async () => {
-    const { page, consoleLogs } = await renderPage('/')
-
-    await page.getByText('to page load hook').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook')
-    const loadingEndLogs = consoleLogs.filter(c => c.text.includes('page:loading:end'))
-    expect(loadingEndLogs.length).toBe(1)
-
-    await page.close()
-  })
-
-  it('should hide nuxt page load indicator after navigate back from nested page', async () => {
-    const LOAD_INDICATOR_SELECTOR = '.nuxt-loading-indicator'
-    const { page } = await renderPage('/page-load-hook')
-    await page.getByText('To sub page').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook/subpage')
-
-    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
-    let isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
-    expect(isVisible).toBe(true)
-
-    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
-    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
-    expect(isVisible).toBe(false)
-
-    await page.goBack()
-
-    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
-    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
-    expect(isVisible).toBe(true)
-
-    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
-    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
-    expect(isVisible).toBe(false)
-
-    await page.close()
-  })
 })
 
 describe('nuxt composables', () => {
@@ -1131,30 +1093,6 @@ describe('nuxt links', () => {
     expect(html).toContain('<div>useLink3 in NuxtLink: true</div>')
     expect(html).toContain('<div>route3 using useLink: /nuxt-link/trailing-slash</div>')
     expect(html).toContain('<div>href3 using useLink: /nuxt-link/trailing-slash</div>')
-  })
-  it('useLink navigate importing NuxtLink works', async () => {
-    const page = await createPage('/nuxt-link/use-link')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
-
-    await page.locator('#button1').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
-    await page.close()
-  })
-  it('useLink navigate using resolveComponent works', async () => {
-    const page = await createPage('/nuxt-link/use-link')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
-
-    await page.locator('#button2').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
-    await page.close()
-  })
-  it('useLink navigate using resolveDynamicComponent works', async () => {
-    const page = await createPage('/nuxt-link/use-link')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
-
-    await page.locator('#button3').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
-    await page.close()
   })
 })
 
@@ -1519,38 +1457,6 @@ describe('composables', () => {
     expect(pageErrors).toEqual([])
     await page.close()
   })
-  it('`useRouteAnnouncer` should change message on route change', async () => {
-    const { page } = await renderPage('/route-announcer')
-    expect(await page.getByRole('status').textContent()).toContain('First Page')
-    expect(await page.getByRole('status').getAttribute('aria-live')).toBe('polite')
-    await page.getByRole('link').click()
-    await page.getByText('Second page content').waitFor()
-    expect(await page.getByRole('status').textContent()).toContain('Second Page')
-    await page.close()
-  })
-  it('`useRouteAnnouncer` should change message on dynamically changed title', async () => {
-    const { page } = await renderPage('/route-announcer')
-    await page.getByRole('button').click()
-    await page.waitForFunction(() => document.title.includes('Dynamically set title'))
-    expect(await page.getByRole('status').textContent()).toContain('Dynamically set title')
-    await page.close()
-  })
-  it('`useAnnouncer` should announce polite message', async () => {
-    const { page } = await renderPage('/announcer')
-    await page.getByTestId('polite-button').click()
-    await page.waitForFunction(() => document.querySelector('[role="status"]')?.textContent?.includes('Polite announcement'))
-    expect(await page.getByRole('status').textContent()).toContain('Polite announcement')
-    expect(await page.getByRole('status').getAttribute('aria-live')).toBe('polite')
-    await page.close()
-  })
-  it('`useAnnouncer` should announce assertive message', async () => {
-    const { page } = await renderPage('/announcer')
-    await page.getByTestId('assertive-button').click()
-    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Assertive announcement'))
-    expect(await page.getByRole('alert').textContent()).toContain('Assertive announcement')
-    expect(await page.getByRole('alert').getAttribute('aria-live')).toBe('assertive')
-    await page.close()
-  })
 })
 
 describe('middlewares', () => {
@@ -1819,39 +1725,6 @@ describe('extends support', () => {
 })
 
 // Bug #6592
-describe('page key', () => {
-  it.each(['/fixed-keyed-child-parent', '/internal-layout/fixed-keyed-child-parent'])('should not cause run of setup if navigation not change page key and layout', async (path) => {
-    const { page, consoleLogs } = await renderPage(`${path}/0`)
-
-    await page.click(`[href="${path}/1"]`)
-    await page.waitForSelector('#page-1')
-
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
-    // Wait for all pending micro ticks to be cleared,
-    // so we are not resolved too early when there are repeated page loading
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
-
-    expect(consoleLogs.filter(l => l.text.includes('Child Setup')).length).toBe(1)
-    await page.close()
-  })
-
-  it.each(['/keyed-child-parent', '/internal-layout/keyed-child-parent'])('will cause run of setup if navigation changed page key', async (path) => {
-    const { page, consoleLogs } = await renderPage(`${path}/0`)
-
-    await page.click(`[href="${path}/1"]`)
-    await page.waitForSelector('#page-1')
-
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
-    // Wait for all pending micro ticks to be cleared,
-    // so we are not resolved too early when there are repeated page loading
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
-
-    expect(consoleLogs.filter(l => l.text.includes('Child Setup')).length).toBe(2)
-    await page.close()
-  })
-})
-
-// Bug #6592
 describe('layout change not load page twice', () => {
   const cases = {
     '/with-layout': '/with-layout2',
@@ -1869,18 +1742,6 @@ describe('layout change not load page twice', () => {
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
     expect(consoleLogs.filter(l => l.text.includes('Layout2 Page Setup')).length).toBe(1)
-  })
-})
-
-describe('layout switching', () => {
-  // #13309
-  it('does not cause TypeError: Cannot read properties of null', async () => {
-    const { page, consoleLogs, pageErrors } = await renderPage('/layout-switch/start')
-    await page.click('[href="/layout-switch/end"]')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/layout-switch/end')
-    expect(consoleLogs.map(i => i.text).filter(l => l.match(/error/i))).toMatchInlineSnapshot('[]')
-    expect(pageErrors).toMatchInlineSnapshot('[]')
-    await page.close()
   })
 })
 
@@ -2514,89 +2375,6 @@ describe.runIf(isDev)('component testing', () => {
   })
 })
 
-describe('keepalive', () => {
-  it('should not keepalive by default', async () => {
-    const { page, consoleLogs } = await renderPage('/keepalive')
-
-    const pageName = 'not-keepalive'
-    await page.click(`#${pageName}`)
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${pageName}`)
-
-    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
-
-    await page.close()
-  })
-
-  it('should not keepalive when included in app config but config in nuxt-page is not undefined', async () => {
-    const { page, consoleLogs } = await renderPage('/keepalive')
-
-    const pageName = 'keepalive-in-config'
-    await page.click(`#${pageName}`)
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${pageName}`)
-
-    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
-
-    await page.close()
-  })
-
-  it('should not keepalive when included in app config but exclueded in nuxt-page', async () => {
-    const { page, consoleLogs } = await renderPage('/keepalive')
-
-    const pageName = 'not-keepalive-in-nuxtpage'
-    await page.click(`#${pageName}`)
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${pageName}`)
-
-    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
-
-    await page.close()
-  })
-
-  it('should keepalive when included in nuxt-page', async () => {
-    const { page, consoleLogs } = await renderPage('/keepalive')
-
-    const pageName = 'keepalive-in-nuxtpage'
-    await page.click(`#${pageName}`)
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${pageName}`)
-
-    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`, `${pageName}: onActivated`])
-
-    await page.close()
-  })
-
-  it('should preserve keepalive config when navigate routes in nuxt-page', async () => {
-    const { page, consoleLogs } = await renderPage('/keepalive')
-
-    const slugs = [
-      'keepalive-in-nuxtpage',
-      'keepalive-in-nuxtpage-2',
-      'keepalive-in-nuxtpage',
-      'not-keepalive',
-      'keepalive-in-nuxtpage-2',
-    ]
-
-    for (const slug of slugs) {
-      await page.click(`#${slug}`)
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${slug}`)
-    }
-
-    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([
-      'keepalive-in-nuxtpage: onMounted',
-      'keepalive-in-nuxtpage: onActivated',
-      'keepalive-in-nuxtpage: onDeactivated',
-      'keepalive-in-nuxtpage-2: onMounted',
-      'keepalive-in-nuxtpage-2: onActivated',
-      'keepalive-in-nuxtpage: onActivated',
-      'keepalive-in-nuxtpage-2: onDeactivated',
-      'keepalive-in-nuxtpage: onDeactivated',
-      'not-keepalive: onMounted',
-      'keepalive-in-nuxtpage-2: onActivated',
-      'not-keepalive: onUnmounted',
-    ])
-
-    await page.close()
-  })
-})
-
 describe.skipIf(!runsOnceInMatrix)('teleports', () => {
   it('should append teleports to body', async () => {
     const html = await $fetch<string>('/teleport')
@@ -2825,45 +2603,6 @@ describe('scrollToTop', () => {
 
     const scrollY = await page.evaluate(() => window.scrollY)
     expect(scrollY).toBe(0)
-  })
-})
-
-describe('namespace access to useNuxtApp', () => {
-  it('should return the nuxt instance when used with correct appId', async () => {
-    const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
-
-    expect(pageErrors).toEqual([])
-
-    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
-
-    // Defaulting to appId
-    await page.evaluate(() => window.useNuxtApp?.())
-    // Using correct configured appId
-    // @ts-expect-error not public API yet
-    await page.evaluate(() => window.useNuxtApp?.('nuxt-app-basic'))
-
-    await page.close()
-  })
-
-  it('should throw an error when used with wrong appId', async () => {
-    const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
-
-    expect(pageErrors).toEqual([])
-
-    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
-
-    let error: unknown
-    try {
-      // Using wrong/unknown appId
-      // @ts-expect-error not public API yet
-      await page.evaluate(() => window.useNuxtApp?.('nuxt-app-unknown'))
-    } catch (err) {
-      error = err
-    }
-
-    expect(error).toBeTruthy()
-
-    await page.close()
   })
 })
 

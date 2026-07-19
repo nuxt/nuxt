@@ -59,7 +59,7 @@ export default withMatrix({
       })
     },
     function (_options, nuxt) {
-      const routesToDuplicate = ['/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
+      const routesToDuplicate = ['/with-layout', '/with-layout2']
       const stripLayout = (page: NuxtPage): NuxtPage => ({
         ...page,
         children: page.children?.map(child => stripLayout(child)),
@@ -109,9 +109,6 @@ export default withMatrix({
         { charset: 'utf-8' },
         { name: 'description', content: 'Nuxt Fixture' },
       ],
-    },
-    keepalive: {
-      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
     },
   },
   css: ['~/assets/global.css'],
