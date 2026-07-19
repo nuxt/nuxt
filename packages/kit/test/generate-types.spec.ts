@@ -4,6 +4,7 @@ import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../src/constants.ts'
 import { loadNuxtConfig } from '../src/loader/config.ts'
 import { _generateTypes, resolveLayerPaths } from '../src/template.ts'
 import { getLayerDirectories } from 'nuxt/kit'
@@ -26,7 +27,7 @@ const mockNuxt = {
     buildDir: '/my-app/.nuxt',
     modulesDir: ['/my-app/node_modules', '/node_modules'],
     modules: [],
-    extensions: ['.ts', '.mjs', '.js'],
+    extensions: [...DEFAULT_JS_FILE_EXTENSIONS],
     _layers: [{ config: { rootDir: '/my-app', srcDir: '/my-app' } }],
     _installedModules: [],
     _modules: [],
@@ -182,6 +183,63 @@ describe('tsConfig generation', () => {
         './build-dir/*',
       ],
     })
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33528
+  it('should sort aliases pointing into layer directories before ~ and @', async () => {
+    const nuxt = mockNuxtWithOptions({
+      alias: {
+        '@': '/my-app/',
+        '#build': '/my-app/.nuxt/',
+        'vue': '/my-app/node_modules/vue/',
+        '#layers/foo': '/my-app/layers/foo/',
+        '@layer-foo': '/my-app/layers/foo/app/',
+      },
+      typescript: {
+        hoist: ['vue'],
+      },
+    })
+    nuxt.options._layers = [
+      ...nuxt.options._layers,
+      { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo/app' }, cwd: '/my-app/layers/foo', configFile: '/my-app/layers/foo/nuxt.config.ts' },
+    ]
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    const pathKeys = Object.keys(tsConfig.compilerOptions?.paths ?? {})
+
+    expect(pathKeys.indexOf('vue')).toBeLessThan(pathKeys.indexOf('@layer-foo'))
+    expect(pathKeys.indexOf('@layer-foo')).toBeLessThan(pathKeys.indexOf('#layers/foo'))
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('~'))
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('@'))
+    expect(pathKeys.indexOf('@layer-foo')).toBeLessThan(pathKeys.indexOf('~'))
+    expect(pathKeys.indexOf('@layer-foo')).toBeLessThan(pathKeys.indexOf('@'))
+    expect(pathKeys.filter(key => key.startsWith('#build')).at(-1)).toBe(pathKeys.at(-1))
+  })
+
+  it('should not treat ~ and @ as layer aliases when a layer contains the root directory', async () => {
+    const nuxt = mockNuxtWithOptions({
+      rootDir: '/repo/apps/web',
+      srcDir: '/repo/apps/web',
+      buildDir: '/repo/apps/web/.nuxt',
+      alias: {
+        '~': '/repo/apps/web/',
+        '@': '/repo/apps/web/',
+        '#layers/base': '/repo/',
+        '#layers/foo': '/repo/apps/web/layers/foo/',
+      },
+    })
+    nuxt.options._layers = [
+      { config: { rootDir: '/repo/apps/web', srcDir: '/repo/apps/web' }, cwd: '/repo/apps/web', configFile: '/repo/apps/web/nuxt.config.ts' },
+      { config: { rootDir: '/repo', srcDir: '/repo' }, cwd: '/repo', configFile: '/repo/nuxt.config.ts' },
+      { config: { rootDir: '/repo/apps/web/layers/foo', srcDir: '/repo/apps/web/layers/foo' }, cwd: '/repo/apps/web/layers/foo', configFile: '/repo/apps/web/layers/foo/nuxt.config.ts' },
+    ] as typeof nuxt.options._layers
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    const pathKeys = Object.keys(tsConfig.compilerOptions?.paths ?? {})
+
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('~'))
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('@'))
+    expect(pathKeys.indexOf('#layers/foo')).toBeLessThan(pathKeys.indexOf('#layers/base'))
   })
 })
 

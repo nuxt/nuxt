@@ -1,6 +1,7 @@
 ---
 title: 'useRequestURL'
 description: 'Access the incoming request URL with the useRequestURL composable.'
+minimalVersion: "3.5"
 links:
   - label: Source
     icon: i-simple-icons-github

@@ -4,8 +4,8 @@ import { viewDepthKey } from 'vue-router'
 
 import { createError } from '../composables/error'
 import { useRoute } from '../composables/router'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 
-// @ts-expect-error virtual file
 import { islandComponents, pageIslandRoutes } from '#build/components.islands.mjs'
 
 interface IslandRendererProps {
@@ -47,7 +47,7 @@ const IslandRenderer = defineComponent({
     }
 
     onErrorCaptured((e) => {
-      console.log(e)
+      renderDiagnostics.NUXT_E4015({ name, cause: e })
     })
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })

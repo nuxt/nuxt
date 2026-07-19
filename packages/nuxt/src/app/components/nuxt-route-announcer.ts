@@ -1,6 +1,6 @@
 import { computed, defineComponent, h } from 'vue'
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
-import type { Politeness } from 'nuxt/app'
+import type { Politeness } from '../composables/route-announcer'
 import { useRouteAnnouncer } from '../composables/route-announcer'
 
 interface NuxtRouteAnnouncerProps {

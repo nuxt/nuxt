@@ -10,7 +10,8 @@ import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { useNitro } from '@nuxt/kit'
 
-import { annotatePlugins, checkForCircularDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
+import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
+import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
@@ -81,7 +82,9 @@ const PLUGIN_TEMPLATE_RE = /_(?:45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins.client.mjs',
   async getContents (ctx) {
-    const clientPlugins = sortPluginsByDependsOn(await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')))
+    const allPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => ctx.nuxt.options.dev || !p.mode || p.mode !== 'server'))
+    const clientPlugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => !p.mode || p.mode !== 'server'), { warn: ctx.nuxt.options.dev, mode: 'client', allPlugins }))
+    setPluginDependenciesForMode(ctx.nuxt, 'client', clientPlugins)
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
     const imports: string[] = []
@@ -101,7 +104,9 @@ export const clientPluginTemplate: NuxtTemplate = {
 export const serverPluginTemplate: NuxtTemplate = {
   filename: 'plugins.server.mjs',
   async getContents (ctx) {
-    const serverPlugins = sortPluginsByDependsOn(await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')))
+    const allPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => ctx.nuxt.options.dev || !p.mode || p.mode !== 'client'))
+    const serverPlugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => !p.mode || p.mode !== 'client'), { warn: ctx.nuxt.options.dev, mode: 'server', allPlugins }))
+    setPluginDependenciesForMode(ctx.nuxt, 'server', serverPlugins)
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = []
     const imports: string[] = []
@@ -193,7 +198,7 @@ export const schemaTemplate: NuxtTemplate = {
   getContents: async ({ nuxt }) => {
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public') {
+      if (key !== 'public' && key !== 'nitro') {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
@@ -506,15 +511,16 @@ export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.server.mjs',
   getContents () {
     return [
-      'import { $fetch } from \'ofetch\'',
+      'import { $fetch as _$fetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
       'import { serverFetch } from "nitro";',
       'globalThis.fetch = serverFetch',
       'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = $fetch.create({',
+      '  globalThis.$fetch = _$fetch.create({',
       '    baseURL: baseURL()',
       '  })',
       '}',
+      'export const $fetch = globalThis.$fetch',
     ].join('\n')
   },
 }
@@ -523,14 +529,22 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
   filename: 'fetch.client.mjs',
   getContents () {
     return [
-      'import { $fetch } from \'ofetch\'',
+      'import { $fetch as _$fetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
       'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = $fetch.create({',
+      '  globalThis.$fetch = _$fetch.create({',
       '    baseURL: baseURL()',
       '  })',
       '}',
+      'export const $fetch = globalThis.$fetch',
     ].join('\n')
+  },
+}
+
+export const dollarFetchTypeTemplate: NuxtTemplate = {
+  filename: 'fetch.d.ts',
+  getContents () {
+    return 'export { $fetch } from \'ofetch\'\n'
   },
 }
 
@@ -629,7 +643,13 @@ export const buildTypeTemplate: NuxtTemplate = {
         }
       }
 
-      declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
+      // declare both extensioned (`#build/foo.mjs`) and bare (`#build/foo`) module specifiers
+      const fullSpecifier = join('#build', file.filename)
+      declarations += 'declare module ' + JSON.stringify(fullSpecifier) + ';\n'
+      const bareSpecifier = fullSpecifier.replace(/\.m?js$/, '')
+      if (bareSpecifier !== fullSpecifier) {
+        declarations += 'declare module ' + JSON.stringify(bareSpecifier) + ';\n'
+      }
     }
 
     return declarations

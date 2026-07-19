@@ -6,7 +6,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
-import { logger } from '../../utils.ts'
+import { pageDiagnostics } from '@nuxt/kit'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isSerializable } from '../utils.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
@@ -104,7 +104,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!code) {
             s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
             const { pathname } = parseModuleId(id)
-            logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
+            pageDiagnostics.NUXT_B4001({ pathname })
           } else {
             s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           }
@@ -185,8 +185,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
               walk(decl.init, {
                 enter: (node, parent) => {
                   if (node.type === 'AwaitExpression') {
-                    logger.error(`Await expressions are not supported in definePageMeta. File: '${id}'`)
-                    throw new Error('await in definePageMeta')
+                    const codeSnippet = code.slice(node.start, Math.min(node.end, node.start + 80))
+                    throw pageDiagnostics.NUXT_B4002({ codeSnippet, offset: node.start })
                   }
                   if (
                     isBindingIdentifier(node, parent)
@@ -330,7 +330,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id.replace(/\?.+$/, ''))
+          throw pageDiagnostics.NUXT_B4003({ callCount: instances, file: id })
         }
 
         if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
@@ -347,8 +347,19 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (options.routesId && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
             const routesModule = server.moduleGraph.getModuleById(options.routesId)
+            // Reload the real module when Vite selects its macro counterpart (#30709).
+            const realModules = []
+            for (const mod of modules) {
+              if (mod.id && MACRO_STRIP_RE.test(mod.id)) {
+                const realModule = server.moduleGraph.getModuleById(mod.id.replace(MACRO_STRIP_RE, r => r.endsWith('&') ? '?' : ''))
+                if (realModule) {
+                  realModules.push(realModule)
+                }
+              }
+            }
             return [
               ...modules,
+              ...realModules,
               ...macroModule ? [macroModule] : [],
               ...routesModule ? [routesModule] : [],
             ]
@@ -368,6 +379,7 @@ function rewriteQuery (id: string) {
 }
 
 const MACRO_QUERY_RE = /[?&]macro=true(?:&|$)/
+const MACRO_STRIP_RE = /\?macro=true&?/
 const TYPE_PARAM_RE = /[?&]type=([^?&]+)/
 const LANG_PARAM_RE = /[?&]lang=([^?&]+)/
 function parseMacroQuery (id: string) {
