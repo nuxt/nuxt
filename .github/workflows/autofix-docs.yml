@@ -18,22 +18,18 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
         with:
-          node-version: lts/*
-          cache: "pnpm"
+          node-version: lts
+          cache: true
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build Nuxt
-        run: pnpm build
+      - name: Prepare
+        run: vp run dev:prepare
 
       - name: Lint (docs)
-        run: pnpm lint:docs:fix
+        run: vp run lint:docs:fix
 
       - name: Typecheck (docs)
-        run: pnpm typecheck:docs
+        run: vp run typecheck:docs
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1.3.4

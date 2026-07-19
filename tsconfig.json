@@ -27,6 +27,7 @@
       "dom",
       "dom.iterable"
     ],
+    "libReplacement": false,
     "paths": {
       "#app": [
         "./packages/nuxt/src/app/index"

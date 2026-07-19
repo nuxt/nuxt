@@ -1,17 +1,9 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
+import { runsOnceInMatrix } from './matrix'
 
-// only run once across the fixture matrix
-const isMatrixRun = !!process.env.TEST_BUILDER
-const skipForMatrix = isMatrixRun && !(
-  process.env.TEST_BUILDER === 'vite'
-  && process.env.TEST_ENV === 'built'
-  && process.env.TEST_CONTEXT === 'default'
-  && process.env.TEST_MANIFEST === 'manifest-on'
-)
-
-describe.skipIf(skipForMatrix)('SSR vite resolve conditions', () => {
+describe.skipIf(!runsOnceInMatrix)('SSR vite resolve conditions', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/external-vue-resolution', import.meta.url))
 
   it('resolves `vue` and `vue-router` from nuxt runtime files', async () => {
