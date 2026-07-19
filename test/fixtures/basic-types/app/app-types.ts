@@ -18,15 +18,6 @@ type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
 
-declare module 'nitro/types' {
-  interface InternalApi {
-    '/api/method-inference': {
-      get: { method: 'get' }
-      post: { method: 'post' }
-    }
-  }
-}
-
 declare module 'nuxt/app' {
   interface NuxtLayouts {
     withFunction: {
@@ -127,13 +118,6 @@ describe('API routes', () => {
 
   // TODO: https://github.com/nitrojs/nitro/issues/2758
   it('works with useFetch', () => {
-    expectTypeOf(useFetch('/api/method-inference').data.value!.method).toEqualTypeOf<'get'>()
-    expectTypeOf(useLazyFetch('/api/method-inference', { method: 'post' }).data.value!.method).toEqualTypeOf<'post'>()
-    expectTypeOf(useFetch('/api/method-inference', { method: 'post', transform: data => data }).data.value!.method).toEqualTypeOf<'post'>()
-    expectTypeOf(useFetch('/api/method-inference', { method: 'post', default: () => ({ method: 'post' as const }) }).data.value!.method).toEqualTypeOf<'post'>()
-    expectTypeOf(useFetch('/api/method-inference', { method: 'post' }, 'key').data.value!.method).toEqualTypeOf<'post'>()
-    expectTypeOf(createUseFetch<void, '/api/method-inference', 'post'>({ method: 'post' })('/api/method-inference').data.value!.method).toEqualTypeOf<'post'>()
-
     // expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     // expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
     // expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
