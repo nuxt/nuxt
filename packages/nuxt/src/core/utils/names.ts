@@ -3,6 +3,12 @@ import { kebabCase, splitByCase } from 'scule'
 import { withTrailingSlash } from 'ufo'
 import { QUOTE_RE } from './index.ts'
 
+const GROUPING_FOLDER_RE = /^\(.*\)$/
+
+function isGroupingFolder (segment: string) {
+  return GROUPING_FOLDER_RE.test(segment.trim())
+}
+
 export function getNameFromPath (path: string, relativeTo?: string) {
   const relativePath = relativeTo
     ? normalize(path).replace(withTrailingSlash(normalize(relativeTo)), '')
@@ -25,11 +31,12 @@ export function resolveComponentNameSegments (fileName: string, prefixParts: str
    */
   const fileNameParts = splitByCase(fileName)
   const fileNamePartsContent = fileNameParts.join('/').toLowerCase()
-  const componentNameParts: string[] = prefixParts.flatMap(p => splitByCase(p))
-  let index = prefixParts.length - 1
+  const componentPrefixParts = prefixParts.filter(part => !isGroupingFolder(part))
+  const componentNameParts: string[] = componentPrefixParts.flatMap(p => splitByCase(p))
+  let index = componentPrefixParts.length - 1
   const matchedSuffix: string[] = []
   while (index >= 0) {
-    const prefixPart = prefixParts[index]!
+    const prefixPart = componentPrefixParts[index]!
     matchedSuffix.unshift(...splitByCase(prefixPart).map(p => p.toLowerCase()))
     const matchedSuffixContent = matchedSuffix.join('/')
     if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
