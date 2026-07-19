@@ -2374,18 +2374,26 @@ describe.skipIf(isDev)('dynamic paths', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/14766
-  it.skipIf(isWebpack)('resolves a constrained dynamic asset import during SSR and hydration', async () => {
+  it.skipIf(isWebpack)('resolves dynamic and glob asset imports during SSR and hydration', async () => {
+    const testIds = ['dynamic-import-asset', 'lazy-glob-asset', 'eager-glob-asset'] as const
     const html = await $fetch<string>('/assets?asset=two')
-    const image = html.match(/<img[^>]*data-testid="dynamic-import-asset"[^>]*>/)?.[0]
-    const src = image?.match(/src="([^"]+)"/)?.[1]
+    const serverSources = new Map<string, string>()
 
-    expect(src).toMatch(/^\/_nuxt\/.+\.svg$/)
-    const asset = await fetch(src!)
-    expect(await asset.text()).toContain('dynamic-two')
+    for (const testId of testIds) {
+      const image = html.match(new RegExp(`<img[^>]*data-testid="${testId}"[^>]*>`))?.[0]
+      const src = image?.match(/src="([^"]+)"/)?.[1]
+
+      expect(src).toMatch(/^\/_nuxt\/.+\.svg$/)
+      const asset = await fetch(src!)
+      expect(await asset.text()).toContain('dynamic-two')
+      serverSources.set(testId, src!)
+    }
 
     const { page, pageErrors, consoleLogs } = await renderPage('/assets?asset=two')
-    const clientSrc = await page.getByTestId('dynamic-import-asset').getAttribute('src')
-    expect(new URL(clientSrc!).pathname).toBe(src)
+    for (const testId of testIds) {
+      const clientSrc = await page.getByTestId(testId).getAttribute('src')
+      expect(new URL(clientSrc!).pathname).toBe(serverSources.get(testId))
+    }
     expect(pageErrors).toEqual([])
     expectNoErrorsOrWarnings(consoleLogs)
     await page.close()
