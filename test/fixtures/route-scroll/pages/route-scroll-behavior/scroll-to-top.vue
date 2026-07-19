@@ -1,11 +1,3 @@
-<script setup lang="ts">
-const nuxtApp = useNuxtApp()
-
-nuxtApp.hook('page:transition:finish', (Data) => {
-  console.log('動畫完成', Data)
-})
-</script>
-
 <template>
   <div>
     <NuxtPage />

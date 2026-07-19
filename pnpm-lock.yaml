@@ -1426,6 +1426,24 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  test/fixtures/nuxt-time:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/preview:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/route-scroll:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/runtime-compiler:
     dependencies:
       nuxt:

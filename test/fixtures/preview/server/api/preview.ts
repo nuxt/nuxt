@@ -1,3 +1,5 @@
+import { defineEventHandler, getQuery } from 'h3'
+
 const apiKeyName = 'apiKey'
 const apiKey = 'hehe'
 

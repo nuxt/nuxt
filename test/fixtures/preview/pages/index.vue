@@ -16,7 +16,7 @@ const { data } = await useAsyncData(async () => {
   <div>
     <NuxtLink
       id="use-fetch-check"
-      href="/preview/with-use-fetch"
+      href="/with-use-fetch"
     >
       check useFetch
     </NuxtLink>

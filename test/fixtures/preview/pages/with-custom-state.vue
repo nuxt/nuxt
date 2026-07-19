@@ -16,7 +16,7 @@ onMounted(() => {
   <div>
     <NuxtLink
       id="with-use-fetch"
-      to="/preview/with-use-fetch"
+      to="/with-use-fetch"
     >
       fetch check
     </NuxtLink>
