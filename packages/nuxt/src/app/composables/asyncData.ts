@@ -1,6 +1,7 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { hashFunction, hashKey } from '../utils/hash'
+import { debounceTick } from '../utils/debounce-tick'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
@@ -164,70 +165,6 @@ export interface _AsyncData<DataT, ErrorT> {
   clear: () => void
   error: Ref<ErrorT | undefined>
   status: Ref<AsyncDataRequestStatus>
-}
-
-export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
-  fn: (...args: ArgumentsT) => PromiseLike<ReturnT> | ReturnT,
-) {
-  let leadingValue: PromiseLike<ReturnT> | ReturnT
-
-  let active: boolean
-
-  let resolveList: Array<(val: unknown) => void> = []
-
-  let currentPromise: Promise<ReturnT> | undefined
-
-  let trailingArgs: any[] | undefined
-
-  // @ts-expect-error todo
-  const applyFn = (_this, args) => {
-    currentPromise = _applyPromised(fn, _this, args)
-    currentPromise.finally(() => {
-      currentPromise = undefined
-      if (trailingArgs && !active) {
-        const promise = applyFn(_this, trailingArgs)
-        trailingArgs = undefined
-        return promise
-      }
-    })
-    return currentPromise
-  }
-
-  return function (...args: ArgumentsT) {
-    trailingArgs = args
-
-    if (currentPromise) {
-      return currentPromise
-    }
-    return new Promise<ReturnT>((resolve) => {
-      const shouldCallNow = !active
-
-      active = true
-      queuePostFlushCb(() => {
-        active = false
-        const promise = leadingValue
-        trailingArgs = undefined
-        for (const _resolve of resolveList) {
-          _resolve(promise)
-        }
-        resolveList = []
-      })
-
-      if (shouldCallNow) {
-        // @ts-expect-error todo
-        leadingValue = applyFn(this, args)
-        resolve(leadingValue)
-      } else {
-        // @ts-expect-error todo
-        resolveList.push(resolve)
-      }
-    })
-  }
-}
-
-async function _applyPromised (fn: () => any, _this: unknown, args: any[]) {
-  // @ts-expect-error todo
-  return await fn.apply(_this, args)
 }
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
