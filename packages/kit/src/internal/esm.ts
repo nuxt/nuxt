@@ -4,6 +4,7 @@ import { resolveModulePath } from 'exsolve'
 import { createJiti } from 'jiti'
 import { getUserCaller, warn } from './trace.ts'
 import { resolveAlias } from '../resolve.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export interface ResolveModuleOptions {
   /** @deprecated use `url` with URLs pointing at a file - never a directory */
@@ -38,7 +39,7 @@ export function resolveModule (id: string, options?: ResolveModuleOptions): stri
   return resolveModulePath(id, {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     from: options?.url ?? options?.paths ?? [import.meta.url],
-    extensions: options?.extensions ?? ['.js', '.mjs', '.ts', '.cjs', '.tsx', '.jsx', '.mts', '.cts'],
+    extensions: options?.extensions ?? DEFAULT_JS_FILE_EXTENSIONS,
   })
 }
 
