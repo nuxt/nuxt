@@ -21,6 +21,7 @@ import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
 import { normalizeRouteRulePath } from '../core/utils/route-rules.ts'
+import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
@@ -282,6 +283,7 @@ export default defineNuxtModule({
         name: 'NuxtPage',
         priority: 10, // built-in that we do not expect the user to override
         filePath: resolve(distDir, 'pages/runtime/page-placeholder'),
+        meta: getBuiltinComponentMeta('NuxtPage'),
       })
       // Prerender index if pages integration is not enabled
       nuxt.hook('nitro:init', (nitro) => {
@@ -811,6 +813,7 @@ export default defineNuxtModule({
       name: 'NuxtPage',
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(distDir, 'pages/runtime/page'),
+      meta: getBuiltinComponentMeta('NuxtPage'),
     })
   },
 })
