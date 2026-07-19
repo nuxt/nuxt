@@ -14,7 +14,7 @@ const layoutStylePlugin = () => {
   return {
     name: 'layout-style-plugin',
     enforce: 'pre' as const,
-    transform(code, id) {
+    transform (code, id) {
       if (id.endsWith('.css') && id.includes('layout=')) {
         return `.xs { ${code} }`
       }
