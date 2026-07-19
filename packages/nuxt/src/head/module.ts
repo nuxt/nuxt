@@ -55,9 +55,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }
 
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
-    // Nuxt's runtime and generated templates must use the Unhead version Nuxt was built against.
-    const nuxtImportPaths = [directoryToURL(distDir)]
-    const resolveNuxtUnhead = (id: string) => resolveModulePath(id, { from: nuxtImportPaths })
+    const resolveNuxtUnhead = (id: string) => resolveModulePath(id, { from: import.meta.url })
 
     // Register @unhead/vue/vite plugin for v5 compat mode
     // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
