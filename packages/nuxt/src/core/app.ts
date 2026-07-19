@@ -9,7 +9,7 @@ import { buildDiagnostics, findPath, getLayerDirectories, normalizePlugin, norma
 import { logger, resolveToAlias } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
-import type { ExtractedPluginMeta } from './plugins/plugin-metadata.ts'
+import type { ExtractedPluginMeta, PluginBuildMode } from './plugins/plugin-metadata.ts'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
@@ -338,7 +338,7 @@ export function sortPluginsByDependsOn<T extends AnnotatedPlugin> (plugins: T[])
   return result
 }
 
-export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[], options: { warn?: boolean } = {}): T[] {
+export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[], options: { warn?: boolean, mode?: PluginBuildMode, allPlugins?: AnnotatedPlugin[] } = {}): T[] {
   // A plugin with dynamic metadata may provide a name we cannot see at build time.
   // Keep the complete graph so the runtime resolver can handle it conservatively.
   if (plugins.some(plugin => plugin._metaUnknown)) {
@@ -346,6 +346,7 @@ export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[
   }
 
   const pluginNames = new Set(plugins.map(plugin => plugin.name))
+  const allPluginNames = new Set((options.allPlugins || plugins).map(plugin => plugin.name))
   return plugins.map((plugin) => {
     if (!plugin.dependsOn?.some(name => !pluginNames.has(name))) {
       return plugin
@@ -353,7 +354,14 @@ export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[
 
     const missing = plugin.dependsOn.filter(name => !pluginNames.has(name))
     if (options.warn) {
-      pluginDiagnostics.NUXT_B2008({ name: plugin.name!, missing: missing.join(', ') })
+      const unavailable = options.mode ? missing.filter(name => allPluginNames.has(name)) : []
+      const unregistered = options.mode ? missing.filter(name => !allPluginNames.has(name)) : missing
+      if (unavailable.length && options.mode) {
+        pluginDiagnostics.NUXT_B2012({ name: plugin.name!, dependencies: unavailable, mode: options.mode })
+      }
+      if (unregistered.length) {
+        pluginDiagnostics.NUXT_B2008({ name: plugin.name!, missing: unregistered.join(', ') })
+      }
     }
 
     return {

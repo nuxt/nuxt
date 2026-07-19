@@ -153,6 +153,25 @@ describe('plugin sanity checking', () => {
     vi.restoreAllMocks()
   })
 
+  it('distinguishes dependencies unavailable in the build target from unregistered plugins', () => {
+    vi.spyOn(console, 'warn')
+    const allPlugins = [
+      { name: 'client', src: '', mode: 'client' as const },
+      { name: 'server', src: '', mode: 'server' as const },
+      { name: 'universal', dependsOn: ['client', 'server', 'missing'], src: '' },
+    ]
+    const plugins = filterPluginDependencies(allPlugins.filter(plugin => plugin.mode !== 'server'), {
+      warn: true,
+      mode: 'client',
+      allPlugins,
+    })
+    expect(plugins[1]?.dependsOn).toEqual(['client'])
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Plugin `universal` depends on `server`, but this dependency is unavailable in the client build and will be ignored.'))
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Do not depend on plugins that are unavailable in the same build environment; remove them from the `dependsOn` array.'))
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Plugin `universal` depends on `missing` but they are not registered.'))
+    vi.restoreAllMocks()
+  })
+
   it('filters non-existent dependencies without warning in production', () => {
     vi.spyOn(console, 'warn')
     const source = [
