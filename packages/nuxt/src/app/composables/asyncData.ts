@@ -884,7 +884,7 @@ function buildAsyncData<
             if (import.meta.client && typeof minDelay === 'number' && minDelay > 0) {
               const minDelayPromise = new Promise<void>((resolveDelay) => {
                 const timer = setTimeout(resolveDelay, minDelay)
-                
+
                 cleanupController.signal.addEventListener('abort', () => {
                   clearTimeout(timer)
                   resolveDelay()
