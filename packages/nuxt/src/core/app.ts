@@ -338,6 +338,31 @@ export function sortPluginsByDependsOn<T extends AnnotatedPlugin> (plugins: T[])
   return result
 }
 
+export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[], options: { warn?: boolean } = {}): T[] {
+  // A plugin with dynamic metadata may provide a name we cannot see at build time.
+  // Keep the complete graph so the runtime resolver can handle it conservatively.
+  if (plugins.some(plugin => plugin._metaUnknown)) {
+    return plugins
+  }
+
+  const pluginNames = new Set(plugins.map(plugin => plugin.name))
+  return plugins.map((plugin) => {
+    if (!plugin.dependsOn?.some(name => !pluginNames.has(name))) {
+      return plugin
+    }
+
+    const missing = plugin.dependsOn.filter(name => !pluginNames.has(name))
+    if (options.warn) {
+      pluginDiagnostics.NUXT_B2008({ name: plugin.name!, missing: missing.join(', ') })
+    }
+
+    return {
+      ...plugin,
+      dependsOn: plugin.dependsOn.filter(name => pluginNames.has(name)),
+    }
+  })
+}
+
 export function hasPluginDependencies (plugins: Array<{ dependsOn?: string[], _metaUnknown?: boolean }>): boolean {
   for (const plugin of plugins) {
     if (plugin._metaUnknown) { return true }
@@ -372,12 +397,7 @@ export function hasIslandOptOutPlugins (plugins: Array<{ hasEnv?: boolean, _meta
 
 export function checkForCircularDependencies (_plugins: AnnotatedPlugin[]) {
   const deps: Record<string, string[]> = Object.create(null)
-  const pluginNames = new Set(_plugins.map(plugin => plugin.name))
   for (const plugin of _plugins) {
-    // Make sure dependency plugins are registered
-    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.has(name))) {
-      pluginDiagnostics.NUXT_B2008({ name: plugin.name!, missing: plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ') })
-    }
     // Make graph to detect circular dependencies
     if (plugin.name) {
       deps[plugin.name] = plugin.dependsOn || []

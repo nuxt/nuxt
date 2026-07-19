@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata.ts'
-import { checkForCircularDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks } from '../src/core/app.ts'
+import { RemovePluginMetadataPlugin, extractMetadata, setPluginDependenciesForMode } from '../src/core/plugins/plugin-metadata.ts'
+import { checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks } from '../src/core/app.ts'
 
 describe('plugin-metadata', () => {
   const properties = Object.entries({
@@ -59,10 +59,11 @@ describe('plugin-metadata', () => {
     })
   })
 
-  const transformPlugin: any = RemovePluginMetadataPlugin({
+  const nuxt = {
     options: { sourcemap: { client: true } },
     apps: { default: { plugins: [{ src: 'my-plugin.mjs', order: 10 }] } },
-  } as any).raw({}, {} as any)
+  } as any
+  const transformPlugin: any = RemovePluginMetadataPlugin(nuxt, 'client').raw({}, {} as any)
 
   it('should overwrite invalid plugins', () => {
     const invalidPlugins = [
@@ -89,12 +90,37 @@ describe('plugin-metadata', () => {
           "
     `)
   })
+
+  it('should filter plugin dependencies for the build mode', () => {
+    const filterNuxt = {
+      options: { sourcemap: { client: true } },
+      apps: { default: { plugins: [{ src: 'my-plugin.mjs' }] } },
+    } as any
+    setPluginDependenciesForMode(filterNuxt, 'client', [{ src: 'my-plugin.mjs', dependsOn: ['client-plugin'] }])
+    const filterTransformPlugin: any = RemovePluginMetadataPlugin(filterNuxt, 'client').raw({}, {} as any)
+    const plugin = `
+      export default defineNuxtPlugin({
+        name: 'test',
+        dependsOn: ['client-plugin', 'server-plugin'],
+        setup: () => {},
+      })
+    `
+    expect(filterTransformPlugin.transform(plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
+      "
+            export default defineNuxtPlugin({
+              name: 'test',
+              dependsOn: ["client-plugin"],
+              setup: () => {},
+            })
+          "
+    `)
+  })
 })
 
 describe('plugin sanity checking', () => {
-  it('non-existent depends are warned', () => {
+  it('filters and warns about non-existent dependencies in development', () => {
     vi.spyOn(console, 'warn')
-    checkForCircularDependencies([
+    const plugins = filterPluginDependencies([
       {
         name: 'A',
         src: '',
@@ -108,9 +134,30 @@ describe('plugin sanity checking', () => {
         name: 'C',
         src: '',
       },
-    ])
+    ], { warn: true })
+    expect(plugins[1]?.dependsOn).toEqual([])
     expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Plugin `B` depends on `D` but they are not registered.'))
     vi.restoreAllMocks()
+  })
+
+  it('filters non-existent dependencies without warning in production', () => {
+    vi.spyOn(console, 'warn')
+    const plugins = filterPluginDependencies([
+      { name: 'A', src: '' },
+      { name: 'B', dependsOn: ['A', 'D'], src: '' },
+    ])
+    expect(plugins[1]?.dependsOn).toEqual(['A'])
+    expect(console.warn).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it('preserves dependencies when plugin metadata is unknown', () => {
+    const plugins = [
+      { name: 'A', src: '', _metaUnknown: true },
+      { name: 'B', dependsOn: ['A', 'D'], src: '' },
+    ]
+    expect(filterPluginDependencies(plugins)).toBe(plugins)
+    expect(plugins[1]?.dependsOn).toEqual(['A', 'D'])
   })
 
   it('circular dependencies are warned', () => {
