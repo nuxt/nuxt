@@ -88,12 +88,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const isIgnored = createIsIgnored(nuxt)
   const serverEntry = nuxt.options.ssr ? entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
 
-
   const vscPlugin: Plugin = {
     name: 'nuxt:virtual-vsc',
     resolveId: {
       order: 'pre',
-      handler(id) {
+      handler (id) {
         if (id.startsWith('virtual:vsc:')) {
           return id.slice('virtual:vsc:'.length)
         }
@@ -123,7 +122,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ingestComponents(components)
   })
 
-
   const onigiriChunkMap = new Map<string, string>()
   const onigiriBuildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
   const onigiriAssetsBase = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
@@ -145,7 +143,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const onigiriChunkCollectorPlugin: Plugin = {
     name: 'nuxt:vue-onigiri-chunk-collector',
     applyToEnvironment: environment => environment.name === 'client',
-    generateBundle(_outputOptions, bundle) {
+    generateBundle (_outputOptions, bundle) {
       const root = nuxt.options.srcDir.replaceAll('\\', '/').replace(/\/$/, '')
       for (const file in bundle) {
         const chunk = bundle[file]
@@ -217,11 +215,11 @@ export async function importFn(src, exportName = 'default') {
     applyToEnvironment: env => env.name === 'client',
     resolveId: {
       order: 'pre',
-      handler(id) {
+      handler (id) {
         if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
       },
     },
-    load(id) {
+    load (id) {
       if (id !== '\0virtual:onigiri/manifest') { return }
       return buildClientImportFnSource()
     },
@@ -233,29 +231,26 @@ export async function importFn(src, exportName = 'default') {
     applyToEnvironment: env => env.name !== 'client',
     resolveId: {
       order: 'pre',
-      handler(id) {
+      handler (id) {
         if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
       },
     },
-    load(id) {
+    load (id) {
       if (id !== '\0virtual:onigiri/manifest') { return }
       return buildServerImportFnSource()
     },
   }
 
-  const onigiriPlugins: Plugin[] = [
-    vscPlugin,
-    onigiriCompilerPlugin(onigiriCompilerOptions),
-    // Defaults: server uses `"auto"` — the compiler registers each
-    // v-load-client target during transform, the manifest plugin emits
-    // an `import.meta.glob([...])` covering exactly those. Client is
-    // off because the AST carries fetchable URLs (the compile-time
-    // bake), so the runtime importFn does a direct `import(url)`.
-    onigiriManifestPlugin(),
-    onigiriChunkCollectorPlugin,
-    onigiriClientManifestOverride,
-    onigiriServerManifestOverride,
-  ]
+  const onigiriPlugins: Plugin[] = nuxt.options.experimental.componentIslands !== 'vue-onigiri'
+    ? []
+    : [
+        vscPlugin,
+        onigiriCompilerPlugin(onigiriCompilerOptions),
+        onigiriManifestPlugin(),
+        onigiriChunkCollectorPlugin,
+        onigiriClientManifestOverride,
+        onigiriServerManifestOverride,
+      ]
   const config: vite.InlineConfig = mergeConfig(
     {
       base: nuxt.options.dev
@@ -284,7 +279,7 @@ export async function importFn(src, exportName = 'default') {
         },
       },
       builder: {
-        async buildApp(builder) {
+        async buildApp (builder) {
           // run serially to preserve the order of client, server builds
           const environments = Object.values(builder.environments)
           for (const environment of environments) {
@@ -421,11 +416,11 @@ export async function importFn(src, exportName = 'default') {
     enforce: 'pre',
     resolveId: {
       order: 'pre',
-      handler(id) {
+      handler (id) {
         if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
       },
     },
-    load(id) {
+    load (id) {
       if (id !== '\0virtual:onigiri/manifest') { return }
       return buildServerImportFnSource()
     },
@@ -436,7 +431,7 @@ export async function importFn(src, exportName = 'default') {
       name: 'nuxt:virtual-vsc',
       resolveId: {
         order: 'pre',
-        handler(id) {
+        handler (id) {
           if (id.startsWith('virtual:vsc:')) {
             return id.slice('virtual:vsc:'.length)
           }
@@ -495,7 +490,7 @@ export async function importFn(src, exportName = 'default') {
   nuxt._perf?.endPhase('vite:dev-server')
 }
 
-async function withLogs(fn: () => Promise<unknown>, message: string, enabled = true) {
+async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
   if (!enabled) { return fn() }
 
   const start = performance.now()

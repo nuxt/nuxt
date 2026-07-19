@@ -728,7 +728,7 @@ async function initNuxt (nuxt: Nuxt) {
     addComponent({
       name: 'NuxtIsland',
       priority: 10, // built-in that we do not expect the user to override
-      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
+      filePath: resolve(nuxt.options.appDir, nuxt.options.experimental.componentIslands === 'vue-onigiri' ? 'components/nuxt-island-onigiri' : 'components/nuxt-island'),
     })
   }
 

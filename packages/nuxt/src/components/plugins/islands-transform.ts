@@ -1,0 +1,275 @@
+import type { Component } from '@nuxt/schema'
+import { createUnplugin } from 'unplugin'
+import { generateTransform, rolldownString } from 'rolldown-string'
+import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
+import { genObjectFromRawEntries, genString } from 'knitwork'
+import type { Plugin } from 'vite'
+import { normalize } from 'pathe'
+import { isVue, parseModuleId } from '../../core/utils/index.ts'
+
+interface ServerOnlyComponentTransformPluginOptions {
+  getComponents: () => Component[]
+  /**
+   * Returns the resolved file paths of pages that should be rendered as islands
+   * (i.e. `pages/*.server.vue`). These need the same `<slot>` / `v-load-client`
+   * transform as island components, but they live in the pages registry rather
+   * than the components registry.
+   */
+  getServerPages?: () => string[]
+  /**
+   * allow using `v-load-client` attribute on components
+   */
+  selectiveClient?: boolean | 'deep'
+}
+
+const SCRIPT_RE = /<script[^>]*>/i
+const SCRIPT_RE_GLOBAL = /<script[^>]*>/gi
+const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|v-load-client/
+const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
+const NUXTCLIENT_ATTR_RE = /\s:?v-load-client(?:="[^"]*")?/g
+const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(?:="[^"]*")?/g
+const KEY_RE = /:?key="[^"]"/g
+
+function wrapWithVForDiv (code: string, vfor: string): string {
+  return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
+}
+
+export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
+  const isVite = meta.framework === 'vite'
+  return {
+    name: 'nuxt:server-only-component-transform',
+    enforce: 'pre',
+    transformInclude (id) {
+      if (!isVue(id)) { return false }
+      if (isVite && options.selectiveClient === 'deep') { return true }
+      const { pathname } = parseModuleId(normalize(id))
+      return isIslandFile(pathname, options)
+    },
+    transform: {
+      filter: {
+        code: {
+          include: [HAS_SLOT_OR_CLIENT_RE],
+        },
+      },
+      async handler (code, id, transformMeta?: unknown) {
+        const template = code.match(TEMPLATE_RE)
+        if (!template) { return }
+        const startingIndex = template.index || 0
+        const s = rolldownString(code, id, transformMeta)
+
+        const { pathname } = parseModuleId(normalize(id))
+        const isIsland = isIslandFile(pathname, options)
+
+        if (!SCRIPT_RE.test(code)) {
+          s.prepend('<script setup>' + IMPORT_CODE + '</script>')
+        } else {
+          for (const match of code.matchAll(SCRIPT_RE_GLOBAL)) {
+            s.appendRight(match.index + match[0].length, IMPORT_CODE)
+          }
+        }
+
+        let hasNuxtClient = false
+
+        const ast = parse(template[0])
+        await walk(ast, (node) => {
+          if (node.type !== ELEMENT_NODE) {
+            return
+          }
+          if (node.name === 'slot') {
+            if (!isIsland) { return }
+            const { attributes, children, loc } = node
+
+            const slotName = attributes.name ?? 'default'
+
+            if (attributes.name) { delete attributes.name }
+            if (attributes['v-bind']) {
+              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
+            }
+            const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+            const bindings = getPropsToString(attributes)
+            // add the wrapper
+            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
+
+            if (children.length) {
+              // pass slot fallback to NuxtTeleportSsrSlot fallback
+              const attrString = attributeToString(attributes)
+              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(KEY_RE, '')
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
+            } else {
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
+            }
+
+            s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
+            return
+          }
+
+          if (node.name === 'NuxtTeleportIslandComponent') {
+            return
+          }
+
+          if (!('v-load-client' in node.attributes) && !(':v-load-client' in node.attributes)) {
+            return
+          }
+
+          hasNuxtClient = true
+
+          if (!isVite || !options.selectiveClient) {
+            return
+          }
+
+          const { loc, attributes } = node
+          const attributeValue = attributes[':v-load-client'] || attributes['v-load-client'] || 'true'
+          const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+
+          let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
+          if (wrapperAttributes) {
+            startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
+          }
+
+          s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :v-load-client="${attributeValue}">`)
+          s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
+          s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
+        })
+
+        if (hasNuxtClient) {
+          if (!options.selectiveClient) {
+            console.warn(`The \`v-load-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: ${id}`)
+          } else if (!isVite) {
+            console.warn(`The \`v-load-client\` attribute and client components within islands are only supported with Vite. file: ${id}`)
+          }
+        }
+
+        return generateTransform(s, id)
+      },
+    },
+  }
+})
+
+function isIslandFile (pathname: string, options: ServerOnlyComponentTransformPluginOptions): boolean {
+  const components = options.getComponents()
+  const isIslandComponent = components.some(component =>
+    component.filePath === pathname &&
+    (component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))),
+  )
+  if (isIslandComponent) { return true }
+  return options.getServerPages?.().includes(pathname) ?? false
+}
+
+/**
+ * extract attributes from a node
+ */
+function extractAttributes (attributes: Record<string, string>, names: string[]) {
+  const extracted: Record<string, string> = {}
+  for (const name of names) {
+    if (name in attributes) {
+      extracted[name] = attributes[name]!
+      delete attributes[name]
+    }
+  }
+  return extracted
+}
+
+function attributeToString (attributes: Record<string, string>) {
+  return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
+}
+
+function isBinding (attr: string): boolean {
+  return attr.startsWith(':')
+}
+
+function getPropsToString (bindings: Record<string, string>): string {
+  const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
+  if (Object.keys(bindings).length === 0) { return 'undefined' }
+  const contentParts: string[] = []
+  for (const [name, value] of Object.entries(bindings)) {
+    if (name && (name !== '_bind' && name !== 'v-for')) {
+      contentParts.push(isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``)
+    }
+  }
+  const content = contentParts.join(',')
+  const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
+  if (!vfor) {
+    return `[${data}]`
+  } else {
+    return `__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data}))`
+  }
+}
+
+type ChunkPluginOptions = {
+  dev: boolean
+  getComponents: () => Component[]
+}
+
+const COMPONENT_CHUNK_ID = `#build/component-chunk`
+const COMPONENT_CHUNK_RESOLVED_ID = '\0nuxt-component-chunk'
+
+export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => {
+  const chunkIds = new Map<string, string>()
+  const paths = new Map<string, string>()
+  return [
+    {
+      name: 'nuxt:components-chunk:client',
+      apply: () => !options.dev,
+      applyToEnvironment: environment => environment.name === 'client',
+      buildStart () {
+        for (const c of options.getComponents()) {
+          if (!c.filePath || c.mode === 'server') {
+            continue
+          }
+          chunkIds.set(c.pascalName, this.emitFile({
+            type: 'chunk',
+            name: `${c.pascalName}-chunk.mjs`,
+            id: c.filePath,
+            preserveSignature: 'strict',
+          }))
+        }
+      },
+      generateBundle (_, bundle) {
+        const ids = new Set<string>()
+        for (const [name, id] of chunkIds.entries()) {
+          const filename = this.getFileName(id)
+          ids.add(filename)
+          paths.set(name, filename)
+        }
+        for (const chunk of Object.values(bundle)) {
+          if (chunk.type === 'chunk') {
+            if (ids.has(chunk.fileName)) {
+              chunk.isEntry = false
+            }
+          }
+        }
+      },
+    },
+    {
+      name: 'nuxt:components-chunk:server',
+      resolveId: {
+        order: 'pre',
+        handler (id) {
+          if (id === COMPONENT_CHUNK_ID) {
+            return COMPONENT_CHUNK_RESOLVED_ID
+          }
+        },
+      },
+      load (id) {
+        if (id === COMPONENT_CHUNK_RESOLVED_ID) {
+          if (options.dev) {
+            const filePaths: Record<string, string> = {}
+            for (const c of options.getComponents()) {
+              if (!c.filePath || c.mode === 'server') {
+                continue
+              }
+              filePaths[c.pascalName] = `@fs/${c.filePath}`
+            }
+            return `export default ${genObjectFromRawEntries(Object.entries(filePaths).map(([name, path]) => [name, genString(path)]))}`
+          }
+
+          return `export default ${
+            genObjectFromRawEntries(Array.from(paths.entries())
+              .map(([name, id]) => [name, genString('/' + id)]))
+          }`
+        }
+      },
+    },
+  ]
+}

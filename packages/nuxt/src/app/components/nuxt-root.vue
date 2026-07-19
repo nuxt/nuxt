@@ -5,6 +5,10 @@
       v-else-if="error"
       :error="error"
     />
+    <IslandRenderer
+      v-else-if="islandContext"
+      :context="islandContext"
+    />
     <component
       :is="SingleRenderer"
       v-else-if="SingleRenderer"
@@ -22,6 +26,7 @@ import { useRoute, useRouter } from '../composables/router'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
+import IslandRenderer from '#build/island-renderer.mjs'
 
 const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
@@ -75,4 +80,7 @@ onErrorCaptured((err, target, info) => {
     return false // suppress error from breaking render
   }
 })
+
+// Component islands context
+const islandContext = import.meta.server && nuxtApp.ssrContext.islandContext
 </script>

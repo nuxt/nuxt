@@ -6,7 +6,9 @@ export default withMatrix({
     '/buffered': { streaming: false },
   },
   experimental: {
-    ssrStreaming: true, 
-    componentIslands: true,
+    ssrStreaming: true,
+    // Enables the `v-load-client` selective-client island path exercised by
+    // `/islands` (the `uid;client` teleport marker).
+    componentIslands: { selectiveClient: true },
   },
 })

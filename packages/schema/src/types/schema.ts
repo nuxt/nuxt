@@ -1180,9 +1180,11 @@ export interface ConfigSchema {
      *
      * By default it is set to 'auto', which means it will be enabled only when there are islands, server components or server pages in your app.
      *
+     * Set it to 'vue-onigiri' to use the experimental vue-onigiri implementation, which serialize in AST instead of HTML.
+     *
      * @default 'auto'
      */
-    componentIslands: 'auto' | boolean
+    componentIslands: true | 'auto' | 'local' | 'local+remote' | 'vue-onigiri' | Partial<{ remoteIsland: boolean, selectiveClient: boolean | 'deep' }> | false
 
     /**
      * Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories.

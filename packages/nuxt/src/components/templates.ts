@@ -91,9 +91,12 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
     )
 
+    // the vue-onigiri implementation loads island sources through the `virtual:vsc:` compiler prefix
+    const islandImportPrefix = nuxt.options.experimental.componentIslands === 'vue-onigiri' ? 'virtual:vsc:' : ''
+
     const serverPages = pages?.filter(p => (p.mode === 'server' && p.file && p.name)) || []
     const pageExports = serverPages.map((p) => {
-      return `"page_${p.name}": defineAsyncComponent(${genDynamicImport('virtual:vsc:' + p.file!)}.then(c => c.default || c))`
+      return `"page_${p.name}": defineAsyncComponent(${genDynamicImport(islandImportPrefix + p.file!)}.then(c => c.default || c))`
     })
     // map each `page_<name>` to a stable, opaque marker derived from the page's file path.
     const pageIslandRoutes = serverPages.map((p) => {
@@ -107,7 +110,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
         (c) => {
           const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
           const comment = createImportMagicComments(c)
-          return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport('virtual:vsc:' + c.filePath, { comment })}.then(c => ${exp}))`
+          return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(islandImportPrefix + c.filePath, { comment })}.then(c => ${exp}))`
         },
       ).concat(pageExports).join(',\n'),
       '})',

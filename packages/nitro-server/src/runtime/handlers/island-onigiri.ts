@@ -6,20 +6,25 @@ import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
+import { serializeApp } from 'vue-onigiri/runtime/serialize'
 import { getIslandHash } from '#app/island-hash'
-import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
+import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
-// @ts-expect-error virtual file
 import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
-import { getSSRRenderer } from '../utils/renderer/build-files'
+import { getComponentsIslands, getSSRRenderer, getServerEntry } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
-import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
 import { useStorage } from 'nitro/storage'
 import type { Storage } from 'unstorage'
 
 export const islandCache: Storage<NuxtIslandResponse> | null = import.meta.prerender ? useStorage<NuxtIslandResponse>('internal:nuxt:prerender:island') : null
 export const islandPropCache: Storage<string> | null = import.meta.prerender ? useStorage<string>('internal:nuxt:prerender:island-props') : null
+
+let _componentsPromise: Promise<Record<string, any>> | undefined
+function getComponents (): Promise<Record<string, any>> {
+  _componentsPromise ||= getComponentsIslands().then(r => r.islandComponents)
+  return _componentsPromise
+}
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
@@ -47,12 +52,22 @@ export default {
       // Render app
       const renderer = await getSSRRenderer()
 
-      const renderResult = await (tracingChannelNuxt
-        ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
-        : renderer.renderToString(ssrContext)
-      ).catch(async (err) => {
+      const createSSRApp = await getServerEntry()
+
+      // Pin the SSR app's root to the requested island component so
+      // `serializeApp` produces the island's AST (not the wrapping app
+      // shell). Resolved via the build-time `components.islands.mjs` map.
+      const components = await getComponents()
+      const rootComponent = components[islandContext.name]
+
+      const app = await createSSRApp(ssrContext, { rootComponent })
+
+      const ast = await (tracingChannelNuxt
+        ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => app.runWithContext(() => serializeApp(app, undefined, ssrContext)))
+        : app.runWithContext(() => serializeApp(app, undefined, ssrContext))
+      ).catch(async (err: unknown) => {
         if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
-          return {} as Awaited<ReturnType<typeof renderer.renderToString>>
+          return undefined
         }
         await ssrContext.nuxt?.hooks.callHook('app:error', err)
         throw err
@@ -60,7 +75,9 @@ export default {
 
       // Fire `app:rendered` before checking `~renderResponse` (matches `renderer.ts`), so
       // anything hooking into it, like `useCookie`, will still work on redirect/reject.
-      await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
+      // The onigiri island path serializes the app to an AST rather than rendering
+      // HTML, so there is no `renderResult` to report.
+      await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: null })
 
       if (ssrContext['~renderResponse']) {
         return returnRenderResponse(event, ssrContext['~renderResponse'])
@@ -89,7 +106,7 @@ export default {
           // Add CSS links in <head> for CSS files
           // - in dev mode when rendering an island and the file has scoped styles and is not a page
           if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
-            link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+            link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file.replace('virtual:vsc:', '')), crossorigin: '' })
           }
         }
         if (link.length) {
@@ -112,9 +129,7 @@ export default {
       const islandResponse: NuxtIslandResponse = {
         id: islandContext.id,
         head: islandHead,
-        html: getServerComponentHTML(renderResult.html),
-        components: getClientIslandResponse(ssrContext),
-        slots: getSlotIslandResponse(ssrContext),
+        ast,
       }
 
       await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })

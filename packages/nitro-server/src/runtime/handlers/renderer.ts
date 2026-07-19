@@ -22,6 +22,7 @@ import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
+import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
@@ -361,7 +362,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
-      _rendered.html,
+      componentIslands ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
       APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : '') + APP_TELEPORT_CLOSE_TAG,
     ],
     bodyAppend: [bodyTags],
@@ -740,12 +741,21 @@ async function renderStreamedResponse (ctx: {
           + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : '')
           + APP_TELEPORT_CLOSE_TAG
 
+        // Island teleports (slot content, selective-client components) cannot
+        // be stitched into the body string - it has already streamed. Emit them
+        // as inert `<template>`s plus a relocation script that runs before the
+        // deferred entry hydrates. Skipped under `NO_SCRIPTS` (the guard keeps
+        // island apps buffered in that case). No-op under the vue-onigiri
+        // implementation, which does not use island teleports.
+        const islandTeleports = NO_SCRIPTS ? '' : renderStreamedIslandTeleports(ssrContext, nonceAttr)
+
         const closingHtml = APP_ROOT_CLOSE_TAG
           // Styles for modules registered after the first chunk (deeply nested
           // async components) - emitted outside the app root.
           + (await renderRouteStyles())
           + teleportHtml
           + (ssrContext.teleports?.body || '')
+          + islandTeleports
           + joinTags(closeContext.bodyAppend)
           + '</body></html>'
 

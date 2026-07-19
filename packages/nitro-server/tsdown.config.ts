@@ -18,6 +18,7 @@ export default defineConfig([
     deps: {
       onlyBundle: [],
       neverBundle: [
+        'vue-onigiri',
         '#build/dist/server/client.precomputed.mjs',
         '#build/dist/server/client.manifest.mjs',
         '#build/dist/server/styles.mjs',

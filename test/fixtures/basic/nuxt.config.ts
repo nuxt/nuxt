@@ -164,6 +164,9 @@ export default withMatrix({
     clientFallback: true,
     restoreState: true,
     clientNodeCompat: true,
+    componentIslands: {
+      selectiveClient: 'deep',
+    },
     inlineRouteRules: true,
     prefetchPreloadTags: true,
   },
