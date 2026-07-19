@@ -37,6 +37,8 @@ import { nitroSchemaTemplate } from './templates.ts'
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
 export type { NuxtTracingChannelOptions } from './augments.ts'
 
+type NitroTSConfig = NonNullable<NonNullable<NitroConfig['typescript']>['tsConfig']>
+
 const logLevelMapReverse = {
   silent: 0,
   info: 3,
@@ -137,7 +139,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const h3Entry = resolveModulePath('h3', { from: import.meta.url })
   const h3PackageJson = resolveModulePath('h3/package.json', { from: import.meta.url })
 
+  // `nuxt.options.nitro.typescript.tsConfig` is a portal onto `typescript.serverTsConfig`,
+  // so this baseline sits under whichever of the two the user set. `types`, `paths` and
+  // `noEmit` are managed per-context and are not propagated from the global config.
+  const globalCompilerOptions = { ...nuxt.options.typescript?.tsConfig?.compilerOptions }
+  delete globalCompilerOptions.types
+  delete globalCompilerOptions.paths
+  delete globalCompilerOptions.noEmit
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
+    typescript: {
+      tsConfig: { compilerOptions: globalCompilerOptions } as NitroTSConfig,
+    },
+  }, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
