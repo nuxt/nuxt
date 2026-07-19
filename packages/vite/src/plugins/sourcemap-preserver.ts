@@ -52,7 +52,7 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
   return {
     name: 'nuxt:sourcemap-export',
     applyToEnvironment: (environment) => {
-      return environment.name === 'ssr' && environment.config.isProduction
+      return environment.name === 'ssr' && environment.config.isProduction && !!environment.config.build.sourcemap
     },
     apply: 'build',
     configResolved (config) {

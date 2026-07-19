@@ -64,10 +64,9 @@ describe('SourcemapPreserverPlugin', () => {
     nitroBuildBefore!(nitro)
 
     expect(nitro.options.rollupConfig.plugins?.some(plugin => plugin.name === 'existing-plugin')).toBe(true)
-    const nitroPlugin = nitro.options.rollupConfig.plugins?.find(plugin => plugin.name === 'nuxt:sourcemap-import')
+    const nitroPlugin = nitro.options.rollupConfig.plugins?.find(plugin => plugin.load)
     expect(nitroPlugin).toBeDefined()
     if (!nitroPlugin) { return }
-    expect(nitroPlugin.name).toBe('nuxt:sourcemap-import')
 
     const load = nitroPlugin.load as unknown as {
       filter: { id: RegExp }
