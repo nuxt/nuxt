@@ -22,7 +22,14 @@ function consoleLogsFor (page: Page) {
 }
 
 function filteredLogs (page: Page) {
-  return consoleLogsFor(page).map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature'))
+  return consoleLogsFor(page).map(l => l.text).filter(i =>
+    !i.includes('[vite]')
+    && !i.includes('<Suspense> is an experimental feature')
+    // webpack dev client noise (HMR status logs and echoed build-warning groups)
+    && !i.includes('[HMR]')
+    && !i.startsWith('%c')
+    && i !== 'console.groupEnd',
+  )
 }
 
 // Bug #7337
