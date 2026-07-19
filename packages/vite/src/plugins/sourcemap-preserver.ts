@@ -45,7 +45,7 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
 
   nuxt.hook('nitro:build:before', (nitro) => {
     nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
-      plugins: [nitroPlugin],
+      plugins: [nitroPlugin()],
     })
   })
 
@@ -54,9 +54,7 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
     applyToEnvironment: (environment) => {
       return environment.name === 'ssr' && environment.config.isProduction
     },
-    apply (config) {
-      return !!config.build?.sourcemap
-    },
+    apply: 'build',
     configResolved (config) {
       outputDir = config.build.outDir
     },
