@@ -318,11 +318,14 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
       ? { exclude: ssrContext['~lazyHydratedModules'] }
       : undefined
+    // Skip hints for stylesheets already rendered as blocking links above
+    // (e.g. CSS of lazy hydrated components, which are server-rendered)
+    const renderedCSS = new Set(link.map(l => l.href))
     ssrContext.head.push({
-      link: getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
+      link: (getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]).filter(l => !renderedCSS.has(l.href)),
     })
     ssrContext.head.push({
-      link: getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
+      link: (getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]).filter(l => !renderedCSS.has(l.href)),
     })
     // 5. Payloads
     ssrContext.head.push({
