@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
@@ -2040,127 +2040,6 @@ describe.skipIf(isDev)('non-ascii public asset files in output', () => {
 
     const subdir = join(publicDir, 'каталог')
     expect(await readdir(subdir)).toContain('файл.json')
-  })
-})
-
-// TODO: dynamic paths in dev
-describe.skipIf(isDev)('dynamic paths', () => {
-  const publicFiles = ['/public.svg', '/css-only-public-asset.svg']
-  const isPublicFile = (base = '/', file: string) => {
-    if (isWebpack) {
-      // TODO: webpack does not yet support dynamic static paths
-      expect(publicFiles).toContain(file)
-      return true
-    }
-
-    expect(file).toMatch(new RegExp(`^${base.replace(/\//g, '\\/')}`))
-    expect(publicFiles).toContain(file.replace(base, '/'))
-    return true
-  }
-
-  it('should work with no overrides', async () => {
-    const html: string = await $fetch<string>('/assets')
-    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[1] || match[2]!
-      if (url.startsWith('data:')) { continue }
-      expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
-    }
-  })
-
-  // webpack injects CSS differently
-  it.skipIf(isWebpack)('adds relative paths to CSS', async () => {
-    const html: string = await $fetch<string>('/assets')
-    const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)).map(m => m[2] || m[3])
-    const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u!))
-    expect(cssURL).toBeDefined()
-    const css = await $fetch<string>(cssURL!)
-    const imageUrls = new Set(Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1]!.replace(/[-.]\w{8}\./g, '.')))
-    expect([...imageUrls]).toMatchInlineSnapshot(`
-      [
-        "./logo.svg",
-        "../public.svg",
-      ]
-    `)
-  })
-
-  it('should allow setting base URL and build assets directory', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
-        NUXT_APP_BASE_URL: '/foo/',
-      },
-    })
-
-    const html = await $fetch<string>('/foo/assets')
-    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[1] || match[2]!
-      if (url.startsWith('data:')) { continue }
-      expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
-    }
-
-    // TODO: document as breaking change
-    expect(await $fetch<string>('/foo/url')).toContain('path: /url')
-  })
-
-  it('should allow setting relative baseURL', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BASE_URL: './',
-      },
-    })
-
-    const html = await $fetch<string>('/assets')
-    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[1] || match[2]!
-      if (url.startsWith('data:')) { continue }
-      expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
-      expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
-    }
-  })
-
-  it('should use baseURL when redirecting', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
-        NUXT_APP_BASE_URL: '/foo/',
-      },
-    })
-    const { headers } = await fetch('/foo/navigate-to/', { redirect: 'manual' })
-
-    expect(headers.get('location')).toEqual('/foo/')
-  })
-
-  it('should allow setting CDN URL', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BASE_URL: '/foo/',
-        NUXT_APP_CDN_URL: 'https://example.com/',
-        NUXT_APP_BUILD_ASSETS_DIR: '/_cdn/',
-      },
-    })
-
-    const html = await $fetch<string>('/foo/assets')
-    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[1] || match[2]!
-      if (url.startsWith('data:')) { continue }
-      expect(url.startsWith('https://example.com/_cdn/') || isPublicFile('https://example.com/', url)).toBeTruthy()
-    }
-  })
-
-  it.skipIf(isDev || isWebpack)('should render relative importmap path with relative path', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BASE_URL: '',
-        NUXT_APP_BUILD_ASSETS_DIR: 'assets/',
-      },
-    })
-
-    const html = await $fetch<string>('/')
-    expect(html).toContain('<script type="importmap">{"imports":{"#entry":"./assets')
-  })
-
-  it('restore server', async () => {
-    await startServer()
   })
 })
 

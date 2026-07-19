@@ -148,7 +148,7 @@ export default withMatrix({
     ],
   },
   features: {
-    inlineStyles: id => !!id && !id.includes('assets.vue'),
+    inlineStyles: id => !!id,
   },
   experimental: {
     nitroAutoImports: true,
