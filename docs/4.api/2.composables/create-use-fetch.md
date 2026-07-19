@@ -45,7 +45,7 @@ function createUseFetch (
 
 ## Options
 
-`createUseFetch` accepts all the same options as [`useFetch`](/docs/4.x/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, and more.
+`createUseFetch` accepts all the same options as [`useFetch`](/docs/4.x/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, `fetchPolicy`, and more.
 
 See the full list of options in the [`useFetch` documentation](/docs/4.x/api/composables/use-fetch#parameters).
 

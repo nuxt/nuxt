@@ -166,6 +166,7 @@ type UseFetchOptions<ResT, DataT = ResT> = {
   lazy?: boolean
   immediate?: boolean
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
+  fetchPolicy?: 'cache-first' | 'cache-and-network' | 'network-only' | 'cache-only' | 'no-cache'
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
   timeout?: number
@@ -224,6 +225,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `timeout` :badge[v4.2]{color="info" size="xs" class="align-middle"}       | `number`                                                                | -          | A number in milliseconds to wait before timing out the request (defaults to `undefined`, which means no timeout)                                                                                                                                                                   |
 | `transform`                                                               | `(input: DataT) => DataT \| Promise<DataT>`                             | -          | Function to transform the result after resolving.                                                                                                                                                                                                                                  |
 | `getCachedData` :badge[v3.8]{color="info" size="xs" class="align-middle"} | `(key, nuxtApp, ctx) => DataT \| undefined`                             | -          | Function to return cached data. See below for default.                                                                                                                                                                                                                             |
+| `fetchPolicy` :badge[v4.4]{color="info" size="xs" class="align-middle"}   | `AsyncDataFetchPolicy`                                                  | `'cache-first'` | Control how fetching interacts with Nuxt's cached data (not the HTTP `cache` option). See [`useAsyncData`](/docs/4.x/api/composables/use-async-data#parameters) for details.                                                                                                  |
 | `pick`                                                                    | `string[]`                                                              | -          | Only pick specified keys from the result.                                                                                                                                                                                                                                          |
 | `watch`                                                                   | `MultiWatchSources \| false`                                            | -          | Array of reactive sources to watch and auto-refresh. `false` disables watching.                                                                                                                                                                                                    |
 | `deep` :badge[v3.8]{color="info" size="xs" class="align-middle"}          | `boolean`                                                               | `false`    | Return data in a deep ref object. Defaults to `false` for improved performance (shallow ref object).                                                                                                                                                                               |
@@ -243,6 +245,10 @@ const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
   : nuxtApp.static.data[key]
 ```
 This only caches data when `experimental.payloadExtraction` in `nuxt.config` is enabled.
+
+::note
+The `fetchPolicy` option controls Nuxt's payload-level data cache and is distinct from the `cache` option, which is passed through to the native `fetch` HTTP cache.
+::
 
 ## Return Values
 

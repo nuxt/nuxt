@@ -309,6 +309,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        fetchPolicy,
         ...fetchOptions
       } = {
         ...(typeof options === 'function' ? {} : factoryOptions),
@@ -342,6 +343,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        fetchPolicy,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
       }
 

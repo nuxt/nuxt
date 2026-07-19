@@ -422,6 +422,178 @@ describe('useAsyncData', () => {
     expect(data.value).toBe('watch')
   })
 
+  describe('fetchPolicy', () => {
+    it('`cache-first` (default) returns cached data without fetching', async () => {
+      useNuxtApp().static.data[uniqueKey] = 'cached'
+      const handler = vi.fn(() => Promise.resolve('network'))
+      const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-first' })
+      expect(handler).not.toHaveBeenCalled()
+      expect(data.value).toBe('cached')
+      expect(status.value).toBe('success')
+    })
+
+    it('`network-only` ignores cached data but updates the cache', async () => {
+      useNuxtApp().static.data[uniqueKey] = 'cached'
+      const handler = vi.fn(() => Promise.resolve('network'))
+      const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'network-only' })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(data.value).toBe('network')
+      expect(status.value).toBe('success')
+      expect(useNuxtApp().payload.data[uniqueKey]).toBe('network')
+    })
+
+    it('`network-only` does not consult getCachedData outside hydration', async () => {
+      const getCachedData = vi.fn(() => 'cached')
+      const { data, refresh } = await useAsyncData(uniqueKey, () => Promise.resolve('network'), { fetchPolicy: 'network-only', getCachedData })
+      await refresh()
+      expect(getCachedData).not.toHaveBeenCalled()
+      expect(data.value).toBe('network')
+    })
+
+    it.each(['network-only', 'no-cache'] as const)('`%s` adopts the server payload during hydration', async (fetchPolicy) => {
+      const nuxtApp = useNuxtApp()
+      const isHydrating = nuxtApp.isHydrating
+      nuxtApp.isHydrating = true
+      nuxtApp.payload.data[uniqueKey] = 'server'
+      try {
+        const handler = vi.fn(() => Promise.resolve('network'))
+        const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy })
+        expect(handler).not.toHaveBeenCalled()
+        expect(data.value).toBe('server')
+        expect(status.value).toBe('success')
+      } finally {
+        nuxtApp.isHydrating = isHydrating
+      }
+    })
+
+    it('`cache-only` returns cached data and never fetches', async () => {
+      useNuxtApp().static.data[uniqueKey] = 'cached'
+      const handler = vi.fn(() => Promise.resolve('network'))
+      const { data, status, refresh } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-only' })
+      expect(handler).not.toHaveBeenCalled()
+      expect(data.value).toBe('cached')
+      expect(status.value).toBe('success')
+      await refresh()
+      expect(handler).not.toHaveBeenCalled()
+    })
+
+    it('`cache-only` with an empty cache does not fetch', async () => {
+      const handler = vi.fn(() => Promise.resolve('network'))
+      const { data, status, pending, refresh } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-only', default: () => 'default' })
+      expect(handler).not.toHaveBeenCalled()
+      expect(data.value).toBe('default')
+      expect(status.value).toBe('idle')
+      expect(pending.value).toBe(false)
+      await refresh()
+      expect(handler).not.toHaveBeenCalled()
+      expect(status.value).toBe('idle')
+    })
+
+    it('`cache-only` re-consults the cache on refresh', async () => {
+      const handler = vi.fn(() => Promise.resolve('network'))
+      const { data, refresh } = await useAsyncData(uniqueKey, handler, {
+        fetchPolicy: 'cache-only',
+        getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key],
+      })
+      expect(data.value).toBeUndefined()
+      useNuxtApp().payload.data[uniqueKey] = 'written later'
+      await refresh()
+      expect(handler).not.toHaveBeenCalled()
+      expect(data.value).toBe('written later')
+    })
+
+    it('`no-cache` fetches but does not update the cache', async () => {
+      useNuxtApp().static.data[uniqueKey] = 'cached'
+      const handler = vi.fn(() => Promise.resolve('network'))
+      const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'no-cache' })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(data.value).toBe('network')
+      expect(status.value).toBe('success')
+      expect(uniqueKey in useNuxtApp().payload.data).toBe(false)
+    })
+
+    it('`cache-and-network` returns cached data and revalidates in the background', async () => {
+      useNuxtApp().static.data[uniqueKey] = 'cached'
+      let resolveHandler!: (value: string) => void
+      const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
+      const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-and-network' })
+      // resolves with the cached value while the request is still in flight
+      expect(data.value).toBe('cached')
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(status.value).toBe('pending')
+
+      resolveHandler('network')
+      await flushPromises()
+      expect(data.value).toBe('network')
+      expect(status.value).toBe('success')
+      expect(useNuxtApp().payload.data[uniqueKey]).toBe('network')
+    })
+
+    it('`cache-and-network` fetches normally when no cached data is present', async () => {
+      const handler = vi.fn(() => Promise.resolve('network'))
+      const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-and-network' })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(data.value).toBe('network')
+      expect(status.value).toBe('success')
+    })
+
+    it('`cache-and-network` does not restart an in-flight revalidation on a cache hit', async () => {
+      useNuxtApp().static.data[uniqueKey] = 'cached'
+      let resolveHandler!: (value: string) => void
+      const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
+      const first = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-and-network' })
+      expect(handler).toHaveBeenCalledTimes(1)
+
+      const second = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-and-network' })
+      expect(second.data.value).toBe('cached')
+      expect(handler).toHaveBeenCalledTimes(1)
+
+      resolveHandler('network')
+      await flushPromises()
+      expect(first.data.value).toBe('network')
+      expect(second.data.value).toBe('network')
+    })
+
+    it('`cache-and-network` composes with a custom getCachedData on refresh', async () => {
+      const resolvers: Array<(value: string) => void> = []
+      const handler = vi.fn(() => new Promise<string>((resolve) => { resolvers.push(resolve) }))
+      const { data, refresh } = await useAsyncData(uniqueKey, handler, {
+        fetchPolicy: 'cache-and-network',
+        getCachedData: () => 'cached',
+      })
+      expect(data.value).toBe('cached')
+      resolvers[0]!('network-0')
+      await flushPromises()
+      expect(data.value).toBe('network-0')
+
+      await refresh()
+      expect(data.value).toBe('cached')
+      resolvers[1]!('network-1')
+      await flushPromises()
+      expect(data.value).toBe('network-1')
+      expect(handler).toHaveBeenCalledTimes(2)
+    })
+
+    it('`cache-and-network` does not fetch when `enabled` is false', async () => {
+      useNuxtApp().static.data[uniqueKey] = 'cached'
+      const handler = vi.fn(() => Promise.resolve('network'))
+      const { data } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-and-network', enabled: false })
+      expect(handler).not.toHaveBeenCalled()
+      expect(data.value).toBe('cached')
+    })
+
+    it('`network-only` refetches on watch trigger', async () => {
+      const number = ref(0)
+      const handler = vi.fn(() => Promise.resolve(number.value))
+      const { data } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'network-only', watch: [number] })
+      expect(data.value).toBe(0)
+      number.value = 1
+      await flushPromises()
+      expect(handler).toHaveBeenCalledTimes(2)
+      expect(data.value).toBe(1)
+    })
+  })
+
   it('should use default while pending', async () => {
     const promise = useAsyncData(() => Promise.resolve('test'), { default: () => 'default' })
     const { data, pending } = promise

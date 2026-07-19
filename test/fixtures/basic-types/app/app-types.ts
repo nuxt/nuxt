@@ -693,6 +693,19 @@ describe('composables', () => {
     })
   })
 
+  it('correctly types fetchPolicy option', () => {
+    useAsyncData('test', () => Promise.resolve({ foo: 1 }), { fetchPolicy: 'cache-first' })
+    useAsyncData('test', () => Promise.resolve({ foo: 1 }), { fetchPolicy: 'cache-and-network' })
+    useAsyncData('test', () => Promise.resolve({ foo: 1 }), { fetchPolicy: 'network-only' })
+    useAsyncData('test', () => Promise.resolve({ foo: 1 }), { fetchPolicy: 'cache-only' })
+    useAsyncData('test', () => Promise.resolve({ foo: 1 }), { fetchPolicy: 'no-cache' })
+    // @ts-expect-error invalid fetchPolicy value
+    useAsyncData('test', () => Promise.resolve({ foo: 1 }), { fetchPolicy: 'cache-later' })
+    useFetch('/api/hey', { fetchPolicy: 'cache-and-network' })
+    // @ts-expect-error invalid fetchPolicy value
+    useFetch('/api/hey', { fetchPolicy: 'cache-later' })
+  })
+
   it('infers transformed data independently from typed cached data', () => {
     const asyncData = useAsyncData(
       () => Promise.resolve({
