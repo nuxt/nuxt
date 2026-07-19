@@ -4,63 +4,17 @@ title: Build Memory Usage
 description: How to understand and reduce memory use during `nuxt build`, and how to size CI runners.
 ---
 
-`nuxt build` often needs more memory than the running app. The build creates client and server bundles, runs Nitro, and may prerender routes. Module graphs, transforms, sourcemaps, and generated HTML all live in memory for part of that process.
+`nuxt build` often needs more memory than the running app. You generate client and server bundles, run Nitro, and may prerender routes. Graphs, transforms, sourcemaps, and HTML stay in memory for parts of that work.
 
-Nuxt does not publish a fixed memory budget. Peak usage depends on your source, dependencies, config, Node.js version, and preset. Measure your own build in CI before you pick a runner size.
+Nuxt does not publish a fixed memory budget. Peak usage depends on your app, dependencies, config, Node.js version, and preset. Measure a real build on your CI runner before you pick machine size. Runtime memory after deploy is a separate number; do not size production hosts from build peaks.
 
-## Examples From the Community
+Reports in [nuxt/nuxt#34849](https://github.com/nuxt/nuxt/issues/34849) (Nuxt 4.4.x, before Vite 8) show peaks from a few gigabytes into double digits on large prerendered sites. Those numbers age quickly after Nuxt and Vite upgrades, so treat them as context and re-measure your own project.
 
-These peaks were reported in [nuxt/nuxt#34849](https://github.com/nuxt/nuxt/issues/34849) on Nuxt 4.4.x (before Vite 8). Treat them as historical planning anchors, not current limits. Peaks may be lower after Nuxt 4.5+.
+## Reducing Peak Memory
 
-| Project | Peak during `nuxt build` |
-| --- | --- |
-| Minimal app with `@nuxt/ui` | ~3.5–4 GB |
-| Large app (421k LOC + 82k lines of i18n JSON) | ~10–11 GB |
-| Large app with client/server sourcemaps and thousands of prerendered routes | 12+ GB |
+Prerendering dominates for most apps: each route holds HTML and payload data, and higher concurrency multiplies that cost. Sourcemaps (server maps are on by default), Nitro minification of a large server bundle, and very large client dependencies can push the peak further. Change one setting at a time and compare peak RSS on identical builds.
 
-Runtime memory after deploy is a different number. Do not size production hosts from build peaks.
-
-## What Uses Memory
-
-- **Sourcemaps.** Server maps are on by default (`sourcemap.server: true`). Client maps add more.
-- **Prerendering.** Each route renders HTML and payload data; concurrency multiplies that cost.
-- **Large graphs.** Big locale JSON, generated code, and heavy modules increase what Vite/Rollup/Nitro must parse.
-- **Nitro minification.** Minifying a large server bundle can spike near the end of the build.
-
-Dependency upgrades can change the graph. In the same issue, builds started OOMing on 8 GB runners after `@nuxt/ui` 4.6.1, and other projects using Reka UI-based kits (`@nuxt/ui`, `shadcn-vue`) reported high peaks. Treat those as leads: compare the same app before and after the lockfile change.
-
-## Ways to Reduce Memory
-
-Change one setting at a time and compare peak RSS on identical builds.
-
-### Turn Off Sourcemaps You Do Not Ship
-
-```ts twoslash [nuxt.config.ts]
-export default defineNuxtConfig({
-  sourcemap: {
-    server: false,
-    client: false,
-  },
-})
-```
-
-See [`sourcemap`](/docs/4.x/api/nuxt-config#sourcemap) and [Debugging](/docs/4.x/guide/going-further/debugging#sourcemaps).
-
-### Disable Nitro `minify` if the Heap Is Tight
-
-```ts twoslash [nuxt.config.ts]
-export default defineNuxtConfig({
-  nitro: {
-    minify: false,
-  },
-})
-```
-
-One large project saw about 1 GB less peak after turning off server sourcemaps and minification together. Test each option on your own bundle.
-
-### Limit Prerender Work
-
-Prefer ISR/SWR for large dynamic sections instead of prerendering every URL:
+Start with prerender work. Prefer ISR or SWR for large dynamic sections, skip prerender where you do not need static HTML, lower `concurrency`, and avoid crawling every link:
 
 ```ts twoslash [nuxt.config.ts]
 export default defineNuxtConfig({
@@ -80,33 +34,67 @@ export default defineNuxtConfig({
 
 Lower `concurrency` trades build time for less parallel memory use. See [Prerendering](/docs/4.x/getting-started/prerendering) and [Nitro prerender options](https://nitro.build/config#prerender).
 
-### Raise the Node Heap When the Machine Has RAM
+Turn off sourcemaps you do not ship:
+
+```ts twoslash [nuxt.config.ts]
+export default defineNuxtConfig({
+  sourcemap: {
+    server: false,
+    client: false,
+  },
+})
+```
+
+See [`sourcemap`](/docs/4.x/api/nuxt-config#sourcemap) and [Debugging](/docs/4.x/guide/going-further/debugging#sourcemaps).
+
+If the heap spikes near the end of the build, disable Nitro minification:
+
+```ts twoslash [nuxt.config.ts]
+export default defineNuxtConfig({
+  nitro: {
+    minify: false,
+  },
+})
+```
+
+One large project saw about 1 GB less peak after turning off server sourcemaps and minification together. Test each option on your own bundle.
+
+When Node.js throws `FATAL ERROR: Reached heap limit` and the machine has free RAM, raise the V8 heap:
 
 ```bash [Terminal]
 NODE_OPTIONS='--max-old-space-size=8192' npx nuxt build
 ```
 
-This helps when Node throws `FATAL ERROR: Reached heap limit` and the host still has free memory. Exit code `137` usually means the OS killed the process. A larger V8 heap does not add physical RAM.
+Exit code `137` means the OS killed the process. A larger heap limit does not add physical RAM. `--expose-gc` only exposes `global.gc()`; it does not free objects the build still holds.
 
-`--expose-gc` only exposes `global.gc()`. It does not free objects the build still holds.
+If a very large dependency (for example Puppeteer) lands in the client graph, [`nuxt analyze`](/docs/4.x/api/commands/analyze) can show that. For most apps, prerender work matters more than the module graph.
 
-If a very large dependency (for example Puppeteer) lands in the client graph, [`nuxt analyze`](/docs/4.x/api/commands/analyze) can show that. For most apps, prerendering dominates peak memory more than the module graph.
+## CI Runners
 
-## Sizing CI
+Pick a runner with more free memory than your measured peak, and leave room for the OS and package manager. Standard GitHub-hosted `macos-latest` runners have about 7 GB of RAM. Standard `ubuntu-latest` runners have 16 GB for public repositories and 8 GB for private repositories. Move to a larger runner or cut workload when peaks approach the limit.
 
-Pick a runner with more free memory than your measured peak, leaving room for the OS and package manager. Standard GitHub-hosted `macos-latest` runners have about 7 GB of RAM. Standard `ubuntu-latest` runners have 16 GB for public repositories and 8 GB for private repositories. Move to a larger runner or cut workload when peaks approach the limit. Swap can avoid an abrupt kill but slows the build a lot.
+If GitHub Actions kills the build for memory, add swap before `nuxt build`. The job gets slower under swap, but you finish instead of running out of memory:
 
-Re-measure after Nuxt, Node, or major module upgrades on the same project and runner. That is the clearest signal of a regression.
+```yaml [.github/workflows/ci.yml]
+- name: Add swap space
+  run: |
+    sudo fallocate -l 6G /mnt/swapfile
+    sudo chmod 600 /mnt/swapfile
+    sudo mkswap /mnt/swapfile
+    sudo swapon /mnt/swapfile
+```
 
-## How to Measure
+Re-measure after Nuxt, Node.js, or major module upgrades on the same project and runner.
 
-Peak RSS for the timed command (Linux, GNU time):
+## Measuring
+
+On Linux, peak RSS for the timed command:
 
 ```bash [Terminal]
 /usr/bin/time -v npx nuxt build
 ```
 
-Heap profile when you need retained allocations:
+For retained allocations, use a heap profile:
 
 ```bash [Terminal]
 NODE_OPTIONS='--heap-prof' npx nuxt build
@@ -114,7 +102,7 @@ NODE_OPTIONS='--heap-prof' npx nuxt build
 
 Open the `.heapprofile` in Chrome DevTools. Profiling adds overhead, so size CI from normal builds.
 
-Optional stage logs in the main process:
+You can also log RSS and heap at build hooks in the main process:
 
 ```ts [nuxt.config.ts]
 function reportMemory (stage: string) {
@@ -137,6 +125,6 @@ export default defineNuxtConfig({
 
 These hooks miss peaks between stages and memory in child processes.
 
-[`nuxt build --profile`](/docs/4.x/api/commands/build) reports RSS and heap deltas for build stages and writes a CPU profile. It helps identify slow stages but does not produce a retained-allocation heap profile.
+[`nuxt build --profile`](/docs/4.x/api/commands/build) reports RSS and heap deltas for build stages and writes a CPU profile. Use it to find slow stages; it does not produce a retained-allocation heap profile.
 
-When you open an OOM issue, include Nuxt and Node versions, peak RSS, runner RAM, sourcemap settings, prerender route count, preset, and major module versions.
+When you open an OOM issue, include Nuxt and Node.js versions, peak RSS, runner RAM, sourcemap settings, prerender route count, preset, and major module versions.
