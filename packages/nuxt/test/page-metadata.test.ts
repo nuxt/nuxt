@@ -95,7 +95,7 @@ definePageMeta({
 
   it('should extract metadata from JS/JSX files', () => {
     const fileContents = `definePageMeta({ name: 'bar' })`
-    for (const ext of ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']) {
+    for (const ext of ['js', 'jsx', 'ts', 'cts', 'mts', 'tsx', 'mjs', 'cjs']) {
       const meta = getRouteMeta(fileContents, `/app/pages/index.${ext}`)
       expect(meta).toStrictEqual({
         name: 'bar',
