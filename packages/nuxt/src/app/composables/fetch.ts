@@ -40,8 +40,8 @@ export interface UseFetchOptions<
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'method' | 'timeout'> {
-  method?: MaybeRefOrGetter<M>
   key?: MaybeRefOrGetter<string>
+  method?: MaybeRefOrGetter<M>
   $fetch?: $Fetch
   watch?: MultiWatchSources | false
 }
