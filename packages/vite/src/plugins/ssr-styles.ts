@@ -383,9 +383,13 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
             if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
 
-            if (!islandPaths.has(pathname) && !serverPagePaths.has(pathname)) {
+            const isEntryModule = pathname === entry
+
+            if (!isEntryModule && !islandPaths.has(pathname) && !serverPagePaths.has(pathname)) {
               if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
             }
+
+            if (isEntryModule && options.shouldInline === false) { return }
 
             const relativeId = relativeToSrcDir(stripQuery(id))
             const idMap = cssMap[relativeId] ||= { files: [] }
@@ -406,6 +410,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             let styleCtr = 0
             const ids = clientCSSMap[id] || []
             for (const file of ids) {
+              if (isEntryModule && typeof options.shouldInline === 'function' && !options.shouldInline(file)) { continue }
               if (emittedIds.has(file)) { continue }
               const fileInline = file + '?inline&used'
               const resolved = await this.resolve(file) ?? await this.resolve(file, id)
