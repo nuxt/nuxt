@@ -208,7 +208,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
               const propertyKey = property.key.name
               if (propertyKey === 'dependsOn' && filteredDependencies && property.value.type === 'ArrayExpression') {
                 const dependencies = property.value.elements.map(element => element?.type === 'Literal' && typeof element.value === 'string' ? element.value : null)
-                if (dependencies.every(dependency => dependency !== null) && (dependencies.length !== filteredDependencies.length || dependencies.some((dependency, index) => dependency !== filteredDependencies[index]))) {
+                if (dependencies.length !== filteredDependencies.length || dependencies.some((dependency, index) => dependency !== filteredDependencies[index])) {
                   s.overwrite(property.value.start, property.value.end, JSON.stringify(filteredDependencies))
                 }
               }

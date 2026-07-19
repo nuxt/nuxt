@@ -340,14 +340,15 @@ export function sortPluginsByDependsOn<T extends AnnotatedPlugin> (plugins: T[])
 
 export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[], options: { warn?: boolean, mode?: PluginBuildMode, allPlugins?: AnnotatedPlugin[] } = {}): T[] {
   // A plugin with dynamic metadata may provide a name we cannot see at build time.
-  // Keep the complete graph so the runtime resolver can handle it conservatively.
-  if (plugins.some(plugin => plugin._metaUnknown)) {
-    return plugins
-  }
+  // In that case keep the complete graph so the runtime resolver can handle it
+  // conservatively, but still emit the dev-time warnings: cross-environment
+  // dependencies are never bundled for this build regardless of what the dynamic
+  // plugin provides.
+  const filter = !plugins.some(plugin => plugin._metaUnknown)
 
   const pluginNames = new Set(plugins.map(plugin => plugin.name))
   const allPluginNames = new Set((options.allPlugins || plugins).map(plugin => plugin.name))
-  return plugins.map((plugin) => {
+  const result = plugins.map((plugin) => {
     if (!plugin.dependsOn?.some(name => !pluginNames.has(name))) {
       return plugin
     }
@@ -364,11 +365,17 @@ export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[
       }
     }
 
+    if (!filter) {
+      return plugin
+    }
+
     return {
       ...plugin,
       dependsOn: plugin.dependsOn.filter(name => pluginNames.has(name)),
     }
   })
+
+  return filter ? result : plugins
 }
 
 export function hasPluginDependencies (plugins: Array<{ dependsOn?: string[], _metaUnknown?: boolean }>): boolean {

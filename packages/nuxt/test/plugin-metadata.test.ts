@@ -194,6 +194,18 @@ describe('plugin sanity checking', () => {
     expect(plugins[1]?.dependsOn).toEqual(['A', 'D'])
   })
 
+  it('warns about missing dependencies even when plugin metadata is unknown', () => {
+    vi.spyOn(console, 'warn')
+    const plugins = [
+      { name: 'A', src: '', _metaUnknown: true },
+      { name: 'B', dependsOn: ['A', 'D'], src: '' },
+    ]
+    expect(filterPluginDependencies(plugins, { warn: true })).toBe(plugins)
+    expect(plugins[1]?.dependsOn).toEqual(['A', 'D'])
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Plugin `B` depends on `D` but they are not registered.'))
+    vi.restoreAllMocks()
+  })
+
   it('circular dependencies are warned', () => {
     vi.spyOn(console, 'warn')
     checkForCircularDependencies([
