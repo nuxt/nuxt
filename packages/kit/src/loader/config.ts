@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, realpathSync, statSync } from 'node:fs'
 import process from 'node:process'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
@@ -7,7 +7,7 @@ import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { basename, join, relative, resolve } from 'pathe'
+import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
@@ -61,11 +61,15 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       dotenv: false, // already loaded above
       async resolve (source, resolveOptions) {
         // Respect a user-provided resolver
-        const resolved = await opts.resolve?.(source, resolveOptions)
-        if (resolved) { return resolved }
+        const custom = await opts.resolve?.(source, resolveOptions)
+        if (custom) { return custom }
         // Only dedupe local sources; packages/remote sources are left to c12
-        const layerDir = resolve(resolveOptions.cwd || process.cwd(), source)
-        if (!existsSync(layerDir)) { return }
+        const path = resolve(resolveOptions.cwd || process.cwd(), source)
+        if (!existsSync(path)) { return }
+        // Canonicalise to the layer directory so different spellings of the same
+        // layer share one identity: a config-file path -> its directory, and a
+        // symlink -> its target
+        const layerDir = normalize(realpathSync(statSync(path).isDirectory() ? path : dirname(path)))
         if (seenLayerDirs.has(layerDir)) {
           // Empty layer so the repeat contributes nothing to the merge; a nullish
           // return would let c12 resolve and merge the same layer again
