@@ -18,6 +18,7 @@ export type { LayerDirectories } from './layers.ts'
 // Utils
 export { setGlobalHead } from './head.ts'
 export { addImports, addImportsDir, addImportsSources } from './imports.ts'
+export { updateAppConfig } from './app-config.ts'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config.ts'
 export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig, setBuildOutput } from './build.ts'
 export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigOptions } from './build.ts'
