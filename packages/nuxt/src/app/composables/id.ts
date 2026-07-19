@@ -1,4 +1,14 @@
+import { useNuxtApp } from '#app'
 import { useId as _useId } from 'vue'
+// @ts-expect-error virtual file
+import { componentIslands } from '#build/nuxt.config.mjs'
 
-/** @deprecated Use `useId` from `vue` */
-export const useId = _useId
+export const useId = import.meta.server && componentIslands
+  ? (): string => {
+      const nuxtApp = useNuxtApp()
+      if (nuxtApp.ssrContext?.islandContext) {
+        return nuxtApp.ssrContext.islandContext.id + useId()
+      }
+      return _useId()
+    }
+  : _useId
