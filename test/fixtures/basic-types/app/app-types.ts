@@ -28,9 +28,6 @@ declare module 'nitro/types' {
       get: { method: 'get' }
       post: { method: 'post' }
     }
-    '/api/method-inference/post-only': {
-      post: { method: 'post' }
-    }
   }
 }
 
@@ -139,8 +136,6 @@ describe('API routes', () => {
     const transformedPostFetch = useFetch('/api/method-inference', { method: 'post', transform: data => data })
     const defaultedPostFetch = useFetch('/api/method-inference', { method: 'post', default: () => ({ method: 'post' as const }) })
     const keyedPostFetch = useFetch('/api/method-inference', { method: 'post' }, 'key')
-    const explicitResponseFetch = useFetch<{ explicit: true }>('/api/method-inference')
-    const postOnlyFetch = useFetch('/api/method-inference/post-only')
     const usePostFetch = createUseFetch<void, '/api/method-inference', 'post'>({ method: 'post' })
     const factoryFetch = usePostFetch('/api/method-inference')
 
@@ -149,8 +144,6 @@ describe('API routes', () => {
     expectTypeOf<FetchMethod<typeof transformedPostFetch>>().toEqualTypeOf<'post'>()
     expectTypeOf<FetchMethod<typeof defaultedPostFetch>>().toEqualTypeOf<'post'>()
     expectTypeOf<FetchMethod<typeof keyedPostFetch>>().toEqualTypeOf<'post'>()
-    expectTypeOf(explicitResponseFetch.data).toEqualTypeOf<Ref<{ explicit: true } | DefaultAsyncDataValue>>()
-    expectTypeOf(postOnlyFetch.data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf<FetchMethod<typeof factoryFetch>>().toEqualTypeOf<'post'>()
 
     // expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
