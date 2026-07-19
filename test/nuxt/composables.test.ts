@@ -527,6 +527,42 @@ describe('loading state', () => {
     expect(isLoading.value).toBeFalsy()
     vi.useRealTimers()
   })
+
+  it('clears a pending hide timeout when setting progress', () => {
+    vi.useFakeTimers()
+    const { clear, finish, isLoading, set } = useLoadingIndicator()
+
+    try {
+      finish()
+      vi.advanceTimersByTime(100)
+      set(30, { force: true })
+      clear()
+      vi.advanceTimersByTime(400)
+
+      expect(isLoading.value).toBe(true)
+    } finally {
+      finish({ force: true })
+      vi.useRealTimers()
+    }
+  })
+
+  it('clears a pending reset timeout when setting progress', () => {
+    vi.useFakeTimers()
+    const { clear, finish, progress, set } = useLoadingIndicator()
+
+    try {
+      finish()
+      vi.advanceTimersByTime(500)
+      set(30, { force: true })
+      clear()
+      vi.advanceTimersByTime(400)
+
+      expect(progress.value).toBe(30)
+    } finally {
+      finish({ force: true })
+      vi.useRealTimers()
+    }
+  })
 })
 
 describe.skipIf(!isTestingAppManifest)('app manifests', () => {

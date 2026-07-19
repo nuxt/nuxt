@@ -39,7 +39,7 @@ You do not need to `await` `useFetch`. On the server, Nuxt waits for the promise
 
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
 
-```ts
+```ts [app/pages/index.vue]
 const param1 = ref('value1')
 const { data, status, error, refresh } = await useFetch('/api/modules', {
   query: { param1, param2: 'value2' },
@@ -50,7 +50,7 @@ The above example results in `https://api.nuxt.com/modules?param1=value1&param2=
 
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
-```ts
+```ts [app/pages/index.vue]
 const { data, status, error, refresh, clear } = await useFetch('/api/auth/login', {
   onRequest ({ request, options }) {
     // Set the request headers
@@ -124,7 +124,7 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 Fetch options can be provided as reactive, supporting `computed`, `ref` and [computed getters](https://vuejs.org/guide/essentials/computed). When a reactive fetch option is updated it will trigger a refetch using the updated resolved reactive value.
 
-```ts
+```ts [app/pages/index.vue]
 const searchQuery = ref('initial')
 const { data } = await useFetch('/api/search', {
   query: { q: searchQuery },
@@ -135,7 +135,7 @@ searchQuery.value = 'new search'
 
 If needed, you can opt out of this behavior using `watch: false`:
 
-```ts
+```ts [app/pages/index.vue]
 const searchQuery = ref('initial')
 const { data } = await useFetch('/api/search', {
   query: { q: searchQuery },
@@ -237,7 +237,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
 
 **getCachedData default:**
 
-```ts
+```ts [Default getCachedData Implementation]
 const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
   ? nuxtApp.payload.data[key]
   : nuxtApp.static.data[key]
@@ -270,14 +270,14 @@ If you have not fetched data on the server (for example, with `server: false`), 
 Functions from the `Promise` (`then`, `catch`, and `finally`) can safely be destructured, if you did not await the return value.
 ::
 
-### Status values
+### Status Values
 
 - `idle`: Request has not started (e.g. `{ immediate: false }` or `{ server: false }` on server render)
 - `pending`: Request is in progress
 - `success`: Request completed successfully
 - `error`: Request failed
 
-### Examples
+### Example
 
 :link-example{to="/docs/4.x/examples/advanced/use-custom-fetch-composable"}
 

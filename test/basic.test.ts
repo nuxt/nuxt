@@ -1626,6 +1626,12 @@ describe('plugins', () => {
     expect(html).toContain('asyncPlugin: Async plugin works! 123')
     expect(html).toContain('useFetch works!')
   })
+
+  it('runs a plugin with environment-specific dependencies', async () => {
+    const html = await $fetch<string>('/plugins')
+    expect(html).toContain('dependsOnPlugin: Plugin with environment-specific dependencies works!')
+    await expectNoClientErrors('/plugins')
+  })
 })
 
 describe('layouts', () => {

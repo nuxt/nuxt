@@ -264,7 +264,7 @@ It provides both lab and field data about a page. Lab data is useful for debuggi
 
 Each test can be run from different locations around the world, on real browsers, over any number of customizable network conditions.
 
-## Common problems
+## Common Problems
 
 When building more complex Nuxt applications, you will probably encounter some of the problems listed below. Understanding these problems and fixing them will help you improve performance of your website.
 

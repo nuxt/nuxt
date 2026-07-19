@@ -81,7 +81,7 @@ Returns the same `AsyncData` object as [`useFetch`](/docs/4.x/api/composables/us
 
 :read-more{to="/docs/4.x/api/composables/use-fetch#return-values"}
 
-## Examples
+## Example
 
 ### Handling Pending State
 

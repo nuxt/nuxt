@@ -40,6 +40,23 @@ export const orderMap: Record<NonNullable<PluginMeta['enforce']>, number> = {
 
 export type ExtractedPluginMeta = PluginMeta & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean, _metaUnknown?: boolean }
 
+export type PluginBuildMode = 'client' | 'server'
+
+const pluginDependenciesByMode = new WeakMap<Nuxt, Partial<Record<PluginBuildMode, Map<string, string[]>>>>()
+
+export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode, plugins: Array<{ src: string, dependsOn?: string[], _metaUnknown?: boolean }>) {
+  const dependencies = new Map<string, string[]>()
+  for (const plugin of plugins) {
+    if (!plugin._metaUnknown && plugin.dependsOn) {
+      dependencies.set(normalize(plugin.src), plugin.dependsOn)
+    }
+  }
+
+  const metadata = pluginDependenciesByMode.get(nuxt) || {}
+  metadata[mode] = dependencies
+  pluginDependenciesByMode.set(nuxt, metadata)
+}
+
 const metaCache: Record<string, ExtractedPluginMeta> = {}
 export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
   let meta: ExtractedPluginMeta = {}
@@ -135,13 +152,15 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
   return meta
 }
 
-export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
+export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) => createUnplugin(() => {
   return {
-    name: 'nuxt:remove-plugin-metadata',
+    name: `nuxt:remove-plugin-metadata:${mode}`,
     transform (code, id, meta?: unknown) {
       id = normalize(id)
       const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
       if (!plugin) { return }
+
+      const filteredDependencies = pluginDependenciesByMode.get(nuxt)?.[mode]?.get(id)
 
       if (!code.trim()) {
         pluginDiagnostics.NUXT_B2004({ src: plugin.src })
@@ -178,7 +197,8 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           wrapped = true
 
           // Remove metadata that already has been extracted
-          if (!('order' in plugin) && !('name' in plugin)) { return }
+          const removeExtractedMetadata = 'order' in plugin || 'name' in plugin
+          if (!filteredDependencies && !removeExtractedMetadata) { return }
           for (const [argIndex, arg] of node.arguments.entries()) {
             if (arg.type !== 'ObjectExpression') { continue }
 
@@ -186,7 +206,13 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
               if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
 
               const propertyKey = property.key.name
-              if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name') {
+              if (propertyKey === 'dependsOn' && filteredDependencies && property.value.type === 'ArrayExpression') {
+                const dependencies = property.value.elements.map(element => element?.type === 'Literal' && typeof element.value === 'string' ? element.value : null)
+                if (dependencies.length !== filteredDependencies.length || dependencies.some((dependency, index) => dependency !== filteredDependencies[index])) {
+                  s.overwrite(property.value.start, property.value.end, JSON.stringify(filteredDependencies))
+                }
+              }
+              if (removeExtractedMetadata && (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name')) {
                 const nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
                 const nextIndex = nextNode?.start || (arg.end - 1)
 
