@@ -95,6 +95,15 @@ interface BaseAsyncDataOptions<
    */
   timeout?: number
   /**
+   * An artificial minimum duration in milliseconds that the request is guaranteed to take before its
+   * result (or error) surfaces.
+   *
+   * The delay only applies on the client (it is skipped during SSR/prerendering) and does not delay
+   * aborts — cancelling the request (via `dedupe: 'cancel'`, `clear()`, `timeout`, or `enabled: false`)
+   * settles immediately and clears the pending timer.
+   */
+  minDelay?: number
+  /**
    * Controls whether to run the async function
    * @default true
    */
@@ -155,6 +164,8 @@ export interface AsyncDataExecuteOptions {
   signal?: AbortSignal
 
   timeout?: number
+
+  minDelay?: number
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -866,7 +877,27 @@ function buildAsyncData<
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
             }, { once: true, signal: cleanupController.signal })
 
-            return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
+            const handlerPromise = Promise.resolve(handler(nuxtApp, { signal: mergedSignal }))
+
+            const minDelay = opts.minDelay ?? options.minDelay
+
+            if (import.meta.client && typeof minDelay === 'number' && minDelay > 0) {
+              const minDelayPromise = new Promise<void>((resolveDelay) => {
+                const timer = setTimeout(resolveDelay, minDelay)
+                
+                cleanupController.signal.addEventListener('abort', () => {
+                  clearTimeout(timer)
+                  resolveDelay()
+                }, { once: true })
+              })
+
+              return handlerPromise.then(
+                result => minDelayPromise.then(() => resolve(result)),
+                error => minDelayPromise.then(() => reject(error)),
+              )
+            }
+
+            return handlerPromise.then(resolve, reject)
           } catch (err) {
             reject(err)
           }

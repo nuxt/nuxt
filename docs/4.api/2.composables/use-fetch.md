@@ -169,6 +169,7 @@ type UseFetchOptions<ResT, DataT = ResT> = {
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
   timeout?: number
+  minDelay?: number
   enabled?: MaybeRefOrGetter<boolean>
   default?: () => DataT | Ref<DataT>
   transform?: (input: ResT) => DataT | Promise<DataT>
@@ -195,6 +196,7 @@ type AsyncData<DataT, ErrorT> = {
 interface AsyncDataExecuteOptions {
   dedupe?: 'cancel' | 'defer'
   timeout?: number
+  minDelay?: number
   signal?: AbortSignal
 }
 
@@ -222,6 +224,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `immediate`                                                               | `boolean`                                                               | `true`     | If false, prevents request from firing immediately.                                                                                                                                                                                                                                |
 | `default`                                                                 | `() => DataT`                                                           | -          | Factory for default value of `data` before async resolves.                                                                                                                                                                                                                         |
 | `timeout` :badge[v4.2]{color="info" size="xs" class="align-middle"}       | `number`                                                                | -          | A number in milliseconds to wait before timing out the request (defaults to `undefined`, which means no timeout)                                                                                                                                                                   |
+| `minDelay` :badge[v5.0]{color="info" size="xs" class="align-middle"}      | `number`                                                                | -          | A minimum duration in milliseconds the request is guaranteed to take before its result (or error) surfaces. Client-only (skipped during SSR); aborts are not delayed. Defaults to `undefined` (no minimum).         |
 | `transform`                                                               | `(input: DataT) => DataT \| Promise<DataT>`                             | -          | Function to transform the result after resolving.                                                                                                                                                                                                                                  |
 | `getCachedData` :badge[v3.8]{color="info" size="xs" class="align-middle"} | `(key, nuxtApp, ctx) => DataT \| undefined`                             | -          | Function to return cached data. See below for default.                                                                                                                                                                                                                             |
 | `pick`                                                                    | `string[]`                                                              | -          | Only pick specified keys from the result.                                                                                                                                                                                                                                          |

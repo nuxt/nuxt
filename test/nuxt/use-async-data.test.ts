@@ -1233,6 +1233,66 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
+  it('should enforce a minimum delay before the result surfaces', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => Promise.resolve('value'))
+    const { status, data } = useAsyncData('min-delay-success', promiseFn, { minDelay: 1000 })
+    expect(status.value).toBe('pending')
+    // the handler has already resolved, but the minimum delay keeps the state pending
+    await flushPromises()
+    expect(status.value).toBe('pending')
+    expect(data.value).toBeUndefined()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(status.value).toBe('success')
+    expect(data.value).toBe('value')
+    vi.useRealTimers()
+  })
+
+  it('should enforce the minimum delay before an error surfaces', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => Promise.reject(new Error('boom')))
+    const { status, error } = useAsyncData('min-delay-error', promiseFn, { minDelay: 1000 })
+    expect(status.value).toBe('pending')
+    await flushPromises()
+    expect(status.value).toBe('pending')
+    expect(error.value).toBeUndefined()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(status.value).toBe('error')
+    expect(error.value).toBeTruthy()
+    vi.useRealTimers()
+  })
+
+  it('should not delay aborts while waiting for the minimum delay', async () => {
+    vi.useFakeTimers()
+    let aborted = false
+    const promiseFn = vi.fn((_: any, { signal }: { signal: AbortSignal }) => {
+      signal.addEventListener('abort', () => { aborted = true })
+      return Promise.resolve('value')
+    })
+    const { status, clear } = useAsyncData('min-delay-abort', promiseFn, { minDelay: 1000 })
+    await flushPromises()
+    // still waiting on the minimum delay
+    expect(status.value).toBe('pending')
+    clear()
+    await flushPromises()
+    // the abort settles immediately without waiting out the remaining delay
+    expect(status.value).toBe('idle')
+    expect(aborted).toBe(true)
+    vi.useRealTimers()
+  })
+
+  it('should allow overriding minDelay per execute call', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => Promise.resolve('value'))
+    const { status, execute } = useAsyncData('min-delay-override', promiseFn, { immediate: false, minDelay: 1000 })
+    expect(status.value).toBe('idle')
+    execute({ minDelay: 0 })
+    await flushPromises()
+    // the per-call override disables the configured floor, so it resolves without advancing timers
+    expect(status.value).toBe('success')
+    vi.useRealTimers()
+  })
+
   it('should handle already-aborted signal', async () => {
     const controller = new AbortController()
     controller.abort(new DOMException('Already aborted', 'AbortError'))
