@@ -23,6 +23,9 @@ const { status, data: posts } = await useLazyFetch('/api/posts')
   <div v-if="status === 'pending'">
     Loading ...
   </div>
+  <div v-else-if="status === 'error'">
+    Error loading posts
+  </div>
   <div v-else>
     <div v-for="post in posts">
       <!-- do something -->
@@ -36,7 +39,7 @@ const { status, data: posts } = await useLazyFetch('/api/posts')
 ::
 
 ::warning
-Awaiting `useLazyFetch` initializes the call but does not wait for the data. During client-side navigation, check `status === 'pending'` in your component's template before using the result.
+Awaiting `useLazyFetch` initializes the call but does not wait for the data. During client-side navigation, check `status === 'pending'` and `status === 'error'` in your component's template before using the result.
 ::
 
 ::warning
@@ -100,6 +103,9 @@ watch(posts, (newPosts) => {
 <template>
   <div v-if="status === 'pending'">
     Loading ...
+  </div>
+  <div v-else-if="status === 'error'">
+    Error loading posts
   </div>
   <div v-else>
     <div v-for="post in posts">

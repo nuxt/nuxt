@@ -18,7 +18,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
-const { data, status, error, refresh, clear } = await useAsyncData(
+const { data, status, pending, error, refresh, clear } = await useAsyncData(
   'mountains',
   (_nuxtApp, { signal }) => $fetch('https://api.nuxtjs.dev/mountains', { signal }),
 )
@@ -34,7 +34,7 @@ You do not need to `await` `useAsyncData`. On the server, Nuxt waits for the pro
 ::
 
 ::note
-`data`, `status`, and `error` are Vue refs. Access their values with `.value` in `<script setup>`. `refresh`/`execute` and `clear` are plain functions.
+`data`, `status`, `pending`, and `error` are Vue refs. Access their values with `.value` in `<script setup>`. `refresh`/`execute` and `clear` are plain functions.
 ::
 
 ### Watch Parameters
@@ -295,7 +295,7 @@ If you have not fetched data on the server (for example, with `server: false`), 
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`.                                                                                                                                              |
 | `error`   | `Ref<ErrorT \| undefined>`                          | Error object if the asynchronous function threw an error.                                                                                                         |
 | `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the asynchronous function call. Use it to distinguish `idle`, `pending`, `success`, and `error`.                                                        |
-| `pending` | `Ref<boolean>`                                      | `true` while a request is in flight. With [`experimental.pendingWhenIdle`](/docs/4.x/guide/going-further/experimental-features#pendingwhenidle), it is also `true` before the request starts. |
+| `pending` | `Ref<boolean>`                                      | `true` while a request is in flight. With [`experimental.pendingWhenIdle`](/docs/4.x/guide/going-further/experimental-features#pendingwhenidle), it is also `true` when `status` is `idle` and no cached data is available. |
 | `clear`   | `() => void`                                        | Resets `data` to `undefined` (or the value of `options.default()` if provided), `error` to `undefined`, set `status` to `idle`, and cancels any pending calls.    |
 
 ::tip

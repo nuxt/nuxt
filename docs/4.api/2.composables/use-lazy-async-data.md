@@ -87,8 +87,14 @@ watch(count, (newCount) => {
 </script>
 
 <template>
-  <div>
-    {{ status === 'pending' ? 'Loading' : count }}
+  <div v-if="status === 'pending'">
+    Loading
+  </div>
+  <div v-else-if="status === 'error'">
+    Error loading count
+  </div>
+  <div v-else>
+    {{ count }}
   </div>
 </template>
 ```
