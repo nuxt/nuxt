@@ -31,6 +31,17 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     expect(cssLinks, page).toEqual([])
   })
 
+  // https://github.com/nuxt/nuxt/issues/35255
+  it.fails('drops duplicate stylesheet links for fully inlined CSS in a shared chunk', async () => {
+    for (const page of ['shared-a', 'shared-b']) {
+      const html = await readFile(join(outputDir, 'public', page, 'index.html'), 'utf-8')
+      expect(html, page).toContain('--inline-shared-box-token:shared-box')
+
+      const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+      expect(cssLinks, page).toEqual([])
+    }
+  })
+
   // https://github.com/nuxt/nuxt/issues/31558
   it('inlines CSS for a non-island child of a server component', async () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
