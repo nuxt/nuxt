@@ -10,6 +10,19 @@ import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 
+const nitroUnheadImports = [
+  '@unhead/vue/server',
+  '@unhead/vue/stream/iife',
+  '@unhead/vue/stream/server',
+  '@unhead/vue/utils',
+  'unhead/legacy',
+  'unhead/plugins',
+  'unhead/server',
+  'unhead/stream/iife',
+  'unhead/stream/server',
+  'unhead/utils',
+]
+
 export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
     name: 'nuxt:meta',
@@ -55,6 +68,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }
 
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
+    // Nuxt's runtime and generated templates must use the Unhead version Nuxt was built against.
+    const nuxtImportPaths = [directoryToURL(distDir)]
+    const resolveNuxtUnhead = (id: string) => resolveModulePath(id, { from: nuxtImportPaths })
 
     // Register @unhead/vue/vite plugin for v5 compat mode
     // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
@@ -95,8 +111,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    const unheadLegacy = resolveModulePath('@unhead/vue/legacy', { try: true, from: importPaths }) || '@unhead/vue/legacy'
-    const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
+    const unheadLegacy = resolveNuxtUnhead('@unhead/vue/legacy')
+    const unheadPlugins = resolveNuxtUnhead('@unhead/vue/plugins')
+    const nitroUnheadAliases = Object.fromEntries(nitroUnheadImports.map(id => [id, resolveNuxtUnhead(id)]))
 
     addTemplate({
       filename: 'unhead-options.mjs',
@@ -147,6 +164,10 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     // template is only exposed in nuxt context, expose in nitro context as well
     nuxt.hooks.hook('nitro:config', (config) => {
+      // Nitro externalizes these imports independently from the Nuxt runtime files that own them.
+      // Pin them so an application dependency cannot replace Nuxt's Unhead version.
+      config.alias ||= {}
+      Object.assign(config.alias, nitroUnheadAliases)
       config.virtual!['#internal/unhead-options.mjs'] = () => nuxt.vfs['#build/unhead-options.mjs'] || ''
       config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs'] || ''
     })

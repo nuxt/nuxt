@@ -1,0 +1,12 @@
+{
+  "name": "fixture-unhead-major-resolution",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@unhead/vue": "2.1.15",
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  }
+}
