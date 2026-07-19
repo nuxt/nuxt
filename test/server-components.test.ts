@@ -580,7 +580,7 @@ describe('page-island middleware', () => {
 
 describe.skipIf(isDev || isWebpack)('regressions', () => {
   // https://github.com/nuxt/nuxt/issues/26527
-  it.fails('renders <Counter nuxt-client /> when nested two levels deep in server components', async () => {
+  it('renders <Counter nuxt-client /> when nested two levels deep in server components', async () => {
     const { page } = await renderPage('/nested-nuxt-client')
 
     await page.locator('.server-inner-counter .sugar-counter button').waitFor({ timeout: 5_000 })

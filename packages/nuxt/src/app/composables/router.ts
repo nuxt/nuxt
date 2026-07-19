@@ -1,4 +1,5 @@
-import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
+import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
+import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
 import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
@@ -18,6 +19,22 @@ export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as unknown as Router
 }
 
+/**
+ * Whether the current effect scope is (a descendant of) the component instance's scope.
+ * A detached scope (e.g. `createSharedComposable`) outlives the component, so the
+ * per-page route injected there would freeze after navigation (#18903).
+ */
+function isScopeWithinInstance (instance: ComponentInternalInstance): boolean {
+  // `scope`/`parent` are internal, but stable across vue versions
+  const instanceScope = (instance as ComponentInternalInstance & { scope: EffectScope }).scope
+  let scope: (EffectScope & { parent?: EffectScope }) | undefined = getCurrentScope()
+  while (scope) {
+    if (scope === instanceScope) { return true }
+    scope = scope.parent
+  }
+  return false
+}
+
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = (() => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
@@ -26,7 +43,10 @@ export const useRoute: typeof _useRoute = (() => {
     navigationDiagnostics.NUXT_E2005({ middleware: typeof middleware === 'string' ? middleware : undefined, trace })
   }
   if (hasInjectionContext()) {
-    return inject(PageRouteSymbol, useNuxtApp()._route)
+    const instance = getCurrentInstance()
+    if (!instance || isScopeWithinInstance(instance)) {
+      return inject(PageRouteSymbol, useNuxtApp()._route)
+    }
   }
   return useNuxtApp()._route
 }) as unknown as typeof _useRoute
@@ -305,6 +325,11 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
     navigationDiagnostics.NUXT_E2008()
   }
   const inMiddleware = isProcessingMiddleware()
+  const middlewareTo = import.meta.server && inMiddleware && nuxtApp._middlewareTo
+  if (middlewareTo) {
+    middlewareTo.meta.layout = layout as any
+    middlewareTo.meta.layoutProps = props
+  }
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
       to.meta.layout = layout as any
