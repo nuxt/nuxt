@@ -9,3 +9,9 @@ const someValue = useState('val', () => 1)
     State: {{ someValue }}
   </div>
 </template>
+
+<style scoped>
+hr {
+  border-color: rgb(255, 0, 0);
+}
+</style>

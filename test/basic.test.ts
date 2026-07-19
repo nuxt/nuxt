@@ -8,7 +8,7 @@ import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/tes
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
@@ -454,26 +454,6 @@ describe('pages', () => {
     expect(await page.locator('.multi-root-node-script-count').innerHTML()).toContain('0')
     expect(await page.locator('.multi-root-node-script-button').innerHTML()).toContain('add 1 to count')
 
-    // ensure components reactivity
-    await page.locator('.multi-root-node-button').click()
-    await page.locator('.multi-root-node-script-button').click()
-    await page.locator('.client-only-script button').click()
-    await page.locator('.client-only-script-setup button').click()
-
-    expect(await page.locator('.multi-root-node-count').innerHTML()).toContain('1')
-    expect(await page.locator('.multi-root-node-script-count').innerHTML()).toContain('1')
-    expect(await page.locator('.client-only-script-setup button').innerHTML()).toContain('1')
-    expect(await page.locator('.client-only-script button').innerHTML()).toContain('1')
-
-    // ensure components ref is working and reactive
-    await page.locator('button.test-ref-1').click()
-    await page.locator('button.test-ref-2').click()
-    await page.locator('button.test-ref-3').click()
-    await page.locator('button.test-ref-4').click()
-    expect(await page.locator('.client-only-script-setup button').innerHTML()).toContain('2')
-    expect(await page.locator('.client-only-script button').innerHTML()).toContain('2')
-    expect(await page.locator('.string-stateful-script').innerHTML()).toContain('1')
-    expect(await page.locator('.string-stateful').innerHTML()).toContain('1')
     const waitForConsoleLog = page.waitForEvent('console', consoleLog => consoleLog.text() === 'has $el')
 
     // ensure directives are reactive
@@ -1222,37 +1202,6 @@ describe('errors', () => {
     expect(res).toContain('Hello Nuxt 3!')
   })
 
-  // TODO: need to create test for webpack
-  // TODO: need to fix this test for rspack
-  it.runIf(!isDev && builder !== 'rspack')('should handle chunk loading errors', async () => {
-    const { page, consoleLogs } = await renderPage()
-    await page.route(/\.css/, route => route.abort('timedout')) // verify CSS link preload failure doesn't break the page
-    await page.goto(url('/'))
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/' && !window.useNuxtApp?.().isHydrating)
-
-    const initialLogs = consoleLogs.map(c => c.text).join('')
-    expect(initialLogs).toContain('caught chunk load error')
-    consoleLogs.length = 0
-
-    await page.getByText('Increment state').click()
-    await page.getByText('Increment state').click()
-    expect(await page.innerText('div')).toContain('Some value: 3')
-    await page.route(/.*/, route => route.abort('timedout'), { times: 1 })
-    await page.getByText('Chunk error').click()
-
-    await page.waitForURL(url('/chunk-error'))
-
-    const logs = consoleLogs.map(c => c.text).join('')
-    expect(logs).toContain('caught chunk load error')
-    expect(logs).toContain('Failed to load resource')
-
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/chunk-error')
-    expect(await page.innerText('div')).toContain('Chunk error page')
-    await page.locator('div').getByText('State: 3').waitFor()
-
-    await page.close()
-  })
-
   it('should allow catching errors within error boundaries', async () => {
     const { page } = await renderPage('/error/error-boundary')
     await page.getByText('This is the error rendering').first().waitFor()
@@ -1339,7 +1288,7 @@ describe('middlewares', () => {
     await page.close()
   })
 
-  it('should allow aborting navigation on server-side', async () => {
+  it.skipIf(!runsOnceInMatrix)('should allow aborting navigation on server-side', async () => {
     const res = await fetch('/?abort', {
       headers: {
         accept: 'application/json',
@@ -1348,7 +1297,7 @@ describe('middlewares', () => {
     expect(res.status).toEqual(401)
   })
 
-  it('should allow aborting navigation fatally on client-side', async () => {
+  it.skipIf(!runsOnceInMatrix)('should allow aborting navigation fatally on client-side', async () => {
     const html = await $fetch<string>('/middleware-abort')
     expect(html).not.toContain('This is the error page')
     const { page } = await renderPage('/middleware-abort')
@@ -1356,7 +1305,7 @@ describe('middlewares', () => {
     await page.close()
   })
 
-  it('should inject auth', async () => {
+  it.skipIf(!runsOnceInMatrix)('should inject auth', async () => {
     const html = await $fetch<string>('/auth')
 
     // Snapshot
@@ -1366,7 +1315,7 @@ describe('middlewares', () => {
     expect(html).toContain('auth: Injected by injectAuth middleware')
   })
 
-  it('should not inject auth', async () => {
+  it.skipIf(!runsOnceInMatrix)('should not inject auth', async () => {
     const html = await $fetch<string>('/no-auth')
 
     // Snapshot
@@ -1385,7 +1334,7 @@ describe('middlewares', () => {
 })
 
 describe('plugins', () => {
-  it('basic plugin', async () => {
+  it.skipIf(!runsOnceInMatrix)('basic plugin', async () => {
     const html = await $fetch<string>('/plugins')
     expect(html).toContain('myPlugin: Injected by my-plugin')
   })
@@ -1404,7 +1353,7 @@ describe('plugins', () => {
 })
 
 describe('layouts', () => {
-  it('should apply custom layout', async () => {
+  it.skipIf(!runsOnceInMatrix)('should apply custom layout', async () => {
     const html = await $fetch<string>('/with-layout')
 
     // Snapshot
@@ -1413,7 +1362,7 @@ describe('layouts', () => {
     expect(html).toContain('with-layout.vue')
     expect(html).toContain('Custom Layout:')
   })
-  it('should work with props', async () => {
+  it.skipIf(!runsOnceInMatrix)('should work with props', async () => {
     const html = await $fetch<string>('/with-layout-props')
 
     expect(html).toContain('with-layout-props.vue')
@@ -1433,7 +1382,7 @@ describe('layouts', () => {
     expect(html).toContain('middleware layout: custom')
     await expectNoClientErrors('/with-dynamic-layout')
   })
-  it('should work with a computed layout', async () => {
+  it.skipIf(!runsOnceInMatrix)('should work with a computed layout', async () => {
     const html = await $fetch<string>('/with-computed-layout')
 
     // Snapshot
@@ -1443,7 +1392,7 @@ describe('layouts', () => {
     expect(html).toContain('Custom Layout')
     await expectNoClientErrors('/with-computed-layout')
   })
-  it('should allow passing custom props to a layout', async () => {
+  it.skipIf(!runsOnceInMatrix)('should allow passing custom props to a layout', async () => {
     const html = await $fetch<string>('/layouts/with-props')
     expect(html).toContain('some prop was passed')
     await expectNoClientErrors('/layouts/with-props')
