@@ -104,9 +104,9 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const html = await readFile(join(outputDir, 'public', 'custom-layout/index.html'), 'utf-8')
 
     const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
-    // The Vite plugin transforms `.layout-container { ... }` to `.xs .layout-container { ... }`
+    // The Vite plugin transforms `.layout-container { ... }` to `.xs { .layout-container { ... } }`
     expect(inlinedStyles).toContain('--inline-custom-layout-token:custom-layout')
     // The key assertion: the style should have .xs prefix from Vite plugin transformation
-    expect(inlinedStyles).toMatch(/\.xs\s+\.layout-container/)
+    expect(inlinedStyles).toMatch(/\.xs\s*(?:\{\s*)?\.layout-container/)
   })
 })
