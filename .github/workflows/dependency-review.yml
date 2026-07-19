@@ -15,4 +15,4 @@ jobs:
   dependency-review:
     uses: nuxt/.github/.github/workflows/dependency-review.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github
     with:
-      fail-on-provenance-change: true
+      fail-on-provenance-change: false

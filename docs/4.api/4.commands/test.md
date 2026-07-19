@@ -14,7 +14,7 @@ npx nuxt test [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [
 ```
 <!--/test-cmd-->
 
-The `test` command runs tests using [`@nuxt/test-utils`](/docs/getting-started/testing). This command sets `process.env.NODE_ENV` to `test` if not already set.
+The `test` command runs tests using [`@nuxt/test-utils`](/docs/4.x/getting-started/testing). This command sets `process.env.NODE_ENV` to `test` if not already set.
 
 ## Arguments
 

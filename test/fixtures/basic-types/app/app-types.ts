@@ -1,15 +1,13 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
-import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
-import type { H3Event } from 'h3'
 
 import { $fetch } from 'ofetch'
 import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
 import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError } from '#app'
+import type { NuxtError, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -135,7 +133,8 @@ describe('API routes', () => {
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
+    // https://github.com/nuxt/nuxt/issues/22753
+    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
 
     // TODO: https://github.com/nitrojs/nitro/issues/2758
@@ -147,7 +146,7 @@ describe('API routes', () => {
     expectTypeOf(useLazyFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useLazyFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
   })
 
@@ -160,11 +159,51 @@ describe('API routes', () => {
       },
     })
   })
+
+  // https://github.com/nuxt/nuxt/issues/35341
+  it('accepts MaybeRefOrGetter for documented option fields', () => {
+    const method = ref<'POST'>('POST')
+    const base = ref('/api')
+    const search = ref('x')
+    const state = reactive({ name: 'a' })
+
+    for (const useFn of [useFetch, useLazyFetch]) {
+      useFn('/x', {
+        method,
+        baseURL: base,
+        query: { q: search },
+        params: { q: search },
+        headers: { 'x-test': search },
+        body: state,
+      })
+      useFn('/x', {
+        method: computed(() => method.value),
+        baseURL: computed(() => base.value),
+        query: computed(() => ({ q: search.value })),
+        params: computed(() => ({ q: search.value })),
+        headers: computed(() => ({ 'x-test': search.value })),
+        body: computed(() => ({ ...state })),
+      })
+      useFn('/x', {
+        method: () => method.value,
+        baseURL: () => base.value,
+        query: () => ({ q: search.value }),
+        params: () => ({ q: search.value }),
+        headers: () => ({ 'x-test': search.value }),
+        body: () => ({ ...state }),
+      })
+    }
+
+    // @ts-expect-error wrong shape: number is not a method
+    useFetch('/x', { method: 123 })
+    // @ts-expect-error wrong shape: getter must return a method
+    useFetch('/x', { method: () => 123 })
+  })
 })
 
 describe('nitro compatible APIs', () => {
   it('useRuntimeConfig', () => {
-    useRuntimeConfig({} as H3Event)
+    useRuntimeConfig()
   })
 })
 
@@ -809,5 +848,70 @@ describe('kit utilities', () => {
     const _fake: Fromage = 'babybel'
 
     const _fromage: Fromage = 'cheese'
+  })
+})
+
+declare module '#app' {
+  interface NuxtApp {
+    $augmentedViaPoundApp: (msg: string) => number
+  }
+  interface PageMeta {
+    poundAppMetaField?: boolean
+  }
+  interface RuntimeNuxtHooks {
+    'pound-app:custom-hook': (payload: { foo: string }) => void | Promise<void>
+  }
+}
+
+declare module 'nuxt/app' {
+  interface NuxtApp {
+    $augmentedViaNuxtApp: string
+  }
+}
+
+declare module '#app' {
+  interface NuxtPayload {
+    poundAppPayloadField?: 'from-pound-app'
+  }
+}
+
+describe('module augmentation of runtime app types', () => {
+  it('merges `NuxtApp` augmentations from `#app` and `nuxt/app`', () => {
+    const nuxtApp = useNuxtApp()
+    expectTypeOf(nuxtApp.$augmentedViaPoundApp).toEqualTypeOf<(msg: string) => number>()
+    expectTypeOf(nuxtApp.$augmentedViaNuxtApp).toEqualTypeOf<string>()
+  })
+  it('sees the same `NuxtApp` interface through both specifiers', () => {
+    const viaNuxtApp: import('nuxt/app').NuxtApp = useNuxtApp()
+    expectTypeOf(viaNuxtApp.$augmentedViaPoundApp).toEqualTypeOf<(msg: string) => number>()
+    expectTypeOf(viaNuxtApp.$augmentedViaNuxtApp).toEqualTypeOf<string>()
+    const viaPoundApp: import('#app').NuxtApp = viaNuxtApp
+    expectTypeOf(viaPoundApp).toEqualTypeOf<typeof viaNuxtApp>()
+  })
+  it('merges `PageMeta` augmentations from `#app`', () => {
+    definePageMeta({ poundAppMetaField: true })
+    expectTypeOf<PageMeta['poundAppMetaField']>().toEqualTypeOf<boolean | undefined>()
+  })
+  it('merges `RuntimeNuxtHooks` augmentations from `#app`', () => {
+    useNuxtApp().hook('pound-app:custom-hook', (payload) => {
+      expectTypeOf(payload).toEqualTypeOf<{ foo: string }>()
+    })
+  })
+  it('re-exports the same leaf types through `#app` as `#app/types` declares', () => {
+    expectTypeOf<import('#app').NuxtPayload>().toEqualTypeOf<import('#app/types').NuxtPayload>()
+    expectTypeOf<import('#app').NuxtSSRContext>().toEqualTypeOf<import('#app/types').NuxtSSRContext>()
+  })
+  it('flows `#app` payload augmentations through to the `#app/types` leaf', () => {
+    // `@nuxt/nitro-server` reads `NuxtPayload` from `#app/types`; a user
+    // augmentation applied via `#app` must be visible there too.
+    expectTypeOf<import('#app/types').NuxtPayload['poundAppPayloadField']>().toEqualTypeOf<'from-pound-app' | undefined>()
+  })
+})
+
+describe('error typing', () => {
+  it('useError exposes NuxtError fields', () => {
+    const error = useError()
+    expectTypeOf(error.value?.fatal).toEqualTypeOf<boolean | undefined>()
+    expectTypeOf(error.value?.__nuxt_error).toEqualTypeOf<true | undefined>()
   })
 })

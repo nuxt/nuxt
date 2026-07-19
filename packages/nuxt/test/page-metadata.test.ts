@@ -219,6 +219,8 @@ definePageMeta({ name: 'bar' })
     definePageMeta({
       name: 'name-from-page-meta' as PageName,
       path: ('/some-custom-path') as const,
+      alias: <string>'/some-alias',
+      redirect: '/some-redirect'!,
       props: <{ foo: string }>{
         foo: 'bar' satisfies string,
       },
@@ -228,8 +230,36 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
+        "alias": "/some-alias",
         "name": "name-from-page-meta",
         "path": "/some-custom-path",
+        "props": {
+          "foo": "bar",
+        },
+        "redirect": "/some-redirect",
+      }
+    `)
+  })
+
+  it('should extract metadata from typed macro calls', () => {
+    const meta = getRouteMeta(`
+    <script setup lang="ts">
+    interface PageMeta {
+      name: string
+    }
+
+    definePageMeta<PageMeta>({
+      name: 'name-from-page-meta',
+      props: {
+        foo: 'bar',
+      },
+    });
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "name": "name-from-page-meta",
         "props": {
           "foo": "bar",
         },
@@ -479,7 +509,7 @@ describe('rewrite page meta', () => {
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[Error: Multiple \`definePageMeta\` calls are not supported. File: component.vue]`)
+    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[NUXT_B4003: \`definePageMeta()\` is called 2 times in \`component.vue?macro=true\`, but only one call is allowed.]`)
   })
 
   it('should extract metadata from vue components', () => {
@@ -767,7 +797,7 @@ definePageMeta({
       transformPlugin.transform.handler(compiled.content, 'component.vue?macro=true')
     } catch (e) {
       if (e instanceof Error) {
-        expect(e.message).toMatch(/await in definePageMeta/)
+        expect(e.message).toContain('`await` expression is used in a variable referenced by `definePageMeta`')
         wasErrorThrown = true
       }
     }

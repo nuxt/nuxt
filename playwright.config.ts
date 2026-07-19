@@ -13,8 +13,8 @@ const e2eMatrix = [
 ] as const
 
 const devOnlyTests = ['**/hmr.test.ts']
-const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/lazy-hydration.test.ts']
-const viteOnlyTests = ['**/lazy-hydration.test.ts']
+const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/lazy-hydration.test.ts', '**/server-page-css.test.ts']
+const viteOnlyTests = ['**/lazy-hydration.test.ts', '**/server-page-css.test.ts']
 
 function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
   const ignore: string[] = []

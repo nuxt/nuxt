@@ -103,6 +103,37 @@ describe('useFetch', () => {
     expect(data.value).toStrictEqual({ count: 0 })
   })
 
+  it('should not fetch when `enabled` is false', async () => {
+    let count = 0
+    registerEndpoint('/api/enabled-false', defineEventHandler(() => ({ count: count++ })))
+
+    const { data, status } = await useFetch('/api/enabled-false', { enabled: false })
+
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+    expect(count).toBe(0)
+  })
+
+  it('should work with reactive `enabled`', async () => {
+    let count = 0
+    registerEndpoint('/api/enabled-reactive', defineEventHandler(() => ({ count: count++ })))
+
+    const enabled = ref(false)
+    const { data, status, execute } = await useFetch('/api/enabled-reactive', { enabled, immediate: false })
+
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+
+    // execute is blocked while `enabled` is false
+    await execute()
+    expect(data.value).toBe(undefined)
+    expect(count).toBe(0)
+
+    enabled.value = true
+    await execute()
+    expect(data.value).toStrictEqual({ count: 0 })
+  })
+
   it.runIf(process.env.PROJECT === 'nuxt-legacy')('should work with reactive keys and immediate: false', async () => {
     registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
 
@@ -179,6 +210,33 @@ describe('useFetch', () => {
       const { data } = await useFetch('/api/complex-objects', { body: value, immediate: false }, 'autokey')
       expect(data.value).toEqual('new value')
     }
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35341
+  it('should send unwrapped values when options are getters', async () => {
+    registerEndpoint('/api/getter-options', defineEventHandler(async event => ({
+      method: event.req.method,
+      url: event.req.url,
+      header: event.req.headers.get('x-test'),
+      body: event.req.method === 'POST' ? await event.req.json() : null,
+    })))
+
+    const state = reactive({ name: 'userquin' })
+    const method = ref<'POST'>('POST')
+    const search = ref('hello')
+
+    const { data } = await useFetch<{ method: string, url: string, header: string | null, body: { name: string } | null }>('/api/getter-options', {
+      method: () => method.value,
+      baseURL: () => '',
+      query: () => ({ q: search.value }),
+      headers: () => ({ 'x-test': 'yes' }),
+      body: () => ({ ...state }),
+    })
+
+    expect(data.value?.method).toBe('POST')
+    expect(data.value?.url).toContain('q=hello')
+    expect(data.value?.header).toBe('yes')
+    expect(data.value?.body).toEqual({ name: 'userquin' })
   })
 
   it('should produce different keys for FormData with duplicate keys or different files', async () => {

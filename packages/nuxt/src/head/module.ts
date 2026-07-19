@@ -1,8 +1,10 @@
+import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, useLogger } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, headDiagnostics } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
+import { streamingIifeCode } from 'unhead/stream/iife'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
@@ -14,7 +16,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     configKey: 'unhead',
   },
   setup (options, nuxt) {
-    const logger = useLogger('nuxt:unhead')
     const runtimeDir = resolve(distDir, 'head/runtime')
 
     /* eslint-disable @typescript-eslint/no-deprecated */
@@ -104,11 +105,11 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
         // legacy is forced false on v5 by the schema resolver (which warns there), so only v4 reaches this
         if (legacy) {
-          logger.warn('`unhead.legacy` is deprecated and will be removed. Remove deprecated head patterns (hid, vmid, children, body:true) and migrate promise values to resolved values before passing to useHead.')
+          headDiagnostics.NUXT_B6003()
         }
 
         if (headNext === false) {
-          logger.warn('`experimental.headNext` is deprecated. CAPO sorting is now the default; set `unhead.legacy: true` to opt out temporarily.')
+          headDiagnostics.NUXT_B6004()
         }
 
         const disableCapoSorting = !isV5 && (legacy || headNext === false)
@@ -164,7 +165,76 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    // Add library-specific plugin
-    addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })
+    // Emit the unhead streaming IIFE as a raw, content-hashed JS asset in
+    // production so the renderer can load it as a classic script
+    // (`<script async src>` without `type="module"`). The IIFE is a
+    // prebuilt, pre-minified self-invoking string; routing it through the
+    // bundler's chunk graph would wrap it in ESM and break the loader.
+    //
+    // We deliberately do not use unheadVuePlugin's SFC transform here
+    // (HeadStream injection): it causes hydration mismatches because the
+    // server renders <script> and the client renders null. The renderer
+    // injects head update scripts outside the Vue render tree instead.
+    const ssrStreamingEnabled = typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
+    if (ssrStreamingEnabled) {
+      let iifeChunkFileName: string | undefined
+
+      nuxt.hooks.hook('nitro:config', (config) => {
+        config.virtual!['#internal/streaming-iife-chunk.mjs'] = () =>
+          `export const iifeChunkFileName = ${JSON.stringify(iifeChunkFileName)}`
+      })
+
+      addVitePlugin({
+        name: 'nuxt:streaming-iife-chunk',
+        applyToEnvironment: (env: any) => env.name === 'client',
+
+        buildStart () {
+          if (nuxt.options.dev) { return }
+          const contentHash = createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)
+          const baseName = `streaming-iife.${contentHash}.js`
+          const prefix = nuxt.options.app.buildAssetsDir.replace(/^\//, '')
+          this.emitFile({
+            type: 'asset',
+            fileName: prefix + baseName,
+            source: streamingIifeCode,
+          })
+          iifeChunkFileName = baseName
+        },
+      })
+
+      // For webpack/rspack we emit the IIFE via `compilation.emitAsset` so
+      // it ships as a classic script outside the chunk graph (no ESM
+      // wrapping). Client compiler, production only - dev inlines the IIFE.
+      if (!nuxt.options.dev && nuxt.options.builder !== '@nuxt/vite-builder') {
+        const makeIifeAssetPlugin = () => ({
+          apply (compiler: any) {
+            if (compiler.options.name !== 'client') { return }
+            compiler.hooks.thisCompilation.tap('nuxt:streaming-iife-chunk', (compilation: any) => {
+              const { RawSource } = compiler.webpack.sources
+              const { PROCESS_ASSETS_STAGE_ADDITIONAL } = compiler.webpack.Compilation
+              compilation.hooks.processAssets.tap(
+                { name: 'nuxt:streaming-iife-chunk', stage: PROCESS_ASSETS_STAGE_ADDITIONAL },
+                () => {
+                  const contentHash = createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)
+                  const fileName = `streaming-iife.${contentHash}.js`
+                  if (!compilation.getAsset(fileName)) {
+                    compilation.emitAsset(fileName, new RawSource(streamingIifeCode))
+                  }
+                  iifeChunkFileName = fileName
+                },
+              )
+            })
+          },
+        })
+        addBuildPlugin({
+          webpack: makeIifeAssetPlugin,
+          rspack: makeIifeAssetPlugin,
+        })
+      }
+    }
+
+    // Add library-specific plugins
+    addPlugin({ src: resolve(runtimeDir, ssrStreamingEnabled ? 'plugins/unhead-stream.client' : 'plugins/unhead.client') })
+    addPlugin({ src: resolve(runtimeDir, 'plugins/unhead.server') })
   },
 })

@@ -11,9 +11,9 @@ import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
-import { computeIslandHash, filterIslandProps } from '../island-hash'
+import { getIslandHash, serializeIslandProps } from '../island-hash'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 
-// @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
@@ -104,8 +104,8 @@ const NuxtIsland = defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => filterIslandProps(props.props))
-    const hashId = computed(() => computeIslandHash(props.name, filteredProps.value, props.context, props.source))
+    const serializedProps = computed(() => serializeIslandProps(props.props))
+    const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
@@ -125,7 +125,7 @@ const NuxtIsland = defineComponent({
           key,
           ...(import.meta.server && import.meta.prerender)
             ? {}
-            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
+            : { params: { ...props.context, props: props.props ? serializedProps.value : undefined } },
           result: toRevive,
         },
         ...result,
@@ -154,7 +154,7 @@ const NuxtIsland = defineComponent({
         while (currentEl) {
           if (isEndFragment(currentEl)) {
             if (startEl !== currentEl.previousSibling) {
-              console.warn(`[\`Server components(and islands)\`] "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`)
+              renderDiagnostics.NUXT_E4005({ name: props.name })
             }
             break
           } else if (!isStartFragment(currentEl) && isFirstElement) {
@@ -219,7 +219,7 @@ const NuxtIsland = defineComponent({
       // TODO: Validate response
       const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
-        props: props.props ? JSON.stringify(props.props) : undefined,
+        props: props.props ? serializedProps.value : undefined,
       }))
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
@@ -237,7 +237,7 @@ const NuxtIsland = defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          throw renderDiagnostics.NUXT_E4012({ name: props.name, status: r.status, detail: e.message, cause: e })
         }
         throw e
       }

@@ -7,7 +7,6 @@ import { h } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
-// @ts-expect-error virtual file
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
 
 const devRevivers: Record<string, (data: any) => any> = import.meta.server

@@ -1,11 +1,7 @@
 import { Fragment, createElementBlock, defineComponent, h, onMounted, shallowRef, useId } from 'vue'
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 import { useState } from '../composables/state'
-
-const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
-function sanitizeTag (tag: string, fallback: string): string {
-  return VALID_TAG_RE.test(tag) ? tag : fallback
-}
+import { sanitizeTag } from './utils'
 
 interface NuxtClientFallbackProps {
   fallbackTag?: string

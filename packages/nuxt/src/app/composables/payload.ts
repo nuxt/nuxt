@@ -8,8 +8,8 @@ import { useHead } from './head'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
+import { stateDiagnostics } from '../diagnostics/state.ts'
 
-// @ts-expect-error virtual import
 import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
@@ -26,8 +26,8 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   }
   return null
 }
-let linkRelType: string | undefined
-function detectLinkRelType () {
+let linkRelType: 'preload' | 'prefetch' | undefined
+function detectLinkRelType (): 'preload' | 'prefetch' {
   if (import.meta.server) { return 'preload' }
   if (linkRelType) { return linkRelType }
   const relList = document.createElement('link').relList
@@ -55,8 +55,14 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
       linkEl.href = payloadURL
       document.head.appendChild(linkEl)
       return new Promise<void>((resolve, reject) => {
-        linkEl.addEventListener('load', () => resolve())
-        linkEl.addEventListener('error', () => reject())
+        const cleanup = () => {
+          linkEl.removeEventListener('load', onLoad)
+          linkEl.removeEventListener('error', onError)
+        }
+        const onLoad = () => { cleanup(); resolve() }
+        const onError = () => { cleanup(); reject() }
+        linkEl.addEventListener('load', onLoad)
+        linkEl.addEventListener('error', onError)
       })
     }
   })
@@ -72,7 +78,7 @@ const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
-    throw new Error('Payload URL must not include hostname: ' + url)
+    throw stateDiagnostics.NUXT_E7001({ url })
   }
   const config = useRuntimeConfig()
   const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
@@ -87,13 +93,13 @@ async function _importPayload (payloadURL: string) {
     const res = await fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' })
     if (!res.ok) {
       if (import.meta.dev) {
-        console.warn(`[nuxt] Cannot load payload ${payloadURL}: ${res.status} ${res.statusText}`)
+        stateDiagnostics.NUXT_E7002({ url: payloadURL })
       }
       return null
     }
     return await parsePayload(await res.text())
   } catch (err) {
-    console.warn('[nuxt] Cannot load payload ', payloadURL, err)
+    stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
   }
   return null
 }
@@ -215,7 +221,7 @@ export function definePayloadReviver (
   revive: (data: any) => any | undefined,
 ): void {
   if (import.meta.dev && getCurrentInstance()) {
-    console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')
+    stateDiagnostics.NUXT_E7004()
   }
   if (import.meta.client) {
     useNuxtApp()._payloadRevivers[name] = revive

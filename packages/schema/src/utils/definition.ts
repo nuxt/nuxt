@@ -49,8 +49,15 @@ export type AugmentProperty<T extends Record<string, any>, K extends keyof T, V>
     : T[key]
 }
 
+/**
+ * Callback signature for the second argument of a `$resolve` resolver, exposed
+ * so resolvers can annotate the parameter when declaration emit forbids the
+ * implicit `any` that contextual typing would otherwise leave.
+ */
+export type ResolverGetter = <K extends KeysOf<ConfigSchema>>(key: K) => Promise<ReturnFromKey<ConfigSchema, K>>
+
 interface Resolvers<ReturnValue> {
-  $resolve: (val: unknown, get: <K extends KeysOf<ConfigSchema>>(key: K) => Promise<ReturnFromKey<ConfigSchema, K>>) => Awaitable<ReturnValue>
+  $resolve: (val: unknown, get: ResolverGetter) => Awaitable<ReturnValue>
   $schema?: InputObject['$schema']
   $default?: ReturnValue
 }

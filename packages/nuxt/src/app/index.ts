@@ -1,8 +1,4 @@
-// Reference the dist copy so the source `src/app/types/augments.ts` isn't
-// also loaded at typecheck time. Both copies define identical `declare global`
-// blocks but resolve `NuxtApp` from different module paths (src vs dist), so
-// loading both triggers TS2717.
-import type { _NuxtAugmentsAnchor } from '../../dist/app/types/augments'
+import type { _NuxtAugmentsAnchor } from './types/augments'
 // re-export so the side-effect import survives tree-shaking.
 export type { _NuxtAugmentsAnchor as _NuxtAugments }
 
@@ -15,9 +11,12 @@ export type { AddRouteMiddlewareOptions, AnnouncerPoliteness, AsyncData, AsyncDa
 
 export { defineNuxtLink } from './components/index'
 export type { NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
+export { getIslandHash, serializeIslandProps } from './island-hash'
+export { hashKey } from './utils/hash'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
 export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
-export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext, PageMeta, NuxtPageProps, NuxtLayouts } from './types'
+export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, SerializedErrorCause } from './types'
+export type { PageMeta, NuxtPageProps, NuxtLayouts } from '../pages/runtime/index'
 
 export const isVue2 = false
 export const isVue3 = true

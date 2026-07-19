@@ -198,7 +198,7 @@ test.describe('vite-only HMR tests', () => {
     })
 
     // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
 
     await expect.soft(button).toHaveText('1')
   })
@@ -227,7 +227,7 @@ test.describe('vite-only HMR tests', () => {
     })
 
     // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
 
     await expect.soft(button).toHaveText('1')
   })
@@ -251,7 +251,7 @@ test.describe('vite-only HMR tests', () => {
     })
 
     // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
 
     // Navigate to the new route
     await page.locator('a[href="/routes/non-existent"]').click()

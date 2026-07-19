@@ -9,6 +9,7 @@ import { flushPromises } from '@vue/test-utils'
 import { Transition } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
+import * as idleCallback from '#app/compat/idle-callback'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { NuxtPage } from '#components'
 
@@ -78,7 +79,7 @@ describe('useAsyncData', () => {
   })
 
   it('should throw TypeError when key is empty', () => {
-    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[TypeError: [nuxt] [useAsyncData] key must be a non-empty string.]')
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[NUXT_E3008: NUXT_E3008]')
   })
 
   it('should keep promise methods after destructuring', async () => {
@@ -109,7 +110,7 @@ describe('useAsyncData', () => {
   it('should capture errors', async () => {
     vi.stubGlobal('__TEST_DEV__', true)
 
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
@@ -124,12 +125,6 @@ describe('useAsyncData', () => {
     expect(syncedError.value).toBe(error.value)
     expect(syncedStatus.value).toBe(status.value)
     expect(syncedPending.value).toBe(false)
-
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt\] \[useAsyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
-    ))
-    warn.mockRestore()
-    vi.unstubAllGlobals()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -191,6 +186,27 @@ describe('useAsyncData', () => {
     expect(data.data.value).toBeUndefined()
     await refreshNuxtData(uniqueKey)
     expect(data.data.value).toMatchInlineSnapshot('"test"')
+  })
+
+  it('should not wait for idle callback when refreshing after hydration', async () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback')
+
+    try {
+      nuxtApp.isHydrating = false
+      await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+      clearNuxtData(uniqueKey)
+      const data = useNuxtData(uniqueKey)
+
+      await refreshNuxtData(uniqueKey)
+
+      expect(data.data.value).toMatchInlineSnapshot('"test"')
+      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
   })
 
   it('should allow overriding requests', async () => {
@@ -502,46 +518,6 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
   })
 
-  it('should warn if incompatible options are used', async () => {
-    vi.stubGlobal('__TEST_DEV__', true)
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
-    expect(warn).not.toHaveBeenCalled()
-    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: true })
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt\] \[useAsyncData\] Incompatible options detected for "dedupedKey3" \(used at .*:\d+:\d+\):\n- mismatching `deep` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
-    ))
-
-    let count = 0
-    for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
-      warn.mockClear()
-      count++
-
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
-      expect(warn).not.toHaveBeenCalled()
-      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(
-          new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "${uniqueKey}-${count}" \\(used at .*:\\d+:\\d+\\):\n- different \`${opt}\` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
-        ))
-    }
-
-    warn.mockClear()
-    count++
-
-    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
-    expect(warn).not.toHaveBeenCalled()
-    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('bob'))
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "${uniqueKey}-${count}" \\(used at .*:\\d+:\\d+\\):\n- different handler\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
-    ))
-
-    warn.mockReset()
-    vi.unstubAllGlobals()
-  })
-
   it('should only refresh asyncdata once when watched dependency is updated', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const route = ref('/')
@@ -742,6 +718,76 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
     expect(promiseFn).toHaveBeenLastCalledWith('second')
     expect(comp2.html()).toMatchInlineSnapshot(`"<div>second</div>"`)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35322
+  it('should not leave a new subscriber stuck at idle when the previous subscriber unregisters during an in-flight deferred request', async () => {
+    const key = `stranded-idle-${++counter}`
+
+    let resolveHandler: ((value: string) => void) | undefined
+    const promiseFn = vi.fn(() => new Promise<string>((resolve) => {
+      resolveHandler = resolve
+    }))
+
+    const scopeA = effectScope()
+    let resultA!: ReturnType<typeof useAsyncData>
+    scopeA.run(() => {
+      resultA = useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    const nuxtApp = useNuxtApp()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(nuxtApp._asyncDataPromises[key]).toBeDefined()
+    expect(nuxtApp._asyncData[key]!.status.value).toBe('pending')
+
+    scopeA.stop()
+
+    const scopeB = effectScope()
+    let resultB!: ReturnType<typeof useAsyncData>
+    scopeB.run(() => {
+      resultB = useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    expect(nuxtApp._asyncData[key]!._init).toBe(true)
+
+    resolveHandler!('resolved')
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(nuxtApp._asyncData[key]!.status.value).toBe('success')
+    expect(nuxtApp._asyncData[key]!.data.value).toBe('resolved')
+    expect(resultB.status.value).toBe('success')
+    expect(resultB.data.value).toBe('resolved')
+
+    resultA.clear()
+    scopeB.stop()
+  })
+
+  it('should abort the in-flight request when the last subscriber unmounts', () => {
+    const key = `abort-on-unmount-${++counter}`
+
+    let capturedSignal: AbortSignal | undefined
+    const promiseFn = vi.fn((_nuxtApp, { signal }: { signal: AbortSignal }) => {
+      capturedSignal = signal
+      return new Promise<string>(() => {})
+    })
+
+    const scope = effectScope()
+    scope.run(() => {
+      useAsyncData(key, promiseFn, { dedupe: 'defer', immediate: true })
+    })
+
+    const nuxtApp = useNuxtApp()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(capturedSignal).toBeDefined()
+    expect(capturedSignal!.aborted).toBe(false)
+    expect(nuxtApp._asyncDataPromises[key]).toBeDefined()
+
+    scope.stop()
+
+    expect(capturedSignal!.aborted).toBe(true)
+    expect(nuxtApp._asyncDataPromises[key]).toBeUndefined()
   })
 
   it('should be synced with useNuxtData', async () => {
@@ -1541,5 +1587,179 @@ describe('useAsyncData', () => {
 
     late.unmount()
     persistent.unmount()
+  })
+
+  it('should not execute when enabled is false', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { enabled: false })
+
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(data.value).toBe(undefined)
+    expect(pending.value).toBe(false)
+    expect(status.value).toBe('idle')
+  })
+
+  it('should work with reactive `enabled`', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const enabledRef = ref(false)
+    const enabledComputed = computed(() => enabledRef.value)
+    const enabledFn = () => enabledRef.value
+
+    for (const enabled of [enabledRef, enabledComputed, enabledFn]) {
+      promiseFn.mockClear()
+      enabledRef.value = false
+
+      const { data, pending, status, execute } = await useAsyncData(uniqueKey, promiseFn, { enabled, immediate: false })
+
+      expect(promiseFn).not.toHaveBeenCalled()
+      expect(data.value).toBe(undefined)
+      expect(pending.value).toBe(false)
+      expect(status.value).toBe('idle')
+
+      // Try to execute when enabled is false - should be blocked
+      await execute()
+      expect(promiseFn).not.toHaveBeenCalled()
+      expect(data.value).toBe(undefined)
+
+      // Enable and execute - should work
+      enabledRef.value = true
+      await execute()
+
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      expect(data.value).toBe('test')
+      expect(pending.value).toBe(false)
+      expect(status.value).toBe('success')
+
+      // Reset for next iteration
+      clearNuxtData(uniqueKey)
+    }
+  })
+
+  it('should use default value when enabled is false', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data } = await useAsyncData(uniqueKey, promiseFn, {
+      enabled: false,
+      default: () => 'default',
+    })
+
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(data.value).toBe('default')
+  })
+
+  it('should be blocked by enabled even on manual refresh', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const enabled = ref(false)
+    const { data, refresh } = await useAsyncData(uniqueKey, promiseFn, { enabled })
+
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(data.value).toBe(undefined)
+
+    // Try to refresh when enabled is false - should be blocked
+    await refresh({ cause: 'refresh:manual' })
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(data.value).toBe(undefined)
+
+    // Enable and refresh - should work
+    enabled.value = true
+    await refresh({ cause: 'refresh:manual' })
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('test')
+  })
+
+  it('should respect enabled barrier in watch triggers', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const enabled = ref(true)
+    const watchSource = ref(1)
+
+    // First, test that watch works when enabled is true
+    const { data } = await useAsyncData(uniqueKey, promiseFn, {
+      enabled,
+      watch: [watchSource],
+    })
+
+    // Initial execution should happen because immediate defaults to true
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('test')
+
+    // Now disable and change watch source - should be blocked
+    enabled.value = false
+    watchSource.value++
+    await nextTick()
+    await flushPromises()
+
+    // Wait a bit more to ensure debounce settles
+    await new Promise(resolve => setTimeout(resolve, 10))
+    expect(promiseFn).toHaveBeenCalledTimes(1) // No additional calls
+
+    // Enable again and change watch source - should trigger
+    enabled.value = true
+    watchSource.value++
+    await nextTick()
+    await flushPromises()
+
+    // Wait for debounced execution
+    await new Promise(resolve => setTimeout(resolve, 10))
+    expect(promiseFn).toHaveBeenCalledTimes(2) // Should be called again
+  })
+
+  it('should work with enabled and lazy option together', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const enabled = ref(false)
+
+    let asyncDataRef: ReturnType<typeof useAsyncData>
+
+    const component = defineComponent({
+      setup () {
+        asyncDataRef = useAsyncData(uniqueKey, promiseFn, { enabled, lazy: true })
+        return () => h('div', asyncDataRef.data.value || 'loading')
+      },
+    })
+
+    const wrapper = await mountSuspended(component)
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(wrapper.text()).toBe('loading')
+
+    // Enable and manually execute - should work
+    enabled.value = true
+    await asyncDataRef!.execute()
+
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(wrapper.text()).toBe('test')
+  })
+
+  it('should cancel the pending request when `enabled` changes from true to false', async () => {
+    let resolve!: (value: string) => void
+    const promiseFn = vi.fn(() => new Promise<string>((res) => { resolve = res }))
+    const enabled = ref(true)
+
+    const { data, status, execute } = await useAsyncData(uniqueKey, promiseFn, { enabled, immediate: false })
+
+    const promise = execute()
+    expect(status.value).toBe('pending')
+
+    enabled.value = false
+    await nextTick()
+
+    // the late result must not be applied to a cancelled request
+    resolve('late')
+    await promise.catch(() => {})
+
+    expect(status.value).toBe('idle')
+    expect(data.value).toBeUndefined()
+  })
+
+  it('should still clear data when `clear()` is called while disabled', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const enabled = ref(true)
+
+    const { data, status, clear } = await useAsyncData(uniqueKey, promiseFn, { enabled })
+    expect(data.value).toBe('test')
+
+    enabled.value = false
+    await nextTick()
+
+    clear()
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
   })
 })

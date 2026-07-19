@@ -4,7 +4,6 @@
 
 <script setup>
 import { defineAsyncComponent } from 'vue'
-// eslint-disable-next-line vue/prefer-import-from-vue
 import { escapeHtml } from '@vue/shared'
 
 const props = defineProps({

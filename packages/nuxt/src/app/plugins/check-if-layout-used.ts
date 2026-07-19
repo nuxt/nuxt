@@ -3,8 +3,8 @@ import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
 import { useError } from '../composables/error'
+import { renderDiagnostics } from '../diagnostics/render.ts'
 
-// @ts-expect-error virtual file
 import layouts from '#build/layouts'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
@@ -14,7 +14,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     function checkIfLayoutUsed () {
       if (!error.value && !nuxtApp._isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
-        console.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
+        renderDiagnostics.NUXT_E4007()
       }
     }
     if (import.meta.server) {

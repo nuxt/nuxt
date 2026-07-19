@@ -4,10 +4,9 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getAppManifest } from '../composables/manifest'
 import type { NuxtAppManifestMeta } from '../composables/manifest'
 import { onNuxtReady } from '../composables/ready'
-// @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
-// @ts-expect-error virtual file
 import { outdatedBuildInterval } from '#build/nuxt.config.mjs'
+import { $fetch } from '#build/fetch'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
   if (import.meta.test) { return }

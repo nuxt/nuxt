@@ -37,15 +37,23 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
 
       if (config.server && config.server.hmr !== false) {
-        const serverDefaults: Omit<ServerOptions, 'hmr'> & { hmr: Exclude<ServerOptions['hmr'], boolean> } = {
+        // Attach HMR to Nuxt's dev server (captured in core from the `listen`
+        // hook) so it shares the app's port and certificate. Falls back to a
+        // dedicated HMR port when that server isn't available (e.g. an older
+        // core, where the dev CLI wires this up instead).
+        const hmrServer = nuxt._devServerListener
+        const serverDefaults: Omit<ServerOptions, 'hmr' | 'ws'> & { hmr: Exclude<ServerOptions['hmr'], boolean>, ws: NonNullable<Exclude<ServerOptions['ws'], false>> } = {
           hmr: {
             protocol: nuxt.options.devServer.https ? 'wss' : undefined,
+            server: hmrServer,
+          },
+          ws: {
+            server: hmrServer,
           },
         }
-        if (typeof config.server.hmr !== 'object' || !config.server.hmr.server) {
-          serverDefaults.hmr ??= {}
+        if (!hmrServer && (typeof config.server.ws !== 'object' || !config.server.ws.server)) {
           const hmrPortDefault = 24678 // Vite's default HMR port
-          serverDefaults.hmr.port = await getPort({
+          serverDefaults.ws.port = await getPort({
             verbose: false,
             portRange: [hmrPortDefault, hmrPortDefault + 20],
           })
@@ -57,16 +65,6 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
     },
     async configureServer (viteServer) {
-      // Invalidate virtual modules when templates are re-generated
-      nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
-        await Promise.all(changedTemplates.map(async (template) => {
-          for (const mod of viteServer.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
-            viteServer.moduleGraph.invalidateModule(mod)
-            await viteServer.reloadModule(mod)
-          }
-        }))
-      })
-
       await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
 
       const staticBases: string[] = []
@@ -129,7 +127,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
 
       const viteMiddleware = defineEventHandler(async (event: H3V1Event | H3V2Event) => {
-        const url = 'url' in event ? event.url.pathname + event.url.search + event.url.hash : event.path
+        const url = 'url' in event ? event.url.pathname + event.url.search + event.url.hash : (event as H3V1Event).path
         const isBasePath = url.startsWith(viteServer.config.base!)
 
         // Check if this is a vite-handled route or proxy path
@@ -146,10 +144,9 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           isViteRoute ||= isProxyPath(url)
         }
 
-        const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+        const { req, res } = ('runtime' in event ? event.runtime?.node : (event as any).node) as { req: IncomingMessage, res: ServerResponse }
         if (!isViteRoute) {
-          // @ts-expect-error _skip_transform is a private property
-          req._skip_transform = true
+          (req as IncomingMessage & { _skip_transform?: boolean })._skip_transform = true
         }
 
         // Workaround: vite devmiddleware modifies req.url
