@@ -347,8 +347,18 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (options.routesId && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
             const routesModule = server.moduleGraph.getModuleById(options.routesId)
+            // #30709
+            const scriptModules: typeof modules = []
+            if (modules.some(m => m.id && SCRIPT_MACRO_RE.test(m.id))) {
+              for (const mod of server.moduleGraph.getModulesByFile(file) || []) {
+                if (mod.id && SCRIPT_RE.test(mod.id) && !MACRO_QUERY_RE.test(mod.id)) {
+                  scriptModules.push(mod)
+                }
+              }
+            }
             return [
               ...modules,
+              ...scriptModules,
               ...macroModule ? [macroModule] : [],
               ...routesModule ? [routesModule] : [],
             ]
@@ -368,6 +378,8 @@ function rewriteQuery (id: string) {
 }
 
 const MACRO_QUERY_RE = /[?&]macro=true(?:&|$)/
+const SCRIPT_RE = /[?&]type=script\b/
+const SCRIPT_MACRO_RE = /[?&]macro=true&.*[?&]type=script\b/
 const TYPE_PARAM_RE = /[?&]type=([^?&]+)/
 const LANG_PARAM_RE = /[?&]lang=([^?&]+)/
 function parseMacroQuery (id: string) {
