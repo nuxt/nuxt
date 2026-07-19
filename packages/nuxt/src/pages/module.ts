@@ -463,7 +463,10 @@ export default defineNuxtModule({
     let publicAssets: Nitro['options']['publicAssets'] = []
     nuxt.hook('nitro:init', (nitro) => {
       const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
-      publicAssets = nitro.options.publicAssets.filter(asset => resolve(asset.dir) !== clientBuildDir)
+      publicAssets = nitro.options.publicAssets.filter((asset) => {
+        const dir = resolve(asset.dir)
+        return dir !== clientBuildDir && !dir.startsWith(clientBuildDir + '/')
+      })
     })
 
     const warnPublicAssetConflicts = () => {
