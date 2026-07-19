@@ -1,8 +1,12 @@
-import { basename, normalize, resolve } from 'pathe'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { basename, dirname, normalize, resolve } from 'pathe'
+import { parseNodeModulePath } from 'mlly'
+import { resolveModulePath } from 'exsolve'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
-import { logger } from '@nuxt/kit'
+import { directoryToURL, logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
@@ -159,21 +163,75 @@ function baseAlias (ctx: WebpackConfigContext) {
   }
 }
 
+/**
+ * The `node_modules` directories that hold a package's dependencies, given a file
+ * resolved inside it. Covers both the isolated pnpm layout (dependencies are symlinked
+ * into the package's `.pnpm` group) and the hoisted/workspace layout (dependencies live
+ * in the package's own `node_modules`).
+ */
+export function packageDependencyDirs (entry: string | undefined) {
+  if (!entry) { return [] }
+
+  const dirs = new Set<string>()
+  const groupDir = parseNodeModulePath(entry).dir
+  if (groupDir) { dirs.add(resolve(groupDir)) }
+
+  let dir = dirname(entry)
+  while (dir !== dirname(dir)) {
+    if (existsSync(resolve(dir, 'package.json'))) {
+      dirs.add(resolve(dir, 'node_modules'))
+      break
+    }
+    dir = dirname(dir)
+  }
+
+  return [...dirs].filter(dir => existsSync(dir))
+}
+
+// This module is bundled into whichever builder package is installed
+// (`@nuxt/webpack-builder` or `@nuxt/rspack-builder`), so its dependency directories are
+// where that builder's loaders (vue-loader, css-loader, ...) live. Searching them lets
+// isolated node_modules layouts (pnpm without shamefully-hoist) find the loaders and
+// client runtime helpers Nuxt ships with. (#31351)
+const builderModulesDirs = packageDependencyDirs(fileURLToPath(import.meta.url))
+
 function baseResolve (ctx: WebpackConfigContext) {
   // Prioritize nested node_modules in webpack search path (#2558)
   // TODO: this might be refactored as default modulesDir?
-  const webpackModulesDir = ['node_modules'].concat(ctx.options.modulesDir)
+  const webpackModulesDir = ['node_modules', ...ctx.options.modulesDir]
+
+  // Nuxt's generated virtual modules import runtime dependencies of `nuxt` and
+  // `@nuxt/nitro-server` (e.g. `ofetch`, `ufo`, `nitro`) by bare specifier. Under isolated
+  // node_modules layouts these are not reachable from the app root, so fall back to those
+  // packages' dependency directories. (#31351)
+  const from = ctx.options.modulesDir.map(directoryToURL)
+  const runtimeModulesDirs = ['nuxt/package.json', '@nuxt/nitro-server/package.json']
+    .flatMap(id => packageDependencyDirs(resolveModulePath(id, { from, try: true })))
+
+  const resolveModules = [...webpackModulesDir]
+  for (const dir of [...runtimeModulesDirs, ...builderModulesDirs]) {
+    if (!resolveModules.includes(dir)) {
+      resolveModules.push(dir)
+    }
+  }
+
+  const resolveLoaderModules = [...webpackModulesDir]
+  for (const dir of builderModulesDirs) {
+    if (!resolveLoaderModules.includes(dir)) {
+      resolveLoaderModules.push(dir)
+    }
+  }
 
   ctx.config.resolve = {
     extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
     alias: ctx.alias,
-    modules: webpackModulesDir,
+    modules: resolveModules,
     fullySpecified: false,
     ...ctx.config.resolve,
   }
 
   ctx.config.resolveLoader = {
-    modules: webpackModulesDir,
+    modules: resolveLoaderModules,
     ...ctx.config.resolveLoader,
   }
 }

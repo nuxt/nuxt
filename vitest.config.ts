@@ -12,6 +12,7 @@ const commonSettings: NuxtConfig = {
   pages: true,
   routeRules: {
     '/specific-prerendered': { prerender: true },
+    '/isr/**': { isr: 60 },
     '/pre/test': { redirect: '/' },
     '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
