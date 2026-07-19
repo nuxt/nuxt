@@ -22,15 +22,12 @@ test.describe('lazy hydration styles', () => {
     await expect(page.getByText('Hydrate Never')).toBeVisible()
 
     // CSS should be linked (not inlined, since inlineStyles: false)
-    const styleLink = page.locator('link[rel="stylesheet"]').first()
-    await expect(styleLink).toBeAttached()
+    const styleLinks = page.locator('link[rel="stylesheet"]')
+    await expect(styleLinks.first()).toBeAttached()
 
-    // The CSS file should contain our component styles
-    const href = await styleLink.getAttribute('href')
-    expect(href).toBeTruthy()
-
-    const cssResponse = await page.request.get(href!)
-    const css = await cssResponse.text()
+    // The linked CSS should contain our component styles
+    const hrefs = await styleLinks.evaluateAll(links => links.map(l => (l as HTMLLinkElement).href))
+    const css = (await Promise.all(hrefs.map(href => page.request.get(href).then(r => r.text())))).join('')
     expect(css).toContain('.hydrate-never-component')
   })
 
@@ -43,6 +40,22 @@ test.describe('lazy hydration styles', () => {
       const js = await page.request.get(href).then(r => r.text())
       expect(js).not.toContain('hydrate-on-visible-component')
     }
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33339
+  test('should render blocking stylesheets for all server-rendered CSS, without duplicate resource hints', async ({ fetch }) => {
+    const html = await fetch('/').then(r => r.text())
+    const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
+    const stylesheets = [...head.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
+    const css = (await Promise.all(stylesheets.map(href => fetch(href).then(r => r.text())))).join('')
+    // CSS for the page and every server-rendered component must arrive blocking, not as prefetch-only
+    expect(css).toContain('.index-page')
+    expect(css).toContain('.base-a')
+    expect(css).toContain('.base-b')
+    expect(css).toContain('.base-c')
+    // and rendered stylesheets must not reappear as preload/prefetch hints
+    const hints = [...head.matchAll(/<link[^>]+rel="(?:preload|modulepreload|prefetch)"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
+    expect(stylesheets.filter(href => hints.includes(href))).toEqual([])
   })
 })
 

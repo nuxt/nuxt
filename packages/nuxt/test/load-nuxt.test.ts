@@ -207,4 +207,10 @@ describe('pages detection', () => {
     expect(nuxt.options.pages).toMatchObject(result)
     await nuxt.close()
   })
+
+  it('generates layout types even when pages are disabled', async () => {
+    const nuxt = await loadNuxt({ cwd: pagesFixtureDir, overrides: { pages: false }, ready: true })
+    expect(nuxt.options.build.templates.some(t => t.filename === 'types/layouts.d.ts')).toBe(true)
+    await nuxt.close()
+  })
 })

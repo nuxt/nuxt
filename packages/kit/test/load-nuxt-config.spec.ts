@@ -48,6 +48,35 @@ describe('loadNuxtConfig', () => {
     `)
   })
 
+  it('should order local layers listed in extends (alias path) above unlisted ones', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
+    // `c` is listed in extends, so it outranks the unlisted (auto-scanned) `d`; external layers stay below
+    const config = await loadNuxtConfig({ cwd, overrides: { extends: ['~/layers/c'] } })
+    expect(config._layers.map(l => basename(l.cwd))).toMatchInlineSnapshot(`
+      [
+        "layer-fixture",
+        "c",
+        "d",
+        "b",
+        "a",
+      ]
+    `)
+  })
+
+  it('should order local layers by their position in extends (relative path)', async () => {
+    const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd, overrides: { extends: ['./layers/c', './layers/d'] } })
+    expect(config._layers.map(l => basename(l.cwd))).toMatchInlineSnapshot(`
+      [
+        "layer-fixture",
+        "c",
+        "d",
+        "b",
+        "a",
+      ]
+    `)
+  })
+
   describe('with .env file', () => {
     let tempDir: string
 
