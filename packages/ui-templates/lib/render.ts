@@ -146,10 +146,15 @@ export const RenderPlugin = () => {
           return lastChar || ''
         }).replace(/@media[^{]*\{\}/g, '')
 
-        const inlineScripts: string[] = []
-        for (const [_, i] of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
-          if (i && !i.includes('const t=document.createElement("link")')) {
-            inlineScripts.push(i)
+        const bodyIndex = html.search(/<body[^>]*>/)
+        const inlineScripts: Array<{ code: string, tagPosition?: string }> = []
+        for (const match of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
+          const code = match[1]
+          if (code && !code.includes('const t=document.createElement("link")')) {
+            // Scripts authored inside <body> depend on the DOM they follow, so keep them at
+            // body close instead of letting useHead hoist them into <head> where they'd run first.
+            const tagPosition = bodyIndex !== -1 && match.index > bodyIndex ? 'bodyClose' : undefined
+            inlineScripts.push({ code, tagPosition })
           }
         }
 
@@ -163,7 +168,10 @@ export const RenderPlugin = () => {
           `const props = defineProps(${props})`,
           title && 'useHead(' + genObjectFromRawEntries([
             ['title', `\`${title}\``],
-            ['script', inlineScripts.map(s => ({ innerHTML: `\`${s.replace(/[`$]/g, '\\$&')}\`` }))],
+            ['script', inlineScripts.map(s => ({
+              innerHTML: `\`${s.code.replace(/[`$]/g, '\\$&')}\``,
+              ...(s.tagPosition ? { tagPosition: `'${s.tagPosition}'` } : {}),
+            }))],
             ['style', [{ innerHTML: `\`${globalStyles.replace(/[`$]/g, '\\$&')}\`` }]],
           ]) + ')',
           '</script>',
