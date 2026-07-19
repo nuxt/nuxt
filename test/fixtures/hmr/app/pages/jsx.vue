@@ -1,9 +1,15 @@
-<script lang="tsx">
-import { defineComponent } from 'vue'
+<template>
+  <div>
+    <h1>HMR with JSX</h1>
+    <div data-testid="jsx-content">
+      {{ text }}
+    </div>
+    <NuxtLink to="/">
+      index
+    </NuxtLink>
+  </div>
+</template>
 
-export default defineComponent({
-  setup () {
-    return () => <div data-testid="jsx-content">jsx: original</div>
-  },
-})
+<script setup lang="jsx">
+const text = 'jsx: original'
 </script>
