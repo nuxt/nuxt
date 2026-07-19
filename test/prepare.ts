@@ -2,7 +2,7 @@ import { rm } from 'node:fs/promises'
 
 import { glob } from 'tinyglobby'
 
-import { fixturesDir, getFixtureDirs, prepareFixtures } from './fixture-prepare'
+import { fixturesDir, getFixtureDirs, prepareFixtures } from './fixture-prepare.ts'
 
 async function initTesting () {
   const dirs = await getFixtureDirs()
