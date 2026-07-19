@@ -43,7 +43,7 @@ test.describe('lazy hydration styles', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/33339
-  test('should render blocking stylesheet for page CSS when a lazy hydrated component shares a chunk', async ({ fetch }) => {
+  test('should render blocking stylesheets for all server-rendered CSS, without duplicate resource hints', async ({ fetch }) => {
     const html = await fetch('/').then(r => r.text())
     const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
     const stylesheets = [...head.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
@@ -53,16 +53,9 @@ test.describe('lazy hydration styles', () => {
     expect(css).toContain('.base-a')
     expect(css).toContain('.base-b')
     expect(css).toContain('.base-c')
-  })
-
-  test('should not duplicate rendered stylesheets as resource hints', async ({ fetch }) => {
-    const html = await fetch('/').then(r => r.text())
-    const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
-    const stylesheets = [...head.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
+    // and rendered stylesheets must not reappear as preload/prefetch hints
     const hints = [...head.matchAll(/<link[^>]+rel="(?:preload|modulepreload|prefetch)"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
-    for (const href of stylesheets) {
-      expect(hints).not.toContain(href)
-    }
+    expect(stylesheets.filter(href => hints.includes(href))).toEqual([])
   })
 })
 
