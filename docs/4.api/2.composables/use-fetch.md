@@ -180,7 +180,7 @@ type UseFetchOptions<ResT, DataT = ResT> = {
 
 type AsyncDataRequestContext = {
   /** The reason for this data request */
-  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'watch'
+  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'refresh:revalidate' | 'watch'
 }
 
 type AsyncData<DataT, ErrorT> = {

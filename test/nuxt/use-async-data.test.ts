@@ -457,8 +457,10 @@ describe('useAsyncData', () => {
       nuxtApp.payload.data[uniqueKey] = 'server'
       try {
         const handler = vi.fn(() => Promise.resolve('network'))
-        const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy })
+        const getCachedData = vi.fn(() => 'custom-cache')
+        const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy, getCachedData })
         expect(handler).not.toHaveBeenCalled()
+        expect(getCachedData).not.toHaveBeenCalled()
         expect(data.value).toBe('server')
         expect(status.value).toBe('success')
       } finally {
@@ -516,17 +518,32 @@ describe('useAsyncData', () => {
       useNuxtApp().static.data[uniqueKey] = 'cached'
       let resolveHandler!: (value: string) => void
       const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
-      const { data, status } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-and-network' })
+      const { data, status, pending } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-and-network' })
       // resolves with the cached value while the request is still in flight
       expect(data.value).toBe('cached')
       expect(handler).toHaveBeenCalledTimes(1)
-      expect(status.value).toBe('pending')
+      expect(status.value).toBe('success')
+      expect(pending.value).toBe(false)
 
       resolveHandler('network')
       await flushPromises()
       expect(data.value).toBe('network')
       expect(status.value).toBe('success')
       expect(useNuxtApp().payload.data[uniqueKey]).toBe('network')
+    })
+
+    it('`cache-and-network` keeps stale data when the background revalidation fails', async () => {
+      useNuxtApp().static.data[uniqueKey] = 'cached'
+      let rejectHandler!: (error: Error) => void
+      const handler = vi.fn(() => new Promise<string>((_resolve, reject) => { rejectHandler = reject }))
+      const { data, status, error } = await useAsyncData(uniqueKey, handler, { fetchPolicy: 'cache-and-network', default: () => 'default' })
+      expect(data.value).toBe('cached')
+
+      rejectHandler(new Error('revalidation failed'))
+      await flushPromises()
+      expect(data.value).toBe('cached')
+      expect(status.value).toBe('error')
+      expect(error.value?.message).toBe('revalidation failed')
     })
 
     it('`cache-and-network` fetches normally when no cached data is present', async () => {

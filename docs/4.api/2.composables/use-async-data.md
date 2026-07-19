@@ -174,7 +174,7 @@ type AsyncDataFetchPolicy = 'cache-first' | 'cache-and-network' | 'network-only'
 
 type AsyncDataRequestContext = {
   /** The reason for this data request */
-  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'watch'
+  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'refresh:revalidate' | 'watch'
 }
 
 type AsyncData<DataT, ErrorT> = {
@@ -241,13 +241,17 @@ This only caches data when `experimental.payloadExtraction` in `nuxt.config` is 
 The `fetchPolicy` option controls _whether_ cached data (as read by `getCachedData`) is used and updated; `getCachedData` controls _how_ cached data is read. The two options compose.
 
 - `cache-first` (default): if cached data is present, return it without fetching; otherwise fetch and update the cache.
-- `cache-and-network`: if cached data is present, return it immediately, then fetch in the background and update the cache and `data` when the response resolves (`status` is `'pending'` while revalidating).
+- `cache-and-network`: if cached data is present, return it immediately, then fetch in the background and update the cache and `data` when the response resolves. While revalidating, `status` stays `'success'` and `pending` stays `false`; if the background fetch fails, the stale `data` is kept and `error` is set (with `status: 'error'`). Background revalidations call `getCachedData` with `cause: 'refresh:revalidate'`.
 - `network-only`: always fetch, ignoring cached data, but still update the cache with the result.
-- `cache-only`: only return cached data; never fetch. With an empty cache, `data` stays at the `default()` value and `status` is `'idle'`.
-- `no-cache`: always fetch and do not update the cache with the result.
+- `cache-only`: only return cached data; never fetch. With an empty cache, `data` stays at the `default()` value and `status` is `'idle'`. Manual `execute()` and `refresh()` calls re-consult the cache but never trigger a fetch.
+- `no-cache`: always fetch and do not update the cache with the result. Because the cache is never written on the client, `useNuxtData` will not reflect results fetched with this policy.
 
 ::note
-During first-load hydration the server-rendered payload is always adopted, whatever the policy — it is how server data is transferred to the client, not a cache. This also means the server always writes to `nuxtApp.payload.data`, even with `no-cache`. With `cache-and-network`, the payload is additionally revalidated in the background once hydration completes.
+During first-load hydration the server-rendered payload is always adopted, whatever the policy: it is how server data is transferred to the client, not a cache. This also means the server always writes to `nuxtApp.payload.data`, even with `no-cache`, and that `network-only` does not trigger a client-side fetch on first load. With `cache-and-network`, the payload is additionally revalidated in the background once hydration completes.
+::
+
+::note
+With the default `getCachedData`, cached data only exists when `experimental.payloadExtraction` is enabled. To get the most out of `cache-and-network` or `cache-only`, pair them with a custom `getCachedData` that reads from your own cache.
 ::
 
 ::note
