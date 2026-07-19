@@ -18,10 +18,6 @@ type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
 
-type FetchMethod<T> = T extends { data: Ref<infer Data> }
-  ? NonNullable<Data> extends { method: infer Method } ? Method : never
-  : never
-
 declare module 'nitro/types' {
   interface InternalApi {
     '/api/method-inference': {
@@ -131,20 +127,12 @@ describe('API routes', () => {
 
   // TODO: https://github.com/nitrojs/nitro/issues/2758
   it('works with useFetch', () => {
-    const defaultFetch = useFetch('/api/method-inference')
-    const postFetch = useLazyFetch('/api/method-inference', { method: 'post' })
-    const transformedPostFetch = useFetch('/api/method-inference', { method: 'post', transform: data => data })
-    const defaultedPostFetch = useFetch('/api/method-inference', { method: 'post', default: () => ({ method: 'post' as const }) })
-    const keyedPostFetch = useFetch('/api/method-inference', { method: 'post' }, 'key')
-    const usePostFetch = createUseFetch<void, '/api/method-inference', 'post'>({ method: 'post' })
-    const factoryFetch = usePostFetch('/api/method-inference')
-
-    expectTypeOf<FetchMethod<typeof defaultFetch>>().toEqualTypeOf<'get'>()
-    expectTypeOf<FetchMethod<typeof postFetch>>().toEqualTypeOf<'post'>()
-    expectTypeOf<FetchMethod<typeof transformedPostFetch>>().toEqualTypeOf<'post'>()
-    expectTypeOf<FetchMethod<typeof defaultedPostFetch>>().toEqualTypeOf<'post'>()
-    expectTypeOf<FetchMethod<typeof keyedPostFetch>>().toEqualTypeOf<'post'>()
-    expectTypeOf<FetchMethod<typeof factoryFetch>>().toEqualTypeOf<'post'>()
+    expectTypeOf(useFetch('/api/method-inference').data.value!.method).toEqualTypeOf<'get'>()
+    expectTypeOf(useLazyFetch('/api/method-inference', { method: 'post' }).data.value!.method).toEqualTypeOf<'post'>()
+    expectTypeOf(useFetch('/api/method-inference', { method: 'post', transform: data => data }).data.value!.method).toEqualTypeOf<'post'>()
+    expectTypeOf(useFetch('/api/method-inference', { method: 'post', default: () => ({ method: 'post' as const }) }).data.value!.method).toEqualTypeOf<'post'>()
+    expectTypeOf(useFetch('/api/method-inference', { method: 'post' }, 'key').data.value!.method).toEqualTypeOf<'post'>()
+    expectTypeOf(createUseFetch<void, '/api/method-inference', 'post'>({ method: 'post' })('/api/method-inference').data.value!.method).toEqualTypeOf<'post'>()
 
     // expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     // expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
