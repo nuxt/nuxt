@@ -78,3 +78,37 @@ describe('useRuntimeConfig', () => {
     expect(useRuntimeConfig()).toEqual(expected)
   })
 })
+
+// These tests document the current environment variable value coercion
+// behaviour (see https://github.com/nuxt/nuxt/issues/24812). Environment
+// variable values are passed through `destr`, so JSON-compatible values are
+// deserialized. They pin the existing behaviour to catch unintended changes.
+describe('useRuntimeConfig env value casting', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.restoreAllMocks()
+  })
+
+  it.each([
+    { envValue: '', expected: '' },
+    { envValue: 'hello-world', expected: 'hello-world' },
+    { envValue: '0', expected: 0 },
+    { envValue: '3000', expected: 3000 },
+    { envValue: 'true', expected: true },
+    { envValue: 'false', expected: false },
+    { envValue: undefined, expected: '' },
+    { envValue: 'undefined', expected: '' },
+    { envValue: 'null', expected: '' },
+    { envValue: '4848e0', expected: 4848 },
+    { envValue: '"4848e0"', expected: '4848e0' },
+    { envValue: '""4848e0""', expected: '"4848e0"' },
+    { envValue: '{ foo: "bar" }', expected: '{ foo: "bar" }' },
+  ])('casts $envValue to $expected', ({ envValue, expected }) => {
+    const runtimeConfig = { myVar: '' }
+    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion: false } } } } as any)
+    mockKlona.mockReturnValue(runtimeConfig)
+    vi.stubEnv('NITRO_MY_VAR', envValue)
+
+    expect(useRuntimeConfig().myVar).toEqual(expected)
+  })
+})

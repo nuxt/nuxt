@@ -5,7 +5,7 @@ import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
-import { gte } from 'semver'
+import { isGreaterOrEqual } from 'verkit'
 import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
@@ -361,7 +361,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   let hasTypescriptVersionWithModulePreserve
   for (const parent of nestedModulesDirs) {
     hasTypescriptVersionWithModulePreserve ??= await readPackageJSON('typescript', { parent })
-      .then(r => r?.version && gte(r.version, '5.4.0'))
+      .then(r => r?.version && isGreaterOrEqual(r.version, '5.4.0'))
       .catch(() => undefined)
   }
   hasTypescriptVersionWithModulePreserve ??= true
@@ -370,10 +370,10 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const isV5OrHigher = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
 
-  const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
+  const userExclude = [...(nuxt.options.typescript?.tsConfig?.exclude ?? []), ...(nuxt.options.typescript?.appTsConfig?.exclude ?? [])]
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
-  const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
+  const baseTsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: true,
@@ -431,74 +431,31 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...exclude],
   } satisfies TSConfig)
 
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, baseTsConfig)
+
+  // `baseTsConfig.compilerOptions` already merges the user's global `typescript.tsConfig` with
+  // Nuxt's defaults. The `node` and `shared` environments load `nuxt.config` and modules, so
+  // they inherit that baseline minus the app-only (DOM/Vue) options, and always emit nothing,
+  // scan no ambient types, and start from empty `paths` (filled in below).
+  const appOnlyCompilerOptions = ['lib', 'libReplacement', 'jsx', 'jsxImportSource', 'noUncheckedSideEffectImports', 'experimentalDecorators'] as const
+  const nonAppCompilerOptions = (): NonNullable<TSConfig['compilerOptions']> => {
+    const compilerOptions = { ...baseTsConfig.compilerOptions }
+    for (const key of appOnlyCompilerOptions) {
+      delete compilerOptions[key]
+    }
+    return { ...compilerOptions, noEmit: true, types: [], paths: {} }
+  }
+
   // This describes the environment where we load `nuxt.config.ts` (and modules)
   const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
-    compilerOptions: {
-      /* Base options: */
-      esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
-      skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
-      target: tsConfig.compilerOptions?.target,
-      allowJs: tsConfig.compilerOptions?.allowJs,
-      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
-      resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
-      moduleDetection: tsConfig.compilerOptions?.moduleDetection,
-      isolatedModules: tsConfig.compilerOptions?.isolatedModules,
-      verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
-      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
-      /* Strictness */
-      strict: tsConfig.compilerOptions?.strict,
-      noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
-      forceConsistentCasingInFileNames: tsConfig.compilerOptions?.forceConsistentCasingInFileNames,
-      noImplicitOverride: tsConfig.compilerOptions?.noImplicitOverride,
-      /* If NOT transpiling with TypeScript: */
-      module: tsConfig.compilerOptions?.module,
-      noEmit: true,
-      /* remove auto-scanning for types */
-      types: [],
-      /* add paths object for filling-in later */
-      paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: tsConfig.compilerOptions?.moduleResolution,
-      useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
-      noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
-      allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
-    },
+    compilerOptions: nonAppCompilerOptions(),
     include: [...nodeInclude],
     exclude: [...nodeExclude],
   } satisfies TSConfig)
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
   const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, {
-    compilerOptions: {
-      /* Base options: */
-      esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
-      skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
-      target: tsConfig.compilerOptions?.target,
-      allowJs: tsConfig.compilerOptions?.allowJs,
-      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
-      resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
-      moduleDetection: tsConfig.compilerOptions?.moduleDetection,
-      isolatedModules: tsConfig.compilerOptions?.isolatedModules,
-      verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
-      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
-      /* Strictness */
-      strict: tsConfig.compilerOptions?.strict,
-      noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
-      forceConsistentCasingInFileNames: tsConfig.compilerOptions?.forceConsistentCasingInFileNames,
-      noImplicitOverride: tsConfig.compilerOptions?.noImplicitOverride,
-      /* If NOT transpiling with TypeScript: */
-      module: tsConfig.compilerOptions?.module,
-      noEmit: true,
-      /* remove auto-scanning for types */
-      types: [],
-      /* add paths object for filling-in later */
-      paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: tsConfig.compilerOptions?.moduleResolution,
-      useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
-      noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
-      allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
-    },
+    compilerOptions: nonAppCompilerOptions(),
     include: [...sharedInclude],
     exclude: [...sharedExclude],
   } satisfies TSConfig)

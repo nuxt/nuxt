@@ -1,7 +1,7 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { $Fetch, NitroRouteRules } from 'nitro/types'
 import { useRuntimeConfig } from '../nuxt'
-import { manifestDiagnostics } from '../diagnostics/manifest.ts'
+import { manifestDiagnostics } from '../diagnostics/manifest'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 import { $fetch as _$fetch } from '#build/fetch'

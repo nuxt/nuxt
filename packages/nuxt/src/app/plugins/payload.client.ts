@@ -5,7 +5,7 @@ import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
 import { injectHead } from '../composables/head'
-import { stateDiagnostics } from '../diagnostics/state.ts'
+import { stateDiagnostics } from '../diagnostics/state'
 
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 

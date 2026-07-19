@@ -382,7 +382,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
+      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] as Set<string> | undefined ?? new Set<string>()
       const metaFiltered: Record<string, any> = {}
       let skipMeta = true
       for (const key in page.meta || {}) {

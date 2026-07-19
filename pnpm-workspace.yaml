@@ -45,3 +45,4 @@ minimumReleaseAgeExclude:
   - undici@8.5.0
   - unctx@3.0.0-beta.2
   - magic-string@1.0.0
+  - verkit@0.1.2

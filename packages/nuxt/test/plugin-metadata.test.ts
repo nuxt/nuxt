@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata.ts'
-import { checkForCircularDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks } from '../src/core/app.ts'
+import { RemovePluginMetadataPlugin, extractMetadata, setPluginDependenciesForMode } from '../src/core/plugins/plugin-metadata.ts'
+import { checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks } from '../src/core/app.ts'
 
 describe('plugin-metadata', () => {
   const properties = Object.entries({
@@ -59,10 +59,11 @@ describe('plugin-metadata', () => {
     })
   })
 
-  const transformPlugin: any = RemovePluginMetadataPlugin({
+  const nuxt = {
     options: { sourcemap: { client: true } },
     apps: { default: { plugins: [{ src: 'my-plugin.mjs', order: 10 }] } },
-  } as any).raw({}, {} as any)
+  } as any
+  const transformPlugin: any = RemovePluginMetadataPlugin(nuxt, 'client').raw({}, {} as any)
 
   it('should overwrite invalid plugins', () => {
     const invalidPlugins = [
@@ -89,12 +90,50 @@ describe('plugin-metadata', () => {
           "
     `)
   })
+
+  it('should filter plugin dependencies for the build mode', () => {
+    const filterNuxt = {
+      options: { sourcemap: { client: true } },
+      apps: { default: { plugins: [{ src: 'my-plugin.mjs' }] } },
+    } as any
+    setPluginDependenciesForMode(filterNuxt, 'client', [{ src: 'my-plugin.mjs', dependsOn: ['client-plugin'] }])
+    setPluginDependenciesForMode(filterNuxt, 'server', [{ src: 'my-plugin.mjs', dependsOn: ['server-plugin'] }])
+    const plugin = `
+      export default defineNuxtPlugin({
+        name: 'test',
+        dependsOn: ['client-plugin', 'server-plugin'],
+        setup: () => {},
+      })
+    `
+    const transform = (mode: 'client' | 'server') => (RemovePluginMetadataPlugin(filterNuxt, mode).raw({}, {} as any) as any).transform(plugin, 'my-plugin.mjs').code
+    expect({
+      client: transform('client'),
+      server: transform('server'),
+    }).toMatchInlineSnapshot(`
+      {
+        "client": "
+            export default defineNuxtPlugin({
+              name: 'test',
+              dependsOn: ["client-plugin"],
+              setup: () => {},
+            })
+          ",
+        "server": "
+            export default defineNuxtPlugin({
+              name: 'test',
+              dependsOn: ["server-plugin"],
+              setup: () => {},
+            })
+          ",
+      }
+    `)
+  })
 })
 
 describe('plugin sanity checking', () => {
-  it('non-existent depends are warned', () => {
+  it('filters and warns about non-existent dependencies in development', () => {
     vi.spyOn(console, 'warn')
-    checkForCircularDependencies([
+    const plugins = filterPluginDependencies([
       {
         name: 'A',
         src: '',
@@ -108,7 +147,61 @@ describe('plugin sanity checking', () => {
         name: 'C',
         src: '',
       },
-    ])
+    ], { warn: true })
+    expect(plugins[1]?.dependsOn).toEqual([])
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Plugin `B` depends on `D` but they are not registered.'))
+    vi.restoreAllMocks()
+  })
+
+  it('distinguishes dependencies unavailable in the build target from unregistered plugins', () => {
+    vi.spyOn(console, 'warn')
+    const allPlugins = [
+      { name: 'client', src: '', mode: 'client' as const },
+      { name: 'server', src: '', mode: 'server' as const },
+      { name: 'universal', dependsOn: ['client', 'server', 'missing'], src: '' },
+    ]
+    const plugins = filterPluginDependencies(allPlugins.filter(plugin => plugin.mode !== 'server'), {
+      warn: true,
+      mode: 'client',
+      allPlugins,
+    })
+    expect(plugins[1]?.dependsOn).toEqual(['client'])
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Plugin `universal` depends on `server`, but this dependency is unavailable in the client build and will be ignored.'))
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Do not depend on plugins that are unavailable in the same build environment; remove them from the `dependsOn` array.'))
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Plugin `universal` depends on `missing` but they are not registered.'))
+    vi.restoreAllMocks()
+  })
+
+  it('filters non-existent dependencies without warning in production', () => {
+    vi.spyOn(console, 'warn')
+    const source = [
+      { name: 'A', src: '' },
+      { name: 'B', dependsOn: ['A', 'D'], src: '' },
+    ]
+    const plugins = filterPluginDependencies(source)
+    expect(plugins[1]?.dependsOn).toEqual(['A'])
+    expect(source[1]?.dependsOn).toEqual(['A', 'D'])
+    expect(console.warn).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it('preserves dependencies when plugin metadata is unknown', () => {
+    const plugins = [
+      { name: 'A', src: '', _metaUnknown: true },
+      { name: 'B', dependsOn: ['A', 'D'], src: '' },
+    ]
+    expect(filterPluginDependencies(plugins)).toBe(plugins)
+    expect(plugins[1]?.dependsOn).toEqual(['A', 'D'])
+  })
+
+  it('warns about missing dependencies even when plugin metadata is unknown', () => {
+    vi.spyOn(console, 'warn')
+    const plugins = [
+      { name: 'A', src: '', _metaUnknown: true },
+      { name: 'B', dependsOn: ['A', 'D'], src: '' },
+    ]
+    expect(filterPluginDependencies(plugins, { warn: true })).toBe(plugins)
+    expect(plugins[1]?.dependsOn).toEqual(['A', 'D'])
     expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Plugin `B` depends on `D` but they are not registered.'))
     vi.restoreAllMocks()
   })

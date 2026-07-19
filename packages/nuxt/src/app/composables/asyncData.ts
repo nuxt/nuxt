@@ -1,7 +1,7 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
-import { debounce } from 'perfect-debounce'
 import { hashFunction, hashKey } from '../utils/hash'
+import { debounceTick } from '../utils/debounce-tick'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
@@ -11,7 +11,7 @@ import { createError } from './error'
 import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
-import { dataDiagnostics } from '../diagnostics/data.ts'
+import { dataDiagnostics } from '../diagnostics/data'
 
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
@@ -528,16 +528,15 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
                 // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
                 if (!nuxtApp._asyncData[newKey]?._init) {
-                  let initialValue: NoInfer<DataT> | undefined
-
-                  if (oldKey && hadData) {
-                    initialValue = nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
-                  } else {
-                    initialValue = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-                    initialFetchOptions.cachedData = initialValue
-                  }
-
+                  // Resolve the new key's cached data before seeding the container, so getCachedData
+                  // cannot see the previous key's display-only data as a cache hit for the new key.
+                  const cachedData = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+                  initialFetchOptions.cachedData = cachedData
+                  const initialValue = (oldKey && hadData && cachedData === undefined)
+                    ? nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
+                    : cachedData
                   nuxtApp._asyncData[newKey] = buildAsyncData(nuxtApp, newKey, _handler, opts, initialValue)
+                  nuxtApp._asyncData[newKey]!._initialCachedData = cachedData
                 }
 
                 nuxtApp._asyncData[newKey]._deps++
@@ -566,12 +565,6 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         const unsubParamsWatcher = opts.watch
           ? watch(opts.watch, () => {
               if (keyChanging) { return } // avoid double execute while the key switch is being processed
-              // if the 0ms debounce is pending (same tick) force flush the debounce post watcher flush
-              if (nuxtApp._asyncData[key.value]?._execute.isPending()) {
-                queuePostFlushCb(() => {
-                  nuxtApp._asyncData[key.value]?._execute.flush()
-                })
-              }
               nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: opts.dedupe })
             })
           : noop
@@ -776,14 +769,7 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-// TODO: export from `perfect-debounce`
-export type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: ArgumentsT) => Promise<ReturnT>) & {
-  cancel: () => void
-  flush: () => Promise<ReturnT> | undefined
-  isPending: () => boolean
-}
-
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController }
 
 function buildAsyncData<
   ResT,
@@ -946,7 +932,7 @@ function buildAsyncData<
       nuxtApp._asyncDataPromises[key] = promise
       return nuxtApp._asyncDataPromises[key]!
     },
-    _execute: debounce((...args) => asyncData.execute(...args), 0, { leading: true }),
+    _execute: debounceTick((...args) => asyncData.execute(...args)),
     _default: options.default!,
     _deps: 0,
     _init: true,

@@ -347,8 +347,19 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (options.routesId && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
             const routesModule = server.moduleGraph.getModuleById(options.routesId)
+            // Reload the real module when Vite selects its macro counterpart (#30709).
+            const realModules = []
+            for (const mod of modules) {
+              if (mod.id && MACRO_STRIP_RE.test(mod.id)) {
+                const realModule = server.moduleGraph.getModuleById(mod.id.replace(MACRO_STRIP_RE, r => r.endsWith('&') ? '?' : ''))
+                if (realModule) {
+                  realModules.push(realModule)
+                }
+              }
+            }
             return [
               ...modules,
+              ...realModules,
               ...macroModule ? [macroModule] : [],
               ...routesModule ? [routesModule] : [],
             ]
@@ -368,6 +379,7 @@ function rewriteQuery (id: string) {
 }
 
 const MACRO_QUERY_RE = /[?&]macro=true(?:&|$)/
+const MACRO_STRIP_RE = /\?macro=true&?/
 const TYPE_PARAM_RE = /[?&]type=([^?&]+)/
 const LANG_PARAM_RE = /[?&]lang=([^?&]+)/
 function parseMacroQuery (id: string) {
