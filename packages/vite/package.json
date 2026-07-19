@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "4.3.1",
+  "version": "5.0.0-0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -35,6 +35,7 @@
     "defu": "^6.1.7",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.1.0",
+    "generic-names": "^4.0.0",
     "get-port-please": "^3.2.0",
     "jiti": "^2.7.0",
     "js-tokens": "^10.0.0",

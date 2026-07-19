@@ -4,7 +4,7 @@ import { viewDepthKey } from 'vue-router'
 
 import { createError } from '../composables/error'
 import { useRoute } from '../composables/router'
-import { renderDiagnostics } from '../diagnostics/render.ts'
+import { renderDiagnostics } from '../diagnostics/render'
 
 import { islandComponents, pageIslandRoutes } from '#build/components.islands.mjs'
 

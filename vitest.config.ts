@@ -112,6 +112,7 @@ export default defineConfig({
           name: fixtureProjectName(entry),
           include: ['test/*.test.ts'],
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: isWindows ? 60000 : 20000,
           retry: isCI ? 2 : 0,
@@ -123,6 +124,7 @@ export default defineConfig({
         test: {
           name: 'bundle',
           include: ['test/bundle.test.ts'],
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: 180_000,
           retry: isCI ? 2 : 0,
@@ -137,6 +139,7 @@ export default defineConfig({
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
+            '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),

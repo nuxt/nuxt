@@ -12,7 +12,7 @@ links:
 
 Within your pages, components, and plugins, you can use `useCookie` to read and write cookies in an SSR-friendly way.
 
-```ts
+```ts [Usage]
 const cookie = useCookie(name, options)
 ```
 
@@ -76,7 +76,7 @@ Most of the options will be directly passed to the [cookie](https://github.com/j
 
 Returns a Vue `Ref<T>` representing the cookie value. Updating the ref will update the cookie (unless `readonly` is set). The ref is SSR-friendly and will work on both client and server.
 
-## Examples
+## Example
 
 ### Basic Usage
 
@@ -107,7 +107,7 @@ counter.value ||= Math.round(Math.random() * 1000)
 
 ### Readonly Cookies
 
-```vue
+```vue [app/app.vue]
 <script setup lang="ts">
 const user = useCookie(
   'userInfo',
@@ -130,7 +130,7 @@ if (user.value) {
 
 ### Writable Cookies
 
-```vue
+```vue [app/app.vue]
 <script setup lang="ts">
 const list = useCookie(
   'list',
@@ -167,7 +167,7 @@ function save () {
 
 ### Refreshing Cookies
 
-```vue
+```vue [app/app.vue]
 <script setup lang="ts">
 const session = useCookie(
   'session', {
@@ -191,7 +191,7 @@ session.value = 'active'
 
 Use a function for `expires` when you want a fresh expiration date every time the cookie is written (for example, sliding sessions or tokens):
 
-```vue
+```vue [app/app.vue]
 <script setup lang="ts">
 const token = useCookie('token', {
   // Re-evaluated on every write — keep this getter pure

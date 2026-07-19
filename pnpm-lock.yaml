@@ -73,9 +73,6 @@ importers:
       '@types/node':
         specifier: 24.13.3
         version: 24.13.3
-      '@types/semver':
-        specifier: 7.7.1
-        version: 7.7.1
       '@typescript-eslint/parser':
         specifier: 8.64.0
         version: 8.64.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3)
@@ -181,9 +178,6 @@ importers:
       rollup:
         specifier: 4.62.2
         version: 4.62.2
-      semver:
-        specifier: 7.8.5
-        version: 7.8.5
       sherif:
         specifier: 1.13.0
         version: 1.13.0
@@ -208,6 +202,9 @@ importers:
       ufo:
         specifier: 1.6.4
         version: 1.6.4
+      verkit:
+        specifier: 0.1.2
+        version: 0.1.2
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
@@ -282,9 +279,6 @@ importers:
       scule:
         specifier: ^1.3.0
         version: 1.3.0
-      semver:
-        specifier: ^7.8.5
-        version: 7.8.5
       std-env:
         specifier: ^4.2.0
         version: 4.2.0
@@ -300,13 +294,13 @@ importers:
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
+      verkit:
+        specifier: ^0.1.2
+        version: 0.1.2
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
-      '@types/semver':
-        specifier: 7.7.1
-        version: 7.7.1
       hookable:
         specifier: 6.1.1
         version: 6.1.1
@@ -572,9 +566,6 @@ importers:
       scule:
         specifier: ^1.3.0
         version: 1.3.0
-      semver:
-        specifier: ^7.8.5
-        version: 7.8.5
       std-env:
         specifier: ^4.2.0
         version: 4.2.0
@@ -611,6 +602,9 @@ importers:
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
+      verkit:
+        specifier: ^0.1.2
+        version: 0.1.2
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
@@ -1022,6 +1016,9 @@ importers:
       exsolve:
         specifier: ^1.1.0
         version: 1.1.0
+      generic-names:
+        specifier: ^4.0.0
+        version: 4.0.0
       get-port-please:
         specifier: ^3.2.0
         version: 3.2.0
@@ -1356,6 +1353,28 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/chunk-error:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  test/fixtures/dynamic-paths:
+    dependencies:
+      '@nuxt/rspack-builder':
+        specifier: workspace:*
+        version: link:../../../packages/rspack
+      '@nuxt/webpack-builder':
+        specifier: workspace:*
+        version: link:../../../packages/webpack
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/external-vue-resolution:
     dependencies:
       nuxt:
@@ -1399,6 +1418,34 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/minimal-types:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/nested-suspense:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  test/fixtures/nuxt-time:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/preview:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/route-scroll:
     dependencies:
       nuxt:
         specifier: workspace:*
@@ -3631,9 +3678,6 @@ packages:
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
-
-  '@types/semver@7.7.1':
-    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -5998,6 +6042,9 @@ packages:
   fzf@0.5.2:
     resolution: {integrity: sha512-Tt4kuxLXFKHy8KT40zwsUPUkg1CrsgY25FxA2U/j/0WgEDCk3ddc/zLTCCcbSHX9FcKtLuVaDGtGE/STWC+j3Q==}
 
+  generic-names@4.0.0:
+    resolution: {integrity: sha512-ySFolZQfw9FoDb3ed9d80Cm9f0+r7qj+HJkWjeD9RBfpxEVTlVhol+gvaQB/78WbwYfbnNh8nWHHBSlg072y6A==}
+
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -6812,6 +6859,10 @@ packages:
   loader-utils@2.0.4:
     resolution: {integrity: sha512-xXqpXoINfFhgua9xiqD8fPFHgkoq1mmmpE92WlDbm9rNRd/EbRb+Gqf908T2DMfuHjjJlksiK2RbHVOdD/MqSw==}
     engines: {node: '>=8.9.0'}
+
+  loader-utils@3.3.1:
+    resolution: {integrity: sha512-FMJTLMXfCLMLfJxcX9PFqX5qD88Z5MRGaZCVzfuqeZSPsyiBzs+pahDQjbIWz2QIzPZz0NX9Zy4FX3lmK6YHIg==}
+    engines: {node: '>= 12.13.0'}
 
   local-pkg@1.2.1:
     resolution: {integrity: sha512-++gUqRDEvcnN6Zhqrr+y/CkVEHhlrR96vZn3nZZPYzMcBUyBtTKzB9NadClFIsIVSsu+3i9tfk/erqy9kAmt7Q==}
@@ -9376,6 +9427,10 @@ packages:
   validate-npm-package-name@5.0.1:
     resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
+
+  verkit@0.1.2:
+    resolution: {integrity: sha512-WqkT8n3hqizuCu71W3bUzf5fjBmkbXcudsehe/NbxA8PgqoKnSOY5K0Ba2ckg1qaRaSpSz7as/n9K1R9JXjQKg==}
+    engines: {node: '>=18.12.0'}
 
   version-guard@1.1.3:
     resolution: {integrity: sha512-JwPr6erhX53EWH/HCSzfy1tTFrtPXUe927wdM1jqBBeYp1OM+qPHjWbsvv6pIBduqdgxxS+ScfG7S28pzyr2DQ==}
@@ -12082,8 +12137,6 @@ snapshots:
   '@types/relateurl@0.2.33': {}
 
   '@types/resolve@1.20.2': {}
-
-  '@types/semver@7.7.1': {}
 
   '@types/unist@2.0.11': {}
 
@@ -15177,6 +15230,10 @@ snapshots:
 
   fzf@0.5.2: {}
 
+  generic-names@4.0.0:
+    dependencies:
+      loader-utils: 3.3.1
+
   gensync@1.0.0-beta.2: {}
 
   get-caller-file@2.0.5: {}
@@ -16057,6 +16114,8 @@ snapshots:
       big.js: 5.2.2
       emojis-list: 3.0.0
       json5: 2.2.3
+
+  loader-utils@3.3.1: {}
 
   local-pkg@1.2.1:
     dependencies:
@@ -19469,6 +19528,8 @@ snapshots:
       spdx-expression-parse: 3.0.1
 
   validate-npm-package-name@5.0.1: {}
+
+  verkit@0.1.2: {}
 
   version-guard@1.1.3: {}
 
