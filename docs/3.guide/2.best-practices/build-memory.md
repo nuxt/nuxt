@@ -25,7 +25,7 @@ Use them as planning anchors, not as official limits. Runtime memory after deplo
 - **Sourcemaps.** Server maps are on by default (`sourcemap.server: true`). Client maps add more.
 - **Prerendering.** Each route renders HTML and payload data; concurrency multiplies that cost.
 - **Large graphs.** Big locale JSON, generated code, and heavy modules increase what Vite/Rollup/Nitro must parse.
-- **Nitro minify.** Minifying a large server bundle can spike near the end of the build.
+- **Nitro minification.** Minifying a large server bundle can spike near the end of the build.
 
 Dependency upgrades can change the graph. In the same issue, builds started OOMing on 8 GB runners after `@nuxt/ui` 4.6.1, and other projects using Reka UI-based kits (`@nuxt/ui`, `shadcn-vue`) reported high peaks. Treat those as leads: compare the same app before and after the lockfile change.
 
@@ -83,7 +83,7 @@ Lower `concurrency` trades build time for less parallel memory use. See [Prerend
 ### Raise the Node Heap When the Machine Has RAM
 
 ```bash [Terminal]
-NODE_OPTIONS='--max-old-space-size=8192' nuxt build
+NODE_OPTIONS='--max-old-space-size=8192' npx nuxt build
 ```
 
 This helps when Node throws `FATAL ERROR: Reached heap limit` and the host still has free memory. Exit code `137` usually means the OS killed the process. A larger V8 heap does not add physical RAM.
@@ -102,13 +102,13 @@ Nuxt 5 uses [Rolldown](https://rolldown.rs) via Vite 8 for the client pipeline. 
 
 ## Sizing CI
 
-Pick a runner with more free memory than your measured peak, leaving room for the OS and package manager. Stock GitHub-hosted runners (~7 GB usable) sit at the edge for apps with UI kits or heavy prerender. Move to a larger runner or cut workload when peaks approach the limit. Swap can avoid an abrupt kill but slows the build a lot.
+Pick a runner with more free memory than your measured peak, leaving room for the OS and package manager. Standard GitHub-hosted `macos-latest` runners have about 7 GB of RAM. Standard `ubuntu-latest` runners have 16 GB for public repositories and 8 GB for private repositories. Move to a larger runner or cut workload when peaks approach the limit. Swap can avoid an abrupt kill but slows the build a lot.
 
 Re-measure after Nuxt, Node, or major module upgrades on the same project and runner. That is the clearest signal of a regression.
 
 ## How to Measure
 
-Peak RSS for the whole process (Linux, GNU time):
+Peak RSS for the timed command (Linux, GNU time):
 
 ```bash [Terminal]
 /usr/bin/time -v npx nuxt build
@@ -145,6 +145,6 @@ export default defineNuxtConfig({
 
 These hooks miss peaks between stages and memory in child processes.
 
-[`nuxt build --profile`](/docs/4.x/api/commands/build) writes a CPU profile. It helps find a slow stage; it does not profile heap.
+[`nuxt build --profile`](/docs/4.x/api/commands/build) reports RSS and heap deltas for build stages and writes a CPU profile. It helps identify slow stages but does not produce a retained-allocation heap profile.
 
 When you open an OOM issue, include Nuxt and Node versions, peak RSS, runner RAM, sourcemap settings, prerender route count, preset, and major module versions.
