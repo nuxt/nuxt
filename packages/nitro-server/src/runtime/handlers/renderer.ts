@@ -313,19 +313,17 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   if (!NO_SCRIPTS) {
     // 4. Resource Hints
-    // Exclude lazy hydrated modules so their JS chunks don't get preloaded
-    // (CSS links are already added above, this only affects JS preloads).
+    // Excluding lazy hydrated modules keeps their JS chunks from being preloaded, but also
+    // resurfaces their CSS as hints, so filter out anything already linked as a stylesheet.
     const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
       ? { exclude: ssrContext['~lazyHydratedModules'] }
       : undefined
-    // Skip hints for stylesheets already rendered as blocking links above
-    // (e.g. CSS of lazy hydrated components, which are server-rendered)
-    const renderedCSS = new Set(link.map(l => l.href))
+    const stylesheetHrefs = new Set(link.map(l => l.href))
     ssrContext.head.push({
-      link: (getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]).filter(l => !renderedCSS.has(l.href)),
+      link: (getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]).filter(l => !stylesheetHrefs.has(l.href)),
     })
     ssrContext.head.push({
-      link: (getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]).filter(l => !renderedCSS.has(l.href)),
+      link: (getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]).filter(l => !stylesheetHrefs.has(l.href)),
     })
     // 5. Payloads
     ssrContext.head.push({

@@ -48,9 +48,7 @@ test.describe('lazy hydration styles', () => {
     const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
     const stylesheets = [...head.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
     const css = (await Promise.all(stylesheets.map(href => fetch(href).then(r => r.text())))).join('')
-    // Page CSS and CSS for all server-rendered components (including the
-    // lazy hydrated one and its shared child) must load in a blocking way,
-    // not as prefetch-only, to avoid a flash of unstyled content
+    // CSS for the page and every server-rendered component must arrive blocking, not as prefetch-only
     expect(css).toContain('.index-page')
     expect(css).toContain('.base-a')
     expect(css).toContain('.base-b')
