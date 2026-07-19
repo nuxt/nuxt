@@ -262,8 +262,8 @@ If you have not fetched data on the server (for example, with `server: false`), 
 | `refresh` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Function to manually refresh the data. By default, Nuxt waits until a `refresh` is finished before it can be executed again.                                      |
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`.                                                                                                                                              |
 | `error`   | `Ref<ErrorT \| undefined>`                          | Error object if the data fetching failed.                                                                                                                         |
-| `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the data request. See below for possible values.                                                                                                        |
-| `pending` | `Ref<boolean>`                                      | Boolean flag indicating whether the current request is in progress.                                                                                               |
+| `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the data request. Use it to distinguish `idle`, `pending`, `success`, and `error`.                                                                      |
+| `pending` | `Ref<boolean>`                                      | `true` while a request is in flight. With [`experimental.pendingWhenIdle`](/docs/4.x/guide/going-further/experimental-features#pendingwhenidle), it is also `true` before the request starts. |
 | `clear`   | `() => void`                                        | Resets `data` to `undefined` (or the value of `options.default()` if provided), `error` to `undefined`, set `status` to `idle`, and cancels any pending requests. |
 
 ::tip
