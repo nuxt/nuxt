@@ -1,6 +1,6 @@
 {
-  "statusCode": 500,
-  "statusMessage": "Internal server error",
+  "status": 500,
+  "statusText": "Internal server error",
   "description": "This page is temporarily unavailable.",
   "refresh": "Refresh this page"
 }

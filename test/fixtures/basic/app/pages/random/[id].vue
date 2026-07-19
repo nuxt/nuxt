@@ -24,6 +24,9 @@
     >
       Random (C)
     </NuxtLink>
+    <NuxtLink to="/random/日本語">
+      Random (Japanese)
+    </NuxtLink>
     <ServerOnlyComponent />
     <br>
 

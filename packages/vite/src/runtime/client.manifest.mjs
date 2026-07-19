@@ -1,4 +1,0 @@
-// @ts-check
-import { viteNodeFetch } from './vite-node-shared.mjs'
-
-export default () => viteNodeFetch.getManifest()

@@ -1,25 +1,24 @@
-import { existsSync, statSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, componentDiagnostics, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
-import { distDir } from '../dirs'
-import { logger } from '../utils'
-import { lazyHydrationMacroPreset } from '../imports/presets'
-import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
-import { scanComponents } from './scan'
+import { distDir } from '../dirs.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
+import { lazyHydrationMacroPreset } from '../imports/presets.ts'
+import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
+import { scanComponents } from './scan.ts'
 
-import { LoaderPlugin } from './plugins/loader'
-import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
-import { TransformPlugin } from './plugins/transform'
-import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
-import { ComponentNamePlugin } from './plugins/component-names'
-import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
-import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
+import { LoaderPlugin } from './plugins/loader.ts'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
+import { TransformPlugin } from './plugins/transform.ts'
+import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
+import { ComponentNamePlugin } from './plugins/component-names.ts'
+import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
+import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
+import type { Component, ComponentsDir, ComponentsOptions, NuxtPage } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 const SLASH_SEPARATOR_RE = /[\\/]/
 /**
  * Compare two directory entries by the number of path segments.
@@ -63,16 +62,19 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // TODO: remove in Nuxt v5
     if (nuxt.options.experimental.normalizeComponentNames) {
-      addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.client, getComponents }), { server: false })
-      addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
+      addBuildPlugin(ComponentNamePlugin({ getComponents }))
     }
 
     // Resolve dirs
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
       const allDirs: ComponentsDir[] = []
-      for (const layer of nuxt.options._layers) {
-        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 })
+      const layerCount = nuxt.options._layers.length
+      for (const [i, layer] of nuxt.options._layers.entries()) {
+        // Assign priority based on layer position: lower index = higher priority
+        // This ensures correct override order: root > auto-scanned > extends layers
+        const priority = layerCount - i
+        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority })
         allDirs.push(...layerDirs)
       }
 
@@ -95,9 +97,9 @@ export default defineNuxtModule<ComponentsOptions>({
           nuxt.options.build.transpile.push(dirPath)
         }
 
-        const present = isDirectory(dirPath)
+        const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          logger.warn('Components directory not found: `' + dirPath + '`')
+          componentDiagnostics.NUXT_B3001({ dirPath })
         }
 
         const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs
@@ -110,7 +112,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || (extensions.length > 1 ? `**/*.{${extensions.join(',')}}` : `**/*.${extensions[0] || '*'}`),
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.{cts,mts,ts}', // .d.ts files
+            `**/*.{${DECLARATION_EXTENSIONS.join(',')},}`, // .d.ts files
             ...(dirOptions.ignore || []),
           ],
           transpile,
@@ -179,13 +181,22 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:templates', async (app) => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
+      const modesByName = new Map<string, Set<string | undefined>>()
+      for (const component of newComponents) {
+        let modes = modesByName.get(component.pascalName)
+        if (!modes) {
+          modes = new Set()
+          modesByName.set(component.pascalName, modes)
+        }
+        modes.add(component.mode)
+      }
       // add server placeholder for .client components server side. issue: #7085
       for (const component of newComponents) {
         if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && isAbsolute(component.filePath) && !existsSync(component.filePath)) {
           // attempt to resolve component path
           component.filePath = resolveModulePath(resolveAlias(component.filePath), { try: true, extensions: nuxt.options.extensions }) ?? component.filePath
         }
-        if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
+        if (component.mode === 'client' && !modesByName.get(component.pascalName)?.has('server')) {
           newComponents.push({
             ...component,
             _raw: true,
@@ -193,9 +204,10 @@ export default defineNuxtModule<ComponentsOptions>({
             filePath: serverPlaceholderPath,
             chunkName: 'components/' + component.kebabName,
           })
+          modesByName.get(component.pascalName)!.add('server')
         }
-        if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
-          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
+        if (component.mode === 'server' && !nuxt.options.ssr && !modesByName.get(component.pascalName)?.has('client')) {
+          componentDiagnostics.NUXT_B3002({ component: component.pascalName })
         }
       }
       context.components = newComponents
@@ -206,7 +218,7 @@ export default defineNuxtModule<ComponentsOptions>({
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
-    addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
+    addBuildPlugin(TreeShakeTemplatePlugin({ getComponents }), { client: false })
 
     const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
 
@@ -219,18 +231,16 @@ export default defineNuxtModule<ComponentsOptions>({
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client' }), { server: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server' }), { client: false })
 
     if (nuxt.options.experimental.lazyHydration) {
       addBuildPlugin(LazyHydrationTransformPlugin({
         ...sharedLoaderOptions,
-        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
       }), { prepend: true })
 
       addBuildPlugin(LazyHydrationMacroTransformPlugin({
         ...sharedLoaderOptions,
-        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
         alias: nuxt.options.alias,
       }))
 
@@ -255,7 +265,23 @@ export default defineNuxtModule<ComponentsOptions>({
         },
       }, { server: false })
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false, prepend: true })
+      function getServerPages (): string[] {
+        const paths: string[] = []
+        function visit (pages: NuxtPage[]) {
+          for (const page of pages) {
+            if (page.mode === 'server' && page.file) {
+              paths.push(normalize(page.file))
+            }
+            if (page.children?.length) { visit(page.children) }
+          }
+        }
+        for (const app of Object.values(nuxt.apps)) {
+          if (app.pages) { visit(app.pages) }
+        }
+        return paths
+      }
+
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
         addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))

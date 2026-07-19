@@ -20,20 +20,21 @@ export function LayerDepOptimizePlugin (nuxt: Nuxt): Plugin | undefined {
 
   if (layerDirs.length > 0) {
     // Reverse so longest/most specific directories are searched first
-    layerDirs.sort().reverse()
-    const dirs = [...layerDirs]
+    const dirs = layerDirs.toSorted().reverse()
     return {
       name: 'nuxt:optimize-layer-deps',
       enforce: 'pre',
-      async resolveId (source, _importer) {
-        if (!_importer || !dirs.length) { return }
-        const importer = normalize(_importer)
-        const layerIndex = dirs.findIndex(dir => importer.startsWith(dir))
-        // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
-        if (layerIndex !== -1) {
-          dirs.splice(layerIndex, 1)
-          await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
-        }
+      resolveId: {
+        async handler (source, _importer) {
+          if (!_importer) { return }
+          const importer = normalize(_importer)
+          const layerIndex = dirs.findIndex(dir => importer.startsWith(dir))
+          // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
+          if (layerIndex !== -1) {
+            dirs.splice(layerIndex, 1)
+            await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
+          }
+        },
       },
     }
   }

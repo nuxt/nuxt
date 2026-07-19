@@ -1,5 +1,6 @@
 import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
+import { defineLink } from '@unhead/vue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
@@ -7,9 +8,9 @@ import { useHead } from './head'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
+import { stateDiagnostics } from '../diagnostics/state.ts'
 
-// @ts-expect-error virtual import
-import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -19,16 +20,17 @@ interface LoadPayloadOptions {
 /** @since 3.0.0 */
 export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
   if (import.meta.server || !payloadExtraction) { return null }
-  // TODO: allow payload extraction for non-prerendered URLs
-  const shouldLoadPayload = await isPrerendered(url)
-  if (!shouldLoadPayload) {
-    return null
+  if (await shouldLoadPayload(url)) {
+    const payloadURL = await _getPayloadURL(url, opts)
+    // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
+    // cannot invalidate them - defer to normal HTTP cache semantics instead
+    const cache: RequestCache = getRouteRules({ path: url }).payload ? 'default' : 'force-cache'
+    return await _importPayload(payloadURL, cache) || null
   }
-  const payloadURL = await _getPayloadURL(url, opts)
-  return await _importPayload(payloadURL) || null
+  return null
 }
-let linkRelType: string | undefined
-function detectLinkRelType () {
+let linkRelType: 'preload' | 'prefetch' | undefined
+function detectLinkRelType (): 'preload' | 'prefetch' {
   if (import.meta.server) { return 'preload' }
   if (linkRelType) { return linkRelType }
   const relList = document.createElement('link').relList
@@ -38,22 +40,32 @@ function detectLinkRelType () {
 /** @since 3.0.0 */
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
   const nuxtApp = useNuxtApp()
-  const promise = _getPayloadURL(url, opts).then((payloadURL) => {
-    const link = renderJsonPayloads
-      ? { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
-      : { rel: 'modulepreload', crossorigin: '', href: payloadURL } as const
+  const promise = shouldLoadPayload(url).then(async (shouldPreload) => {
+    if (!shouldPreload) {
+      return
+    }
+    const payloadURL = await _getPayloadURL(url, opts)
+    const rel = detectLinkRelType()
+    const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
 
     if (import.meta.server) {
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
     } else {
       const linkEl = document.createElement('link')
-      for (const key of Object.keys(link) as Array<keyof typeof link>) {
-        linkEl[key === 'crossorigin' ? 'crossOrigin' : key] = link[key]!
-      }
+      linkEl.rel = rel
+      linkEl.setAttribute('as', 'fetch')
+      linkEl.crossOrigin = 'anonymous'
+      linkEl.href = payloadURL
       document.head.appendChild(linkEl)
       return new Promise<void>((resolve, reject) => {
-        linkEl.addEventListener('load', () => resolve())
-        linkEl.addEventListener('error', () => reject())
+        const cleanup = () => {
+          linkEl.removeEventListener('load', onLoad)
+          linkEl.removeEventListener('error', onError)
+        }
+        const onLoad = () => { cleanup(); resolve() }
+        const onError = () => { cleanup(); reject() }
+        linkEl.addEventListener('load', onLoad)
+        linkEl.addEventListener('error', onError)
       })
     }
   })
@@ -65,52 +77,96 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
 // --- Internal ---
 
-const filename = renderJsonPayloads ? '_payload.json' : '_payload.js'
+const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
-    throw new Error('Payload URL must not include hostname: ' + url)
+    throw stateDiagnostics.NUXT_E7001({ url })
   }
   const config = useRuntimeConfig()
-  const hash = opts.hash || (opts.fresh ? Date.now() : config.app.buildId)
+  const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
   const cdnURL = config.app.cdnURL
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
   return joinURL(baseOrCdnURL, u.pathname, filename + (hash ? `?${hash}` : ''))
 }
 
-async function _importPayload (payloadURL: string) {
+async function _importPayload (payloadURL: string, cache: RequestCache) {
   if (import.meta.server || !payloadExtraction) { return null }
-  const payloadPromise = renderJsonPayloads
-    ? fetch(payloadURL, { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
-    : import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
-
   try {
-    return await payloadPromise
+    const res = await fetch(payloadURL, import.meta.dev ? {} : { cache })
+    if (!res.ok) {
+      if (import.meta.dev) {
+        stateDiagnostics.NUXT_E7002({ url: payloadURL })
+      }
+      return null
+    }
+    return await parsePayload(await res.text())
   } catch (err) {
-    console.warn('[nuxt] Cannot load payload ', payloadURL, err)
+    stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
   }
   return null
 }
-/** @since 3.0.0 */
-export async function isPrerendered (url = useRoute().path) {
-  const nuxtApp = useNuxtApp()
-  // Note: Alternative for server is checking x-nitro-prerender header
-  if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
-  url = url.replace(/\/$/, '')
-  const manifest = await getAppManifest()
-  if (manifest.prerendered.includes(url)) {
+
+function _shouldLoadPrerenderedPayload (rules: Record<string, any>) {
+  if (rules.redirect) {
+    return false
+  }
+  if (rules.prerender) {
     return true
   }
-  return nuxtApp.runWithContext(async () => {
-    const rules = await getRouteRules({ path: url })
-    return !!rules.prerender && !rules.redirect
-  })
+}
+
+async function _isPrerenderedInManifest (url: string) {
+  // Note: Alternative for server is checking x-nitro-prerender header
+  if (!appManifest) {
+    return false
+  }
+  url = url === '/' ? url : url.replace(/\/$/, '')
+  try {
+    const manifest = await getAppManifest()
+    return manifest.prerendered.includes(url)
+  } catch {
+    // handle errors fetching manifest
+    return false
+  }
+}
+
+/**
+ * @internal
+ */
+export async function shouldLoadPayload (url: string = useRoute().path): Promise<boolean> {
+  const rules = getRouteRules({ path: url })
+  if (rules.ssr === false) {
+    return false
+  }
+  const res = _shouldLoadPrerenderedPayload(rules)
+  if (res !== undefined) {
+    return res
+  }
+
+  if (rules.payload) {
+    return true
+  }
+
+  const prerendered = await _isPrerenderedInManifest(url)
+  return prerendered
+}
+
+/** @since 3.0.0 */
+export async function isPrerendered (url: string = useRoute().path): Promise<boolean> {
+  const res = _shouldLoadPrerenderedPayload(getRouteRules({ path: url }))
+  if (res !== undefined) {
+    return res
+  }
+
+  const prerendered = await _isPrerenderedInManifest(url)
+  return prerendered
 }
 
 let payloadCache: NuxtPayload | null = null
 
 /** @since 3.4.0 */
-export async function getNuxtClientPayload () {
+export async function getNuxtClientPayload (): Promise<NuxtPayload | Partial<NuxtPayload> | null> {
   if (import.meta.server) {
     return null
   }
@@ -125,7 +181,10 @@ export async function getNuxtClientPayload () {
 
   const inlineData = await parsePayload(el.textContent || '')
 
-  const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
+  // `prerenderedAt` is only set for build-time prerendered HTML - without it, the page
+  // was rendered at runtime (`isr`/`swr`/`cache`) and the external payload must match
+  // the HTML we were just served, so revalidate instead of trusting the browser cache
+  const externalData = el.dataset.src ? await _importPayload(el.dataset.src, inlineData.prerenderedAt ? 'force-cache' : 'no-cache') : undefined
 
   payloadCache = {
     ...inlineData,
@@ -140,7 +199,7 @@ export async function getNuxtClientPayload () {
   return payloadCache
 }
 
-export async function parsePayload (payload: string) {
+export async function parsePayload (payload: string): Promise<any> {
   return await parse(payload, useNuxtApp()._payloadRevivers)
 }
 
@@ -151,9 +210,9 @@ export async function parsePayload (payload: string) {
 export function definePayloadReducer (
   name: string,
   reduce: (data: any) => any,
-) {
+): void {
   if (import.meta.server) {
-    useNuxtApp().ssrContext!._payloadReducers[name] = reduce
+    useNuxtApp().ssrContext!['~payloadReducers'][name] = reduce
   }
 }
 
@@ -166,9 +225,9 @@ export function definePayloadReducer (
 export function definePayloadReviver (
   name: string,
   revive: (data: any) => any | undefined,
-) {
+): void {
   if (import.meta.dev && getCurrentInstance()) {
-    console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')
+    stateDiagnostics.NUXT_E7004()
   }
   if (import.meta.client) {
     useNuxtApp()._payloadRevivers[name] = revive

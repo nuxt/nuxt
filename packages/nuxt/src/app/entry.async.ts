@@ -1,7 +1,7 @@
-import type { CreateOptions } from './nuxt'
+import type { Entry } from './entry'
 
-const entry = import.meta.server
-  ? (ctx?: CreateOptions['ssrContext']) => import('#app/entry').then(m => m.default(ctx))
+const entry: Entry | (() => Promise<Entry>) = import.meta.server
+  ? ctx => import('#app/entry').then(m => m.default(ctx))
   : () => import('#app/entry').then(m => m.default)
 
 if (import.meta.client) {

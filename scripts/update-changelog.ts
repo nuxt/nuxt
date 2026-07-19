@@ -1,4 +1,5 @@
-import { execSync } from 'node:child_process'
+import process from 'node:process'
+import { execFileSync } from 'node:child_process'
 import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
@@ -14,35 +15,41 @@ async function main () {
 
   const prevMessages = new Set(handleSeparateBranch ? await getPreviousReleasedCommits().then(r => r.map(c => c.message)) : [])
 
-  const commits = await getLatestCommits().then(commits => commits.filter(
+  // TODO: revert after release of v4.2.0
+  // Get the date of the latest tag to filter out merged history commits
+  const latestTagName = await getLatestTag()
+  const tagDate = execFileSync('git', ['log', '-1', '--format=%ai', latestTagName], { encoding: 'utf-8' })
+  const sinceDate = tagDate.trim()
+
+  const commits = await getLatestCommits(sinceDate).then(commits => commits.filter(
     c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps') && !prevMessages.has(c.message),
   ))
-  const bumpType = await determineBumpType() || 'patch'
+  const bumpType = await determineBumpType(sinceDate) || 'patch'
 
   const newVersion = inc(workspace.find('nuxt').data.version, bumpType)
   const changelog = await generateMarkDown(commits, config)
 
   // Create and push a branch with bumped versions if it has not already been created
-  const branchExists = execSync(`git ls-remote --heads origin v${newVersion}`).toString().trim().length > 0
+  const branchExists = execFileSync('git', ['ls-remote', '--heads', 'origin', `v${newVersion}`], { encoding: 'utf-8' }).trim().length > 0
   if (!branchExists) {
-    execSync('git config --global user.email "daniel@roe.dev"')
-    execSync('git config --global user.name "Daniel Roe"')
-    execSync(`git checkout -b v${newVersion}`)
+    execFileSync('git', ['config', '--global', 'user.email', 'daniel@roe.dev'])
+    execFileSync('git', ['config', '--global', 'user.name', 'Daniel Roe'])
+    execFileSync('git', ['checkout', '-b', `v${newVersion}`])
 
     for (const pkg of workspace.packages.filter(p => !p.data.private)) {
       workspace.setVersion(pkg.data.name, newVersion!)
     }
     await workspace.save()
 
-    execSync(`git commit -am v${newVersion}`)
-    execSync(`git push -u origin v${newVersion}`)
+    execFileSync('git', ['commit', '-am', `v${newVersion}`])
+    execFileSync('git', ['push', '-u', 'origin', `v${newVersion}`])
   }
 
   // Get the current PR for this release, if it exists
   const [currentPR] = await $fetch(`https://api.github.com/repos/nuxt/nuxt/pulls?head=nuxt:v${newVersion}`)
-  const contributors = await getContributors()
+  const contributors = await getContributors(sinceDate)
 
-  const latestTag = await getLatestTag()
+  const latestTag = latestTagName
   const previousReleasedTag = handleSeparateBranch ? await getLatestReleasedTag() : latestTag
 
   const releaseNotes = [

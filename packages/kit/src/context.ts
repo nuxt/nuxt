@@ -1,21 +1,23 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { createContext, getContext } from 'unctx'
+import { getContext } from 'unctx'
+import type { UseContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
 /**
  * Direct access to the Nuxt global context - see https://github.com/unjs/unctx.
  * @deprecated Use `getNuxtCtx` instead
  */
-export const nuxtCtx = getContext<Nuxt>('nuxt')
+export const nuxtCtx: UseContext<Nuxt> = getContext<Nuxt>('nuxt')
 
 /** async local storage for the name of the current nuxt instance */
-const asyncNuxtStorage = createContext<Nuxt>({
+const asyncNuxtStorage = getContext<Nuxt>('asyncNuxtStorage', {
   asyncContext: true,
   AsyncLocalStorage,
 })
 
 /** Direct access to the Nuxt context with asyncLocalStorage - see https://github.com/unjs/unctx. */
-export const getNuxtCtx = () => asyncNuxtStorage.tryUse()
+export const getNuxtCtx = (): Nuxt | null => asyncNuxtStorage.tryUse()
 
 /**
  * Get access to Nuxt instance.
@@ -30,7 +32,7 @@ export function useNuxt (): Nuxt {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const instance = asyncNuxtStorage.tryUse() || nuxtCtx.tryUse()
   if (!instance) {
-    throw new Error('Nuxt instance is unavailable!')
+    throw kitDiagnostics.NUXT_B8001()
   }
   return instance
 }

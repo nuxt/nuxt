@@ -3,10 +3,12 @@ import { isAbsolute } from 'node:path'
 import { normalize } from 'pathe'
 import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
-import { MODE_RE, filterInPlace } from './utils'
-import { tryUseNuxt, useNuxt } from './context'
-import { addTemplate } from './template'
-import { resolveAlias } from './resolve'
+import { MODE_RE, filterInPlace } from './utils.ts'
+import { pluginDiagnostics } from './diagnostics/plugins.ts'
+import { tryUseNuxt, useNuxt } from './context.ts'
+import { addTemplate } from './template.ts'
+import { resolveAlias } from './resolve.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from './constants.ts'
 
 /**
  * Normalize a nuxt plugin object
@@ -25,7 +27,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   }
 
   if (!plugin.src) {
-    throw new Error('Invalid plugin. src option is required: ' + JSON.stringify(plugin))
+    throw pluginDiagnostics.NUXT_B2011({ src: JSON.stringify(plugin) })
   }
 
   // Normalize full path to plugin
@@ -34,7 +36,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   if (!existsSync(plugin.src) && isAbsolute(plugin.src)) {
     try {
       plugin.src = resolveModulePath(plugin.src, {
-        extensions: tryUseNuxt()?.options.extensions ?? ['.js', '.mjs', '.cjs', '.ts', '.tsx', '.mts', '.cts'],
+        extensions: tryUseNuxt()?.options.extensions ?? DEFAULT_JS_FILE_EXTENSIONS,
       })
     } catch {
       // ignore errors as the file may be in the nuxt vfs
@@ -76,7 +78,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
  * ```
  */
 export interface AddPluginOptions { append?: boolean }
-export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}) {
+export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}): NuxtPlugin {
   const nuxt = useNuxt()
 
   // Normalize plugin

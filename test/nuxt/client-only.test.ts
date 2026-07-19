@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import type { ComponentOptions } from 'vue'
-import { Suspense, defineComponent, h, toDisplayString, useAttrs } from 'vue'
+import { Suspense, createSSRApp, defineComponent, h, toDisplayString, useAttrs } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises, mount } from '@vue/test-utils'
 
 import { createClientOnly } from '../../packages/nuxt/src/app/components/client-only'
-import { createClientPage } from '../../packages/nuxt/dist/components/runtime/client-component'
+import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
+import ServerPlaceholder from '../../packages/nuxt/src/app/components/server-placeholder'
+import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
+import { useNuxtApp } from '#app/nuxt'
 import { ClientOnly } from '#components'
 
 describe('client pages', () => {
@@ -79,6 +83,36 @@ describe('client-only', () => {
   })
 })
 
+describe('client-only SSR fallback tag', () => {
+  const renderFallback = (props: Record<string, unknown>) => {
+    const app = createSSRApp(defineComponent({
+      setup: () => () => h(ClientOnly, props, { default: () => [] }),
+    }))
+    return renderToString(app)
+  }
+
+  it('renders a valid `fallbackTag` verbatim', async () => {
+    expect(await renderFallback({ fallbackTag: 'div', fallback: 'x' })).toBe('<div>x</div>')
+    expect(await renderFallback({ fallbackTag: 'section', fallback: 'x' })).toBe('<section>x</section>')
+    expect(await renderFallback({ fallbackTag: 'my-element', fallback: 'x' })).toBe('<my-element>x</my-element>')
+  })
+
+  it('replaces a malicious `fallbackTag` with `span`', async () => {
+    expect(await renderFallback({ fallbackTag: 'img src=x onerror=alert(1)', fallback: 'x' })).toBe('<span>x</span>')
+    expect(await renderFallback({ fallbackTag: '<script>', fallback: 'x' })).toBe('<span>x</span>')
+  })
+
+  it('falls back to `span` when `fallbackTag` is empty or undefined', async () => {
+    expect(await renderFallback({ fallback: 'x' })).toBe('<span>x</span>')
+    expect(await renderFallback({ fallbackTag: '', fallback: 'x' })).toBe('<span>x</span>')
+  })
+
+  it('also sanitises `placeholderTag`', async () => {
+    expect(await renderFallback({ placeholderTag: 'aside', placeholder: 'x' })).toBe('<aside>x</aside>')
+    expect(await renderFallback({ placeholderTag: 'img src=x onerror=alert(1)', placeholder: 'x' })).toBe('<span>x</span>')
+  })
+})
+
 describe('createClientOnly', () => {
   it('should not inherit attributes if disabled', async () => {
     const NonInherited = createClientOnly({
@@ -92,6 +126,50 @@ describe('createClientOnly', () => {
     })
     const wrapper = await mountSuspended(component)
     expect(wrapper.html()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+  })
+})
+
+describe('ServerPlaceholder', () => {
+  it('should render the correct placeholder based on clientNodePlaceholder flag', () => {
+    const wrapper = mount(ServerPlaceholder)
+    if (clientNodePlaceholder) {
+      // v5 behavior: comment node placeholder
+      expect(wrapper.html()).toBe('<!--placeholder-->')
+    } else {
+      // v4 behavior: empty div placeholder
+      expect(wrapper.html()).toBe('<div></div>')
+    }
+  })
+})
+
+describe('createClientOnly - placeholder during hydration', () => {
+  it('should render the correct placeholder during hydration based on clientNodePlaceholder flag', async () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp.isHydrating = true
+
+    try {
+      const comp = defineComponent({
+        setup: () => () => h('div', { id: 'real' }, 'real content'),
+      })
+
+      const ClientComp = createClientOnly(comp as ComponentOptions)
+      const wrapper = mount(ClientComp)
+
+      // Before onMounted fires, should show placeholder
+      expect(wrapper.find('#real').exists()).toBe(false)
+      if (clientNodePlaceholder) {
+        expect(wrapper.html()).toBe('<!--placeholder-->')
+      } else {
+        expect(wrapper.html()).toBe('<div></div>')
+      }
+
+      // After mounting, should show real content regardless of flag
+      await flushPromises()
+      expect(wrapper.find('#real').exists()).toBe(true)
+      expect(wrapper.html()).toBe('<div id="real">real content</div>')
+    } finally {
+      nuxtApp.isHydrating = false
+    }
   })
 })
 
