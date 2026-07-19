@@ -544,7 +544,10 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
 export const dollarFetchTypeTemplate: NuxtTemplate = {
   filename: 'fetch.d.ts',
   getContents () {
-    return 'export { $fetch } from \'ofetch\'\n'
+    // type as nitro's route-aware `$Fetch` (matching the runtime cast in
+    // `#app/composables/fetch`) so typed API routes are inferred, rather
+    // than ofetch's plain `$fetch` which returns `Promise<any>`
+    return 'export declare const $fetch: import(\'nitro/types\').$Fetch\n'
   },
 }
 
