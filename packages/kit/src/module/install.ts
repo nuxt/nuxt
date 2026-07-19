@@ -327,15 +327,6 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
     })
   } catch (error: unknown) {
-    const code = (error as Error & { code?: string }).code
-    if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
-      const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
-      // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
-      // i.e. module is importing a module that is missing
-      if (module && !module.includes(nuxtModule as string)) {
-        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(error), cause: error })
-      }
-    }
     throw kitDiagnostics.NUXT_B8017({ module: nuxtModule, cause: error })
   }
 
@@ -377,8 +368,6 @@ export function getDirectory (p: string): string {
 export const normalizeModuleTranspilePath = (p: string) => {
   return getDirectory(p).split('node_modules/').pop() as string
 }
-
-const MissingModuleMatcher = /Cannot find module\s+['"]?([^'")\s]+)['"]?/i
 
 async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions?: Record<string, unknown>, nuxt = useNuxt()) {
   if (!meta.name || !meta.version) {

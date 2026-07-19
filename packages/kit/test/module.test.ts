@@ -502,6 +502,12 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     await writeFile(join(depWithExports, 'package.json'), JSON.stringify({ name: 'dep-with-exports', version: '1.0.0', type: 'module', exports: { '.': './index.js' } }))
     await writeFile(join(depWithExports, 'index.js'), `export default () => {}\n`)
 
+    // installed and loads fine, but its default export is not a function
+    const nonFunctionModule = join(tempDir, 'node_modules/non-function-module')
+    await mkdir(nonFunctionModule, { recursive: true })
+    await writeFile(join(nonFunctionModule, 'package.json'), JSON.stringify({ name: 'non-function-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(nonFunctionModule, 'index.js'), `export default {}\n`)
+
     // entrypoint imports a non-exported subpath, throwing ERR_PACKAGE_PATH_NOT_EXPORTED at import time
     const subpathModule = join(tempDir, 'node_modules/subpath-module')
     await mkdir(subpathModule, { recursive: true })
@@ -535,6 +541,12 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect(error.message).toMatch(/An error occurred while importing the module/)
     expect(error.message).not.toMatch(/may not be installed/)
     expect(error.cause).toBeInstanceOf(Error)
+  })
+
+  it('reports a module whose default export is not a function', async () => {
+    const error = await loadError('non-function-module')
+    expect(error.message).toMatch(/is not a function/)
+    expect(error.message).not.toMatch(/may not be installed/)
   })
 
   it('reports a genuinely missing module as not installed', async () => {
