@@ -320,10 +320,10 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
       : undefined
     const stylesheetHrefs = new Set(link.map(l => l.href))
     ssrContext.head.push({
-      link: (getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]).filter(l => !stylesheetHrefs.has(l.href)),
-    })
-    ssrContext.head.push({
-      link: (getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]).filter(l => !stylesheetHrefs.has(l.href)),
+      link: [
+        ...getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
+        ...getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
+      ].filter(l => !stylesheetHrefs.has(l.href)),
     })
     // 5. Payloads
     ssrContext.head.push({
