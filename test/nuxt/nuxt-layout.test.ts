@@ -10,7 +10,7 @@ import layouts from '#build/layouts.mjs'
 import { useRoute } from '#app/composables/router'
 
 describe('NuxtLayout', () => {
-  const router = useRouter()
+  let router: ReturnType<typeof useRouter>
   let resolveDeferredPage: () => void
 
   let routeChanges = 0
@@ -22,6 +22,7 @@ describe('NuxtLayout', () => {
   const addedPages = ['no-layout', 'layout-1', 'layout-2', 'layout-2-deferred', 'deferred']
 
   beforeAll(async () => {
+    router = useRouter()
     for (const layout of addedLayouts) {
       layouts[layout] = defineComponent({
         setup (_, ctx) {

@@ -45,16 +45,16 @@ When using `useLazyAsyncData`, navigation will occur before fetching is complete
 ## Type
 
 ```ts [Signature]
-export function useLazyAsyncData<DataT, ErrorT> (
-  handler: (ctx?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions<DataT>,
-): AsyncData<DataT, ErrorT>
+export function useLazyAsyncData<ResT, DataE = unknown, DataT = ResT> (
+  handler: AsyncDataHandler<ResT>,
+  options?: AsyncDataOptions<ResT, DataT>,
+): AsyncData<DataT, DataE> & Promise<AsyncData<DataT, DataE>>
 
-export function useLazyAsyncData<DataT, ErrorT> (
-  key: string,
-  handler: (ctx?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions<DataT>,
-): AsyncData<DataT, ErrorT>
+export function useLazyAsyncData<ResT, DataE = unknown, DataT = ResT> (
+  key: MaybeRefOrGetter<string>,
+  handler: AsyncDataHandler<ResT>,
+  options?: AsyncDataOptions<ResT, DataT>,
+): AsyncData<DataT, DataE> & Promise<AsyncData<DataT, DataE>>
 ```
 
 `useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/4.x/api/composables/use-async-data).

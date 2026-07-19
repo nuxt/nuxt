@@ -1,4 +1,5 @@
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
 
 const ensureItemIsLast = (item: string) => (arr: string[]) => {
   const index = arr.indexOf(item)
@@ -23,7 +24,7 @@ export default defineResolvers({
       $resolve: (val) => {
         if (typeof val === 'string') {
           if (!(val in orderPresets)) {
-            throw new Error(`[nuxt] Unknown PostCSS order preset: ${val}`)
+            throw schemaDiagnostics.NUXT_B5015({ preset: val })
           }
           return orderPresets[val as keyof typeof orderPresets]
         }
@@ -36,19 +37,6 @@ export default defineResolvers({
         return orderPresets.autoprefixerAndCssnanoLast
       },
     },
-    plugins: {
-      autoprefixer: {},
-      cssnano: {
-        $resolve: async (val, get) => {
-          if (val || val === false) {
-            return val
-          }
-          if (await get('dev')) {
-            return false
-          }
-          return {}
-        },
-      },
-    },
+    plugins: {},
   },
 })

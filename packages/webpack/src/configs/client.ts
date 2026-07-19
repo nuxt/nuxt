@@ -9,7 +9,7 @@ import { defineEnv } from 'unenv'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
 import { nuxt } from '../presets/nuxt.ts'
-import { TsCheckerPlugin, webpack } from '#builder'
+import { TsCheckerPlugin, builder, webpack } from '#builder'
 
 export async function client (ctx: WebpackConfigContext) {
   ctx.name = 'client'
@@ -76,6 +76,14 @@ function clientHMR (ctx: WebpackConfigContext) {
     return
   }
 
+  ctx.config.plugins ||= []
+  ctx.config.plugins.push(new webpack.HotModuleReplacementPlugin())
+
+  // Rsbuild's dev server injects its own HMR client
+  if (builder === 'rspack') {
+    return
+  }
+
   const clientOptions = ctx.userConfig.hotMiddleware?.client || {}
   const hotMiddlewareClientOptions = {
     reload: true,
@@ -94,9 +102,6 @@ function clientHMR (ctx: WebpackConfigContext) {
     // https://github.com/webpack/webpack-hot-middleware#config
     `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`,
   )
-
-  ctx.config.plugins ||= []
-  ctx.config.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 
 function clientOptimization (ctx: WebpackConfigContext) {

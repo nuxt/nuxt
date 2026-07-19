@@ -22,11 +22,12 @@
     "noEmit": true,
     /* If your code runs in the DOM: */
     "lib": [
-      "es2022",
+      "es2023",
       "webworker",
       "dom",
       "dom.iterable"
     ],
+    "libReplacement": false,
     "paths": {
       "#app": [
         "./packages/nuxt/src/app/index"
@@ -36,6 +37,21 @@
       ],
       "#unhead/composables": [
         "./packages/nuxt/src/head/runtime/composables"
+      ],
+      "#vite-node": [
+        "./packages/vite/src/vite-node"
+      ],
+      "#vite-node-entry": [
+        "./packages/vite/src/vite-node-entry"
+      ],
+      "#vite-node-runner": [
+        "./packages/vite/src/vite-node-runner"
+      ],
+      "nuxt/app": [
+        "./packages/nuxt/src/app/index"
+      ],
+      "nuxt/app/*": [
+        "./packages/nuxt/src/app/*"
       ]
     }
   },
@@ -43,6 +59,7 @@
     "**/dist/**",
     "**/.nuxt/**",
     "packages/nuxt/src/app/types/**",
+    "packages/kit/test/types-fixture/**",
     "packages/nuxt/meta.d.ts",
     "**/nuxt.d.ts",
     "**/examples/**",

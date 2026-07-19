@@ -5,12 +5,11 @@ import { join, relative, resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getLayerDirectories, importModule } from '@nuxt/kit'
+import { configDiagnostics, createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getLayerDirectories, importModule } from '@nuxt/kit'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
 import { createJiti } from 'jiti'
-import { logger } from '../utils.ts'
 
 export default defineNuxtModule({
   meta: {
@@ -21,7 +20,7 @@ export default defineNuxtModule({
 
     // Initialize untyped/jiti loader
     const _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
-      cache: false,
+      fsCache: false,
       transformOptions: {
         babel: {
           plugins: [untypedPlugin],
@@ -77,7 +76,7 @@ export default defineNuxtModule({
           }
           return
         } catch {
-          logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
+          configDiagnostics.NUXT_B5009()
         }
       }
 
@@ -115,11 +114,7 @@ export default defineNuxtModule({
             // TODO: fix type for second argument of `import`
             loadedConfig = await _resolveSchema.import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
-            logger.warn(
-              'Unable to load schema from',
-              filePath,
-              err,
-            )
+            configDiagnostics.NUXT_B5005({ filePath, cause: err })
             continue
           }
           schemaDefs.push(loadedConfig)

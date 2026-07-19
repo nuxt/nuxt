@@ -1,20 +1,24 @@
-import { basename, normalize, resolve } from 'pathe'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { basename, dirname, normalize, resolve } from 'pathe'
+import { parseNodeModulePath } from 'mlly'
+import { resolveModulePath } from 'exsolve'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
-import { logger } from '@nuxt/kit'
+import { DEFAULT_JS_FILE_EXTENSIONS, directoryToURL, logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
-import { isTest } from 'std-env'
 import { defu } from 'defu'
 import type { WarningFilter } from '../plugins/warning-ignore.ts'
 import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets, fileName } from '../utils/config.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
+import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
 import { WebpackBarPlugin, builder, webpack } from '#builder'
 
@@ -29,10 +33,27 @@ export async function base (ctx: WebpackConfigContext) {
 }
 
 function baseConfig (ctx: WebpackConfigContext) {
+  const rules: NonNullable<Configuration['module']>['rules'] = []
+  if (builder === 'rspack') {
+    rules.push({
+      test: /\.m?js$/,
+      resolve: {
+        fullySpecified: false,
+      },
+    })
+  }
+
   ctx.config = defu({}, {
     name: ctx.name,
-    entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
-    module: { rules: [] },
+    entry: { app: [resolve(ctx.options.appDir, (ctx.options.experimental.asyncEntry || ctx.isDev) ? 'entry.async' : 'entry')] },
+    module: {
+      rules,
+      // Nuxt resolves some virtual module exports lazily (e.g. `?inline` CSS), so missing exports
+      // must not fail the build under Rspack.
+      ...builder === 'rspack'
+        ? { parser: { javascript: { exportsPresence: 'auto' as const } } }
+        : {},
+    },
     plugins: [],
     externals: [],
     optimization: {
@@ -123,6 +144,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   // Emit explicit dynamic import statements for rollup compatibility
   if (ctx.isServer && !ctx.isDev) {
     ctx.config.plugins.push(new RollupCompatDynamicImportPlugin())
+    ctx.config.plugins.push(new StripInvalidPureAnnotationsPlugin())
   }
 }
 
@@ -134,28 +156,82 @@ function baseAlias (ctx: WebpackConfigContext) {
     ...ctx.alias,
   }
   if (ctx.isClient) {
-    ctx.alias['nitro/runtime'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
+    ctx.alias['nitro/runtime-config'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
     // TODO: remove in v5
     ctx.alias['#internal/nitro'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
     ctx.alias['nitropack/runtime'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
   }
 }
 
+/**
+ * The `node_modules` directories that hold a package's dependencies, given a file
+ * resolved inside it. Covers both the isolated pnpm layout (dependencies are symlinked
+ * into the package's `.pnpm` group) and the hoisted/workspace layout (dependencies live
+ * in the package's own `node_modules`).
+ */
+export function packageDependencyDirs (entry: string | undefined) {
+  if (!entry) { return [] }
+
+  const dirs = new Set<string>()
+  const groupDir = parseNodeModulePath(entry).dir
+  if (groupDir) { dirs.add(resolve(groupDir)) }
+
+  let dir = dirname(entry)
+  while (dir !== dirname(dir)) {
+    if (existsSync(resolve(dir, 'package.json'))) {
+      dirs.add(resolve(dir, 'node_modules'))
+      break
+    }
+    dir = dirname(dir)
+  }
+
+  return [...dirs].filter(dir => existsSync(dir))
+}
+
+// This module is bundled into whichever builder package is installed
+// (`@nuxt/webpack-builder` or `@nuxt/rspack-builder`), so its dependency directories are
+// where that builder's loaders (vue-loader, css-loader, ...) live. Searching them lets
+// isolated node_modules layouts (pnpm without shamefully-hoist) find the loaders and
+// client runtime helpers Nuxt ships with. (#31351)
+const builderModulesDirs = packageDependencyDirs(fileURLToPath(import.meta.url))
+
 function baseResolve (ctx: WebpackConfigContext) {
   // Prioritize nested node_modules in webpack search path (#2558)
   // TODO: this might be refactored as default modulesDir?
-  const webpackModulesDir = ['node_modules'].concat(ctx.options.modulesDir)
+  const webpackModulesDir = ['node_modules', ...ctx.options.modulesDir]
+
+  // Nuxt's generated virtual modules import runtime dependencies of `nuxt` and
+  // `@nuxt/nitro-server` (e.g. `ofetch`, `ufo`, `nitro`) by bare specifier. Under isolated
+  // node_modules layouts these are not reachable from the app root, so fall back to those
+  // packages' dependency directories. (#31351)
+  const from = ctx.options.modulesDir.map(directoryToURL)
+  const runtimeModulesDirs = ['nuxt/package.json', '@nuxt/nitro-server/package.json']
+    .flatMap(id => packageDependencyDirs(resolveModulePath(id, { from, try: true })))
+
+  const resolveModules = [...webpackModulesDir]
+  for (const dir of [...runtimeModulesDirs, ...builderModulesDirs]) {
+    if (!resolveModules.includes(dir)) {
+      resolveModules.push(dir)
+    }
+  }
+
+  const resolveLoaderModules = [...webpackModulesDir]
+  for (const dir of builderModulesDirs) {
+    if (!resolveLoaderModules.includes(dir)) {
+      resolveLoaderModules.push(dir)
+    }
+  }
 
   ctx.config.resolve = {
-    extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
+    extensions: ['.wasm', ...DEFAULT_JS_FILE_EXTENSIONS, '.json', '.vue'],
     alias: ctx.alias,
-    modules: webpackModulesDir,
+    modules: resolveModules,
     fullySpecified: false,
     ...ctx.config.resolve,
   }
 
   ctx.config.resolveLoader = {
-    modules: webpackModulesDir,
+    modules: resolveLoaderModules,
     ...ctx.config.resolveLoader,
   }
 }
@@ -233,14 +309,15 @@ function getEnv (ctx: WebpackConfigContext) {
     '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.dev': ctx.options.dev,
-    'process.test': isTest,
+    'process.test': ctx.nuxt.options.test,
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
     'process.server': ctx.isServer,
     'import.meta.dev': ctx.options.dev,
-    'import.meta.test': isTest,
+    'import.meta.test': ctx.nuxt.options.test,
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
+    'import.meta.envName': JSON.stringify(ctx.options.envName),
     'import.meta.server': ctx.isServer,
   }
 

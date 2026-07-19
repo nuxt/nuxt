@@ -1,3 +1,5 @@
+/// <reference path="./build-only.d.ts" />
+
 import type { UseHeadInput } from '@unhead/vue/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
@@ -22,6 +24,7 @@ declare global {
     browser: boolean
     client: boolean
     dev: boolean
+    envName: string
     server: boolean
     test: boolean
   }
@@ -53,3 +56,5 @@ declare module 'vue' {
     head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
+
+export type _NuxtAugmentsAnchor = NuxtApp

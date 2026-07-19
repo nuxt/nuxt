@@ -10,6 +10,7 @@ import { findWorkspaceDir } from 'pkg-types'
 import type { NuxtDebugOptions } from '../types/debug.ts'
 import type { NuxtModule } from '../types/module.ts'
 import { defineResolvers } from '../utils/definition.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export default defineResolvers({
   extends: undefined,
@@ -23,7 +24,7 @@ export default defineResolvers({
       const rootDir = await get('rootDir')
       return val && typeof val === 'string'
         ? resolve(rootDir, val)
-        : await findWorkspaceDir(rootDir, {
+        : findWorkspaceDir(rootDir, {
             gitConfig: 'closest',
             try: true,
           }).catch(() => rootDir)
@@ -115,6 +116,15 @@ export default defineResolvers({
   test: {
     $resolve: val => typeof val === 'boolean' ? val : Boolean(isTest),
   },
+  envName: {
+    $resolve: async (val, get) => {
+      if (typeof val === 'string') {
+        return val
+      }
+      const isDev = await get('dev') as boolean
+      return isDev ? 'development' : 'production'
+    },
+  },
   debug: {
     $resolve: (val) => {
       val ??= isDebug
@@ -130,10 +140,20 @@ export default defineResolvers({
           nitro: true,
           router: true,
           hydration: true,
+          perf: process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true,
         } satisfies Required<NuxtDebugOptions>
       }
       if (val && typeof val === 'object') {
+        // Support NUXT_DEBUG_PERF env var to enable perf profiling
+        if (process.env.NUXT_DEBUG_PERF) {
+          (val as NuxtDebugOptions).perf = process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true
+        }
         return val
+      }
+      // Support NUXT_DEBUG_PERF env var without other debug options
+      if (process.env.NUXT_DEBUG_PERF) {
+        const perf: boolean | 'quiet' = process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true
+        return { perf } satisfies Partial<NuxtDebugOptions>
       }
       return false
     },
@@ -187,7 +207,7 @@ export default defineResolvers({
   },
   extensions: {
     $resolve: (val): string[] => {
-      const extensions = ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.vue']
+      const extensions = [...DEFAULT_JS_FILE_EXTENSIONS, '.vue']
       if (Array.isArray(val)) {
         for (const item of val) {
           if (item && typeof item === 'string') {

@@ -1,13 +1,12 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
-import { createIsIgnored } from '@nuxt/kit'
+import { buildDiagnostics, createIsIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
-import { dirname, join, relative } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
 
@@ -248,10 +247,12 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
 
     // retry if file has changed during read
     if ((await fd.stat()).mtime.getTime() !== mtime) {
+      await fd.close()
+      fd = undefined
       if (count < 5) {
-        return readFileWithMeta(dir, fileName, count + 1)
+        return await readFileWithMeta(dir, fileName, count + 1)
       }
-      console.warn(`Failed to read file \`${fileName}\` as it changed during read.`)
+      buildDiagnostics.NUXT_B1010({ file: fileName })
       return
     }
 
@@ -264,7 +265,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       },
     }
   } catch (err) {
-    console.warn(`Failed to read file \`${fileName}\`:`, err)
+    buildDiagnostics.NUXT_B1011({ file: fileName, cause: err })
   } finally {
     await fd?.close()
   }
@@ -284,25 +285,27 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
       // Prevent path traversal attacks
       if (!filePath.startsWith(resolvedCwd)) {
-        consola.warn(`Skipping unsafe cache path: ${file.name}`)
+        buildDiagnostics.NUXT_B1012({ path: file.name })
         continue
       }
 
       await mkdir(dirname(filePath), { recursive: true })
 
-      fd = await open(filePath, 'w')
-
-      const stats = await fd.stat().catch(() => null)
-      if (stats?.isFile() && stats.size) {
+      // Stat before open('w') since it truncates the file
+      const existingStats = await stat(filePath).catch(() => null)
+      const cachedSize = file.data?.byteLength ?? 0
+      if (existingStats?.isFile() && existingStats.size === cachedSize) {
         const lastModified = Number.parseInt(file.attrs?.mtime?.toString().padEnd(13, '0') || '0')
-        if (stats.mtime.getTime() >= lastModified) {
+        if (existingStats.mtime.getTime() >= lastModified) {
           consola.debug(`Skipping \`${file.name}\` (up to date or newer than cache)`)
           continue
         }
       }
+
+      fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
-      console.error(err)
+      buildDiagnostics.NUXT_B1013({ file: file.name, cause: err })
     } finally {
       await fd?.close()
     }
@@ -323,7 +326,7 @@ async function writeCache (cwd: string, sources: string | string[], cacheFile: s
 function getCacheDir (nuxt: Nuxt) {
   let cacheDir = join(nuxt.options.workspaceDir, 'node_modules')
   if (!existsSync(cacheDir)) {
-    for (const dir of [...nuxt.options.modulesDir].sort((a, b) => a.length - b.length)) {
+    for (const dir of nuxt.options.modulesDir.toSorted((a, b) => a.length - b.length)) {
       if (existsSync(dir)) {
         cacheDir = dir
         break

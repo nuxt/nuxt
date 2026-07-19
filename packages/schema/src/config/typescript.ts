@@ -27,7 +27,6 @@ export default defineResolvers({
           '@vue/compiler-sfc',
           'vue-router',
           'vue-router/auto-routes',
-          'unplugin-vue-router/client',
           '@nuxt/schema',
           'nuxt',
         ]

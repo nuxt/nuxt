@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
+import { defu } from 'defu'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
 import { loadNuxt } from '../src/index.ts'
@@ -132,6 +133,7 @@ describe('loadNuxt', () => {
         "nuxt:pages",
         "nuxt:meta",
         "nuxt:components",
+        "nuxt:compiler",
         "nuxt:imports",
         "nuxt:nuxt-config-schema",
         "@nuxt/telemetry",
@@ -153,6 +155,26 @@ describe('loadNuxt', () => {
     )
 
     expect(hasLayerServer).toBe(true)
+
+    await nuxt.close()
+  })
+
+  it('does not leak debug mutation proxies into resolved options', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      overrides: {
+        experimental: { debugModuleMutation: true },
+        modules: [
+          (_options, nuxt) => {
+            nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
+              exampleModule: { apiKey: '' },
+            }) as unknown as typeof nuxt.options.runtimeConfig
+          },
+        ],
+      },
+    })
+
+    expect(() => structuredClone(nuxt.options.runtimeConfig)).not.toThrow()
 
     await nuxt.close()
   })
