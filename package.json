@@ -65,7 +65,7 @@
     "@vitest/coverage-v8": "catalog:dev",
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
-    "autoprefixer": "10.5.3",
+    "autoprefixer": "10.5.4",
     "case-police": "catalog:dev",
     "changelogen": "catalog:dev",
     "consola": "catalog:build",
@@ -109,6 +109,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@11.15.1",
   "version": ""
 }
