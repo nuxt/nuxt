@@ -24,13 +24,19 @@ export const useRouter: typeof _useRouter = () => {
  * A detached scope (e.g. `createSharedComposable`) outlives the component, so the
  * per-page route injected there would freeze after navigation (#18903).
  */
+function getParentScope (scope: EffectScope): EffectScope | undefined {
+  // Vue <= 3.5 tracks the parent scope directly; Vue >= 3.6 links it as the scope's sole subscriber.
+  const internal = scope as EffectScope & { parent?: EffectScope, subs?: { sub?: EffectScope } }
+  return internal.parent ?? internal.subs?.sub
+}
+
 function isScopeWithinInstance (instance: ComponentInternalInstance): boolean {
-  // `scope`/`parent` are internal, but stable across vue versions
+  // `scope` and the scope-parent linkage are internal to vue
   const instanceScope = (instance as ComponentInternalInstance & { scope: EffectScope }).scope
-  let scope: (EffectScope & { parent?: EffectScope }) | undefined = getCurrentScope()
+  let scope: EffectScope | undefined = getCurrentScope()
   while (scope) {
     if (scope === instanceScope) { return true }
-    scope = scope.parent
+    scope = getParentScope(scope)
   }
   return false
 }
