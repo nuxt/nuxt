@@ -25,7 +25,10 @@
   "workspaces": {
     ".": {
       "entry": [
-        "scripts/*"
+        "scripts/*",
+        "test/e2e/global.setup.ts",
+        "test/e2e/global.teardown.ts",
+        "test/runtime/app/**/*.ts"
       ]
     },
     "test/fixtures/*": {
@@ -49,6 +52,9 @@
       ]
     },
     "packages/vite": {
+      "entry": [
+        "src/fix-stacktrace.ts"
+      ],
       "ignoreDependencies": [
         "mocked-exports",
         "nitropack",
@@ -63,10 +69,10 @@
     },
     "packages/nuxt": {
       "entry": [
-        "src/app/**/*.ts",
-        "src/app/*.ts",
-        "src/*/runtime/**/*.{ts,js}",
+        "src/app/**/*.{ts,vue}",
+        "src/*/runtime/**/*.{ts,js,vue}",
         "src/core/templates.ts",
+        "meta.d.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,vue}"
       ],
       "ignoreDependencies": [
