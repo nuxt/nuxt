@@ -2043,6 +2043,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/ui-templates:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
 packages:
 
   '@andrewbranch/untar.js@1.0.3':
