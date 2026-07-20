@@ -63,6 +63,13 @@ test.describe('vapor interop', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
+  test('onPrehydrate runs in a vapor component', async ({ page, goto }) => {
+    await goto('/composables')
+    await expect(page.locator('html')).toHaveAttribute('data-vapor-prehydrate', 'ran')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
   test('element template refs work in a vapor component', async ({ page, goto }) => {
     await goto('/composables')
     await expect(page.getByTestId('refs')).toHaveText('el:ok')
