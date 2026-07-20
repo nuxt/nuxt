@@ -423,8 +423,8 @@ catalogs:
       specifier: 1.2.4
       version: 1.2.4
     tsdown:
-      specifier: 0.22.9
-      version: 0.22.9
+      specifier: 0.22.11
+      version: 0.22.11
     typescript:
       specifier: 6.0.3
       version: 6.0.3
@@ -853,7 +853,7 @@ importers:
         version: 2.13.4(@rspack/core@2.1.4(@swc/helpers@0.5.23))(oxc-parser@0.140.0)(rolldown@1.2.0)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       tsdown:
         specifier: catalog:dev
-        version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
+        version: 0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
       unimport:
         specifier: catalog:build
         version: 6.3.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.140.0)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
@@ -971,7 +971,7 @@ importers:
         version: link:../nuxt
       tsdown:
         specifier: catalog:dev
-        version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
+        version: 0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
       vitest:
         specifier: catalog:dev
         version: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.0)(vite@8.1.5)
@@ -1176,7 +1176,7 @@ importers:
         version: 3.5.40
       tsdown:
         specifier: catalog:dev
-        version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
+        version: 0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
       typescript:
         specifier: catalog:dev
         version: 6.0.3
@@ -1339,7 +1339,7 @@ importers:
         version: 4.62.2
       tsdown:
         specifier: catalog:dev
-        version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
+        version: 0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
@@ -1448,7 +1448,7 @@ importers:
         version: 1.3.0
       tsdown:
         specifier: catalog:dev
-        version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
+        version: 0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
       unctx:
         specifier: catalog:build
         version: 3.0.0(magic-string@1.0.0)(oxc-parser@0.140.0)(rolldown@1.2.0)(unplugin@3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))
@@ -1644,7 +1644,7 @@ importers:
         version: 7.0.1(rolldown@1.2.0)(rollup@4.62.2)
       tsdown:
         specifier: catalog:dev
-        version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
+        version: 0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@7.0.2)
@@ -1807,7 +1807,7 @@ importers:
         version: 4.62.2
       tsdown:
         specifier: catalog:dev
-        version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
+        version: 0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
@@ -7943,8 +7943,8 @@ packages:
     resolution: {integrity: sha512-nK28WOo+QIjBkDduTINE4JkF/UJJKyf2EJxvJKfblDpyg0Q+pkOHNTL0Qwy6NP6FhE/EnzV73BxxqcJaXY9anw==}
     engines: {node: '>= 0.4'}
 
-  obug@2.1.3:
-    resolution: {integrity: sha512-9miFgM2OFba7hB+pRgvtV84pYTBaoTHohvmIgiRt6dRIzbwEOIaNaP+dIlGs2fNFoB0SeISs0Jz5WFVRid6Xyg==}
+  obug@2.1.4:
+    resolution: {integrity: sha512-4a+OsYv9UktOJKE+l1A4OufDgdRF9PifWj+tJnHURo/P+WOxpG4GzUFL9qCalmWauao6ogiG+QvnCovwPoyAWA==}
     engines: {node: '>=12.20.0'}
 
   ocache@0.1.5:
@@ -9454,14 +9454,14 @@ packages:
       '@typescript/native-preview':
         optional: true
 
-  tsdown@0.22.9:
-    resolution: {integrity: sha512-/0QEjQEhOU1t1YxOIAGzFN7bIssd8P0pBpkOmNLCQi3c5UtrcMF5bvq3f30xHJNW9QCA9aUNcNAorMr2CTd6Lg==}
+  tsdown@0.22.11:
+    resolution: {integrity: sha512-BERdQpqAltv3vYGC0pE4n+mRGPIN91T/on+Ud73bYRkbptknelFm27tJgBBUz4RJ5d3VNeVH90HfjBo1Ouj8yQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     hasBin: true
     peerDependencies:
       '@arethetypeswrong/core': ^0.18.1
-      '@tsdown/css': 0.22.9
-      '@tsdown/exe': 0.22.9
+      '@tsdown/css': 0.22.11
+      '@tsdown/exe': 0.22.11
       '@vitejs/devtools': '*'
       publint: ^0.3.8
       tsx: '*'
@@ -10454,7 +10454,7 @@ snapshots:
       gensync: 1.0.0-beta.2
       import-meta-resolve: 4.2.0
       json5: 2.2.3
-      obug: 2.1.3
+      obug: 2.1.4
       semver: 7.8.5
 
   '@babel/generator@7.29.7':
@@ -10703,7 +10703,7 @@ snapshots:
       '@babel/parser': 8.0.0
       '@babel/template': 8.0.0
       '@babel/types': 8.0.0
-      obug: 2.1.3
+      obug: 2.1.4
 
   '@babel/types@7.29.7':
     dependencies:
@@ -13406,7 +13406,7 @@ snapshots:
       h3: 2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       mlly: 1.8.2
       nostics: 0.2.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
-      obug: 2.1.3
+      obug: 2.1.4
       pathe: 2.0.3
       perfect-debounce: 2.1.0
       tinyexec: 1.2.4
@@ -13458,7 +13458,7 @@ snapshots:
       h3: 2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       mlly: 1.8.2
       nostics: 0.2.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
-      obug: 2.1.3
+      obug: 2.1.4
       pathe: 2.0.3
       perfect-debounce: 2.1.0
       tinyexec: 1.2.4
@@ -13545,7 +13545,7 @@ snapshots:
       istanbul-lib-report: 3.0.1
       istanbul-reports: 3.2.0
       magicast: 0.5.3
-      obug: 2.1.3
+      obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.0
       vitest: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.0)(vite@8.1.5)
@@ -17273,7 +17273,7 @@ snapshots:
       has-symbols: 1.1.0
       object-keys: 1.1.1
 
-  obug@2.1.3: {}
+  obug@2.1.4: {}
 
   ocache@0.1.5:
     dependencies:
@@ -18338,7 +18338,7 @@ snapshots:
     dependencies:
       dts-resolver: 3.0.0(oxc-resolver@11.21.3)
       get-tsconfig: 5.0.0-beta.5
-      obug: 2.1.3
+      obug: 2.1.4
       rolldown: 1.2.0
       yuku-ast: 0.1.7
       yuku-codegen: 0.6.3
@@ -18353,7 +18353,7 @@ snapshots:
     dependencies:
       dts-resolver: 3.0.0(oxc-resolver@11.21.3)
       get-tsconfig: 5.0.0-beta.5
-      obug: 2.1.3
+      obug: 2.1.4
       rolldown: 1.2.0
       yuku-ast: 0.1.7
       yuku-codegen: 0.6.3
@@ -18974,7 +18974,7 @@ snapshots:
     transitivePeerDependencies:
       - tslib
 
-  tsdown@0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3)):
+  tsdown@0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3)):
     dependencies:
       ansis: 4.3.1
       cac: 7.0.0
@@ -18982,7 +18982,7 @@ snapshots:
       empathic: 2.0.1
       hookable: 6.1.1
       import-without-cache: 0.4.0
-      obug: 2.1.3
+      obug: 2.1.4
       picomatch: 4.0.5
       rolldown: 1.2.0
       rolldown-plugin-dts: 0.27.9(oxc-resolver@11.21.3)(rolldown@1.2.0)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
@@ -19002,7 +19002,7 @@ snapshots:
       - oxc-resolver
       - vue-tsc
 
-  tsdown@0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2)):
+  tsdown@0.22.11(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2)):
     dependencies:
       ansis: 4.3.1
       cac: 7.0.0
@@ -19010,7 +19010,7 @@ snapshots:
       empathic: 2.0.1
       hookable: 6.1.1
       import-without-cache: 0.4.0
-      obug: 2.1.3
+      obug: 2.1.4
       picomatch: 4.0.5
       rolldown: 1.2.0
       rolldown-plugin-dts: 0.27.9(oxc-resolver@11.21.3)(rolldown@1.2.0)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
@@ -19433,7 +19433,7 @@ snapshots:
     dependencies:
       cac: 7.0.0
       es-module-lexer: 2.1.0
-      obug: 2.1.3
+      obug: 2.1.4
       pathe: 2.0.3
       vite: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
     transitivePeerDependencies:
@@ -19471,7 +19471,7 @@ snapshots:
       '@vitejs/devtools-kit': 0.3.4(@rspack/core@2.1.4(@swc/helpers@0.5.23))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       ansis: 4.3.1
       error-stack-parser-es: 1.0.5
-      obug: 2.1.3
+      obug: 2.1.4
       ohash: 2.0.11
       open: 11.0.0
       perfect-debounce: 2.1.0
@@ -19560,7 +19560,7 @@ snapshots:
       es-module-lexer: 2.1.0
       expect-type: 1.3.0
       magic-string: 0.30.21
-      obug: 2.1.3
+      obug: 2.1.4
       pathe: 2.0.3
       picomatch: 4.0.5
       std-env: 4.2.0

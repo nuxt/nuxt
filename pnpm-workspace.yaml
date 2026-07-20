@@ -253,7 +253,7 @@ catalogs:
     sherif: 1.13.0
     svgo: 4.0.2
     tinyexec: 1.2.4
-    tsdown: 0.22.9
+    tsdown: 0.22.11
     typescript: 6.0.3
     unocss: 66.7.5
     vitest: 4.1.10
