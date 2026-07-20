@@ -223,7 +223,7 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Prompt to set compatibility date
+  // Warn if compatibility date is unset
   nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
 
   if (!nuxt.options.compatibilityDate.default) {
@@ -231,7 +231,22 @@ async function initNuxt (nuxt: Nuxt) {
 
     if (nuxt.options.dev && hasTTY && !isCI && !nuxt.options.test && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      configDiagnostics.NUXT_B5001({ fallback: fallbackCompatibilityDate, latest: formatDate('latest') })
+      const localConfigFiles = [...new Set(
+        nuxt.options._layers
+          .map(layer => layer.configFile)
+          .filter((configFile): configFile is string => !!configFile
+            && !configFile.endsWith('.nuxtrc')
+            && !configFile.includes('node_modules'))
+          .map((configFile) => {
+            const rel = relative(nuxt.options.rootDir, configFile)
+            return (rel && !rel.startsWith('..')) ? rel : configFile
+          }),
+      )]
+      configDiagnostics.NUXT_B5001({
+        fallback: fallbackCompatibilityDate,
+        latest: formatDate('latest'),
+        ...(localConfigFiles.length > 1 ? { configs: localConfigFiles.map(f => `\`${f}\``).join(', ') } : {}),
+      })
     }
   }
 
