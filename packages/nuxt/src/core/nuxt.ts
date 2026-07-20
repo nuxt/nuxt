@@ -206,7 +206,8 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-let warnedAboutCompatDate = false
+/** `false` = not yet handled; `'pending'` = prompt in flight; `true` = prompt/diagnostic finished */
+let warnedAboutCompatDate: false | 'pending' | true = false
 
 async function initNuxt (nuxt: Nuxt) {
   nuxt._perf?.startPhase('init')
@@ -265,67 +266,81 @@ async function initNuxt (nuxt: Nuxt) {
     } else {
       async function promptAndUpdate () {
         if (warnedAboutCompatDate) { return }
-        warnedAboutCompatDate = true
+        warnedAboutCompatDate = 'pending'
 
-        const result = await consola.prompt(`Do you want to set ${colors.cyan(`compatibilityDate: '${todaysDate}'`)} in your Nuxt config?`, {
-          type: 'confirm',
-          default: true,
-        })
-        if (result !== true) {
-          emitMissingCompatDateDiagnostic()
-          return
-        }
-
-        const localConfigs = getLocalConfigFiles()
-        let targetConfigFile = localConfigs[0]
-
-        // With layers, let the user pick a local config (not node_modules) — #27992
-        if (localConfigs.length > 1) {
-          const selected = await consola.prompt('Which config file should be updated?', {
-            type: 'select',
-            options: localConfigs.map(configFile => ({
-              label: displayConfigPath(configFile),
-              value: configFile,
-            })),
+        try {
+          const result = await consola.prompt(`Do you want to set ${colors.cyan(`compatibilityDate: '${todaysDate}'`)} in your Nuxt config?`, {
+            type: 'confirm',
+            default: true,
           })
-          if (typeof selected !== 'string') {
+          if (result !== true) {
             emitMissingCompatDateDiagnostic()
             return
           }
-          targetConfigFile = selected
-        }
 
-        try {
-          const res = await updateConfig({
-            configFile: 'nuxt.config',
-            cwd: targetConfigFile ? dirname(targetConfigFile) : nuxt.options.rootDir,
-            async onCreate ({ configFile }) {
-              const shallCreate = await consola.prompt(`Do you want to create ${colors.cyan(displayConfigPath(configFile))}?`, {
-                type: 'confirm',
-                default: true,
-              })
-              if (shallCreate !== true) {
-                return false
-              }
-              return _getDefaultNuxtConfig()
-            },
-            onUpdate (config) {
-              config.compatibilityDate = todaysDate
-            },
-          })
+          const localConfigs = getLocalConfigFiles()
+          let targetConfigFile = localConfigs[0]
 
-          if (res?.configFile) {
-            nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(todaysDate)
-            consola.success(`Compatibility date set to \`${todaysDate}\` in \`${displayConfigPath(res.configFile)}\``)
-            return
+          // With layers, let the user pick a local config (not node_modules) — #27992
+          if (localConfigs.length > 1) {
+            const selected = await consola.prompt('Which config file should be updated?', {
+              type: 'select',
+              options: localConfigs.map(configFile => ({
+                label: displayConfigPath(configFile),
+                value: configFile,
+              })),
+            })
+            if (typeof selected !== 'string') {
+              emitMissingCompatDateDiagnostic()
+              return
+            }
+            targetConfigFile = selected
           }
-        } catch (err) {
-          const message = err instanceof Error ? err.message : err
-          consola.error(`Failed to update config: ${message}`)
-        }
 
-        emitMissingCompatDateDiagnostic()
+          try {
+            const res = await updateConfig({
+              configFile: 'nuxt.config',
+              cwd: targetConfigFile ? dirname(targetConfigFile) : nuxt.options.rootDir,
+              async onCreate ({ configFile }) {
+                const shallCreate = await consola.prompt(`Do you want to create ${colors.cyan(displayConfigPath(configFile))}?`, {
+                  type: 'confirm',
+                  default: true,
+                })
+                if (shallCreate !== true) {
+                  return false
+                }
+                return _getDefaultNuxtConfig()
+              },
+              onUpdate (config) {
+                config.compatibilityDate = todaysDate
+              },
+            })
+
+            if (res?.configFile) {
+              nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(todaysDate)
+              consola.success(`Compatibility date set to \`${todaysDate}\` in \`${displayConfigPath(res.configFile)}\``)
+              return
+            }
+          } catch (err) {
+            const message = err instanceof Error ? err.message : err
+            consola.error(`Failed to update config: ${message}`)
+          }
+
+          emitMissingCompatDateDiagnostic()
+        } finally {
+          // Mark complete unless restart cleared `'pending'` mid-prompt (see restart hook below).
+          if (warnedAboutCompatDate === 'pending') {
+            warnedAboutCompatDate = true
+          }
+        }
       }
+
+      // Soft restart can abandon an in-flight prompt without finishing finally → allow re-prompt/diagnostic.
+      nuxt.hook('restart', () => {
+        if (warnedAboutCompatDate === 'pending') {
+          warnedAboutCompatDate = false
+        }
+      })
 
       nuxt.hooks.hookOnce('nitro:init', (nitro) => {
         nitro.hooks.hookOnce('compiled', () => {
