@@ -88,7 +88,7 @@
     "@rollup/plugin-babel": "7.1.0",
     "hookable": "6.1.1",
     "nuxt": "workspace:*",
-    "tsdown": "0.22.8",
+    "tsdown": "0.22.9",
     "vitest": "4.1.10"
   },
   "engines": {
