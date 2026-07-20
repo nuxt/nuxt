@@ -7,7 +7,11 @@
     "somepath",
     "foo",
     "sherif",
-    "pkg-pr-new"
+    "pkg-pr-new",
+    "nuxt",
+    "ofetch",
+    "@nuxt/webpack-builder",
+    "@nuxt/rspack-builder"
   ],
   "ignoreUnresolved": [
     "^#build/",
