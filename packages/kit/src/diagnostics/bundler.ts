@@ -73,7 +73,7 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B7014: {
       why: (p: { name: string }) => `The webpack \`${p.name}\` build failed with errors.`,
-      fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxi clean` and rebuilding.',
+      fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxi cleanup` and rebuilding.',
       docs: false,
     },
     NUXT_B7015: {
