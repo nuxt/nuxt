@@ -1,0 +1,57 @@
+diff --git a/dist/runtime-core.cjs.js b/dist/runtime-core.cjs.js
+index ae4f8fdf9b687fcb4c6e8b662f912efbba86b6f2..4ed0733718d22384333598334b55d0b46f61eff7 100644
+--- a/dist/runtime-core.cjs.js
++++ b/dist/runtime-core.cjs.js
+@@ -1341,8 +1341,10 @@ function getInnerChild$1(vnode) {
+ 	}
+ }
+ function setTransitionHooks(vnode, hooks) {
+-	if (vnode.shapeFlag & 6 && vnode.component) if (isVaporComponent(vnode.type)) getVaporInterface(vnode.component, vnode).setTransitionHooks(vnode.component, hooks);
+-	else {
++	if (vnode.shapeFlag & 6 && vnode.component) if (isVaporComponent(vnode.type)) {
++		vnode.transition = hooks;
++		getVaporInterface(vnode.component, vnode).setTransitionHooks(vnode.component, hooks);
++	} else {
+ 		vnode.transition = hooks;
+ 		setTransitionHooks(vnode.component.subTree, hooks);
+ 	}
+diff --git a/dist/runtime-core.cjs.prod.js b/dist/runtime-core.cjs.prod.js
+index 972a309b976a24bbcdc432971c6b1a9ac52ac7b8..b9a91544c6a4b06d53ac2fc26697b87996204e0d 100644
+--- a/dist/runtime-core.cjs.prod.js
++++ b/dist/runtime-core.cjs.prod.js
+@@ -954,8 +954,10 @@ function getInnerChild$1(vnode) {
+ 	}
+ }
+ function setTransitionHooks(vnode, hooks) {
+-	if (vnode.shapeFlag & 6 && vnode.component) if (isVaporComponent(vnode.type)) getVaporInterface(vnode.component, vnode).setTransitionHooks(vnode.component, hooks);
+-	else {
++	if (vnode.shapeFlag & 6 && vnode.component) if (isVaporComponent(vnode.type)) {
++		vnode.transition = hooks;
++		getVaporInterface(vnode.component, vnode).setTransitionHooks(vnode.component, hooks);
++	} else {
+ 		vnode.transition = hooks;
+ 		setTransitionHooks(vnode.component.subTree, hooks);
+ 	}
+diff --git a/dist/runtime-core.esm-bundler.js b/dist/runtime-core.esm-bundler.js
+index c6d5c597a282143d07fd009513f6ad6045c05e7e..d81f67116c5007ecbed187afdcb8c37116d296a9 100644
+--- a/dist/runtime-core.esm-bundler.js
++++ b/dist/runtime-core.esm-bundler.js
+@@ -1350,8 +1350,10 @@ function getInnerChild$1(vnode) {
+ 	}
+ }
+ function setTransitionHooks(vnode, hooks) {
+-	if (vnode.shapeFlag & 6 && vnode.component) if (isVaporComponent(vnode.type)) getVaporInterface(vnode.component, vnode).setTransitionHooks(vnode.component, hooks);
+-	else {
++	if (vnode.shapeFlag & 6 && vnode.component) if (isVaporComponent(vnode.type)) {
++		vnode.transition = hooks;
++		getVaporInterface(vnode.component, vnode).setTransitionHooks(vnode.component, hooks);
++	} else {
+ 		vnode.transition = hooks;
+ 		setTransitionHooks(vnode.component.subTree, hooks);
+ 	}
+@@ -6427,4 +6429,4 @@ const resolveFilter = null;
+ const compatUtils = null;
+ const DeprecationTypes = null;
+ //#endregion
+-export { BaseTransition, BaseTransitionPropsValidators, Comment, DeprecationTypes, EffectScope, ErrorCodes, ErrorTypeStrings, Fragment, KeepAlive, MismatchTypes, MoveType, NULL_DYNAMIC_COMPONENT, ReactiveEffect, SchedulerJobFlags, Static, Suspense, Teleport, Text, TrackOpTypes, TriggerOpTypes, VaporSlot, activate, assertNumber, baseEmit, baseNormalizePropsOptions, baseResolveTransitionHooks, callWithAsyncErrorHandling, callWithErrorHandling, camelize, capitalize, checkTransitionMode, cloneVNode, compatUtils, computed, createAppAPI, createAsyncComponentContext, createBlock, createCanSetSetupRefChecker, createCommentVNode, createElementBlock, createBaseVNode as createElementVNode, createHydrationRenderer, createInternalObject, createPropsRestProxy, createRenderer, createSlots, createStaticVNode, createTextVNode, createVNode, currentInstance, customRef, deactivate, defineAsyncComponent, defineComponent, defineEmits, defineExpose, defineModel, defineOptions, defineProps, defineSlots, devtools, devtoolsComponentAdded, effect, effectScope, endMeasure, ensureValidVNode, ensureVaporSlotFallback, expose, flushOnAppMount, getAttributeMismatch, getComponentName, getCurrentInstance, getCurrentScope, getCurrentWatcher, getFunctionalFallthrough, getInheritedScopeIds, getTransitionRawChildren, guardReactiveProps, h, handleError, hasInjectionContext, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, initCustomFormatter, initFeatureFlags, inject, invalidateMount, invokeDirectiveHook, isAsyncWrapper, isEmitListener, isHydrating, isKeepAlive, isMapEqual, isMemoSame, isMismatchAllowed, isProxy, isReactive, isReadonly, isRef, isRuntimeOnly, isSetEqual, isShallow, isTeleportDeferred, isTeleportDisabled, isTemplateNode, isTemplateRefKey, isVNode, isValidHtmlOrSvgAttribute, knownTemplateRefs, leaveCbKey, logMismatchError, markAsyncBoundary, markRaw, matches, mergeDefaults, mergeModels, mergeProps, nextTick, nextUid, normalizeClass, normalizeProps, normalizeRef, normalizeStyle, normalizeVNode, onActivated, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onDeactivated, onErrorCaptured, onMounted, onRenderTracked, onRenderTriggered, onScopeDispose, onServerPrefetch, onUnmounted, onUpdated, onWatcherCleanup, openBlock, performAsyncHydrate, performTransitionEnter, performTransitionLeave, popScopeId, popWarningContext, provide, proxyRefs, pushScopeId, pushWarningContext, queueJob, queuePostFlushCb, reactive, readonly, ref, registerHMR, registerRuntimeCompiler, renderList, renderSlot, resetShapeFlag, resolveComponent, resolveDirective, resolveDynamicComponent, resolveFilter, resolvePropValue, resolveTarget as resolveTeleportTarget, resolveTransitionHooks, setBlockTracking, setCurrentInstance, setCurrentRenderingInstance, setDevtoolsHook, setIsHydratingEnabled, setRef, setTransitionHooks, shallowReactive, shallowReadonly, shallowRef, shouldUpdateComponent, simpleSetCurrentInstance, ssrContextKey, ssrUtils, startMeasure, stop, toClassSet, toDisplayString, toHandlerKey, toHandlers, toRaw, toRef, toRefs, toStyleMap, toValue, transformVNodeArgs, triggerRef, unref, unregisterHMR, useAsyncComponentState, useAttrs, useId, useInstanceOption, useModel, useSSRContext, useSlots, useTemplateRef, useTransitionState, validateComponentName, validateProps, version, warn, warnExtraneousAttributes, warnPropMismatch, watch, watchEffect, watchPostEffect, watchSyncEffect, withAsyncContext, withCtx, withDefaults, withDirectives, withMemo, withScopeId };
++export { BaseTransition, BaseTransitionPropsValidators, Comment, DeprecationTypes, EffectScope, ErrorCodes, ErrorTypeStrings, Fragment, KeepAlive, MismatchTypes, MoveType, NULL_DYNAMIC_COMPONENT, ReactiveEffect, SchedulerJobFlags, Static, Suspense, Teleport, Text, TrackOpTypes, TriggerOpTypes, VaporSlot, activate, assertNumber, baseEmit, baseNormalizePropsOptions, baseResolveTransitionHooks, callWithAsyncErrorHandling, callWithErrorHandling, camelize, capitalize, checkTransitionMode, cloneVNode, compatUtils, computed, createAppAPI, createAsyncComponentContext, createBlock, createCanSetSetupRefChecker, createCommentVNode, createElementBlock, createBaseVNode as createElementVNode, createHydrationRenderer, createInternalObject, createPropsRestProxy, createRenderer, createSlots, createStaticVNode, createTextVNode, createVNode, currentInstance, customRef, deactivate, defineAsyncComponent, defineComponent, defineEmits, defineExpose, defineModel, defineOptions, defineProps, defineSlots, devtools, devtoolsComponentAdded, effect, effectScope, endMeasure, ensureValidVNode, ensureVaporSlotFallback, expose, flushOnAppMount, getAttributeMismatch, getComponentName, getCurrentInstance, getCurrentScope, getCurrentWatcher, getFunctionalFallthrough, getInheritedScopeIds, getTransitionRawChildren, guardReactiveProps, h, handleError, hasInjectionContext, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, initCustomFormatter, initFeatureFlags, inject, invalidateMount, invokeDirectiveHook, isAsyncWrapper, isEmitListener, isHydrating, isHydratingEnabled, isKeepAlive, isMapEqual, isMemoSame, isMismatchAllowed, isProxy, isReactive, isReadonly, isRef, isRuntimeOnly, isSetEqual, isShallow, isTeleportDeferred, isTeleportDisabled, isTemplateNode, isTemplateRefKey, isVNode, isValidHtmlOrSvgAttribute, knownTemplateRefs, leaveCbKey, logMismatchError, markAsyncBoundary, markRaw, matches, mergeDefaults, mergeModels, mergeProps, nextTick, nextUid, normalizeClass, normalizeProps, normalizeRef, normalizeStyle, normalizeVNode, onActivated, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onDeactivated, onErrorCaptured, onMounted, onRenderTracked, onRenderTriggered, onScopeDispose, onServerPrefetch, onUnmounted, onUpdated, onWatcherCleanup, openBlock, performAsyncHydrate, performTransitionEnter, performTransitionLeave, popScopeId, popWarningContext, provide, proxyRefs, pushScopeId, pushWarningContext, queueJob, queuePostFlushCb, reactive, readonly, ref, registerHMR, registerRuntimeCompiler, renderList, renderSlot, resetShapeFlag, resolveComponent, resolveDirective, resolveDynamicComponent, resolveFilter, resolvePropValue, resolveTarget as resolveTeleportTarget, resolveTransitionHooks, setBlockTracking, setCurrentInstance, setCurrentRenderingInstance, setDevtoolsHook, setIsHydratingEnabled, setRef, setTransitionHooks, shallowReactive, shallowReadonly, shallowRef, shouldUpdateComponent, simpleSetCurrentInstance, ssrContextKey, ssrUtils, startMeasure, stop, toClassSet, toDisplayString, toHandlerKey, toHandlers, toRaw, toRef, toRefs, toStyleMap, toValue, transformVNodeArgs, triggerRef, unref, unregisterHMR, useAsyncComponentState, useAttrs, useId, useInstanceOption, useModel, useSSRContext, useSlots, useTemplateRef, useTransitionState, validateComponentName, validateProps, version, warn, warnExtraneousAttributes, warnPropMismatch, watch, watchEffect, watchPostEffect, watchSyncEffect, withAsyncContext, withCtx, withDefaults, withDirectives, withMemo, withScopeId };

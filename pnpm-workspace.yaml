@@ -9,6 +9,8 @@ packages:
   - test/fixtures/*/_local-modules/*
 
 patchedDependencies:
+  '@vue/runtime-core@3.6.0-rc.1': patches/@vue__runtime-core@3.6.0-rc.1.patch
+  '@vue/runtime-vapor@3.6.0-rc.1': patches/@vue__runtime-vapor@3.6.0-rc.1.patch
   changelogen: patches/changelogen.patch
   knip@6.27.0: patches/knip@6.27.0.patch
   nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
@@ -39,6 +41,8 @@ overrides:
   "@vue/runtime-dom": "3.6.0-rc.1"
   "@vue/server-renderer": "3.6.0-rc.1"
   "@vue/shared": "3.6.0-rc.1"
+  "@vue/runtime-vapor": "3.6.0-rc.1"
+  "@vue/compiler-vapor": "3.6.0-rc.1"
 
 allowBuilds:
   '@parcel/watcher': true

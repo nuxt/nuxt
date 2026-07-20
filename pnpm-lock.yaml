@@ -569,8 +569,12 @@ overrides:
   '@vue/runtime-dom': 3.6.0-rc.1
   '@vue/server-renderer': 3.6.0-rc.1
   '@vue/shared': 3.6.0-rc.1
+  '@vue/runtime-vapor': 3.6.0-rc.1
+  '@vue/compiler-vapor': 3.6.0-rc.1
 
 patchedDependencies:
+  '@vue/runtime-core@3.6.0-rc.1': e3b1c74dbef80fb5b8d78cf783230c82c28f29411ce5b94dae5b25614fe1ab8e
+  '@vue/runtime-vapor@3.6.0-rc.1': 9aad5a629700c08382ce9002487b0ec00b9efa9a235c3df80e53d89f74a7e263
   changelogen: 8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b
   knip@6.27.0: 1ba9a7d6e9ab2a13375caa1c61d26951ad4e8de983d62372678133b04d547d3d
   nitro@3.0.260610-beta: 69d26cc4029f357c5be0b553988dd13057c41448950c52c4cb31fb8c4bf0d1ce
@@ -13778,7 +13782,7 @@ snapshots:
     dependencies:
       '@vue/shared': 3.6.0-rc.1
 
-  '@vue/runtime-core@3.6.0-rc.1':
+  '@vue/runtime-core@3.6.0-rc.1(patch_hash=e3b1c74dbef80fb5b8d78cf783230c82c28f29411ce5b94dae5b25614fe1ab8e)':
     dependencies:
       '@vue/reactivity': 3.6.0-rc.1
       '@vue/shared': 3.6.0-rc.1
@@ -13786,11 +13790,11 @@ snapshots:
   '@vue/runtime-dom@3.6.0-rc.1':
     dependencies:
       '@vue/reactivity': 3.6.0-rc.1
-      '@vue/runtime-core': 3.6.0-rc.1
+      '@vue/runtime-core': 3.6.0-rc.1(patch_hash=e3b1c74dbef80fb5b8d78cf783230c82c28f29411ce5b94dae5b25614fe1ab8e)
       '@vue/shared': 3.6.0-rc.1
       csstype: 3.2.3
 
-  '@vue/runtime-vapor@3.6.0-rc.1(@vue/runtime-dom@3.6.0-rc.1)':
+  '@vue/runtime-vapor@3.6.0-rc.1(patch_hash=9aad5a629700c08382ce9002487b0ec00b9efa9a235c3df80e53d89f74a7e263)(@vue/runtime-dom@3.6.0-rc.1)':
     dependencies:
       '@vue/reactivity': 3.6.0-rc.1
       '@vue/runtime-dom': 3.6.0-rc.1
@@ -19788,7 +19792,7 @@ snapshots:
       '@vue/compiler-dom': 3.6.0-rc.1
       '@vue/compiler-sfc': 3.6.0-rc.1
       '@vue/runtime-dom': 3.6.0-rc.1
-      '@vue/runtime-vapor': 3.6.0-rc.1(@vue/runtime-dom@3.6.0-rc.1)
+      '@vue/runtime-vapor': 3.6.0-rc.1(patch_hash=9aad5a629700c08382ce9002487b0ec00b9efa9a235c3df80e53d89f74a7e263)(@vue/runtime-dom@3.6.0-rc.1)
       '@vue/server-renderer': 3.6.0-rc.1
       '@vue/shared': 3.6.0-rc.1
     optionalDependencies:
@@ -19799,7 +19803,7 @@ snapshots:
       '@vue/compiler-dom': 3.6.0-rc.1
       '@vue/compiler-sfc': 3.6.0-rc.1
       '@vue/runtime-dom': 3.6.0-rc.1
-      '@vue/runtime-vapor': 3.6.0-rc.1(@vue/runtime-dom@3.6.0-rc.1)
+      '@vue/runtime-vapor': 3.6.0-rc.1(patch_hash=9aad5a629700c08382ce9002487b0ec00b9efa9a235c3df80e53d89f74a7e263)(@vue/runtime-dom@3.6.0-rc.1)
       '@vue/server-renderer': 3.6.0-rc.1
       '@vue/shared': 3.6.0-rc.1
     optionalDependencies:
@@ -19810,7 +19814,7 @@ snapshots:
       '@vue/compiler-dom': 3.6.0-rc.1
       '@vue/compiler-sfc': 3.6.0-rc.1
       '@vue/runtime-dom': 3.6.0-rc.1
-      '@vue/runtime-vapor': 3.6.0-rc.1(@vue/runtime-dom@3.6.0-rc.1)
+      '@vue/runtime-vapor': 3.6.0-rc.1(patch_hash=9aad5a629700c08382ce9002487b0ec00b9efa9a235c3df80e53d89f74a7e263)(@vue/runtime-dom@3.6.0-rc.1)
       '@vue/server-renderer': 3.6.0-rc.1
       '@vue/shared': 3.6.0-rc.1
     optionalDependencies:
