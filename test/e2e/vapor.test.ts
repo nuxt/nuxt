@@ -123,3 +123,104 @@ test.describe('vapor interop', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 })
+
+test.describe('vapor async data', () => {
+  test('ssr + hydration of a vapor page with top-level await', async ({ page, goto }) => {
+    await goto('/async-await')
+    await expect(page.getByTestId('await-message')).toHaveText('resolved after await')
+
+    await page.getByTestId('nav-index').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Vapor interop fixture')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('ssr + hydration of awaited useAsyncData in a vapor page, with refresh', async ({ page, goto }) => {
+    await goto('/async-data')
+    await expect(page.getByTestId('data-greeting')).toHaveText('hello from api')
+    await expect(page.getByTestId('data-status')).toHaveText('success')
+
+    const countText = await page.getByTestId('data-count').textContent()
+    await page.getByTestId('refresh-button').click()
+    await expect(page.getByTestId('data-count')).not.toHaveText(countText!)
+    await expect(page.getByTestId('data-status')).toHaveText('success')
+  })
+
+  test('ssr + hydration of awaited useAsyncData in a vdom page, with refresh', async ({ page, goto }) => {
+    await goto('/vdom-async-data')
+    await expect(page.getByTestId('data-greeting')).toHaveText('hello from api')
+    await expect(page.getByTestId('data-status')).toHaveText('success')
+
+    const countText = await page.getByTestId('data-count').textContent()
+    await page.getByTestId('refresh-button').click()
+    await expect(page.getByTestId('data-count')).not.toHaveText(countText!)
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('lazy useAsyncData in a vapor page resolves after client-side navigation', async ({ page, goto }) => {
+    await goto('/async-await')
+    await page.getByTestId('nav-lazy-data').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Lazy data vapor page')
+    await expect(page.getByTestId('data-status')).toHaveText('success')
+    await expect(page.getByTestId('data-greeting')).toHaveText('hello from api')
+  })
+
+  test('navigation to a vapor page with async setup blocks and shows the loading indicator', async ({ page, goto }) => {
+    await goto('/')
+    await page.getByTestId('nav-slow').click()
+
+    await expect(page.getByTestId('page-title')).toHaveText('Vapor interop fixture')
+    await expect.poll(() => page.evaluate(() => {
+      const el = document.querySelector<HTMLElement>('.nuxt-loading-indicator')
+      return el ? getComputedStyle(el).opacity !== '0' : false
+    })).toBe(true)
+
+    await expect(page.getByTestId('page-title')).toHaveText('Slow vapor page')
+  })
+
+  test('onServerPrefetch and callOnce in a vapor page', async ({ page, goto }) => {
+    await goto('/prefetch')
+    await expect(page.getByTestId('prefetched')).toHaveText('prefetched-on-server')
+    await expect(page.getByTestId('once-count')).toHaveText('once: 1')
+
+    await page.getByTestId('nav-index').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Vapor interop fixture')
+    await page.getByTestId('nav-prefetch').click()
+    await expect(page.getByTestId('once-count')).toHaveText('once: 1')
+    await expect(page.getByTestId('prefetched')).toHaveText('prefetched-on-server')
+  })
+
+  test('client-side navigation between two vapor pages with async setup', async ({ page, goto }) => {
+    await goto('/async-await')
+    await page.getByTestId('nav-slow').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Slow vapor page')
+    await expect(page.getByTestId('data-greeting')).toHaveText('hello from api')
+
+    await page.getByTestId('nav-async-data').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Async data vapor page')
+    await expect(page.getByTestId('data-greeting')).toHaveText('hello from api')
+    await expect(page.getByTestId('data-status')).toHaveText('success')
+  })
+
+  // on the first client-side navigation from a vdom page to a vapor page,
+  // useAsyncData refs never update the DOM: awaited useAsyncData shows an empty
+  // page with status `idle` (dev only), lazy useAsyncData is stuck on `pending`
+  // (dev and built). navigating from another vapor page works.
+  test('client-side navigation from a vdom page to a vapor page with awaited useAsyncData', async ({ page, goto }, testInfo) => {
+    test.fail(testInfo.project.name.endsWith('-dev'), 'vapor page render effects lose the fetched data on first vdom -> vapor navigation in dev')
+    await goto('/')
+    await page.getByTestId('nav-async-data').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Async data vapor page')
+    await expect(page.getByTestId('data-greeting')).toHaveText('hello from api')
+    await expect(page.getByTestId('data-status')).toHaveText('success')
+  })
+
+  test.fail('client-side navigation from a vdom page to a vapor page with lazy useAsyncData', async ({ page, goto }) => {
+    await goto('/')
+    await page.getByTestId('nav-lazy-data').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Lazy data vapor page')
+    await expect(page.getByTestId('data-status')).toHaveText('success')
+    await expect(page.getByTestId('data-greeting')).toHaveText('hello from api')
+  })
+})
