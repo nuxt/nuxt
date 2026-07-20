@@ -3,7 +3,7 @@ import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetu
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import ServerPlaceholder from './server-placeholder'
-import { elToStaticVNode, sanitizeTag } from './utils'
+import { elToStaticVNode, isVaporSlot, sanitizeTag } from './utils'
 
 import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 
@@ -62,8 +62,11 @@ const ClientOnly = defineComponent({
     return () => {
       if (mounted.value) {
         const vnodes = slots.default?.()
-        if (vnodes && vnodes.length === 1) {
+        if (vnodes && vnodes.length === 1 && !isVaporSlot(slots.default)) {
           return [cloneVNode(vnodes[0]!, attrs)]
+        }
+        if (import.meta.dev && isVaporSlot(slots.default) && attrs && Object.keys(attrs).length > 0) {
+          console.warn('[nuxt] <ClientOnly> cannot forward fallthrough attributes onto a vapor slot child. Move the attributes onto an element inside the slot, or wrap the content in a single vdom root.')
         }
         return vnodes
       }

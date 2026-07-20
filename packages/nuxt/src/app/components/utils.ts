@@ -47,6 +47,19 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   return true
 }
 
+/**
+ * Detect a vapor slot function passed into a vdom component via interop.
+ *
+ * Vapor slots register `__vapor`/`__vs` markers on the slot function itself, so
+ * we can recognise them without invoking the slot. Calling a vapor slot to
+ * inspect the shape of its returned VNodes is not a safe dry run (its content is
+ * not expressed as a VNode tree), so callers use this to skip VNode-shape
+ * heuristics rather than silently make a wrong decision.
+ */
+export function isVaporSlot (slot: ((...args: any[]) => any) | undefined | null): boolean {
+  return !!slot && (!!(slot as any).__vapor || !!(slot as any).__vs)
+}
+
 const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
 /** Return `tag` if it is a safe HTML tag name, otherwise `fallback`. */
 export function sanitizeTag (tag: string | undefined, fallback: string): string {

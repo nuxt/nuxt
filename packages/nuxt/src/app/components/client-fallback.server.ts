@@ -4,7 +4,7 @@ import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'v
 
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
-import { createBuffer, sanitizeTag } from './utils'
+import { createBuffer, isVaporSlot, sanitizeTag } from './utils'
 import { renderDiagnostics } from '../diagnostics/render'
 
 interface NuxtClientFallbackProps {
@@ -66,6 +66,9 @@ const NuxtClientFallbackServer = defineComponent({
     })
 
     try {
+      if (import.meta.dev && isVaporSlot(ctx.slots.default)) {
+        console.warn('[nuxt] <NuxtClientFallback> cannot server-render a vapor slot child. Its content is not expressed as VNodes, so the SSR attempt (and the fallback-on-error behaviour that depends on it) will not work. Wrap the content in a vdom component if you need server-side fallback.')
+      }
       const defaultSlot = ctx.slots.default?.()
       const ssrVNodes = createBuffer()
 
