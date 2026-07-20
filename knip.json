@@ -1,6 +1,13 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "ignoreWorkspaces": ["test/fixtures/basic"],
+  "rules": {
+    "duplicates": "off"
+  },
+  "ignoreExportsUsedInFile": {
+    "interface": true,
+    "type": true
+  },
   "ignoreDependencies": [
     "bing",
     "uno.css",
