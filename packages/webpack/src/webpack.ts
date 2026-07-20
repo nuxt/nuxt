@@ -217,12 +217,15 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
     bundlerDiagnostics.NUXT_B7017()
   }
 
-  await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares), { cors: () => true })
+  const buildAssetsPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
+  // `builds/` under the assets dir is a Nitro-served virtual route (app manifest), not a bundler asset.
+  const nitroBuildsPrefix = joinURL(buildAssetsPrefix, 'builds')
+  await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares, buildAssetsPrefix, nitroBuildsPrefix), { cors: () => true })
 
   await Promise.all(firstCompiles)
 }
 
-function rsbuildToH3Handler (middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void) {
+function rsbuildToH3Handler (middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void, buildAssetsPrefix: string, nitroBuildsPrefix: string) {
   return defineEventHandler(async (event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
     if (!isSameOriginRequest(req)) {
@@ -242,7 +245,14 @@ function rsbuildToH3Handler (middlewares: (req: IncomingMessage, res: ServerResp
       // settle when the response finishes; `next` means Nuxt should handle it.
       res!.on('finish', done)
       res!.on('close', done)
-      middlewares(req as IncomingMessage, res as ServerResponse, () => done())
+      middlewares(req as IncomingMessage, res as ServerResponse, () => {
+        const url = req!.url
+        if (url && url.startsWith(buildAssetsPrefix) && !url.startsWith(nitroBuildsPrefix)) {
+          res!.statusCode = 404
+          res!.end()
+        }
+        done()
+      })
     })
   })
 }
