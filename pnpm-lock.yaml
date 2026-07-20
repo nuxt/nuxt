@@ -14,6 +14,7 @@ overrides:
 
 patchedDependencies:
   changelogen: 8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b
+  knip@6.27.0: 1ba9a7d6e9ab2a13375caa1c61d26951ad4e8de983d62372678133b04d547d3d
 
 importers:
 
@@ -132,7 +133,7 @@ importers:
         version: 10.0.1
       knip:
         specifier: 6.27.0
-        version: 6.27.0
+        version: 6.27.0(patch_hash=1ba9a7d6e9ab2a13375caa1c61d26951ad4e8de983d62372678133b04d547d3d)
       magic-regexp:
         specifier: 0.11.0
         version: 0.11.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
@@ -15763,7 +15764,7 @@ snapshots:
 
   klona@2.0.6: {}
 
-  knip@6.27.0:
+  knip@6.27.0(patch_hash=1ba9a7d6e9ab2a13375caa1c61d26951ad4e8de983d62372678133b04d547d3d):
     dependencies:
       fdir: 6.5.0(picomatch@4.0.5)
       formatly: 0.3.0

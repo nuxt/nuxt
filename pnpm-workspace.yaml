@@ -10,6 +10,7 @@ packages:
 
 patchedDependencies:
   changelogen: patches/changelogen.patch
+  knip@6.27.0: patches/knip@6.27.0.patch
 
 publicHoistPattern:
   - '*-loader'
