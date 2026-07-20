@@ -12,6 +12,10 @@ const attrs = useAttrs()
 useHead({ title: 'vapor head title' })
 useSeoMeta({ description: 'vapor seo description' })
 
+onPrehydrate(() => {
+  document.documentElement.setAttribute('data-vapor-prehydrate', 'ran')
+})
+
 const ready = ref('pending')
 onNuxtReady(() => { ready.value = 'ready' })
 
