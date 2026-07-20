@@ -169,6 +169,31 @@ describe('resolveApp', () => {
     `)
   })
 
+  it('resolves plugins in nested local layer order (#34691)', async () => {
+    const app = await getResolvedApp([
+      'layers/layer-a/plugins/01.first.ts',
+      'layers/layer-a/nuxt.config.ts',
+      'layers/layer-b/plugins/70.second.ts',
+      {
+        name: 'layers/layer-b/nuxt.config.ts',
+        contents: 'export default defineNuxtConfig({ extends: [\'../layer-a\'] })',
+      },
+      {
+        name: 'nuxt.config.ts',
+        contents: 'export default defineNuxtConfig({ extends: [\'./layers/layer-a\', \'./layers/layer-b\'] })',
+      },
+    ])
+
+    const plugins = app.plugins
+      .filter(p => !('getContents' in p) && p.src.includes('<rootDir>/layers/'))
+      .map(p => p.src)
+
+    expect(plugins).toEqual([
+      '<rootDir>/layers/layer-a/plugins/01.first.ts',
+      '<rootDir>/layers/layer-b/plugins/70.second.ts',
+    ])
+  })
+
   it('resolves layer middleware in correct order', async () => {
     const app = await getResolvedApp([
       // layer 1
