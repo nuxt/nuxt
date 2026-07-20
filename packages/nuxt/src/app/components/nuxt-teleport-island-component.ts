@@ -1,6 +1,7 @@
 import type { Component, DefineSetupFnComponent, InjectionKey, SlotsType, VNode } from 'vue'
 import { Teleport, defineComponent, h, inject, provide, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { isVaporSlot } from './utils'
 import paths from '#build/component-chunk'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 
@@ -43,6 +44,9 @@ const NuxtTeleportIslandComponent = /* @__PURE__ */ defineComponent({
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
+      if (import.meta.dev && isVaporSlot(slots.default)) {
+        console.warn('[nuxt] a vapor component cannot be teleported as an interactive island. Island client hydration reads the wrapped component from its VNode, which a vapor slot does not expose. Use a vdom component for `nuxtClient` islands.')
+      }
       const slot = slots.default!()[0]!
       const slotType = slot.type as ExtendedComponent
       const name = (slotType.__name || slotType.name) as string
