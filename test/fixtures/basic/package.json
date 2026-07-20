@@ -10,7 +10,7 @@
     "nuxt": "workspace:*"
   },
   "devDependencies": {
-    "@vue/devtools-api": "catalog:dev",
+    "@vue/devtools-api": "8.1.5",
     "defu": "catalog:build",
     "postcss": "catalog:build",
     "ufo": "catalog:build",

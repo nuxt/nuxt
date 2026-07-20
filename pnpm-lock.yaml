@@ -323,9 +323,6 @@ catalogs:
     '@vue/compiler-core':
       specifier: 3.5.40
       version: 3.5.40
-    '@vue/devtools-api':
-      specifier: 8.1.5
-      version: 8.1.5
     '@vue/language-core':
       specifier: 3.3.7
       version: 3.3.7
@@ -1831,7 +1828,7 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       '@vue/devtools-api':
-        specifier: catalog:dev
+        specifier: 8.1.5
         version: 8.1.5
       defu:
         specifier: catalog:build
@@ -1888,6 +1885,12 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+
+  test/fixtures/css-cleanup:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/dynamic-paths:
     dependencies:

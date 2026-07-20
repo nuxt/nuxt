@@ -747,6 +747,11 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
   }
 
+  // Add experimental cleanup of styles from unmounted pages/layouts
+  if (nuxt.options.experimental.cleanupRouteStyles && !nuxt.options.dev && nuxt.options.builder === '@nuxt/vite-builder') {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/cleanup-route-styles.client'))
+  }
+
   // Add experimental page reload support
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))

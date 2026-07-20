@@ -219,7 +219,6 @@ catalogs:
     '@vitejs/plugin-vue-jsx': 5.1.6
     '@vitest/coverage-v8': 4.1.10
     '@vue/compiler-core': 3.5.40
-    '@vue/devtools-api': 8.1.5
     '@vue/language-core': 3.3.7
     '@vue/test-utils': 2.4.11
     acorn: 8.17.0
