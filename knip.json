@@ -4,10 +4,7 @@
   "rules": {
     "duplicates": "off"
   },
-  "ignoreExportsUsedInFile": {
-    "interface": true,
-    "type": true
-  },
+  "ignoreExportsUsedInFile": true,
   "ignoreDependencies": [
     "bing",
     "uno.css",
@@ -34,15 +31,15 @@
     ".": {
       "entry": [
         "scripts/*",
-        "test/e2e/global.setup.ts",
-        "test/e2e/global.teardown.ts",
+        "test/*.ts",
+        "test/e2e/*.ts",
         "test/runtime/app/**/*.ts",
         "test/mocks/app-config.ts"
       ]
     },
     "test/fixtures/*": {
       "entry": [
-        "**/*.{js,ts,mjs,vue}"
+        "**/*.{js,ts,mjs,vue}!"
       ],
       "paths": {
         "~~/*": ["./*"],
@@ -51,7 +48,7 @@
     },
     "packages/nitro-server": {
       "entry": [
-        "src/runtime/**/*.{js,ts,mjs}"
+        "src/runtime/**/*.{js,ts,mjs}!"
       ],
       "ignoreDependencies": [
         "mocked-exports",
@@ -82,15 +79,17 @@
     },
     "packages/nuxt": {
       "entry": [
-        "src/app/**/*.{ts,vue}",
-        "src/*/runtime/**/*.{ts,js,vue}",
-        "src/core/templates.ts",
+        "src/app/**/*.{ts,vue}!",
+        "src/*/runtime/**/*.{ts,js,vue}!",
+        "src/core/templates.ts!",
         "meta.d.ts",
+        "test/**/*.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,vue}"
       ],
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
+        "@nuxt/telemetry!",
         "@nuxt/vite-builder"
       ]
     },
