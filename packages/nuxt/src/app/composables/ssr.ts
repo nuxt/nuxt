@@ -126,6 +126,9 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
   }
 
   const vm = getCurrentInstance()
+  if (import.meta.dev && !vm && key) {
+    appDiagnostics.NUXT_E1013()
+  }
   if (vm && key) {
     vm.attrs[PREHYDRATE_ATTR_KEY] ||= ''
     key = ':' + key + ':'
