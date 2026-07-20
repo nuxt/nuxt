@@ -189,7 +189,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
 }
 
 const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/gi
-export function extractScriptContent (sfc: string) {
+function extractScriptContent (sfc: string) {
   const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
   for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
     if (match?.groups?.content) {

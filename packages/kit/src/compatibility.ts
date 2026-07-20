@@ -15,7 +15,7 @@ const builderMap = {
   '@nuxt/webpack-builder': 'webpack',
 }
 
-export function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
+function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
   const nuxtVersion = getNuxtVersion(nuxt)
   return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
 }
