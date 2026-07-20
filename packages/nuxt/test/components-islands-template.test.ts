@@ -49,4 +49,30 @@ describe('componentsIslandsTemplate', () => {
     expect(contents).toContain('"1thing": defineAsyncComponent(')
     expect(() => Parser.parse(contents, { ecmaVersion: 'latest', sourceType: 'module' })).not.toThrow()
   })
+
+  it('does not import vue-router when there are no server page islands', async () => {
+    const app = {
+      components: [makeComponent({})],
+      pages: [],
+    } as unknown as NuxtApp
+
+    const contents = await componentsIslandsTemplate.getContents!({ app, nuxt: makeNuxt(), options: {} })
+
+    expect(contents).not.toContain('vue-router')
+    expect(contents).toContain('export const providePageIslandDepth')
+    expect(() => Parser.parse(contents, { ecmaVersion: 'latest', sourceType: 'module' })).not.toThrow()
+  })
+
+  it('imports vue-router only when server page islands exist', async () => {
+    const app = {
+      components: [makeComponent({})],
+      pages: [{ name: 'home', mode: 'server', file: '/root/pages/index.server.vue', path: '/' }],
+    } as unknown as NuxtApp
+
+    const contents = await componentsIslandsTemplate.getContents!({ app, nuxt: makeNuxt(), options: {} })
+
+    expect(contents).toContain('import { viewDepthKey } from \'vue-router\'')
+    expect(contents).toContain('export const providePageIslandDepth')
+    expect(() => Parser.parse(contents, { ecmaVersion: 'latest', sourceType: 'module' })).not.toThrow()
+  })
 })
