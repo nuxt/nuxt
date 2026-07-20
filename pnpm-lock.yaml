@@ -124,6 +124,9 @@ importers:
       estree-walker:
         specifier: 3.0.3
         version: 3.0.3
+      exsolve:
+        specifier: 1.1.0
+        version: 1.1.0
       get-port-please:
         specifier: 3.2.0
         version: 3.2.0
@@ -133,6 +136,9 @@ importers:
       happy-dom:
         specifier: 20.11.0
         version: 20.11.0
+      hookable:
+        specifier: 6.1.1
+        version: 6.1.1
       installed-check:
         specifier: 10.0.1
         version: 10.0.1
@@ -217,6 +223,9 @@ importers:
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
+      vue-router:
+        specifier: 5.2.0
+        version: 5.2.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.40)(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       vue-tsc:
         specifier: 3.3.7
         version: 3.3.7(typescript@6.0.3)
