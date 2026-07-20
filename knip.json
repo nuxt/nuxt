@@ -40,6 +40,20 @@
     "packages/nitro-server": {
       "entry": [
         "src/runtime/**/*.{js,ts,mjs}"
+      ],
+      "ignoreDependencies": [
+        "mocked-exports",
+        "vue-devtools-stub",
+        "@babel/plugin-proposal-decorators",
+        "@babel/plugin-syntax-typescript"
+      ]
+    },
+    "packages/vite": {
+      "ignoreDependencies": [
+        "mocked-exports",
+        "nitropack",
+        "@babel/plugin-proposal-decorators",
+        "@babel/plugin-syntax-jsx"
       ]
     },
     "packages/kit": {
@@ -65,6 +79,9 @@
     "packages/ui-templates": {
       "entry": [
         "lib/*.ts"
+      ],
+      "ignoreDependencies": [
+        "@vue/shared"
       ]
     },
     "packages/webpack": {
