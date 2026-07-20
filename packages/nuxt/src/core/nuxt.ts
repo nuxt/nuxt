@@ -793,6 +793,10 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
+  if (nuxt.options.vue.vapor) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/vapor-interop.client'))
+  }
+
   if (nuxt.options.vue.config && Object.values(nuxt.options.vue.config).some(v => v !== null && v !== undefined)) {
     addPluginTemplate({
       filename: 'vue-app-config.mjs',
