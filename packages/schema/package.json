@@ -31,7 +31,7 @@
   "dependencies": {
     "@vue/shared": "^3.5.40",
     "defu": "^6.1.7",
-    "nostics": "^1.1.4",
+    "nostics": "^1.2.0",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.1",
     "std-env": "^4.2.0"
@@ -41,7 +41,7 @@
     "@types/pug": "2.0.10",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "@unhead/vue": "3.1.8",
+    "@unhead/vue": "3.2.1",
     "@vitejs/plugin-vue": "6.0.8",
     "@vitejs/plugin-vue-jsx": "5.1.6",
     "@vue/compiler-core": "3.5.40",

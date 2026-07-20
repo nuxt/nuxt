@@ -57,7 +57,7 @@
     "postcss-url": "^10.1.4",
     "pug-plain-loader": "^1.1.0",
     "raw-loader": "^4.0.2",
-    "rolldown-string": "^0.3.0",
+    "rolldown-string": "^0.3.1",
     "rspack-vue-loader": "^17.6.1",
     "seroval": "^1.5.5",
     "time-fix-plugin": "^2.0.7",

@@ -62,7 +62,7 @@
     "@types/babel__helper-plugin-utils": "7.10.3",
     "@types/node": "24.13.3",
     "@typescript-eslint/parser": "8.64.0",
-    "@unhead/vue": "3.1.8",
+    "@unhead/vue": "3.2.1",
     "@vitest/coverage-v8": "4.1.10",
     "@vue/test-utils": "2.4.11",
     "acorn": "8.17.0",
@@ -80,7 +80,7 @@
     "estree-walker": "3.0.3",
     "get-port-please": "3.2.0",
     "h3": "2.0.1-rc.22",
-    "happy-dom": "20.10.6",
+    "happy-dom": "20.11.0",
     "installed-check": "10.0.1",
     "knip": "6.27.0",
     "magic-regexp": "0.11.0",
@@ -94,7 +94,7 @@
     "pathe": "2.0.3",
     "pkg-pr-new": "0.0.78",
     "playwright-core": "1.61.1",
-    "rolldown-string": "0.3.0",
+    "rolldown-string": "0.3.1",
     "rollup": "4.62.2",
     "sherif": "1.13.0",
     "srvx": "0.11.22",
@@ -112,6 +112,6 @@
     "vue-tsc": "3.3.7",
     "webpack": "5.108.4"
   },
-  "packageManager": "pnpm@11.13.1",
+  "packageManager": "pnpm@11.15.0",
   "version": ""
 }

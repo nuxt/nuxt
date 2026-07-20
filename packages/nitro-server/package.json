@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
-    "@unhead/vue": "^3.1.8",
+    "@unhead/vue": "^3.2.1",
     "@vue/shared": "^3.5.40",
     "consola": "^3.4.2",
     "defu": "^6.1.7",
@@ -52,7 +52,7 @@
     "mlly": "^1.8.2",
     "mocked-exports": "^0.1.1",
     "nitro": "^3.0.260610-beta",
-    "nostics": "^1.1.4",
+    "nostics": "^1.2.0",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "srvx": "^0.11.22",
