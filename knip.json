@@ -56,6 +56,20 @@
       "entry": [
         "lib/*.ts"
       ]
+    },
+    "packages/webpack": {
+      "ignoreDependencies": [
+        "autoprefixer",
+        "css-loader",
+        "cssnano",
+        "file-loader",
+        "postcss-import",
+        "postcss-loader",
+        "postcss-url",
+        "pug-plain-loader",
+        "raw-loader",
+        "url-loader"
+      ]
     }
   }
 }
