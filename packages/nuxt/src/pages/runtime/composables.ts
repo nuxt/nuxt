@@ -1,5 +1,5 @@
 import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, hasInjectionContext } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitropack/types'
@@ -74,6 +74,10 @@ const warnRuntimeUsage = (method: string) => {
 export const definePageMeta = (meta: PageMeta): void => {
   if (import.meta.dev) {
     const component = getCurrentInstance()?.type
+    // vapor components have no vdom instance, so we cannot tell whether this is a route component
+    if (!component && hasInjectionContext()) {
+      return
+    }
     try {
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
