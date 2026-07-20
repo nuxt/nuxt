@@ -11,7 +11,12 @@ onMounted(() => {
 
 <template>
   <div>
-    <VaporCounter ref="compRef" label="vapor in vapor" />
-    <p data-testid="nested-refs">{{ refInfo }}</p>
+    <VaporCounter
+      ref="compRef"
+      label="vapor in vapor"
+    />
+    <p data-testid="nested-refs">
+      {{ refInfo }}
+    </p>
   </div>
 </template>
