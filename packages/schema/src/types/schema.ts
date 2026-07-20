@@ -1619,6 +1619,30 @@ export interface ConfigSchema {
     nitroAutoImports: boolean
 
     /**
+     * Clean up stylesheets belonging to pages and layouts that are no longer
+     * rendered after a client-side navigation.
+     *
+     * By default, once the CSS for a lazy-loaded page or layout chunk has been
+     * added to the document it stays there for the lifetime of the app, so
+     * global (non-scoped) styles from a previously visited route can leak into
+     * other routes, and the document keeps accumulating one stylesheet per
+     * page/layout ever visited in the session ([#22817](https://github.com/nuxt/nuxt/issues/22817)).
+     * When this option is enabled, Nuxt emits a map of page/layout stylesheets
+     * at build time and adds/removes their `<link>` tags on navigation, so only
+     * the current route's styles are present in the document.
+     *
+     * Only supported with the Vite builder in production builds. Works best
+     * with `features.inlineStyles: false` (inlined styles from the initially
+     * rendered route cannot be cleaned up). Styles for layouts rendered via an
+     * explicit `<NuxtLayout name="...">` prop (rather than route metadata or
+     * route rules) are not tracked and are never removed.
+     *
+     * @default false
+     * @see https://github.com/nuxt/nuxt/issues/22817
+     */
+    cleanupRouteStyles: boolean
+
+    /**
      * Enable SSR streaming to improve Time to First Byte (TTFB).
      *
      * When enabled, the server sends the HTML shell (head, styles, preload hints)

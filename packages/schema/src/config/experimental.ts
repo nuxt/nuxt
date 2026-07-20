@@ -263,6 +263,7 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
+    cleanupRouteStyles: false,
     ssrStreaming: {
       $resolve (val) {
         // Indexing crawlers only; `chrome-lighthouse` is intentionally absent

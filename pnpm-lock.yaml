@@ -1886,6 +1886,12 @@ importers:
         specifier: catalog:dev
         version: 6.0.3
 
+  test/fixtures/css-cleanup:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/dynamic-paths:
     dependencies:
       '@nuxt/rspack-builder':
