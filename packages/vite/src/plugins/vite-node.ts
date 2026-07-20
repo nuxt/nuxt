@@ -441,6 +441,25 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                 }
                 throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
               }) as Exclude<FetchResult, { cache: true }>
+            if (response && !response.map && ssrServer.environments?.ssr?.moduleGraph) {
+              const graph = ssrServer.environments.ssr.moduleGraph
+              let mod = graph.getModuleById(request.payload.moduleId)
+                     || graph.fileToModulesMap.get(request.payload.moduleId)?.values().next().value
+              if (!mod) {
+                const baseName = request.payload.moduleId.split('/').pop()
+                if (baseName) {
+                  for (const [key, set] of graph.fileToModulesMap.entries()) {
+                    if (key.endsWith(baseName)) {
+                      mod = set.values().next().value
+                      break
+                    }
+                  }
+                }
+              }
+              if (mod?.transformResult?.map) {
+                response.map = mod.transformResult.map as any
+              }
+            }
             sendResponse<typeof request.type>(socket, request.id, response)
             return
           }
