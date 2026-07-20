@@ -98,6 +98,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+  # Warm the Windows dependency cache on main
+  # Without this job every Windows job cold-installs all deps
+  warm-windows-cache:
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && github.event_name == 'push' && github.ref_name == 'main'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+        with:
+          node-version: 22
+          cache: true
+
   codeql:
     if: github.event_name != 'merge_group' && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
     runs-on: ubuntu-latest
@@ -116,7 +135,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
+        uses: github/codeql-action/init@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
         with:
           config: |
             paths:
@@ -133,7 +152,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
+        uses: github/codeql-action/analyze@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -205,6 +224,12 @@ jobs:
       - parallel:
           - name: Lint
             run: vp run lint
+
+          - name: Knip
+            run: vp run lint:knip
+
+          - name: Knip (production)
+            run: vp run lint:knip:production
 
           - name: Test (nuxt runtime)
             run: vp run test:runtime

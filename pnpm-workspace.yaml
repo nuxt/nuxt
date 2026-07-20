@@ -10,6 +10,7 @@ packages:
 
 patchedDependencies:
   changelogen: patches/changelogen.patch
+  knip@6.27.0: patches/knip@6.27.0.patch
 
 publicHoistPattern:
   - '*-loader'
@@ -47,3 +48,6 @@ minimumReleaseAgeExclude:
   - unctx@3.0.0-beta.2
   - magic-string@1.0.0
   - verkit@0.1.2
+  - '@unhead/bundler@3.2.1'
+  - '@unhead/vue@3.2.1'
+  - unhead@3.2.1

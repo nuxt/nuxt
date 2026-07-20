@@ -14,7 +14,7 @@ export function toVirtualId (absolutePath: string, nuxt: Nuxt): string {
   return PREFIX + encodeURIComponent(relative(nuxt.options.rootDir, absolutePath))
 }
 
-export function fromVirtualId (id: string, nuxt: Nuxt): string {
+function fromVirtualId (id: string, nuxt: Nuxt): string {
   const search = id.match(QUERY_RE)?.[0] || ''
   const relativePart = withoutQuery(decodeURIComponent(withoutPrefix(id)))
   return resolve(nuxt.options.rootDir, relativePart) + search
