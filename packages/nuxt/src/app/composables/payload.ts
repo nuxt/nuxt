@@ -1,8 +1,8 @@
 import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
 import { defineLink } from '@unhead/vue'
-import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { onServerPrefetch, reactive } from 'vue'
+import { isInComponentSetup, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 import { useHead } from './head'
 
@@ -246,8 +246,11 @@ export function definePayloadReviver (
   name: string,
   revive: (data: any) => any | undefined,
 ): void {
-  if (import.meta.dev && getCurrentInstance()) {
-    stateDiagnostics.NUXT_E7004()
+  if (import.meta.dev) {
+    const nuxtApp = tryUseNuxtApp()
+    if (nuxtApp && isInComponentSetup(nuxtApp)) {
+      stateDiagnostics.NUXT_E7004()
+    }
   }
   if (import.meta.client) {
     useNuxtApp()._payloadRevivers[name] = revive

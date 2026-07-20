@@ -6,7 +6,7 @@ import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQu
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { isInComponentSetup, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
@@ -44,9 +44,12 @@ function isScopeWithinInstance (instance: ComponentInternalInstance): boolean {
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = (() => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
-    const middleware = useNuxtApp()._processingMiddleware
-    const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    navigationDiagnostics.NUXT_E2005({ middleware: typeof middleware === 'string' ? middleware : undefined, trace })
+    const nuxtApp = useNuxtApp()
+    if (!isInComponentSetup(nuxtApp)) {
+      const middleware = nuxtApp._processingMiddleware
+      const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
+      navigationDiagnostics.NUXT_E2005({ middleware: typeof middleware === 'string' ? middleware : undefined, trace })
+    }
   }
   if (hasInjectionContext()) {
     const instance = getCurrentInstance()
@@ -321,7 +324,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? MakeSerializableObject<NuxtLayouts[Layout]> : never): void => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
-    if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
+    if (import.meta.dev && isInComponentSetup(nuxtApp) && nuxtApp.payload.state._layout !== layout) {
       navigationDiagnostics.NUXT_E2007()
     }
     nuxtApp.payload.state._layout = layout
