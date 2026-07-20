@@ -103,6 +103,52 @@
         "raw-loader",
         "url-loader"
       ]
+    },
+    "packages/rspack": {
+      "ignoreDependencies": [
+        "@nuxt/friendly-errors-webpack-plugin",
+        "@nuxt/kit",
+        "@types/webpack-bundle-analyzer",
+        "@vue/compiler-sfc",
+        "autoprefixer",
+        "css-loader",
+        "css-minimizer-webpack-plugin",
+        "cssnano",
+        "defu",
+        "esbuild-loader",
+        "escape-string-regexp",
+        "exsolve",
+        "file-loader",
+        "h3",
+        "h3-next",
+        "jiti",
+        "knitwork",
+        "memfs",
+        "mini-css-extract-plugin",
+        "mlly",
+        "ohash",
+        "pathe",
+        "pify",
+        "postcss",
+        "postcss-import",
+        "postcss-import-resolver",
+        "postcss-loader",
+        "postcss-url",
+        "pug-plain-loader",
+        "raw-loader",
+        "rolldown-string",
+        "rollup",
+        "seroval",
+        "time-fix-plugin",
+        "tinyglobby",
+        "ufo",
+        "unenv",
+        "unplugin",
+        "url-loader",
+        "vue",
+        "vue-bundle-renderer",
+        "webpack-bundle-analyzer"
+      ]
     }
   }
 }
