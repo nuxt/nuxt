@@ -1,9 +1,8 @@
-import { resolveModulePath } from 'exsolve'
 import VueSSRClientPlugin from '../plugins/vue/client.ts'
 import VueSSRServerPlugin from '../plugins/vue/server.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 
-import { VueLoaderPlugin, builder, vueLoader, webpack } from '#builder'
+import { VueLoaderPlugin, builder, vueLoader, vueModuleIdentifierLoader, webpack } from '../builder.ts'
 
 export function vue (ctx: WebpackConfigContext) {
   // ensure the Vue loader is always the first plugin, regardless of plugin ordering.
@@ -32,12 +31,11 @@ export function vue (ctx: WebpackConfigContext) {
       filename: `${ctx.name}.manifest.json`,
     }))
 
-    const loaderPath = resolveModulePath('#vue-module-identifier', { from: import.meta.url })
     ctx.config.module!.rules!.push({
       test: /\.vue$/i,
       enforce: 'post',
       use: [{
-        loader: loaderPath,
+        loader: vueModuleIdentifierLoader,
         options: { srcDir: ctx.nuxt.options.srcDir },
       }],
     })

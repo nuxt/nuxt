@@ -8,7 +8,7 @@ import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/tes
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
+import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
@@ -93,7 +93,7 @@ describe('route rules', () => {
     expect(html).not.toContain('<script')
   })
 
-  itFailsIf(isWebpack && isDev)('client-side navigation should redirect if hash included', async () => {
+  itFailsIf(builder === 'webpack' && isDev)('client-side navigation should redirect if hash included', async () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')
     await page.getByTestId('route-rules-redirect').click()
@@ -1852,7 +1852,7 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   // TODO: looks like this test is flaky
-  const prefetchedPayloadIt = !isTestingAppManifest ? it.skip : itFailsIf(isWebpack && isDev)
+  const prefetchedPayloadIt = !isTestingAppManifest ? it.skip : itFailsIf(builder === 'webpack' && isDev)
   prefetchedPayloadIt('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 

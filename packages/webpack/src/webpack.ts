@@ -20,7 +20,7 @@ import { isSameOriginRequest } from './utils/same-origin.ts'
 import { client, server } from './configs/index.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
-import { builder, createRsbuild, webpack } from '#builder'
+import { builder, createRsbuild, webpack } from './builder.ts'
 
 // TODO: Support plugins
 // const plugins: string[] = []
