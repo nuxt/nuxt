@@ -27,7 +27,10 @@ interface LoaderOptions {
 //    single SFC, which happens when a `<script setup lang="[jt]sx">` block
 //    references components from the template (nuxt/nuxt#30929).
 // 2. h(ComponentName, ...) - JSX h() calls with PascalCase component identifiers
-const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\d*\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b/g
+// 3. _createAssetComponent("ComponentName", ...) - Vapor's runtime component resolution.
+//    Only the helper name and its first (name) argument are matched, so the remaining
+//    arguments are preserved; the call is rewritten to `createComponentWithFallback(<import>, ...)`.
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\d*\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b|(?<=[\s(=;,])_?createAssetComponent\d*\s*\(\s*(?<vaporQuote>["'`])(?<vaporLazy>lazy-|Lazy(?=[A-Z]))?(?<vaporModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<vaporName>[^'"`]*)\k<vaporQuote>/g
 
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
@@ -56,9 +59,10 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       // replace `_resolveComponent("...")` to direct import
       for (const match of code.matchAll(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE)) {
         const groups = match.groups!
-        const lazy = groups.hLazy || groups.lazy
-        const modifier = groups.hModifier || groups.modifier
-        const name = groups.hName || groups.name
+        const lazy = groups.hLazy || groups.lazy || groups.vaporLazy
+        const modifier = groups.hModifier || groups.modifier || groups.vaporModifier
+        const name = groups.hName || groups.name || groups.vaporName
+        const isVapor = groups.vaporQuote !== undefined
         const normalComponent = findComponent(components, name!, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent
@@ -83,7 +87,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             if (!options.experimentalComponentIslands) {
               componentDiagnostics.NUXT_B3003({ component: name! })
             }
-            s.overwrite(match.index, match.index + match[0].length, identifier)
+            s.overwrite(match.index, match.index + match[0].length, isVapor ? vaporReplacement(imports, identifier) : identifier)
             continue
           }
 
@@ -155,7 +159,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             }
           }
 
-          s.overwrite(match.index, match.index + match[0].length, identifier)
+          s.overwrite(match.index, match.index + match[0].length, isVapor ? vaporReplacement(imports, identifier) : identifier)
         }
       }
 
@@ -167,6 +171,15 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
     },
   }
 })
+
+// TODO: `createAssetComponent`'s sixth argument is `maybeSelfReference` while
+// `createComponentWithFallback`'s is `appContext`. The compiler only emits it for
+// `__self`-suffixed self-references, which shouldn't reach the auto-import path,
+// but a self-referencing vapor component could misbehave here.
+function vaporReplacement (imports: Set<string>, identifier: string) {
+  imports.add(genImport('vue', [{ name: 'createComponentWithFallback', as: '__nuxt_createComponentWithFallback' }]))
+  return `__nuxt_createComponentWithFallback(${identifier}`
+}
 
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
   const id = pascalCase(name).replace(QUOTE_RE, '')

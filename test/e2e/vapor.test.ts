@@ -27,9 +27,7 @@ test.describe('vapor interop', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  // vapor pages rendered through NuxtPage currently hydrate with mismatches and
-  // mismatch recovery drops nested vapor components
-  test.fail('renders and hydrates a vapor page using nuxt composables', async ({ page, goto }) => {
+  test('renders and hydrates a vapor page using nuxt composables', async ({ page, goto }) => {
     await goto('/vapor-page')
     await expect(page.getByTestId('page-title')).toHaveText('Vapor page')
     await expect(page.getByTestId('route-path')).toHaveText('/vapor-page')
@@ -43,7 +41,8 @@ test.describe('vapor interop', () => {
 
   test('hydrates mixed vapor/vdom nesting in both directions', async ({ page, goto }) => {
     await goto('/mixed')
-    await expect(page.getByTestId('vdom-child')).toContainText('vdom child')
+    await expect(page.getByTestId('vdom-child').first()).toContainText('vdom child')
+    await expect(page.getByTestId('vapor-wrapper').getByTestId('vdom-child')).toContainText('vdom child')
     await expect(page.getByTestId('vapor-counter-label')).toHaveText('vapor inside vdom slot')
     await expect(page.getByTestId('vapor-wrapper-text')).toHaveText('vapor wrapper')
     await expect(page.getByTestId('vapor-slot-content')).toHaveText('slot from vapor')
