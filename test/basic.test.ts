@@ -1927,13 +1927,12 @@ describe.skipIf(isWindows)('payload rendering', () => {
     const { page, requests } = await renderPage('/payload-query?page=1')
 
     requests.length = 0
+    const payloadRequestPromise = page.waitForRequest(request => request.url().includes('/payload-query/_payload.json'))
     await page.getByTestId('payload-query-next').click()
     await page.waitForURL(url('/payload-query?page=2'))
-    await page.waitForLoadState('networkidle')
 
-    const payloadRequest = requests.find(request => request.includes('/payload-query/_payload.json'))
-    expect(payloadRequest).toBeDefined()
-    const payloadURL = new URL(payloadRequest!, url('/'))
+    const payloadRequest = await payloadRequestPromise
+    const payloadURL = new URL(payloadRequest.url())
     expect.soft(payloadURL.searchParams.get('page')).toBe('2')
     expect(await page.locator('#payload-query').textContent()).toContain('2')
 
