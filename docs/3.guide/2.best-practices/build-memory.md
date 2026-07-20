@@ -65,7 +65,7 @@ When Node.js throws `FATAL ERROR: Reached heap limit` and the machine has free R
 NODE_OPTIONS='--max-old-space-size=8192' npx nuxt build
 ```
 
-Exit code `137` means the OS killed the process. A larger heap limit does not add physical RAM. `--expose-gc` only exposes `global.gc()`; it does not free objects the build still holds.
+Exit code `137` means the process received SIGKILL. The OOM killer is one possible cause, not proof of memory exhaustion by itself. Check runner or container logs (for example dmesg or the host's OOM killer messages) before diagnosing a memory problem. A larger heap limit does not add physical RAM. `--expose-gc` only exposes `global.gc()`; it does not free objects the build still holds.
 
 If a very large dependency (for example Puppeteer) lands in the client graph, [`nuxt analyze`](/docs/4.x/api/commands/analyze) can show that. For most apps, prerender work matters more than the module graph.
 
@@ -94,13 +94,13 @@ On Linux, peak RSS for the timed command:
 /usr/bin/time -v npx nuxt build
 ```
 
-For retained allocations, use a heap profile:
+For allocation profiling, use a sampled heap profile:
 
 ```bash [Terminal]
 NODE_OPTIONS='--heap-prof' npx nuxt build
 ```
 
-Open the `.heapprofile` in Chrome DevTools. Profiling adds overhead, so size CI from normal builds.
+Open the `.heapprofile` in Chrome DevTools. Profiling adds overhead, so size CI from normal builds. When the build dies near the heap limit and you need a snapshot of the heap at that moment, prefer [`--heapsnapshot-near-heap-limit`](https://nodejs.org/api/cli.html#--heapsnapshot-near-heap-limitmax_count) instead of `--heap-prof`.
 
 You can also log RSS and heap at build hooks in the main process:
 
@@ -125,6 +125,6 @@ export default defineNuxtConfig({
 
 These hooks miss peaks between stages and memory in child processes.
 
-[`nuxt build --profile`](/docs/4.x/api/commands/build) reports RSS and heap deltas for build stages and writes a CPU profile. Use it to find slow stages; it does not produce a retained-allocation heap profile.
+[`nuxt build --profile`](/docs/4.x/api/commands/build) reports RSS and heap deltas for build stages and writes a CPU profile. Use it to find slow stages; it does not produce a sampled heap profile.
 
 When you open an OOM issue, include Nuxt and Node.js versions, peak RSS, runner RAM, sourcemap settings, prerender route count, preset, and major module versions.
