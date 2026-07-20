@@ -228,6 +228,9 @@ jobs:
           - name: Knip
             run: vp run lint:knip
 
+          - name: Knip (production)
+            run: vp run lint:knip:production
+
           - name: Test (nuxt runtime)
             run: vp run test:runtime
 
