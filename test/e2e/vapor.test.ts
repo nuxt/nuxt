@@ -33,8 +33,64 @@ test.describe('vapor interop', () => {
     await expect(page.getByTestId('route-path')).toHaveText('/vapor-page')
     await expect(page.getByTestId('use-state')).toHaveText('state-initial')
 
-    await page.getByTestId('vapor-counter-button').click()
+    await page.getByTestId('vapor-counter-button').click({ timeout: 5000 })
     await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('nuxt composables work in a vapor component inside a vdom page', async ({ page, goto }) => {
+    await goto('/composables')
+    await expect(page.getByTestId('nuxt-app')).toHaveText('nuxt-app-ok')
+    await expect(page.getByTestId('state')).toHaveText('state-ok')
+    await expect(page.getByTestId('route-path')).toHaveText('/composables')
+    await expect(page.getByTestId('router')).toHaveText('router-ok')
+    await expect(page.getByTestId('runtime-config')).toHaveText('runtime-config-ok')
+    await expect(page.getByTestId('attrs')).toHaveText('attrs-ok')
+    await expect(page.getByTestId('ready')).toHaveText('ready')
+    await expect(page.getByTestId('async-data')).toHaveText('world (success)')
+    await expect(page).toHaveTitle('vapor head title')
+    expect(await page.locator('meta[name=description]').getAttribute('content')).toBe('vapor seo description')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('useId hydrates without mismatch in a vapor component', async ({ page, goto }) => {
+    await goto('/composables')
+    await expect(page.getByTestId('use-id')).not.toHaveText('id-missing')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('element template refs work in a vapor component', async ({ page, goto }) => {
+    await goto('/composables')
+    await expect(page.getByTestId('refs')).toHaveText('el:ok')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  // nested vapor components inside a vapor component hit the same hydration
+  // mismatch recovery bug as vapor pages, even when hosted in a vdom page
+  test('hydrates a vapor component nested inside another vapor component', async ({ page, goto }) => {
+    await goto('/nested')
+    await expect(page.getByTestId('vapor-counter-label')).toHaveText('vapor in vapor')
+    await expect(page.getByTestId('nested-refs')).toHaveText('comp:ok $el:absent')
+
+    await page.getByTestId('vapor-counter-button').click({ timeout: 5000 })
+    await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  // lazy hydration wrappers rely on vdom async component hydration strategies,
+  // which never hydrate a vapor component: it renders on the server but stays inert
+  test.fail('lazy hydration (hydrate-on-visible) of a vapor component', async ({ page, goto }) => {
+    await goto('/lazy')
+    await expect(page.getByTestId('vapor-counter-label')).toHaveText('lazy vapor')
+
+    await page.getByTestId('vapor-counter-button').scrollIntoViewIfNeeded()
+    await page.getByTestId('vapor-counter-button').click()
+    await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1', { timeout: 5000 })
 
     expect(page).toHaveNoErrorsOrWarnings()
   })

@@ -1,6 +1,11 @@
 import { withMatrix } from '../../matrix'
 
 export default withMatrix({
+  runtimeConfig: {
+    public: {
+      testValue: 'runtime-config-ok',
+    },
+  },
   app: {
     head: {
       title: 'Vapor',
