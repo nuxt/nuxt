@@ -68,7 +68,7 @@
     "rolldown": "1.2.0",
     "rollup": "4.62.2",
     "rollup-plugin-visualizer": "7.0.1",
-    "tsdown": "0.22.8",
+    "tsdown": "0.22.9",
     "vue": "3.5.40"
   },
   "peerDependencies": {
