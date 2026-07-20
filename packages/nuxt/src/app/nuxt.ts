@@ -580,6 +580,20 @@ export function useNuxtApp (id?: string): NuxtApp {
   return nuxtAppInstance
 }
 
+/**
+ * Whether the current execution context is a component setup rather than a plugin or the app scope.
+ *
+ * Vapor components have no vdom `getCurrentInstance()`, but their setup runs within a dedicated
+ * effect scope distinct from the nuxt app's own scope (which plugins run in), so the scope
+ * discriminates the two cases.
+ * @internal
+ */
+export function isInComponentSetup (nuxtApp: NuxtApp): boolean {
+  if (getCurrentInstance()) { return true }
+  const scope = getCurrentScope()
+  return !!scope && scope !== nuxtApp._scope
+}
+
 /** @since 3.0.0 */
 /* @__NO_SIDE_EFFECTS__ */
 export function useRuntimeConfig (): RuntimeConfig {
