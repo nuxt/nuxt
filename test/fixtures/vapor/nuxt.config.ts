@@ -7,6 +7,9 @@ export default withMatrix({
       meta: [{ name: 'description', content: 'Vapor interop test fixture' }],
     },
   },
+  vue: {
+    vapor: true,
+  },
   runtimeConfig: {
     public: {
       testValue: 'runtime-config-ok',

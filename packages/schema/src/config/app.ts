@@ -21,6 +21,20 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+
+    /**
+     * Enable experimental support for Vue Vapor Mode (requires Vue 3.6+).
+     *
+     * This installs Vue's `vaporInteropPlugin` so that vapor components (SFCs using
+     * `<script setup vapor>` or `<template vapor>`) can be used alongside regular
+     * VDOM components.
+     * @see [Vue Vapor Mode release notes](https://github.com/vuejs/core/releases/tag/v3.6.0-rc.1)
+     */
+    vapor: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
     propsDestructure: true,
 
     config: {},
