@@ -83,9 +83,7 @@ test.describe('vapor interop', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  // lazy hydration wrappers rely on vdom async component hydration strategies,
-  // which never hydrate a vapor component: it renders on the server but stays inert
-  test.fail('lazy hydration (hydrate-on-visible) of a vapor component', async ({ page, goto }) => {
+  test('lazy hydration (hydrate-on-visible) of a vapor component', async ({ page, goto }) => {
     await goto('/lazy')
     await expect(page.getByTestId('vapor-counter-label')).toHaveText('lazy vapor')
 
@@ -204,12 +202,7 @@ test.describe('vapor async data', () => {
     await expect(page.getByTestId('data-status')).toHaveText('success')
   })
 
-  // on the first client-side navigation from a vdom page to a vapor page,
-  // useAsyncData refs never update the DOM: awaited useAsyncData shows an empty
-  // page with status `idle` (dev only), lazy useAsyncData is stuck on `pending`
-  // (dev and built). navigating from another vapor page works.
-  test('client-side navigation from a vdom page to a vapor page with awaited useAsyncData', async ({ page, goto }, testInfo) => {
-    test.fail(testInfo.project.name.endsWith('-dev'), 'vapor page render effects lose the fetched data on first vdom -> vapor navigation in dev')
+  test('client-side navigation from a vdom page to a vapor page with awaited useAsyncData', async ({ page, goto }) => {
     await goto('/')
     await page.getByTestId('nav-async-data').click()
     await expect(page.getByTestId('page-title')).toHaveText('Async data vapor page')
@@ -217,6 +210,9 @@ test.describe('vapor async data', () => {
     await expect(page.getByTestId('data-status')).toHaveText('success')
   })
 
+  // on the first client-side navigation from a vdom page to a vapor page, lifecycle
+  // hooks registered in setup (onBeforeMount) never fire, so the lazy fetch never
+  // starts. navigating from another vapor page works.
   test.fail('client-side navigation from a vdom page to a vapor page with lazy useAsyncData', async ({ page, goto }) => {
     await goto('/')
     await page.getByTestId('nav-lazy-data').click()
@@ -271,8 +267,9 @@ test.describe('vapor page transitions', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  // enter hooks of a vapor page fire twice, and enter begins before the
-  // leaving page has finished despite `mode: 'out-in'`
+  // enter begins before the leaving page has finished despite `mode: 'out-in'`:
+  // `before-enter` fires before `after-leave` (double-firing of enter hooks was
+  // fixed by vuejs/core#15133; the ordering violation remains with it applied)
   test.fail('js transition hooks fire exactly once and respect out-in ordering', async ({ page, goto, isDev }) => {
     test.skip(isDev, 'hooks fire only once in dev')
     await goto('/vdom-page?tr=1')
@@ -288,9 +285,7 @@ test.describe('vapor page transitions', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  // leaving a vapor page under a transition with `mode: 'out-in'` never mounts
-  // the next page, leaving NuxtPage empty
-  test.fail('navigating away from a vapor page with an out-in transition renders the next page', async ({ page, goto }) => {
+  test('navigating away from a vapor page with an out-in transition renders the next page', async ({ page, goto }) => {
     await goto('/?tr=1')
     await page.getByTestId('nav-keepalive-vapor').click()
     await expect(page.getByTestId('page-title')).toHaveText('Keepalive vapor')
@@ -315,9 +310,7 @@ test.describe('vapor page transitions', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  // flaky: with a default-mode (simultaneous) transition, the leaving page is
-  // sometimes never removed from the DOM when a vapor page is involved
-  test.fixme('default-mode transition removes the leaving page from the DOM', async ({ page, goto }) => {
+  test('default-mode transition removes the leaving page from the DOM', async ({ page, goto }) => {
     await goto('/?tr=default')
 
     await page.getByTestId('nav-keepalive-vapor').click()
@@ -416,23 +409,13 @@ test.describe('nuxt built-ins with vapor children', () => {
     await expect(page.getByTestId('vapor-throws-handler')).toBeVisible()
   })
 
-  test('<NuxtErrorBoundary> captures setup errors from vapor components', async ({ page, goto, isBuilt }) => {
-    // in production builds, mounting a vapor component that throws in setup crashes the
-    // vapor renderer (`Cannot read properties of undefined (reading 'anchor')`) instead of
-    // propagating to `onErrorCaptured`
-    test.fail(isBuilt, 'vapor setup errors are not captured by onErrorCaptured in production builds')
-
+  test('<NuxtErrorBoundary> captures setup errors from vapor components', async ({ page, goto }) => {
     await goto('/error-boundary')
     await page.getByTestId('mount-throwing').click()
     await expect(page.getByTestId('setup-error')).toContainText('vapor setup error')
   })
 
-  test('<NuxtLink> works inside vapor components', async ({ page, goto, isWebpack }) => {
-    // with vite, hydrating a vdom <NuxtLink> rendered inside a vapor component reports a
-    // hydration mismatch, and mismatch recovery re-renders it without resolving the
-    // component (a raw `<nuxtlink>` element ends up in the DOM); webpack/rspack builds work
-    test.fail(!isWebpack, 'vite hydration of <NuxtLink> inside vapor components reports mismatches')
-
+  test('<NuxtLink> works inside vapor components', async ({ page, goto }) => {
     await goto('/links')
     await expect(page.getByTestId('vapor-plain-link')).toHaveAttribute('href', '/')
 
@@ -452,10 +435,7 @@ test.describe('nuxt built-ins with vapor children', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  // hydrating a `Lazy`-prefixed (async) vapor component silently produces dead DOM:
-  // no warnings are logged, but event handlers are never attached (client-side
-  // navigation to the same page works). This is timing/chunk-layout dependent.
-  test.fail('lazy auto-imported vapor component renders and hydrates', async ({ page, goto }) => {
+  test('lazy auto-imported vapor component renders and hydrates', async ({ page, goto }) => {
     await goto('/lazy-import')
     await expect(page.getByTestId('vapor-counter-label')).toHaveText('lazy vapor')
     await page.getByTestId('vapor-counter-button').click()
