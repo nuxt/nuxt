@@ -203,10 +203,6 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-export const keyDependencies: string[] = [
-  '@nuxt/kit',
-]
-
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
