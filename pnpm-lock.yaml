@@ -25,9 +25,6 @@ importers:
       '@babel/core':
         specifier: 8.0.1
         version: 8.0.1
-      '@babel/helper-plugin-utils':
-        specifier: 8.0.1
-        version: 8.0.1(@babel/core@8.0.1)
       '@codspeed/core':
         specifier: 5.7.1
         version: 5.7.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
@@ -67,9 +64,6 @@ importers:
       '@types/babel__core':
         specifier: 7.20.5
         version: 7.20.5
-      '@types/babel__helper-plugin-utils':
-        specifier: 7.10.3
-        version: 7.10.3
       '@types/node':
         specifier: 24.13.3
         version: 24.13.3
@@ -100,9 +94,6 @@ importers:
       defu:
         specifier: 6.1.7
         version: 6.1.7
-      destr:
-        specifier: 2.0.5
-        version: 2.0.5
       devalue:
         specifier: 5.8.1
         version: 5.8.1
@@ -121,9 +112,6 @@ importers:
       eslint-typegen:
         specifier: 2.3.1
         version: 2.3.1(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
-      estree-walker:
-        specifier: 3.0.3
-        version: 3.0.3
       exsolve:
         specifier: 1.1.0
         version: 1.1.0
@@ -148,15 +136,9 @@ importers:
       magic-regexp:
         specifier: 0.11.0
         version: 0.11.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
-      magic-string:
-        specifier: 1.0.0
-        version: 1.0.0
       markdownlint-cli:
         specifier: 0.49.1
         version: 0.49.1(supports-color@10.2.2)
-      memfs:
-        specifier: 4.64.0
-        version: 4.64.0(tslib@2.8.1)
       nitro:
         specifier: 3.0.260610-beta
         version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
@@ -178,9 +160,6 @@ importers:
       playwright-core:
         specifier: 1.61.1
         version: 1.61.1
-      rolldown-string:
-        specifier: 0.3.1
-        version: 0.3.1(rolldown@1.2.0)
       rollup:
         specifier: 4.62.2
         version: 4.62.2
@@ -199,9 +178,6 @@ importers:
       tinyglobby:
         specifier: 0.2.17
         version: 0.2.17
-      ts-blank-space:
-        specifier: 0.9.0
-        version: 0.9.0
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -3618,9 +3594,6 @@ packages:
 
   '@types/babel__generator@7.27.0':
     resolution: {integrity: sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg==}
-
-  '@types/babel__helper-plugin-utils@7.10.3':
-    resolution: {integrity: sha512-FcLBBPXInqKfULB2nvOBskQPcnSMZ0s1Y2q76u9H1NPPWaLcTeq38xBeKfF/RBUECK333qeaqRdYoPSwW7rTNQ==}
 
   '@types/babel__template@7.4.4':
     resolution: {integrity: sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A==}
@@ -8975,10 +8948,6 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4'
 
-  ts-blank-space@0.9.0:
-    resolution: {integrity: sha512-TU6coIZm6RxGgAjroRKmi6aCQ7Pq7cT+1I+bTKBepD6joOuWqUCOptVlz+eurqTnatnQOimlR8XB5sQZ6ULwbw==}
-    engines: {node: '>=18.0.0'}
-
   ts-checker-rspack-plugin@1.5.2:
     resolution: {integrity: sha512-YtdNbLnJ9fU6itfQky0K9Lebb/N0TUSbSVUByyoGt27em3hiTCVnfW2MzxFUHpdMv5+7xPmoS8YBwdDyHfEaGQ==}
     peerDependencies:
@@ -12039,10 +12008,6 @@ snapshots:
   '@types/babel__generator@7.27.0':
     dependencies:
       '@babel/types': 7.29.7
-
-  '@types/babel__helper-plugin-utils@7.10.3':
-    dependencies:
-      '@types/babel__core': 7.20.5
 
   '@types/babel__template@7.4.4':
     dependencies:
@@ -18587,10 +18552,6 @@ snapshots:
   trough@2.2.0: {}
 
   ts-api-utils@2.5.0(typescript@6.0.3):
-    dependencies:
-      typescript: 6.0.3
-
-  ts-blank-space@0.9.0:
     dependencies:
       typescript: 6.0.3
 
