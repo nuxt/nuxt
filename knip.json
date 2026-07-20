@@ -1,12 +1,20 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreBinaries": [
-    "prepack"
-  ],
   "ignoreWorkspaces": ["test/fixtures/basic"],
   "ignoreDependencies": [
     "bing",
-    "uno.css"
+    "uno.css",
+    "somepath",
+    "foo"
+  ],
+  "ignoreUnresolved": [
+    "^#build/",
+    "^#internal/",
+    "^#shared/",
+    "^#nitro-internal-pollyfills$",
+    "^#spa-template$",
+    "\\.\\./schema\\.ts$",
+    "\\.\\./hmr-sibling-layer$"
   ],
   "workspaces": {
     ".": {
@@ -16,15 +24,21 @@
     },
     "test/fixtures/*": {
       "entry": [
-        "nuxt.config.{js,ts}",
-        "modules/*.ts",
-        "types.ts"
+        "**/*.{js,ts,mjs,vue}"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"]
+      }
+    },
+    "packages/nitro-server": {
+      "entry": [
+        "src/runtime/**/*.{js,ts,mjs}"
       ]
     },
-    "packages/*": {
+    "packages/kit": {
       "entry": [
-        "src/index.ts",
-        "src/runtime/**/*.{js,ts,mjs}"
+        "test/**/*-fixture/**/*.{js,ts,mjs,cjs,cts,mts,vue}"
       ]
     },
     "packages/nuxt": {
@@ -33,27 +47,12 @@
         "src/app/*.ts",
         "src/*/runtime/**/*.{ts,js}",
         "src/core/templates.ts",
-        "src/index.ts"
-      ]
-    },
-    "packages/rspack": {
-      "entry": [
-        "../webpack/src/index.ts",
-        "../webpack/src/runtime/**/*.{js,ts,mjs}",
-        "builder.mjs"
+        "test/**/*-fixture/**/*.{js,ts,mjs,vue}"
       ]
     },
     "packages/ui-templates": {
       "entry": [
-        "lib/*.ts",
-        "styles.ts"
-      ]
-    },
-    "packages/webpack": {
-      "entry": [
-        "src/index.ts",
-        "src/runtime/**/*.{js,ts,mjs}",
-        "builder.mjs"
+        "lib/*.ts"
       ]
     }
   }
