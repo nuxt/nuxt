@@ -1040,8 +1040,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     for (const builder of ['webpack', 'rspack'] as const) {
       nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
         if (name === 'server') {
-          const memfs = compiler.outputFileSystem as typeof import('node:fs')
           nitro.options.virtual['nuxt/entry'] = () => {
+            const memfs = compiler.outputFileSystem as typeof import('node:fs')
             mkdirSync(join(nuxt.options.buildDir, 'dist/server'), { recursive: true })
             writeFileSync(diskServerEntry, memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8'))
             return `export { default } from ${JSON.stringify(pathToFileURL(diskServerEntry).href + '?v=' + Date.now())}`
