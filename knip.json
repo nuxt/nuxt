@@ -11,7 +11,8 @@
     "nuxt",
     "ofetch",
     "@nuxt/webpack-builder",
-    "@nuxt/rspack-builder"
+    "@nuxt/rspack-builder",
+    "@rspack/core"
   ],
   "ignoreUnresolved": [
     "^#build/",
@@ -28,7 +29,8 @@
         "scripts/*",
         "test/e2e/global.setup.ts",
         "test/e2e/global.teardown.ts",
-        "test/runtime/app/**/*.ts"
+        "test/runtime/app/**/*.ts",
+        "test/mocks/app-config.ts"
       ]
     },
     "test/fixtures/*": {
@@ -60,6 +62,8 @@
       "ignoreDependencies": [
         "mocked-exports",
         "nitropack",
+        "autoprefixer",
+        "cssnano",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-jsx"
       ]
@@ -80,13 +84,13 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
-        "@nuxt/telemetry",
         "@nuxt/vite-builder"
       ]
     },
     "packages/schema": {
       "ignoreDependencies": [
-        "@vue/shared"
+        "@vue/shared",
+        "@nuxt/ui-templates"
       ]
     },
     "packages/ui-templates": {
@@ -108,7 +112,8 @@
         "postcss-url",
         "pug-plain-loader",
         "raw-loader",
-        "url-loader"
+        "url-loader",
+        "vue"
       ]
     },
     "packages/rspack": {
