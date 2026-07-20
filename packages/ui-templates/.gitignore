@@ -1,0 +1,9 @@
+# The ui-templates build output is committed (regenerated + diffed by CI), so it
+# does not run during install. Track only the self-contained template modules
+# imported by other packages; ignore the rest of dist.
+!dist/
+dist/*
+!dist/templates/
+dist/templates/*
+!dist/templates/loading.ts
+!dist/templates/spa-loading-icon.ts

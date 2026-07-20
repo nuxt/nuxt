@@ -112,9 +112,6 @@
     "packages/ui-templates": {
       "entry": [
         "lib/*.ts"
-      ],
-      "ignoreDependencies": [
-        "@vue/shared"
       ]
     },
     "packages/webpack": {
