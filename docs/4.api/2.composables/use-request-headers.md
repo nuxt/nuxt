@@ -24,9 +24,9 @@ In the browser, `useRequestHeaders` will return an empty object.
 
 ## Example
 
-We can use `useRequestHeaders` to access and proxy the initial request's `authorization` header to any future internal requests during SSR.
+During SSR, `$fetch` and `useFetch` do not attach browser cookies or other request headers to internal API calls. Use `useRequestHeaders` to pass the headers you need.
 
-The example below adds the `authorization` request header to an isomorphic `$fetch` call.
+The example below forwards the `authorization` header with `useFetch`. Use the same pattern for `cookie` when your API route reads session cookies.
 
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">
@@ -35,3 +35,7 @@ const { data } = await useFetch('/api/confidential', {
 })
 </script>
 ```
+
+::read-more{to="/docs/4.x/getting-started/data-fetching#pass-client-headers-to-the-api"}
+See Pass Client Headers to the API for cookie examples and guidance on external APIs.
+::

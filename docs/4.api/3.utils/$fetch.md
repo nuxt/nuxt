@@ -66,9 +66,9 @@ If you use `$fetch` to call an (external) HTTPS URL with a self-signed certifica
 
 ### Passing Headers and Cookies
 
-When we call `$fetch` in the browser, user headers like `cookie` will be directly sent to the API.
+When you call `$fetch` in the browser, the browser sends headers such as `cookie` to the API.
 
-However, during Server-Side Rendering, due to security risks such as **Server-Side Request Forgery (SSRF)** or **Authentication Misuse**, the `$fetch` wouldn't include the user's browser cookies, nor pass on cookies from the fetch response.
+During SSR, `$fetch` does not include the user's browser cookies, and it does not pass cookies from the fetch response back to the client. This limits risks such as **Server-Side Request Forgery (SSRF)** and authentication misuse.
 
 ::code-group
 
@@ -87,14 +87,15 @@ export default defineEventHandler((event) => {
 ```
 ::
 
-If you need to forward headers and cookies on the server, you must manually pass them:
+Forward the headers you need with [`useRequestHeaders`](/docs/4.x/api/composables/use-request-headers):
 
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
-// This will forward the user's headers and cookies to `/api/cookies`
-const requestFetch = useRequestFetch()
-const { data } = await useAsyncData(() => requestFetch('/api/cookies'))
+// This forwards the cookie header to `/api/cookies` during SSR
+const { data } = await useAsyncData(() => $fetch('/api/cookies', {
+  headers: useRequestHeaders(['cookie']),
+}))
 </script>
 ```
 
-However, when calling `useFetch` with a relative URL on the server, Nuxt will use [`useRequestFetch`](/docs/4.x/api/composables/use-request-fetch) to proxy headers and cookies (with the exception of headers not meant to be forwarded, like `host`).
+The same approach works with [`useFetch`](/docs/4.x/api/composables/use-fetch). See [Pass Client Headers to the API](/docs/4.x/getting-started/data-fetching#pass-client-headers-to-the-api).
