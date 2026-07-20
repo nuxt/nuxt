@@ -167,7 +167,7 @@ catalogs:
     pathe: ^2.0.3
     picomatch: ^4.0.5
     pkg-types: ^2.3.1
-    postcss: ^8.5.19
+    postcss: ^8.5.20
     postcss-import: ^16.1.1
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^8.2.1
