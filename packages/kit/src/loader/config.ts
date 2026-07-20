@@ -61,7 +61,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // `layers/` and also listed in `extends`) to avoid merging them twice (#34667)
   const seenLayerDirs = new Set<string>()
 
-  const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await withDefineNuxtConfig(
+  const resolved = await withDefineNuxtConfig(
     () => loadConfig<NuxtConfig>({
       name: 'nuxt',
       configFile: 'nuxt.config',
@@ -117,6 +117,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       },
     }),
   )
+  const { configFile, layers = [], cwd, meta } = resolved
+  const nuxtConfig = cloneConfig(resolved.config)
 
   // Fill config
   nuxtConfig.rootDir ||= cwd
@@ -208,6 +210,32 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+}
+
+function cloneConfig<T> (value: T, seen = new WeakMap<object, unknown>()): T {
+  if (!value || typeof value !== 'object') { return value }
+
+  const existing = seen.get(value)
+  if (existing) { return existing as T }
+
+  const isArray = Array.isArray(value)
+  const prototype = Object.getPrototypeOf(value)
+  if (!isArray && prototype !== Object.prototype && prototype !== null) { return value }
+
+  const cloned = isArray ? [] : Object.create(prototype)
+  seen.set(value, cloned)
+  for (const key of Reflect.ownKeys(value)) {
+    if (isArray && key === 'length') { continue }
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    if (!descriptor) { continue }
+    if ('value' in descriptor) {
+      descriptor.value = cloneConfig(descriptor.value, seen)
+      descriptor.writable = true
+    }
+    descriptor.configurable = true
+    Object.defineProperty(cloned, key, descriptor)
+  }
+  return cloned as T
 }
 
 /**

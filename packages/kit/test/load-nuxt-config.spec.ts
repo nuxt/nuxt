@@ -1,9 +1,10 @@
 import process from 'node:process'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { loadNuxtConfig } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
+import { getLayerDirectories, loadNuxtConfig } from '@nuxt/kit'
 import { basename, join } from 'pathe'
 
 describe('loadNuxtConfig', () => {
@@ -75,6 +76,67 @@ describe('loadNuxtConfig', () => {
         "a",
       ]
     `)
+  })
+
+  it('should not leak layer directory defaults into the merged Nuxt config', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-layer-dir-'))
+    const layerDir = join(tempDir, 'layers/foo')
+    await mkdir(layerDir, { recursive: true })
+    await writeFile(join(tempDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n')
+    await writeFile(join(layerDir, 'nuxt.config.ts'), `class Plugin {
+      #value = 42
+      read () { return this.#value }
+    }
+    const plugin = new Plugin()
+    const hook = () => 42
+    const shared = { value: 'shared' }
+    const cycle = { value: 'cycle' }
+    cycle.self = cycle
+
+    export default defineNuxtConfig({
+      future: { compatibilityVersion: 4 },
+      dir: { app: 'custom-app' },
+      srcDir: '.',
+      imports: { scan: false },
+      typescript: { strict: false },
+      app: { head: { meta: [{ name: 'layer' }] } },
+      experimental: { appManifest: false },
+      hooks: { ready: hook },
+      vite: {
+        plugins: [plugin],
+        sharedA: shared,
+        sharedB: shared,
+        cycle,
+      },
+    })\n`)
+
+    try {
+      const config = await loadNuxtConfig({ cwd: tempDir })
+      const [rootDirectories, layerDirectories] = getLayerDirectories({ options: config } as Nuxt)
+
+      expect(config.dir.app).toBe(join(tempDir, 'custom-app'))
+      expect(config._layers[1]?.config.dir?.app).toBe(join(layerDir, 'custom-app'))
+      expect(rootDirectories?.public).toBe(`${join(tempDir, 'public')}/`)
+      expect(layerDirectories?.public).toBe(`${join(layerDir, 'public')}/`)
+
+      const layerConfig = config._layers[1]?.config
+      expect(layerConfig?.imports).toEqual({ scan: false })
+      expect(layerConfig?.typescript).toEqual({ strict: false })
+      expect(layerConfig?.app).toEqual({ head: { meta: [{ name: 'layer' }] } })
+      expect(layerConfig?.experimental).toEqual({ appManifest: false })
+
+      const vite = config.vite as any
+      const layerVite = layerConfig?.vite as any
+      expect(vite.sharedA).toBe(vite.sharedB)
+      expect(vite.sharedA).not.toBe(layerVite.sharedA)
+      expect(vite.cycle.self).toBe(vite.cycle)
+      expect(vite.cycle).not.toBe(layerVite.cycle)
+      expect(vite.plugins[0]).toBe(layerVite.plugins[0])
+      expect(vite.plugins[0].read()).toBe(42)
+      expect(config.hooks.ready).toBe(layerConfig?.hooks?.ready)
+    } finally {
+      await rm(tempDir, { recursive: true, force: true })
+    }
   })
 
   describe('with .env file', () => {
