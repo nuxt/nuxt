@@ -378,3 +378,100 @@ test.describe('keepalive with vapor pages', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 })
+
+test.describe('nuxt built-ins with vapor children', () => {
+  test('<ClientOnly> renders fallback on server and vapor child on client', async ({ page, goto, fetch }) => {
+    const html = await (await fetch('/client-only')).text()
+    expect(html).toContain('fallback content')
+    expect(html).not.toContain('vapor in client-only')
+
+    await goto('/client-only')
+    await expect(page.getByTestId('vapor-counter-label')).toHaveText('vapor in client-only')
+    await page.getByTestId('vapor-counter-button').click()
+    await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('<DevOnly> renders vapor child in dev and fallback in production', async ({ page, goto, isDev }) => {
+    await goto('/dev-only')
+    if (isDev) {
+      await expect(page.getByTestId('vapor-counter-label')).toHaveText('vapor in dev-only')
+      await page.getByTestId('vapor-counter-button').click()
+      await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
+    } else {
+      await expect(page.getByTestId('dev-only-fallback')).toHaveText('production fallback')
+      await expect(page.getByTestId('vapor-counter')).toHaveCount(0)
+    }
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('<NuxtErrorBoundary> captures event handler errors from vapor components', async ({ page, goto }) => {
+    await goto('/error-boundary')
+
+    await page.getByTestId('vapor-throws-handler').click()
+    await expect(page.getByTestId('handler-error')).toContainText('vapor handler error')
+    await page.getByTestId('handler-clear').click()
+    await expect(page.getByTestId('vapor-throws-handler')).toBeVisible()
+  })
+
+  test('<NuxtErrorBoundary> captures setup errors from vapor components', async ({ page, goto, isBuilt }) => {
+    // in production builds, mounting a vapor component that throws in setup crashes the
+    // vapor renderer (`Cannot read properties of undefined (reading 'anchor')`) instead of
+    // propagating to `onErrorCaptured`
+    test.fail(isBuilt, 'vapor setup errors are not captured by onErrorCaptured in production builds')
+
+    await goto('/error-boundary')
+    await page.getByTestId('mount-throwing').click()
+    await expect(page.getByTestId('setup-error')).toContainText('vapor setup error')
+  })
+
+  test('<NuxtLink> works inside vapor components', async ({ page, goto, isWebpack }) => {
+    // with vite, hydrating a vdom <NuxtLink> rendered inside a vapor component reports a
+    // hydration mismatch, and mismatch recovery re-renders it without resolving the
+    // component (a raw `<nuxtlink>` element ends up in the DOM); webpack/rspack builds work
+    test.fail(!isWebpack, 'vite hydration of <NuxtLink> inside vapor components reports mismatches')
+
+    await goto('/links')
+    await expect(page.getByTestId('vapor-plain-link')).toHaveAttribute('href', '/')
+
+    await page.getByTestId('vapor-plain-link').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Vapor interop fixture')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('<NuxtLink> custom v-slot API works inside vapor components', async ({ page, goto }) => {
+    await goto('/links-custom')
+    await expect(page.getByTestId('vapor-custom-link')).toHaveAttribute('href', '/mixed')
+
+    await page.getByTestId('vapor-custom-link').click()
+    await expect(page.getByTestId('page-title')).toHaveText('Mixed nesting')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  // hydrating a `Lazy`-prefixed (async) vapor component silently produces dead DOM:
+  // no warnings are logged, but event handlers are never attached (client-side
+  // navigation to the same page works). This is timing/chunk-layout dependent.
+  test.fail('lazy auto-imported vapor component renders and hydrates', async ({ page, goto }) => {
+    await goto('/lazy-import')
+    await expect(page.getByTestId('vapor-counter-label')).toHaveText('lazy vapor')
+    await page.getByTestId('vapor-counter-button').click()
+    await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('server component renders alongside a vapor sibling', async ({ page, goto }) => {
+    await goto('/island')
+    await expect(page.getByTestId('server-box-text')).toHaveText('server box')
+    await expect(page.getByTestId('island-slot-content')).toHaveText('island slot')
+    await expect(page.getByTestId('vapor-counter-label')).toHaveText('vapor sibling of island')
+    await page.getByTestId('vapor-counter-button').click()
+    await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+})

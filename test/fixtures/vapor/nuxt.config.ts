@@ -12,4 +12,7 @@ export default withMatrix({
       testValue: 'runtime-config-ok',
     },
   },
+  experimental: {
+    componentIslands: true,
+  },
 })
