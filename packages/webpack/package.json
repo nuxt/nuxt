@@ -44,7 +44,7 @@
     "fork-ts-checker-webpack-plugin": "^9.1.0",
     "jiti": "^2.7.0",
     "knitwork": "^1.3.0",
-    "magic-string": "^0.30.21",
+    "magic-string": "^1.0.0",
     "memfs": "^4.64.0",
     "mini-css-extract-plugin": "^2.10.2",
     "mlly": "^1.8.2",

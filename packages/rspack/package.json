@@ -44,7 +44,7 @@
     "file-loader": "^6.2.0",
     "jiti": "^2.7.0",
     "knitwork": "^1.3.0",
-    "magic-string": "^0.30.21",
+    "magic-string": "^1.0.0",
     "memfs": "^4.64.0",
     "mlly": "^1.8.2",
     "ohash": "^2.0.11",
