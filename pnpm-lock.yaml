@@ -4,6 +4,561 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  app-runtime:
+    '@unhead/vue':
+      specifier: ^3.2.1
+      version: 3.2.1
+    '@vue/shared':
+      specifier: ^3.5.40
+      version: 3.5.40
+    consola:
+      specifier: ^3.4.2
+      version: 3.4.2
+    cookie-es:
+      specifier: ^3.1.1
+      version: 3.1.1
+    defu:
+      specifier: ^6.1.7
+      version: 6.1.7
+    devalue:
+      specifier: ^5.8.1
+      version: 5.8.1
+    errx:
+      specifier: ^0.1.0
+      version: 0.1.0
+    fnv1a-64:
+      specifier: ^0.1.1
+      version: 0.1.1
+    hookable:
+      specifier: ^6.1.1
+      version: 6.1.1
+    klona:
+      specifier: ^2.0.6
+      version: 2.0.6
+    nostics:
+      specifier: ^1.2.0
+      version: 1.2.0
+    object-identity:
+      specifier: ^0.2.3
+      version: 0.2.3
+    ofetch:
+      specifier: 2.0.0-alpha.3
+      version: 2.0.0-alpha.3
+    ohash:
+      specifier: ^2.0.11
+      version: 2.0.11
+    pathe:
+      specifier: ^2.0.3
+      version: 2.0.3
+    perfect-debounce:
+      specifier: ^2.1.0
+      version: 2.1.0
+    ufo:
+      specifier: ^1.6.4
+      version: 1.6.4
+    uncrypto:
+      specifier: ^0.1.3
+      version: 0.1.3
+    unctx:
+      specifier: ^3.0.0
+      version: 3.0.0
+    unhead:
+      specifier: ^3.2.1
+      version: 3.2.1
+    vue-bundle-renderer:
+      specifier: ^2.3.1
+      version: 2.3.1
+    vue-router:
+      specifier: ^5.2.0
+      version: 5.2.0
+  build:
+    '@dxup/nuxt':
+      specifier: ^0.5.3
+      version: 0.5.3
+    '@nuxt/cli':
+      specifier: ^3.37.0
+      version: 3.37.0
+    '@nuxt/devtools':
+      specifier: ^4.0.0-alpha.7
+      version: 4.0.0-alpha.7
+    '@nuxt/telemetry':
+      specifier: ^2.8.0
+      version: 2.8.0
+    '@vue/shared':
+      specifier: ^3.5.40
+      version: 3.5.40
+    autoprefixer:
+      specifier: ^10.5.4
+      version: 10.5.4
+    c12:
+      specifier: ^3.3.4
+      version: 3.3.4
+    chokidar:
+      specifier: ^5.0.0
+      version: 5.0.0
+    compatx:
+      specifier: ^0.2.0
+      version: 0.2.0
+    consola:
+      specifier: ^3.4.2
+      version: 3.4.2
+    cssnano:
+      specifier: ^8.0.2
+      version: 8.0.2
+    defu:
+      specifier: ^6.1.7
+      version: 6.1.7
+    destr:
+      specifier: ^2.0.5
+      version: 2.0.5
+    errx:
+      specifier: ^0.1.0
+      version: 0.1.0
+    escape-string-regexp:
+      specifier: ^5.0.0
+      version: 5.0.0
+    exsolve:
+      specifier: ^1.1.0
+      version: 1.1.0
+    generic-names:
+      specifier: ^4.0.0
+      version: 4.0.0
+    get-port-please:
+      specifier: ^3.2.0
+      version: 3.2.0
+    ignore:
+      specifier: ^7.0.6
+      version: 7.0.6
+    impound:
+      specifier: ^1.1.5
+      version: 1.1.5
+    jiti:
+      specifier: ^2.7.0
+      version: 2.7.0
+    js-tokens:
+      specifier: ^10.0.0
+      version: 10.0.0
+    klona:
+      specifier: ^2.0.6
+      version: 2.0.6
+    knitwork:
+      specifier: ^1.3.0
+      version: 1.3.0
+    mlly:
+      specifier: ^1.8.2
+      version: 1.8.2
+    mocked-exports:
+      specifier: ^0.1.1
+      version: 0.1.1
+    nanotar:
+      specifier: ^0.3.0
+      version: 0.3.0
+    nostics:
+      specifier: ^1.2.0
+      version: 1.2.0
+    nypm:
+      specifier: ^0.6.8
+      version: 0.6.8
+    ohash:
+      specifier: ^2.0.11
+      version: 2.0.11
+    on-change:
+      specifier: ^6.0.2
+      version: 6.0.2
+    pathe:
+      specifier: ^2.0.3
+      version: 2.0.3
+    picomatch:
+      specifier: ^4.0.5
+      version: 4.0.5
+    pkg-types:
+      specifier: ^2.3.1
+      version: 2.3.1
+    postcss:
+      specifier: ^8.5.19
+      version: 8.5.19
+    postcss-import:
+      specifier: ^16.1.1
+      version: 16.1.1
+    postcss-import-resolver:
+      specifier: ^2.0.0
+      version: 2.0.0
+    postcss-loader:
+      specifier: ^8.2.1
+      version: 8.2.1
+    postcss-url:
+      specifier: ^10.1.4
+      version: 10.1.4
+    rc9:
+      specifier: ^3.0.1
+      version: 3.0.1
+    scule:
+      specifier: ^1.3.0
+      version: 1.3.0
+    seroval:
+      specifier: ^1.5.5
+      version: 1.5.5
+    std-env:
+      specifier: ^4.2.0
+      version: 4.2.0
+    tinyglobby:
+      specifier: ^0.2.17
+      version: 0.2.17
+    ufo:
+      specifier: ^1.6.4
+      version: 1.6.4
+    ultrahtml:
+      specifier: ^1.7.0
+      version: 1.7.0
+    unctx:
+      specifier: ^3.0.0
+      version: 3.0.0
+    undici:
+      specifier: ^8.7.0
+      version: 8.7.0
+    unenv:
+      specifier: 2.0.0-rc.24
+      version: 2.0.0-rc.24
+    unimport:
+      specifier: ^6.3.0
+      version: 6.3.0
+    unplugin:
+      specifier: ^3.3.0
+      version: 3.3.0
+    unrouting:
+      specifier: ^0.1.7
+      version: 0.1.7
+    untyped:
+      specifier: ^2.0.0
+      version: 2.0.0
+    verkit:
+      specifier: ^0.1.2
+      version: 0.1.2
+    vue-bundle-renderer:
+      specifier: ^2.3.1
+      version: 2.3.1
+  dev:
+    '@arethetypeswrong/cli':
+      specifier: 0.18.5
+      version: 0.18.5
+    '@babel/core':
+      specifier: 8.0.1
+      version: 8.0.1
+    '@babel/plugin-proposal-decorators':
+      specifier: 8.0.2
+      version: 8.0.2
+    '@babel/plugin-syntax-jsx':
+      specifier: 8.0.1
+      version: 8.0.1
+    '@babel/plugin-syntax-typescript':
+      specifier: 8.0.3
+      version: 8.0.3
+    '@codspeed/core':
+      specifier: 5.7.1
+      version: 5.7.1
+    '@codspeed/vitest-plugin':
+      specifier: 5.7.1
+      version: 5.7.1
+    '@eslint/markdown':
+      specifier: 8.0.3
+      version: 8.0.3
+    '@nuxt/eslint-config':
+      specifier: 1.16.0
+      version: 1.16.0
+    '@nuxt/scripts':
+      specifier: 1.3.1
+      version: 1.3.1
+    '@nuxt/test-utils':
+      specifier: 4.0.3
+      version: 4.0.3
+    '@parcel/watcher':
+      specifier: 2.5.6
+      version: 2.5.6
+    '@playwright/test':
+      specifier: 1.61.1
+      version: 1.61.1
+    '@rollup/plugin-babel':
+      specifier: 7.1.0
+      version: 7.1.0
+    '@rspack/core':
+      specifier: 2.1.4
+      version: 2.1.4
+    '@testing-library/vue':
+      specifier: 8.1.0
+      version: 8.1.0
+    '@types/babel__core':
+      specifier: 7.20.5
+      version: 7.20.5
+    '@types/estree':
+      specifier: 1.0.9
+      version: 1.0.9
+    '@types/node':
+      specifier: 24.13.3
+      version: 24.13.3
+    '@types/picomatch':
+      specifier: 4.0.3
+      version: 4.0.3
+    '@types/pug':
+      specifier: 2.0.10
+      version: 2.0.10
+    '@types/webpack-bundle-analyzer':
+      specifier: 4.7.0
+      version: 4.7.0
+    '@types/webpack-hot-middleware':
+      specifier: 2.25.12
+      version: 2.25.12
+    '@typescript-eslint/parser':
+      specifier: 8.64.0
+      version: 8.64.0
+    '@unocss/reset':
+      specifier: 66.7.5
+      version: 66.7.5
+    '@vitejs/plugin-vue-jsx':
+      specifier: 5.1.6
+      version: 5.1.6
+    '@vitest/coverage-v8':
+      specifier: 4.1.10
+      version: 4.1.10
+    '@vue/compiler-core':
+      specifier: 3.5.40
+      version: 3.5.40
+    '@vue/devtools-api':
+      specifier: 8.1.5
+      version: 8.1.5
+    '@vue/language-core':
+      specifier: 3.3.7
+      version: 3.3.7
+    '@vue/test-utils':
+      specifier: 2.4.11
+      version: 2.4.11
+    acorn:
+      specifier: 8.17.0
+      version: 8.17.0
+    beasties:
+      specifier: 0.4.3
+      version: 0.4.3
+    case-police:
+      specifier: 2.2.1
+      version: 2.2.1
+    changelogen:
+      specifier: 0.6.2
+      version: 0.6.2
+    esbuild:
+      specifier: 0.28.1
+      version: 0.28.1
+    eslint:
+      specifier: 10.7.0
+      version: 10.7.0
+    eslint-plugin-import-x:
+      specifier: 4.17.1
+      version: 4.17.1
+    eslint-plugin-no-only-tests:
+      specifier: 3.4.0
+      version: 3.4.0
+    eslint-plugin-perfectionist:
+      specifier: 5.10.0
+      version: 5.10.0
+    eslint-typegen:
+      specifier: 2.3.1
+      version: 2.3.1
+    h3:
+      specifier: 2.0.1-rc.22
+      version: 2.0.1-rc.22
+    h3-next:
+      specifier: npm:h3@2.0.1-rc.22
+      version: 2.0.1-rc.22
+    happy-dom:
+      specifier: 20.11.0
+      version: 20.11.0
+    html-validate:
+      specifier: 11.5.6
+      version: 11.5.6
+    htmlnano:
+      specifier: 3.4.0
+      version: 3.4.0
+    installed-check:
+      specifier: 10.0.1
+      version: 10.0.1
+    knip:
+      specifier: 6.27.0
+      version: 6.27.0
+    magic-regexp:
+      specifier: 0.11.0
+      version: 0.11.0
+    markdownlint-cli:
+      specifier: 0.49.1
+      version: 0.49.1
+    nitropack:
+      specifier: 2.13.4
+      version: 2.13.4
+    nuxt-content-twoslash:
+      specifier: 0.4.0
+      version: 0.4.0
+    oxc-transform:
+      specifier: 0.140.0
+      version: 0.140.0
+    pkg-pr-new:
+      specifier: 0.0.78
+      version: 0.0.78
+    playwright-core:
+      specifier: 1.61.1
+      version: 1.61.1
+    prettier:
+      specifier: 3.9.5
+      version: 3.9.5
+    rollup:
+      specifier: 4.62.2
+      version: 4.62.2
+    rollup-plugin-visualizer:
+      specifier: 7.0.1
+      version: 7.0.1
+    sherif:
+      specifier: 1.13.0
+      version: 1.13.0
+    svgo:
+      specifier: 4.0.2
+      version: 4.0.2
+    tinyexec:
+      specifier: 1.2.4
+      version: 1.2.4
+    tsdown:
+      specifier: 0.22.9
+      version: 0.22.9
+    typescript:
+      specifier: 6.0.3
+      version: 6.0.3
+    unocss:
+      specifier: 66.7.5
+      version: 66.7.5
+    vitest:
+      specifier: 4.1.10
+      version: 4.1.10
+    vitest-environment-nuxt:
+      specifier: 2.0.0
+      version: 2.0.0
+    vue-sfc-transformer:
+      specifier: 0.2.3
+      version: 0.2.3
+    vue-tsc:
+      specifier: 3.3.7
+      version: 3.3.7
+  nitro-runtime:
+    destr:
+      specifier: ^2.0.5
+      version: 2.0.5
+    lru-cache:
+      specifier: ^11.5.2
+      version: 11.5.2
+    nitro:
+      specifier: ^3.0.260610-beta
+      version: 3.0.260610-beta
+    srvx:
+      specifier: ^0.11.22
+      version: 0.11.22
+    unstorage:
+      specifier: 2.0.0-alpha.7
+      version: 2.0.0-alpha.7
+  vite:
+    magic-string:
+      specifier: ^1.0.0
+      version: 1.0.0
+    oxc-walker:
+      specifier: ^1.0.0
+      version: 1.0.0
+    rolldown:
+      specifier: ^1.2.0
+      version: 1.2.0
+    rolldown-string:
+      specifier: ^0.3.1
+      version: 0.3.1
+    vite-node:
+      specifier: ^6.0.0
+      version: 6.0.0
+    vite-plugin-checker:
+      specifier: ^0.14.4
+      version: 0.14.4
+  vue:
+    '@vitejs/plugin-vue':
+      specifier: ^6.0.8
+      version: 6.0.8
+    '@vue/compiler-sfc':
+      specifier: 3.5.40
+      version: 3.5.40
+    rspack-vue-loader:
+      specifier: ^17.6.1
+      version: 17.6.1
+    vue-devtools-stub:
+      specifier: ^0.1.0
+      version: 0.1.0
+    vue-loader:
+      specifier: ^17.4.2
+      version: 17.4.2
+  webpack:
+    '@nuxt/friendly-errors-webpack-plugin':
+      specifier: ^2.6.0
+      version: 2.6.0
+    '@rsbuild/core':
+      specifier: ~2.1.6
+      version: 2.1.6
+    css-loader:
+      specifier: ^7.1.4
+      version: 7.1.4
+    css-minimizer-webpack-plugin:
+      specifier: ^8.0.0
+      version: 8.0.0
+    esbuild-loader:
+      specifier: ^4.5.0
+      version: 4.5.0
+    file-loader:
+      specifier: ^6.2.0
+      version: 6.2.0
+    fork-ts-checker-webpack-plugin:
+      specifier: ^9.1.0
+      version: 9.1.0
+    hash-sum:
+      specifier: ^2.0.0
+      version: 2.0.0
+    memfs:
+      specifier: ^4.64.0
+      version: 4.64.0
+    mini-css-extract-plugin:
+      specifier: ^2.10.2
+      version: 2.10.2
+    pify:
+      specifier: ^6.1.0
+      version: 6.1.0
+    pug-plain-loader:
+      specifier: ^1.1.0
+      version: 1.1.0
+    raw-loader:
+      specifier: ^4.0.2
+      version: 4.0.2
+    time-fix-plugin:
+      specifier: ^2.0.7
+      version: 2.0.7
+    ts-checker-rspack-plugin:
+      specifier: ^1.5.2
+      version: 1.5.2
+    url-loader:
+      specifier: ^4.1.1
+      version: 4.1.1
+    webpack:
+      specifier: ^5.108.4
+      version: 5.108.4
+    webpack-bundle-analyzer:
+      specifier: ^5.3.1
+      version: 5.3.1
+    webpack-dev-middleware:
+      specifier: ^8.0.3
+      version: 8.0.3
+    webpack-hot-middleware:
+      specifier: ^2.26.1
+      version: 2.26.1
+    webpackbar:
+      specifier: ^7.0.0
+      version: 7.0.0
+
 overrides:
   '@nuxt/kit': workspace:*
   '@nuxt/schema': workspace:*
@@ -21,25 +576,25 @@ importers:
   .:
     devDependencies:
       '@arethetypeswrong/cli':
-        specifier: 0.18.5
+        specifier: catalog:dev
         version: 0.18.5
       '@babel/core':
-        specifier: 8.0.1
+        specifier: catalog:dev
         version: 8.0.1
       '@codspeed/core':
-        specifier: 5.7.1
+        specifier: catalog:dev
         version: 5.7.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       '@codspeed/vitest-plugin':
-        specifier: 5.7.1
+        specifier: catalog:dev
         version: 5.7.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(tinybench@2.9.0)(vite@8.1.5)(vitest@4.1.10)
       '@eslint/markdown':
-        specifier: 8.0.3
+        specifier: catalog:dev
         version: 8.0.3(supports-color@10.2.2)
       '@nuxt/cli':
-        specifier: 3.37.0
+        specifier: catalog:build
         version: 3.37.0(@nuxt/schema@packages+schema)(commander@15.0.0)(magicast@0.5.3)(supports-color@10.2.2)
       '@nuxt/eslint-config':
-        specifier: 1.16.0
+        specifier: catalog:dev
         version: 1.16.0(@typescript-eslint/utils@8.63.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.5.40)(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       '@nuxt/kit':
         specifier: workspace:*
@@ -48,166 +603,166 @@ importers:
         specifier: workspace:*
         version: link:packages/rspack
       '@nuxt/test-utils':
-        specifier: 4.0.3
+        specifier: catalog:dev
         version: 4.0.3(@playwright/test@1.61.1)(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@testing-library/vue@8.1.0(@vue/compiler-dom@3.5.40)(@vue/compiler-sfc@3.5.40)(@vue/server-renderer@3.5.40)(vue@3.5.40(typescript@6.0.3)))(@vue/test-utils@2.4.11(@vue/compiler-dom@3.5.40)(@vue/server-renderer@3.5.40)(vue@3.5.40(typescript@6.0.3)))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(happy-dom@20.11.0)(magicast@0.5.3)(playwright-core@1.61.1)(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(vitest@4.1.10)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
       '@playwright/test':
-        specifier: 1.61.1
+        specifier: catalog:dev
         version: 1.61.1
       '@rspack/core':
-        specifier: 2.1.4
+        specifier: catalog:dev
         version: 2.1.4(@swc/helpers@0.5.23)
       '@testing-library/vue':
-        specifier: 8.1.0
+        specifier: catalog:dev
         version: 8.1.0(@vue/compiler-dom@3.5.40)(@vue/compiler-sfc@3.5.40)(@vue/server-renderer@3.5.40)(vue@3.5.40(typescript@6.0.3))
       '@types/babel__core':
-        specifier: 7.20.5
+        specifier: catalog:dev
         version: 7.20.5
       '@types/node':
-        specifier: 24.13.3
+        specifier: catalog:dev
         version: 24.13.3
       '@typescript-eslint/parser':
-        specifier: 8.64.0
+        specifier: catalog:dev
         version: 8.64.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       '@unhead/vue':
-        specifier: 3.2.1
+        specifier: catalog:app-runtime
         version: 3.2.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(lightningcss@1.32.0)(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@vitest/coverage-v8':
-        specifier: 4.1.10
+        specifier: catalog:dev
         version: 4.1.10(vitest@4.1.10)
       '@vue/test-utils':
-        specifier: 2.4.11
+        specifier: catalog:dev
         version: 2.4.11(@vue/compiler-dom@3.5.40)(@vue/server-renderer@3.5.40)(vue@3.5.40(typescript@6.0.3))
       acorn:
-        specifier: 8.17.0
+        specifier: catalog:dev
         version: 8.17.0
       case-police:
-        specifier: 2.2.1
+        specifier: catalog:dev
         version: 2.2.1
       changelogen:
-        specifier: 0.6.2
+        specifier: catalog:dev
         version: 0.6.2(patch_hash=8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b)(magicast@0.5.3)
       consola:
-        specifier: 3.4.2
+        specifier: catalog:build
         version: 3.4.2
       defu:
-        specifier: 6.1.7
+        specifier: catalog:build
         version: 6.1.7
       devalue:
-        specifier: 5.8.1
+        specifier: catalog:app-runtime
         version: 5.8.1
       eslint:
-        specifier: 10.7.0
+        specifier: catalog:dev
         version: 10.7.0(jiti@2.7.0)(supports-color@10.2.2)
       eslint-plugin-import-x:
-        specifier: 4.17.1
+        specifier: catalog:dev
         version: 4.17.1(@typescript-eslint/utils@8.63.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       eslint-plugin-no-only-tests:
-        specifier: 3.4.0
+        specifier: catalog:dev
         version: 3.4.0
       eslint-plugin-perfectionist:
-        specifier: 5.10.0
+        specifier: catalog:dev
         version: 5.10.0(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       eslint-typegen:
-        specifier: 2.3.1
+        specifier: catalog:dev
         version: 2.3.1(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))
       exsolve:
-        specifier: 1.1.0
+        specifier: catalog:build
         version: 1.1.0
       get-port-please:
-        specifier: 3.2.0
+        specifier: catalog:build
         version: 3.2.0
       h3:
-        specifier: 2.0.1-rc.22
+        specifier: catalog:dev
         version: 2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       happy-dom:
-        specifier: 20.11.0
+        specifier: catalog:dev
         version: 20.11.0
       hookable:
-        specifier: 6.1.1
+        specifier: catalog:app-runtime
         version: 6.1.1
       installed-check:
-        specifier: 10.0.1
+        specifier: catalog:dev
         version: 10.0.1
       knip:
-        specifier: 6.27.0
+        specifier: catalog:dev
         version: 6.27.0(patch_hash=1ba9a7d6e9ab2a13375caa1c61d26951ad4e8de983d62372678133b04d547d3d)
       magic-regexp:
-        specifier: 0.11.0
+        specifier: catalog:dev
         version: 0.11.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       markdownlint-cli:
-        specifier: 0.49.1
+        specifier: catalog:dev
         version: 0.49.1(supports-color@10.2.2)
       nitro:
-        specifier: 3.0.260610-beta
+        specifier: catalog:nitro-runtime
         version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
       nuxt-content-twoslash:
-        specifier: 0.4.0
+        specifier: catalog:dev
         version: 0.4.0(@nuxtjs/mdc@0.22.0(supports-color@10.2.2))(supports-color@10.2.2)
       ofetch:
-        specifier: 2.0.0-alpha.3
+        specifier: catalog:app-runtime
         version: 2.0.0-alpha.3
       pathe:
-        specifier: 2.0.3
+        specifier: catalog:build
         version: 2.0.3
       pkg-pr-new:
-        specifier: 0.0.78
+        specifier: catalog:dev
         version: 0.0.78
       playwright-core:
-        specifier: 1.61.1
+        specifier: catalog:dev
         version: 1.61.1
       rollup:
-        specifier: 4.62.2
+        specifier: catalog:dev
         version: 4.62.2
       sherif:
-        specifier: 1.13.0
+        specifier: catalog:dev
         version: 1.13.0
       srvx:
-        specifier: 0.11.22
+        specifier: catalog:nitro-runtime
         version: 0.11.22
       std-env:
-        specifier: 4.2.0
+        specifier: catalog:build
         version: 4.2.0
       tinyexec:
-        specifier: 1.2.4
+        specifier: catalog:dev
         version: 1.2.4
       tinyglobby:
-        specifier: 0.2.17
+        specifier: catalog:build
         version: 0.2.17
       typescript:
-        specifier: 6.0.3
+        specifier: catalog:dev
         version: 6.0.3
       ufo:
-        specifier: 1.6.4
+        specifier: catalog:build
         version: 1.6.4
       verkit:
-        specifier: 0.1.2
+        specifier: catalog:build
         version: 0.1.2
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: 4.1.10
+        specifier: catalog:dev
         version: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.0)(vite@8.1.5)
       vitest-environment-nuxt:
-        specifier: 2.0.0
+        specifier: catalog:dev
         version: 2.0.0(@playwright/test@1.61.1)(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@testing-library/vue@8.1.0(@vue/compiler-dom@3.5.40)(@vue/compiler-sfc@3.5.40)(@vue/server-renderer@3.5.40)(vue@3.5.40(typescript@6.0.3)))(@vue/test-utils@2.4.11(@vue/compiler-dom@3.5.40)(@vue/server-renderer@3.5.40)(vue@3.5.40(typescript@6.0.3)))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(happy-dom@20.11.0)(magicast@0.5.3)(playwright-core@1.61.1)(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(vitest@4.1.10)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
       vue-router:
-        specifier: 5.2.0
+        specifier: catalog:app-runtime
         version: 5.2.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.40)(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       vue-tsc:
-        specifier: 3.3.7
+        specifier: catalog:dev
         version: 3.3.7(typescript@6.0.3)
       webpack:
-        specifier: 5.108.4
+        specifier: catalog:webpack
         version: 5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
 
   docs: {}
@@ -215,101 +770,101 @@ importers:
   packages/kit:
     dependencies:
       c12:
-        specifier: ^3.3.4
+        specifier: catalog:build
         version: 3.3.4(magicast@0.5.3)
       consola:
-        specifier: ^3.4.2
+        specifier: catalog:build
         version: 3.4.2
       defu:
-        specifier: ^6.1.7
+        specifier: catalog:build
         version: 6.1.7
       destr:
-        specifier: ^2.0.5
+        specifier: catalog:build
         version: 2.0.5
       errx:
-        specifier: ^0.1.0
+        specifier: catalog:build
         version: 0.1.0
       exsolve:
-        specifier: ^1.1.0
+        specifier: catalog:build
         version: 1.1.0
       ignore:
-        specifier: ^7.0.6
+        specifier: catalog:build
         version: 7.0.6
       jiti:
-        specifier: ^2.7.0
+        specifier: catalog:build
         version: 2.7.0
       klona:
-        specifier: ^2.0.6
+        specifier: catalog:build
         version: 2.0.6
       mlly:
-        specifier: ^1.8.2
+        specifier: catalog:build
         version: 1.8.2
       nostics:
-        specifier: ^1.2.0
+        specifier: catalog:build
         version: 1.2.0
       nypm:
-        specifier: ^0.6.8
+        specifier: catalog:build
         version: 0.6.8
       ohash:
-        specifier: ^2.0.11
+        specifier: catalog:build
         version: 2.0.11
       pathe:
-        specifier: ^2.0.3
+        specifier: catalog:build
         version: 2.0.3
       pkg-types:
-        specifier: ^2.3.1
+        specifier: catalog:build
         version: 2.3.1
       rc9:
-        specifier: ^3.0.1
+        specifier: catalog:build
         version: 3.0.1
       scule:
-        specifier: ^1.3.0
+        specifier: catalog:build
         version: 1.3.0
       std-env:
-        specifier: ^4.2.0
+        specifier: catalog:build
         version: 4.2.0
       tinyglobby:
-        specifier: ^0.2.17
+        specifier: catalog:build
         version: 0.2.17
       ufo:
-        specifier: ^1.6.4
+        specifier: catalog:build
         version: 1.6.4
       unctx:
-        specifier: ^3.0.0
+        specifier: catalog:build
         version: 3.0.0(magic-string@1.0.0)(oxc-parser@0.140.0)(rolldown@1.2.0)(unplugin@3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))
       untyped:
-        specifier: ^2.0.0
+        specifier: catalog:build
         version: 2.0.0
       verkit:
-        specifier: ^0.1.2
+        specifier: catalog:build
         version: 0.1.2
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
       hookable:
-        specifier: 6.1.1
+        specifier: catalog:app-runtime
         version: 6.1.1
       nitro:
-        specifier: 3.0.260610-beta
+        specifier: catalog:nitro-runtime
         version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
       nitropack:
-        specifier: 2.13.4
+        specifier: catalog:dev
         version: 2.13.4(@rspack/core@2.1.4(@swc/helpers@0.5.23))(oxc-parser@0.140.0)(rolldown@1.2.0)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       tsdown:
-        specifier: 0.22.9
+        specifier: catalog:dev
         version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
       unimport:
-        specifier: 6.3.0
+        specifier: catalog:build
         version: 6.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.140.0)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: 4.1.10
+        specifier: catalog:dev
         version: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.0)(vite@8.1.5)
       webpack:
-        specifier: 5.108.4
+        specifier: catalog:webpack
         version: 5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
 
   packages/nitro-server:
@@ -318,119 +873,119 @@ importers:
         specifier: workspace:*
         version: link:../kit
       '@unhead/vue':
-        specifier: ^3.2.1
+        specifier: catalog:app-runtime
         version: 3.2.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(lightningcss@1.32.0)(rolldown@1.2.0)(rollup@4.62.2)(typescript@7.0.2)(vite@8.1.5)(vue@3.5.40(typescript@7.0.2))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@vue/shared':
-        specifier: ^3.5.40
+        specifier: catalog:app-runtime
         version: 3.5.40
       consola:
-        specifier: ^3.4.2
+        specifier: catalog:app-runtime
         version: 3.4.2
       defu:
-        specifier: ^6.1.7
+        specifier: catalog:app-runtime
         version: 6.1.7
       destr:
-        specifier: ^2.0.5
+        specifier: catalog:nitro-runtime
         version: 2.0.5
       devalue:
-        specifier: ^5.8.1
+        specifier: catalog:app-runtime
         version: 5.8.1
       errx:
-        specifier: ^0.1.0
+        specifier: catalog:app-runtime
         version: 0.1.0
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: catalog:build
         version: 5.0.0
       exsolve:
-        specifier: ^1.1.0
+        specifier: catalog:build
         version: 1.1.0
       impound:
-        specifier: ^1.1.5
+        specifier: catalog:build
         version: 1.1.5(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       klona:
-        specifier: ^2.0.6
+        specifier: catalog:app-runtime
         version: 2.0.6
       lru-cache:
-        specifier: ^11.5.2
+        specifier: catalog:nitro-runtime
         version: 11.5.2
       mlly:
-        specifier: ^1.8.2
+        specifier: catalog:build
         version: 1.8.2
       mocked-exports:
-        specifier: ^0.1.1
+        specifier: catalog:build
         version: 0.1.1
       nitro:
-        specifier: ^3.0.260610-beta
+        specifier: catalog:nitro-runtime
         version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
       nostics:
-        specifier: ^1.2.0
+        specifier: catalog:app-runtime
         version: 1.2.0
       ohash:
-        specifier: ^2.0.11
+        specifier: catalog:app-runtime
         version: 2.0.11
       pathe:
-        specifier: ^2.0.3
+        specifier: catalog:app-runtime
         version: 2.0.3
       srvx:
-        specifier: ^0.11.22
+        specifier: catalog:nitro-runtime
         version: 0.11.22
       std-env:
-        specifier: ^4.2.0
+        specifier: catalog:build
         version: 4.2.0
       ufo:
-        specifier: ^1.6.4
+        specifier: catalog:app-runtime
         version: 1.6.4
       unctx:
-        specifier: ^3.0.0
+        specifier: catalog:app-runtime
         version: 3.0.0(magic-string@1.0.0)(oxc-parser@0.140.0)(rolldown@1.2.0)(unplugin@3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))
       unstorage:
-        specifier: 2.0.0-alpha.7
+        specifier: catalog:nitro-runtime
         version: 2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1(supports-color@10.2.2))(lru-cache@11.5.2)(ofetch@1.5.1)
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@7.0.2)
       vue-bundle-renderer:
-        specifier: ^2.3.1
+        specifier: catalog:app-runtime
         version: 2.3.1
       vue-devtools-stub:
-        specifier: ^0.1.0
+        specifier: catalog:vue
         version: 0.1.0
     devDependencies:
       '@babel/plugin-proposal-decorators':
-        specifier: 8.0.2
+        specifier: catalog:dev
         version: 8.0.2(@babel/core@8.0.1)
       '@babel/plugin-syntax-typescript':
-        specifier: 8.0.3
+        specifier: catalog:dev
         version: 8.0.3(@babel/core@8.0.1)
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
       '@rollup/plugin-babel':
-        specifier: 7.1.0
+        specifier: catalog:dev
         version: 7.1.0(@babel/core@8.0.1)(@types/babel__core@7.20.5)(rollup@4.62.2)(supports-color@10.2.2)
       hookable:
-        specifier: 6.1.1
+        specifier: catalog:app-runtime
         version: 6.1.1
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
       tsdown:
-        specifier: 0.22.9
+        specifier: catalog:dev
         version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
       vitest:
-        specifier: 4.1.10
+        specifier: catalog:dev
         version: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.0)(vite@8.1.5)
 
   packages/nuxt:
     dependencies:
       '@dxup/nuxt':
-        specifier: ^0.5.3
+        specifier: catalog:build
         version: 0.5.3(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@nuxt/cli':
-        specifier: ^3.37.0
+        specifier: catalog:build
         version: 3.37.0(@nuxt/schema@packages+schema)(commander@15.0.0)(magicast@0.5.3)(supports-color@10.2.2)
       '@nuxt/devtools':
-        specifier: ^4.0.0-alpha.7
+        specifier: catalog:build
         version: 4.0.0-alpha.7(@rspack/core@2.1.4(@swc/helpers@0.5.23))(crossws@0.4.6(srvx@0.11.22))(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.10.1(supports-color@10.2.2))(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@nuxt/kit':
         specifier: workspace:*
@@ -442,7 +997,7 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@nuxt/telemetry':
-        specifier: ^2.8.0
+        specifier: catalog:build
         version: 2.8.0(@nuxt/kit@packages+kit)
       '@nuxt/vite-builder':
         specifier: workspace:*
@@ -451,339 +1006,339 @@ importers:
         specifier: '>=18.12.0'
         version: 24.13.3
       '@unhead/vue':
-        specifier: ^3.2.1
+        specifier: catalog:app-runtime
         version: 3.2.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(lightningcss@1.32.0)(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@vue/shared':
-        specifier: ^3.5.40
+        specifier: catalog:app-runtime
         version: 3.5.40
       chokidar:
-        specifier: ^5.0.0
+        specifier: catalog:build
         version: 5.0.0
       compatx:
-        specifier: ^0.2.0
+        specifier: catalog:build
         version: 0.2.0
       consola:
-        specifier: ^3.4.2
+        specifier: catalog:app-runtime
         version: 3.4.2
       cookie-es:
-        specifier: ^3.1.1
+        specifier: catalog:app-runtime
         version: 3.1.1
       defu:
-        specifier: ^6.1.7
+        specifier: catalog:app-runtime
         version: 6.1.7
       devalue:
-        specifier: ^5.8.1
+        specifier: catalog:app-runtime
         version: 5.8.1
       errx:
-        specifier: ^0.1.0
+        specifier: catalog:app-runtime
         version: 0.1.0
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: catalog:build
         version: 5.0.0
       exsolve:
-        specifier: ^1.1.0
+        specifier: catalog:build
         version: 1.1.0
       fnv1a-64:
-        specifier: ^0.1.1
+        specifier: catalog:app-runtime
         version: 0.1.1
       hookable:
-        specifier: ^6.1.1
+        specifier: catalog:app-runtime
         version: 6.1.1
       ignore:
-        specifier: ^7.0.6
+        specifier: catalog:build
         version: 7.0.6
       impound:
-        specifier: ^1.1.5
+        specifier: catalog:build
         version: 1.1.5(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       jiti:
-        specifier: ^2.7.0
+        specifier: catalog:build
         version: 2.7.0
       klona:
-        specifier: ^2.0.6
+        specifier: catalog:app-runtime
         version: 2.0.6
       knitwork:
-        specifier: ^1.3.0
+        specifier: catalog:build
         version: 1.3.0
       magic-string:
-        specifier: ^1.0.0
+        specifier: catalog:vite
         version: 1.0.0
       mlly:
-        specifier: ^1.8.2
+        specifier: catalog:build
         version: 1.8.2
       nanotar:
-        specifier: ^0.3.0
+        specifier: catalog:build
         version: 0.3.0
       nostics:
-        specifier: ^1.2.0
+        specifier: catalog:app-runtime
         version: 1.2.0
       object-identity:
-        specifier: ^0.2.3
+        specifier: catalog:app-runtime
         version: 0.2.3
       ofetch:
-        specifier: 2.0.0-alpha.3
+        specifier: catalog:app-runtime
         version: 2.0.0-alpha.3
       ohash:
-        specifier: ^2.0.11
+        specifier: catalog:app-runtime
         version: 2.0.11
       on-change:
-        specifier: ^6.0.2
+        specifier: catalog:build
         version: 6.0.2
       oxc-walker:
-        specifier: ^1.0.0
+        specifier: catalog:vite
         version: 1.0.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.140.0)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       pathe:
-        specifier: ^2.0.3
+        specifier: catalog:app-runtime
         version: 2.0.3
       perfect-debounce:
-        specifier: ^2.1.0
+        specifier: catalog:app-runtime
         version: 2.1.0
       picomatch:
-        specifier: ^4.0.5
+        specifier: catalog:build
         version: 4.0.5
       pkg-types:
-        specifier: ^2.3.1
+        specifier: catalog:build
         version: 2.3.1
       rolldown:
-        specifier: ^1.2.0
+        specifier: catalog:vite
         version: 1.2.0
       rolldown-string:
-        specifier: ^0.3.1
+        specifier: catalog:vite
         version: 0.3.1(rolldown@1.2.0)
       scule:
-        specifier: ^1.3.0
+        specifier: catalog:build
         version: 1.3.0
       std-env:
-        specifier: ^4.2.0
+        specifier: catalog:build
         version: 4.2.0
       tinyglobby:
-        specifier: ^0.2.17
+        specifier: catalog:build
         version: 0.2.17
       ufo:
-        specifier: ^1.6.4
+        specifier: catalog:app-runtime
         version: 1.6.4
       ultrahtml:
-        specifier: ^1.7.0
+        specifier: catalog:build
         version: 1.7.0
       uncrypto:
-        specifier: ^0.1.3
+        specifier: catalog:app-runtime
         version: 0.1.3
       unctx:
-        specifier: ^3.0.0
+        specifier: catalog:app-runtime
         version: 3.0.0(magic-string@1.0.0)(oxc-parser@0.140.0)(rolldown@1.2.0)(unplugin@3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))
       undici:
-        specifier: ^8.7.0
+        specifier: catalog:build
         version: 8.7.0
       unhead:
-        specifier: ^3.2.1
+        specifier: catalog:app-runtime
         version: 3.2.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       unimport:
-        specifier: ^6.3.0
+        specifier: catalog:build
         version: 6.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.140.0)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       unplugin:
-        specifier: ^3.3.0
+        specifier: catalog:build
         version: 3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       unrouting:
-        specifier: ^0.1.7
+        specifier: catalog:build
         version: 0.1.7
       untyped:
-        specifier: ^2.0.0
+        specifier: catalog:build
         version: 2.0.0
       verkit:
-        specifier: ^0.1.2
+        specifier: catalog:build
         version: 0.1.2
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
       vue-router:
-        specifier: ^5.2.0
+        specifier: catalog:app-runtime
         version: 5.2.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.40)(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
     devDependencies:
       '@nuxt/scripts':
-        specifier: 1.3.1
+        specifier: catalog:dev
         version: 1.3.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@unhead/vue@3.2.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(lightningcss@1.32.0)(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.10.1(supports-color@10.2.2))(rolldown@1.2.0)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@parcel/watcher':
-        specifier: 2.5.6
+        specifier: catalog:dev
         version: 2.5.6
       '@types/estree':
-        specifier: 1.0.9
+        specifier: catalog:dev
         version: 1.0.9
       '@types/picomatch':
-        specifier: 4.0.3
+        specifier: catalog:dev
         version: 4.0.3
       '@vitejs/plugin-vue':
-        specifier: 6.0.8
+        specifier: catalog:vue
         version: 6.0.8(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))
       '@vitejs/plugin-vue-jsx':
-        specifier: 5.1.6
+        specifier: catalog:dev
         version: 5.1.6(supports-color@10.2.2)(vite@8.1.5)(vue@3.5.40(typescript@6.0.3))
       '@vue/compiler-sfc':
-        specifier: 3.5.40
+        specifier: catalog:vue
         version: 3.5.40
       tsdown:
-        specifier: 0.22.9
+        specifier: catalog:dev
         version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
       typescript:
-        specifier: 6.0.3
+        specifier: catalog:dev
         version: 6.0.3
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
-        specifier: 4.1.10
+        specifier: catalog:dev
         version: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.0)(vite@8.1.5)
       vue-bundle-renderer:
-        specifier: 2.3.1
+        specifier: catalog:build
         version: 2.3.1
       vue-sfc-transformer:
-        specifier: 0.2.3
+        specifier: catalog:dev
         version: 0.2.3(@volar/typescript@2.4.28)(@vue/compiler-core@3.5.40)(@vue/language-core@3.3.7)(esbuild@0.28.1)(rolldown@1.2.0)(typescript@6.0.3)(vue@3.5.40(typescript@6.0.3))
 
   packages/rspack:
     dependencies:
       '@nuxt/friendly-errors-webpack-plugin':
-        specifier: ^2.6.0
+        specifier: catalog:webpack
         version: 2.6.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
       '@rsbuild/core':
-        specifier: ~2.1.6
+        specifier: catalog:webpack
         version: 2.1.6
       '@vue/compiler-sfc':
-        specifier: 3.5.40
+        specifier: catalog:vue
         version: 3.5.40
       autoprefixer:
-        specifier: ^10.5.4
+        specifier: catalog:build
         version: 10.5.4(postcss@8.5.19)
       css-loader:
-        specifier: ^7.1.4
+        specifier: catalog:webpack
         version: 7.1.4(@rspack/core@2.1.4(@swc/helpers@0.5.23))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       css-minimizer-webpack-plugin:
-        specifier: ^8.0.0
+        specifier: catalog:webpack
         version: 8.0.0(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       cssnano:
-        specifier: ^8.0.2
+        specifier: catalog:build
         version: 8.0.2(postcss@8.5.19)
       defu:
-        specifier: ^6.1.7
+        specifier: catalog:build
         version: 6.1.7
       esbuild-loader:
-        specifier: ^4.5.0
+        specifier: catalog:webpack
         version: 4.5.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: catalog:build
         version: 5.0.0
       exsolve:
-        specifier: ^1.1.0
+        specifier: catalog:build
         version: 1.1.0
       file-loader:
-        specifier: ^6.2.0
+        specifier: catalog:webpack
         version: 6.2.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       jiti:
-        specifier: ^2.7.0
+        specifier: catalog:build
         version: 2.7.0
       knitwork:
-        specifier: ^1.3.0
+        specifier: catalog:build
         version: 1.3.0
       memfs:
-        specifier: ^4.64.0
+        specifier: catalog:webpack
         version: 4.64.0(tslib@2.8.1)
       mini-css-extract-plugin:
-        specifier: ^2.10.2
+        specifier: catalog:webpack
         version: 2.10.2(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       mlly:
-        specifier: ^1.8.2
+        specifier: catalog:build
         version: 1.8.2
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
       ohash:
-        specifier: ^2.0.11
+        specifier: catalog:build
         version: 2.0.11
       pathe:
-        specifier: ^2.0.3
+        specifier: catalog:build
         version: 2.0.3
       pify:
-        specifier: ^6.1.0
+        specifier: catalog:webpack
         version: 6.1.0
       postcss:
-        specifier: ^8.5.19
+        specifier: catalog:build
         version: 8.5.19
       postcss-import:
-        specifier: ^16.1.1
+        specifier: catalog:build
         version: 16.1.1(postcss@8.5.19)
       postcss-import-resolver:
-        specifier: ^2.0.0
+        specifier: catalog:build
         version: 2.0.0
       postcss-loader:
-        specifier: ^8.2.1
+        specifier: catalog:build
         version: 8.2.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(postcss@8.5.19)(typescript@6.0.3)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       postcss-url:
-        specifier: ^10.1.4
+        specifier: catalog:build
         version: 10.1.4(postcss@8.5.19)
       pug-plain-loader:
-        specifier: ^1.1.0
+        specifier: catalog:webpack
         version: 1.1.0(pug@3.0.4)
       raw-loader:
-        specifier: ^4.0.2
+        specifier: catalog:webpack
         version: 4.0.2(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       rolldown-string:
-        specifier: ^0.3.1
+        specifier: catalog:vite
         version: 0.3.1(rolldown@1.2.0)
       rspack-vue-loader:
-        specifier: ^17.6.1
+        specifier: catalog:vue
         version: 17.6.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.40)(vue@3.5.40(typescript@6.0.3))
       seroval:
-        specifier: ^1.5.5
+        specifier: catalog:build
         version: 1.5.5
       time-fix-plugin:
-        specifier: ^2.0.7
+        specifier: catalog:webpack
         version: 2.0.7(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       tinyglobby:
-        specifier: ^0.2.17
+        specifier: catalog:build
         version: 0.2.17
       ts-checker-rspack-plugin:
-        specifier: ^1.5.2
+        specifier: catalog:webpack
         version: 1.5.2(@rspack/core@2.1.4(@swc/helpers@0.5.23))(tslib@2.8.1)(typescript@6.0.3)
       ufo:
-        specifier: ^1.6.4
+        specifier: catalog:build
         version: 1.6.4
       unenv:
-        specifier: 2.0.0-rc.24
+        specifier: catalog:build
         version: 2.0.0-rc.24
       unplugin:
-        specifier: ^3.3.0
+        specifier: catalog:build
         version: 3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       url-loader:
-        specifier: ^4.1.1
+        specifier: catalog:webpack
         version: 4.1.1(file-loader@6.2.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       vue-bundle-renderer:
-        specifier: ^2.3.1
+        specifier: catalog:build
         version: 2.3.1
       webpack-bundle-analyzer:
-        specifier: ^5.3.1
+        specifier: catalog:webpack
         version: 5.3.1
       webpackbar:
-        specifier: ^7.0.0
+        specifier: catalog:webpack
         version: 7.0.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
       '@types/webpack-bundle-analyzer':
-        specifier: 4.7.0
+        specifier: catalog:dev
         version: 4.7.0(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
       h3:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.22
+        specifier: catalog:dev
         version: h3@2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       rollup:
-        specifier: 4.62.2
+        specifier: catalog:dev
         version: 4.62.2
       tsdown:
-        specifier: 0.22.9
+        specifier: catalog:dev
         version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
       vue:
         specifier: 3.5.40
@@ -792,116 +1347,116 @@ importers:
   packages/schema:
     dependencies:
       '@vue/shared':
-        specifier: ^3.5.40
+        specifier: catalog:build
         version: 3.5.40
       defu:
-        specifier: ^6.1.7
+        specifier: catalog:build
         version: 6.1.7
       nostics:
-        specifier: ^1.2.0
+        specifier: catalog:build
         version: 1.2.0
       pathe:
-        specifier: ^2.0.3
+        specifier: catalog:build
         version: 2.0.3
       pkg-types:
-        specifier: ^2.3.1
+        specifier: catalog:build
         version: 2.3.1
       std-env:
-        specifier: ^4.2.0
+        specifier: catalog:build
         version: 4.2.0
     devDependencies:
       '@nuxt/ui-templates':
         specifier: workspace:*
         version: link:../ui-templates
       '@types/pug':
-        specifier: 2.0.10
+        specifier: catalog:dev
         version: 2.0.10
       '@types/webpack-bundle-analyzer':
-        specifier: 4.7.0
+        specifier: catalog:dev
         version: 4.7.0(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
       '@types/webpack-hot-middleware':
-        specifier: 2.25.12
+        specifier: catalog:dev
         version: 2.25.12(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
       '@unhead/vue':
-        specifier: 3.2.1
+        specifier: catalog:app-runtime
         version: 3.2.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(crossws@0.4.6(srvx@0.11.22))(esbuild@0.28.1)(lightningcss@1.32.0)(rolldown@1.2.0)(rollup@4.62.2)(typescript@7.0.2)(vite@8.1.5)(vue@3.5.40(typescript@7.0.2))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@vitejs/plugin-vue':
-        specifier: 6.0.8
+        specifier: catalog:vue
         version: 6.0.8(vite@8.1.5)(vue@3.5.40(typescript@7.0.2))
       '@vitejs/plugin-vue-jsx':
-        specifier: 5.1.6
+        specifier: catalog:dev
         version: 5.1.6(supports-color@10.2.2)(vite@8.1.5)(vue@3.5.40(typescript@7.0.2))
       '@vue/compiler-core':
-        specifier: 3.5.40
+        specifier: catalog:dev
         version: 3.5.40
       '@vue/compiler-sfc':
-        specifier: 3.5.40
+        specifier: catalog:vue
         version: 3.5.40
       '@vue/language-core':
-        specifier: 3.3.7
+        specifier: catalog:dev
         version: 3.3.7
       autoprefixer:
-        specifier: 10.5.4
+        specifier: catalog:build
         version: 10.5.4(postcss@8.5.19)
       c12:
-        specifier: 3.3.4
+        specifier: catalog:build
         version: 3.3.4(magicast@0.5.3)
       chokidar:
-        specifier: 5.0.0
+        specifier: catalog:build
         version: 5.0.0
       compatx:
-        specifier: 0.2.0
+        specifier: catalog:build
         version: 0.2.0
       css-minimizer-webpack-plugin:
-        specifier: 8.0.0
+        specifier: catalog:webpack
         version: 8.0.0(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       cssnano:
-        specifier: 8.0.2
+        specifier: catalog:build
         version: 8.0.2(postcss@8.5.19)
       esbuild:
-        specifier: 0.28.1
+        specifier: catalog:dev
         version: 0.28.1
       esbuild-loader:
-        specifier: 4.5.0
+        specifier: catalog:webpack
         version: 4.5.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       h3:
-        specifier: 2.0.1-rc.22
+        specifier: catalog:dev
         version: 2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       hookable:
-        specifier: 6.1.1
+        specifier: catalog:app-runtime
         version: 6.1.1
       ignore:
-        specifier: 7.0.6
+        specifier: catalog:build
         version: 7.0.6
       mini-css-extract-plugin:
-        specifier: 2.10.2
+        specifier: catalog:webpack
         version: 2.10.2(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       ofetch:
-        specifier: 2.0.0-alpha.3
+        specifier: catalog:app-runtime
         version: 2.0.0-alpha.3
       oxc-transform:
-        specifier: 0.140.0
+        specifier: catalog:dev
         version: 0.140.0
       postcss:
-        specifier: 8.5.19
+        specifier: catalog:build
         version: 8.5.19
       rollup-plugin-visualizer:
-        specifier: 7.0.1
+        specifier: catalog:dev
         version: 7.0.1(rolldown@1.2.0)(rollup@4.62.2)
       scule:
-        specifier: 1.3.0
+        specifier: catalog:build
         version: 1.3.0
       tsdown:
-        specifier: 0.22.9
+        specifier: catalog:dev
         version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
       unctx:
-        specifier: 3.0.0
+        specifier: catalog:build
         version: 3.0.0(magic-string@1.0.0)(oxc-parser@0.140.0)(rolldown@1.2.0)(unplugin@3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))
       unimport:
-        specifier: 6.3.0
+        specifier: catalog:build
         version: 6.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.140.0)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       untyped:
-        specifier: 2.0.0
+        specifier: catalog:build
         version: 2.0.0
       vite:
         specifier: 8.1.5
@@ -910,61 +1465,61 @@ importers:
         specifier: 3.5.40
         version: 3.5.40(typescript@7.0.2)
       vue-bundle-renderer:
-        specifier: 2.3.1
+        specifier: catalog:build
         version: 2.3.1
       vue-loader:
-        specifier: 17.4.2
+        specifier: catalog:vue
         version: 17.4.2(@vue/compiler-sfc@3.5.40)(vue@3.5.40(typescript@7.0.2))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       vue-router:
-        specifier: 5.2.0
+        specifier: catalog:app-runtime
         version: 5.2.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.40)(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(vue@3.5.40(typescript@7.0.2))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       webpack:
-        specifier: 5.108.4
+        specifier: catalog:webpack
         version: 5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
       webpack-dev-middleware:
-        specifier: 8.0.3
+        specifier: catalog:webpack
         version: 8.0.3(tslib@2.8.1)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
 
   packages/ui-templates:
     devDependencies:
       '@unocss/reset':
-        specifier: 66.7.5
+        specifier: catalog:dev
         version: 66.7.5
       '@vue/shared':
-        specifier: 3.5.40
+        specifier: catalog:build
         version: 3.5.40
       beasties:
-        specifier: 0.4.3
+        specifier: catalog:dev
         version: 0.4.3
       html-validate:
-        specifier: 11.5.6
+        specifier: catalog:dev
         version: 11.5.6(@vitest/expect@4.1.10)(vitest@4.1.10)
       htmlnano:
-        specifier: 3.4.0
+        specifier: catalog:dev
         version: 3.4.0(cssnano@8.0.2(postcss@8.5.19))(postcss@8.5.19)(svgo@4.0.2)(terser@5.48.0)(typescript@7.0.2)
       knitwork:
-        specifier: 1.3.0
+        specifier: catalog:build
         version: 1.3.0
       pathe:
-        specifier: 2.0.3
+        specifier: catalog:build
         version: 2.0.3
       prettier:
-        specifier: 3.9.5
+        specifier: catalog:dev
         version: 3.9.5
       scule:
-        specifier: 1.3.0
+        specifier: catalog:build
         version: 1.3.0
       svgo:
-        specifier: 4.0.2
+        specifier: catalog:dev
         version: 4.0.2
       tinyexec:
-        specifier: 1.2.4
+        specifier: catalog:dev
         version: 1.2.4
       tinyglobby:
-        specifier: 0.2.17
+        specifier: catalog:build
         version: 0.2.17
       unocss:
-        specifier: 66.7.5
+        specifier: catalog:dev
         version: 66.7.5(vite@8.1.5)
       vite:
         specifier: 8.1.5
@@ -976,119 +1531,119 @@ importers:
         specifier: workspace:*
         version: link:../kit
       '@vitejs/plugin-vue':
-        specifier: ^6.0.8
+        specifier: catalog:vue
         version: 6.0.8(vite@8.1.5)(vue@3.5.40(typescript@7.0.2))
       consola:
-        specifier: ^3.4.2
+        specifier: catalog:build
         version: 3.4.2
       defu:
-        specifier: ^6.1.7
+        specifier: catalog:build
         version: 6.1.7
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: catalog:build
         version: 5.0.0
       exsolve:
-        specifier: ^1.1.0
+        specifier: catalog:build
         version: 1.1.0
       generic-names:
-        specifier: ^4.0.0
+        specifier: catalog:build
         version: 4.0.0
       get-port-please:
-        specifier: ^3.2.0
+        specifier: catalog:build
         version: 3.2.0
       jiti:
-        specifier: ^2.7.0
+        specifier: catalog:build
         version: 2.7.0
       js-tokens:
-        specifier: ^10.0.0
+        specifier: catalog:build
         version: 10.0.0
       knitwork:
-        specifier: ^1.3.0
+        specifier: catalog:build
         version: 1.3.0
       mlly:
-        specifier: ^1.8.2
+        specifier: catalog:build
         version: 1.8.2
       mocked-exports:
-        specifier: ^0.1.1
+        specifier: catalog:build
         version: 0.1.1
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
       pathe:
-        specifier: ^2.0.3
+        specifier: catalog:build
         version: 2.0.3
       pkg-types:
-        specifier: ^2.3.1
+        specifier: catalog:build
         version: 2.3.1
       rolldown-string:
-        specifier: ^0.3.1
+        specifier: catalog:vite
         version: 0.3.1(rolldown@1.2.0)
       seroval:
-        specifier: ^1.5.5
+        specifier: catalog:build
         version: 1.5.5
       std-env:
-        specifier: ^4.2.0
+        specifier: catalog:build
         version: 4.2.0
       ufo:
-        specifier: ^1.6.4
+        specifier: catalog:build
         version: 1.6.4
       unenv:
-        specifier: 2.0.0-rc.24
+        specifier: catalog:build
         version: 2.0.0-rc.24
       vite:
         specifier: 8.1.5
         version: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       vite-node:
-        specifier: ^6.0.0
+        specifier: catalog:vite
         version: 6.0.0(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       vite-plugin-checker:
-        specifier: ^0.14.4
+        specifier: catalog:vite
         version: 0.14.4(eslint@10.7.0(jiti@2.7.0)(supports-color@10.2.2))(optionator@0.9.4)(typescript@7.0.2)(vite@8.1.5)(vue-tsc@3.3.7(typescript@7.0.2))
       vue-bundle-renderer:
-        specifier: ^2.3.1
+        specifier: catalog:build
         version: 2.3.1
     devDependencies:
       '@babel/plugin-proposal-decorators':
-        specifier: 8.0.2
+        specifier: catalog:dev
         version: 8.0.2(@babel/core@8.0.1)
       '@babel/plugin-syntax-jsx':
-        specifier: 8.0.1
+        specifier: catalog:dev
         version: 8.0.1(@babel/core@8.0.1)
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
       '@vitejs/plugin-vue-jsx':
-        specifier: 5.1.6
+        specifier: catalog:dev
         version: 5.1.6(supports-color@10.2.2)(vite@8.1.5)(vue@3.5.40(typescript@7.0.2))
       autoprefixer:
-        specifier: 10.5.4
+        specifier: catalog:build
         version: 10.5.4(postcss@8.5.19)
       cssnano:
-        specifier: 8.0.2
+        specifier: catalog:build
         version: 8.0.2(postcss@8.5.19)
       h3:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.22
+        specifier: catalog:dev
         version: h3@2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       nitropack:
-        specifier: 2.13.4
+        specifier: catalog:dev
         version: 2.13.4(@rspack/core@2.1.4(@swc/helpers@0.5.23))(oxc-parser@0.140.0)(rolldown@1.2.0)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       postcss:
-        specifier: 8.5.19
+        specifier: catalog:build
         version: 8.5.19
       rolldown:
-        specifier: 1.2.0
+        specifier: catalog:vite
         version: 1.2.0
       rollup:
-        specifier: 4.62.2
+        specifier: catalog:dev
         version: 4.62.2
       rollup-plugin-visualizer:
-        specifier: 7.0.1
+        specifier: catalog:dev
         version: 7.0.1(rolldown@1.2.0)(rollup@4.62.2)
       tsdown:
-        specifier: 0.22.9
+        specifier: catalog:dev
         version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.7(typescript@7.0.2))
       vue:
         specifier: 3.5.40
@@ -1097,161 +1652,161 @@ importers:
   packages/webpack:
     dependencies:
       '@nuxt/friendly-errors-webpack-plugin':
-        specifier: ^2.6.0
+        specifier: catalog:webpack
         version: 2.6.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
       '@vue/compiler-sfc':
-        specifier: 3.5.40
+        specifier: catalog:vue
         version: 3.5.40
       autoprefixer:
-        specifier: ^10.5.4
+        specifier: catalog:build
         version: 10.5.4(postcss@8.5.19)
       css-loader:
-        specifier: ^7.1.4
+        specifier: catalog:webpack
         version: 7.1.4(@rspack/core@2.1.4(@swc/helpers@0.5.23))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       css-minimizer-webpack-plugin:
-        specifier: ^8.0.0
+        specifier: catalog:webpack
         version: 8.0.0(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       cssnano:
-        specifier: ^8.0.2
+        specifier: catalog:build
         version: 8.0.2(postcss@8.5.19)
       defu:
-        specifier: ^6.1.7
+        specifier: catalog:build
         version: 6.1.7
       esbuild-loader:
-        specifier: ^4.5.0
+        specifier: catalog:webpack
         version: 4.5.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: catalog:build
         version: 5.0.0
       exsolve:
-        specifier: ^1.1.0
+        specifier: catalog:build
         version: 1.1.0
       file-loader:
-        specifier: ^6.2.0
+        specifier: catalog:webpack
         version: 6.2.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       fork-ts-checker-webpack-plugin:
-        specifier: ^9.1.0
+        specifier: catalog:webpack
         version: 9.1.0(typescript@6.0.3)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       hash-sum:
-        specifier: ^2.0.0
+        specifier: catalog:webpack
         version: 2.0.0
       jiti:
-        specifier: ^2.7.0
+        specifier: catalog:build
         version: 2.7.0
       knitwork:
-        specifier: ^1.3.0
+        specifier: catalog:build
         version: 1.3.0
       memfs:
-        specifier: ^4.64.0
+        specifier: catalog:webpack
         version: 4.64.0(tslib@2.8.1)
       mini-css-extract-plugin:
-        specifier: ^2.10.2
+        specifier: catalog:webpack
         version: 2.10.2(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       mlly:
-        specifier: ^1.8.2
+        specifier: catalog:build
         version: 1.8.2
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
       ohash:
-        specifier: ^2.0.11
+        specifier: catalog:build
         version: 2.0.11
       pathe:
-        specifier: ^2.0.3
+        specifier: catalog:build
         version: 2.0.3
       pify:
-        specifier: ^6.1.0
+        specifier: catalog:webpack
         version: 6.1.0
       postcss:
-        specifier: ^8.5.19
+        specifier: catalog:build
         version: 8.5.19
       postcss-import:
-        specifier: ^16.1.1
+        specifier: catalog:build
         version: 16.1.1(postcss@8.5.19)
       postcss-import-resolver:
-        specifier: ^2.0.0
+        specifier: catalog:build
         version: 2.0.0
       postcss-loader:
-        specifier: ^8.2.1
+        specifier: catalog:build
         version: 8.2.1(@rspack/core@2.1.4(@swc/helpers@0.5.23))(postcss@8.5.19)(typescript@6.0.3)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       postcss-url:
-        specifier: ^10.1.4
+        specifier: catalog:build
         version: 10.1.4(postcss@8.5.19)
       pug-plain-loader:
-        specifier: ^1.1.0
+        specifier: catalog:webpack
         version: 1.1.0(pug@3.0.4)
       raw-loader:
-        specifier: ^4.0.2
+        specifier: catalog:webpack
         version: 4.0.2(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       rolldown-string:
-        specifier: ^0.3.1
+        specifier: catalog:vite
         version: 0.3.1(rolldown@1.2.0)
       seroval:
-        specifier: ^1.5.5
+        specifier: catalog:build
         version: 1.5.5
       time-fix-plugin:
-        specifier: ^2.0.7
+        specifier: catalog:webpack
         version: 2.0.7(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       ufo:
-        specifier: ^1.6.4
+        specifier: catalog:build
         version: 1.6.4
       unenv:
-        specifier: 2.0.0-rc.24
+        specifier: catalog:build
         version: 2.0.0-rc.24
       unplugin:
-        specifier: ^3.3.0
+        specifier: catalog:build
         version: 3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       url-loader:
-        specifier: ^4.1.1
+        specifier: catalog:webpack
         version: 4.1.1(file-loader@6.2.0(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       vue-bundle-renderer:
-        specifier: ^2.3.1
+        specifier: catalog:build
         version: 2.3.1
       vue-loader:
-        specifier: ^17.4.2
+        specifier: catalog:vue
         version: 17.4.2(@vue/compiler-sfc@3.5.40)(vue@3.5.40(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       webpack:
-        specifier: ^5.108.4
+        specifier: catalog:webpack
         version: 5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
       webpack-bundle-analyzer:
-        specifier: ^5.3.1
+        specifier: catalog:webpack
         version: 5.3.1
       webpack-dev-middleware:
-        specifier: ^8.0.3
+        specifier: catalog:webpack
         version: 8.0.3(tslib@2.8.1)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       webpack-hot-middleware:
-        specifier: ^2.26.1
+        specifier: catalog:webpack
         version: 2.26.1
       webpackbar:
-        specifier: ^7.0.0
+        specifier: catalog:webpack
         version: 7.0.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
       '@rspack/core':
-        specifier: 2.1.4
+        specifier: catalog:dev
         version: 2.1.4(@swc/helpers@0.5.23)
       '@types/webpack-bundle-analyzer':
-        specifier: 4.7.0
+        specifier: catalog:dev
         version: 4.7.0(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
       '@types/webpack-hot-middleware':
-        specifier: 2.25.12
+        specifier: catalog:dev
         version: 2.25.12(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)
       h3:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.22
+        specifier: catalog:dev
         version: h3@2.0.1-rc.22(crossws@0.4.6(srvx@0.11.22))
       rollup:
-        specifier: 4.62.2
+        specifier: catalog:dev
         version: 4.62.2
       tsdown:
-        specifier: 0.22.9
+        specifier: catalog:dev
         version: 0.22.9(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(oxc-resolver@11.21.3)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.7(typescript@6.0.3))
       vue:
         specifier: 3.5.40
@@ -1276,19 +1831,19 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       '@vue/devtools-api':
-        specifier: ^8.1.2
+        specifier: catalog:dev
         version: 8.1.5
       defu:
-        specifier: ^6.1.7
+        specifier: catalog:build
         version: 6.1.7
       postcss:
-        specifier: ^8.5.14
+        specifier: catalog:build
         version: 8.5.19
       ufo:
-        specifier: ^1.6.4
+        specifier: catalog:build
         version: 1.6.4
       unplugin:
-        specifier: ^3.0.0
+        specifier: catalog:build
         version: 3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
       vue:
         specifier: 3.5.40
@@ -1303,18 +1858,18 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
       ofetch:
-        specifier: ^2.0.0-alpha.3
+        specifier: catalog:app-runtime
         version: 2.0.0-alpha.3
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@7.0.2)
       vue-router:
-        specifier: ^5.0.6
+        specifier: catalog:app-runtime
         version: 5.2.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.40)(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(vue@3.5.40(typescript@7.0.2))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.19))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
     devDependencies:
       vitest:
-        specifier: 4.1.6
-        version: 4.1.6(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10(vitest@4.1.10))(happy-dom@20.11.0)(vite@8.1.5)
+        specifier: catalog:dev
+        version: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.0)(vite@8.1.5)
 
   test/fixtures/basic-types/_local-modules/hook-augmenting-module: {}
 
@@ -1331,8 +1886,8 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       typescript:
-        specifier: 5.9.3
-        version: 5.9.3
+        specifier: catalog:dev
+        version: 6.0.3
 
   test/fixtures/dynamic-paths:
     dependencies:
@@ -1401,8 +1956,8 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       typescript:
-        specifier: 5.9.3
-        version: 5.9.3
+        specifier: catalog:dev
+        version: 6.0.3
 
   test/fixtures/nuxt-time:
     dependencies:
@@ -1453,8 +2008,8 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       typescript:
-        specifier: latest
-        version: 7.0.2
+        specifier: catalog:dev
+        version: 6.0.3
 
   test/fixtures/suspense:
     dependencies:
@@ -1463,8 +2018,8 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       typescript:
-        specifier: 5.9.3
-        version: 5.9.3
+        specifier: catalog:dev
+        version: 6.0.3
 
   test/fixtures/suspense-layout:
     dependencies:
@@ -1473,8 +2028,8 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       typescript:
-        specifier: 5.9.3
-        version: 5.9.3
+        specifier: catalog:dev
+        version: 6.0.3
 
   test/fixtures/ui-templates:
     dependencies:
@@ -4214,22 +4769,8 @@ packages:
   '@vitest/expect@4.1.10':
     resolution: {integrity: sha512-YsCn+qAk1GWjQOWFEsEcL2gNQ0zmVmQu3T03qP6UyjhtmdtwtbuI+DASn/7iQB3HGTXkdBwGddzxPlmiql5vlA==}
 
-  '@vitest/expect@4.1.6':
-    resolution: {integrity: sha512-7EHDquPthALSV0jhhjgEW8FXaviMx7rSqu8W6oqCoAuOhKov814P99QDV1pxMA3QPv21YudvJngIhjrNI4opLg==}
-
   '@vitest/mocker@4.1.10':
     resolution: {integrity: sha512-v0xaezt+DKEmKfaxg133ldzADrwLGd7Ze1MfQQTYfvs8OqZIwbxyxaYURivwV7sWy5fqn3rH5uOrSp07bp44Ow==}
-    peerDependencies:
-      msw: ^2.4.9
-      vite: 8.1.5
-    peerDependenciesMeta:
-      msw:
-        optional: true
-      vite:
-        optional: true
-
-  '@vitest/mocker@4.1.6':
-    resolution: {integrity: sha512-MCFc63czMjEInOlcY2cpQCvCN+KgbAn+60xu9cMgP4sKaLC5JNAKw7JH8QdAnoAC88hW1IiSNZ+GgVXlN1UcMQ==}
     peerDependencies:
       msw: ^2.4.9
       vite: 8.1.5
@@ -4242,32 +4783,17 @@ packages:
   '@vitest/pretty-format@4.1.10':
     resolution: {integrity: sha512-W1HsjSH4MXQ9YfmmhLAoIYf1HRfekQCGngeIgcei6MP5QQGWUe0gkopdZQaVCFO+JDJMrAJGwa5pRpNpvy4P8Q==}
 
-  '@vitest/pretty-format@4.1.6':
-    resolution: {integrity: sha512-h5SxD/IzNhZYnrSZRsUZQIC+vD0GY8cUvq0iwsmkFKixRCKLLWqCXa/FIQ4S1R+sI+PGoojkHsdNrbZiM9Qpgw==}
-
   '@vitest/runner@4.1.10':
     resolution: {integrity: sha512-IKI6kpIH+LmpROplyLwBBaCfMgOZOMsygVa6BARD6ahA04VRuJSa6OaVG7kRvSEMD870Vd91rSSw0eegtWyLGg==}
-
-  '@vitest/runner@4.1.6':
-    resolution: {integrity: sha512-nOPCmn2+yD0ZNmKdsXGv/UxMMWbMuKeD6GyYncNwdkYDxpQvrPSKYj2rWuDjC2Y4b6w6hjip5dBKFzEUuZe3vA==}
 
   '@vitest/snapshot@4.1.10':
     resolution: {integrity: sha512-xRkfOT1qpTAi/Ti4Y1LtfRc3kEuqxGw59eN2jN9pRWMtS/XDevekhcFSqvQqjUNGksfjMJu3Y+oJ+4Ypn2OaJw==}
 
-  '@vitest/snapshot@4.1.6':
-    resolution: {integrity: sha512-YhsdE6xAVfTDmzjxL2ZDUvjj+ZsgyOKe+TdQzqkD72wIOmHka8NuGQ6NpTNZv9D2Z63fbwWKJPeVpEw4EQgYxw==}
-
   '@vitest/spy@4.1.10':
     resolution: {integrity: sha512-PLf/Ugvoq5wO/b4rwYCR1h2PSIdXz7wnkQFMiUpLdtM7l6pqVFcQIBEHyT1+l+cj7mNwAfZHzqXqDyjvOuwbDw==}
 
-  '@vitest/spy@4.1.6':
-    resolution: {integrity: sha512-JFKxMx6udhwKh/Ldo270e17QX710vgunMkuPAvXjHSvC6oqLWAHhVhjg/I71q0u0CBSErIODV1Kjv0FQNSWjdg==}
-
   '@vitest/utils@4.1.10':
     resolution: {integrity: sha512-fy9am/HWxbaGt/Sawrp90vt6Y6jQwf1RX77cz3uwoJwJVMli/e1IEwRPnMNJ7vKfPTwo0diXifkpPvwH9v7nGA==}
-
-  '@vitest/utils@4.1.6':
-    resolution: {integrity: sha512-FxIY+U81R3LGKCxaHHFRQ5+g6/iRgGLmeHWdp2Amj4ljQRrEIWHmZyDfDYBRZlpyqA7qKxtS9DD1dhk8RnRIVQ==}
 
   '@volar/language-core@2.4.28':
     resolution: {integrity: sha512-w4qhIJ8ZSitgLAkVay6AbcnC7gP3glYM3fYwKV3srj8m494E3xtrCv6E+bWviiK/8hs6e6t1ij1s2Endql7vzQ==}
@@ -9536,47 +10062,6 @@ packages:
       jsdom:
         optional: true
 
-  vitest@4.1.6:
-    resolution: {integrity: sha512-6lvjbS3p9b4CrdCmguzbh2/4uoXhGE2q71R4OX5sqF9R1bo9Xd6fGrMAfvp5wnCzlBnFVdCOp6onuTQVbo8iUQ==}
-    engines: {node: ^20.0.0 || ^22.0.0 || >=24.0.0}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@opentelemetry/api': ^1.9.0
-      '@types/node': ^20.0.0 || ^22.0.0 || >=24.0.0
-      '@vitest/browser-playwright': 4.1.6
-      '@vitest/browser-preview': 4.1.6
-      '@vitest/browser-webdriverio': 4.1.6
-      '@vitest/coverage-istanbul': 4.1.6
-      '@vitest/coverage-v8': 4.1.6
-      '@vitest/ui': 4.1.6
-      happy-dom: '*'
-      jsdom: '*'
-      vite: 8.1.5
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@opentelemetry/api':
-        optional: true
-      '@types/node':
-        optional: true
-      '@vitest/browser-playwright':
-        optional: true
-      '@vitest/browser-preview':
-        optional: true
-      '@vitest/browser-webdriverio':
-        optional: true
-      '@vitest/coverage-istanbul':
-        optional: true
-      '@vitest/coverage-v8':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-
   void-elements@3.1.0:
     resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
     engines: {node: '>=0.10.0'}
@@ -13074,26 +13559,9 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.0
 
-  '@vitest/expect@4.1.6':
-    dependencies:
-      '@standard-schema/spec': 1.1.0
-      '@types/chai': 5.2.3
-      '@vitest/spy': 4.1.6
-      '@vitest/utils': 4.1.6
-      chai: 6.2.2
-      tinyrainbow: 3.1.0
-
   '@vitest/mocker@4.1.10(vite@8.1.5)':
     dependencies:
       '@vitest/spy': 4.1.10
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      vite: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
-
-  '@vitest/mocker@4.1.6(vite@8.1.5)':
-    dependencies:
-      '@vitest/spy': 4.1.6
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
@@ -13103,18 +13571,9 @@ snapshots:
     dependencies:
       tinyrainbow: 3.1.0
 
-  '@vitest/pretty-format@4.1.6':
-    dependencies:
-      tinyrainbow: 3.1.0
-
   '@vitest/runner@4.1.10':
     dependencies:
       '@vitest/utils': 4.1.10
-      pathe: 2.0.3
-
-  '@vitest/runner@4.1.6':
-    dependencies:
-      '@vitest/utils': 4.1.6
       pathe: 2.0.3
 
   '@vitest/snapshot@4.1.10':
@@ -13124,26 +13583,11 @@ snapshots:
       magic-string: 0.30.21
       pathe: 2.0.3
 
-  '@vitest/snapshot@4.1.6':
-    dependencies:
-      '@vitest/pretty-format': 4.1.6
-      '@vitest/utils': 4.1.6
-      magic-string: 0.30.21
-      pathe: 2.0.3
-
   '@vitest/spy@4.1.10': {}
-
-  '@vitest/spy@4.1.6': {}
 
   '@vitest/utils@4.1.10':
     dependencies:
       '@vitest/pretty-format': 4.1.10
-      convert-source-map: 2.0.0
-      tinyrainbow: 3.1.0
-
-  '@vitest/utils@4.1.6':
-    dependencies:
-      '@vitest/pretty-format': 4.1.6
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
@@ -18647,6 +19091,7 @@ snapshots:
       '@typescript/typescript-sunos-x64': 7.0.2
       '@typescript/typescript-win32-arm64': 7.0.2
       '@typescript/typescript-win32-x64': 7.0.2
+    optional: true
 
   uc.micro@2.1.0: {}
 
@@ -19112,35 +19557,6 @@ snapshots:
       '@vitest/snapshot': 4.1.10
       '@vitest/spy': 4.1.10
       '@vitest/utils': 4.1.10
-      es-module-lexer: 2.1.0
-      expect-type: 1.3.0
-      magic-string: 0.30.21
-      obug: 2.1.3
-      pathe: 2.0.3
-      picomatch: 4.0.5
-      std-env: 4.2.0
-      tinybench: 2.9.0
-      tinyexec: 1.2.4
-      tinyglobby: 0.2.17
-      tinyrainbow: 3.1.0
-      vite: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 24.13.3
-      '@vitest/coverage-v8': 4.1.10(vitest@4.1.10)
-      happy-dom: 20.11.0
-    transitivePeerDependencies:
-      - msw
-
-  vitest@4.1.6(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10(vitest@4.1.10))(happy-dom@20.11.0)(vite@8.1.5):
-    dependencies:
-      '@vitest/expect': 4.1.6
-      '@vitest/mocker': 4.1.6(vite@8.1.5)
-      '@vitest/pretty-format': 4.1.6
-      '@vitest/runner': 4.1.6
-      '@vitest/snapshot': 4.1.6
-      '@vitest/spy': 4.1.6
-      '@vitest/utils': 4.1.6
       es-module-lexer: 2.1.0
       expect-type: 1.3.0
       magic-string: 0.30.21
