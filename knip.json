@@ -47,6 +47,8 @@
       "ignoreDependencies": [
         "mocked-exports",
         "vue-devtools-stub",
+        "ohash",
+        "hookable",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
       ]
@@ -80,6 +82,11 @@
         "@nuxt/devtools",
         "@nuxt/telemetry",
         "@nuxt/vite-builder"
+      ]
+    },
+    "packages/schema": {
+      "ignoreDependencies": [
+        "@vue/shared"
       ]
     },
     "packages/ui-templates": {
