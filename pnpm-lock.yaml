@@ -148,6 +148,9 @@ catalogs:
     knitwork:
       specifier: ^1.3.0
       version: 1.3.0
+    magicast:
+      specifier: ^0.5.3
+      version: 0.5.3
     mlly:
       specifier: ^1.8.2
       version: 1.8.2
@@ -1024,6 +1027,9 @@ importers:
       '@vue/shared':
         specifier: catalog:app-runtime
         version: 3.5.40
+      c12:
+        specifier: catalog:build
+        version: 3.3.4(magicast@0.5.3)
       chokidar:
         specifier: catalog:build
         version: 5.0.0
@@ -1075,6 +1081,9 @@ importers:
       magic-string:
         specifier: catalog:vite
         version: 1.0.0
+      magicast:
+        specifier: catalog:build
+        version: 0.5.3
       mlly:
         specifier: catalog:build
         version: 1.8.2
