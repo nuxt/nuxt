@@ -225,17 +225,47 @@ jobs:
           - name: Lint
             run: vp run lint
 
-          - name: Knip
-            run: vp run lint:knip
-
-          - name: Knip (production)
-            run: vp run lint:knip:production
-
           - name: Test (nuxt runtime)
             run: vp run test:runtime
 
           - name: Test (unit)
             run: vp run test:unit
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # Runs on pull requests too (unlike the `lint` job) so knip regressions surface
+  # before the merge queue.
+  knip:
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+        with:
+          node-version: lts
+          cache: true
+
+      - name: Prepare
+        run: vp run dev:prepare
+
+      - parallel:
+          - name: Knip
+            run: vp run lint:knip
+
+          - name: Knip (production)
+            run: vp run lint:knip:production
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -404,6 +434,7 @@ jobs:
       - codeql
       - typecheck
       - lint-and-test
+      - knip
       - test-size
       - test-fixtures
       - test-e2e
@@ -417,6 +448,7 @@ jobs:
             "${{ needs.codeql.result }}" \
             "${{ needs.typecheck.result }}" \
             "${{ needs.lint-and-test.result }}" \
+            "${{ needs.knip.result }}" \
             "${{ needs.test-size.result }}" \
             "${{ needs.test-fixtures.result }}" \
             "${{ needs.test-e2e.result }}" \

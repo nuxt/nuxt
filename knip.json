@@ -1,6 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "ignoreWorkspaces": ["test/fixtures/basic"],
+  "ignore": ["**/.nuxt/**", "**/.output/**"],
   "rules": {
     "duplicates": "off"
   },
