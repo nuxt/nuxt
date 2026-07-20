@@ -461,4 +461,28 @@ test.describe('nuxt built-ins with vapor children', () => {
 
     expect(page).toHaveNoErrorsOrWarnings()
   })
+
+  test('<ClientOnly> renders a vapor slot child (single and multiple) without inspecting VNode shape', async ({ page, goto, fetch }) => {
+    const html = await (await fetch('/vapor-slots')).text()
+    expect(html).toContain('fallback content')
+    expect(html).not.toContain('from vapor slot')
+
+    await goto('/vapor-slots')
+    await expect(page.getByTestId('vapor-client-only-content')).toHaveText('from vapor slot')
+    await expect(page.getByTestId('vapor-client-only-multi-a')).toHaveText('a')
+    await expect(page.getByTestId('vapor-client-only-multi-b')).toHaveText('b')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('<DevOnly> renders a vapor slot child in dev and its fallback in production', async ({ page, goto, isDev }) => {
+    await goto('/vapor-slots')
+    if (isDev) {
+      await expect(page.getByTestId('vapor-dev-only-content')).toHaveText('dev vapor slot')
+    } else {
+      await expect(page.getByTestId('vapor-dev-only-fallback')).toHaveText('prod fallback')
+    }
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
 })

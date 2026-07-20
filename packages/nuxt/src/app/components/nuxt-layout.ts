@@ -8,7 +8,7 @@ import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
-import { _mergeTransitionProps, _wrapInTransition } from './utils'
+import { _mergeTransitionProps, _wrapInTransition, isVaporSlot } from './utils'
 import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
 import { useRoute as useVueRouterRoute } from '#build/pages'
@@ -208,6 +208,7 @@ const LayoutProvider = defineComponent({
     if (import.meta.dev && import.meta.client) {
       onMounted(() => {
         nextTick(() => {
+          if (isVaporSlot(context.slots.default)) { return }
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
               renderDiagnostics.NUXT_E4002({ name })
