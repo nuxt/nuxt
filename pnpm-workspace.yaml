@@ -254,7 +254,7 @@ catalogs:
     svgo: 4.0.2
     tinyexec: 1.2.4
     tsdown: 0.22.11
-    typescript: 6.0.3
+    typescript: 7.0.2
     unocss: 66.7.5
     vitest: 4.1.10
     vitest-environment-nuxt: 2.0.0
