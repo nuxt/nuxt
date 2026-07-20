@@ -5,7 +5,9 @@
     "bing",
     "uno.css",
     "somepath",
-    "foo"
+    "foo",
+    "sherif",
+    "pkg-pr-new"
   ],
   "ignoreUnresolved": [
     "^#build/",
