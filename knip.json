@@ -54,6 +54,12 @@
         "src/*/runtime/**/*.{ts,js}",
         "src/core/templates.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,vue}"
+      ],
+      "ignoreDependencies": [
+        "@dxup/nuxt",
+        "@nuxt/devtools",
+        "@nuxt/telemetry",
+        "@nuxt/vite-builder"
       ]
     },
     "packages/ui-templates": {
