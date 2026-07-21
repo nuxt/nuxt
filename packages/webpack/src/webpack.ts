@@ -225,33 +225,40 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
   await Promise.all(firstCompiles)
 }
 
+// h3 sentinel signalling that the response has already been written to the
+// raw node `res`; returning `undefined` instead would make h3 treat the
+// request as unhandled and fall through to the SSR catch-all handler.
+const kHandled = /* @__PURE__ */ Symbol.for('h3.handled')
+
 function rsbuildToH3Handler (middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void, buildAssetsPrefix: string, nitroBuildsPrefix: string) {
-  return defineEventHandler(async (event) => {
+  return defineEventHandler((event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
     if (!isSameOriginRequest(req)) {
       res!.statusCode = 403
       res!.end('Forbidden')
-      return
+      return kHandled
     }
-    await new Promise<void>((resolve) => {
+    return new Promise<typeof kHandled | undefined>((resolve) => {
       let settled = false
-      const done = () => {
+      const done = (result: typeof kHandled | undefined) => {
         if (!settled) {
           settled = true
-          resolve()
+          resolve(result)
         }
       }
       // Middlewares that serve a response end it without calling `next`, so also
       // settle when the response finishes; `next` means Nuxt should handle it.
-      res!.on('finish', done)
-      res!.on('close', done)
+      res!.on('finish', () => done(kHandled))
+      res!.on('close', () => done(kHandled))
       middlewares(req as IncomingMessage, res as ServerResponse, () => {
         const url = req!.url
         if (url && url.startsWith(buildAssetsPrefix) && !url.startsWith(nitroBuildsPrefix)) {
           res!.statusCode = 404
           res!.end()
+          done(kHandled)
+        } else {
+          done(undefined)
         }
-        done()
       })
     })
   })
