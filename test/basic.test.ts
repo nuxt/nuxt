@@ -1907,6 +1907,43 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
     expect(Array.isArray(data.data['swr-data'])).toBe(true)
   })
 
+  it('preserves query parameters in extracted payloads for cached routes', async () => {
+    const { page, requests } = await renderPage('/payload-query?page=1')
+
+    requests.length = 0
+    const payloadRequestPromise = page.waitForRequest(request => request.url().includes('/payload-query/_payload.json'))
+    await page.getByTestId('payload-query-next').click()
+    await page.waitForURL(url('/payload-query?page=2'))
+
+    const payloadRequest = await payloadRequestPromise
+    const payloadURL = new URL(payloadRequest.url())
+    expect.soft(payloadURL.searchParams.get('page')).toBe('2')
+    expect(await page.locator('#payload-query').textContent()).toContain('2')
+
+    requests.length = 0
+    await page.getByTestId('payload-query-hash').click()
+    await page.waitForURL(url('/payload-query?page=2#section'))
+    expect(requests.filter(request => request.includes('/payload-query/_payload.json'))).toHaveLength(0)
+
+    await page.close()
+
+    const payload = await $fetch<string>('/payload-query/_payload.json?page=2', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data['payload-query-2']).toEqual({ page: 2 })
+    expect(data.data['payload-query-1']).toBeUndefined()
+  })
+
+  it('does not refetch payloads on query-only navigation for prerendered routes', async () => {
+    const { page, requests } = await renderPage('/random/a')
+
+    requests.length = 0
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/random/a?foo=bar'))
+    await page.waitForURL(url('/random/a?foo=bar'))
+    expect(requests.filter(request => request.includes('_payload.json'))).toHaveLength(0)
+
+    await page.close()
+  })
+
   // https://github.com/nuxt/nuxt/issues/34856
   it('should render payload for SSR+SWR routes that opt out of a catch-all `ssr: false` rule', async () => {
     const payload = await $fetch<string>('/route-rules/swr-in-spa/_payload.json', { responseType: 'text' })
