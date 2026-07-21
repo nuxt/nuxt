@@ -72,6 +72,17 @@ describe('useAsyncData diagnostics (dev)', () => {
     warn.mockClear()
     count++
 
+    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { serialize: false })
+    expect(warn).not.toHaveBeenCalled()
+    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(
+        new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different \`serialize\` option\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\\d+:\\d+`),
+      ))
+
+    warn.mockClear()
+    count++
+
     await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
     expect(warn).not.toHaveBeenCalled()
     await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('bob'))

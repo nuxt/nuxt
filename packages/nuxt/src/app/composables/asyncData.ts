@@ -13,7 +13,9 @@ import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 import { dataDiagnostics } from '../diagnostics/data'
 
-import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { neverHydratedSymbol } from './lazy-hydration'
+
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -401,6 +403,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       opts.dedupe ??= 'cancel'
       opts.enabled ??= true
 
+      if (import.meta.server && stripNeverHydratedData && opts.serialize === undefined && getCurrentInstance() && inject(neverHydratedSymbol, false)) {
+        opts.serialize = false
+      }
+
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
         for (const key in factoryOptions) {
@@ -417,7 +423,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         if (values.handler !== currentData._hash?.handler) {
           warnings.push(`different handler`)
         }
-        for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
+        for (const opt of ['transform', 'pick', 'getCachedData', 'serialize'] as const) {
           if (values[opt] !== currentData._hash![opt]) {
             warnings.push(`different \`${opt}\` option`)
           }
@@ -992,6 +998,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     transform: options.transform ? hashFunction(options.transform as (...args: any[]) => any) : undefined,
     pick: options.pick ? hashKey(options.pick) : undefined,
     getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
+    serialize: String(options.serialize ?? true),
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {

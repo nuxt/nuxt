@@ -1,6 +1,7 @@
-import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps } from 'vue'
+import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, provide } from 'vue'
 import type { AsyncComponentLoader, ComponentObjectPropsOptions, DefineSetupFnComponent, ExtractPropTypes, HydrationStrategy } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
+import { neverHydratedSymbol } from '#app/composables/lazy-hydration'
 
 type LazyHydrationEmits = {
   hydrated: () => void
@@ -8,13 +9,16 @@ type LazyHydrationEmits = {
 
 type LazyComponentFactory<Props extends Record<string, any>> = (id: string, loader: AsyncComponentLoader) => DefineSetupFnComponent<Props, LazyHydrationEmits>
 
-function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extends Record<string, any> = ExtractPropTypes<P>> (props: P, defineStrategy: (props: ExtractPropTypes<P>) => HydrationStrategy | undefined): LazyComponentFactory<Props> {
+function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extends Record<string, any> = ExtractPropTypes<P>> (props: P, defineStrategy: (props: ExtractPropTypes<P>) => HydrationStrategy | undefined, never = false): LazyComponentFactory<Props> {
   return (id: string, loader: AsyncComponentLoader) => defineComponent({
     inheritAttrs: false,
     props,
     emits: ['hydrated'],
     setup (props, ctx) {
       if (import.meta.server) {
+        if (never) {
+          provide(neverHydratedSymbol, true)
+        }
         const nuxtApp = useNuxtApp()
         nuxtApp.hook('app:rendered', ({ ssrContext }) => {
           // track lazy hydrated components so prefetch/preload tags are not rendered for them
@@ -133,4 +137,5 @@ export const createLazyNeverComponent: LazyComponentFactory<LazyNeverProps> = de
   },
 },
 () => hydrateNever,
+true,
 )
