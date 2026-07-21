@@ -774,7 +774,6 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add support for custom types in JSON payload
-  addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
   addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
 
   addRouteMiddleware({
@@ -860,6 +859,10 @@ export default defineNuxtPlugin({
   // Init nitro
   await bundleServer(nuxt)
   nuxt._perf?.startPhase('ready')
+
+  if (nuxt.options.ssr !== false) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+  }
 
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {

@@ -9,11 +9,13 @@ import { join } from 'pathe'
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
+  const spaRootDir = fileURLToPath(new URL('./fixtures/spa', import.meta.url))
 
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxt', 'build', rootDir]),
       exec('pnpm', ['nuxt', 'build', pagesRootDir]),
+      exec('pnpm', ['nuxt', 'build', spaRootDir]),
     ])
   }, 120 * 1000)
 
@@ -33,6 +35,21 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "_nuxt/entry.js",
       ]
     `)
+  })
+
+  it('does not ship payload revival machinery in a spa build', async () => {
+    const clientStats = await analyzeSizes(['**/*.js'], join(spaRootDir, '.output/public'), spaRootDir)
+
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"101k"`)
+
+    const contents = await Promise.all(
+      (await glob(['**/*.js'], { cwd: join(spaRootDir, '.output/public') }))
+        .map(file => fsp.readFile(join(spaRootDir, '.output/public', file), 'utf8')),
+    )
+    const bundle = contents.join('\n')
+
+    expect(bundle).not.toContain('nuxt:revive-payload:client')
+    expect(bundle).not.toContain('EmptyShallowRef')
   })
 
   it('default client bundle size (pages)', async () => {
