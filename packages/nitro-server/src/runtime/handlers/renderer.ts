@@ -146,9 +146,9 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     payloadURL.searchParams.delete(PAYLOAD_BUILD_ID_PARAM)
     ssrContext.url = url + payloadURL.search
 
-    if (import.meta.prerender && await payloadCache!.hasItem(url + '.json')) {
+    if (import.meta.prerender && await payloadCache!.hasItem(ssrContext.url + '.json')) {
       event.res.headers.set('content-type', 'application/json')
-      const response = await payloadCache!.getItem(url + '.json') || undefined
+      const response = await payloadCache!.getItem(ssrContext.url + '.json') || undefined
       return new FastResponse(response?.body, response)
     }
   }
