@@ -56,8 +56,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"271k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
-    const packages = getVendorPackages(modules.files)
+    const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
@@ -86,8 +85,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"344k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
-    const packages = getVendorPackages(modules.files)
+    const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
