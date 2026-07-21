@@ -555,14 +555,23 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
     return [
       'import { $fetch as _$fetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
-      'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = _$fetch.create({',
-      '    baseURL: baseURL()',
-      '  })',
-      '}',
-      'export const $fetch = globalThis.$fetch',
+      'export const $fetch = /*#__PURE__*/ _$fetch.create({ baseURL: baseURL() })',
     ].join('\n')
   },
+}
+
+// `#build/fetch-setup` is imported for its side effects as the first import in the app entry.
+// On the server it seeds `globalThis.$fetch` before any other module evaluates. On the client
+// `$fetch` is an auto-import, so this stays empty to keep a static entry import from pulling
+// `ofetch` into bundles that never use `$fetch`.
+export const dollarFetchSetupServerTemplate: NuxtTemplate = {
+  filename: 'fetch-setup.server.mjs',
+  getContents: () => 'import \'#build/fetch\'\n',
+}
+
+export const dollarFetchSetupClientTemplate: NuxtTemplate = {
+  filename: 'fetch-setup.client.mjs',
+  getContents: () => 'export {}\n',
 }
 
 export const dollarFetchTypeTemplate: NuxtTemplate = {

@@ -26,6 +26,9 @@ declare module '#build/fetch.server.mjs' {
   const $fetch: import('nitro/types').$Fetch
   export { $fetch }
 }
+declare module '#build/fetch-setup'
+declare module '#build/fetch-setup.client.mjs'
+declare module '#build/fetch-setup.server.mjs'
 
 declare module '#build/global-polyfills.mjs'
 declare module '#build/island-renderer'
