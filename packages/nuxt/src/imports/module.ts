@@ -59,6 +59,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         composablesDirs.push(
           resolve(layer.config.srcDir, 'composables'),
           resolve(layer.config.srcDir, 'utils'),
+          resolve(layer.config.srcDir, 'types'),
           resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'),
           resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'),
         )

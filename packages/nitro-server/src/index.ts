@@ -67,7 +67,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   addTemplate(nitroSchemaTemplate)
 
-  const sharedDirs = new Set<string>()
+  const importDirs = new Set<string>()
   if (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false) {
     for (const layer of nuxt.options._layers) {
       // Layer disabled scanning for itself
@@ -75,8 +75,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         continue
       }
 
-      sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'))
-      sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
+      importDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'))
+      importDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
+      importDirs.add(resolve(layer.config.serverDir ?? resolve(layer.config.rootDir, 'server'), 'types'))
     }
   }
 
@@ -163,7 +164,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       ? false
       : {
           autoImport: nuxt.options.imports.autoImport as boolean,
-          dirs: [...sharedDirs],
+          dirs: [...importDirs],
           presets: nuxt.options.experimental.nitroAutoImports
             ? [
                 ...v2ImportsPreset,
