@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
+import { gzipSync } from 'node:zlib'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
@@ -19,7 +20,11 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"120k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"114k"`)
+    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"42.7k"`)
+
+    const entry = await fsp.readFile(join(rootDir, '.output/public', clientStats!.files.find(f => f.startsWith('_nuxt/entry'))!), 'utf8')
+    expect(entry).not.toContain('[ofetch] global.fetch is not supported')
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -33,7 +38,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"180k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"181k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -127,6 +132,7 @@ async function analyzeSizes (pattern: string[], rootDir: string, projectDir: str
   const files: string[] = await glob(pattern, { cwd: rootDir })
   const stripPatterns = getStripPatterns(projectDir)
   let totalBytes = 0
+  let gzipBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)
     const isSymlink = (await fsp.lstat(path).catch(() => null))?.isSymbolicLink()
@@ -138,9 +144,10 @@ async function analyzeSizes (pattern: string[], rootDir: string, projectDir: str
         normalized = normalized.replaceAll(pattern, '')
       }
       totalBytes += Buffer.byteLength(normalized)
+      gzipBytes += gzipSync(normalized).byteLength
     }
   }
-  return { files, totalBytes }
+  return { files, totalBytes, gzipBytes }
 }
 
 // Strip strings that vary by host or by build invocation but don't represent real bundle
