@@ -4,6 +4,7 @@ import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { isChangingPage } from '#app/components/utils'
 import { useRouter } from '#app/composables/router'
+import { generateRouteRecordKey } from './utils'
 
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
@@ -32,6 +33,13 @@ export default <RouterConfig>{
 
     if (routeAllowsScrollToTop === false) { return false }
 
+    // Changing only a nested page leaves every page above it mounted, so scrolling the window
+    // would move a parent page the user never navigated away from (#31638). An explicit
+    // `scrollToTop`, a restored position or a hash target still take precedence.
+    if (routeAllowsScrollToTop !== true && !savedPosition && !to.hash && isChangingOnlyChildPage(to, from)) {
+      return false
+    }
+
     if (from === START_LOCATION) {
       return _calculatePosition(to, from, savedPosition, hashScrollBehaviour)
     }
@@ -59,6 +67,26 @@ export default <RouterConfig>{
       })
     })
   },
+}
+
+/**
+ * Return `true` if navigation only rerenders pages nested below the leaf route, leaving every
+ * page component above it mounted. This mirrors the parent-rerender check `<NuxtPage>` uses to
+ * decide whether it has to rerender (see `haveParentRoutesRendered` in `./page`).
+ */
+function isChangingOnlyChildPage (to: RouteLocationNormalized, from: RouteLocationNormalized): boolean {
+  // Parent routes without a component are transparent — vue-router renders the child directly
+  // at the parent's depth (see #34967), so they don't contribute a page render above us.
+  const toParents = to.matched.slice(0, -1).filter(m => m.components?.default)
+  const fromParents = from.matched.slice(0, -1).filter(m => m.components?.default)
+
+  if (!toParents.length || toParents.length !== fromParents.length) { return false }
+
+  return toParents.every((match, index) => {
+    const fromMatch = fromParents[index]!
+    return match.components?.default === fromMatch.components?.default &&
+      generateRouteRecordKey(to, match) === generateRouteRecordKey(from, fromMatch)
+  })
 }
 
 function _getHashElementScrollMarginTop (selector: string): number {

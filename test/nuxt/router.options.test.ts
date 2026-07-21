@@ -339,6 +339,154 @@ describe('scrollBehavior with scrollToTop and fixed page key', () => {
   })
 })
 
+// https://github.com/nuxt/nuxt/issues/31638
+describe('scrollBehavior with nested pages', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  let wrapper: VueWrapper<unknown>
+  let scrollTo: ReturnType<typeof vi.spyOn>
+  const cleanups: Array<() => void> = []
+
+  const pageLoadingEnd = vi.fn()
+
+  const NestedChildA = defineComponent({ setup: () => () => h('div', 'Nested child A') })
+  const NestedChildB = defineComponent({ setup: () => () => h('div', [h('div', { id: 'target' }, 'Nested child B')]) })
+  const NestedDynamicChild = defineComponent({ setup: () => () => h('div', 'Nested dynamic child') })
+
+  beforeAll(async () => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    // A static parent page (`pages/nested-scroll.vue`) hosting sibling children.
+    cleanups.push(router.addRoute({
+      name: 'nested-scroll',
+      path: '/nested-scroll',
+      component: NestedPageParent,
+      children: [
+        { path: 'a', component: NestedChildA },
+        { path: 'b', component: NestedChildB },
+        { path: 'day/:day', component: NestedDynamicChild },
+        { path: 'opt-in/:id', meta: { scrollToTop: true }, component: NestedDynamicChild },
+      ],
+    }))
+
+    // A parent page that owns a route param (`pages/nested-scroll-param/[parentId].vue`),
+    // so changing that param does rerender the parent.
+    cleanups.push(router.addRoute({
+      name: 'nested-scroll-param',
+      path: '/nested-scroll-param/:parentId',
+      component: NestedPageParent,
+      children: [
+        { path: ':childId', component: NestedDynamicChild },
+      ],
+    }))
+
+    cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEnd))
+
+    // attached to the document so `scrollBehavior` can resolve hash targets via `querySelector`
+    wrapper = await mountSuspended(defineComponent({
+      setup: () => () => h(NuxtPage),
+    }), { attachTo: document.body })
+    await flushPromises()
+  })
+
+  beforeEach(async () => {
+    await navigateTo('/')
+    await flushPromises()
+    vi.clearAllMocks()
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
+  })
+
+  afterAll(() => {
+    wrapper.unmount()
+    for (const cleanup of cleanups) {
+      cleanup()
+    }
+  })
+
+  // `scrollBehavior` resolves on `page:loading:end` and then defers one animation frame,
+  // so give that deferred decision a chance to run before asserting.
+  async function settleNavigation () {
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+    await sleep(50)
+    await flushPromises()
+  }
+
+  async function enterRoute (path: string) {
+    await navigateTo(path)
+    await settleNavigation()
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    vi.clearAllMocks()
+  }
+
+  it('should not scroll to top when only the nested child page changes', async () => {
+    await enterRoute('/nested-scroll/a')
+
+    await navigateTo('/nested-scroll/b')
+    await settleNavigation()
+
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('should not scroll to top when only a nested child param changes', async () => {
+    await enterRoute('/nested-scroll/day/monday')
+
+    await navigateTo('/nested-scroll/day/tuesday')
+    await settleNavigation()
+
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('should scroll to top when a param owned by the parent page changes', async () => {
+    await enterRoute('/nested-scroll-param/one/a')
+
+    await navigateTo('/nested-scroll-param/two/a')
+    await settleNavigation()
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+
+  it('should scroll to top when navigating from a top-level page into a nested page', async () => {
+    await enterRoute('/about')
+
+    await navigateTo('/nested-scroll/a')
+    await settleNavigation()
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+
+  it('should scroll to top on a nested change when the child opts in with scrollToTop', async () => {
+    await enterRoute('/nested-scroll/opt-in/1')
+
+    await navigateTo('/nested-scroll/opt-in/2')
+    await settleNavigation()
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+
+  it('should still scroll to a hash target when only the nested page changes', async () => {
+    await enterRoute('/nested-scroll/a')
+
+    await navigateTo('/nested-scroll/b#target')
+    await settleNavigation()
+
+    // vue-router resolves `{ el }` to coordinates before scrolling; `behavior` is only set on
+    // the hash branch, so it distinguishes this from a plain scroll to top.
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'auto' }))
+  })
+
+  it('should leave non-nested navigation behaviour unchanged', async () => {
+    await enterRoute('/about')
+
+    await navigateTo('/')
+    await settleNavigation()
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+})
+
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 const NestedPageParent = defineComponent({

@@ -33,6 +33,15 @@ const interpolatePath = (route: RouteLocationNormalizedLoaded, match: RouteLocat
     .replace(ROUTE_KEY_NORMAL_RE, r => (route.params as Record<string, unknown>)[r.slice(1)]?.toString() || '')
 }
 
+/**
+ * Resolve the key of a single matched route record, so a record can be compared across two
+ * route locations without needing the component rendered at its depth.
+ */
+export const generateRouteRecordKey = (route: RouteLocationNormalizedLoaded, match: RouteLocationMatched): string | false | undefined => {
+  const source = match.meta.key ?? interpolatePath(route, match)
+  return typeof source === 'function' ? source(route) : source
+}
+
 export const generateRouteKey = (routeProps: RouterViewSlotProps, override?: string | ((route: RouteLocationNormalizedLoaded) => string)): string | false | undefined => {
   const matchedRoute = routeProps.route.matched.find(m => m.components?.default === routeProps.Component.type)
   const source = override ?? matchedRoute?.meta.key ?? (matchedRoute && interpolatePath(routeProps.route, matchedRoute))
