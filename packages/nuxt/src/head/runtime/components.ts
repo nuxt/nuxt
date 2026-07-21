@@ -204,7 +204,7 @@ export const NoScript: DefineSetupFnComponent<GlobalProps & TagPositionPropsType
     return () => {
       const noscript = normalizeProps(props, key) as Noscript
       if (import.meta.dev && isVaporSlot(slots.default)) {
-        console.warn('[nuxt] <Noscript> reads its text content from the slot VNodes, which a vapor slot does not expose. Pass the content as a string instead.')
+        unheadDiagnostics.NUXT_E6004({ component: 'Noscript' })
       }
       const slotVnodes = slots.default?.()
       const textContent: VNodeNormalizedChildren[] = []
@@ -339,7 +339,7 @@ export const Title: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComp
     })
     return () => {
       if (import.meta.dev && isVaporSlot(slots.default)) {
-        console.warn('[nuxt] <Title> reads its text content from the slot VNodes, which a vapor slot does not expose. Pass the title as a string instead.')
+        unheadDiagnostics.NUXT_E6004({ component: 'Title' })
       }
       const defaultSlot = slots.default?.()
       input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
@@ -434,7 +434,7 @@ export const Style: DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefa
     return () => {
       const style = normalizeProps(props, key) as UnheadStyle
       if (import.meta.dev && isVaporSlot(slots.default)) {
-        console.warn('[nuxt] <Style> reads its text content from the slot VNodes, which a vapor slot does not expose. Pass the CSS as a string instead.')
+        unheadDiagnostics.NUXT_E6004({ component: 'Style' })
       }
       const textContent = slots.default?.()?.[0]?.children
       if (textContent) {

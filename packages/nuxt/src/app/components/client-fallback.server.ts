@@ -67,7 +67,7 @@ const NuxtClientFallbackServer = defineComponent({
 
     try {
       if (import.meta.dev && isVaporSlot(ctx.slots.default)) {
-        console.warn('[nuxt] <NuxtClientFallback> cannot server-render a vapor slot child. Its content is not expressed as VNodes, so the SSR attempt (and the fallback-on-error behaviour that depends on it) will not work. Wrap the content in a vdom component if you need server-side fallback.')
+        renderDiagnostics.NUXT_E4017()
       }
       const defaultSlot = ctx.slots.default?.()
       const ssrVNodes = createBuffer()
