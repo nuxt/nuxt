@@ -102,7 +102,7 @@ interface BaseAsyncDataOptions<
    * aborts — cancelling the request (via `dedupe: 'cancel'`, `clear()`, `timeout`, or `enabled: false`)
    * settles immediately and clears the pending timer.
    */
-  minDelay?: number
+  minDuration?: number
   /**
    * Controls whether to run the async function
    * @default true
@@ -165,7 +165,7 @@ export interface AsyncDataExecuteOptions {
 
   timeout?: number
 
-  minDelay?: number
+  minDuration?: number
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -879,11 +879,11 @@ function buildAsyncData<
 
             const handlerPromise = Promise.resolve(handler(nuxtApp, { signal: mergedSignal }))
 
-            const minDelay = opts.minDelay ?? options.minDelay
+            const minDuration = opts.minDuration ?? options.minDuration
 
-            if (import.meta.client && typeof minDelay === 'number' && minDelay > 0) {
-              const minDelayPromise = new Promise<void>((resolveDelay) => {
-                const timer = setTimeout(resolveDelay, minDelay)
+            if (import.meta.client && typeof minDuration === 'number' && minDuration > 0) {
+              const minDurationPromise = new Promise<void>((resolveDelay) => {
+                const timer = setTimeout(resolveDelay, minDuration)
 
                 cleanupController.signal.addEventListener('abort', () => {
                   clearTimeout(timer)
@@ -892,8 +892,8 @@ function buildAsyncData<
               })
 
               return handlerPromise.then(
-                result => minDelayPromise.then(() => resolve(result)),
-                error => minDelayPromise.then(() => reject(error)),
+                result => minDurationPromise.then(() => resolve(result)),
+                error => minDurationPromise.then(() => reject(error)),
               )
             }
 
