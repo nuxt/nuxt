@@ -42,6 +42,13 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     })
   })
 
+  it('should preserve native global fetch and route internal `$fetch` through nitro', async () => {
+    expect(await $fetch('/api/native-fetch')).toEqual({
+      globalFetchPatched: false,
+      internal: 'Hello API',
+    })
+  })
+
   it('should preserve states', async () => {
     expect(await $fetch('/api/counter')).toEqual({ count: 0 })
     expect(await $fetch('/api/counter')).toEqual({ count: 1 })
