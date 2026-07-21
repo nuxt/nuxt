@@ -131,6 +131,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
 
+  // pin to h3 v1 to prevent pulling in h3 v2 as a dependency of the nitro server
+  const h3Entry = resolveModulePath('h3', { from: import.meta.url })
+  const h3PackageJson = resolveModulePath('h3/package.json', { from: import.meta.url })
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
@@ -336,6 +340,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             '@vue/compiler-ssr': mockProxy,
           },
       '@vue/devtools-api': 'vue-devtools-stub',
+
+      'h3': h3Entry,
+      'h3/package.json': h3PackageJson,
 
       // Nuxt aliases
       ...nuxt.options.alias,
@@ -730,7 +737,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // TODO: extract to shared utility?
-  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@', 'h3', 'h3/package.json']
   // TODO: remove support for baseUrl in nuxt v5
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
