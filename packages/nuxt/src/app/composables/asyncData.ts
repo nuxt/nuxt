@@ -99,6 +99,14 @@ interface BaseAsyncDataOptions<
    * @default true
    */
   enabled?: MaybeRefOrGetter<boolean>
+  /**
+   * Whether to store resolved data in the Nuxt payload (and therefore serialize it into `__NUXT_DATA__` when server-rendered).
+   * When `false`, data fetched on the server is kept out of the payload entirely and the client will refetch
+   * after hydration if a component renders it. Pair with lazy hydration (e.g. `hydrate-never`) to avoid
+   * hydration mismatches and unnecessary client fetches.
+   * @default true
+   */
+  serialize?: boolean
 }
 
 export interface AsyncDataOptions<
@@ -832,7 +840,10 @@ function buildAsyncData<
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (cachedData !== undefined) {
-          nuxtApp.payload.data[key] = asyncData.data.value = cachedData as DataT
+          if (options.serialize !== false) {
+            nuxtApp.payload.data[key] = cachedData
+          }
+          asyncData.data.value = cachedData as DataT
           asyncData.error.value = undefined
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
@@ -891,7 +902,9 @@ function buildAsyncData<
             dataDiagnostics.NUXT_E3006({ fn: options._functionName || 'useAsyncData', sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
           }
 
-          nuxtApp.payload.data[key] = result
+          if (options.serialize !== false) {
+            nuxtApp.payload.data[key] = result
+          }
 
           asyncData.data.value = result
           asyncData.error.value = undefined

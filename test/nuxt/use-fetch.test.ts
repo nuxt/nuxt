@@ -64,6 +64,14 @@ describe('useFetch', () => {
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
 
+  it('does not write resolved data to the payload with `serialize: false`', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data } = await useFetch('/api/test', { key: 'serialize-false', serialize: false })
+
+    expect(data.value).toBeDefined()
+    expect('serialize-false' in nuxtApp.payload.data).toBe(false)
+  })
+
   it('should work with reactive keys', async () => {
     registerEndpoint('/api/initial', defineEventHandler(() => ({ url: '/api/initial' })))
     registerEndpoint('/api/updated', defineEventHandler(() => ({ url: '/api/updated' })))

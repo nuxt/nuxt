@@ -295,6 +295,25 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
+  it('does not write resolved data to the payload with `serialize: false`', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('test'), { serialize: false })
+
+    expect(data.value).toBe('test')
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+  })
+
+  it('does not write cached data to the payload with `serialize: false`', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('fetched'), {
+      serialize: false,
+      getCachedData: () => 'cached',
+    })
+
+    expect(data.value).toBe('cached')
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+  })
+
   it('removes the key from payload.data and _asyncDataPromises on clear', async () => {
     const nuxtApp = useNuxtApp()
     await useAsyncData(uniqueKey, () => Promise.resolve('test'))
