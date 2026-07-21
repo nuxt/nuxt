@@ -48,6 +48,8 @@ vi.mock('../src/app/composables/router', () => ({
   }),
 }))
 
+const nuxtAppMock = { hooks: { callHook: vi.fn(() => Promise.resolve()) } } as any
+
 // Helpers for test visibility
 const EXTERNAL = 'a'
 const INTERNAL = 'RouterLink'
@@ -565,5 +567,29 @@ describe('nuxt-link:useLink', () => {
     const trailingSlash = ref<'append' | 'remove'>('append')
     const link = component.useLink({ to: '/about', trailingSlash })
     expect(link.to.value).toBe('/about/')
+  })
+
+  it('exposes prefetch state', async () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const link = component.useLink({ to: '/about', prefetchOn: 'visibility' })
+
+    expect(link.prefetched.value).toBe(false)
+    expect(link.shouldPrefetch('visibility')).toBe(true)
+    expect(link.shouldPrefetch('interaction')).toBe(false)
+
+    await link.prefetch(nuxtAppMock)
+
+    expect(link.prefetched.value).toBe(true)
+    expect(link.shouldPrefetch('visibility')).toBe(false)
+  })
+
+  it('reads prefetch props through Refs', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const noPrefetch = ref(true)
+    const link = component.useLink({ to: '/about', prefetchOn: ref('visibility' as const), noPrefetch })
+
+    expect(link.shouldPrefetch('visibility')).toBe(false)
+    noPrefetch.value = false
+    expect(link.shouldPrefetch('visibility')).toBe(true)
   })
 })

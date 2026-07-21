@@ -6,6 +6,7 @@ import type {
   InjectionKey,
   MaybeRef,
   PropType,
+  ShallowRef,
   SlotsType,
   UnwrapRef,
   VNode,
@@ -258,11 +259,43 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       return applyTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), effectiveTrailingSlash)
     })
 
+    // Prefetching
+    const prefetched = shallowRef(false)
+
+    function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
+      if (import.meta.server) { return false }
+      const prefetchOn = unref(props.prefetchOn)
+      return Boolean((!prefetched.value && (typeof prefetchOn === 'string' ? prefetchOn === mode : (prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (unref(props.prefetch) ?? options.prefetch) !== false && unref(props.noPrefetch) !== true && unref(props.target) !== '_blank' && !isSlowConnection()))
+    }
+
+    async function prefetch (nuxtApp = useNuxtApp()) {
+      if (import.meta.server) { return }
+
+      if (prefetched.value) { return }
+
+      if (href.value === null) { return }
+
+      prefetched.value = true
+
+      const path = typeof to.value === 'string'
+        ? to.value
+        : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
+      const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
+      await Promise.all([
+        nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
+        !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+      ])
+    }
+
     return {
       to,
       hasTarget,
       isAbsoluteUrl,
       isExternal,
+      //
+      prefetch,
+      prefetched,
+      shouldPrefetch,
       //
       href,
       isActive: link?.isActive ?? computed(() => to.value === router.currentRoute.value.path),
@@ -283,6 +316,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       hasTarget: ComputedRef<boolean | null | undefined>
       isAbsoluteUrl: ComputedRef<boolean>
       isExternal: ComputedRef<boolean>
+      prefetch: (nuxtApp?: NuxtApp) => Promise<void>
+      prefetched: ShallowRef<boolean>
+      shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
     }
   }
 
@@ -388,36 +424,10 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     setup (props, { slots }) {
       const router = useRouter()
 
-      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, prefetch, prefetched, shouldPrefetch } = useNuxtLink(props)
 
-      // Prefetching
-      const prefetched = shallowRef(false)
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
-
-      function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
-        if (import.meta.server) { return false }
-        return Boolean((!prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()))
-      }
-
-      async function prefetch (nuxtApp = useNuxtApp()) {
-        if (import.meta.server) { return }
-
-        if (prefetched.value) { return }
-
-        if (href.value === null) { return }
-
-        prefetched.value = true
-
-        const path = typeof to.value === 'string'
-          ? to.value
-          : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-        const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
-        await Promise.all([
-          nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
-          !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
-        ])
-      }
 
       if (import.meta.client && !props.custom) {
         checkPropConflicts(props, 'noPrefetch', 'prefetch')
