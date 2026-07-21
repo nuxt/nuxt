@@ -19,7 +19,7 @@ function makeLayer (cwd: string): NuxtConfigLayer {
 
 function createPlugin (layers: NuxtConfigLayer[], framework: 'vite' | 'webpack' = 'vite') {
   const meta = { framework, webpack: { compiler: {} } } as unknown as UnpluginContextMeta
-  const raw = LayerAliasingPlugin({ root: '/', dev: false, sourcemap: false, layers }).raw({}, meta)
+  const raw = LayerAliasingPlugin({ root: '/', dev: false, layers }).raw({}, meta)
   const entry = (Array.isArray(raw) ? raw[0] : raw) as RawPlugin
   return {
     transformInclude: entry.transformInclude!,

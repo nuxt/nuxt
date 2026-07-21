@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -6,10 +5,7 @@ import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
 import { join } from 'pathe'
 
-const nuxtEntry = fileURLToPath(new URL('../packages/nuxt/dist/index.mjs', import.meta.url))
-const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes('const _module = await jiti')
-
-describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
 
@@ -21,9 +17,9 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   }, 120 * 1000)
 
   it('default client bundle size', async () => {
-    const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'))
+    const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"113k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"120k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -35,9 +31,9 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   })
 
   it('default client bundle size (pages)', async () => {
-    const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'))
+    const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"174k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"181k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -50,7 +46,6 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
         "_nuxt/pages.js",
         "_nuxt/runtime-core.js",
         "_nuxt/server-component.js",
-        "_nuxt/utils.js",
       ]
     `)
   })
@@ -58,15 +53,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"66.7k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"271k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"462k"`)
-
-    const packages = modules.files
-      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
-      .sort()
+    const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
@@ -74,12 +64,13 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
         "destr",
         "devalue",
         "h3+rou3+srvx",
+        "nostics",
         "ocache+ohash",
         "ofetch",
         "pathe",
         "scule",
         "ufo",
-        "unctx",
+        "unhead",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
@@ -91,15 +82,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"274k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"344k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"471k"`)
-
-    const packages = modules.files
-      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
-      .sort()
+    const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
@@ -107,37 +93,80 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
         "destr",
         "devalue",
         "h3+rou3+srvx",
-        "hookable",
+        "nostics",
         "ocache+ohash",
         "ofetch",
         "pathe",
-        "perfect-debounce",
         "scule",
         "ufo",
         "uncrypto",
-        "unctx",
+        "unhead",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
+        "vue-devtools-stub",
+        "vue-router",
         "vue__server-renderer",
       ]
     `)
   })
 })
 
-async function analyzeSizes (pattern: string[], rootDir: string) {
+// we strip packages that are small enough rolldown might inline them
+// depending on humidity or the time of day
+const MERGE_BOUNDARY_PACKAGES = new Set(['unctx'])
+
+function getVendorPackages (files: string[]) {
+  return files
+    .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
+    .filter(pkg => !MERGE_BOUNDARY_PACKAGES.has(pkg))
+    .sort()
+}
+
+async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })
+  const stripPatterns = getStripPatterns(projectDir)
   let totalBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)
     const isSymlink = (await fsp.lstat(path).catch(() => null))?.isSymbolicLink()
 
     if (!isSymlink) {
-      const bytes = Buffer.byteLength(await fsp.readFile(path))
-      totalBytes += bytes
+      const contents = await fsp.readFile(path, 'utf8')
+      let normalized = contents
+      for (const pattern of stripPatterns) {
+        normalized = normalized.replaceAll(pattern, '')
+      }
+      totalBytes += Buffer.byteLength(normalized)
     }
   }
   return { files, totalBytes }
+}
+
+// Strip strings that vary by host or by build invocation but don't represent real bundle
+// content, so the byte count is stable across machines and consecutive builds.
+//
+// 1. `projectDir`: leaks into rolldown-generated identifier names. Rolldown turns a virtual
+//    module's absolute path into a JS identifier as
+//    `encodeURIComponent(path).replace(/\W/g, '_')`, so the raw, URL-encoded, and mangled
+//    forms can all appear in `.output/server/_build/server.mjs`.
+//
+// 2. `node_modules/.cache/nuxt/`: `@nuxt/kit` config loader flips `buildDir` from
+//    `<rootDir>/.nuxt` to `<rootDir>/node_modules/.cache/nuxt/.nuxt` when `.nuxt/` already
+//    exists at config-load time (the production-build-after-prior-build case), so the same
+//    fixture produces different bytes on first build vs second build on the same machine.
+//    The prefix shows up both in `//#region` chunk comments and inside mangled virtual-
+//    module identifiers.
+function getStripPatterns (projectDir: string) {
+  return [
+    ...allForms(projectDir),
+    ...allForms('node_modules/.cache/nuxt/'),
+  ]
+}
+
+function allForms (value: string) {
+  const encoded = encodeURIComponent(value)
+  return [value, encoded, encoded.replace(/\W/g, '_')]
 }
 
 function roundToKilobytes (bytes: number) {

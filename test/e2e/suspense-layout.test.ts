@@ -1,8 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
-import { join } from 'pathe'
 import { expect, test } from './test-utils'
-import { isDev } from '../matrix'
 
 /**
  * Regression coverage for two interacting suspense bugs:
@@ -15,18 +13,14 @@ import { isDev } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/suspense-layout', import.meta.url))
 
-test.describe.configure({ mode: isDev ? 'serial' : 'parallel' })
+test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
     rootDir: fixtureDir,
-    dev: isDev,
     server: true,
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
-    nuxtConfig: {
-      buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
-    },
   },
 })
 

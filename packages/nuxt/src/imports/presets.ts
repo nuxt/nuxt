@@ -54,6 +54,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/fetch',
   },
   {
+    imports: ['$fetch'],
+    from: '#build/fetch',
+  },
+  {
     imports: ['useCookie', 'refreshCookie'],
     from: '#app/composables/cookie',
   },
@@ -96,6 +100,10 @@ const granularAppPresets: InlinePreset[] = [
   {
     imports: ['usePreviewMode'],
     from: '#app/composables/preview',
+  },
+  {
+    imports: ['useLayout'],
+    from: '#app/composables/layout',
   },
   {
     imports: ['useRouteAnnouncer'],
@@ -155,6 +163,11 @@ export const scriptsStubsPreset = {
     'useScriptRedditPixel',
     'useScriptPayPal',
     'useScriptGravatar',
+    'useScriptAhrefsAnalytics',
+    'useScriptLinkedInInsight',
+    'useScriptCalendly',
+    'useScriptUsercentrics',
+    'useScriptSpeedCurve',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',

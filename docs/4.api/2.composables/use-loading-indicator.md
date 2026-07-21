@@ -1,6 +1,7 @@
 ---
 title: 'useLoadingIndicator'
 description: This composable gives you access to the loading state of the app page.
+minimalVersion: "3.9"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -23,17 +24,17 @@ It hooks into [`page:loading:start`](/docs/4.x/api/advanced/hooks#app-hooks-runt
 
 ### `isLoading`
 
-- **type**: `Ref<boolean>`
+- **type**: `Readonly<ShallowRef<boolean>>`
 - **description**: The loading state
 
 ### `error`
 
-- **type**: `Ref<boolean>`
+- **type**: `Readonly<ShallowRef<boolean>>`
 - **description**: The error state
 
 ### `progress`
 
-- **type**: `Ref<number>`
+- **type**: `Readonly<ShallowRef<number>>`
 - **description**: The progress state. From `0` to `100`.
 
 ## Methods

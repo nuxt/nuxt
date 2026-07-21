@@ -59,7 +59,7 @@ export default withMatrix({
       })
     },
     function (_options, nuxt) {
-      const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
+      const routesToDuplicate = ['/with-layout', '/with-layout2']
       const stripLayout = (page: NuxtPage): NuxtPage => ({
         ...page,
         children: page.children?.map(child => stripLayout(child)),
@@ -110,9 +110,6 @@ export default withMatrix({
         { name: 'description', content: 'Nuxt Fixture' },
       ],
     },
-    keepalive: {
-      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
-    },
   },
   css: ['~/assets/global.css'],
   vue: {
@@ -151,7 +148,7 @@ export default withMatrix({
     ],
   },
   features: {
-    inlineStyles: id => !!id && !id.includes('assets.vue'),
+    inlineStyles: id => !!id,
   },
   experimental: {
     nitroAutoImports: true,
@@ -165,6 +162,7 @@ export default withMatrix({
       selectiveClient: 'deep',
     },
     inlineRouteRules: true,
+    prefetchPreloadTags: true,
   },
   nitro: {
     publicAssets: [
@@ -175,11 +173,12 @@ export default withMatrix({
     ],
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
-      '/hydration/spa-redirection/**': { ssr: false },
+      '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
       '/route-rules/redirect': { redirect: '/' },
@@ -187,6 +186,7 @@ export default withMatrix({
       '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
+      '/payload-query': { cache: { swr: true, maxAge: 60 } },
       '/swr': { swr: 60 },
     },
     prerender: {

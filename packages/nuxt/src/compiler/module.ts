@@ -1,8 +1,8 @@
-import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, buildDiagnostics, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, normalizeExtension, toArray } from '../utils.ts'
 import { createScanPluginContext, matchWithStringOrRegex } from './utils.ts'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin, scanFileForFactories } from './plugins/keyed-function-factories.ts'
@@ -32,7 +32,6 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
     nuxt.hook('build:before', async () => {
       // Replace keyed function factory compiler macro placeholders with actual factories.
       addBuildPlugin(KeyedFunctionFactoriesPlugin({
-        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         factories: nuxt.options.optimization.keyedComposableFactories,
         alias: nuxt.options.alias,
         getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
@@ -52,15 +51,13 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       // Maintained as a mutable list so HMR can add/remove entries
       normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
         ...rest,
-        source: typeof source === 'string' ? await resolvePath(source, { fallbackToOriginal: true }) : source,
+        source: await resolvePath(source, { fallbackToOriginal: true }),
       })))
 
       addBuildPlugin(KeyedFunctionsPlugin({
-        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         keyedFunctions: normalizedKeyedFunctions,
         getKeyedFunctions: () => normalizedKeyedFunctions,
         alias: nuxt.options.alias,
-        getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
         appDir: nuxt.options.appDir,
         dev: nuxt.options.dev,
       }))
@@ -127,11 +124,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              logger.error(`[nuxt:compiler] Plugin \`${plugin.name}\` failed to scan file \`${filePath}\``, e)
+              buildDiagnostics.NUXT_B1005({ plugin: plugin.name, file: filePath, cause: e })
             }
           }))
         } catch (e) {
-          logger.error(`[nuxt:compiler] Cannot read file \`${filePath}\``, e)
+          buildDiagnostics.NUXT_B1006({ file: filePath, cause: e })
         }
       }
 
@@ -140,7 +137,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         try {
           await plugin.afterScan(nuxt)
         } catch (e) {
-          logger.error(`[nuxt:compiler] Error in \`afterScan\` hook of plugin \`${plugin.name}\``, e)
+          buildDiagnostics.NUXT_B1007({ plugin: plugin.name, cause: e })
         }
       }))
     }

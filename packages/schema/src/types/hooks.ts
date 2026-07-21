@@ -24,12 +24,23 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 // thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if RawVueCompilerOptions is available.
 export type VueTSConfig = 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
+export interface NuxtPageMeta {
+  [key: PropertyKey]: unknown
+}
+
 export interface NuxtPage {
   name?: string
   path: string
   props?: RouteRecordRaw['props']
   file?: string
-  meta?: Record<string, any>
+  /**
+   * Named view files keyed by view name, including `default`. Populated by the
+   * page scanner from the `name@view.vue` filename convention. When set, the
+   * keys are wired up to vue-router's [`components`](https://router.vuejs.org/guide/essentials/named-views.html)
+   * option so multiple `<NuxtPage name="..." />` outlets can render.
+   */
+  components?: Record<string, string>
+  meta?: NuxtPageMeta
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]

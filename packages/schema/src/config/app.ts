@@ -2,6 +2,7 @@ import process from 'node:process'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
 import type { AppHeadMetaObject } from '../types/head.ts'
 import type { NuxtAppConfig, ViewTransitionOptions } from '../types/config.ts'
 
@@ -178,7 +179,7 @@ export default defineResolvers({
         if (typeof val !== 'boolean') { return false }
         if ((await get('future.compatibilityVersion') as number) >= 5) {
           if (val) {
-            console.warn('`unhead.legacy` is ignored when `future.compatibilityVersion` >= 5. Remove deprecated head patterns (`hid`, `vmid`, `children`, `body: true`, `renderPriority`) and resolve promise values before passing to `useHead`.')
+            schemaDiagnostics.NUXT_B5013()
           }
           return false
         }

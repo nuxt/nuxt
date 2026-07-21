@@ -1,59 +1,175 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreBinaries": [
-    "prepack"
+  "ignore": [
+    "**/.nuxt/**",
+    "**/.output/**",
+    "test/fixtures/basic/app/components/Tsx.tsx"
   ],
-  "ignoreWorkspaces": ["test/fixtures/basic"],
+  "rules": {
+    "duplicates": "off"
+  },
+  "ignoreExportsUsedInFile": true,
   "ignoreDependencies": [
     "bing",
-    "uno.css"
+    "uno.css",
+    "somepath",
+    "foo",
+    "sherif",
+    "nonexistent-package",
+    "pkg-pr-new",
+    "nuxt",
+    "ofetch",
+    "@nuxt/telemetry",
+    "@nuxt/webpack-builder",
+    "@nuxt/rspack-builder",
+    "@rspack/core"
+  ],
+  "ignoreUnresolved": [
+    "^#build/",
+    "^#internal/",
+    "^#shared/",
+    "^#nitro-internal-pollyfills$",
+    "^#spa-template$",
+    "\\.\\./schema\\.ts$",
+    "\\.\\./hmr-sibling-layer$"
   ],
   "workspaces": {
     ".": {
       "entry": [
-        "scripts/*"
+        "scripts/*",
+        "test/*.ts",
+        "test/e2e/*.ts",
+        "test/runtime/app/**/*.ts",
+        "test/mocks/app-config.ts"
       ]
     },
     "test/fixtures/*": {
       "entry": [
-        "nuxt.config.{js,ts}",
-        "modules/*.ts",
-        "types.ts"
+        "**/*.{js,ts,mjs,vue}!"
+      ],
+      "paths": {
+        "~~/*": [
+          "./*"
+        ],
+        "~/*": [
+          "./*"
+        ]
+      }
+    },
+    "packages/nitro-server": {
+      "entry": [
+        "src/runtime/**/*.{js,ts,mjs}!"
+      ],
+      "ignoreDependencies": [
+        "mocked-exports",
+        "vue-devtools-stub",
+        "ohash",
+        "hookable",
+        "@babel/plugin-proposal-decorators",
+        "@babel/plugin-syntax-typescript"
       ]
     },
-    "packages/*": {
+    "packages/vite": {
       "entry": [
-        "src/index.ts",
-        "src/runtime/**/*.{js,ts,mjs}"
+        "src/fix-stacktrace.ts"
+      ],
+      "ignoreDependencies": [
+        "mocked-exports",
+        "nitropack",
+        "autoprefixer",
+        "cssnano",
+        "@babel/plugin-proposal-decorators",
+        "@babel/plugin-syntax-jsx"
+      ]
+    },
+    "packages/kit": {
+      "entry": [
+        "test/**/*-fixture/**/*.{js,ts,mjs,cjs,cts,mts,vue}"
       ]
     },
     "packages/nuxt": {
       "entry": [
-        "src/app/**/*.ts",
-        "src/app/*.ts",
-        "src/*/runtime/**/*.{ts,js}",
-        "src/core/templates.ts",
-        "src/index.ts"
-      ]
-    },
-    "packages/rspack": {
-      "entry": [
-        "../webpack/src/index.ts",
-        "../webpack/src/runtime/**/*.{js,ts,mjs}",
-        "builder.mjs"
+        "src/app/**/*.{ts,vue}!",
+        "src/*/runtime/**/*.{ts,js,vue}!",
+        "src/core/templates.ts!",
+        "meta.d.ts",
+        "test/**/*.ts",
+        "test/**/*-fixture/**/*.{js,ts,mjs,vue}"
+      ],
+      "ignoreDependencies": [
+        "@dxup/nuxt",
+        "@nuxt/devtools",
+        "@nuxt/telemetry!",
+        "@nuxt/vite-builder"
       ]
     },
     "packages/ui-templates": {
       "entry": [
-        "lib/*.ts",
-        "styles.ts"
+        "lib/*.ts"
+      ],
+      "ignoreDependencies": [
+        "@vue/shared"
       ]
     },
     "packages/webpack": {
-      "entry": [
-        "src/index.ts",
-        "src/runtime/**/*.{js,ts,mjs}",
-        "builder.mjs"
+      "ignoreDependencies": [
+        "autoprefixer",
+        "css-loader",
+        "cssnano",
+        "file-loader",
+        "postcss-import",
+        "postcss-loader",
+        "postcss-url",
+        "pug-plain-loader",
+        "raw-loader",
+        "url-loader",
+        "vue"
+      ]
+    },
+    "packages/rspack": {
+      "ignoreDependencies": [
+        "@nuxt/friendly-errors-webpack-plugin",
+        "@nuxt/kit",
+        "@types/webpack-bundle-analyzer",
+        "@vue/compiler-sfc",
+        "autoprefixer",
+        "css-loader",
+        "css-minimizer-webpack-plugin",
+        "cssnano",
+        "defu",
+        "esbuild-loader",
+        "escape-string-regexp",
+        "exsolve",
+        "file-loader",
+        "h3",
+        "h3-next",
+        "jiti",
+        "knitwork",
+        "memfs",
+        "mini-css-extract-plugin",
+        "mlly",
+        "ohash",
+        "pathe",
+        "pify",
+        "postcss",
+        "postcss-import",
+        "postcss-import-resolver",
+        "postcss-loader",
+        "postcss-url",
+        "pug-plain-loader",
+        "raw-loader",
+        "rolldown-string",
+        "rollup",
+        "seroval",
+        "time-fix-plugin",
+        "tinyglobby",
+        "ufo",
+        "unenv",
+        "unplugin",
+        "url-loader",
+        "vue",
+        "vue-bundle-renderer",
+        "webpack-bundle-analyzer"
       ]
     }
   }

@@ -2,6 +2,7 @@ export const runtimeDependencies = [
   // other deps
   'devalue',
   'klona',
+  'unhead',
   // deliberate exports from nitro builder
   '@nuxt/nitro-server/h3',
   // unjs ecosystem
@@ -13,6 +14,8 @@ export const runtimeDependencies = [
   'unctx',
   'cookie-es',
   'perfect-debounce',
+  'fnv1a-64',
+  'object-identity',
   'ohash',
   'pathe',
   'uncrypto',

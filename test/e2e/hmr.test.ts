@@ -7,6 +7,8 @@ import { expect, test } from './test-utils'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
 const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
+const siblingLayerFixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr-sibling-layer', import.meta.url))
+const siblingLayerSourceDir = fileURLToPath(new URL('../fixtures/hmr-sibling-layer', import.meta.url))
 
 test.use({
   nuxt: {
@@ -126,11 +128,12 @@ test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) 
 })
 
 test('HMR for island components', async ({ page, goto }) => {
+  const componentPath = join(fixtureDir, 'app/components/islands/HmrComponent.vue')
+  const componentContents = readFileSync(join(sourceDir, 'app/components/islands/HmrComponent.vue'), 'utf8')
+  writeFileSync(componentPath, componentContents)
+
   // Navigate to the page with the island components
   await goto('/server-component')
-
-  const componentPath = join(fixtureDir, 'app/components/islands/HmrComponent.vue')
-  const componentContents = readFileSync(componentPath, 'utf8')
 
   // Test initial state of the component
   await expect(page.getByTestId('hmr-id')).toHaveText('0')
@@ -195,7 +198,7 @@ test.describe('vite-only HMR tests', () => {
     })
 
     // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
 
     await expect.soft(button).toHaveText('1')
   })
@@ -224,9 +227,23 @@ test.describe('vite-only HMR tests', () => {
     })
 
     // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
 
     await expect.soft(button).toHaveText('1')
+  })
+
+  test('HMR for pages using JSX (#30709)', async ({ page, goto }) => {
+    const pagePath = join(fixtureDir, 'app/pages/jsx.vue')
+    const pageContents = readFileSync(join(sourceDir, 'app/pages/jsx.vue'), 'utf8')
+    writeFileSync(pagePath, pageContents)
+
+    await goto('/jsx')
+    await expect(page.getByTestId('jsx-content')).toHaveText('jsx: original')
+
+    writeFileSync(pagePath, pageContents.replace('jsx: original', 'jsx: updated'))
+    await expect(page.getByTestId('jsx-content')).toHaveText('jsx: updated', { timeout: 10000 })
+
+    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('HMR for routes', async ({ page, goto }) => {
@@ -248,7 +265,7 @@ test.describe('vite-only HMR tests', () => {
     })
 
     // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
 
     // Navigate to the new route
     await page.locator('a[href="/routes/non-existent"]').click()
@@ -367,6 +384,31 @@ test.describe('vite-only HMR tests', () => {
         !log.text.includes('No match found for location with path "/hmr-trigger"'),
     )
     expect(errors).toStrictEqual([])
+  })
+
+  // https://github.com/nuxt/nuxt/issues/34763 / https://github.com/nuxt/nuxt/issues/30169
+  test('SSR re-evaluates components in a sibling local layer', async ({ fetch }) => {
+    const componentPath = join(siblingLayerFixtureDir, 'app/components/SiblingLayerMarker.vue')
+    const original = readFileSync(join(siblingLayerSourceDir, 'app/components/SiblingLayerMarker.vue'), 'utf8')
+    writeFileSync(componentPath, original)
+
+    async function readMarker () {
+      const res = await fetch('/sibling-layer')
+      const html = await res.text()
+      const match = html.match(/data-testid="sibling-marker"[^>]*>([^<]+)</)
+      return match ? match[1] : null
+    }
+
+    // Wait for the route + component (provided by the sibling layer) to be
+    // wired up by the dev server.
+    await expect(readMarker).toBeWithPolling('v1')
+
+    writeFileSync(componentPath, original.replace(`'v1'`, `'v2'`))
+
+    // Without the SSR cache invalidation fix (c58bb749a), this poll would
+    // keep observing 'v1' because the sibling layer's module stayed cached on
+    // the SSR side even though the plugin re-ran load().
+    await expect(readMarker).toBeWithPolling('v2', { timeout: 30000 })
   })
 
   // https://github.com/nuxt/nuxt/issues/30169

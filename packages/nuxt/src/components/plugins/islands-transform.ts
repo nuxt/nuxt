@@ -1,6 +1,7 @@
 import type { Component } from '@nuxt/schema'
+import { componentDiagnostics } from '@nuxt/kit'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
@@ -52,11 +53,11 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           include: [HAS_SLOT_OR_CLIENT_RE],
         },
       },
-      async handler (code, id) {
+      async handler (code, id, transformMeta?: unknown) {
         const template = code.match(TEMPLATE_RE)
         if (!template) { return }
         const startingIndex = template.index || 0
-        const s = new MagicString(code)
+        const s = rolldownString(code, id, transformMeta)
 
         const { pathname } = parseModuleId(normalize(id))
         const isIsland = isIslandFile(pathname, options)
@@ -64,9 +65,9 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         if (!SCRIPT_RE.test(code)) {
           s.prepend('<script setup>' + IMPORT_CODE + '</script>')
         } else {
-          s.replace(SCRIPT_RE_GLOBAL, (full) => {
-            return full + IMPORT_CODE
-          })
+          for (const match of code.matchAll(SCRIPT_RE_GLOBAL)) {
+            s.appendRight(match.index + match[0].length, IMPORT_CODE)
+          }
         }
 
         let hasNuxtClient = false
@@ -134,18 +135,13 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
 
         if (hasNuxtClient) {
           if (!options.selectiveClient) {
-            console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: ${id}`)
+            componentDiagnostics.NUXT_B3007({ file: id })
           } else if (!isVite) {
-            console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: ${id}`)
+            componentDiagnostics.NUXT_B3013({ file: id })
           }
         }
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: s.generateMap({ source: id, includeContent: true }),
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

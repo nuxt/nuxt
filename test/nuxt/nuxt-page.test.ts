@@ -717,6 +717,66 @@ describe('nuxtApp._route should follow the router on tree-narrowing navigations'
   })
 })
 
+// https://github.com/nuxt/nuxt/issues/34967
+describe('NuxtPage should render child routes when the parent route omits its component', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    router.addRoute({
+      name: 'index-34967',
+      path: '/index-34967',
+      component: defineComponent({
+        name: 'index-34967',
+        render: () => h('div', { 'data-testid': 'index-34967' }, 'Index'),
+      }),
+    })
+
+    router.addRoute({
+      // parent route deliberately has no component (added via `pages:extend` without `file`)
+      name: 'parent-34967',
+      path: '/parent-34967',
+      children: [
+        {
+          name: 'child-34967',
+          path: 'child',
+          component: defineComponent({
+            name: 'child-34967',
+            render: () => h('div', { 'data-testid': 'child-34967' }, 'Child'),
+          }),
+        },
+      ],
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('index-34967')
+    router.removeRoute('parent-34967')
+  })
+
+  it('renders the child after client-side navigation into a parent without a component', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/index-34967')
+    await flushPromises()
+    expect(el.html()).toContain('Index')
+    expect(nuxtApp._route.path).toBe('/index-34967')
+
+    await navigateTo('/parent-34967/child')
+    await flushPromises()
+    expect(nuxtApp._route.path).toBe('/parent-34967/child')
+    expect(el.html()).toContain('Child')
+    expect(el.html()).not.toContain('Index')
+
+    el.unmount()
+  })
+})
+
 describe('NuxtPage should work with keepalive options', () => {
   let visits = 0
   let router: ReturnType<typeof useRouter>
@@ -805,6 +865,264 @@ describe('NuxtPage should work with keepalive options', () => {
     await navigateTo('/')
     await navigateTo('/home')
     expect(visits).toBe(1)
+    el.unmount()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33610
+  it('should keep a page alive when only that page sets keepalive in its route meta', async () => {
+    let otherVisits = 0
+    router.addRoute({
+      name: 'other',
+      path: '/other',
+      component: defineComponent({
+        name: 'other',
+        setup () {
+          otherVisits++
+          return () => h('div', 'other')
+        },
+      }),
+    })
+    const homeRoute = router.getRoutes().find(r => r.name === 'home')!
+    homeRoute.meta.keepalive = true
+
+    const el = await mountSuspended({
+      setup () {
+        return () => h(NuxtLayout, {}, { default: () => h(NuxtPage) })
+      },
+    })
+    await navigateTo('/home')
+    await navigateTo('/other')
+    await navigateTo('/home')
+    expect(visits).toBe(1)
+    expect(otherVisits).toBe(1)
+
+    delete homeRoute.meta.keepalive
+    router.removeRoute('other')
+    el.unmount()
+  })
+})
+
+// https://github.com/nuxt/nuxt/issues/35348
+describe('NuxtPage should not emit page:finish before the page:start hook chain settles', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    router.addRoute({
+      name: 'race-35348',
+      path: '/race-35348',
+      component: defineComponent({
+        name: 'race-35348',
+        async setup () {
+          await Promise.resolve()
+          return () => h('div', { 'data-testid': 'race-35348' }, 'Race')
+        },
+      }),
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('race-35348')
+  })
+
+  it('awaits a slow async page:start callback before firing page:finish', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    const order: string[] = []
+    const removeStart = nuxtApp.hooks.hook('page:start', async () => {
+      order.push('start:enter')
+      await new Promise<void>(resolve => setTimeout(resolve, 50))
+      order.push('start:exit')
+    })
+    const removeFinish = nuxtApp.hooks.hook('page:finish', () => {
+      order.push('finish')
+    })
+
+    await navigateTo('/race-35348')
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(order).toEqual(['start:enter', 'start:exit', 'finish'])
+
+    removeStart()
+    removeFinish()
+    el.unmount()
+  })
+})
+
+describe('NuxtPage route sync when leaf component is reused (#33107)', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let resolvers: Array<() => void>
+
+  beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+    resolvers = []
+
+    // A single component matched by two different paths (like a catch-all or `[id]` page)
+    router.addRoute({
+      name: 'items',
+      path: '/items/:id',
+      component: defineComponent({
+        name: 'items',
+        async setup () {
+          const route = useRoute()
+          await new Promise<void>((resolve) => { resolvers.push(resolve) })
+          return () => h('div', { 'data-testid': 'item-page' }, `item:${route.params.id}`)
+        },
+      }),
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('items')
+  })
+
+  it('does not update the route read outside <NuxtPage> before a param navigation to the same component resolves', async () => {
+    const el = await mountSuspended({
+      setup () {
+        // read outside the page's `<RouteProvider>`, so this resolves to the deferred `nuxtApp._route`
+        const route = useRoute()
+        return () => h('div', [
+          h('span', { 'data-testid': 'outer-path' }, route.path),
+          h(NuxtPage),
+        ])
+      },
+    })
+
+    await navigateTo('/items/a')
+    resolvers.at(-1)!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-path"]').text()).toBe('/items/a')
+    expect(el.get('[data-testid="item-page"]').text()).toBe('item:a')
+
+    await navigateTo('/items/b')
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-path"]').text()).toBe('/items/a')
+    expect(el.get('[data-testid="item-page"]').text()).toBe('item:a')
+
+    resolvers.at(-1)!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-path"]').text()).toBe('/items/b')
+    expect(el.get('[data-testid="item-page"]').text()).toBe('item:b')
+
+    el.unmount()
+  })
+
+  it('still syncs the route immediately on a query-only navigation that does not remount the page (#34918)', async () => {
+    const el = await mountSuspended({
+      setup () {
+        const route = useRoute()
+        return () => h('div', [
+          h('span', { 'data-testid': 'outer-full-path' }, route.fullPath),
+          h(NuxtPage),
+        ])
+      },
+    })
+
+    await navigateTo('/items/a')
+    resolvers.at(-1)!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-full-path"]').text()).toBe('/items/a')
+
+    await navigateTo('/items/a?page=2')
+    await flushPromises()
+
+    expect(el.get('[data-testid="outer-full-path"]').text()).toBe('/items/a?page=2')
+
+    el.unmount()
+  })
+})
+
+// Bug #6592
+describe('NuxtPage with page keys', () => {
+  let router: ReturnType<typeof useRouter>
+  let setupRuns = 0
+
+  function addChildParentRoute (name: string, key: string | ((route: ReturnType<typeof useRoute>) => string)) {
+    router.addRoute({
+      name,
+      path: `/${name}`,
+      component: defineComponent({
+        name,
+        setup: () => () => h('div', [`${name}`, h(NuxtPage)]),
+      }),
+      children: [
+        {
+          name: `${name}-foo`,
+          path: ':foo',
+          meta: { key },
+          component: defineComponent({
+            name: `${name}-foo`,
+            setup () {
+              setupRuns++
+              const route = useRoute()
+              return () => h('div', { id: `page-${route.params.foo}` }, `[${name}/${route.params.foo}]`)
+            },
+          }),
+        },
+      ],
+    })
+  }
+
+  beforeEach(() => {
+    router = useRouter()
+    setupRuns = 0
+    addChildParentRoute('fixed-keyed-child-parent', 'keyed')
+    addChildParentRoute('keyed-child-parent', route => 'keyed-' + route.params.foo)
+  })
+
+  afterEach(async () => {
+    await navigateTo('/')
+    await flushPromises()
+    router.removeRoute('fixed-keyed-child-parent')
+    router.removeRoute('keyed-child-parent')
+  })
+
+  it('should not cause run of setup if navigation not change page key and layout', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/fixed-keyed-child-parent/0')
+    await flushPromises()
+    expect(setupRuns).toBe(1)
+
+    await navigateTo('/fixed-keyed-child-parent/1')
+    await flushPromises()
+    expect(el.html()).toContain('id="page-1"')
+    expect(setupRuns).toBe(1)
+
+    el.unmount()
+  })
+
+  it('will cause run of setup if navigation changed page key', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/keyed-child-parent/0')
+    await flushPromises()
+    expect(setupRuns).toBe(1)
+
+    await navigateTo('/keyed-child-parent/1')
+    await flushPromises()
+    expect(el.html()).toContain('id="page-1"')
+    expect(setupRuns).toBe(2)
+
     el.unmount()
   })
 })

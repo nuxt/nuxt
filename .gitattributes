@@ -1,0 +1,7 @@
+# Committed generated ui-templates output; pin LF so regeneration on any OS diffs cleanly.
+packages/nuxt/src/app/components/error-404.vue text eol=lf
+packages/nuxt/src/app/components/error-500.vue text eol=lf
+packages/nuxt/src/app/components/welcome.vue text eol=lf
+packages/nitro-server/src/runtime/templates/error-500.ts text eol=lf
+packages/nitro-server/src/templates/spa-loading-icon.ts text eol=lf
+packages/schema/src/templates/loading.ts text eol=lf

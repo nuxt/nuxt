@@ -1,7 +1,14 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import { genDynamicImport, genDynamicTypeImport, genObjectKey } from 'knitwork'
+import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
-import type { NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import type { ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+
+type ResolvedComponentType = {
+  pascalName: string
+  type: string
+  meta?: ComponentMeta
+}
 
 type ImportMagicCommentsOptions = {
   chunkName: string
@@ -79,7 +86,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
-      return 'export const islandComponents = {}'
+      return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)\nexport const providePageIslandDepth = () => {}'
     }
 
     const components = app.components
@@ -90,13 +97,18 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
     )
 
-    const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
+    const serverPages = pages?.filter(p => (p.mode === 'server' && p.file && p.name)) || []
+    const pageExports = serverPages.map((p) => {
       return `"page_${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
-    }) || []
+    })
+    // map each `page_<name>` to a stable, opaque marker derived from the page's file path.
+    const pageIslandRoutes = serverPages.map((p) => {
+      return `  "page_${p.name}": ${JSON.stringify(hash(relative(nuxt.options.rootDir, p.file!)))}`
+    })
 
     return [
       'import { defineAsyncComponent } from \'vue\'',
-      'export const islandComponents = import.meta.client ? {} : {',
+      'export const islandComponents = import.meta.client ? Object.create(null) : Object.assign(Object.create(null), {',
       islands.map(
         (c) => {
           const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
@@ -104,15 +116,55 @@ export const componentsIslandsTemplate: NuxtTemplate = {
           return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
         },
       ).concat(pageExports).join(',\n'),
-      '}',
+      '})',
+      'export const pageIslandRoutes = import.meta.client ? Object.create(null) : Object.assign(Object.create(null), {',
+      pageIslandRoutes.join(',\n'),
+      '})',
+      // Only pull `vue-router` (and its devtools chain) into the server bundle
+      // when the app actually has server page islands to render.
+      serverPages.length
+        ? [
+            'import { computed, provide } from \'vue\'',
+            'import { viewDepthKey } from \'vue-router\'',
+            'export const providePageIslandDepth = import.meta.client ? () => {} : (route, expectedIslandKey) => {',
+            '  provide(viewDepthKey, computed(() => {',
+            '    const depth = route.matched.findIndex(m => m.components?.default?.__nuxt_island === expectedIslandKey)',
+            '    return depth === -1 ? 0 : depth + 1',
+            '  }))',
+            '}',
+          ].join('\n')
+        : 'export const providePageIslandDepth = () => {}',
     ].join('\n')
   },
 }
 
 const NON_VUE_RE = /\b\.(?!vue)\w+$/g
+
+function escapeJsDocText (value: string) {
+  return value.replace(/\*\//g, '* /')
+}
+
+function renderComponentJsDoc (meta?: ComponentMeta, options: { indent?: string, lazyName?: string } = {}) {
+  if (!meta?.description && !meta?.docsUrl) {
+    return ''
+  }
+  const indent = options.indent || ''
+  const sections: string[] = []
+  if (options.lazyName) {
+    sections.push(`Lazy-loaded version of \`<${options.lazyName}>\`.`)
+  }
+  if (meta?.description) {
+    sections.push(escapeJsDocText(meta.description))
+  }
+  if (meta?.docsUrl) {
+    sections.push(`@see ${escapeJsDocText(meta.docsUrl)}`)
+  }
+  return `${indent}/**\n${indent} * ${sections.join(`\n${indent} *\n${indent} * `)}\n${indent} */\n`
+}
+
 function resolveComponentTypes (app: NuxtApp, baseDir: string, dynamic: boolean) {
   const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
-  const componentTypes: Array<[string, string]> = []
+  const componentTypes: ResolvedComponentType[] = []
   for (const c of app.components) {
     if (c.island) {
       continue
@@ -130,7 +182,7 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string, dynamic: boolean)
         type = `IslandComponent<${type}>`
       }
     }
-    componentTypes.push([c.pascalName, type])
+    componentTypes.push({ pascalName: c.pascalName, type, meta: c.meta })
   }
 
   return componentTypes
@@ -173,8 +225,8 @@ import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 
-${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: LazyComponent<${type}>`).join('\n')}
+${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(meta)}export const ${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(meta, { lazyName: pascalName })}export const Lazy${pascalName}: LazyComponent<${type}>`).join('\n')}
 
 export const componentNames: string[]
 `
@@ -190,8 +242,8 @@ import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 interface _GlobalComponents {
-${componentTypes.map(([pascalName, type]) => `  ${genObjectKey(pascalName)}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `  ${genObjectKey(`Lazy${pascalName}`)}: LazyComponent<${type}>`).join('\n')}
+${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(meta, { indent: '  ' })}  ${genObjectKey(pascalName)}: ${type}`).join('\n')}
+${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(meta, { indent: '  ', lazyName: pascalName })}  ${genObjectKey(`Lazy${pascalName}`)}: LazyComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {

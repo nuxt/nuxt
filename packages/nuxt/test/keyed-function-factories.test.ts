@@ -694,7 +694,7 @@ describe('keyed function factories plugin', () => {
     },
   ]
 
-  const transformPlugin = KeyedFunctionFactoriesPlugin({ sourcemap: false, factories, alias: {}, getAutoImports: () => Promise.resolve([]) }).raw({}, {} as any) as {
+  const transformPlugin = KeyedFunctionFactoriesPlugin({ factories, alias: {}, getAutoImports: () => Promise.resolve([]) }).raw({}, {} as any) as {
     transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
   }
 
@@ -987,7 +987,6 @@ describe('keyed function factories plugin', () => {
     ]
 
     const transformPluginWithAutoImports = KeyedFunctionFactoriesPlugin({
-      sourcemap: false,
       factories: factoriesWithAlias,
       alias,
       getAutoImports: () => Promise.resolve(autoImports),
@@ -1011,7 +1010,6 @@ describe('keyed function factories plugin', () => {
       ]
 
       const plugin = KeyedFunctionFactoriesPlugin({
-        sourcemap: false,
         factories: factoriesWithAlias,
         alias,
         getAutoImports: () => Promise.resolve(wrongAutoImports),

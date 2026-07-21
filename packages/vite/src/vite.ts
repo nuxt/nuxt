@@ -33,8 +33,10 @@ import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
+import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
+import { ServerEntryPlugin } from './plugins/server-entry.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
@@ -52,7 +54,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
     nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
-    nitro.options.virtual['#internal/nuxt/vite-node-runner'] = () => `export { default } from ${JSON.stringify(resolve(distDir, 'vite-node-runner'))}`
+    nitro.options.virtual['#internal/nuxt/vite-node-runner.mjs'] = () => `export { default } from ${JSON.stringify(resolve(distDir, 'vite-node-runner'))}`
   }
 
   let allowDirs = [
@@ -70,9 +72,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ]),
   ].filter(d => d && existsSync(d))
 
-  for (const dir of allowDirs) {
-    allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
-  }
+  allowDirs = allowDirs.filter(d =>
+    !allowDirs.some(other => other !== d && d.startsWith(other + '/')),
+  )
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
@@ -109,20 +111,25 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           }
         },
       },
-      builder: {
-        async buildApp (builder) {
-          // run serially to preserve the order of client, server builds
-          const environments = Object.values(builder.environments)
-          for (const environment of environments) {
-            logger.restoreAll()
-            nuxt._perf?.startPhase(`vite:${environment.name}`)
-            await builder.build(environment)
-            nuxt._perf?.endPhase(`vite:${environment.name}`)
-            logger.wrapAll()
-            await nuxt.callHook('vite:compiled')
-          }
-        },
-      },
+      // `nitro/vite`'s plugin runs the build process, including prerendering + asset copying
+      ...nuxt.options.experimental.nitroViteEnvironment
+        ? {}
+        : {
+            builder: {
+              async buildApp (builder) {
+                // run serially to preserve the order of client, server builds
+                const environments = Object.values(builder.environments)
+                for (const environment of environments) {
+                  logger.restoreAll()
+                  nuxt._perf?.startPhase(`vite:${environment.name}`)
+                  await builder.build(environment)
+                  nuxt._perf?.endPhase(`vite:${environment.name}`)
+                  logger.wrapAll()
+                  await nuxt.callHook('vite:compiled')
+                }
+              },
+            },
+          },
       environments: {
         client: {
           consumer: 'client',
@@ -186,9 +193,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveExternalsPlugin(nuxt),
         vuePlugin(viteConfig.vue),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
-        ViteNodePlugin(nuxt),
         ClientManifestPlugin(nuxt),
+        // After ClientManifestPlugin so its dev `clientManifest` override wins.
+        ViteNodePlugin(nuxt),
+        ServerEntryPlugin(nuxt, entry),
         DevServerPlugin(nuxt),
+        TemplateHMRPlugin(nuxt),
         // lower decorators after Vue SFC compilation and TypeScript stripping
         DecoratorsPlugin(nuxt),
         // add resolver for files in public assets directories
@@ -269,6 +279,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
+    nuxt.hook('close', () => server.close())
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
   nuxt._perf?.endPhase('vite:dev-server')

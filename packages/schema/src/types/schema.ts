@@ -12,7 +12,7 @@ import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
-import type { NuxtLinkOptions } from 'nuxt/app'
+import type { NuxtLinkOptions } from '#app/types'
 import type { FetchOptions } from 'ofetch'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
@@ -700,6 +700,17 @@ export interface ConfigSchema {
   test: boolean
 
   /**
+   * The active Nuxt environment name, used by `c12` to select configuration
+   * overrides (e.g. `$env.staging`). Defaults to the explicit `envName` passed to
+   * `loadNuxtConfig` (e.g. via `nuxt --envName`), falling back to `'development'`
+   * in dev mode and `'production'` otherwise.
+   *
+   * Exposed to runtime app code as `import.meta.envName`.
+   *
+   */
+  envName: string
+
+  /**
    * Set to `true` to enable debug mode.
    *
    * At the moment, it prints out hook names and timings on the server, and logs hook arguments as well in the browser.
@@ -1209,13 +1220,15 @@ export interface ConfigSchema {
      * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve performance in large projects or on Windows platforms.
      * You can also set this to `chokidar` to watch all files in your source directory.
      *
+     * Set to `'builder'` to reuse the active builder's own file watcher (e.g. Vite's `server.watcher`) instead of starting a second one. If the active builder does not provide a watcher, Nuxt falls back to its default selection.
+     *
      * @see [chokidar](https://github.com/paulmillr/chokidar)
      *
      * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      *
-     * @default 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
+     * @default 'builder' if `future.compatibilityVersion` >= 5, otherwise 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
      */
-    watcher: 'chokidar' | 'parcel' | 'chokidar-granular'
+    watcher: 'chokidar' | 'parcel' | 'chokidar-granular' | 'builder'
 
     /**
      * Enable native async context to be accessible for nested composables
@@ -1518,6 +1531,16 @@ export interface ConfigSchema {
     purgeCachedData: boolean
 
     /**
+     * When a `<NuxtLink>` is prefetched and the destination route has payload extraction enabled (the default for prerendered and cached routes), forward any `<link rel="preload">` hints that the destination set via `useHead` (or via modules like `@nuxt/image`'s `<NuxtImg preload>`) into the current document.
+     *
+     * The forwarded links are downgraded from `rel="preload"` to `rel="prefetch"` so they don't compete with the current page's critical resources. Only user-defined head tags are forwarded; build-time JS/CSS chunk preloads are not.
+     *
+     * @default false
+     * @see [Issue #34953](https://github.com/nuxt/nuxt/issues/34953)
+     */
+    prefetchPreloadTags: boolean
+
+    /**
      * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
      *
      * @default true
@@ -1596,6 +1619,42 @@ export interface ConfigSchema {
     nitroAutoImports: boolean
 
     /**
+     * Enable SSR streaming to improve Time to First Byte (TTFB).
+     *
+     * When enabled, the server sends the HTML shell (head, styles, preload hints)
+     * immediately and streams the rendered body content progressively.
+     *
+     * Streaming is automatically disabled for bot/crawler user agents to ensure
+     * search engines receive fully-rendered HTML. You can opt a route out of
+     * streaming via `routeRules` with `streaming: false`.
+     *
+     * Set to `true` to enable with defaults, or pass an object to configure options.
+     *
+     * @default false
+     * @see https://github.com/nuxt/nuxt/issues/4753
+     */
+    ssrStreaming: boolean | {
+      enabled?: boolean
+      /**
+       * A regular expression matching bot/crawler user agents. Requests matching
+       * the pattern are served fully-buffered (non-streamed) responses for SEO
+       * safety.
+       *
+       * @default /bot\b|crawl|spider|slurp|facebookexternalhit|google\b|bing\b|yandex\b|baidu\b|duckduck/i
+       */
+      botRegex?: RegExp
+    }
+
+    /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Only effective when using `@nuxt/vite-builder`.
+     * @default false
+     */
+    nitroViteEnvironment: boolean
+
+    /**
      * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.
      *
      * Hookable v6 may return `void` instead of `Promise<void>` when there are no registered
@@ -1655,7 +1714,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | DotenvOptions }
+  _loadOptions: { dotenv?: boolean | DotenvOptions, envName?: string | false }
 
   /**
    *
@@ -1715,6 +1774,8 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
+   * @note `sensitive` defaults to `true` with `future.compatibilityVersion >= 5`.
+   *
    * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */
     options: RouterConfigSerializable
@@ -1758,14 +1819,30 @@ export interface ConfigSchema {
     typeCheck: boolean | 'build'
 
     /**
-     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
+     * Extend the generated tsconfig files with shared options.
+     *
+     * `compilerOptions` set here apply to all generated tsconfigs (`.nuxt/tsconfig.app.json`, `.nuxt/tsconfig.server.json`, `.nuxt/tsconfig.node.json` and `.nuxt/tsconfig.shared.json`), while `include`, `exclude` and `vueCompilerOptions` apply only to `.nuxt/tsconfig.app.json` (and the legacy `.nuxt/tsconfig.json`).
+     *
+     * Two groups of `compilerOptions` are exceptions: DOM- and Vue-specific options (such as `lib`, `jsx` and `jsxImportSource`) apply only to `.nuxt/tsconfig.app.json`, and `types`, `paths` and `noEmit` are managed by Nuxt per context, so they cannot be set globally for the `node`, `shared` and `server` tsconfigs.
+     *
+     * Use `appTsConfig`, `serverTsConfig`, `nodeTsConfig` or `sharedTsConfig` for context-specific overrides; they take precedence over this option.
      */
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option. Options set here take precedence over `tsConfig`.
+     */
+    appTsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
     /**
      * You can extend the generated `.nuxt/tsconfig.node.json` using this option.
      */
     nodeTsConfig: TSConfig
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.server.json` using this option. Options set here take precedence over `tsConfig`.
+     */
+    serverTsConfig: TSConfig
 
     /**
      * You can extend the generated `.nuxt/tsconfig.shared.json` using this option.

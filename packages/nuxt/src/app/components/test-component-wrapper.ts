@@ -1,10 +1,11 @@
 import { defineComponent, h } from 'vue'
+import type { DefineSetupFnComponent } from 'vue'
 import { parseQuery } from 'vue-router'
-import { resolve } from 'pathe'
-// @ts-expect-error virtual file
+import { isAbsolute, relative, resolve } from 'pathe'
+import { renderDiagnostics } from '../diagnostics/render'
 import { devRootDir } from '#build/nuxt.config.mjs'
 
-export default (url: string) => defineComponent({
+const testComponentWrapper = (url: string): DefineSetupFnComponent<{}> => defineComponent({
   name: 'NuxtTestComponentWrapper',
   inheritAttrs: false,
   async setup (props, { attrs }) {
@@ -21,8 +22,9 @@ export default (url: string) => defineComponent({
       }
     }
     const path = resolve(query.path as string)
-    if (!path.startsWith(devRootDir)) {
-      throw new Error(`[nuxt] Cannot access path outside of project root directory: \`${path}\`.`)
+    const rel = relative(devRootDir, path)
+    if (rel.startsWith('..') || isAbsolute(rel)) {
+      throw renderDiagnostics.NUXT_E4008({ path })
     }
     const comp = await import(/* @vite-ignore */ path as string).then(r => r.default)
     return () => [
@@ -32,4 +34,6 @@ export default (url: string) => defineComponent({
       ]),
     ]
   },
-})
+}) as unknown as DefineSetupFnComponent<{}>
+
+export default testComponentWrapper

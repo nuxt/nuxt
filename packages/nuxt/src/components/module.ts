@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, componentDiagnostics, defineNuxtModule, findPath, getLayerDirectories, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -62,8 +62,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // TODO: remove in Nuxt v5
     if (nuxt.options.experimental.normalizeComponentNames) {
-      addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.client, getComponents }), { server: false })
-      addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
+      addBuildPlugin(ComponentNamePlugin({ getComponents }))
     }
 
     // Resolve dirs
@@ -100,10 +99,25 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          logger.warn('Components directory not found: `' + dirPath + '`')
+          componentDiagnostics.NUXT_B3001({ dirPath })
         }
 
-        const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs
+        const inNodeModules = dirPath.includes('node_modules')
+
+        // Watch external component dirs so newly added components are picked up in
+        // dev without a restart. Layer app dirs are already watched, and the
+        // builder watchers unconditionally ignore `node_modules`, so paths there
+        // cannot be watched regardless of the `watch` option.
+        if (nuxt.options.dev && dirOptions.watch !== false && !inNodeModules) {
+          const coveredByLayer = getLayerDirectories(nuxt).some(dirs =>
+            dirPath === dirs.app.replace(/\/$/, '') || dirPath.startsWith(dirs.app),
+          )
+          if (!coveredByLayer && !nuxt.options.watch.includes(dirPath)) {
+            nuxt.options.watch.push(dirPath)
+          }
+        }
+
+        const dirs = inNodeModules ? libraryComponentDirs : userComponentDirs
 
         dirs.push({
           global: moduleOptions.global,
@@ -182,13 +196,22 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:templates', async (app) => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
+      const modesByName = new Map<string, Set<string | undefined>>()
+      for (const component of newComponents) {
+        let modes = modesByName.get(component.pascalName)
+        if (!modes) {
+          modes = new Set()
+          modesByName.set(component.pascalName, modes)
+        }
+        modes.add(component.mode)
+      }
       // add server placeholder for .client components server side. issue: #7085
       for (const component of newComponents) {
         if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && isAbsolute(component.filePath) && !existsSync(component.filePath)) {
           // attempt to resolve component path
           component.filePath = resolveModulePath(resolveAlias(component.filePath), { try: true, extensions: nuxt.options.extensions }) ?? component.filePath
         }
-        if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
+        if (component.mode === 'client' && !modesByName.get(component.pascalName)?.has('server')) {
           newComponents.push({
             ...component,
             _raw: true,
@@ -196,9 +219,10 @@ export default defineNuxtModule<ComponentsOptions>({
             filePath: serverPlaceholderPath,
             chunkName: 'components/' + component.kebabName,
           })
+          modesByName.get(component.pascalName)!.add('server')
         }
-        if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
-          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
+        if (component.mode === 'server' && !nuxt.options.ssr && !modesByName.get(component.pascalName)?.has('client')) {
+          componentDiagnostics.NUXT_B3002({ component: component.pascalName })
         }
       }
       context.components = newComponents
@@ -209,7 +233,7 @@ export default defineNuxtModule<ComponentsOptions>({
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
-    addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
+    addBuildPlugin(TreeShakeTemplatePlugin({ getComponents }), { client: false })
 
     const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
 
@@ -222,18 +246,16 @@ export default defineNuxtModule<ComponentsOptions>({
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client' }), { server: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server' }), { client: false })
 
     if (nuxt.options.experimental.lazyHydration) {
       addBuildPlugin(LazyHydrationTransformPlugin({
         ...sharedLoaderOptions,
-        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
       }), { prepend: true })
 
       addBuildPlugin(LazyHydrationMacroTransformPlugin({
         ...sharedLoaderOptions,
-        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
         alias: nuxt.options.alias,
       }))
 

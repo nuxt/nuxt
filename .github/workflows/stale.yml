@@ -4,15 +4,16 @@ on:
   schedule:
     - cron: '30 1 * * *' # run every day
 
-permissions:
-  issues: write
+permissions: {}
 
 jobs:
   stale-reproduction:
     runs-on: ubuntu-slim
     if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
+    permissions:
+      issues: write
     steps:
-      - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10.2.0
+      - uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10.4.0
         with:
           days-before-stale: -1 # Issues and PR will never be flagged stale automatically.
           stale-issue-label: 'needs reproduction' # Label that flags an issue as stale.
@@ -27,8 +28,10 @@ jobs:
   stale-bot:
     runs-on: ubuntu-slim
     if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
+    permissions:
+      issues: write
     steps:
-      - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10.2.0
+      - uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10.4.0
         with:
           days-before-stale: -1 # Issues and PR will never be flagged stale automatically.
           stale-issue-label: 'possible bot' # Label that flags an issue as stale.

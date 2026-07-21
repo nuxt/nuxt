@@ -1,10 +1,10 @@
-import { resolveAlias } from '@nuxt/kit'
+import { buildDiagnostics, resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, logger, stripExtension } from '../../utils.ts'
 import type { ESTree } from 'rolldown/utils'
 import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
@@ -24,7 +24,7 @@ interface ParsedKeyedFunctionFactory {
  * Check if the node is a named export of a keyed function factory, and if so,
  * return its VariableDeclarator node.
  */
-export function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
+function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
   if (node.type === 'ExportNamedDeclaration') {
     const parsed: ParsedKeyedFunctionFactory[] = []
 
@@ -133,7 +133,7 @@ function createFactoryProcessor (
     for (const parsedFactoryCall of parsedFactoryCalls) {
       const factoryMeta = getFactoryByLocalName(parsedFactoryCall.factoryName)
       if (!factoryMeta) {
-        logger.error(`[nuxt:compiler] No factory function found for \`${parsedFactoryCall.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`)
+        buildDiagnostics.NUXT_B1008({ function: parsedFactoryCall.functionName, file: filePath })
         continue
       }
 
@@ -382,7 +382,6 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
 // -------- unplugin for replacing keyed factory macros --------
 
 interface KeyedFunctionFactoriesPluginOptions {
-  sourcemap: boolean
   factories: KeyedFunctionFactory[]
   alias: Record<string, string>
   getAutoImports: () => Promise<Import[]>
@@ -417,8 +416,8 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
         },
         code: { include: KEYED_FUNCTION_FACTORY_NAMES_RE },
       },
-      async handler (code, id) {
-        const s = new MagicString(code)
+      async handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
         const scopeTracker = new ScopeTracker({
           preserveExitedScopes: true,
         })
@@ -480,14 +479,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           },
         })
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   },
   experimental: { appManifest: true },
   compatibilityDate: 'latest',
+
   // @ts-expect-error Should show error on unknown properties
   unknownProp: '',
 })

@@ -4,6 +4,7 @@ import { serve } from 'srvx/node'
 import type { ServerHandler } from 'srvx'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { getPort } from 'get-port-please'
+import { $fetch } from '#build/fetch'
 
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
 import NuxtIsland from '../../packages/nuxt/src/app/components/nuxt-island'
@@ -67,6 +68,10 @@ vi.mock('#build/nuxt.config.mjs', () => {
     alwaysRunFetchOnKeyChange: false,
     asyncCallHook: false,
     clientNodePlaceholder: true,
+    hasPluginDependencies: true,
+    hasParallelPlugins: true,
+    hasPluginHooks: true,
+    hasIslandOptOutPlugins: true,
   }
 })
 
@@ -88,15 +93,16 @@ function islandResponse (data: unknown) {
   }
 }
 
+let fetchRawSpy: ReturnType<typeof vi.spyOn> | undefined
+
 function stubFetchRaw (impl: (...args: any[]) => any) {
-  const raw = vi.fn(impl)
-  const $fetch = Object.assign(vi.fn(), { raw, create: () => $fetch })
-  vi.stubGlobal('$fetch', $fetch)
-  return raw
+  fetchRawSpy = vi.spyOn($fetch, 'raw').mockImplementation(impl)
+  return fetchRawSpy
 }
 
 afterEach(() => {
-  vi.unstubAllGlobals()
+  fetchRawSpy?.mockRestore()
+  fetchRawSpy = undefined
 })
 
 describe('runtime server component', () => {

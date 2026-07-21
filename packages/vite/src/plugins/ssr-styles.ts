@@ -1,14 +1,17 @@
+import process from 'node:process'
+import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
-import { dirname, relative } from 'pathe'
+import { basename, dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
-import type { Nuxt } from '@nuxt/schema'
-import MagicString from 'magic-string'
+import { setBuildOutput } from '@nuxt/kit'
+import type { Nuxt, NuxtPage } from '@nuxt/schema'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import { findStaticImports } from 'mlly'
+import genericNames from 'generic-names'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { resolveClientEntry } from '../utils/config.ts'
-import { useNitro } from '@nuxt/kit'
 import escapeStringRegexp from 'escape-string-regexp'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
@@ -17,8 +20,36 @@ const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 const NUXT_COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 const STYLE_QUERY_RE = /[?&]type=style/
 
+/**
+ * Wrap a string `generateScopedName` pattern into a function that strips any
+ * Vite query string (e.g. `?inline&used`) from the resource path before it is
+ * hashed.
+ *
+ * When `features.inlineStyles` is enabled, this plugin imports CSS files with
+ * `?inline&used` appended to the module id. For string patterns Vite delegates
+ * scoped-name generation to `generic-names`, which folds the full resource path
+ * (query included) into the `[hash]`. The client build processes the same file
+ * without the query, so it produces a different hash and therefore different
+ * class names, leaving the SSR markup mismatched against the inlined `<style>`
+ * tags (see https://github.com/nuxt/nuxt/issues/35591 and
+ * https://github.com/vitejs/vite/issues/22957).
+ *
+ * Delegating to `generic-names` with `process.cwd()` (the same context Vite
+ * uses) means the generated names stay byte-identical to the client build for
+ * every supported token, not just `[local]`/`[hash]`.
+ */
+function wrapStringGenerateScopedName (
+  pattern: string,
+  hashPrefix: string,
+): (localName: string, resourcePath: string) => string {
+  const generate = genericNames(pattern, { context: process.cwd(), hashPrefix })
+  return (localName, resourcePath) => generate(localName, resourcePath.replace(QUERY_RE, ''))
+}
+
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
+
+  const envApi = nuxt.options.experimental.nitroViteEnvironment
 
   const chunksWithInlinedCSS = new Set<string>()
   // For each output chunk that originates from a source file, the set of CSS
@@ -29,6 +60,19 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
   const stripQuery = (id: string) => id.replace(QUERY_RE, '')
 
+  // Add the `inline&used` params used to extract a module's CSS for SSR
+  // inlining. Vite/plugin-vue keep the `lang.<ext>` marker last so the id ends
+  // in a CSS extension, which is what vite's `isCSSRequest` and user plugins
+  // gate on. Insert the params *before* that trailing marker so the id keeps its
+  // CSS suffix and stays visible to extension-gated transforms. (#29232)
+  const withInlineQuery = (id: string) => {
+    const match = id.match(/([?&])lang\.[^&?]+$/)
+    if (match) {
+      return id.slice(0, match.index) + match[1] + 'inline&used&' + id.slice(match.index! + 1)
+    }
+    return id + (id.includes('?') ? '&' : '?') + 'inline&used'
+  }
+
   // CSS source module ids (with `?...` query stripped) whose styles will be
   // inlined into the SSR response. Built up in `build:manifest` from the
   // components whose styles are actually emitted as inline `<style>` tags
@@ -38,12 +82,17 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const inlinedCSSModuleIds = new Set<string>()
 
   // Remove CSS entries for files that will have inlined styles
-  const nitro = useNitro()
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
 
-    for (const { cssIds, files, inBundle } of Object.values(cssMap)) {
-      if (!cssIds || !inBundle || !files.length) { continue }
+    // The set of components whose CSS is inlined is derived from `cssMap`
+    // directly (entries with bundled, non-empty CSS). `build:manifest` can fire
+    // before the styles `generateBundle` has run, so we must not depend on the
+    // separately-tracked `chunksWithInlinedCSS` being populated yet.
+    for (const [id, { cssIds, files, inBundle }] of Object.entries(cssMap)) {
+      if (!inBundle || !files.length) { continue }
+      chunksWithInlinedCSS.add(id)
+      if (!cssIds) { continue }
       for (const cssId of cssIds) {
         inlinedCSSModuleIds.add(cssId)
       }
@@ -97,14 +146,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       }
     }
 
-    nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
-    nitro.options._config.virtual ||= {}
-    nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
+    setBuildOutput('entryIds', () => `export default ${JSON.stringify(Array.from(entryIds))}`, nuxt)
   })
 
   const cssMap: Record<string, { files: string[], inBundle?: boolean, cssIds?: Set<string> }> = {}
   // Track emitted CSS chunk refs globally to avoid duplicate emissions across transform calls.
   const emittedFileRefs: Record<string, string> = {}
+  // map for source file to a unique chunk-name prefix
+  const chunkNamePrefixes = new Map<string, string>()
+  const usedChunkNamePrefixes = new Set<string>()
 
   const options = {
     shouldInline: nuxt.options.features.inlineStyles,
@@ -131,17 +181,39 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   )
   const islandPaths = new Set(islands.map(c => c.filePath))
 
+  // Server pages (.server.vue) are not in the components list but still need
+  // their CSS extracted for inline delivery via the island handler.
+  const flattenPages = (pages?: NuxtPage[]): NuxtPage[] =>
+    pages?.flatMap(p => [p, ...flattenPages(p.children)]) ?? []
+  const pages = flattenPages(nuxt.apps.default!.pages)
+  const serverPages = pages.filter(({ mode, file }) => mode === 'server' && file)
+  const serverPagePaths = new Set(serverPages.map(({ file }) => file!))
+
   let entry: string
 
   return {
     name: 'ssr-styles',
+    config (config) {
+      if (!nuxt.options.features.inlineStyles) { return }
+      const modules = config.css?.modules
+      if (typeof modules !== 'object' || !modules || typeof modules.generateScopedName !== 'string') { return }
+      const hashPrefix = typeof modules.hashPrefix === 'string' ? modules.hashPrefix : ''
+      modules.generateScopedName = wrapStringGenerateScopedName(modules.generateScopedName, hashPrefix)
+    },
     configResolved (config) {
       entry = resolveClientEntry(config)
     },
     applyToEnvironment (environment) {
+      if (environment.name !== 'client' && environment.name !== 'ssr') { return false }
       return {
         name: `nuxt:ssr-styles:${environment.name}`,
         enforce: 'pre',
+        buildStart () {
+          if (!envApi && this.environment.name === 'ssr') {
+            const stylesPath = resolve(this.environment.config.build.outDir, 'styles.mjs')
+            setBuildOutput('ssrStyles', () => `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`, nuxt)
+          }
+        },
         resolveId: {
           order: 'pre',
           filter: {
@@ -169,18 +241,24 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           if (environment.name === 'client') { return }
 
           const emitted: Record<string, string> = {}
+          const usedNames = new Set<string>()
           for (const [file, { files, inBundle }] of Object.entries(cssMap)) {
             // File has been tree-shaken out of build (or there are no styles to inline)
             if (!files.length || !inBundle) { continue }
-            const fileName = filename(file)
+            const baseName = filename(file)
+            let assetName = `${baseName}-styles.mjs`
+            for (let i = 2; usedNames.has(assetName); i++) {
+              assetName = `${baseName}-styles-${i}.mjs`
+            }
+            usedNames.add(assetName)
             const base = typeof outputOptions.assetFileNames === 'string'
               ? outputOptions.assetFileNames
               : outputOptions.assetFileNames({
                   type: 'asset',
-                  name: `${fileName}-styles.mjs`,
-                  names: [`${fileName}-styles.mjs`],
-                  originalFileName: `${fileName}-styles.mjs`,
-                  originalFileNames: [`${fileName}-styles.mjs`],
+                  name: assetName,
+                  names: [assetName],
+                  originalFileName: assetName,
+                  originalFileNames: [assetName],
                   source: '',
                 })
 
@@ -202,7 +280,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             }
             emitted[file] = this.emitFile({
               type: 'asset',
-              name: `${fileName}-styles.mjs`,
+              name: assetName,
               source: [
                 ...importStatements,
                 `export default ${genArrayFromRaw([...exportNames])}`,
@@ -217,18 +295,22 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
           // TODO: remove css from vite preload arrays
 
+          const stylesMapEntries = Object.entries(emitted).map(([key, value]) =>
+            [key, `() => import('./${this.getFileName(value)}').then(interopDefault)`]) as [string, string][]
           this.emitFile({
             type: 'asset',
             fileName: 'styles.mjs',
             originalFileName: 'styles.mjs',
-            source:
-          [
-            'const interopDefault = r => r.default || r || []',
-            `export default ${genObjectFromRawEntries(
-              Object.entries(emitted).map(([key, value]) => [key, `() => import('./${this.getFileName(value)}').then(interopDefault)`]) as [string, string][],
-            )}`,
-          ].join('\n'),
+            source: [
+              'const interopDefault = r => r.default || r || []',
+              `export default ${genObjectFromRawEntries(stylesMapEntries)}`,
+            ].join('\n'),
           })
+          if (envApi) {
+            const envEntries = Object.entries(emitted).map(([key, value]) =>
+              [key, `() => import('./${basename(this.getFileName(value))}').then(r => r.default || r || [])`]) as [string, string][]
+            setBuildOutput('ssrStyles', () => `export default ${genObjectFromRawEntries(envEntries)}`, nuxt)
+          }
         },
         renderChunk (_code, chunk) {
           const isEntry = chunk.facadeModuleId === entry
@@ -273,9 +355,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               continue
             }
 
-            const relativePath = relativeToSrcDir(moduleId)
+            const relativePath = relativeToSrcDir(stripQuery(moduleId))
             if (relativePath in cssMap) {
-              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativePath) || isEntry)
+              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(stripQuery(moduleId)) && !!relativePath) || isEntry)
             }
           }
 
@@ -290,7 +372,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               exclude: environment.name === 'client' ? [] : [/\?.*macro=/, /\?.*nuxt_component=/],
             },
           },
-          async handler (code, id) {
+          async handler (code, id, meta?: unknown) {
             if (environment.name === 'client') {
               // We will either teleport global CSS to the 'entry' chunk on the server side
               // or include it here in the client build so it is emitted in the CSS.
@@ -298,10 +380,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                 const idClientCSSMap = clientCSSMap[id] ||= new Set()
                 if (!options.globalCSS.length) { return }
 
-                const s = new MagicString(code)
+                const s = rolldownString(code, id, meta)
                 for (const file of options.globalCSS) {
                   const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-                  const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
+                  const fileInline = withInlineQuery(file)
+                  const res = await this.resolve(fileInline) ?? await this.resolve(fileInline, id)
                   if (!resolved || !res) {
                     if (!warnCache.has(file)) {
                       warnCache.add(file)
@@ -312,38 +395,47 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                   }
                   idClientCSSMap.add(resolved.id)
                 }
-                if (s.hasChanged()) {
-                  return {
-                    code: s.toString(),
-                    map: s.generateMap({ hires: true }),
-                  }
-                }
+                return generateTransform(s, id)
               }
               return
             }
 
             const { pathname, search } = parseModuleId(id)
 
-            if (!(id in clientCSSMap) && !islandPaths.has(pathname) && !isVue(pathname)) { return }
+            if (!(id in clientCSSMap) && !islandPaths.has(pathname) && !serverPagePaths.has(pathname) && !isVue(pathname)) { return }
 
             if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
 
-            if (!islandPaths.has(pathname)) {
+            const isEntryModule = pathname === entry
+
+            if (!isEntryModule && !islandPaths.has(pathname) && !serverPagePaths.has(pathname)) {
               if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
             }
 
-            const relativeId = relativeToSrcDir(id)
+            if (isEntryModule && options.shouldInline === false) { return }
+
+            const relativeId = relativeToSrcDir(stripQuery(id))
             const idMap = cssMap[relativeId] ||= { files: [] }
             const idCssIds = idMap.cssIds ||= new Set()
 
             const emittedIds = new Set<string>()
-            const idFilename = filename(id)
+            let chunkNamePrefix = chunkNamePrefixes.get(relativeId)
+            if (chunkNamePrefix === undefined) {
+              const baseName = filename(id) || 'styles'
+              chunkNamePrefix = baseName
+              for (let i = 2; usedChunkNamePrefixes.has(chunkNamePrefix); i++) {
+                chunkNamePrefix = `${baseName}-${i}`
+              }
+              usedChunkNamePrefixes.add(chunkNamePrefix)
+              chunkNamePrefixes.set(relativeId, chunkNamePrefix)
+            }
 
             let styleCtr = 0
             const ids = clientCSSMap[id] || []
             for (const file of ids) {
+              if (isEntryModule && typeof options.shouldInline === 'function' && !options.shouldInline(file)) { continue }
               if (emittedIds.has(file)) { continue }
-              const fileInline = file + '?inline&used'
+              const fileInline = withInlineQuery(file)
               const resolved = await this.resolve(file) ?? await this.resolve(file, id)
               const res = await this.resolve(fileInline) ?? await this.resolve(fileInline, id)
               if (!resolved || !res) {
@@ -363,7 +455,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               if (!ref) {
                 ref = this.emitFile({
                   type: 'chunk',
-                  name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                  name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
                   id: fileInline,
                 })
                 emittedFileRefs[resolvedInlineId] = ref
@@ -379,7 +471,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
               const resolved = await this.resolve(i.specifier, id)
               if (!resolved) { continue }
-              const resolvedIdInline = resolved.id + '?inline&used'
+              const resolvedIdInline = withInlineQuery(resolved.id)
               const res = await this.resolve(resolvedIdInline)
               if (!res) {
                 if (!warnCache.has(resolved.id)) {
@@ -398,7 +490,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               if (!ref) {
                 ref = this.emitFile({
                   type: 'chunk',
-                  name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                  name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
                   id: resolvedIdInline,
                 })
                 emittedFileRefs[resolvedInlineId] = ref

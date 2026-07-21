@@ -88,7 +88,7 @@ const parentStorageBridge = (nonce: string) => /* js */ `
 
   // Handle clipboard copy from iframe
   window.addEventListener('message', function(e) {
-    if (isValid(e) && e.data.type === 'clipboard-copy') {
+    if (isValid(e.data) && e.data.type === 'clipboard-copy') {
       navigator.clipboard.writeText(e.data.text).catch(function() {});
     }
   });
