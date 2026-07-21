@@ -1,7 +1,7 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob, relativizeToParent } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -425,6 +425,24 @@ const pathToNitroGlobTests = {
 describe('pages:pathToNitroGlob', () => {
   it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
     expect(pathToNitroGlob(path)).to.equal(expected)
+  })
+})
+
+describe('pages:relativizeToParent', () => {
+  const tests: Array<[parentFullPath: string, childPath: string, expected: string]> = [
+    ['/parent', '/parent/child', 'child'],
+    ['/parent/:id()', '/parent/:id/child', 'child'],
+    ['/parent/:id', '/parent/:id()/child', 'child'],
+    ['/parent/:id()+', '/parent/:id+/child', 'child'],
+    ['/parent/:id(\\d+)', '/parent/:id(\\d+)/child', 'child'],
+    ['/parent/:id()', '/parent/:id(\\d+)/child', ':id(\\d+)/child'],
+    ['/parent', '/detached', 'detached'],
+    ['/parent', '/parent-sibling/child', 'parent-sibling/child'],
+    ['/parent', 'relative/child', 'relative/child'],
+    ['/', '/child', 'child'],
+  ]
+  it.each(tests)('should relativize %s + %s to %s', (parentFullPath, childPath, expected) => {
+    expect(relativizeToParent(parentFullPath, childPath)).toBe(expected)
   })
 })
 
