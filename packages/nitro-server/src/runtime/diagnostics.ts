@@ -49,5 +49,10 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Rename the prop (e.g. `templateName`), or disable `vue.runtimeCompiler` if you do not need runtime template compilation.',
       docs: false,
     },
+    NUXT_E8006: {
+      why: (p: { path: string, size: string, keys?: string }) => `The payload for \`${p.path}\` is ${p.size}, which will increase the page size and slow down hydration.${p.keys ? ` Largest payload keys:\n  - ${p.keys}` : ''}`,
+      fix: 'Use the `pick` or `transform` options of `useAsyncData`/`useFetch` to strip out data the client does not need.',
+      docs: false,
+    },
   },
 })
