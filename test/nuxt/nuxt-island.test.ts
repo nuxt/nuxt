@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, popScopeId, pushScopeId } from 'vue'
 import { serve } from 'srvx/node'
 import type { ServerHandler } from 'srvx'
@@ -94,6 +94,10 @@ function stubFetchRaw (impl: (...args: any[]) => any) {
   vi.stubGlobal('$fetch', $fetch)
   return raw
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('runtime server component', () => {
   beforeEach(() => {

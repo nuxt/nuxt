@@ -197,8 +197,7 @@ export default defineComponent({
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
-      // `$fetch` handles `app.baseURL` via its configured `defaults` and routes
-      // relative paths through Nitro's hybrid fetch on the server.
+      // $fetch handles `app.baseURL` for relative URLs
       const r = await $fetch.raw<NuxtIslandResponse>(url, {
         query: {
           ...props.context,
