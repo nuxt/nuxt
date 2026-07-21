@@ -14,7 +14,8 @@ export default defineResolvers({
     },
     define: {
       $resolve: async (_val, get) => {
-        const [isDev, isTest, isDebug, optionsApi] = await Promise.all([get('dev'), get('test'), get('debug'), get('vue').then(v => v.optionsApi)])
+        const [isDev, isTest, isDebug] = await Promise.all([get('dev'), get('test'), get('debug')])
+        const optionsApi = (await get('vue')).optionsApi
         return {
           '__VUE_OPTIONS_API__': Boolean(optionsApi),
           '__VUE_PROD_DEVTOOLS__': false,
