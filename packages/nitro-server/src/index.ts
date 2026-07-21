@@ -133,6 +133,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // pin to h3 v1 to prevent pulling in h3 v2 as a dependency of the nitro server
   const h3Dir = dirname(resolveModulePath('h3/package.json', { from: import.meta.url }))
+  const h3Alias = isWindows ? pathToFileURL(h3Dir).href : h3Dir
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
@@ -340,7 +341,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           },
       '@vue/devtools-api': 'vue-devtools-stub',
 
-      'h3': h3Dir,
+      'h3': h3Alias,
 
       // Nuxt aliases
       ...nuxt.options.alias,
@@ -735,7 +736,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // TODO: extract to shared utility?
-  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@', 'h3']
   // TODO: remove support for baseUrl in nuxt v5
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
