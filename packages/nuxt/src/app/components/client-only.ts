@@ -2,6 +2,7 @@ import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, ge
 import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetupFnComponent, InjectionKey, RendererNode, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
+import { renderDiagnostics } from '../diagnostics/render'
 import ServerPlaceholder from './server-placeholder'
 import { elToStaticVNode, isVaporSlot, sanitizeTag } from './utils'
 
@@ -66,7 +67,7 @@ const ClientOnly = defineComponent({
           return [cloneVNode(vnodes[0]!, attrs)]
         }
         if (import.meta.dev && isVaporSlot(slots.default) && attrs && Object.keys(attrs).length > 0) {
-          console.warn('[nuxt] <ClientOnly> cannot forward fallthrough attributes onto a vapor slot child. Move the attributes onto an element inside the slot, or wrap the content in a single vdom root.')
+          renderDiagnostics.NUXT_E4018()
         }
         return vnodes
       }
