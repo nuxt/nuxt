@@ -48,6 +48,7 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
 const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
+const PAYLOAD_BUILD_ID_PARAM = '_b'
 
 let entryPath: string
 
@@ -133,16 +134,20 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
 
   const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
-    const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
-    ssrContext.url = url
+    const payloadURL = new URL(ssrContext.url, 'http://localhost')
+    const url = payloadURL.pathname.slice(0, -`/${PAYLOAD_FILENAME}`.length) || '/'
 
-    event._path = event.node.req.url = url
-    if (payloadCache && await payloadCache.hasItem(url + '.json')) {
-      return payloadCache.getItem(url + '.json') as Promise<Partial<RenderResponse>>
+    payloadURL.searchParams.delete(PAYLOAD_BUILD_ID_PARAM)
+    ssrContext.url = url + payloadURL.search
+
+    event._path = event.node.req.url = ssrContext.url
+    const cacheKey = getPayloadCacheKey(ssrContext.url)
+    if (payloadCache && await payloadCache.hasItem(cacheKey)) {
+      return payloadCache.getItem(cacheKey) as Promise<Partial<RenderResponse>>
     }
   }
 
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? buildPayloadURL(ssrContext) : undefined
 
   // Render app
   const renderer = await getRenderer(ssrContext)
@@ -228,7 +233,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   if (isRenderingPayload) {
     const response = renderPayloadResponse(ssrContext)
     if (payloadCache) {
-      await payloadCache.setItem(ssrContext.url + '.json', response)
+      await payloadCache.setItem(getPayloadCacheKey(ssrContext.url), response)
     }
     return response
   }
@@ -241,7 +246,7 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     // Cache payload from the current SSR context so _payload.json requests can be served
     // without a full re-render (during prerender via LRU+FS, at runtime via in-memory TTL cache)
     if (payloadCache) {
-      await payloadCache.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext))
+      await payloadCache.setItem(getPayloadCacheKey(ssrContext.url), renderPayloadResponse(ssrContext))
     }
   }
 
@@ -853,6 +858,25 @@ function snapshotResponseHeaders (event: H3Event): string {
     .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
     .sort()
     .join('\n')
+}
+
+// `unstorage`'s `normalizeKey` drops everything from `?` onwards, so using a raw
+// URL as the payload cache key makes query-aware cached routes (e.g. `?page=1` vs
+// `?page=2`) collide. Encode the query into a normalization-safe segment instead.
+function getPayloadCacheKey (url: string): string {
+  const { pathname, search } = new URL(url, 'http://localhost')
+  const path = pathname === '/' ? '/' : pathname.replace(/\/$/, '')
+  return path + (search ? encodeURIComponent(search) : '') + '.json'
+}
+
+function buildPayloadURL (ssrContext: NuxtSSRContext): string {
+  const url = new URL(ssrContext.url, 'http://localhost')
+  const baseURL = ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL
+  const payloadURL = joinURL(baseURL, url.pathname, PAYLOAD_FILENAME)
+
+  url.searchParams.set(PAYLOAD_BUILD_ID_PARAM, ssrContext.runtimeConfig.app.buildId)
+
+  return payloadURL + url.search
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {
