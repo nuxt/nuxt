@@ -39,6 +39,13 @@ describe('loadNuxt', () => {
     // `server/types` is server-only and must NOT leak into the app context
     expect(normalized).not.toContain('<rootDir>/server/types')
   })
+
+  it('does not register server type directories when nitro auto-imports are opted out', async () => {
+    const importDirs = await getNitroImportDirs({ experimental: { nitroAutoImports: false } })
+    // `nitro.imports` is disabled entirely, so no directories (incl. `server/types`) are scanned
+    expect(normalizePaths(importDirs)).not.toContain('<rootDir>/server/types')
+    expect(importDirs).toHaveLength(0)
+  })
 })
 
 function normalizePaths (arr: unknown[]) {
