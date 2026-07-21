@@ -118,10 +118,7 @@ jobs:
           cache: true
 
   ui-templates-generated:
-    # The @nuxt/ui-templates output is committed and no longer built on install.
-    # Regenerate it and fail if the committed files are stale. Gated on `changes.src`,
-    # which covers packages/** and pnpm-lock.yaml — i.e. every input that can change
-    # the generated output — so a dependency bump can't slip drift through.
+    # Regenerates the committed @nuxt/ui-templates output and fails on drift.
     needs: changes
     if: needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
@@ -136,7 +133,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
         with:
-          node-version: lts
+          node-version: 22
           cache: true
 
       - name: Regenerate ui-templates output
@@ -145,7 +142,8 @@ jobs:
 
       - name: Fail if committed output is stale
         run: |
-          paths="packages/ui-templates/dist/templates packages/nuxt/src/app/components packages/nitro-server/src/runtime/templates"
+          paths="packages/nuxt/src/app/components packages/nitro-server/src/runtime/templates packages/nitro-server/src/templates packages/schema/src/templates"
+          git add -N -- $paths
           if ! git diff --exit-code -- $paths; then
             echo "::error::Committed ui-templates output is out of date. Run 'pnpm --filter @nuxt/ui-templates build' and commit the result."
             exit 1

@@ -1374,9 +1374,6 @@ importers:
         specifier: catalog:build
         version: 4.2.0
     devDependencies:
-      '@nuxt/ui-templates':
-        specifier: workspace:*
-        version: link:../ui-templates
       '@types/pug':
         specifier: catalog:dev
         version: 2.0.10
