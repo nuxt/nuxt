@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtBuildOutputs, NuxtOptions } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
-import { join, relative, resolve } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { hash } from 'ohash'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
@@ -130,6 +130,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
+
+  // pin to h3 v1 to prevent pulling in h3 v2 as a dependency of the nitro server
+  const h3Dir = dirname(resolveModulePath('h3/package.json', { from: import.meta.url }))
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
@@ -336,6 +339,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             '@vue/compiler-ssr': mockProxy,
           },
       '@vue/devtools-api': 'vue-devtools-stub',
+
+      'h3': h3Dir,
 
       // Nuxt aliases
       ...nuxt.options.alias,
