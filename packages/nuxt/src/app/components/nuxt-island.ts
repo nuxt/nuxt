@@ -219,6 +219,8 @@ const NuxtIsland = defineComponent({
       // TODO: Validate response
       // $fetch handles `app.baseURL` for relative URLs
       const r = await $fetch.raw<NuxtIslandResponse>(url, {
+        // custom island sources should not be resolved against `app.baseURL` (#23093)
+        ...(props.source ? { baseURL: '' } : {}),
         query: {
           ...props.context,
           props: props.props ? serializedProps.value : undefined,
