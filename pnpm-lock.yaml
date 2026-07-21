@@ -290,6 +290,9 @@ catalogs:
     '@types/estree':
       specifier: 1.0.9
       version: 1.0.9
+    '@types/hash-sum':
+      specifier: 1.0.2
+      version: 1.0.2
     '@types/node':
       specifier: 24.13.3
       version: 24.13.3
@@ -1770,6 +1773,9 @@ importers:
       '@rspack/core':
         specifier: catalog:dev
         version: 2.1.4(@swc/helpers@0.5.23)
+      '@types/hash-sum':
+        specifier: catalog:dev
+        version: 1.0.2
       '@types/webpack-bundle-analyzer':
         specifier: catalog:dev
         version: 4.7.0(cssnano@8.0.2(postcss@8.5.20))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.20)
@@ -4127,6 +4133,9 @@ packages:
 
   '@types/gensync@1.0.5':
     resolution: {integrity: sha512-MbsRCT7mTikHwKZ0X+LVUTLRrZZRLipTuXEO9qOYO+zmjMVk81axyClMROf6uoPD9MRVu46bx8zoR0Ad9q3NAg==}
+
+  '@types/hash-sum@1.0.2':
+    resolution: {integrity: sha512-UP28RddqY8xcU0SCEp9YKutQICXpaAq9N8U2klqF5hegGha7KzTOL8EdhIIV3bOSGBzjEpN9bU/d+nNZBdJYVw==}
 
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
@@ -12145,6 +12154,8 @@ snapshots:
   '@types/estree@1.0.9': {}
 
   '@types/gensync@1.0.5': {}
+
+  '@types/hash-sum@1.0.2': {}
 
   '@types/hast@3.0.4':
     dependencies:

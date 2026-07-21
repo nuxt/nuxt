@@ -7,7 +7,7 @@ import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 
-import { isDev, isWebpack } from './matrix'
+import { builder, isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
@@ -93,7 +93,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  itFailsIf(isWebpack && isDev)('lazy server components', async () => {
+  itFailsIf(builder === 'webpack' && isDev)('lazy server components', async () => {
     const { page, consoleLogs } = await renderPage('/server-components/lazy/start')
 
     await page.getByText('Go to page with lazy server component').click()
@@ -132,7 +132,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  itFailsIf(isWebpack && isDev)('non-lazy server components', async () => {
+  itFailsIf(builder === 'webpack' && isDev)('non-lazy server components', async () => {
     const { page } = await renderPage('/server-components/lazy/start')
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
@@ -164,14 +164,14 @@ describe('server components/islands', () => {
     expect(html).toContain('<title>Server Page - Fixture</title>')
   })
 
-  itFailsIf(isWebpack && isDev)('/server-page - should preserve title after hydration', async () => {
+  itFailsIf(builder === 'webpack' && isDev)('/server-page - should preserve title after hydration', async () => {
     const { page } = await renderPage('/server-page')
     await page.waitForLoadState('networkidle')
     expect(await page.title()).toBe('Server Page - Fixture')
     await page.close()
   })
 
-  itFailsIf(isWebpack && isDev)('/server-page - client side navigation', async () => {
+  itFailsIf(builder === 'webpack' && isDev)('/server-page - client side navigation', async () => {
     const { page } = await renderPage('/')
     await page.getByText('to server page').click()
     await page.waitForLoadState('networkidle')
