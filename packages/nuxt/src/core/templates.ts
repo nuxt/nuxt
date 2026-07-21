@@ -555,7 +555,7 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
     return [
       'import { $fetch as _$fetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
-      'export const $fetch = /*#__PURE__*/ _$fetch.create({ baseURL: baseURL() })',
+      'export const $fetch = /*#__PURE__*/ _$fetch.create({ baseURL: /*#__PURE__*/ baseURL() })',
     ].join('\n')
   },
 }
