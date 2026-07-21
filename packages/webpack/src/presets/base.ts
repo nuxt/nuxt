@@ -148,10 +148,29 @@ function basePlugins (ctx: WebpackConfigContext) {
   }
 }
 
+/**
+ * Pin the packages that hold global vue state (`currentInstance`, reactivity
+ * internals, injection keys) to a single resolved entry, mirroring vite's
+ * `resolve.dedupe: ['vue']`.
+ */
+function vueAliases (ctx: WebpackConfigContext): Record<string, string> {
+  const aliases: Record<string, string> = {}
+  const from = [directoryToURL(ctx.nuxt.options.rootDir), directoryToURL(ctx.nuxt.options.workspaceDir), import.meta.url]
+  const conditions = ctx.isServer ? ['node', 'import', 'default'] : ['browser', 'import', 'default']
+  for (const pkg of ['@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared', '@vue/runtime-vapor', 'vue-router']) {
+    const entry = resolveModulePath(pkg, { from, conditions, try: true })
+    if (entry) {
+      aliases[`${pkg}$`] = entry
+    }
+  }
+  return aliases
+}
+
 function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
     [basename(ctx.nuxt.options.dir.assets)]: resolve(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.assets),
+    ...vueAliases(ctx),
     ...ctx.options.alias,
     ...ctx.alias,
   }
