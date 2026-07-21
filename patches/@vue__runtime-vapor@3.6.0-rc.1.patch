@@ -1,123 +1,141 @@
 diff --git a/dist/runtime-vapor.esm-bundler.js b/dist/runtime-vapor.esm-bundler.js
-index e094b0c46541b00342c601cf8ab96d37c39774bb..16c6387d85abae988b64287bfab6309e0bb26d7f 100644
+index 692300bdb670dc00d060045feea54909384b70d6..937d6b7b6a820dbb5ebb3aabc77d02919c6f9d0d 100644
 --- a/dist/runtime-vapor.esm-bundler.js
 +++ b/dist/runtime-vapor.esm-bundler.js
 @@ -3,7 +3,7 @@
    * (c) 2018-present Yuxi (Evan) You and Vue contributors
    * @license MIT
    **/
--import { EffectScope, Fragment, NULL_DYNAMIC_COMPONENT, Static, TransitionPropsValidators, VaporSlot, VueElementBase, activate, baseApplyTranslation, baseEmit, baseNormalizePropsOptions, baseResolveTransitionHooks, baseUseCssVars, callPendingCbs, callWithAsyncErrorHandling, callWithErrorHandling, checkTransitionMode, createAppAPI, createAsyncComponentContext, createCanSetSetupRefChecker, createInternalObject, createVNode, currentInstance, currentInstance as currentInstance$1, deactivate, devtoolsComponentAdded, endMeasure, ensureHydrationRenderer, ensureRenderer, ensureValidVNode, ensureVaporSlotFallback, expose, flushOnAppMount, forceReflow, getAttributeMismatch, getComponentName, getFunctionalFallthrough, getInheritedScopeIds, getTransitionRawChildren, handleError, handleMovedChildren, hasCSSTransform, initFeatureFlags, invalidateMount, invokeDirectiveHook, isAsyncWrapper, isEmitListener, isHydrating, isKeepAlive, isMapEqual, isMismatchAllowed, isRef, isSetEqual, isTeleportDeferred, isTeleportDisabled, isTemplateNode, isTemplateRefKey, isVNode, isValidHtmlOrSvgAttribute, knownTemplateRefs, leaveCbKey, logMismatchError, markAsyncBoundary, matches, mergeProps, nextUid, normalizeContainer, normalizeRef, normalizeVNode, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onMounted, onScopeDispose, onUpdated, parseEventName, patchStyle, performAsyncHydrate, performTransitionEnter, performTransitionLeave, popWarningContext, pushWarningContext, queueJob, queuePostFlushCb, registerHMR, renderSlot, resetShapeFlag, resolveComponent, resolveDynamicComponent, resolvePropValue, resolveTeleportTarget, resolveTransitionProps, setCurrentInstance, setCurrentRenderingInstance, setDevtoolsHook, setRef, setTransitionHooks, setVarsOnNode, shallowReactive, shallowRef, shouldSetAsProp, shouldSetAsPropForVueCE, shouldUpdateComponent, simpleSetCurrentInstance, startMeasure, toClassSet, toStyleMap, unregisterHMR, unsafeToTrustedHTML, useAsyncComponentState, useTransitionState, vModelCheckboxInit, vModelCheckboxUpdate, vModelGetValue, vModelSelectInit, vModelSetSelected, vModelTextInit, vModelTextUpdate, vShowHidden, vShowOriginalDisplay, validateProps, warn, warnExtraneousAttributes, warnPropMismatch, watch, withAsyncContext as withAsyncContext$1, withCtx, withKeys, withModifiers, xlinkNS } from "@vue/runtime-dom";
-+import { EffectScope, Fragment, NULL_DYNAMIC_COMPONENT, Static, TransitionPropsValidators, VaporSlot, VueElementBase, activate, baseApplyTranslation, baseEmit, baseNormalizePropsOptions, baseResolveTransitionHooks, baseUseCssVars, callPendingCbs, callWithAsyncErrorHandling, callWithErrorHandling, checkTransitionMode, createAppAPI, createAsyncComponentContext, createCanSetSetupRefChecker, createInternalObject, createVNode, currentInstance, currentInstance as currentInstance$1, deactivate, devtoolsComponentAdded, endMeasure, ensureHydrationRenderer, ensureRenderer, ensureValidVNode, ensureVaporSlotFallback, expose, flushOnAppMount, forceReflow, getAttributeMismatch, getComponentName, getFunctionalFallthrough, getInheritedScopeIds, getTransitionRawChildren, handleError, handleMovedChildren, hasCSSTransform, initFeatureFlags, invalidateMount, invokeDirectiveHook, isAsyncWrapper, isEmitListener, isHydrating, isHydratingEnabled, isKeepAlive, isMapEqual, isMismatchAllowed, isRef, isSetEqual, isTeleportDeferred, isTeleportDisabled, isTemplateNode, isTemplateRefKey, isVNode, isValidHtmlOrSvgAttribute, knownTemplateRefs, leaveCbKey, logMismatchError, markAsyncBoundary, matches, mergeProps, nextUid, normalizeContainer, normalizeRef, normalizeVNode, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onMounted, onScopeDispose, onUpdated, parseEventName, patchStyle, performAsyncHydrate, performTransitionEnter, performTransitionLeave, popWarningContext, pushWarningContext, queueJob, queuePostFlushCb, registerHMR, renderSlot, resetShapeFlag, resolveComponent, resolveDynamicComponent, resolvePropValue, resolveTeleportTarget, resolveTransitionProps, setCurrentInstance, setCurrentRenderingInstance, setDevtoolsHook, setRef, setTransitionHooks, setVarsOnNode, shallowReactive, shallowRef, shouldSetAsProp, shouldSetAsPropForVueCE, shouldUpdateComponent, simpleSetCurrentInstance, startMeasure, toClassSet, toStyleMap, unregisterHMR, unsafeToTrustedHTML, useAsyncComponentState, useTransitionState, vModelCheckboxInit, vModelCheckboxUpdate, vModelGetValue, vModelSelectInit, vModelSetSelected, vModelTextInit, vModelTextUpdate, vShowHidden, vShowOriginalDisplay, validateProps, warn, warnExtraneousAttributes, warnPropMismatch, watch, withAsyncContext as withAsyncContext$1, withCtx, withKeys, withModifiers, xlinkNS } from "@vue/runtime-dom";
+-import { EffectScope, Fragment, NULL_DYNAMIC_COMPONENT, Static, TransitionPropsValidators, VaporSlot, VueElementBase, activate, baseApplyTranslation, baseEmit, baseNormalizePropsOptions, baseResolveTransitionHooks, baseUseCssVars, callPendingCbs, callWithAsyncErrorHandling, callWithErrorHandling, checkTransitionMode, createAppAPI, createAsyncComponentContext, createCanSetSetupRefChecker, createInternalObject, createVNode, currentInstance, currentInstance as currentInstance$1, deactivate, devtoolsComponentAdded, endMeasure, ensureHydrationRenderer, ensureRenderer, ensureValidVNode, ensureVaporSlotFallback, expose, flushOnAppMount, forceReflow, getAttributeMismatch, getComponentName, getFunctionalFallthrough, getInheritedScopeIds, getTransitionRawChildren, handleError, handleMovedChildren, hasCSSTransform, initFeatureFlags, invalidateMount, invokeDirectiveHook, isAsyncWrapper, isEmitListener, isHydrating, isHydratingEnabled, isKeepAlive, isMapEqual, isMismatchAllowed, isRef, isSetEqual, isTeleportDeferred, isTeleportDisabled, isTemplateNode, isTemplateRefKey, isVNode, isValidHtmlOrSvgAttribute, knownTemplateRefs, leaveCbKey, logMismatchError, markAsyncBoundary, matches, mergeProps, nextUid, normalizeContainer, normalizeRef, normalizeVNode, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onMounted, onScopeDispose, onUpdated, parseEventName, patchStyle, performAsyncHydrate, performTransitionEnter, performTransitionLeave, popWarningContext, pushWarningContext, queueJob, queuePostFlushCb, registerHMR, renderSlot, resetShapeFlag, resolveComponent, resolveDynamicComponent, resolvePropValue, resolveTeleportTarget, resolveTransitionProps, setCurrentInstance, setCurrentRenderingInstance, setDevtoolsHook, setRef, setTransitionHooks, setVarsOnNode, shallowReactive, shallowRef, shouldSetAsProp, shouldSetAsPropForVueCE, shouldUpdateComponent, simpleSetCurrentInstance, startMeasure, toClassSet, toStyleMap, unregisterHMR, unsafeToTrustedHTML, useAsyncComponentState, useTransitionState, vModelCheckboxInit, vModelCheckboxUpdate, vModelGetValue, vModelSelectInit, vModelSetSelected, vModelTextInit, vModelTextUpdate, vShowHidden, vShowOriginalDisplay, validateProps, warn, warnExtraneousAttributes, warnPropMismatch, watch, withAsyncContext as withAsyncContext$1, withCtx, withKeys, withModifiers, xlinkNS } from "@vue/runtime-dom";
++import { EffectScope, Fragment, NULL_DYNAMIC_COMPONENT, Static, TransitionPropsValidators, VaporSlot, VueElementBase, activate, baseApplyTranslation, baseEmit, baseNormalizePropsOptions, baseResolveTransitionHooks, baseUseCssVars, callPendingCbs, callWithAsyncErrorHandling, callWithErrorHandling, checkTransitionMode, createAppAPI, createAsyncComponentContext, createCanSetSetupRefChecker, createInternalObject, createVNode, currentInstance, currentInstance as currentInstance$1, deactivate, devtoolsComponentAdded, endMeasure, ensureHydrationRenderer, ensureRenderer, ensureValidVNode, ensureVaporSlotFallback, expose, flushOnAppMount, forceReflow, getAttributeMismatch, getComponentName, getFunctionalFallthrough, getInheritedScopeIds, getTransitionRawChildren, handleError, handleMovedChildren, hasCSSTransform, initFeatureFlags, invalidateMount, invokeDirectiveHook, isAsyncWrapper, isEmitListener, isHydrating, isHydratingEnabled, isKeepAlive, isMapEqual, isMismatchAllowed, isRef, isSetEqual, isTeleportDeferred, isTeleportDisabled, isTemplateNode, isTemplateRefKey, isVNode, isValidHtmlOrSvgAttribute, knownTemplateRefs, leaveCbKey, logMismatchError, markAsyncBoundary, matches, mergeProps, nextUid, normalizeContainer, normalizeRef, normalizeVNode, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onMounted, onScopeDispose, onUpdated, parseEventName, patchStyle, performAsyncHydrate, performTransitionEnter, performTransitionLeave, popWarningContext, pushWarningContext, queueJob, queuePostFlushCb, registerHMR, renderSlot, resetShapeFlag, resolveComponent, resolveDynamicComponent, resolvePropValue, resolveTeleportTarget, resolveTransitionProps, restoreCurrentInstance, setCurrentInstance, setCurrentRenderingInstance, setDevtoolsHook, setRef, setTransitionHooks, setVarsOnNode, shallowReactive, shallowRef, shouldSetAsProp, shouldSetAsPropForVueCE, shouldUpdateComponent, simpleSetCurrentInstance, startMeasure, toClassSet, toStyleMap, unregisterHMR, unsafeToTrustedHTML, useAsyncComponentState, useTransitionState, vModelCheckboxInit, vModelCheckboxUpdate, vModelGetValue, vModelSelectInit, vModelSetSelected, vModelTextInit, vModelTextUpdate, vShowHidden, vShowOriginalDisplay, validateProps, warn, warnExtraneousAttributes, warnPropMismatch, watch, withAsyncContext as withAsyncContext$1, withCtx, withKeys, withModifiers, xlinkNS } from "@vue/runtime-dom";
  import { EMPTY_ARR, EMPTY_OBJ, NO, NOOP, camelize, canSetValueDirectly, extend, extend as extend$1, getEscapedCssVarName, getGlobalThis, hasOwn, includeBooleanAttr, invokeArrayFns, isArray, isFunction, isObject, isOn, isPlainObject, isPromise, isReservedProp, isString, isSymbol, looseEqual, normalizeClass, normalizeCssVarValue, normalizeStyle, parseStringStyle, remove as remove$1, stringifyStyle, toDisplayString } from "@vue/shared";
  import { EffectScope as EffectScope$1, ReactiveEffect, computed, effectScope, getCurrentScope, isReactive, isReadonly, isRef as isRef$1, isShallow, markRaw, onEffectCleanup, onScopeDispose as onScopeDispose$1, pauseTracking, proxyRefs, resetTracking, setActiveSub, shallowReactive as shallowReactive$1, shallowReadArray, shallowRef as shallowRef$1, toRaw, toReactive, toReadonly, traverse, unref, watch as watch$1 } from "@vue/reactivity";
  //#region packages/runtime-vapor/src/insertionState.ts
-@@ -31,14 +31,14 @@ function resetInsertionState() {
- //#endregion
- //#region packages/runtime-vapor/src/dom/hydration.ts
- const START_TAG_RE = /^<([^\s/>]+)/;
--let isHydratingEnabled = false;
-+let isHydratingEnabled$1 = false;
- function setIsHydratingEnabled(value) {
--	isHydratingEnabled = value;
-+	isHydratingEnabled$1 = value;
- }
- let currentHydrationNode = null;
- let isHydrating$1 = false;
- function setIsHydrating(value) {
--	if (!isHydratingEnabled && !isHydrating) return false;
-+	if (!isHydratingEnabled$1 && !isHydrating) return false;
- 	try {
- 		return isHydrating$1;
- 	} finally {
-@@ -100,7 +100,7 @@ function hydrateNode(node, fn) {
- 	return performHydration(fn, setup, cleanup);
- }
- function enterHydration(node) {
--	const prevHydrationEnabled = isHydratingEnabled;
-+	const prevHydrationEnabled = isHydratingEnabled$1;
- 	if (!prevHydrationEnabled) setIsHydratingEnabled(true);
- 	const prev = setIsHydrating(true);
- 	const prevHydrationNode = currentHydrationNode;
-@@ -2964,14 +2964,24 @@ function mountComponent(instance, parent, anchor) {
- 		const component = instance.type;
- 		instance.suspense.registerDep(instance, (setupResult) => {
- 			const reset = instance.restoreAsyncContext && instance.restoreAsyncContext();
-+			const handleResult = () => {
-+				const prevInstance = setCurrentInstance(instance);
-+				const prevSub = setActiveSub();
+@@ -532,7 +532,7 @@ var RenderEffect = class extends ReactiveEffect {
+ 				queuePostFlushCb(updateJob);
+ 			} else this.render();
+ 		} finally {
+-			setCurrentInstance(...prev);
++			restoreCurrentInstance(prev);
+ 			if (!!(process.env.NODE_ENV !== "production") && instance) endMeasure(instance, `renderEffect`);
+ 		}
+ 	}
+@@ -553,15 +553,20 @@ function resolveFunctionSource(source) {
+ 	if (source._cache) return source._cache.value;
+ 	const parent = currentInstance && currentInstance.parent;
+ 	if (parent) {
+-		source._cache = computed((oldValue) => {
+-			const prev = setCurrentInstance(parent);
+-			try {
+-				return stabilizeDynamicSourceValue(oldValue, source());
+-			} finally {
+-				setCurrentInstance(...prev);
+-			}
+-		});
+-		onScopeDispose$1(() => source._cache = void 0);
++		const prev = setCurrentInstance(parent);
++		try {
++			source._cache = computed((oldValue) => {
++				const prevInner = setCurrentInstance(parent);
 +				try {
-+					handleSetupResult(setupResult, component, instance);
++					return stabilizeDynamicSourceValue(oldValue, source());
 +				} finally {
-+					setActiveSub(prevSub);
-+					setCurrentInstance(...prevInstance);
++					restoreCurrentInstance(prevInner);
 +				}
-+			};
- 			try {
- 				if (isHydrating$1) withDeferredHydrationBoundary(() => {
--					handleSetupResult(setupResult, component, instance);
-+					handleResult();
- 					mountComponent(instance, parent, anchor);
- 					if (instance.deferredHydrationBoundary) instance.deferredHydrationBoundary();
- 				});
- 				else {
--					handleSetupResult(setupResult, component, instance);
-+					handleResult();
- 					mountComponent(instance, parent, anchor);
- 				}
- 			} finally {
-@@ -2991,7 +3001,7 @@ function mountComponent(instance, parent, anchor) {
- 	if (!!(process.env.NODE_ENV !== "production")) startMeasure(instance, `mount`);
- 	if (instance.bm) invokeArrayFns(instance.bm);
- 	if (!isHydrating$1) {
--		insert(instance.block, parent, anchor);
-+		insert(instance.block, parent, anchor, instance.suspense);
++			});
++			onScopeDispose$1(() => source._cache = void 0);
++		} finally {
++			restoreCurrentInstance(prev);
++		}
+ 		return source._cache.value;
+ 	}
+ 	return source();
+@@ -774,7 +779,7 @@ function normalizePropsOptions(comp) {
+ function resolveDefault(factory, instance) {
+ 	const prev = setCurrentInstance(instance);
+ 	const res = factory.call(null, instance.props);
+-	setCurrentInstance(...prev);
++	restoreCurrentInstance(prev);
+ 	return res;
+ }
+ function hasFallthroughAttrs(comp, rawProps) {
+@@ -2163,7 +2168,7 @@ function runWithRenderCtx(fragment, fn, scope) {
+ 	try {
+ 		return runWithFragmentCtxOnly(fragment, fn);
+ 	} finally {
+-		setCurrentInstance(...prevInstance);
++		restoreCurrentInstance(prevInstance);
+ 	}
+ }
+ function runWithFragmentCtxOnly(fragment, fn) {
+@@ -2600,7 +2605,7 @@ function hmrRerender(instance) {
+ 		devRender(instance);
+ 	} finally {
+ 		popWarningContext();
+-		setCurrentInstance(...prev);
++		restoreCurrentInstance(prev);
+ 	}
+ 	insert(instance.block, parent, anchor);
+ }
+@@ -2618,7 +2623,7 @@ function hmrReload(instance, newComp) {
+ 	try {
+ 		newInstance = createComponent(newComp, instance.rawProps, instance.rawSlots, instance.isSingleRoot, void 0, instance.appContext);
+ 	} finally {
+-		setCurrentInstance(...prev);
++		restoreCurrentInstance(prev);
+ 	}
+ 	mountComponent(newInstance, parent, anchor);
+ 	const app = instance.appContext.app;
+@@ -2765,7 +2770,7 @@ function setupComponent(instance, component) {
+ 		}
+ 	} else handleSetupResult(setupResult, component, instance);
+ 	setActiveSub(prevSub);
+-	setCurrentInstance(...prevInstance);
++	restoreCurrentInstance(prevInstance);
+ }
+ let isApplyingFallthroughProps = false;
+ function applyFallthroughProps(el, attrs) {
+@@ -2970,6 +2975,10 @@ function createPlainElement(comp, rawProps, rawSlots, isSingleRoot, once) {
+ 	} else exitHydrationCursor(hydrationCursor);
+ 	return el;
+ }
++function queuePostMountEffect(fn, suspense) {
++	if (suspense && suspense.pendingBranch) suspense.effects.push(...fn);
++	else queuePostFlushCb(fn);
++}
+ function mountComponent(instance, parent, anchor) {
+ 	if (isSuspenseEnabled && instance.suspense && instance.asyncDep && !instance.asyncResolved) {
+ 		const component = instance.type;
+@@ -3015,8 +3024,8 @@ function mountComponent(instance, parent, anchor) {
+ 		insert(instance.block, parent, anchor, instance.suspense);
  		setComponentScopeId(instance);
  	} else trackComponentScopeId(instance);
- 	if (instance.m) queuePostFlushCb(instance.m);
-@@ -3046,19 +3056,18 @@ function getRootElement(block, onDynamicFragment, recurse = true) {
+-	if (instance.m) queuePostFlushCb(instance.m);
+-	if (isKeepAliveEnabled && instance.shapeFlag & 256 && instance.a) queuePostFlushCb(instance.a);
++	if (instance.m) queuePostMountEffect(instance.m, instance.suspense);
++	if (isKeepAliveEnabled && instance.shapeFlag & 256 && instance.a) queuePostMountEffect(instance.a, instance.suspense);
+ 	instance.isMounted = true;
+ 	if (!!(process.env.NODE_ENV !== "production")) endMeasure(instance, `mount`);
  }
- function handleSetupResult(setupResult, component, instance) {
- 	if (!!(process.env.NODE_ENV !== "production")) pushWarningContext(instance);
--	if (!!(process.env.NODE_ENV !== "production") && !isBlock(setupResult)) if (isFunction(component)) {
--		warn(`Functional vapor component must return a block directly.`);
-+	if (!isBlock(setupResult)) if (isFunction(component)) {
-+		if (!!(process.env.NODE_ENV !== "production")) warn(`Functional vapor component must return a block directly.`);
- 		instance.block = [];
- 	} else if (!component.render) {
--		warn(`Vapor component setup() returned non-block value, and has no render function.`);
-+		if (!!(process.env.NODE_ENV !== "production")) warn(`Vapor component setup() returned non-block value, and has no render function.`);
- 		instance.block = [];
--	} else {
--		if (!!(process.env.NODE_ENV !== "production") || __VUE_PROD_DEVTOOLS__) instance.devtoolsRawSetupState = setupResult;
-+	} else if (!!(process.env.NODE_ENV !== "production")) {
-+		instance.devtoolsRawSetupState = setupResult;
- 		instance.setupState = proxyRefs(setupResult);
--		if (!!(process.env.NODE_ENV !== "production")) instance.setupState = createDevSetupStateProxy(instance);
-+		instance.setupState = createDevSetupStateProxy(instance);
- 		devRender(instance);
--	}
--	else if (setupResult === EMPTY_OBJ && component.render) instance.block = callRender(component.render, instance, setupResult);
-+	} else instance.block = callRender(component.render, instance, setupResult) || [];
- 	else instance.block = setupResult;
- 	if (instance.hasFallthrough && component.inheritAttrs !== false && Object.keys(instance.attrs).length) {
- 		const getFallthroughAttrs = isFunction(component) && !(isTransitionEnabled ? isVaporTransition(component) : false) ? () => getFunctionalFallthrough(instance.attrs) : () => instance.attrs;
-@@ -4161,6 +4170,15 @@ function filterReservedProps(props) {
- 	for (const key in props) if (!isReservedProp(key)) filtered[key] = props[key];
- 	return filtered;
+@@ -3307,7 +3316,7 @@ function createInnerComp(comp, parent, rawProps = parent.rawProps, rawSlots = pa
+ 	try {
+ 		return createComponent(comp, rawProps, rawSlots, void 0, parent.isOnce, parent.appContext);
+ 	} finally {
+-		setCurrentInstance(...prevInstance);
++		restoreCurrentInstance(prevInstance);
+ 	}
  }
-+function withVaporHydrationEnabled(fn) {
-+	const prev = isHydratingEnabled$1;
-+	if (!prev) setIsHydratingEnabled(true);
-+	try {
-+		return fn();
-+	} finally {
-+		if (!prev) setIsHydratingEnabled(false);
-+	}
-+}
- const vaporInteropImpl = {
- 	mount(vnode, container, anchor, parentComponent, parentSuspense, onBeforeMount, onVnodeBeforeMount) {
- 		const selfAnchor = vnode.anchor = /* @__PURE__ */ createTextNode();
-@@ -4232,6 +4250,10 @@ const vaporInteropImpl = {
+ //#endregion
+@@ -3644,7 +3653,7 @@ function removeBranchWithLeaveImpl(frag, transition, parent, render, key, noScop
+ 					frag.renderBranch(pending.render, transition, parent, pending.key, pending.noScope, true);
+ 				} else frag.renderBranch(render, transition, parent, key, noScope, true);
+ 			} finally {
+-				setCurrentInstance(...prevInstance);
++				restoreCurrentInstance(prevInstance);
+ 			}
+ 		});
+ 		if (mode === "out-in") {
+@@ -4190,6 +4199,10 @@ const vaporInteropImpl = {
  		if (instance) {
  			const anchor = vnode.anchor;
  			if (instance.block) {
@@ -128,62 +146,30 @@ index e094b0c46541b00342c601cf8ab96d37c39774bb..16c6387d85abae988b64287bfab6309e
  				unmountComponent(instance, container);
  				if (!doRemove) {
  					const blockContainer = needsHostParentForRemove(instance.block) ? anchor && anchor.parentNode : void 0;
-@@ -4308,30 +4330,46 @@ const vaporInteropImpl = {
+@@ -4563,7 +4576,7 @@ function createVDOMComponent(internals, component, parentComponent, rawProps, ra
+ 			try {
+ 				setupPropsValidation(wrapper, vnode);
+ 			} finally {
+-				setCurrentInstance(...prev);
++				restoreCurrentInstance(prev);
+ 			}
  		}
- 	},
- 	move(vnode, container, anchor, moveType) {
-+		const instance = vnode.component;
-+		if (vnode.transition && instance && instance.block) {
-+			ensureTransitionHooksRegistered();
-+			setTransitionHooks$1(instance, vnode.transition);
-+		}
- 		if (vnode.el && vnode.el !== vnode.anchor && isComment(vnode.el, "[")) move(vnode.el, container, anchor, moveType);
- 		move(vnode.vb || vnode.component, container, anchor, moveType);
- 		move(vnode.anchor, container, anchor, moveType);
- 	},
- 	hydrate(vnode, node, container, anchor, parentComponent, parentSuspense, onBeforeMount, onVnodeBeforeMount) {
--		if (!isHydrating$1 && !isHydrating) return node;
-+		if (!isHydrating$1 && !isHydrating && !isHydratingEnabled) return node;
- 		let instance;
--		hydrateNode(node, () => {
--			instance = this.mount(vnode, container, anchor, parentComponent, parentSuspense, onBeforeMount, onVnodeBeforeMount);
-+		withVaporHydrationEnabled(() => {
-+			hydrateNode(node, () => {
-+				instance = this.mount(vnode, container, anchor, parentComponent, parentSuspense, onBeforeMount, onVnodeBeforeMount);
-+			});
- 		});
- 		if (instance && instance.asyncDep && !instance.asyncResolved) vnode.el = node;
- 		return anchor;
- 	},
- 	hydrateSlot(vnode, node, parentComponent, parentSuspense) {
--		if (!isHydrating$1 && !isHydrating) return node;
--		hydrateNode(node, () => {
--			vnode.vb = renderVaporSlot(vnode, parentComponent, parentSuspense);
--			const anchor = isFragment(vnode.vb) && vnode.vb.anchor ? vnode.vb.anchor : currentHydrationNode;
--			if (isComment(node, "[") && isComment(anchor, "]")) {
--				vnode.el = node;
--				vnode.anchor = anchor;
--			} else vnode.anchor = vnode.el = anchor;
--			if (!!(process.env.NODE_ENV !== "production") && !vnode.anchor) throw new Error(`Failed to locate slot anchor. this is likely a Vue internal bug.`);
-+		if (!isHydrating$1 && !isHydrating && !isHydratingEnabled) return node;
-+		let createdAnchor = false;
-+		withVaporHydrationEnabled(() => {
-+			hydrateNode(node, () => {
-+				vnode.vb = renderVaporSlot(vnode, parentComponent, parentSuspense);
-+				let anchor = isFragment(vnode.vb) && vnode.vb.anchor ? vnode.vb.anchor : currentHydrationNode;
-+				if (!anchor || /* @__PURE__ */ parentNode(anchor) !== /* @__PURE__ */ parentNode(node)) {
-+					createdAnchor = true;
-+					anchor = /* @__PURE__ */ createTextNode();
-+					insert(anchor, /* @__PURE__ */ parentNode(node));
-+				}
-+				if (isComment(node, "[") && isComment(anchor, "]")) {
-+					vnode.el = node;
-+					vnode.anchor = anchor;
-+				} else vnode.anchor = vnode.el = anchor;
-+				if (!!(process.env.NODE_ENV !== "production") && !vnode.anchor) throw new Error(`Failed to locate slot anchor. this is likely a Vue internal bug.`);
-+			});
- 		});
-+		if (createdAnchor) return null;
- 		return isComment(node, "[") ? vnode.anchor.nextSibling : vnode.anchor;
- 	},
- 	setTransitionHooks(component, hooks) {
+ 	};
+@@ -5604,7 +5617,7 @@ var TeleportFragment = class extends RenderContextFragment {
+ 			renderEffect(() => runWithFragmentCtxOnly(this, () => this.handleChildrenUpdate(this.rawSlots && this.rawSlots.default ? this.rawSlots.default() : [])));
+ 			this.bindChildren(this.nodes);
+ 		} finally {
+-			setCurrentInstance(...prevInstance);
++			restoreCurrentInstance(prevInstance);
+ 		}
+ 	}
+ 	ensureChildrenInitialized() {
+@@ -7037,7 +7050,7 @@ function trackTransitionGroupUpdate(owner, updateHooks) {
+ 				try {
+ 					resolveDynamicProps(owner.rawProps);
+ 				} finally {
+-					setCurrentInstance(...prev);
++					restoreCurrentInstance(prev);
+ 				}
+ 			});
+ 			effect.notify = () => {
