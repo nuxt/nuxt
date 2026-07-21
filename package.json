@@ -63,7 +63,7 @@
     "@types/node": "24.13.3",
     "@types/semver": "7.7.1",
     "@typescript-eslint/parser": "8.64.0",
-    "@unhead/vue": "2.1.15",
+    "@unhead/vue": "2.1.16",
     "@vitest/coverage-v8": "4.1.10",
     "@vue/test-utils": "2.4.11",
     "acorn": "8.17.0",
@@ -83,7 +83,7 @@
     "estree-walker": "3.0.3",
     "get-port-please": "3.2.0",
     "h3": "1.15.11",
-    "happy-dom": "20.10.6",
+    "happy-dom": "20.11.0",
     "installed-check": "10.0.1",
     "knip": "6.27.0",
     "magic-regexp": "0.11.0",
@@ -114,6 +114,6 @@
     "vue-tsc": "3.3.7",
     "webpack": "5.108.4"
   },
-  "packageManager": "pnpm@11.13.1",
+  "packageManager": "pnpm@11.15.1",
   "version": ""
 }
