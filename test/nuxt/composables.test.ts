@@ -724,7 +724,7 @@ describe('routing utilities: `navigateTo`', () => {
   }
 
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[NUXT_E2001: NUXT_E2001]')
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/4.x/errors/e2001]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
@@ -733,7 +733,7 @@ describe('routing utilities: `navigateTo`', () => {
       ['\0data:alert("hi")', 'data'],
     ]
     for (const [url] of urls) {
-      expect(() => navigateTo(url, { external: true })).toThrow('NUXT_E2002')
+      expect(() => navigateTo(url, { external: true })).toThrow(expect.objectContaining({ code: 'NUXT_E2002' }))
     }
   })
   it('navigateTo should disallow opening data/script URLs via the `open` option', () => {
@@ -746,7 +746,7 @@ describe('routing utilities: `navigateTo`', () => {
         '\0javascript:alert("hi")',
       ]
       for (const url of urls) {
-        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow('NUXT_E2002')
+        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow(expect.objectContaining({ code: 'NUXT_E2002' }))
       }
       expect(open).not.toHaveBeenCalled()
     } finally {
@@ -769,7 +769,7 @@ describe('routing utilities: `navigateTo`', () => {
       '\0data:alert("hi")',
     ]
     for (const url of urls) {
-      expect(() => reloadNuxtApp({ path: url })).toThrow('NUXT_E2010')
+      expect(() => reloadNuxtApp({ path: url })).toThrow(expect.objectContaining({ code: 'NUXT_E2010' }))
     }
   })
   it('reloadNuxtApp should disallow cross-origin paths', () => {
@@ -779,7 +779,7 @@ describe('routing utilities: `navigateTo`', () => {
       '\\\\evil.com',
     ]
     for (const url of urls) {
-      expect(() => reloadNuxtApp({ path: url })).toThrow('NUXT_E2010')
+      expect(() => reloadNuxtApp({ path: url })).toThrow(expect.objectContaining({ code: 'NUXT_E2010' }))
     }
   })
   it('reloadNuxtApp should allow same-origin paths', () => {
