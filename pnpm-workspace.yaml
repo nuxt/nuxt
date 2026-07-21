@@ -11,6 +11,7 @@ packages:
 patchedDependencies:
   changelogen: patches/changelogen.patch
   knip@6.27.0: patches/knip@6.27.0.patch
+  nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
 
 publicHoistPattern:
   - '*-loader'
@@ -210,6 +211,7 @@ catalogs:
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5
     '@types/estree': 1.0.9
+    '@types/hash-sum': 1.0.2
     '@types/node': 24.13.3
     '@types/picomatch': 4.0.3
     '@types/pug': 2.0.10

@@ -296,6 +296,9 @@ catalogs:
     '@types/estree':
       specifier: 1.0.9
       version: 1.0.9
+    '@types/hash-sum':
+      specifier: 1.0.2
+      version: 1.0.2
     '@types/node':
       specifier: 24.13.3
       version: 24.13.3
@@ -573,6 +576,7 @@ overrides:
 patchedDependencies:
   changelogen: 8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b
   knip@6.27.0: 1ba9a7d6e9ab2a13375caa1c61d26951ad4e8de983d62372678133b04d547d3d
+  nitro@3.0.260610-beta: 69d26cc4029f357c5be0b553988dd13057c41448950c52c4cb31fb8c4bf0d1ce
 
 importers:
 
@@ -700,7 +704,7 @@ importers:
         version: 0.49.1(supports-color@10.2.2)
       nitro:
         specifier: catalog:nitro-runtime
-        version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
+        version: 3.0.260610-beta(patch_hash=69d26cc4029f357c5be0b553988dd13057c41448950c52c4cb31fb8c4bf0d1ce)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -850,7 +854,7 @@ importers:
         version: 6.1.1
       nitro:
         specifier: catalog:nitro-runtime
-        version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
+        version: 3.0.260610-beta(patch_hash=69d26cc4029f357c5be0b553988dd13057c41448950c52c4cb31fb8c4bf0d1ce)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
       nitropack:
         specifier: catalog:dev
         version: 2.13.4(@rspack/core@2.1.4(@swc/helpers@0.5.23))(oxc-parser@0.140.0)(rolldown@1.2.0)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.20))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.20))
@@ -925,7 +929,7 @@ importers:
         version: 0.1.1
       nitro:
         specifier: catalog:nitro-runtime
-        version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
+        version: 3.0.260610-beta(patch_hash=69d26cc4029f357c5be0b553988dd13057c41448950c52c4cb31fb8c4bf0d1ce)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5)
       nostics:
         specifier: catalog:app-runtime
         version: 1.2.0
@@ -1374,9 +1378,6 @@ importers:
         specifier: catalog:build
         version: 4.2.0
     devDependencies:
-      '@nuxt/ui-templates':
-        specifier: workspace:*
-        version: link:../ui-templates
       '@types/pug':
         specifier: catalog:dev
         version: 2.0.10
@@ -1799,6 +1800,9 @@ importers:
       '@rspack/core':
         specifier: catalog:dev
         version: 2.1.4(@swc/helpers@0.5.23)
+      '@types/hash-sum':
+        specifier: catalog:dev
+        version: 1.0.2
       '@types/webpack-bundle-analyzer':
         specifier: catalog:dev
         version: 4.7.0(cssnano@8.0.2(postcss@8.5.20))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.20)
@@ -4181,6 +4185,9 @@ packages:
 
   '@types/gensync@1.0.5':
     resolution: {integrity: sha512-MbsRCT7mTikHwKZ0X+LVUTLRrZZRLipTuXEO9qOYO+zmjMVk81axyClMROf6uoPD9MRVu46bx8zoR0Ad9q3NAg==}
+
+  '@types/hash-sum@1.0.2':
+    resolution: {integrity: sha512-UP28RddqY8xcU0SCEp9YKutQICXpaAq9N8U2klqF5hegGha7KzTOL8EdhIIV3bOSGBzjEpN9bU/d+nNZBdJYVw==}
 
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
@@ -12516,6 +12523,8 @@ snapshots:
 
   '@types/gensync@1.0.5': {}
 
+  '@types/hash-sum@1.0.2': {}
+
   '@types/hast@3.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -17008,7 +17017,7 @@ snapshots:
 
   nf3@0.3.17: {}
 
-  nitro@3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5):
+  nitro@3.0.260610-beta(patch_hash=69d26cc4029f357c5be0b553988dd13057c41448950c52c4cb31fb8c4bf0d1ce)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.2)(vite@8.1.5):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.6(srvx@0.11.22)

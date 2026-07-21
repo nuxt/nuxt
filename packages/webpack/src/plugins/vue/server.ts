@@ -1,7 +1,7 @@
 import type { Compilation, Compiler } from 'webpack'
 import { bundlerDiagnostics } from '@nuxt/kit'
 import { extractQueryPartJS, isJS, validate } from './util.ts'
-import { webpack } from '#builder'
+import { webpack } from '../../builder.ts'
 
 interface VueSSRServerPluginOptions {
   filename: string

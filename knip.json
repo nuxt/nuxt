@@ -103,12 +103,6 @@
         "@nuxt/vite-builder"
       ]
     },
-    "packages/schema": {
-      "ignoreDependencies": [
-        "@vue/shared",
-        "@nuxt/ui-templates"
-      ]
-    },
     "packages/ui-templates": {
       "entry": [
         "lib/*.ts"

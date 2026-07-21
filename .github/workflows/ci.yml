@@ -117,6 +117,45 @@ jobs:
           node-version: 22
           cache: true
 
+  ui-templates-generated:
+    # Regenerates the committed @nuxt/ui-templates output and fails on drift.
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+        with:
+          node-version: 22
+          cache: true
+
+      - name: Regenerate ui-templates output
+        working-directory: packages/ui-templates
+        run: vp run build
+
+      - name: Fail if committed output is stale
+        run: |
+          paths="packages/nuxt/src/app/components packages/nitro-server/src/runtime/templates packages/nitro-server/src/templates packages/schema/src/templates"
+          git add -N -- $paths
+          if ! git diff --exit-code -- $paths; then
+            echo "::error::Committed ui-templates output is out of date. Run 'pnpm --filter @nuxt/ui-templates build' and commit the result."
+            exit 1
+          fi
+          echo "Committed ui-templates output is up to date."
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   codeql:
     if: github.event_name != 'merge_group' && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
     runs-on: ubuntu-latest
@@ -438,6 +477,7 @@ jobs:
       - test-size
       - test-fixtures
       - test-e2e
+      - ui-templates-generated
     steps:
       - name: Check required jobs
         run: |
@@ -452,6 +492,7 @@ jobs:
             "${{ needs.test-size.result }}" \
             "${{ needs.test-fixtures.result }}" \
             "${{ needs.test-e2e.result }}" \
+            "${{ needs.ui-templates-generated.result }}" \
           )
           for result in "${results[@]}"; do
             if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
