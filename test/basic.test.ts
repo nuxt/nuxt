@@ -1949,6 +1949,17 @@ describe.skipIf(isWindows)('payload rendering', () => {
     expect(data.data['payload-query-1']).toBeUndefined()
   })
 
+  it('does not refetch payloads on query-only navigation for prerendered routes', async () => {
+    const { page, requests } = await renderPage('/random/a')
+
+    requests.length = 0
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/random/a?foo=bar'))
+    await page.waitForURL(url('/random/a?foo=bar'))
+    expect(requests.filter(request => request.includes('_payload.json'))).toHaveLength(0)
+
+    await page.close()
+  })
+
   // https://github.com/nuxt/nuxt/issues/34856
   it('should render payload for SSR+SWR routes that opt out of a catch-all `ssr: false` rule', async () => {
     const payload = await $fetch<string>('/route-rules/swr-in-spa/_payload.json', { responseType: 'text' })

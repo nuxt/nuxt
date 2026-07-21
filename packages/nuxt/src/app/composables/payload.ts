@@ -24,7 +24,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
     const payloadURL = await _getPayloadURL(url, opts)
     // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
     // cannot invalidate them - defer to normal HTTP cache semantics instead
-    const cache: RequestCache = getRouteRules({ path: _getRoutePath(url) }).payload ? 'default' : 'force-cache'
+    const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
     return await _importPayload(payloadURL, cache) || null
   }
   return null
@@ -90,6 +90,9 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
   const payloadURL = joinURL(baseOrCdnURL, u.pathname, filename)
 
+  if (!isCachedPayloadRoute(url)) {
+    u.search = ''
+  }
   if (hash) {
     u.searchParams.set(payloadBuildIdParam, String(hash))
   }
@@ -125,6 +128,11 @@ function _shouldLoadPrerenderedPayload (rules: Record<string, any>) {
 
 function _getRoutePath (url: string) {
   return new URL(url, 'http://localhost').pathname
+}
+
+/** @internal */
+export function isCachedPayloadRoute (url: string): boolean {
+  return !!getRouteRules({ path: _getRoutePath(url) }).payload
 }
 
 async function _isPrerenderedInManifest (url: string) {
