@@ -15,11 +15,6 @@ allowBuilds:
   unrs-resolver: false
 
 patchedDependencies:
-  # base is the pinned pkg.pr.new `minor` build below (reports version 3.6.0-rc.1),
-  # NOT published 3.6.0-rc.1. Patches carry vuejs/core#15139 + #15140 + #15141 (all
-  # open) over the built dist. Drop once they land in a released vue.
-  '@vue/runtime-core@3.6.0-rc.1': patches/@vue__runtime-core@3.6.0-rc.1.patch
-  '@vue/runtime-vapor@3.6.0-rc.1': patches/@vue__runtime-vapor@3.6.0-rc.1.patch
   changelogen: patches/changelogen.patch
   knip@6.27.0: patches/knip@6.27.0.patch
 
@@ -29,10 +24,6 @@ publicHoistPattern:
   - 'estree-walker'
 
 shellEmulator: true
-
-# vue/@vue/* are overridden to a pkg.pr.new build (vuejs/core#15139) which resolves
-# via URL; allow that to satisfy transitive deps such as @nuxt/test-utils -> vue
-blockExoticSubdeps: false
 
 verifyDepsBeforeRun: install
 
@@ -45,18 +36,18 @@ overrides:
   nuxt: "workspace:*"
   oxc-parser: "0.140.0"
   vite: "8.1.5"
-  vue: "https://pkg.pr.new/vue@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/compiler-core": "https://pkg.pr.new/@vue/compiler-core@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/compiler-dom": "https://pkg.pr.new/@vue/compiler-dom@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/compiler-sfc": "https://pkg.pr.new/@vue/compiler-sfc@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/compiler-ssr": "https://pkg.pr.new/@vue/compiler-ssr@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/reactivity": "https://pkg.pr.new/@vue/reactivity@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/runtime-core": "https://pkg.pr.new/@vue/runtime-core@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/runtime-dom": "https://pkg.pr.new/@vue/runtime-dom@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/server-renderer": "https://pkg.pr.new/@vue/server-renderer@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/shared": "https://pkg.pr.new/@vue/shared@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/runtime-vapor": "https://pkg.pr.new/@vue/runtime-vapor@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
-  "@vue/compiler-vapor": "https://pkg.pr.new/@vue/compiler-vapor@567c515bd0f2897269e0b44c1f1c2c5c2fdb12a5"
+  vue: "3.6.0-rc.2"
+  "@vue/compiler-core": "3.6.0-rc.2"
+  "@vue/compiler-dom": "3.6.0-rc.2"
+  "@vue/compiler-sfc": "3.6.0-rc.2"
+  "@vue/compiler-ssr": "3.6.0-rc.2"
+  "@vue/reactivity": "3.6.0-rc.2"
+  "@vue/runtime-core": "3.6.0-rc.2"
+  "@vue/runtime-dom": "3.6.0-rc.2"
+  "@vue/server-renderer": "3.6.0-rc.2"
+  "@vue/shared": "3.6.0-rc.2"
+  "@vue/runtime-vapor": "3.6.0-rc.2"
+  "@vue/compiler-vapor": "3.6.0-rc.2"
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
@@ -105,7 +96,7 @@ catalogs:
     unstorage: ^1.17.5
   vue:
     '@vitejs/plugin-vue': ^6.0.8
-    '@vue/compiler-sfc': 3.5.40
+    '@vue/compiler-sfc': 3.6.0-rc.2
     rspack-vue-loader: ^17.6.1
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
