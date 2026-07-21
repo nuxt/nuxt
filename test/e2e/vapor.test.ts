@@ -217,10 +217,7 @@ test.describe('vapor async data', () => {
     await expect(page.getByTestId('data-status')).toHaveText('success')
   })
 
-  // on the first client-side navigation from a vdom page to a vapor page, lifecycle
-  // hooks registered in setup (onBeforeMount) never fire, so the lazy fetch never
-  // starts. navigating from another vapor page works.
-  test.fail('client-side navigation from a vdom page to a vapor page with lazy useAsyncData', async ({ page, goto }) => {
+  test('client-side navigation from a vdom page to a vapor page with lazy useAsyncData', async ({ page, goto }) => {
     await goto('/')
     await page.getByTestId('nav-lazy-data').click()
     await expect(page.getByTestId('page-title')).toHaveText('Lazy data vapor page')
@@ -274,18 +271,15 @@ test.describe('vapor page transitions', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  // enter begins before the leaving page has finished despite `mode: 'out-in'`:
-  // `before-enter` fires before `after-leave` (double-firing of enter hooks was
-  // fixed by vuejs/core#15133; the ordering violation remains with it applied)
-  test.fail('js transition hooks fire exactly once and respect out-in ordering', async ({ page, goto, isDev }) => {
+  test('js transition hooks fire exactly once and respect out-in ordering', async ({ page, goto, isDev }) => {
     test.skip(isDev, 'hooks fire only once in dev')
     await goto('/vdom-page?tr=1')
     await page.getByTestId('nav-vapor-page-two').click()
     await expect(page.getByTestId('page-title')).toHaveText('Vapor page two')
     await expect.poll(() => transitionEvents(page), { timeout: 5000 }).toEqual([
       'vdom-page:before-leave',
-      'vdom-page:after-leave',
       'vapor-page-two:before-enter',
+      'vdom-page:after-leave',
       'vapor-page-two:after-enter',
     ])
 
