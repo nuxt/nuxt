@@ -33,8 +33,10 @@ import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
+import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
+import { ServerEntryPlugin } from './plugins/server-entry.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
@@ -109,20 +111,25 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           }
         },
       },
-      builder: {
-        async buildApp (builder) {
-          // run serially to preserve the order of client, server builds
-          const environments = Object.values(builder.environments)
-          for (const environment of environments) {
-            logger.restoreAll()
-            nuxt._perf?.startPhase(`vite:${environment.name}`)
-            await builder.build(environment)
-            nuxt._perf?.endPhase(`vite:${environment.name}`)
-            logger.wrapAll()
-            await nuxt.callHook('vite:compiled')
-          }
-        },
-      },
+      // `nitro/vite`'s plugin runs the build process, including prerendering + asset copying
+      ...nuxt.options.experimental.nitroViteEnvironment
+        ? {}
+        : {
+            builder: {
+              async buildApp (builder) {
+                // run serially to preserve the order of client, server builds
+                const environments = Object.values(builder.environments)
+                for (const environment of environments) {
+                  logger.restoreAll()
+                  nuxt._perf?.startPhase(`vite:${environment.name}`)
+                  await builder.build(environment)
+                  nuxt._perf?.endPhase(`vite:${environment.name}`)
+                  logger.wrapAll()
+                  await nuxt.callHook('vite:compiled')
+                }
+              },
+            },
+          },
       environments: {
         client: {
           consumer: 'client',
@@ -186,9 +193,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveExternalsPlugin(nuxt),
         vuePlugin(viteConfig.vue),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
-        ViteNodePlugin(nuxt),
         ClientManifestPlugin(nuxt),
+        // After ClientManifestPlugin so its dev `clientManifest` override wins.
+        ViteNodePlugin(nuxt),
+        ServerEntryPlugin(nuxt, entry),
         DevServerPlugin(nuxt),
+        TemplateHMRPlugin(nuxt),
         // lower decorators after Vue SFC compilation and TypeScript stripping
         DecoratorsPlugin(nuxt),
         // add resolver for files in public assets directories

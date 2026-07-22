@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, componentDiagnostics, defineNuxtModule, findPath, getLayerDirectories, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -99,10 +99,25 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          logger.warn('Components directory not found: `' + dirPath + '`')
+          componentDiagnostics.NUXT_B3001({ dirPath })
         }
 
-        const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs
+        const inNodeModules = dirPath.includes('node_modules')
+
+        // Watch external component dirs so newly added components are picked up in
+        // dev without a restart. Layer app dirs are already watched, and the
+        // builder watchers unconditionally ignore `node_modules`, so paths there
+        // cannot be watched regardless of the `watch` option.
+        if (nuxt.options.dev && dirOptions.watch !== false && !inNodeModules) {
+          const coveredByLayer = getLayerDirectories(nuxt).some(dirs =>
+            dirPath === dirs.app.replace(/\/$/, '') || dirPath.startsWith(dirs.app),
+          )
+          if (!coveredByLayer && !nuxt.options.watch.includes(dirPath)) {
+            nuxt.options.watch.push(dirPath)
+          }
+        }
+
+        const dirs = inNodeModules ? libraryComponentDirs : userComponentDirs
 
         dirs.push({
           global: moduleOptions.global,
@@ -207,7 +222,7 @@ export default defineNuxtModule<ComponentsOptions>({
           modesByName.get(component.pascalName)!.add('server')
         }
         if (component.mode === 'server' && !nuxt.options.ssr && !modesByName.get(component.pascalName)?.has('client')) {
-          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
+          componentDiagnostics.NUXT_B3002({ component: component.pascalName })
         }
       }
       context.components = newComponents

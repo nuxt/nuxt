@@ -1,25 +1,18 @@
 import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitro/types'
 
+import { pageDiagnostics } from '@nuxt/kit'
 import { isEqual } from 'ohash'
 import { vueRouterToRou3 } from 'unrouting'
 
-interface GlobRouteRulesFromPagesOptions {
-  warn?: (message: string) => void
-}
-
-export function globRouteRulesFromPages (
-  pages: NuxtPage[],
-  options: GlobRouteRulesFromPagesOptions = {},
-) {
-  return collectRouteRulesFromPages(pages, {}, '', options)
+export function globRouteRulesFromPages (pages: NuxtPage[]) {
+  return collectRouteRulesFromPages(pages, {}, '')
 }
 
 function collectRouteRulesFromPages (
   pages: NuxtPage[],
   paths: Record<string, NitroRouteConfig>,
   prefix: string,
-  options: GlobRouteRulesFromPagesOptions,
 ) {
   for (const page of pages) {
     if (page.rules) {
@@ -27,11 +20,11 @@ function collectRouteRulesFromPages (
         const path = prefix + page.path
         const { patterns, issues } = vueRouterToRou3(path, { collapse: true })
         for (const issue of issues) {
-          options.warn?.(`Inline route rules for \`${path}\` cannot be represented exactly by Nitro route rules: ${issue.message}.`)
+          pageDiagnostics.NUXT_B4016({ path, detail: issue.message })
         }
         for (const pattern of patterns) {
           if (pattern in paths && !isEqual(paths[pattern], page.rules)) {
-            options.warn?.(`Inline route rules for \`${path}\` generated \`${pattern}\`, which is already used by another page. The later inline route rules will override the earlier ones.`)
+            pageDiagnostics.NUXT_B4017({ path, pattern })
           }
           paths[pattern] = page.rules
         }
@@ -40,7 +33,7 @@ function collectRouteRulesFromPages (
       delete page.rules
     }
     if (page.children?.length) {
-      collectRouteRulesFromPages(page.children, paths, prefix + page.path + '/', options)
+      collectRouteRulesFromPages(page.children, paths, prefix + page.path + '/')
     }
   }
   return paths

@@ -7,18 +7,11 @@ import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
-import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { LogObject } from 'consola'
-import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
-import type { SSRHeadPayload } from '@unhead/vue/server'
 
-import type { NuxtAppLiterals } from 'nuxt/app'
-
-import type { NuxtIslandContext } from './types'
+import type { NuxtPayload, NuxtSSRContext, NuxtServerRuntimeHooks, PluginMeta } from './types'
 import type { RouteMiddleware } from './composables/router'
-import type { NuxtError } from './composables/error'
-import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn } from './composables/asyncData'
+import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
 import type { LoadingIndicator } from './composables/loading-indicator'
@@ -26,8 +19,10 @@ import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
-// @ts-expect-error virtual file
+import { appDiagnostics } from './diagnostics/core'
 import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+
+export type { NuxtPayload, NuxtSSRContext, PluginMeta } from './types'
 
 export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
@@ -37,15 +32,15 @@ export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<Nux
 
 type HookResult = Promise<void> | void
 
-type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'], renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
-export interface RuntimeNuxtHooks {
+// `app:error` and `app:rendered` are inherited from the server-addressable
+// subset in `./types`; the hooks declared here need the DOM lib for their
+// argument types (`App<Element>`, `VNode`, `ViewTransition`).
+export interface RuntimeNuxtHooks extends NuxtServerRuntimeHooks {
   'app:created': (app: App<Element>) => HookResult
   'app:beforeMount': (app: App<Element>) => HookResult
   'app:mounted': (app: App<Element>) => HookResult
-  'app:rendered': (ctx: AppRenderedContext) => HookResult
   'app:redirected': () => HookResult
   'app:suspense:resolve': (Component?: VNode) => HookResult
-  'app:error': (err: any) => HookResult
   'app:error:cleared': (options: { redirect?: string }) => HookResult
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
@@ -60,53 +55,6 @@ export interface RuntimeNuxtHooks {
   'page:loading:end': () => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
-}
-
-export interface NuxtSSRContext extends SSRContext {
-  url: string
-  event: H3Event
-  runtimeConfig: RuntimeConfig
-  noSSR: boolean
-  /** whether we are rendering an SSR error */
-  error?: boolean
-  nuxt: _NuxtApp
-  payload: Partial<NuxtPayload>
-  head: VueHeadClient<UseHeadInput, SSRHeadPayload>
-  /** This is used solely to render runtime config with SPA renderer. */
-  config?: Pick<RuntimeConfig, 'public' | 'app'>
-  teleports?: Record<string, string>
-  islandContext?: NuxtIslandContext
-  /** @internal */
-  ['~renderResponse']?: Response
-  /** @internal */
-  ['~payloadReducers']: Record<string, (data: any) => any>
-  /** @internal */
-  ['~sharedPrerenderCache']?: {
-    get<T = unknown> (key: string): Promise<T> | undefined
-    set<T> (key: string, value: Promise<T>): Promise<void>
-  }
-  /** @internal */
-  ['~preloadManifest']?: boolean
-  /** @internal */
-  ['~lazyHydratedModules']?: Set<string>
-}
-
-export interface NuxtPayload {
-  path?: string
-  serverRendered?: boolean
-  prerenderedAt?: number
-  data: Record<string, any>
-  state: Record<string, any>
-  once: Set<string>
-  config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: NuxtError | undefined
-  _errors: Record<string, NuxtError | undefined>
-  /**
-   * Forwarded `<link rel="preload">` / `<link rel="modulepreload">` hints from the destination route, populated when `experimental.prefetchPreloadTags` is enabled.
-   * @internal
-   */
-  prefetchLinks?: Array<Record<string, string | boolean>>
-  [key: string]: unknown
 }
 
 interface _NuxtApp {
@@ -148,7 +96,7 @@ interface _NuxtApp {
     /** @internal */
     _init: boolean
     /** @internal */
-    _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>
+    _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
     /** @internal */
     _hash?: Record<string, string | undefined>
     /** @internal */
@@ -176,6 +124,9 @@ interface _NuxtApp {
 
   /** @internal */
   '_processingMiddleware'?: string | boolean
+
+  /** @internal */
+  '_middlewareTo'?: Pick<RouteLocationNormalizedLoaded, 'meta'>
 
   /** @internal */
   '_once': {
@@ -239,20 +190,6 @@ export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
 
-export interface PluginMeta {
-  name?: string
-  enforce?: 'pre' | 'default' | 'post'
-  /**
-   * Await for other named plugins to finish before running this plugin.
-   */
-  dependsOn?: NuxtAppLiterals['pluginName'][]
-  /**
-   * This allows more granular control over plugin order and should only be used by advanced users.
-   * It overrides the value of `enforce` and is used to sort plugins.
-   */
-  order?: number
-}
-
 export interface PluginEnvContext {
   /**
    * This enable the plugin for islands components.
@@ -268,7 +205,7 @@ export interface ResolvedPluginMeta {
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
-  (nuxt: _NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
+  (nuxt: NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
   [NuxtPluginIndicator]?: true
   meta?: ResolvedPluginMeta
 }
@@ -434,7 +371,9 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
-    const unreg = nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+    const unreg = nuxtApp.hook('app:error', (...args) => {
+      appDiagnostics.NUXT_E1005({ cause: args.length > 1 ? args : args[0] })
+    })
     nuxtApp.hook('app:mounted', unreg)
   }
 
@@ -635,11 +574,7 @@ export function useNuxtApp (id?: string): NuxtApp {
   const nuxtAppInstance = tryUseNuxtApp(id)
 
   if (!nuxtAppInstance) {
-    if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/4.x/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
-    } else {
-      throw new Error('[nuxt] instance unavailable')
-    }
+    throw appDiagnostics.NUXT_E1001()
   }
 
   return nuxtAppInstance
@@ -676,7 +611,7 @@ function wrappedConfig (runtimeConfig: Record<string, unknown>) {
       if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         if (!loggedKeys.has(p)) {
           loggedKeys.add(p)
-          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/4.x/guide/going-further/runtime-config for more information.`)
+          appDiagnostics.NUXT_E1003({ key: p, keys: keys.join(', '), lastKey: lastKey! })
         }
       }
       return Reflect.get(target, p, receiver)

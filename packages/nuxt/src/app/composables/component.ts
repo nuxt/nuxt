@@ -1,12 +1,13 @@
 import { computed, getCurrentInstance } from 'vue'
 import type { DefineComponent, defineComponent } from 'vue'
-import { hash } from 'ohash'
+import { hashKey } from '../utils/hash'
 import type { NuxtApp } from '../nuxt'
 import { getNuxtAppCtx, useNuxtApp } from '../nuxt'
 import { useHead } from './head'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
 import { createError } from './error'
+import { dataDiagnostics } from '../diagnostics/data'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
@@ -15,7 +16,7 @@ function getFetchKey () {
   const vm = getCurrentInstance()!
   const route = useRoute()
   const { _fetchKeyBase } = vm.proxy!.$options
-  return hash([
+  return hashKey([
     _fetchKeyBase,
     route.path,
     route.query,
@@ -42,7 +43,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
       })
     }
   } else if (import.meta.dev) {
-    console.warn('[nuxt] asyncData should return an object', data)
+    dataDiagnostics.NUXT_E3007({ cause: data })
   }
 }
 

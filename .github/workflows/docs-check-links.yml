@@ -9,6 +9,10 @@ on:
       - main
       - 4.x
       - 3.x
+  schedule:
+    # weekly full check of all links, including external ones
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
@@ -17,10 +21,11 @@ permissions: {}
 jobs:
   link-checker:
     runs-on: ubuntu-24.04-arm
+    if: github.event_name != 'schedule' || github.repository == 'nuxt/nuxt'
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
       - name: Restore lychee cache
-        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .lycheecache
           key: cache-lychee-${{ github.sha }}
@@ -31,8 +36,28 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Lychee link checker
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
+      # on pull requests, only check internal docs links to avoid
+      # failures caused by flaky external sites
+      - name: Lychee link checker (internal links)
+        if: github.event_name == 'pull_request'
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          # arguments with file types to check
+          args: >-
+            '-c=lychee.toml'
+            --exclude '^https?://'
+            --include 'https://nuxt\.com/docs'
+            './docs/**/*.md'
+            './docs/**/*.html'
+          # fail the action on broken links
+          fail: true
+        env:
+          # to be used in case rate limits are surpassed
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lychee link checker (all links)
+        if: github.event_name != 'pull_request'
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           # arguments with file types to check
           args: >-

@@ -6,15 +6,16 @@ import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
-import { computeIslandHash } from '#app/island-hash'
-import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
+import { getIslandHash } from '#app/island-hash'
+import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
-// @ts-expect-error virtual file
 import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import { patchDevClientCss } from '../utils/renderer/dev-css'
+import { recordDevClientCss } from '../utils/renderer/dev-client-css'
 import { useStorage } from 'nitro/storage'
 import type { Storage } from 'unstorage'
 
@@ -78,6 +79,10 @@ export default {
       }
 
       if (import.meta.dev) {
+        // refresh  per-request CSS from the builder's module graph post-render
+        await recordDevClientCss(event)
+        // ... and patch it into the manifest.
+        patchDevClientCss(event, renderer.rendererContext)
         const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
 
         const link: Link[] = []
@@ -171,7 +176,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 
   // Bind the response to the URL: a request whose URL-resident `hashId` does not match
   // the actual (name, serialized props, context) is rejected.
-  const expectedHash = computeIslandHash(componentName, serializedProps, clientContext, undefined)
+  const expectedHash = getIslandHash({ name: componentName, props: serializedProps, context: clientContext })
   if (!hashId || hashId !== expectedHash) {
     throw new HTTPError({ status: 400, statusText: 'Invalid island request hash' })
   }

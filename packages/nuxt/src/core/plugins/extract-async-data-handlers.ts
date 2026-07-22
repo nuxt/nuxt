@@ -166,7 +166,7 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
 
             asyncDatas[key] = {
               code: chunk.toString(),
-              map: options.sourcemap ? chunk.generateMap({ hires: true }) : undefined,
+              map: options.sourcemap ? chunk.generateMap({ hires: true }) as SourceMapInput : undefined,
             }
 
             // Replace the original function with a dynamic import

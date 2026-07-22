@@ -2,16 +2,18 @@ import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
 import type { $Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
-import { hash } from 'ohash'
-
 import { isPlainObject } from '@vue/shared'
+import { hashKey } from '../utils/hash'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
+import { dataDiagnostics } from '../diagnostics/data'
 import type { NuxtError } from './error'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
-// @ts-expect-error virtual file
 import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
+import { $fetch as _$fetch } from '#build/fetch'
+
+const $fetch = _$fetch as $Fetch
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -75,23 +77,25 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
   if (opts.body) {
     const value = toValue(opts.body)
     if (!value) {
-      segments.push(hash(value))
+      segments.push(hashKey(value))
     } else if (value instanceof ArrayBuffer) {
-      segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
+      segments.push(hashKey(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
     } else if (value instanceof FormData) {
       const entries: Array<[string, string]> = []
       for (const entry of value.entries()) {
         const [key, val] = entry
         entries.push([key, val instanceof File ? `${val.name}:${val.size}:${val.lastModified}` : val])
       }
-      segments.push(hash(entries))
+      segments.push(hashKey(entries))
     } else if (isPlainObject(value)) {
-      segments.push(hash(reactive(value)))
+      // `reactive` unwraps nested refs so a body like `{ id: ref(1) }` hashes by the
+      // ref's value; hashing the plain object would serialize mutable ref internals.
+      segments.push(hashKey(reactive(value)))
     } else {
       try {
-        segments.push(hash(value))
+        segments.push(hashKey(value))
       } catch {
-        console.warn('[useFetch] Failed to hash body', value)
+        dataDiagnostics.NUXT_E3002({ cause: value })
       }
     }
   }
@@ -110,7 +114,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends NitroFetchRequest = NitroFetchRequest,
-    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
     _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
     DataT = _ResT,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
@@ -124,7 +128,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends NitroFetchRequest = NitroFetchRequest,
-    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
     _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
     DataT = _ResT,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
@@ -138,7 +142,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends NitroFetchRequest = NitroFetchRequest,
-    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
     _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
     DataT = FetchFactoryDataT<FDataT, _ResT>,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
@@ -152,7 +156,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends NitroFetchRequest = NitroFetchRequest,
-    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
     _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
     DataT = FetchFactoryDataT<FDataT, _ResT>,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
@@ -166,7 +170,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends NitroFetchRequest = NitroFetchRequest,
-    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
     _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
     DataT = _ResT,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
@@ -182,7 +186,7 @@ export interface CreateUseFetch {
   <
     FResT = void,
     FReqT extends NitroFetchRequest = NitroFetchRequest,
-    FMethod extends AvailableRouterMethod<FReqT> = FResT extends void ? 'get' extends AvailableRouterMethod<FReqT> ? 'get' : AvailableRouterMethod<FReqT> : AvailableRouterMethod<FReqT>,
+    const FMethod extends AvailableRouterMethod<FReqT> = FResT extends void ? 'get' extends AvailableRouterMethod<FReqT> ? 'get' : AvailableRouterMethod<FReqT> : AvailableRouterMethod<FReqT>,
     F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
@@ -203,7 +207,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
   factory<
     FResT = void,
     FReqT extends NitroFetchRequest = NitroFetchRequest,
-    FMethod extends AvailableRouterMethod<FReqT> = FResT extends void ? 'get' extends AvailableRouterMethod<FReqT> ? 'get' : AvailableRouterMethod<FReqT> : AvailableRouterMethod<FReqT>,
+    const FMethod extends AvailableRouterMethod<FReqT> = FResT extends void ? 'get' extends AvailableRouterMethod<FReqT> ? 'get' : AvailableRouterMethod<FReqT> : AvailableRouterMethod<FReqT>,
     F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
@@ -304,6 +308,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         deep,
         dedupe,
         timeout,
+        enabled,
         ...fetchOptions
       } = {
         ...(typeof options === 'function' ? {} : factoryOptions),
@@ -313,10 +318,10 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
 
       const _request = computed(() => toValue(request))
 
-      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
+      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
-        throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
+        throw dataDiagnostics.NUXT_E3001({ url: _request.value })
       }
 
       const _fetchOptions = reactive<typeof fetchOptions>({
@@ -336,6 +341,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         deep,
         dedupe,
         timeout,
+        enabled,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
       }
 
@@ -385,3 +391,5 @@ export const useLazyFetch: UseFetch = (createUseFetch as unknown as { __nuxt_fac
   // @ts-expect-error private property
   _functionName: 'useLazyFetch',
 }) as ReturnType<typeof createUseFetch>
+
+export type { $Fetch }

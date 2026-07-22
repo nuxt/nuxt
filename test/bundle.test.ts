@@ -1,29 +1,32 @@
-import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
+import { gzipSync } from 'node:zlib'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
 import { join } from 'pathe'
 
-const nuxtEntry = fileURLToPath(new URL('../packages/nuxt/dist/index.mjs', import.meta.url))
-const isStubbed = readFileSync(nuxtEntry, 'utf-8').includes('const _module = await jiti')
-
-describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
+  const spaRootDir = fileURLToPath(new URL('./fixtures/spa', import.meta.url))
 
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxt', 'build', rootDir]),
       exec('pnpm', ['nuxt', 'build', pagesRootDir]),
+      exec('pnpm', ['nuxt', 'build', spaRootDir]),
     ])
   }, 120 * 1000)
 
   it('default client bundle size', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"117k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"106k"`)
+    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"39.5k"`)
+
+    const entry = await fsp.readFile(join(rootDir, '.output/public', clientStats!.files.find(f => f.startsWith('_nuxt/entry'))!), 'utf8')
+    expect(entry).not.toContain('[ofetch] global.fetch is not supported')
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -32,6 +35,21 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
         "_nuxt/entry.js",
       ]
     `)
+  })
+
+  it('does not ship payload revival machinery in a spa build', async () => {
+    const clientStats = await analyzeSizes(['**/*.js'], join(spaRootDir, '.output/public'), spaRootDir)
+
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"101k"`)
+
+    const contents = await Promise.all(
+      (await glob(['**/*.js'], { cwd: join(spaRootDir, '.output/public') }))
+        .map(file => fsp.readFile(join(spaRootDir, '.output/public', file), 'utf8')),
+    )
+    const bundle = contents.join('\n')
+
+    expect(bundle).not.toContain('nuxt:revive-payload:client')
+    expect(bundle).not.toContain('EmptyShallowRef')
   })
 
   it('default client bundle size (pages)', async () => {
@@ -57,15 +75,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"70.3k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"271k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"482k"`)
-
-    const packages = modules.files
-      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
-      .sort()
+    const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
@@ -73,12 +86,12 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
         "destr",
         "devalue",
         "h3+rou3+srvx",
+        "nostics",
         "ocache+ohash",
         "ofetch",
         "pathe",
         "scule",
         "ufo",
-        "unctx",
         "unhead",
         "unstorage",
         "vue",
@@ -91,15 +104,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"172k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"344k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"483k"`)
-
-    const packages = modules.files
-      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
-      .sort()
+    const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
@@ -107,27 +115,41 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
         "destr",
         "devalue",
         "h3+rou3+srvx",
+        "nostics",
         "ocache+ohash",
         "ofetch",
         "pathe",
         "scule",
         "ufo",
         "uncrypto",
-        "unctx",
         "unhead",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
+        "vue-devtools-stub",
+        "vue-router",
         "vue__server-renderer",
       ]
     `)
   })
 })
 
+// we strip packages that are small enough rolldown might inline them
+// depending on humidity or the time of day
+const MERGE_BOUNDARY_PACKAGES = new Set(['unctx'])
+
+function getVendorPackages (files: string[]) {
+  return files
+    .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
+    .filter(pkg => !MERGE_BOUNDARY_PACKAGES.has(pkg))
+    .sort()
+}
+
 async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })
   const stripPatterns = getStripPatterns(projectDir)
   let totalBytes = 0
+  let gzipBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)
     const isSymlink = (await fsp.lstat(path).catch(() => null))?.isSymbolicLink()
@@ -139,9 +161,10 @@ async function analyzeSizes (pattern: string[], rootDir: string, projectDir: str
         normalized = normalized.replaceAll(pattern, '')
       }
       totalBytes += Buffer.byteLength(normalized)
+      gzipBytes += gzipSync(normalized).byteLength
     }
   }
-  return { files, totalBytes }
+  return { files, totalBytes, gzipBytes }
 }
 
 // Strip strings that vary by host or by build invocation but don't represent real bundle

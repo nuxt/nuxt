@@ -29,7 +29,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    UnoCSS(),
+    UnoCSS(r('uno.config.ts')),
     DevRenderingPlugin(),
     RenderPlugin(),
   ],

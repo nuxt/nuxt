@@ -22,7 +22,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-import { shouldLoadPayload } from '#app/composables/payload'
+import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 
 import { isTestingAppManifest } from '../matrix'
@@ -31,6 +31,12 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.req.method,
   headers: Object.fromEntries(event.req.headers.entries()),
 })))
+
+// the test environment builds with `ssr: false`, which disables payload extraction
+vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
+  ...await importOriginal<Record<string, unknown>>(),
+  payloadExtraction: true,
+}))
 
 describe('app config', () => {
   it('can be updated', () => {
@@ -130,6 +136,7 @@ describe('composables', () => {
       'useRouter',
       'useSeoMeta',
       'usePreviewMode',
+      'useLayout',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
@@ -520,6 +527,42 @@ describe('loading state', () => {
     expect(isLoading.value).toBeFalsy()
     vi.useRealTimers()
   })
+
+  it('clears a pending hide timeout when setting progress', () => {
+    vi.useFakeTimers()
+    const { clear, finish, isLoading, set } = useLoadingIndicator()
+
+    try {
+      finish()
+      vi.advanceTimersByTime(100)
+      set(30, { force: true })
+      clear()
+      vi.advanceTimersByTime(400)
+
+      expect(isLoading.value).toBe(true)
+    } finally {
+      finish({ force: true })
+      vi.useRealTimers()
+    }
+  })
+
+  it('clears a pending reset timeout when setting progress', () => {
+    vi.useFakeTimers()
+    const { clear, finish, progress, set } = useLoadingIndicator()
+
+    try {
+      finish()
+      vi.advanceTimersByTime(500)
+      set(30, { force: true })
+      clear()
+      vi.advanceTimersByTime(400)
+
+      expect(progress.value).toBe(30)
+    } finally {
+      finish({ force: true })
+      vi.useRealTimers()
+    }
+  })
 })
 
 describe.skipIf(!isTestingAppManifest)('app manifests', () => {
@@ -541,6 +584,9 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             },
           },
           "wildcard": {
+            "/isr": {
+              "isr": 60,
+            },
             "/pre": {
               "prerender": true,
             },
@@ -580,14 +626,17 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       }
     `)
   })
-  it('matches case-insensitively to mirror vue-router defaults', () => {
-    expect(getRouteRules({ path: '/Pre/spa/thing' })).toMatchObject({
-      prerender: true,
-      ssr: false,
-    })
-    expect(getRouteRules({ path: '/PRE/test' })).toMatchObject({
-      redirect: '/',
-    })
+  it('matches route-rule casing consistently with vue-router', () => {
+    const spaRules = getRouteRules({ path: '/Pre/spa/thing' })
+    const redirectRules = getRouteRules({ path: '/PRE/test' })
+
+    if (process.env.PROJECT === 'nuxt-legacy') {
+      expect(spaRules).toMatchObject({ prerender: true, ssr: false })
+      expect(redirectRules).toMatchObject({ redirect: '/' })
+    } else {
+      expect(spaRules).not.toHaveProperty('prerender')
+      expect(redirectRules).not.toHaveProperty('redirect')
+    }
   })
 })
 
@@ -619,6 +668,23 @@ describe('compiled route rules', () => {
     expect(redirectRoute.redirect).toBe('/')
     const shouldLoadRedirect = await shouldLoadPayload('/pre/test')
     expect(shouldLoadRedirect).toBe(false)
+  })
+
+  it('should only use `force-cache` for immutable prerendered payloads', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('[{"data":1},{}]')))
+    try {
+      await loadPayload('/pre/thing')
+      expect(fetchSpy.mock.calls[0]![1]).toMatchObject({ cache: 'force-cache' })
+
+      // cached (isr/swr/cache) payloads can change within a deploy, so the browser cache must be revalidated
+      await loadPayload('/isr/thing')
+      expect(fetchSpy.mock.calls[1]![1]).toMatchObject({ cache: 'default' })
+
+      await loadPayload('/isr/thing?page=2')
+      expect(fetchSpy.mock.calls[2]![1]).toMatchObject({ cache: 'default' })
+    } finally {
+      fetchSpy.mockRestore()
+    }
   })
 })
 
@@ -665,8 +731,14 @@ describe('routing utilities: `navigateTo`', () => {
     return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
   }
 
+  it('matches routes with compatibility-version casing', () => {
+    router.addRoute({ name: 'case-sensitive-test', path: '/case-sensitive-test', component: defineComponent({}) })
+    expect(router.resolve('/Case-Sensitive-Test').name === 'case-sensitive-test').toBe(process.env.PROJECT === 'nuxt-legacy')
+    router.removeRoute('case-sensitive-test')
+  })
+
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[Error: Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.]')
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/4.x/errors/e2001]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
@@ -674,21 +746,21 @@ describe('routing utilities: `navigateTo`', () => {
       ['data:alert("hi")', 'data'],
       ['\0data:alert("hi")', 'data'],
     ]
-    for (const [url, protocol] of urls) {
-      expect(() => navigateTo(url, { external: true })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+    for (const [url] of urls) {
+      expect(() => navigateTo(url, { external: true })).toThrow(expect.objectContaining({ code: 'NUXT_E2002' }))
     }
   })
   it('navigateTo should disallow opening data/script URLs via the `open` option', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     try {
       const urls = [
-        ['javascript:alert("hi")', 'javascript'],
-        ['data:alert("hi")', 'data'],
-        ['vbscript:alert("hi")', 'vbscript'],
-        ['\0javascript:alert("hi")', 'javascript'],
+        'javascript:alert("hi")',
+        'data:alert("hi")',
+        'vbscript:alert("hi")',
+        '\0javascript:alert("hi")',
       ]
-      for (const [url, protocol] of urls) {
-        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+      for (const url of urls) {
+        expect(() => navigateTo(url, { open: { target: '_blank' } })).toThrow(expect.objectContaining({ code: 'NUXT_E2002' }))
       }
       expect(open).not.toHaveBeenCalled()
     } finally {
@@ -711,7 +783,7 @@ describe('routing utilities: `navigateTo`', () => {
       '\0data:alert("hi")',
     ]
     for (const url of urls) {
-      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with a different host: '${url}'.`)
+      expect(() => reloadNuxtApp({ path: url })).toThrow(expect.objectContaining({ code: 'NUXT_E2010' }))
     }
   })
   it('reloadNuxtApp should disallow cross-origin paths', () => {
@@ -721,7 +793,7 @@ describe('routing utilities: `navigateTo`', () => {
       '\\\\evil.com',
     ]
     for (const url of urls) {
-      expect(() => reloadNuxtApp({ path: url })).toThrow(`Cannot navigate to a URL with a different host: '${url}'.`)
+      expect(() => reloadNuxtApp({ path: url })).toThrow(expect.objectContaining({ code: 'NUXT_E2010' }))
     }
   })
   it('reloadNuxtApp should allow same-origin paths', () => {
@@ -932,6 +1004,52 @@ describe('routing utilities: `useRoute`', () => {
     el.unmount()
     router.removeRoute('parent-test')
   })
+
+  it('should update a route created in a detached scope across navigation', async () => {
+    // minimal `createSharedComposable` from the reproduction in #18903
+    let sharedRoute: ReturnType<typeof useRoute> | undefined
+    const useSharedRoute = () => (sharedRoute ||= effectScope(true).run(() => useRoute())!)
+
+    let injectedRoute: ReturnType<typeof useRoute>
+    let childScopeRoute: ReturnType<typeof useRoute>
+
+    router.addRoute({
+      name: 'shared-a',
+      path: '/shared-a',
+      component: defineComponent({
+        template: '<div />',
+        setup: () => {
+          injectedRoute = useRoute()
+          childScopeRoute = effectScope().run(() => useRoute())!
+          useSharedRoute()
+        },
+      }),
+    })
+    router.addRoute({
+      name: 'shared-b',
+      path: '/shared-b',
+      component: defineComponent({ template: '<div />' }),
+    })
+
+    const el = await mountSuspended({ setup: () => () => h(NuxtPage) })
+
+    await navigateTo('/shared-a')
+    await waitForPageChange()
+    expect(sharedRoute!.name).toBe('shared-a')
+
+    await navigateTo('/shared-b?q=test')
+    await waitForPageChange()
+    // the detached scope outlives the page, so it follows the current route
+    expect(sharedRoute!.name).toBe('shared-b')
+    expect(sharedRoute!.query).toMatchObject({ q: 'test' })
+    // routes obtained within the page's own scope stay frozen at that page's route
+    expect(injectedRoute!.name).toBe('shared-a')
+    expect(childScopeRoute!.name).toBe('shared-a')
+
+    el.unmount()
+    router.removeRoute('shared-a')
+    router.removeRoute('shared-b')
+  })
 })
 
 describe('routing utilities: `abortNavigation`', () => {
@@ -1141,6 +1259,85 @@ describe('useCookie', () => {
 
     expect(document.cookie).not.toContain('no-refresh-test=original')
   })
+
+  it('should re-evaluate expires getter on each cookie write', async () => {
+    const { nextTick } = await import('vue')
+    let callCount = 0
+    const cookie = useCookie('expires-getter', {
+      expires: () => {
+        callCount++
+        return new Date(Date.now() + 60_000)
+      },
+    })
+
+    // Initial write of default/undefined may or may not happen; start from a known count
+    const baseline = callCount
+    cookie.value = 'first'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(baseline)
+
+    const afterFirst = callCount
+    cookie.value = 'second'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(afterFirst)
+    expect(document.cookie).toContain('expires-getter=second')
+  })
+
+  it('should re-evaluate expires getter on same-value assignment when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+    let callCount = 0
+    document.cookie = 'expires-refresh=token'
+    const cookie = useCookie('expires-refresh', {
+      refresh: true,
+      expires: () => {
+        callCount++
+        return new Date(Date.now() + 60_000)
+      },
+    })
+    expect(cookie.value).toBe('token')
+
+    const baseline = callCount
+    cookie.value = 'token'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(baseline)
+    expect(document.cookie).toContain('expires-refresh=token')
+  })
+
+  it('should support a static Date for expires without a getter', async () => {
+    const { nextTick } = await import('vue')
+    const cookie = useCookie('expires-static', {
+      expires: new Date(Date.now() + 60_000),
+    })
+    cookie.value = 'static-value'
+    await nextTick()
+    expect(document.cookie).toContain('expires-static=static-value')
+  })
+
+  it('should not treat an expires getter returning undefined as expired', () => {
+    const cookie = useCookie('expires-undefined-getter', {
+      default: () => 'fallback',
+      expires: () => undefined,
+    })
+    expect(cookie.value).toBe('fallback')
+  })
+
+  it('should keep session cookies without expires or maxAge as plain refs', async () => {
+    const { nextTick } = await import('vue')
+    vi.useFakeTimers()
+    try {
+      const cookie = useCookie('session-no-expiry', {
+        default: () => 'session',
+      })
+      cookie.value = 'session'
+      await nextTick()
+      expect(cookie.value).toBe('session')
+
+      vi.advanceTimersByTime(60_000)
+      expect(cookie.value).toBe('session')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
 
 describe('callOnce', () => {
@@ -1336,5 +1533,16 @@ describe('announcer', () => {
     scope2.stop()
     expect(nuxtApp._announcerDeps).toBe(0)
     expect(nuxtApp._announcer).toBeUndefined()
+  })
+})
+
+describe('namespace access to useNuxtApp', () => {
+  it('should return the nuxt instance when used with correct appId', () => {
+    const nuxtApp = useNuxtApp()
+    expect(useNuxtApp(nuxtApp._id)).toBe(nuxtApp)
+  })
+
+  it('should throw an error when used with wrong appId', () => {
+    expect(() => useNuxtApp('nuxt-app-unknown')).toThrow()
   })
 })

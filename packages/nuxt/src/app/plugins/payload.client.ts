@@ -1,15 +1,17 @@
+import { withoutFragment } from 'ufo'
+
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
-import { loadPayload } from '../composables/payload'
+import { isCachedPayloadRoute, loadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
 import { injectHead } from '../composables/head'
+import { stateDiagnostics } from '../diagnostics/state'
 
-// @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
-// track the active head entry per URL for forwarded preload hints
+// track the active head entry per path for forwarded preload hints
 interface ActiveHeadEntryLike { dispose: () => void }
 const forwardedPrefetchEntries = new Map<string, ActiveHeadEntryLike>()
 
@@ -18,17 +20,22 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   setup (nuxtApp) {
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
-    useRouter().beforeResolve(async (to, from) => {
-      if (to.path === from.path) { return }
-      if (prefetchPreloadTags) {
-        // drop forwarded `rel="prefetch" hints so they don't linger indefinitely.
-        const entry = forwardedPrefetchEntries.get(to.path)
-        if (entry) {
+    const router = useRouter()
+    if (prefetchPreloadTags) {
+      // drop forwarded `rel="prefetch" hints so they don't linger indefinitely.
+      router.afterEach(() => {
+        for (const entry of forwardedPrefetchEntries.values()) {
           entry.dispose()
-          forwardedPrefetchEntries.delete(to.path)
         }
-      }
-      const payload = await loadPayload(to.path)
+        forwardedPrefetchEntries.clear()
+      })
+    }
+    router.beforeResolve(async (to, from) => {
+      const queryAware = isCachedPayloadRoute(to.path)
+      const toURL = queryAware ? withoutFragment(to.fullPath) : to.path
+      const fromURL = queryAware ? withoutFragment(from.fullPath) : from.path
+      if (toURL === fromURL) { return }
+      const payload = await loadPayload(toURL)
       if (!payload) { return }
       if (purgeCachedData) {
         for (const key of staticKeysToRemove) {
@@ -49,11 +56,13 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       // Load payload into cache
       const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
-        const { hostname } = new URL(url, window.location.href)
+        const { hostname, pathname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
-        const payload = await loadPayload(url).catch(() => { console.warn('[nuxt] Error preloading payload for', url) })
-        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(url)) {
+        const payload = await loadPayload(url).catch(() => {
+          stateDiagnostics.NUXT_E7003({ url })
+        })
+        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(pathname)) {
           const entry = head.push({
             link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {
               // downgrade preload (and modulepreload) to prefetch
@@ -61,10 +70,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
               return { ...rest, rel: 'prefetch' }
             }),
           })
-          forwardedPrefetchEntries.set(url, entry)
+          forwardedPrefetchEntries.set(pathname, entry)
         }
       })
-      if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {
+      // `navigator.connection` (Network Information API) is widely supported in
+      // browsers but not part of the standard TS DOM lib.
+      if (isAppManifestEnabled && (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType !== 'slow-2g') {
         setTimeout(getAppManifest, 1000)
       }
     })

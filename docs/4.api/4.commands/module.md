@@ -10,7 +10,7 @@ links:
 
 Nuxt provides a few utilities to work with [Nuxt modules](/modules) seamlessly.
 
-## nuxt module add
+## `nuxt module add`
 
 <!--module-add-cmd-->
 ```bash [Terminal]
@@ -50,7 +50,7 @@ Installing the [`Pinia`](/modules/pinia) module
 npx nuxt module add pinia
 ```
 
-## nuxt module search
+## `nuxt module search`
 
 <!--module-search-cmd-->
 ```bash [Terminal]

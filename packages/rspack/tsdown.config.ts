@@ -8,7 +8,6 @@ export default defineConfig({
     onlyBundle: [],
     neverBundle: [
       '@nuxt/schema',
-      '#builder',
     ],
   },
 })

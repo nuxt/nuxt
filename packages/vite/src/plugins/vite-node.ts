@@ -9,7 +9,7 @@ import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { win32 as pathWin32 } from 'node:path'
 import { dirname, isAbsolute, join, normalize } from 'pathe'
-import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { bundlerDiagnostics, directoryToURL, resolveAlias, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -193,6 +193,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   if (!nuxt.options.dev) {
     return
   }
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    return
+  }
 
   let socketServer: net.Server | undefined
   const { socketPath, parentDir } = generateSocketPath()
@@ -220,20 +223,29 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
 
-  const vfs = {
-    'server.mjs': `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
-    'runner.mjs': `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`,
-    'client.manifest.mjs': `import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))};export default () => viteNodeFetch.getManifest()`,
+  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath].map(p => pathToFileURL(p).href))
+  nitro.options.rollupConfig ||= {}
+  const existingExternal = nitro.options.rollupConfig.external
+  nitro.options.rollupConfig.external = (id, ...args) => {
+    if (externalRuntimeUrls.has(id)) {
+      return true
+    }
+    if (typeof existingExternal === 'function') {
+      return existingExternal(id, ...args)
+    }
+    const patterns = existingExternal == null ? [] : (Array.isArray(existingExternal) ? existingExternal : [existingExternal])
+    return patterns.some(e => typeof e === 'string' ? e === id : e.test(id))
   }
+
+  const serverEntryCode = `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`
+  setBuildOutput('serverEntry', () => serverEntryCode)
+  setBuildOutput('clientManifest', () => `import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))};export default () => viteNodeFetch.getManifest()`)
 
   nitro.options.virtual ||= {}
   nitro.options._config.virtual ||= {}
-
-  for (const key in vfs) {
-    const filename = `#build/dist/server/${key}`
-    nitro.options.virtual[filename] = vfs[key as keyof typeof vfs]
-    nitro.options._config.virtual[filename] = vfs[key as keyof typeof vfs]
-  }
+  const runnerCode = `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`
+  nitro.options.virtual['#build/dist/server/runner.mjs'] = runnerCode
+  nitro.options._config.virtual['#build/dist/server/runner.mjs'] = runnerCode
 
   return {
     name: 'nuxt:vite-node-server',
@@ -464,7 +476,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
       const requiredSize = writeOffset + additionalBytes
 
       if (requiredSize > MAX_BUFFER_SIZE) {
-        throw new Error(`Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`)
+        throw bundlerDiagnostics.NUXT_B7012({ requiredSize, maxSize: MAX_BUFFER_SIZE })
       }
 
       if (requiredSize > buffer.length) {
@@ -536,7 +548,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
   const currentSocketPath = config.socketPath
   if (!currentSocketPath) {
-    throw new Error('Socket path not configured for ViteNodeSocketServer.')
+    throw bundlerDiagnostics.NUXT_B7013()
   }
 
   listenAndRestrict(server, currentSocketPath)
@@ -564,7 +576,7 @@ export function listenAndRestrict (server: net.Server, socketPath: string): void
       try {
         fs.chmodSync(socketPath, 0o600)
       } catch (error) {
-        console.error('[nuxt] Failed to restrict vite-node socket permissions; closing.', error)
+        bundlerDiagnostics.NUXT_B7018({ cause: error })
         server.close()
         try {
           fs.rmSync(dirname(socketPath), { recursive: true, force: true })

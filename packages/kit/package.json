@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "4.3.1",
+  "version": "5.0.0-0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -10,7 +10,7 @@
   "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.mts",
+  "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./package.json": "./package.json"
@@ -24,41 +24,40 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "c12": "^3.3.4",
-    "consola": "^3.4.2",
-    "defu": "^6.1.7",
-    "destr": "^2.0.5",
-    "errx": "^0.1.0",
-    "exsolve": "^1.1.0",
-    "ignore": "^7.0.5",
-    "jiti": "^2.7.0",
-    "klona": "^2.0.6",
-    "mlly": "^1.8.2",
-    "nypm": "^0.6.7",
-    "ohash": "^2.0.11",
-    "pathe": "^2.0.3",
-    "pkg-types": "^2.3.1",
-    "rc9": "^3.0.1",
-    "scule": "^1.3.0",
-    "semver": "^7.8.5",
-    "std-env": "^4.1.0",
-    "tinyglobby": "^0.2.17",
-    "ufo": "^1.6.4",
-    "unctx": "^2.5.0",
-    "untyped": "^2.0.0"
+    "c12": "catalog:build",
+    "consola": "catalog:build",
+    "defu": "catalog:build",
+    "destr": "catalog:build",
+    "errx": "catalog:build",
+    "exsolve": "catalog:build",
+    "ignore": "catalog:build",
+    "jiti": "catalog:build",
+    "klona": "catalog:build",
+    "mlly": "catalog:build",
+    "nostics": "catalog:build",
+    "nypm": "catalog:build",
+    "ohash": "catalog:build",
+    "pathe": "catalog:build",
+    "pkg-types": "catalog:build",
+    "rc9": "catalog:build",
+    "scule": "catalog:build",
+    "std-env": "catalog:build",
+    "tinyglobby": "catalog:build",
+    "ufo": "catalog:build",
+    "unctx": "catalog:build",
+    "untyped": "catalog:build",
+    "verkit": "catalog:build"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "2.0.8",
-    "@types/semver": "7.7.1",
-    "hookable": "6.1.1",
-    "nitro": "3.0.260522-beta",
-    "nitropack": "2.13.4",
-    "tsdown": "0.22.3",
-    "unimport": "6.3.0",
-    "vite": "8.1.0",
-    "vitest": "4.1.9",
-    "webpack": "5.108.1"
+    "hookable": "catalog:app-runtime",
+    "nitro": "catalog:nitro-runtime",
+    "nitropack": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "unimport": "catalog:build",
+    "vite": "catalog:vite",
+    "vitest": "catalog:dev",
+    "webpack": "catalog:webpack"
   },
   "engines": {
     "node": ">=18.12.0"
@@ -67,6 +66,7 @@
     "exports": {
       ".": "./dist/index.mjs",
       "./package.json": "./package.json"
-    }
+    },
+    "types": "./dist/index.d.mts"
   }
 }

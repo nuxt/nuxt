@@ -18,7 +18,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     applyToEnvironment (environment) {
-      if (nuxt.options.dev || environment.name !== 'ssr') {
+      if (nuxt.options.dev || environment.name !== 'ssr' || nuxt.options.experimental.nitroViteEnvironment) {
         return false
       }
       return {

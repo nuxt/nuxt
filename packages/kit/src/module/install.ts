@@ -9,12 +9,13 @@ import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { read as readRc, update as updateRc } from 'rc9'
-import semver from 'semver'
+import { isGreater, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
-import { logger } from '../logger.ts'
 import { getLayerDirectories } from '../layers.ts'
+import { kitDiagnostics } from '../diagnostics/kit-api.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
@@ -105,7 +106,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       if (value.version) {
         const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
         const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
-        if (pkg?.version && !semver.satisfies(pkg.version, value.version, { includePrerelease: true })) {
+        if (pkg?.version && !satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
           error = new TypeError(message)
         }
@@ -273,7 +274,7 @@ export function resolveModuleWithOptions (
     try: true,
     from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
     suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-    extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+    extensions: DEFAULT_JS_FILE_EXTENSIONS,
   })
 
   return {
@@ -306,7 +307,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    throw new TypeError(`Nuxt module should be a function or a string to import. Received: ${nuxtModule}.`)
+    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
   }
 
   const jiti = getSharedJiti(nuxt)
@@ -318,42 +319,38 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     nuxtModule = resolve(nuxt.options.rootDir, nuxtModule)
   }
 
+  // resolution failures mean the module isn't installed
+  let src: string
   try {
-    const src = resolveModuleURL(nuxtModule, {
+    src = resolveModuleURL(nuxtModule, {
       from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
       suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-      extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+      extensions: DEFAULT_JS_FILE_EXTENSIONS,
     })
-    const resolvedModulePath = fileURLToPath(src)
-    const resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
-
-    if (typeof resolvedNuxtModule !== 'function') {
-      throw new TypeError(`Nuxt module should be a function: ${nuxtModule}.`)
-    }
-
-    // nuxt-module-builder generates a module.json with metadata including the version
-    const moduleMetadataPath = new URL('module.json', src)
-    if (existsSync(moduleMetadataPath)) {
-      buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
-    }
-
-    return { nuxtModule: resolvedNuxtModule, buildTimeModuleMeta, resolvedModulePath }
   } catch (error: unknown) {
-    const code = (error as Error & { code?: string }).code
-    if (code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
-      throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`, { cause: error })
-    }
-    if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
-      const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
-      // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
-      // i.e. module is importing a module that is missing
-      if (module && !module.includes(nuxtModule as string)) {
-        throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`, { cause: error })
-      }
-    }
+    throw kitDiagnostics.NUXT_B8017({ module: nuxtModule, cause: error })
   }
 
-  throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+  // module is resolved on disk, so import failures are real load errors, not a missing install
+  const resolvedModulePath = fileURLToPath(src)
+  let resolvedNuxtModule: NuxtModule<any>
+  try {
+    resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
+  } catch (error: unknown) {
+    throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(error), cause: error })
+  }
+
+  if (typeof resolvedNuxtModule !== 'function') {
+    throw kitDiagnostics.NUXT_B8016({ module: nuxtModule })
+  }
+
+  // nuxt-module-builder generates a module.json with metadata including the version
+  const moduleMetadataPath = new URL('module.json', src)
+  if (existsSync(moduleMetadataPath)) {
+    buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
+  }
+
+  return { nuxtModule: resolvedNuxtModule, buildTimeModuleMeta, resolvedModulePath }
 }
 
 // --- Internal ---
@@ -373,8 +370,6 @@ export const normalizeModuleTranspilePath = (p: string) => {
   return getDirectory(p).split('node_modules/').pop() as string
 }
 
-const MissingModuleMatcher = /Cannot find module\s+['"]?([^'")\s]+)['"]?/i
-
 async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions?: Record<string, unknown>, nuxt = useNuxt()) {
   if (!meta.name || !meta.version) {
     return
@@ -389,7 +384,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   try {
     if (!previousVersion) {
       await nuxtModule.onInstall?.(nuxt)
-    } else if (semver.gt(meta.version, previousVersion)) {
+    } else if (isGreater(meta.version, previousVersion)) {
       await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion)
     }
     if (previousVersion !== meta.version) {
@@ -399,9 +394,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
       )
     }
   } catch (e) {
-    logger.error(
-      `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module \`${meta.name}\`: ${e}`,
-    )
+    kitDiagnostics.NUXT_B8019({ phase: !previousVersion ? 'install' : 'upgrade', name: meta.name, error: String(e) })
   }
 }
 

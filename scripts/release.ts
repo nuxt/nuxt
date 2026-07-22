@@ -113,8 +113,10 @@ async function main () {
       // Bump versions to nightly
       console.info('🌙 Bumping versions to nightly...')
       await import('./bump-nightly.ts').then(r => r.bumpNightly())
-    } else {
-      execCommand('pnpm build')
+
+      // The committed ui-templates output bakes in the nuxt package version,
+      // so it must be regenerated after the nightly bump.
+      execFile('vp', ['exec', 'pnpm', '--config.verify-deps-before-run=false', '--filter', '@nuxt/ui-templates', 'build'])
     }
 
     // Use absolute URLs for better rendering on npm
@@ -158,7 +160,7 @@ async function main () {
 
       // Publish with primary tag with trusted publishing
       console.info(`🏷️ Publishing ${pkgDir} with tag: ${tag}`)
-      execFile('pnpm', ['publish', '--access', 'public', '--no-git-checks', '--tag', tag])
+      execFile('vp', ['exec', 'pnpm', 'publish', '--access', 'public', '--no-git-checks', '--tag', tag])
 
       const pkg = readPackageJson('.')
       published.push({ name: pkg.name, version: pkg.version })

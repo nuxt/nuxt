@@ -1,9 +1,10 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, headDiagnostics, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
+import { resolveModulePath } from 'exsolve'
 
 import { isDirectory, logger, resolveToAlias } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
@@ -100,6 +101,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       // Create a context to share state between module internals
       ctx = createUnimport({
         injectAtEnd: true,
+        parser: 'oxc',
         ...rest,
         addons: {
           addons,
@@ -162,7 +164,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
               const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
-              logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` in \`${relativePath}\`.`)
+              headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
             }
           }
         }
@@ -207,6 +209,8 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
   const resolvedImportPathMap = new Map<string, string>()
   const r = (i: Import) => resolvedImportPathMap.get(i.typeFrom || i.from)
 
+  const warnedUnresolvedSources = new Set<string>()
+
   const SUPPORTED_EXTENSION_RE = new RegExp(`\\.(?:${nuxt.options.extensions.map(i => i.replace('.', '')).join('|')})$`)
 
   async function cacheImportPaths (imports: Import[]) {
@@ -216,6 +220,18 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
     const aliasedPaths = new Map(importSource.map(from => [from, resolveAlias(from)] as const))
     const bareSpecifiers = importSource.filter(from => !isAbsolute(aliasedPaths.get(from)!))
     const resolved = new Map(await resolveTypePaths(bareSpecifiers, nuxt.options.modulesDir))
+
+    for (const from of importSource) {
+      if (warnedUnresolvedSources.has(from)) { continue }
+      const aliased = aliasedPaths.get(from)!
+      if (isAbsolute(aliased)) {
+        const isInBuildDir = !relative(nuxt.options.buildDir, aliased).startsWith('..')
+        if (isInBuildDir || resolveModulePath(aliased, { try: true, extensions: nuxt.options.extensions, suffixes: ['', '/index'] })) { continue }
+      } else if (resolved.has(from)) { continue }
+      warnedUnresolvedSources.add(from)
+      const name = imports.find(i => (i.typeFrom || i.from) === from)
+      headDiagnostics.NUXT_B6005({ name: name ? (name.as || name.name) : from, from })
+    }
 
     await Promise.all(importSource.map(async (from) => {
       let path = aliasedPaths.get(from)!

@@ -3,8 +3,10 @@ import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import type { NuxtApp, NuxtPayload } from '../nuxt'
+import type { NuxtError as _NuxtErrorContract } from '../types'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
+import { appDiagnostics } from '../diagnostics/core'
 
 export const NUXT_ERROR_SIGNATURE = '__nuxt_error' as const
 
@@ -45,7 +47,7 @@ export const showError = <DataT = unknown>(
  */
 export const _notifyCrawlerError = (nuxtApp: NuxtApp, error: Error): Promise<void> | void => {
   const result = nuxtApp.callHook('app:error', createError(error))
-  console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, error)
+  appDiagnostics.NUXT_E1012({ userAgent: navigator.userAgent, cause: error })
   return result
 }
 
@@ -82,18 +84,21 @@ export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError
   return !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 }
 
-export class NuxtError<DataT = unknown> extends HTTPError<DataT> {
+export class NuxtError<DataT = unknown> extends HTTPError<DataT> implements _NuxtErrorContract<DataT> {
   readonly __nuxt_error = true as const
   readonly fatal: boolean
+  override readonly cause: unknown
 
   constructor (message = '', opts: Partial<NuxtError<DataT>> = {}) {
     super(message, opts)
+    this.cause = opts instanceof Error ? opts : opts.cause
     this.fatal = opts.fatal ?? !!opts.unhandled
   }
 }
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>): NuxtError<DataT> => {
+  if (isNuxtError<DataT>(error)) { return error }
   return typeof error === 'string'
     ? new NuxtError<DataT>(error)
     : new NuxtError<DataT>(error.message, error)

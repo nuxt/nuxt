@@ -1,4 +1,4 @@
-import { resolveAlias } from '@nuxt/kit'
+import { buildDiagnostics, resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, logger, stripExtension } from '../../utils.ts'
 import type { ESTree } from 'rolldown/utils'
@@ -24,7 +24,7 @@ interface ParsedKeyedFunctionFactory {
  * Check if the node is a named export of a keyed function factory, and if so,
  * return its VariableDeclarator node.
  */
-export function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
+function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
   if (node.type === 'ExportNamedDeclaration') {
     const parsed: ParsedKeyedFunctionFactory[] = []
 
@@ -133,7 +133,7 @@ function createFactoryProcessor (
     for (const parsedFactoryCall of parsedFactoryCalls) {
       const factoryMeta = getFactoryByLocalName(parsedFactoryCall.factoryName)
       if (!factoryMeta) {
-        logger.error(`[nuxt:compiler] No factory function found for \`${parsedFactoryCall.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`)
+        buildDiagnostics.NUXT_B1008({ function: parsedFactoryCall.functionName, file: filePath })
         continue
       }
 

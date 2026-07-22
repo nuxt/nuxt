@@ -1,9 +1,9 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import { afterAll, describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
-import { createApp, resolveApp } from '../src/core/app.ts'
+import { createApp, generateApp, resolveApp } from '../src/core/app.ts'
 import { loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
@@ -21,11 +21,14 @@ describe('resolveApp', () => {
         "dir": "<rootDir>",
         "errorComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-error-page.vue",
         "extensions": [
-          ".js",
-          ".jsx",
           ".mjs",
+          ".js",
+          ".cjs",
+          ".mts",
           ".ts",
+          ".cts",
           ".tsx",
+          ".jsx",
           ".vue",
         ],
         "layouts": {},
@@ -40,7 +43,7 @@ describe('resolveApp', () => {
         "plugins": [
           {
             "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/payload.client.ts",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
           },
           {
             "mode": "client",
@@ -53,18 +56,6 @@ describe('resolveApp', () => {
           {
             "mode": "server",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload-crawler.client.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
           {
             "filename": "components.plugin.mjs",
@@ -242,6 +233,24 @@ describe('resolveApp', () => {
     `)
   })
 
+  it('resolves layer app configs in order', async () => {
+    const app = await getResolvedApp([
+      'layer/app.config.ts',
+      'layer/nuxt.config.ts',
+      'app.config.ts',
+      {
+        name: 'nuxt.config.ts',
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer\'] })',
+      },
+    ])
+    expect(app.configs).toMatchInlineSnapshot(`
+      [
+        "<rootDir>/app.config.ts",
+        "<rootDir>/layer/app.config.ts",
+      ]
+    `)
+  })
+
   it('resolves nested layouts correctly', async () => {
     const app = await getResolvedApp([
       'layouts/default.vue',
@@ -326,6 +335,39 @@ describe('resolveApp', () => {
   })
 })
 
+describe('generateApp template diagnostics', () => {
+  it('reports coded diagnostics once, without the generic NUXT_B1001 wrapper', async () => {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(rootDir, { recursive: true })
+    await writeFile(join(rootDir, 'nuxt.config.ts'), 'export default {}')
+    // a directory as `src` passes the existence check in `normalizeTemplate` but fails on read
+    await mkdir(join(rootDir, 'unreadable-template.mjs'))
+
+    const nuxt = await loadNuxt({ cwd: rootDir })
+    nuxt.hook('app:templates', (app) => {
+      app.templates.push(
+        { filename: 'bad-src.mjs', src: join(rootDir, 'unreadable-template.mjs') },
+        { filename: 'bad-contents.mjs', getContents: () => { throw new Error('boom') } },
+      )
+    })
+    const app = createApp(nuxt)
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      await generateApp(nuxt, app, { filter: t => t.filename === 'bad-src.mjs' || t.filename === 'bad-contents.mjs' })
+      const messages = warn.mock.calls.map(call => String(call[0]))
+      // unreadable `src` keeps its specific diagnostic
+      expect(messages.filter(m => m.includes('NUXT_B1002'))).toHaveLength(1)
+      // only uncoded failures (e.g. from `getContents`) get the generic diagnostic
+      expect(messages.filter(m => m.includes('NUXT_B1001'))).toHaveLength(1)
+    } finally {
+      warn.mockRestore()
+      await nuxt.close()
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  })
+})
+
 async function getResolvedApp (files: Array<string | { name: string, contents: string }>) {
   const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
   await mkdir(rootDir, { recursive: true })
@@ -361,6 +403,8 @@ async function getResolvedApp (files: Array<string | { name: string, contents: s
   for (const layout of Object.values(app.layouts)) {
     layout.file = normaliseToRepo(layout.file)!
   }
+
+  app.configs = app.configs.map(config => normaliseToRepo(config)!)
 
   await nuxt.close()
 
