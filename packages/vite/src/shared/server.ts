@@ -5,6 +5,7 @@ import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
 
 import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
+import { getSsrEnvDefine } from './env-define.ts'
 
 export function ssr (nuxt: Nuxt) {
   const isEnvApi = nuxt.options.experimental.nitroViteEnvironment
@@ -68,14 +69,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       },
     },
     define: {
-      'process.env.NODE_ENV': JSON.stringify(nuxt.options.vite.mode),
-      'process.server': true,
-      'process.client': false,
-      'process.browser': false,
-      'import.meta.server': true,
-      'import.meta.client': false,
-      'import.meta.browser': false,
-      'import.meta.envName': JSON.stringify(nuxt.options.envName),
+      ...getSsrEnvDefine(nuxt),
       // TODO: investigate - issue is onPrehydrate callbacks
       ...(nuxt.options.dev && isEnvApi)
         ? {}

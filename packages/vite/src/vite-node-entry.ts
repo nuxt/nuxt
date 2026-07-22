@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { performance } from 'node:perf_hooks'
 import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from '#vite-node'
@@ -10,8 +9,6 @@ let render: (ssrContext: NuxtSSRContext) => Promise<any>
 export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
-  // eslint-disable-next-line nuxt/prefer-import-meta,@typescript-eslint/no-deprecated
-  process.server = true
   import.meta.server = true
 
   // Invalidate cache for files changed since last rendering

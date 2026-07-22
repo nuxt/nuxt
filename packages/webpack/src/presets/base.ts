@@ -302,17 +302,22 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
   return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
 }
 
-function getEnv (ctx: WebpackConfigContext) {
+export function getEnv (ctx: WebpackConfigContext) {
+  const legacyProcessFlags = ctx.nuxt.options.future.compatibilityVersion < 5
   const _env: Record<string, string | boolean | InstanceType<typeof webpack.DefinePlugin>['definitions'][string]> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     '__NUXT_VERSION__': JSON.stringify(ctx.nuxt._version),
     '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
-    'process.dev': ctx.options.dev,
-    'process.test': ctx.nuxt.options.test,
-    'process.browser': ctx.isClient,
-    'process.client': ctx.isClient,
-    'process.server': ctx.isServer,
+    ...(legacyProcessFlags
+      ? {
+          'process.dev': ctx.options.dev,
+          'process.test': ctx.nuxt.options.test,
+          'process.browser': ctx.isClient,
+          'process.client': ctx.isClient,
+          'process.server': ctx.isServer,
+        }
+      : {}),
     'import.meta.dev': ctx.options.dev,
     'import.meta.test': ctx.nuxt.options.test,
     'import.meta.browser': ctx.isClient,
