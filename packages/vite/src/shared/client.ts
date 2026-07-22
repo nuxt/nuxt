@@ -2,7 +2,6 @@ import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
 
 import { getTranspileStrings } from '../utils/transpile.ts'
-import { getClientEnvDefine } from './env-define.ts'
 
 export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
   return {
@@ -67,7 +66,22 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
         ...getTranspileStrings({ isDev: nuxt.options.dev, isClient: true }),
       ],
     },
-    define: getClientEnvDefine(nuxt),
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(nuxt.options.vite.mode),
+      'process.server': false,
+      'process.client': true,
+      'process.browser': true,
+      'process.nitro': false,
+      'process.prerender': false,
+      'import.meta.server': false,
+      'import.meta.client': true,
+      'import.meta.browser': true,
+      'import.meta.envName': JSON.stringify(nuxt.options.envName),
+      'import.meta.nitro': false,
+      'import.meta.prerender': false,
+      'module.hot': false,
+      ...nuxt.options.experimental.clientNodeCompat ? { global: 'globalThis' } : {},
+    },
     build: {
       sourcemap: nuxt.options.sourcemap.client ? nuxt.options.vite.build?.sourcemap ?? nuxt.options.sourcemap.client : false,
       manifest: 'manifest.json',

@@ -14,25 +14,15 @@ export default defineResolvers({
     },
     define: {
       $resolve: async (_val, get) => {
-        const [isDev, isTest, isDebug, compatibilityVersion] = await Promise.all([
-          get('dev'),
-          get('test'),
-          get('debug'),
-          get('future.compatibilityVersion'),
-        ])
+        const [isDev, isTest, isDebug] = await Promise.all([get('dev'), get('test'), get('debug')])
         const optionsApi = (await get('vue')).optionsApi
-        const legacyProcessFlags = (compatibilityVersion as number) < 5
         return {
           '__VUE_OPTIONS_API__': Boolean(optionsApi),
           '__VUE_PROD_DEVTOOLS__': false,
           '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(isDebug && (isDebug === true || isDebug.hydration)),
-          ...(legacyProcessFlags
-            ? {
-                'process.dev': isDev,
-                'process.test': isTest,
-              }
-            : {}),
+          'process.dev': isDev,
           'import.meta.dev': isDev,
+          'process.test': isTest,
           'import.meta.test': isTest,
           ..._val && typeof _val === 'object' ? _val : {},
         }
