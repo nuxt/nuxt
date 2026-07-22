@@ -104,7 +104,7 @@
     "unhead": "^3.1.6",
     "unimport": "^6.3.0",
     "unplugin": "^3.2.0",
-    "unrouting": "^0.1.7",
+    "unrouting": "^0.2.0",
     "untyped": "^2.0.0",
     "vue": "^3.5.38",
     "vue-router": "^5.1.0"

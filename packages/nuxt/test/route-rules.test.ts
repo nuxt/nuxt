@@ -40,7 +40,7 @@ describe('routeRules from page meta', () => {
     })
   })
 
-  it('warns when constrained dynamic params map to broader route rules', () => {
+  it('expands finite alternation params into a rule per branch without warning', () => {
     const warnings: string[] = []
     const pages = [
       {
@@ -50,10 +50,26 @@ describe('routeRules from page meta', () => {
     ]
 
     expect(globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })).toEqual({
-      '/**': { prerender: true },
+      '/de/account/verify': { prerender: true },
+      '/fr/account/verify': { prerender: true },
+    })
+    expect(warnings).toEqual([])
+  })
+
+  it('warns when a dynamic param collapses to a broader catch-all', () => {
+    const warnings: string[] = []
+    const pages = [
+      {
+        path: '/account/:id(\\d+)',
+        rules: { prerender: true },
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })).toEqual({
+      '/account/**': { prerender: true },
     })
     expect(warnings).toEqual([
-      'Inline route rules for `/:locale(de|fr)/account/verify` were mapped to `/**`, which is broader than the page route because custom RegExp constraints cannot be represented by Nitro route rules.',
+      'Inline route rules for `/account/:id(\\d+)` cannot be represented exactly by Nitro route rules: Collapsed "/account/:id(\\d+)" at segment ":id(\\d+)" into a `**` catch-all, which also matches nested paths.',
     ])
   })
 
@@ -70,12 +86,11 @@ describe('routeRules from page meta', () => {
       },
     ]
 
-    expect(globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })).toEqual({
+    const result = globRouteRulesFromPages(pages, { warn: message => warnings.push(message) })
+    expect(result).toEqual({
       '/foo/**': { prerender: true },
     })
-    expect(warnings).toEqual([
-      'Inline route rules for `/foo/:slug` generated `/foo/**`, which is already used by another page. The later inline route rules will override the earlier ones.',
-    ])
+    expect(warnings).toContain('Inline route rules for `/foo/:slug` generated `/foo/**`, which is already used by another page. The later inline route rules will override the earlier ones.')
   })
 
   it('removes route rules from pages', () => {

@@ -2,8 +2,7 @@ import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitro/types'
 
 import { isEqual } from 'ohash'
-
-import { pathToNitroGlob } from './utils.ts'
+import { vueRouterToRou3 } from 'unrouting'
 
 interface GlobRouteRulesFromPagesOptions {
   warn?: (message: string) => void
@@ -25,12 +24,16 @@ function collectRouteRulesFromPages (
   for (const page of pages) {
     if (page.rules) {
       if (Object.keys(page.rules).length) {
-        const glob = pathToNitroGlob(prefix + page.path, { warn: options.warn })
-        if (glob) {
-          if (glob in paths && !isEqual(paths[glob], page.rules)) {
-            options.warn?.(`Inline route rules for \`${prefix + page.path}\` generated \`${glob}\`, which is already used by another page. The later inline route rules will override the earlier ones.`)
+        const path = prefix + page.path
+        const { patterns, issues } = vueRouterToRou3(path, { collapse: true })
+        for (const issue of issues) {
+          options.warn?.(`Inline route rules for \`${path}\` cannot be represented exactly by Nitro route rules: ${issue.message}.`)
+        }
+        for (const pattern of patterns) {
+          if (pattern in paths && !isEqual(paths[pattern], page.rules)) {
+            options.warn?.(`Inline route rules for \`${path}\` generated \`${pattern}\`, which is already used by another page. The later inline route rules will override the earlier ones.`)
           }
-          paths[glob] = page.rules
+          paths[pattern] = page.rules
         }
       }
       // remove rules to prevent exposing in build

@@ -520,33 +520,6 @@ async function createClientPage(loader) {
   }
 }
 
-const PATH_TO_NITRO_GLOB_RE = /\/[^:/]*(?<!\\):\w.*$/
-const PATH_PARAM_RE = /(?<!\\):\w[\w.]*/g
-const CUSTOM_PATH_PARAM_RE = /(?<!\\):\w[\w.]*\((?!\)|\.\*\)|\[\^\/\][+*]\)|\[\^\/\]\*\*\))/
-
-interface PathToNitroGlobOptions {
-  warn?: (message: string) => void
-}
-
-export function pathToNitroGlob (path: string, options: PathToNitroGlobOptions = {}) {
-  if (!path) {
-    return null
-  }
-  const params = path.match(PATH_PARAM_RE)
-  // Ignore pages with multiple dynamic parameters.
-  if (params && params.length > 1) {
-    return null
-  }
-
-  const glob = path.replace(PATH_TO_NITRO_GLOB_RE, '/**')
-
-  if (CUSTOM_PATH_PARAM_RE.test(path)) {
-    options.warn?.(`Inline route rules for \`${path}\` were mapped to \`${glob}\`, which is broader than the page route because custom RegExp constraints cannot be represented by Nitro route rules.`)
-  }
-
-  return glob
-}
-
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
   return [
     joinURL(parent, page.path),
