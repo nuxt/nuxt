@@ -552,10 +552,23 @@ export const dollarFetchTemplate: NuxtTemplate = {
 export const dollarFetchClientTemplate: NuxtTemplate = {
   filename: 'fetch.client.mjs',
   getContents () {
+    // Defer baseURL() until the first request so node Vitest can import modules
+    // that auto-import $fetch without touching nitro.client's bare `window`
+    // (https://github.com/nuxt/nuxt/issues/35801). Use createFetch + _$fetch.native
+    // so globalThis.fetch stays dynamic the same way _$fetch.create() did.
     return [
-      'import { $fetch as _$fetch } from \'ofetch\'',
+      'import { $fetch as _$fetch, createFetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
-      'export const $fetch = import.meta.test ? globalThis.$fetch || _$fetch.create({ baseURL: baseURL() }) : /*#__PURE__*/ _$fetch.create({ baseURL: /*#__PURE__*/ baseURL() })',
+      'export const $fetch = import.meta.test && globalThis.$fetch',
+      '  ? globalThis.$fetch',
+      '  : /*#__PURE__*/ createFetch({',
+      '      fetch: _$fetch.native,',
+      '      defaults: {',
+      '        get baseURL () {',
+      '          return baseURL()',
+      '        },',
+      '      },',
+      '    })',
     ].join('\n')
   },
 }
