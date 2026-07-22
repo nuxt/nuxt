@@ -184,7 +184,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('/server-page - links inside islands use client-side navigation', async () => {
+  it('/server-page - links inside islands use client-side navigation', async () => {
     const { page } = await renderPage('/server-page')
     await page.evaluate(() => { (window as any).__islandNavMarker = true })
 
