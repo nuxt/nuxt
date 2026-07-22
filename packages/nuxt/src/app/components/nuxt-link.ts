@@ -505,7 +505,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         })
 
         if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
-          const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
+          const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes & { 'data-internal'?: string } = {
             ref: elRef,
             to: to.value,
             activeClass: props.activeClass || options.activeClass,
@@ -528,6 +528,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
               }
             }
             routerLinkProps.rel = props.rel || undefined
+
+            if (import.meta.server && useNuxtApp().ssrContext?.islandContext) {
+              // marks internal links within island HTML for client-side navigation
+              routerLinkProps['data-internal'] = ''
+            }
           }
 
           // Internal link

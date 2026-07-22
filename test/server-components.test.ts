@@ -162,6 +162,10 @@ describe('server components/islands', () => {
     expect(html).toContain('plugin-style')
     // #34482 - title should be composed with titleTemplate
     expect(html).toContain('<title>Server Page - Fixture</title>')
+    expect(html).toContain('data-internal')
+
+    const clientPageHtml = await $fetch<string>('/')
+    expect(clientPageHtml).not.toContain('data-internal')
   })
 
   itFailsIf(builder === 'webpack' && isDev)('/server-page - should preserve title after hydration', async () => {
@@ -177,6 +181,24 @@ describe('server components/islands', () => {
     await page.waitForLoadState('networkidle')
 
     expect(await page.innerHTML('head')).toContain('<meta name="author" content="Nuxt">')
+    await page.close()
+  })
+
+  itFailsIf(builder === 'webpack' && isDev)('/server-page - links inside islands use client-side navigation', async () => {
+    const { page } = await renderPage('/server-page')
+    await page.evaluate(() => { (window as any).__islandNavMarker = true })
+
+    await page.click('#island-link-server-page')
+    await page.locator('#server-page-with-nuxtpage').waitFor()
+    expect(page.url()).toContain('/server-page-with-nuxtpage')
+    expect(await page.evaluate(() => (window as any).__islandNavMarker)).toBe(true)
+
+    await page.goBack()
+    await page.locator('#island-link-home').waitFor()
+    await page.click('#island-link-home')
+    await page.locator('#islands').waitFor()
+    expect(await page.evaluate(() => (window as any).__islandNavMarker)).toBe(true)
+
     await page.close()
   })
 
