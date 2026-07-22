@@ -97,7 +97,11 @@ describe('route rules', () => {
 
   it('test noScript routeRules', async () => {
     const html = await $fetch<string>('/no-scripts')
-    expect(html).not.toContain('<script')
+    // no executable scripts are shipped; the only `<script>` permitted is the
+    // declarative speculation-rules JSON, which runs no JavaScript
+    const scripts = html.match(/<script[^>]*>/g) ?? []
+    expect(scripts.some(tag => tag.includes('type="speculationrules"'))).toBe(true)
+    expect(scripts.every(tag => tag.includes('type="speculationrules"'))).toBe(true)
   })
 
   it('client-side navigation should redirect if hash included', async () => {
