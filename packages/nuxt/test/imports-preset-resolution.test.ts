@@ -1,16 +1,20 @@
 import { fileURLToPath } from 'node:url'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildNuxt } from '@nuxt/kit'
 import { loadNuxt } from '../src/index.ts'
 
 const fixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./imports-preset-fixture', import.meta.url))))
 
-const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+let warn: ReturnType<typeof vi.spyOn>
+
+beforeEach(() => {
+  warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+})
 
 afterEach(() => {
-  warn.mockClear()
+  warn.mockRestore()
 })
 
 describe('imports preset resolution', () => {
