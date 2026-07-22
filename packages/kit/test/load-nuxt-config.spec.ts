@@ -78,12 +78,21 @@ describe('loadNuxtConfig', () => {
     `)
   })
 
-  it('should not leak layer directory defaults into the merged Nuxt config', async () => {
+  it('should isolate the merged config from layers while preserving complex values', async () => {
     const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-layer-dir-'))
     const layerDir = join(tempDir, 'layers/foo')
     await mkdir(layerDir, { recursive: true })
     await writeFile(join(tempDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n')
-    await writeFile(join(layerDir, 'nuxt.config.ts'), `export default defineNuxtConfig({
+    await writeFile(join(layerDir, 'nuxt.config.ts'), `const plugin = Object.assign(
+      Object.create({ read: () => 42 }),
+      { name: 'complex-plugin' },
+    )
+    const hook = () => 42
+    const shared = { value: 'shared' }
+    const cycle: Record<string, unknown> = { value: 'cycle' }
+    cycle.self = cycle
+
+    export default defineNuxtConfig({
       future: { compatibilityVersion: 4 },
       dir: { app: 'custom-app' },
       srcDir: '.',
@@ -91,6 +100,13 @@ describe('loadNuxtConfig', () => {
       typescript: { strict: false },
       app: { head: { meta: [{ name: 'layer' }] } },
       experimental: { appManifest: false },
+      hooks: { ready: hook },
+      vite: {
+        plugins: [plugin],
+        sharedA: shared,
+        sharedB: shared,
+        cycle,
+      },
     })\n`)
 
     try {
@@ -102,11 +118,27 @@ describe('loadNuxtConfig', () => {
       expect(rootDirectories?.public).toBe(`${join(tempDir, 'public')}/`)
       expect(layerDirectories?.public).toBe(`${join(layerDir, 'public')}/`)
 
-      const layerConfig = config._layers[1]?.config
-      expect(layerConfig?.imports).toEqual({ scan: false })
-      expect(layerConfig?.typescript).toEqual({ strict: false })
-      expect(layerConfig?.app).toEqual({ head: { meta: [{ name: 'layer' }] } })
-      expect(layerConfig?.experimental).toEqual({ appManifest: false })
+      const layerConfig = config._layers[1]!.config!
+      expect(layerConfig.imports).toEqual({ scan: false })
+      expect(layerConfig.typescript).toEqual({ strict: false })
+      expect(layerConfig.app).toEqual({ head: { meta: [{ name: 'layer' }] } })
+      expect(layerConfig.experimental).toEqual({ appManifest: false })
+
+      type ViteFixtureConfig = {
+        plugins: Array<{ read: () => number }>
+        sharedA: object
+        sharedB: object
+        cycle: { self: unknown }
+      }
+      const vite = config.vite as unknown as ViteFixtureConfig
+      const layerVite = layerConfig.vite as unknown as ViteFixtureConfig
+      expect(vite.sharedA).toBe(vite.sharedB)
+      expect(vite.sharedA).not.toBe(layerVite.sharedA)
+      expect(vite.cycle.self).toBe(vite.cycle)
+      expect(vite.cycle).not.toBe(layerVite.cycle)
+      expect(vite.plugins[0]).toBe(layerVite.plugins[0])
+      expect(vite.plugins[0]!.read()).toBe(42)
+      expect(config.hooks.ready).toBe(layerConfig.hooks?.ready)
     } finally {
       await rm(tempDir, { recursive: true, force: true })
     }

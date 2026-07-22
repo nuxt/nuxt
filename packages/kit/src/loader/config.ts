@@ -7,7 +7,6 @@ import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { klona } from 'klona/full'
 import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
@@ -119,7 +118,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     }),
   )
   const { configFile, layers = [], cwd, meta } = resolved
-  const nuxtConfig = klona(resolved.config)
+  const nuxtConfig = cloneConfig(resolved.config)
 
   // Fill config
   nuxtConfig.rootDir ||= cwd
@@ -211,6 +210,32 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+}
+
+function cloneConfig<T> (value: T, seen = new WeakMap<object, unknown>()): T {
+  if (!value || typeof value !== 'object') { return value }
+
+  const existing = seen.get(value)
+  if (existing) { return existing as T }
+
+  const isArray = Array.isArray(value)
+  const prototype = Object.getPrototypeOf(value)
+  if (!isArray && prototype !== Object.prototype && prototype !== null) { return value }
+
+  const cloned = isArray ? [] : Object.create(prototype)
+  seen.set(value, cloned)
+  for (const key of Reflect.ownKeys(value)) {
+    if (isArray && key === 'length') { continue }
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    if (!descriptor) { continue }
+    if ('value' in descriptor) {
+      descriptor.value = cloneConfig(descriptor.value, seen)
+      descriptor.writable = true
+    }
+    descriptor.configurable = true
+    Object.defineProperty(cloned, key, descriptor)
+  }
+  return cloned as T
 }
 
 /**
