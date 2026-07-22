@@ -534,19 +534,6 @@ async function createClientPage(loader) {
   }
 }
 
-const PATH_TO_NITRO_GLOB_RE = /\/[^:/]*:\w.*$/
-export function pathToNitroGlob (path: string) {
-  if (!path) {
-    return null
-  }
-  // Ignore pages with multiple dynamic parameters.
-  if (path.indexOf(':') !== path.lastIndexOf(':')) {
-    return null
-  }
-
-  return path.replace(PATH_TO_NITRO_GLOB_RE, '/**')
-}
-
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
   return [
     joinURL(parent, page.path),

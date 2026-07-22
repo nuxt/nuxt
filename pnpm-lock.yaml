@@ -230,8 +230,8 @@ catalogs:
       specifier: ^3.3.0
       version: 3.3.0
     unrouting:
-      specifier: ^0.1.7
-      version: 0.1.7
+      specifier: ^0.2.1
+      version: 0.2.1
     untyped:
       specifier: ^2.0.0
       version: 2.0.0
@@ -1152,7 +1152,7 @@ importers:
         version: 3.3.0(@rspack/core@2.1.4(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5)(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.20))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.20))
       unrouting:
         specifier: catalog:build
-        version: 0.1.7
+        version: 0.2.1
       untyped:
         specifier: catalog:build
         version: 2.0.0
@@ -9745,8 +9745,8 @@ packages:
       webpack:
         optional: true
 
-  unrouting@0.1.7:
-    resolution: {integrity: sha512-+0hfD+CVWtD636rc5Fn9VEjjTEDhdqgMpbwAuVoUmydSHDaMNiFW93SJG4LV++RoGSEAyvQN5uABAscYpDphpQ==}
+  unrouting@0.2.1:
+    resolution: {integrity: sha512-6PPgRNT60lViebJUD/eRdbOd4lS5x+RK5z7IHzAzlYwPqRLFySlzwmoyvvVvpQwrxyyphJ2fSzuWKoCnklilqQ==}
 
   unrs-resolver@1.12.2:
     resolution: {integrity: sha512-dmlRxBJJayXjqTwC+JtF1HhJmgf3ftQ3YejFcZrf4+KKtJv0qDsK1pjqaaVjG7wJ5NJ6UVP1OqRMQ71Z4C3rxQ==}
@@ -19326,7 +19326,7 @@ snapshots:
       vite: 8.1.5(@types/node@24.13.3)(@vitejs/devtools@0.3.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
       webpack: 5.108.4(cssnano@8.0.2(postcss@8.5.20))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.20)
 
-  unrouting@0.1.7:
+  unrouting@0.2.1:
     dependencies:
       escape-string-regexp: 5.0.0
       ufo: 1.6.4

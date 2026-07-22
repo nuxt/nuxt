@@ -43,6 +43,7 @@ minimumReleaseAgeExclude:
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1
   - vue-bundle-renderer
+  - unrouting
   - unimport
   # Renovate security update: undici@8.5.0
   - undici@8.5.0
@@ -186,7 +187,7 @@ catalogs:
     unenv: 2.0.0-rc.24 # intentionally pinned to match nitro's dependency
     unimport: ^6.3.1
     unplugin: ^3.3.0
-    unrouting: ^0.1.7
+    unrouting: ^0.2.1
     untyped: ^2.0.0
     verkit: ^0.1.2
     vue-bundle-renderer: ^2.3.1
