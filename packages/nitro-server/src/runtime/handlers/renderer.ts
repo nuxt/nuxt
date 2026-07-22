@@ -267,17 +267,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
 
-  if (NO_SCRIPTS) {
-    pushSpeculationRules(ssrContext)
-    if (NUXT_VIEW_TRANSITIONS) {
-      pushCrossDocumentViewTransition(ssrContext)
-    }
-  } else if (NUXT_NO_SCRIPTS_PATTERNS.length) {
-    pushNoScriptsLinkHints(ssrContext)
-    if (NUXT_VIEW_TRANSITIONS) {
-      pushCrossDocumentViewTransition(ssrContext)
-    }
-  }
+  pushNoScriptsHints(ssrContext, NO_SCRIPTS)
 
   // 0. Add import map for stable chunk hashes
   if (entryFileName && !NO_SCRIPTS) {
@@ -435,17 +425,7 @@ async function renderStreamedResponse (ctx: {
   const { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
-  if (NO_SCRIPTS) {
-    pushSpeculationRules(ssrContext)
-    if (NUXT_VIEW_TRANSITIONS) {
-      pushCrossDocumentViewTransition(ssrContext)
-    }
-  } else if (NUXT_NO_SCRIPTS_PATTERNS.length) {
-    pushNoScriptsLinkHints(ssrContext)
-    if (NUXT_VIEW_TRANSITIONS) {
-      pushCrossDocumentViewTransition(ssrContext)
-    }
-  }
+  pushNoScriptsHints(ssrContext, NO_SCRIPTS)
 
   // 1. Set HTTP Link headers with entry-point preload hints (fastest resource hinting)
   const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext)
@@ -876,51 +856,39 @@ async function renderStreamedResponse (ctx: {
 }
 
 /**
- * Pages served without scripts navigate with full page loads. When view
- * transitions are enabled, opting into same-origin cross-document view
- * transitions declaratively animates those navigations without a client
- * runtime (the client-side `startViewTransition` plugin is not shipped).
+ * Routes served without scripts navigate with full-page loads. This emits the
+ * declarative navigation hints that speed those up, on both the pages served
+ * without scripts (a blanket rule over same-origin links) and scripted pages
+ * that may link to them (rules scoped to the `noScripts` route patterns):
+ *
+ * - speculation rules, so supporting browsers prefetch and prerender the
+ *   target ahead of the navigation;
+ * - when view transitions are enabled, an opt-in to same-origin cross-document
+ *   view transitions, animating the navigation without a client runtime (the
+ *   client-side `startViewTransition` plugin is not shipped).
+ *
+ * Both tags are declarative and execute no JavaScript.
  */
-function pushCrossDocumentViewTransition (ssrContext: NuxtSSRContext) {
-  ssrContext.head.push({
-    style: [{
-      tagPosition: 'head',
-      innerHTML: '@view-transition{navigation:auto}',
-    }],
-  })
+function pushNoScriptsHints (ssrContext: NuxtSSRContext, noScripts: boolean) {
+  if (noScripts) {
+    pushSpeculationRulesScript(ssrContext, ['/*'])
+  } else if (NUXT_NO_SCRIPTS_PATTERNS.length) {
+    pushSpeculationRulesScript(ssrContext, NUXT_NO_SCRIPTS_PATTERNS)
+  } else {
+    return
+  }
+  if (NUXT_VIEW_TRANSITIONS) {
+    ssrContext.head.push({
+      style: [{
+        tagPosition: 'head',
+        innerHTML: '@view-transition{navigation:auto}',
+      }],
+    })
+  }
 }
 
-/**
- * Pages served without scripts navigate with full page loads. Speculation
- * rules let supporting browsers prefetch and prerender same-origin link
- * targets ahead of the navigation, so following a link is near-instant
- * despite the absence of a client-side router. The tag is declarative JSON
- * and executes no JavaScript.
- */
-function pushSpeculationRules (ssrContext: NuxtSSRContext) {
-  ssrContext.head.push({
-    script: [{
-      tagPosition: 'head',
-      // unhead's script type union does not yet include 'speculationrules'
-      type: 'speculationrules' as any,
-      // unhead v3 JSON-stringifies object innerHTML for <script> tags
-      innerHTML: {
-        prefetch: [{ where: { href_matches: '/*' }, eagerness: 'moderate' }],
-        prerender: [{ where: { href_matches: '/*' }, eagerness: 'moderate' }],
-      },
-    }],
-  })
-}
-
-/**
- * Scripted pages navigate to `noScripts` routes with a full document load (the
- * client router forces it). Emitting speculation rules scoped to the `noScripts`
- * route patterns lets supporting browsers prefetch and prerender those targets
- * ahead of the navigation, without over-prefetching the rest of the app. The tag
- * is declarative JSON and executes no JavaScript.
- */
-function pushNoScriptsLinkHints (ssrContext: NuxtSSRContext) {
-  const rules = (NUXT_NO_SCRIPTS_PATTERNS as string[]).map((href_matches: string) => ({ where: { href_matches }, eagerness: 'moderate' }))
+function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: string[]) {
+  const rules = patterns.map(href_matches => ({ where: { href_matches }, eagerness: 'moderate' }))
   ssrContext.head.push({
     script: [{
       tagPosition: 'head',
