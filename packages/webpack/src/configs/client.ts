@@ -9,7 +9,7 @@ import { defineEnv } from 'unenv'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
 import { nuxt } from '../presets/nuxt.ts'
-import { TsCheckerPlugin, builder, webpack } from '#builder'
+import { TsCheckerPlugin, builder, webpack } from '../builder.ts'
 
 export async function client (ctx: WebpackConfigContext) {
   ctx.name = 'client'

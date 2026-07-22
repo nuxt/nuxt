@@ -28,7 +28,7 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[NUXT_E1007: NUXT_E1007]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[NUXT_E1007: https://nuxt.com/docs/4.x/errors/e1007]`)
   })
 
   it('should have a non-enumerable `__nuxt_factory` property', () => {

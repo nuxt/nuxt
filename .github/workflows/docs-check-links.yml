@@ -9,6 +9,10 @@ on:
       - main
       - 4.x
       - 3.x
+  schedule:
+    # weekly full check of all links, including external ones
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
@@ -17,6 +21,7 @@ permissions: {}
 jobs:
   link-checker:
     runs-on: ubuntu-24.04-arm
+    if: github.event_name != 'schedule' || github.repository == 'nuxt/nuxt'
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
       - name: Restore lychee cache
@@ -31,7 +36,27 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Lychee link checker
+      # on pull requests, only check internal docs links to avoid
+      # failures caused by flaky external sites
+      - name: Lychee link checker (internal links)
+        if: github.event_name == 'pull_request'
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          # arguments with file types to check
+          args: >-
+            '-c=lychee.toml'
+            --exclude '^https?://'
+            --include 'https://nuxt\.com/docs'
+            './docs/**/*.md'
+            './docs/**/*.html'
+          # fail the action on broken links
+          fail: true
+        env:
+          # to be used in case rate limits are surpassed
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lychee link checker (all links)
+        if: github.event_name != 'pull_request'
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           # arguments with file types to check

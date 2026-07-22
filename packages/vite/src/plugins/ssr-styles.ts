@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
-import { dirname, relative, resolve } from 'pathe'
+import { basename, dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
 import { setBuildOutput } from '@nuxt/kit'
@@ -49,6 +49,8 @@ function wrapStringGenerateScopedName (
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
 
+  const envApi = nuxt.options.experimental.nitroViteEnvironment
+
   const chunksWithInlinedCSS = new Set<string>()
   // For each output chunk that originates from a source file, the set of CSS
   // source module ids (no query) vite/rolldown bundled into that chunk's CSS
@@ -83,8 +85,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
 
-    // `build:manifest` can fire before the styles `generateBundle` runs, so
-    // derive inlined components from `cssMap` rather than `chunksWithInlinedCSS`.
+    // The set of components whose CSS is inlined is derived from `cssMap`
+    // directly (entries with bundled, non-empty CSS). `build:manifest` can fire
+    // before the styles `generateBundle` has run, so we must not depend on the
+    // separately-tracked `chunksWithInlinedCSS` being populated yet.
     for (const [id, { cssIds, files, inBundle }] of Object.entries(cssMap)) {
       if (!inBundle || !files.length) { continue }
       chunksWithInlinedCSS.add(id)
@@ -200,11 +204,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       entry = resolveClientEntry(config)
     },
     applyToEnvironment (environment) {
+      if (environment.name !== 'client' && environment.name !== 'ssr') { return false }
       return {
         name: `nuxt:ssr-styles:${environment.name}`,
         enforce: 'pre',
         buildStart () {
-          if (this.environment.name === 'ssr') {
+          if (!envApi && this.environment.name === 'ssr') {
             const stylesPath = resolve(this.environment.config.build.outDir, 'styles.mjs')
             setBuildOutput('ssrStyles', () => `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`, nuxt)
           }
@@ -290,18 +295,22 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
           // TODO: remove css from vite preload arrays
 
+          const stylesMapEntries = Object.entries(emitted).map(([key, value]) =>
+            [key, `() => import('./${this.getFileName(value)}').then(interopDefault)`]) as [string, string][]
           this.emitFile({
             type: 'asset',
             fileName: 'styles.mjs',
             originalFileName: 'styles.mjs',
-            source:
-          [
-            'const interopDefault = r => r.default || r || []',
-            `export default ${genObjectFromRawEntries(
-              Object.entries(emitted).map(([key, value]) => [key, `() => import('./${this.getFileName(value)}').then(interopDefault)`]) as [string, string][],
-            )}`,
-          ].join('\n'),
+            source: [
+              'const interopDefault = r => r.default || r || []',
+              `export default ${genObjectFromRawEntries(stylesMapEntries)}`,
+            ].join('\n'),
           })
+          if (envApi) {
+            const envEntries = Object.entries(emitted).map(([key, value]) =>
+              [key, `() => import('./${basename(this.getFileName(value))}').then(r => r.default || r || [])`]) as [string, string][]
+            setBuildOutput('ssrStyles', () => `export default ${genObjectFromRawEntries(envEntries)}`, nuxt)
+          }
         },
         renderChunk (_code, chunk) {
           const isEntry = chunk.facadeModuleId === entry

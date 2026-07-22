@@ -14,6 +14,8 @@ import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } fr
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import { patchDevClientCss } from '../utils/renderer/dev-css'
+import { recordDevClientCss } from '../utils/renderer/dev-client-css'
 import { useStorage } from 'nitro/storage'
 import type { Storage } from 'unstorage'
 
@@ -77,6 +79,10 @@ export default {
       }
 
       if (import.meta.dev) {
+        // refresh  per-request CSS from the builder's module graph post-render
+        await recordDevClientCss(event)
+        // ... and patch it into the manifest.
+        patchDevClientCss(event, renderer.rendererContext)
         const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
 
         const link: Link[] = []

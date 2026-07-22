@@ -203,10 +203,6 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-export const keyDependencies: string[] = [
-  '@nuxt/kit',
-]
-
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
@@ -415,7 +411,7 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt, 'client'), { server: false })
 
   // Add transform for `onPrehydrate` lifecycle hook
-  addBuildPlugin(PrehydrateTransformPlugin())
+  addBuildPlugin(PrehydrateTransformPlugin({ enforce: nuxt.options.experimental.nitroViteEnvironment ? 'pre' : undefined }))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
@@ -751,17 +747,19 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
   }
 
+  // Route chunk errors require route-level chunks and client-side navigation
+  const pagesEnabled = nuxt.options.pages !== false && (nuxt.options.pages as { enabled?: boolean } | undefined)?.enabled !== false
   // Add experimental page reload support
-  if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
+  if (pagesEnabled && nuxt.options.experimental.emitRouteChunkError === 'automatic') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
   }
   // Add experimental immediate page reload support
-  if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
+  if (pagesEnabled && nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
   }
   // Reload for crawlers when a chunk fails during initial hydration, so they
   // index the server-rendered HTML rather than a blank page
-  if (nuxt.options.experimental.emitRouteChunkError) {
+  if (pagesEnabled && nuxt.options.experimental.emitRouteChunkError) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-crawler.client'))
   }
 
@@ -776,7 +774,6 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add support for custom types in JSON payload
-  addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
   addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
 
   addRouteMiddleware({
@@ -863,9 +860,16 @@ export default defineNuxtPlugin({
   await bundleServer(nuxt)
   nuxt._perf?.startPhase('ready')
 
+  if (nuxt.options.ssr !== false) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+  }
+
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    // The client payload plugin only loads payloads during client-side nav
+    if (pagesEnabled) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    }
     if (nuxt.options.experimental.prefetchPreloadTags) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/prefetch-preload-tags.server'))
     }
