@@ -559,7 +559,12 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         for (const viewName in page.components) {
           if (viewName === 'default') { continue }
           const viewFile = normalize(page.components[viewName]!)
-          viewEntries.push(`${JSON.stringify(viewName)}: ${genDynamicImport(viewFile)}`)
+          // no-scripts routes drop their client chunk, so named views are
+          // stubbed alongside the default component (see `normalizeComponent`)
+          const viewImport = page._noScripts
+            ? `import.meta.server ? ${genDynamicImport(viewFile)} : () => Promise.resolve(_noScriptsPageStub)`
+            : genDynamicImport(viewFile)
+          viewEntries.push(`${JSON.stringify(viewName)}: ${viewImport}`)
         }
         if (viewEntries.length > 0) {
           componentsObject = `{ default: ${component}, ${viewEntries.join(', ')} }`

@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     '/aliased': { noScripts: true },
     '/products/**': { noScripts: true },
     '/dash/**': { noScripts: true },
+    '/report': { noScripts: true },
   },
   experimental: {
     viewTransition: true,
