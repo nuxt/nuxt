@@ -12,6 +12,7 @@ export default withMatrix({
   },
   vue: {
     runtimeCompiler: true,
+    optionsApi: true,
   },
   experimental: {
     nitroAutoImports: true,
