@@ -2014,10 +2014,12 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   it('requests status can be used', async () => {
     const html = await $fetch<string>('/useAsyncData/status')
     expect(html).toContain('true')
-    expect(html).not.toContain('false')
 
     const page = await createPage('/useAsyncData/status')
     await page.locator('#status5-values').getByText('idle,pending,success').waitFor()
+    const text = await page.locator('body').innerText()
+    expect(text).toContain('true')
+    expect(text).not.toContain('false')
     await page.close()
   })
 
