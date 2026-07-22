@@ -35,11 +35,11 @@ The resulting `useAPI` composable has the same signature and return type as [`us
 
 ```ts [Signature]
 function createUseFetch (
-  options?: Partial<UseFetchOptions>,
+  options?: Partial<UseFetchOptions> & { addons?: UseFetchAddon[] },
 ): typeof useFetch
 
 function createUseFetch (
-  options: (callerOptions: UseFetchOptions) => Partial<UseFetchOptions>,
+  options: (callerOptions: UseFetchOptions) => Partial<UseFetchOptions> & { addons?: UseFetchAddon[] },
 ): typeof useFetch
 
 // where the client declares the routes it serves
@@ -47,6 +47,8 @@ function createUseFetch<Routes> (
   options: Partial<UseFetchOptions> & { routes: Routes },
 ): DeclaredUseFetch<Routes>
 ```
+
+The returned composable's signature includes any custom options and return-value extensions contributed by the [addons](#addons).
 
 ## Options
 
@@ -163,6 +165,46 @@ export const useAPI = createUseFetch(callerOptions => ({
 ::important
 The **function signature** (override mode) is required here so that [`useNuxtApp()`](/docs/api/composables/use-nuxt-app) is called in the setup context (at the composable call site) rather than in the module scope, where no Nuxt instance is available.
 ::
+
+## Addons
+
+In addition to `useFetch` options, `createUseFetch` accepts an `addons` array. Addons are reusable units of behavior defined with [`defineUseFetchAddon`](/docs/api/utils/define-use-fetch-addon). They can declare custom call-site options, run middleware around the handler, extend the returned object, and attach custom logic to the composable.
+
+For example, an addon that refreshes the data whenever the window regains focus, gated behind a custom `refreshOnFocus` option, so callers opt in per call:
+
+```ts [app/composables/useCustomFetch.ts]
+const refreshOnFocus = defineUseFetchAddon({
+  // augment the call-site options for the custom useFetch instance 👇
+  setup: (options: UseFetchAddonOptions<{ refreshOnFocus?: boolean }>) => {
+    // 👈 run code *before* calling `useAsyncData` in `useFetch`
+    if (import.meta.server || !options.refreshOnFocus) { return }
+
+    return (asyncData) => {
+      // 👈 run code *after* calling `useAsyncData` in `useFetch`
+      const focused = useWindowFocus()
+      watch(focused, (focused) => {
+        if (focused) { asyncData.refresh() }
+      })
+
+      return { focused } // 👈 extend the returned object with a new property
+    }
+  },
+})
+
+export const useCustomFetch = createUseFetch({ addons: [refreshOnFocus] })
+```
+
+```vue [app/pages/index.vue]
+<script setup lang="ts">
+// `refreshOnFocus` is typed on the created composable
+const { data } = await useCustomFetch(
+  'https://api.nuxtjs.dev/mountains',
+  { refreshOnFocus: true },
+)
+</script>
+```
+
+:read-more{to="/docs/api/utils/define-use-fetch-addon"}
 
 :read-more{to="/docs/guide/recipes/custom-usefetch"}
 
