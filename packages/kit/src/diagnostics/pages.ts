@@ -82,8 +82,8 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B4016: {
-      why: (p: { path: string, detail: string }) => `Inline route rules for \`${p.path}\` cannot be represented exactly by Nitro route rules: ${p.detail}.`,
-      fix: 'Define the affected route rules explicitly in `nitro.routeRules` if you need to scope them more narrowly.',
+      why: (p: { path: string, detail: string }) => `Inline route rules for \`${p.path}\` cannot be represented exactly by Nitro route rules, so they were not applied: ${p.detail}.`,
+      fix: 'Define the affected route rules explicitly in `nitro.routeRules`.',
       docs: false,
     },
     NUXT_B4017: {

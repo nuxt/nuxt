@@ -49,7 +49,7 @@ describe('routeRules from page meta', () => {
     expect(result).toEqual({
       '/': { prerender: true },
       '/some/nested/page': { prerender: true },
-      '/users/**': { prerender: true },
+      '/users/*': { prerender: true },
     })
   })
 
@@ -68,7 +68,21 @@ describe('routeRules from page meta', () => {
     expect(collapse).not.toHaveBeenCalled()
   })
 
-  it('warns when a dynamic param collapses to a broader catch-all', () => {
+  it('converts dynamic params to single-segment wildcards without warning', () => {
+    const pages = [
+      {
+        path: '/foo/:id/bar',
+        rules: { prerender: true },
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages)).toEqual({
+      '/foo/*/bar': { prerender: true },
+    })
+    expect(collapse).not.toHaveBeenCalled()
+  })
+
+  it('drops rules and warns when a path cannot be converted exactly', () => {
     const pages = [
       {
         path: '/account/:id(\\d+)',
@@ -76,16 +90,14 @@ describe('routeRules from page meta', () => {
       },
     ]
 
-    expect(globRouteRulesFromPages(pages)).toEqual({
-      '/account/**': { prerender: true },
-    })
+    expect(globRouteRulesFromPages(pages)).toEqual({})
     expect(collapse).toHaveBeenCalledWith({
       path: '/account/:id(\\d+)',
       detail: 'Collapsed "/account/:id(\\d+)" at segment ":id(\\d+)" into a `**` catch-all, which also matches nested paths',
     })
   })
 
-  it('warns when inline route rules override the same route rule glob', () => {
+  it('warns when inline route rules override the same route rule pattern', () => {
     const pages = [
       {
         path: '/foo/:id',
@@ -98,9 +110,9 @@ describe('routeRules from page meta', () => {
     ]
 
     expect(globRouteRulesFromPages(pages)).toEqual({
-      '/foo/**': { prerender: true },
+      '/foo/*': { prerender: true },
     })
-    expect(collision).toHaveBeenCalledWith({ path: '/foo/:slug', pattern: '/foo/**' })
+    expect(collision).toHaveBeenCalledWith({ path: '/foo/:slug', pattern: '/foo/*' })
   })
 
   it('removes route rules from pages', () => {

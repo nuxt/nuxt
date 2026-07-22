@@ -19,14 +19,17 @@ function collectRouteRulesFromPages (
       if (Object.keys(page.rules).length) {
         const path = prefix + page.path
         const { patterns, issues } = vueRouterToRou3(path, { collapse: true })
-        for (const issue of issues) {
-          pageDiagnostics.NUXT_B4016({ path, detail: issue.message })
-        }
-        for (const pattern of patterns) {
-          if (pattern in paths && !isEqual(paths[pattern], page.rules)) {
-            pageDiagnostics.NUXT_B4017({ path, pattern })
+        if (issues.length) {
+          for (const issue of issues) {
+            pageDiagnostics.NUXT_B4016({ path, detail: issue.message })
           }
-          paths[pattern] = page.rules
+        } else {
+          for (const pattern of patterns) {
+            if (pattern in paths && !isEqual(paths[pattern], page.rules)) {
+              pageDiagnostics.NUXT_B4017({ path, pattern })
+            }
+            paths[pattern] = page.rules
+          }
         }
       }
       // remove rules to prevent exposing in build
