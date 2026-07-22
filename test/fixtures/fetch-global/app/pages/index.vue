@@ -1,0 +1,11 @@
+<template>
+  <div>
+    <h1>index</h1>
+    <NuxtLink
+      id="to-global"
+      to="/global"
+    >
+      global
+    </NuxtLink>
+  </div>
+</template>

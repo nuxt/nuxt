@@ -8,7 +8,7 @@ import ts from 'typescript'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchClientTemplate, dollarFetchSetupClientTemplate, dollarFetchSetupServerTemplate, dollarFetchTemplate, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 import type { RuntimeConfigSchemaNode } from '@nuxt/schema/internal'
@@ -166,6 +166,21 @@ describe('dollarFetchTemplate', () => {
     expect(contents).not.toMatch(/createFetch/)
     expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from ['"]ofetch['"]/)
     expect(contents).toMatch(/globalThis\.\$fetch = _\$fetch\.create\(\{\s*baseURL: baseURL\(\)/)
+  })
+})
+
+describe('client `$fetch` templates', () => {
+  it('installs the global only when the binding is read', async () => {
+    const contents = await dollarFetchClientTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+
+    expect(contents).toContain('export const $fetch = /*#__PURE__*/ (() => globalThis.$fetch ||= _$fetch.create({ baseURL: baseURL() }))()')
+    expect(contents).not.toMatch(/^if /m)
+  })
+
+  it('installs the global from the entry in development only', async () => {
+    expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt({ dev: true }), app: makeApp(), options: {} })).toContain('#build/fetch-global')
+    expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })).not.toContain('#build/fetch')
+    expect(await dollarFetchSetupServerTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })).toContain('#build/fetch')
   })
 })
 
