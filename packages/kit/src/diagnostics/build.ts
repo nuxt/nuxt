@@ -63,17 +63,17 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1011: {
       why: (p: { file: string }) => `Failed to read file \`${p.file}\`.`,
-      fix: 'Check that the file exists and is readable, or try clearing the build cache with `nuxi clean`.',
+      fix: 'Check that the file exists and is readable, or try clearing the build cache with `nuxt clean`.',
       docs: false,
     },
     NUXT_B1012: {
       why: (p: { path: string }) => `Skipping unsafe cache path: ${p.path}. This cache file has a path that escapes the project directory (possible path traversal).`,
-      fix: 'Delete the cache with `nuxi clean` and rebuild.',
+      fix: 'Delete the cache with `nuxt clean` and rebuild.',
       docs: false,
     },
     NUXT_B1013: {
       why: (p: { file: string }) => `Failed to restore cached file \`${p.file}\`.`,
-      fix: 'Try clearing the build cache with `nuxi clean` and rebuilding from scratch.',
+      fix: 'Try clearing the build cache with `nuxt clean` and rebuilding from scratch.',
       docs: false,
     },
     NUXT_B1014: {

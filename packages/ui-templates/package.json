@@ -17,19 +17,19 @@
     "prerender": "pnpm build && node ./lib/prerender.ts"
   },
   "devDependencies": {
-    "@unocss/reset": "66.7.5",
-    "@vue/shared": "3.5.39",
-    "beasties": "0.4.3",
-    "html-validate": "11.5.6",
-    "htmlnano": "3.4.0",
-    "knitwork": "1.3.0",
-    "pathe": "2.0.3",
-    "prettier": "3.9.5",
-    "scule": "1.3.0",
-    "svgo": "4.0.2",
-    "tinyexec": "1.2.4",
-    "tinyglobby": "0.2.17",
-    "unocss": "66.7.5",
-    "vite": "8.1.4"
+    "@unocss/reset": "catalog:dev",
+    "@vue/shared": "catalog:build",
+    "beasties": "catalog:dev",
+    "html-validate": "catalog:dev",
+    "htmlnano": "catalog:dev",
+    "knitwork": "catalog:build",
+    "pathe": "catalog:build",
+    "prettier": "catalog:dev",
+    "scule": "catalog:build",
+    "svgo": "catalog:dev",
+    "tinyexec": "catalog:dev",
+    "tinyglobby": "catalog:build",
+    "unocss": "catalog:dev",
+    "vite": "catalog:vite"
   }
 }

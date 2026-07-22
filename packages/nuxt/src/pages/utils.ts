@@ -169,6 +169,13 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
         routeMeta.rules = defu({}, routeMeta.rules, route.rules)
       }
 
+      // Only the first route per file takes the file's `name`/`path`; a `pages:extend` route
+      // reusing that file keeps its own, else the duplicate route name drops the original (#27358).
+      if (ctx.augmentedPages.has(route.file)) {
+        delete routeMeta.name
+        delete routeMeta.path
+      }
+
       Object.assign(route, routeMeta)
       ctx.augmentedPages.add(route.file)
     }
@@ -181,7 +188,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
 }
 
 const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/gi
-export function extractScriptContent (sfc: string) {
+function extractScriptContent (sfc: string) {
   const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
   for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
     if (match?.groups?.content) {

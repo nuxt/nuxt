@@ -9,7 +9,7 @@ import {
 } from '@unhead/vue'
 import { useNuxtApp } from '#app/nuxt'
 import type { NuxtApp } from '#app/nuxt'
-import { unheadDiagnostics } from '../../app/diagnostics/head.ts'
+import { unheadDiagnostics } from '../../app/diagnostics/head'
 
 /**
  * Injects the head client from the Nuxt context or Vue inject.

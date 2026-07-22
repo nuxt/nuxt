@@ -8,7 +8,7 @@ import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
-import { stateDiagnostics } from '../diagnostics/state.ts'
+import { stateDiagnostics } from '../diagnostics/state'
 
 import { cookieStore } from '#build/nuxt.config.mjs'
 

@@ -12,8 +12,9 @@ type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 export default <RouterConfig>{
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
+    const router = useRouter()
     // @ts-expect-error untyped, nuxt-injected option
-    const hashScrollBehaviour = useRouter().options?.scrollBehaviorType ?? 'auto'
+    const hashScrollBehaviour = router.options?.scrollBehaviorType ?? 'auto'
 
     // Hash routes on the same page, no page hook is fired so resolve here
     if (to.path.replace(/\/$/, '') === from.path.replace(/\/$/, '')) {
@@ -37,7 +38,16 @@ export default <RouterConfig>{
 
     return new Promise((resolve) => {
       const doScroll = () => {
-        requestAnimationFrame(() => resolve(_calculatePosition(to, from, savedPosition, hashScrollBehaviour)))
+        requestAnimationFrame(() => {
+          // A later navigation may have superseded this one while we waited for the
+          // page transition to finish; scrolling now would apply the old destination's
+          // position to the current page, so skip it (#34196).
+          if (router.currentRoute.value.fullPath !== to.fullPath) {
+            resolve(false)
+            return
+          }
+          resolve(_calculatePosition(to, from, savedPosition, hashScrollBehaviour))
+        })
       }
       nuxtApp.hooks.hookOnce('page:loading:end', () => {
         const transitionPromise = nuxtApp['~transitionPromise'] as Promise<void> | undefined

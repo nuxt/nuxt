@@ -108,6 +108,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+  # Warm the Windows dependency cache on main
+  # Without this job every Windows job cold-installs all deps
+  warm-windows-cache:
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && github.event_name == 'push' && github.ref_name == 'main'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+        with:
+          node-version: 22
+          cache: true
+
   codeql:
     if: github.event_name != 'merge_group' && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
     runs-on: ubuntu-latest
@@ -126,7 +145,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
+        uses: github/codeql-action/init@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
         with:
           config: |
             paths:
@@ -143,7 +162,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
+        uses: github/codeql-action/analyze@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -216,8 +235,8 @@ jobs:
           node-version: lts
           cache: true
 
-      - name: Build (stub)
-        run: vp run dev:prepare
+      - name: Prepare
+        run: vp run dev:prepare && vp run test:prepare
 
       - parallel:
           - name: Lint
@@ -231,6 +250,42 @@ jobs:
 
       - name: Check built types
         run: vp run test:attw
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # Runs on pull requests too (unlike the `lint` job) so knip regressions surface
+  # before the merge queue.
+  knip:
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+        with:
+          node-version: lts
+          cache: true
+
+      - name: Prepare
+        run: vp run dev:prepare && vp run test:prepare
+
+      - parallel:
+          - name: Knip
+            run: vp run lint:knip
+
+          - name: Knip (production)
+            run: vp run lint:knip:production
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -325,8 +380,6 @@ jobs:
             projects: '--project "fixtures:vite-dev-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-built-*"'
-          - os: windows-latest
-            projects: '--project "fixtures:rspack-*" --project "fixtures:webpack-*" --project "fixtures:vite-env-api-*"'
 
     timeout-minutes: 45
 
@@ -378,7 +431,13 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
-        os: [ubuntu-24.04-arm, windows-latest]
+        include:
+          - os: ubuntu-24.04-arm
+            shard: ''
+          - os: windows-latest
+            shard: '--shard=1/2'
+          - os: windows-latest
+            shard: '--shard=2/2'
 
     timeout-minutes: 25
 
@@ -404,7 +463,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Test (e2e)
-        run: vp run test:e2e
+        run: vp run test:e2e ${{ matrix.shard }}
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -423,6 +482,7 @@ jobs:
       - codeql
       - typecheck
       - lint-and-test
+      - knip
       - test-size
       - test-fixtures
       - test-e2e
@@ -436,6 +496,7 @@ jobs:
             "${{ needs.codeql.result }}" \
             "${{ needs.typecheck.result }}" \
             "${{ needs.lint-and-test.result }}" \
+            "${{ needs.knip.result }}" \
             "${{ needs.test-size.result }}" \
             "${{ needs.test-fixtures.result }}" \
             "${{ needs.test-e2e.result }}" \

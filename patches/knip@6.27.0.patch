@@ -1,0 +1,16 @@
+diff --git a/dist/plugins/nuxt/index.js b/dist/plugins/nuxt/index.js
+index 64cce98423f0b3192823df80983df14b8a047b04..6badec7bcf0538a8587785af8f661d0e55e2f56e 100644
+--- a/dist/plugins/nuxt/index.js
++++ b/dist/plugins/nuxt/index.js
+@@ -85,9 +85,9 @@ const resolveConfig = async (localConfig, options) => {
+     const inputs = [];
+     for (const id of localConfig.modules ?? []) {
+         if (Array.isArray(id) && typeof id[0] === 'string')
+-            inputs.push(toDependency(id[0]));
++            inputs.push(toDependency(resolveAlias(id[0], srcDir, cwd)));
+         if (typeof id === 'string')
+-            inputs.push(toDependency(id));
++            inputs.push(toDependency(resolveAlias(id, srcDir, cwd)));
+     }
+     addAppEntries(inputs, srcDir, serverDir, localConfig, cwd);
+     const aliases = localConfig.alias;

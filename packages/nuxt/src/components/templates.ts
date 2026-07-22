@@ -80,7 +80,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
-      return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)'
+      return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)\nexport const providePageIslandDepth = () => {}'
     }
 
     const components = app.components
@@ -114,6 +114,20 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       'export const pageIslandRoutes = import.meta.client ? Object.create(null) : Object.assign(Object.create(null), {',
       pageIslandRoutes.join(',\n'),
       '})',
+      // Only pull `vue-router` (and its devtools chain) into the server bundle
+      // when the app actually has server page islands to render.
+      serverPages.length
+        ? [
+            'import { computed, provide } from \'vue\'',
+            'import { viewDepthKey } from \'vue-router\'',
+            'export const providePageIslandDepth = import.meta.client ? () => {} : (route, expectedIslandKey) => {',
+            '  provide(viewDepthKey, computed(() => {',
+            '    const depth = route.matched.findIndex(m => m.components?.default?.__nuxt_island === expectedIslandKey)',
+            '    return depth === -1 ? 0 : depth + 1',
+            '  }))',
+            '}',
+          ].join('\n')
+        : 'export const providePageIslandDepth = () => {}',
     ].join('\n')
   },
 }

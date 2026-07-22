@@ -100,6 +100,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       // Create a context to share state between module internals
       ctx = createUnimport({
         injectAtEnd: true,
+        parser: 'oxc',
         ...rest,
         addons: {
           addons,

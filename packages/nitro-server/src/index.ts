@@ -24,7 +24,6 @@ import { hasTTY, isCI, isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitropack/runtime/meta'
-import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { distDir, getLayerNodeModulesExcludePattern, toArray } from './utils.ts'
@@ -32,6 +31,9 @@ import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/t
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { nitroSchemaTemplate } from './templates.ts'
+// Re-export a type from the augment module rather than a bare `import './augments.ts'`
+// side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
+export type { NuxtTracingChannelOptions } from './augments.ts'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -128,6 +130,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
+
+  // pin to h3 v1 to prevent pulling in h3 v2 as a dependency of the nitro server
+  const h3Entry = resolveModulePath('h3', { from: import.meta.url })
+  const h3PackageJson = resolveModulePath('h3/package.json', { from: import.meta.url })
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
@@ -240,8 +246,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         : {}),
       '/__nuxt_error': { cache: false },
     },
-    appConfig: nuxt.options.appConfig,
-    appConfigFiles: layerDirs.map(dirs => join(dirs.app, 'app.config')),
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -337,6 +341,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           },
       '@vue/devtools-api': 'vue-devtools-stub',
 
+      'h3': h3Entry,
+      'h3/package.json': h3PackageJson,
+
       // Nuxt aliases
       ...nuxt.options.alias,
 
@@ -364,7 +371,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitroConfig.imports.imports.push({
       name: 'useAppConfig',
       from: resolve(distDir, 'runtime/utils/app-config'),
-      priority: -1,
+      // nitropack v2 auto-imports its own `useAppConfig`; outrank it so the server program
+      // resolves a single `useAppConfig` (Nuxt's) instead of merging both to `never`
+      priority: 20,
     })
   }
 
@@ -728,7 +737,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // TODO: extract to shared utility?
-  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@', 'h3', 'h3/package.json']
   // TODO: remove support for baseUrl in nuxt v5
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
@@ -1040,8 +1049,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     for (const builder of ['webpack', 'rspack'] as const) {
       nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
         if (name === 'server') {
-          const memfs = compiler.outputFileSystem as typeof import('node:fs')
           nitro.options.virtual['nuxt/entry'] = () => {
+            const memfs = compiler.outputFileSystem as typeof import('node:fs')
             mkdirSync(join(nuxt.options.buildDir, 'dist/server'), { recursive: true })
             writeFileSync(diskServerEntry, memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8'))
             return `export { default } from ${JSON.stringify(pathToFileURL(diskServerEntry).href + '?v=' + Date.now())}`

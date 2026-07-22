@@ -194,6 +194,35 @@ export default defineNuxtModule({
       }
     })
 
+    // layouts can be used without pages (e.g. `<NuxtLayout>`), so always generate their types
+    addTypeTemplate({
+      filename: 'types/layouts.d.ts',
+      getContents: ({ app }) => {
+        return [
+          'import type { ComputedRef, MaybeRef } from \'vue\'',
+          '',
+          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
+          '  : T extends (props: infer P, ...args: any) => any ? P',
+          '  : {}',
+          '',
+          'declare module \'nuxt/app\' {',
+          '  interface NuxtLayouts {',
+          ...Object.values(app.layouts).map(layout => `    ${genObjectKey(layout.name)}: ComponentProps<${genInlineTypeImport(layout.file)}>`),
+          '  }',
+          '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
+          '  interface PageMeta {',
+          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false> | {',
+          '      [K in LayoutKey]: {',
+          '        name?: MaybeRef<K | false> | ComputedRef<K | false>',
+          '        props?: NuxtLayouts[K]',
+          '      }',
+          '    }[LayoutKey]',
+          '  }',
+          '}',
+        ].join('\n')
+      },
+    })
+
     if (!options.enabled) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
@@ -678,34 +707,6 @@ export default defineNuxtModule({
         ].join('\n')
       },
     }, { nuxt: true, nitro: true, node: true })
-
-    addTypeTemplate({
-      filename: 'types/layouts.d.ts',
-      getContents: ({ app }) => {
-        return [
-          'import type { ComputedRef, MaybeRef } from \'vue\'',
-          '',
-          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
-          '  : T extends (props: infer P, ...args: any) => any ? P',
-          '  : {}',
-          '',
-          'declare module \'nuxt/app\' {',
-          '  interface NuxtLayouts {',
-          ...Object.values(app.layouts).map(layout => `    ${genObjectKey(layout.name)}: ComponentProps<${genInlineTypeImport(layout.file)}>`),
-          '  }',
-          '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
-          '  interface PageMeta {',
-          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false> | {',
-          '      [K in LayoutKey]: {',
-          '        name?: MaybeRef<K | false> | ComputedRef<K | false>',
-          '        props?: NuxtLayouts[K]',
-          '      }',
-          '    }[LayoutKey]',
-          '  }',
-          '}',
-        ].join('\n')
-      },
-    })
 
     // add page meta types if enabled
     if (nuxt.options.experimental.viewTransition) {

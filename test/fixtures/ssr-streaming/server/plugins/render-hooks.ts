@@ -1,4 +1,3 @@
-import { definePlugin as defineNitroPlugin } from 'nitro'
 import { getRequestURL } from 'h3'
 
 // Exercises the streaming render-hook contract. Gated to `/hooks` so the other

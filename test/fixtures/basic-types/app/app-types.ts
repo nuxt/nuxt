@@ -3,8 +3,9 @@ import type { Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 import type { H3Event } from 'h3'
 import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
-import type { NitroRouteRules } from 'nitropack/types'
+import type { $Fetch, NitroFetchRequest, NitroRouteRules } from 'nitropack/types'
 
+import { $fetch } from '#build/fetch'
 import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
 import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
@@ -54,6 +55,13 @@ defineNuxtConfig({
 })
 
 describe('API routes', () => {
+  it('types the auto-imported $fetch with nitro routes', () => {
+    // https://github.com/nuxt/nuxt/pull/35582 regression: `$fetch` was typed as
+    // ofetch's plain `$fetch`, returning `Promise<any>` for every request
+    expectTypeOf($fetch).toEqualTypeOf<$Fetch<unknown, NitroFetchRequest>>()
+    expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
+  })
+
   it('generates types for routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
     // registered in extends
@@ -127,6 +135,11 @@ describe('API routes', () => {
     expectTypeOf(useFetch('/api/union').data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
+    // https://github.com/nuxt/nuxt/issues/22488 — dynamic + static handlers on the same prefix
+    const dynamicId = String(Math.random())
+    expectTypeOf(useFetch(`/api/posts/${dynamicId}`).data).toEqualTypeOf<Ref<number | string | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/posts/static').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf($fetch(`/api/posts/${dynamicId}`)).toEqualTypeOf<Promise<number | string>>()
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 

@@ -6,7 +6,7 @@ import { useNuxtApp } from '../nuxt'
 import type { NuxtApp, NuxtPayload } from '../nuxt'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
-import { appDiagnostics } from '../diagnostics/core.ts'
+import { appDiagnostics } from '../diagnostics/core'
 
 export const NUXT_ERROR_SIGNATURE = '__nuxt_error' as const
 

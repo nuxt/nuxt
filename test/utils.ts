@@ -63,7 +63,7 @@ export async function expectNoClientErrors (path: string) {
   await page.close()
 }
 
-export function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, text: string }>) {
+function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, text: string }>) {
   const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
   const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
 

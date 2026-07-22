@@ -15,6 +15,9 @@ export type { LoadNuxtOptions } from './loader/nuxt.ts'
 export { getLayerDirectories } from './layers.ts'
 export type { LayerDirectories } from './layers.ts'
 
+// Constants
+export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from './constants.ts'
+
 // Utils
 export { setGlobalHead } from './head.ts'
 export { addImports, addImportsDir, addImportsSources } from './imports.ts'
