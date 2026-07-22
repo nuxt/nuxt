@@ -60,6 +60,7 @@ import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
 import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
+import { DollarFetchGlobalPlugin } from './plugins/fetch-global.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
 import { BundledVuePlugin } from './plugins/bundled-vue.ts'
@@ -525,6 +526,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin())
+
+  if (!nuxt.options.dev) {
+    addBuildPlugin(DollarFetchGlobalPlugin(nuxt), { server: false })
+  }
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
