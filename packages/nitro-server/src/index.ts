@@ -15,6 +15,7 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
 import { isWindows } from 'std-env'
+import { rou3PatternToURLPattern } from 'unrouting'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
@@ -215,12 +216,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#internal/streaming-iife-chunk.mjs': () => `export const iifeChunkFileName = undefined`,
       '#internal/nuxt/nitro-config.mjs': () => {
         const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)
+        // `href_matches` patterns (URLPattern syntax) for routes served under a
+        // `noScripts` route rule, so scripted documents can speculatively
+        // prefetch/prerender the full-page navigation the client router forces
+        // to them.
+        const noScriptsPatterns = [...new Set(nitro.routing.routeRules.routes
+          .filter(r => r.data.noScripts)
+          .map(r => rou3PatternToURLPattern(r.route).pattern))]
         return [
           `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
           `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
           `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
           `export const NUXT_NO_SCRIPTS_PROD = ${nuxt.options.features.noScripts === 'production'}`,
           `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
+          `export const NUXT_NO_SCRIPTS_PATTERNS = ${JSON.stringify(noScriptsPatterns)}`,
           `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
           `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,

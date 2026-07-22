@@ -28,7 +28,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import entryIds from 'nuxt/entry-ids'
 import { entryFileName } from 'nuxt/entry-chunk'
@@ -267,6 +267,12 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
 
+  if (NO_SCRIPTS) {
+    pushSpeculationRules(ssrContext)
+  } else if (NUXT_NO_SCRIPTS_PATTERNS.length) {
+    pushNoScriptsLinkHints(ssrContext)
+  }
+
   // 0. Add import map for stable chunk hashes
   if (entryFileName && !NO_SCRIPTS) {
     let path = entryPath
@@ -422,6 +428,12 @@ async function renderStreamedResponse (ctx: {
 }): Promise<ReadableStream<Uint8Array> | Response> {
   const { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
+
+  if (NO_SCRIPTS) {
+    pushSpeculationRules(ssrContext)
+  } else if (NUXT_NO_SCRIPTS_PATTERNS.length) {
+    pushNoScriptsLinkHints(ssrContext)
+  }
 
   // 1. Set HTTP Link headers with entry-point preload hints (fastest resource hinting)
   const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext)
@@ -849,6 +861,51 @@ async function renderStreamedResponse (ctx: {
   event.res.headers.set('x-powered-by', 'Nuxt')
 
   return new FastResponse(outputStream, event.res)
+}
+
+/**
+ * Pages served without scripts navigate with full page loads. Speculation
+ * rules let supporting browsers prefetch and prerender same-origin link
+ * targets ahead of the navigation, so following a link is near-instant
+ * despite the absence of a client-side router. The tag is declarative JSON
+ * and executes no JavaScript.
+ */
+function pushSpeculationRules (ssrContext: NuxtSSRContext) {
+  ssrContext.head.push({
+    script: [{
+      tagPosition: 'head',
+      // unhead's script type union does not yet include 'speculationrules'
+      type: 'speculationrules' as any,
+      // unhead v3 JSON-stringifies object innerHTML for <script> tags
+      innerHTML: {
+        prefetch: [{ where: { href_matches: '/*' }, eagerness: 'moderate' }],
+        prerender: [{ where: { href_matches: '/*' }, eagerness: 'moderate' }],
+      },
+    }],
+  })
+}
+
+/**
+ * Scripted pages navigate to `noScripts` routes with a full document load (the
+ * client router forces it). Emitting speculation rules scoped to the `noScripts`
+ * route patterns lets supporting browsers prefetch and prerender those targets
+ * ahead of the navigation, without over-prefetching the rest of the app. The tag
+ * is declarative JSON and executes no JavaScript.
+ */
+function pushNoScriptsLinkHints (ssrContext: NuxtSSRContext) {
+  const rules = (NUXT_NO_SCRIPTS_PATTERNS as string[]).map((href_matches: string) => ({ where: { href_matches }, eagerness: 'moderate' }))
+  ssrContext.head.push({
+    script: [{
+      tagPosition: 'head',
+      // unhead's script type union does not yet include 'speculationrules'
+      type: 'speculationrules' as any,
+      // unhead v3 JSON-stringifies object innerHTML for <script> tags
+      innerHTML: {
+        prefetch: rules,
+        prerender: rules,
+      },
+    }],
+  })
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {
