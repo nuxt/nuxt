@@ -13,6 +13,7 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { logger, toArray } from '../utils.ts'
 import picomatch from 'picomatch'
+import { vueRouterToRou3 } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
@@ -30,6 +31,17 @@ const RELATIVE_WITH_DOT_RE = /^([^.])/
 
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
+
+// Unlikely to collide with a real exact route rule, so matching it surfaces only
+// the wildcard rules that apply across a glob region.
+const NO_SCRIPTS_PROBE_SEGMENT = '__nuxt_no_scripts_probe__'
+
+// Concretises a rou3 route pattern into a matchable path by replacing catch-alls
+// (`**`, `**:name`) and params (`*`, `:name`) with a literal segment.
+const ROUTE_WILDCARD_RE = /\*\*(?::\w+)?|\*|:\w+/g
+function globToProbePath (route: string): string {
+  return route.replace(ROUTE_WILDCARD_RE, NO_SCRIPTS_PROBE_SEGMENT)
 }
 
 export const pagesImportPresets: InlinePreset[] = [
@@ -714,13 +726,43 @@ export default defineNuxtModule({
     function markNoScriptsPages (pages: NuxtPage[]) {
       const nitro = nitroForNoScripts
       if (!nitro || !('routing' in nitro)) { return }
-      // returns `null` for paths that cannot be matched against route rules at
-      // build time (dynamic segments, wildcards, relative child paths)
+      const routeRules = nitro.routing.routeRules
+      const effectiveNoScripts = (path: string) =>
+        !!defu({} as Record<string, any>, ...routeRules.matchAll('', path).reverse()).noScripts
+      // Whether a rou3 pattern is *always* served without scripts. A fully
+      // static pattern is matched directly. A dynamic one serves a subset of
+      // the region below its first dynamic segment (`/products/*` and
+      // `/products/*/reviews` both live under `/products`), so it is only safe
+      // to drop when that whole region resolves to `noScripts` with no more
+      // specific rule carving out a scripted exception.
+      function patternIsNoScripts (pattern: string): boolean {
+        if (!pattern.includes(':') && !pattern.includes('*')) {
+          const normalized = pattern.length > 1 ? pattern.replace(/\/$/, '') : pattern
+          return effectiveNoScripts(normalized)
+        }
+        const segments = pattern.split('/')
+        const dynamicAt = segments.findIndex(segment => segment.includes(':') || segment.includes('*'))
+        const prefix = segments.slice(0, dynamicAt).join('/') || '/'
+        const probe = (prefix === '/' ? '' : prefix) + '/' + NO_SCRIPTS_PROBE_SEGMENT
+        if (!effectiveNoScripts(probe)) { return false }
+        const within = prefix === '/' ? '/' : prefix + '/'
+        for (const { route } of routeRules.routes) {
+          if (route !== prefix && !route.startsWith(within)) { continue }
+          if (!effectiveNoScripts(globToProbePath(route))) { return false }
+        }
+        return true
+      }
+      // Whether a page reachable at `path` is *always* served without scripts.
+      // `unrouting` collapses the compiled Vue Router path into one or more rou3
+      // patterns (dynamic params become catch-alls, finite alternations expand
+      // into concrete paths); the page is safe to drop only when every one of
+      // them is. Returns `null` when it cannot be determined statically (e.g. a
+      // relative child path with no leading slash).
       function isNoScriptsPath (path: string): boolean | null {
-        if (!path.startsWith('/') || path.includes(':') || path.includes('*')) { return null }
-        const normalized = path.length > 1 ? path.replace(/\/$/, '') : path
-        const rules = defu({} as Record<string, any>, ...nitro!.routing.routeRules.matchAll('', normalized).reverse())
-        return !!rules.noScripts
+        if (!path.startsWith('/')) { return null }
+        const { patterns } = vueRouterToRou3(path, { collapse: true })
+        if (!patterns.length) { return null }
+        return patterns.every(patternIsNoScripts)
       }
       for (const page of pages) {
         if (page.children?.length) {
