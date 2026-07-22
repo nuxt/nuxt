@@ -1,15 +1,12 @@
-import type { $Fetch } from 'ofetch'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
+import { joinURL, withQuery } from 'ufo'
 import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
 import { createError } from '../composables/error'
-import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
+import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
 import { componentIslands } from '#build/nuxt.config.mjs'
-import { $fetch as _$fetch } from '#build/fetch'
-
-const $fetch = _$fetch as $Fetch
 
 function parseRevivedData (data: string) {
   try {
@@ -33,6 +30,7 @@ if (componentIslands) {
   revivers.push(['Island', ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.isHydrating && !nuxtApp.payload.data[key]) {
+      const url = withQuery(joinURL(useRuntimeConfig().app.baseURL ?? '', `/__nuxt_island/${key}.json`), params ?? {})
       // an island-heavy payload has one of these per island, and each is a server render
       // rather than a static asset
       const promise = new Promise((resolve, reject) => {
@@ -43,10 +41,11 @@ if (componentIslands) {
           run: (signal) => {
             // `<NuxtIsland>` fetches for itself if it mounts before this runs
             if (nuxtApp.payload.data[key] !== promise) { return resolve(nuxtApp.payload.data[key]) }
-            return $fetch(`/__nuxt_island/${key}.json`, {
-              responseType: 'json',
-              signal,
-              ...params ? { params } : {},
+            return fetch(url, { signal }).then((r) => {
+              if (!r.ok) {
+                throw createError({ statusCode: r.status, statusMessage: r.statusText })
+              }
+              return r.json()
             }).then((r) => {
               nuxtApp.payload.data[key] = r
               resolve(r)

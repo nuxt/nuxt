@@ -636,7 +636,7 @@ if (!("global" in globalThis)) {
 }
 
 export const dollarFetchTemplate: NuxtTemplate = {
-  filename: 'fetch.mjs',
+  filename: 'fetch.server.mjs',
   dependsOn: [],
   getContents ({ nuxt }) {
     // the runtime a server build executes in is the server builder's to provide; one that
@@ -667,6 +667,42 @@ export const dollarFetchTemplate: NuxtTemplate = {
       'export const $fetch = globalThis.$fetch',
     ].join('\n')
   },
+}
+
+// On the client the global is installed when the binding is first read, and the annotation lets a
+// bundle in which nothing reads it leave out `ofetch` altogether.
+export const dollarFetchClientTemplate: NuxtTemplate = {
+  filename: 'fetch.client.mjs',
+  dependsOn: [],
+  getContents () {
+    return [
+      'import { $fetch as _$fetch } from \'ofetch\'',
+      'import { baseURL } from \'#internal/nuxt/paths\'',
+      'export const $fetch = /*#__PURE__*/ (() => globalThis.$fetch ||= _$fetch.create({ baseURL: baseURL() }))()',
+    ].join('\n')
+  },
+}
+
+// injected into client modules that read the `$fetch` global
+export const dollarFetchGlobalTemplate: NuxtTemplate = {
+  filename: 'fetch-global.mjs',
+  dependsOn: [],
+  getContents: () => 'import { $fetch } from \'#build/fetch\'\nglobalThis.$fetch ||= $fetch\n',
+}
+
+// `#build/fetch-setup` is imported for its side effects as the first import in the app entry.
+// On the server it seeds `globalThis.$fetch` before any other module evaluates. A client build
+// installs the global only where client code reads it (see `DollarFetchGlobalPlugin`).
+export const dollarFetchSetupServerTemplate: NuxtTemplate = {
+  filename: 'fetch-setup.server.mjs',
+  dependsOn: [],
+  getContents: () => 'import \'#build/fetch\'\n',
+}
+
+export const dollarFetchSetupClientTemplate: NuxtTemplate = {
+  filename: 'fetch-setup.client.mjs',
+  dependsOn: [],
+  getContents: ({ nuxt }) => nuxt.options.dev ? 'import \'#build/fetch-global\'\n' : 'export {}\n',
 }
 
 export const dollarFetchTypeTemplate: NuxtTemplate = {
