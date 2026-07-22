@@ -4,7 +4,7 @@ import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'v
 
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
-import { createBuffer, sanitizeTag } from './utils'
+import { createBuffer, isVaporSlot, sanitizeTag } from './utils'
 import { renderDiagnostics } from '../diagnostics/render'
 
 interface NuxtClientFallbackProps {
@@ -66,6 +66,9 @@ const NuxtClientFallbackServer = defineComponent({
     })
 
     try {
+      if (import.meta.dev && isVaporSlot(ctx.slots.default)) {
+        renderDiagnostics.NUXT_E4017()
+      }
       const defaultSlot = ctx.slots.default?.()
       const ssrVNodes = createBuffer()
 

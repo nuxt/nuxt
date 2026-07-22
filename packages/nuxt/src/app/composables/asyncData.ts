@@ -450,10 +450,19 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
       const fetchOnServer = opts.server !== false && nuxtApp.payload.serverRendered
 
+      // vapor components have no vdom instance, but their setup still runs within a
+      // dedicated effect scope (distinct from the nuxt app's own scope, which plugins
+      // run in) where vue lifecycle hooks can register
+      const isWithinVaporComponent = () => {
+        if (getCurrentInstance()) { return false }
+        const scope = getCurrentScope()
+        return !!scope && scope !== nuxtApp._scope
+      }
+
       // Server side
       if (import.meta.server && fetchOnServer && opts.immediate) {
         const promise = initialFetch()
-        if (getCurrentInstance()) {
+        if (getCurrentInstance() || isWithinVaporComponent()) {
           onServerPrefetch(() => promise)
         } else {
           nuxtApp.hook('app:created', async () => { await promise })
@@ -464,13 +473,14 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       if (import.meta.client) {
         // Setup hook callbacks once per instance
         const instance = getCurrentInstance()
+        const inComponentSetup = !!instance || isWithinVaporComponent()
 
         // @ts-expect-error - instance.sp is an internal vue property
         if (instance && fetchOnServer && opts.immediate && !instance.sp) {
           // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
           instance.sp = []
         }
-        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
+        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
@@ -483,7 +493,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
           onUnmounted(() => cbs.splice(0, cbs.length))
         }
 
-        const isWithinClientOnly = instance && (instance._nuxtClientOnly || inject(clientOnlySymbol, false))
+        const isWithinClientOnly = inComponentSetup && (instance?._nuxtClientOnly || inject(clientOnlySymbol, false))
 
         if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || asyncData.data.value !== undefined)) {
           // 1. Hydration (server: true): no fetch
@@ -491,10 +501,14 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
             asyncData.pending.value = false
           }
           asyncData.status.value = asyncData.error.value ? 'error' : 'success'
-        } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || opts.lazy) && opts.immediate) {
+        } else if (inComponentSetup && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || opts.lazy) && opts.immediate) {
           // 2. Initial load (server: false): fetch on mounted
           // 3. Initial load or navigation (lazy: true): fetch on mounted
-          instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          if (instance) {
+            instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          } else {
+            onBeforeMount(() => { initialFetch() })
+          }
         } else if (opts.immediate && asyncData.status.value !== 'success') {
           // 4. Navigation (lazy: false) - or plugin usage: await fetch
           initialFetch()

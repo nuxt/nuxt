@@ -1,6 +1,8 @@
 import type { Component, DefineSetupFnComponent, InjectionKey, SlotsType, VNode } from 'vue'
 import { Teleport, defineComponent, h, inject, provide, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { renderDiagnostics } from '../diagnostics/render'
+import { isVaporSlot } from './utils'
 import paths from '#build/component-chunk'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 
@@ -43,6 +45,9 @@ const NuxtTeleportIslandComponent = /* @__PURE__ */ defineComponent({
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
+      if (import.meta.dev && isVaporSlot(slots.default)) {
+        renderDiagnostics.NUXT_E4019()
+      }
       const slot = slots.default!()[0]!
       const slotType = slot.type as ExtendedComponent
       const name = (slotType.__name || slotType.name) as string

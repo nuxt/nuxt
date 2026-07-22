@@ -18,6 +18,7 @@ import type {
   Target,
 } from './types'
 import { useHead } from '#app/composables/head'
+import { isVaporSlot } from '#app/components/utils'
 import { unheadDiagnostics } from '../../app/diagnostics/head'
 
 interface HeadComponents {
@@ -202,6 +203,9 @@ export const NoScript: DefineSetupFnComponent<GlobalProps & TagPositionPropsType
     const key = useVNodeStringKey()
     return () => {
       const noscript = normalizeProps(props, key) as Noscript
+      if (import.meta.dev && isVaporSlot(slots.default)) {
+        unheadDiagnostics.NUXT_E6004({ component: 'Noscript' })
+      }
       const slotVnodes = slots.default?.()
       const textContent: VNodeNormalizedChildren[] = []
       if (slotVnodes) {
@@ -334,6 +338,9 @@ export const Title: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComp
       update()
     })
     return () => {
+      if (import.meta.dev && isVaporSlot(slots.default)) {
+        unheadDiagnostics.NUXT_E6004({ component: 'Title' })
+      }
       const defaultSlot = slots.default?.()
       input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
       if (import.meta.dev) {
@@ -426,6 +433,9 @@ export const Style: DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefa
     })
     return () => {
       const style = normalizeProps(props, key) as UnheadStyle
+      if (import.meta.dev && isVaporSlot(slots.default)) {
+        unheadDiagnostics.NUXT_E6004({ component: 'Style' })
+      }
       const textContent = slots.default?.()?.[0]?.children
       if (textContent) {
         if (import.meta.dev && typeof textContent !== 'string') {

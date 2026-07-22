@@ -2,8 +2,9 @@ import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, ge
 import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetupFnComponent, InjectionKey, RendererNode, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
+import { renderDiagnostics } from '../diagnostics/render'
 import ServerPlaceholder from './server-placeholder'
-import { elToStaticVNode, sanitizeTag } from './utils'
+import { elToStaticVNode, isVaporSlot, sanitizeTag } from './utils'
 
 import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 
@@ -62,8 +63,11 @@ const ClientOnly = defineComponent({
     return () => {
       if (mounted.value) {
         const vnodes = slots.default?.()
-        if (vnodes && vnodes.length === 1) {
+        if (vnodes && vnodes.length === 1 && !isVaporSlot(slots.default)) {
           return [cloneVNode(vnodes[0]!, attrs)]
+        }
+        if (import.meta.dev && isVaporSlot(slots.default) && attrs && Object.keys(attrs).length > 0) {
+          renderDiagnostics.NUXT_E4018()
         }
         return vnodes
       }
