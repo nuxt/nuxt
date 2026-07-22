@@ -11,8 +11,7 @@ export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   // @ts-expect-error Nuxt still defines process.server at build time; Process is no longer augmented
-  // eslint-disable-next-line nuxt/prefer-import-meta
-  process.server = true
+  process.server = true // eslint-disable-line nuxt/prefer-import-meta
   import.meta.server = true
 
   // Invalidate cache for files changed since last rendering
