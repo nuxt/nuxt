@@ -113,6 +113,7 @@ export default withMatrix({
   },
   css: ['~/assets/global.css'],
   vue: {
+    optionsApi: true,
     compilerOptions: {
       isCustomElement: (tag) => {
         return tag === 'custom-component'
