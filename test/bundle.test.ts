@@ -134,6 +134,30 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   })
 })
 
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('noScripts route rules', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/no-scripts', import.meta.url))
+
+  beforeAll(async () => {
+    await exec('pnpm', ['nuxt', 'build', rootDir])
+  }, 120 * 1000)
+
+  it('drops components of noScripts pages from the client bundle', async () => {
+    const dir = join(rootDir, '.output/public')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    // a flat and a dynamic-param page, both covered by a `noScripts` rule, are
+    // replaced by the reload stub, so their component markers never ship
+    expect(bundle).not.toContain('no-scripts-page')
+    expect(bundle).not.toContain('product-page')
+
+    // a page whose canonical path is `noScripts` but which has a scripted alias
+    // keeps its component so the alias can still render client-side
+    expect(bundle).toContain('aliased-page')
+  })
+})
+
 // we strip packages that are small enough rolldown might inline them
 // depending on humidity or the time of day
 const MERGE_BOUNDARY_PACKAGES = new Set(['unctx'])
