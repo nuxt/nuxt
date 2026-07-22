@@ -1,13 +1,14 @@
 import { fileURLToPath } from 'node:url'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
+import type { MockInstance } from 'vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildNuxt } from '@nuxt/kit'
 import { loadNuxt } from '../src/index.ts'
 
 const fixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./imports-preset-fixture', import.meta.url))))
 
-let warn: ReturnType<typeof vi.spyOn>
+let warn: MockInstance<typeof console.warn>
 
 beforeEach(() => {
   warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -37,5 +38,7 @@ describe('imports preset resolution', () => {
 
     const messages = warn.mock.calls.map(call => call.join(' '))
     expect(messages.some(message => message.includes('NUXT_B6005') && message.includes('nuxt/dist/composables/router'))).toBe(true)
+    expect(messages.some(message => message.includes('NUXT_B6005') && message.includes('utils/missing'))).toBe(true)
+    expect(messages.some(message => message.includes('utils/existing'))).toBe(false)
   })
 })

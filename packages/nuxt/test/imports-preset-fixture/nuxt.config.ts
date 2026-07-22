@@ -6,6 +6,14 @@ export default defineNuxtConfig({
         imports: ['NavigateToOptions'],
         type: true,
       },
+      {
+        from: '~/utils/missing',
+        imports: ['missingUtil'],
+      },
+      {
+        from: '~/utils/existing',
+        imports: ['existingUtil'],
+      },
     ],
   },
 })

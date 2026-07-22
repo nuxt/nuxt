@@ -4,6 +4,7 @@ import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
+import { resolveModulePath } from 'exsolve'
 
 import { isDirectory, logger, resolveToAlias } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
@@ -220,8 +221,13 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
     const bareSpecifiers = importSource.filter(from => !isAbsolute(aliasedPaths.get(from)!))
     const resolved = new Map(await resolveTypePaths(bareSpecifiers, nuxt.options.modulesDir))
 
-    for (const from of bareSpecifiers) {
-      if (resolved.has(from) || warnedUnresolvedSources.has(from)) { continue }
+    for (const from of importSource) {
+      if (warnedUnresolvedSources.has(from)) { continue }
+      const aliased = aliasedPaths.get(from)!
+      if (isAbsolute(aliased)) {
+        const isInBuildDir = !relative(nuxt.options.buildDir, aliased).startsWith('..')
+        if (isInBuildDir || resolveModulePath(aliased, { try: true, extensions: nuxt.options.extensions, suffixes: ['', '/index'] })) { continue }
+      } else if (resolved.has(from)) { continue }
       warnedUnresolvedSources.add(from)
       const name = imports.find(i => (i.typeFrom || i.from) === from)
       headDiagnostics.NUXT_B6005({ name: name ? (name.as || name.name) : from, from })
