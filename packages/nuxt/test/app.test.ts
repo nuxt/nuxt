@@ -43,6 +43,10 @@ describe('resolveApp', () => {
         "plugins": [
           {
             "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
+          },
+          {
+            "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/navigation-repaint.client.ts",
           },
           {
@@ -52,10 +56,6 @@ describe('resolveApp', () => {
           {
             "mode": "server",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
           },
           {
             "filename": "components.plugin.mjs",

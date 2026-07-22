@@ -769,7 +769,6 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add experimental support for custom types in JSON payload
   if (nuxt.options.experimental.renderJsonPayloads) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
     addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
   }
 
@@ -856,6 +855,10 @@ export default defineNuxtPlugin({
   // Init nitro
   await bundleServer(nuxt)
   nuxt._perf?.startPhase('ready')
+
+  if (nuxt.options.experimental.renderJsonPayloads && nuxt.options.ssr !== false) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+  }
 
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
