@@ -6,6 +6,7 @@ import { useRouter } from '#app/composables/router'
 import layouts from '#build/layouts'
 import { namedMiddleware } from '#build/middleware'
 import { _loadAsyncComponent } from '#app/composables/preload'
+import { componentIslands } from '#build/nuxt.config.mjs'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:prefetch',
@@ -40,6 +41,17 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
       if (typeof layout === 'string' && layout in layouts) {
         _loadAsyncComponent(layouts[layout])
+      }
+
+      if (componentIslands) {
+        for (const record of route.matched) {
+          const component = record.components?.default
+          if (typeof component === 'function') {
+            Promise.resolve((component as () => unknown)())
+              .then((c: any) => (c?.default || c)?.__nuxt_prefetch?.(nuxtApp, route))
+              .catch(() => {})
+          }
+        }
       }
     })
   },
