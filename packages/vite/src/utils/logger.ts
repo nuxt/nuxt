@@ -2,7 +2,7 @@ import process from 'node:process'
 import type * as vite from 'vite'
 import { createLogger } from 'vite'
 import { logger } from '@nuxt/kit'
-import { colorize } from 'consola/utils'
+import { colorize, stripAnsi } from 'consola/utils'
 import { hasTTY, isCI } from 'std-env'
 import type { NuxtOptions } from '@nuxt/schema'
 import { relative } from 'pathe'
@@ -26,7 +26,7 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
 }
 
 const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
-export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean } = {}): vite.Logger {
+export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean, onNewDeps?: (deps: string[]) => void, onStaleDep?: (dep: string) => void } = {}): vite.Logger {
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
   const _logger = createLogger()
@@ -52,6 +52,27 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
         if (id && resolveFromPublicAssets(id)) { return }
       }
       if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
+
+      // Intercept Vite optimizer messages → OptimizeDepsHintPlugin. Fails gracefully (Vite's default messages pass through).
+      // Source: https://github.com/vitejs/vite/blob/v7.3.1/packages/vite/src/node/optimizer/optimizer.ts
+      // Ideally Vite exposes hooks for these in the future
+      if (ctx.onStaleDep && type === 'warn' && (msg.includes('Failed to resolve dependency') || msg.includes('Cannot optimize dependency'))) {
+        const match = stripAnsi(msg).match(/(?:Failed to resolve|Cannot optimize) dependency:\s*([^,]+)/)
+        if (match) {
+          ctx.onStaleDep(match[1]!.trim())
+          return
+        }
+      }
+      if (ctx.onNewDeps && type === 'info' && msg.includes('new dependencies optimized:')) {
+        const match = stripAnsi(msg).match(/new dependencies optimized:\s*(.+)/)
+        if (match) {
+          ctx.onNewDeps(match[1]!.split(',').map(d => d.trim()).filter(Boolean))
+          return
+        }
+      }
+      if (ctx.onNewDeps && type === 'info' && (msg.includes('optimized dependencies changed. reloading') || msg.includes('add these dependencies to optimizeDeps.include'))) {
+        return
+      }
     }
 
     const sameAsLast = lastType === type && lastMsg === msg

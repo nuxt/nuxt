@@ -1,7 +1,7 @@
 import type { SchemaDefinition } from 'nuxt/schema'
 import type { DefineNuxtConfig } from 'nuxt/config'
 
-export * from './dist/index.js'
+export * from './dist/index.mjs'
 
 declare global {
   const defineNuxtConfig: DefineNuxtConfig

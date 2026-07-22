@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/nitro-server",
-  "version": "4.2.2",
+  "version": "5.0.0-0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -10,57 +10,99 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "augments": [
+        "./dist/augments.d.mts"
+      ],
+      "h3": [
+        "./dist/h3.d.mts"
+      ]
+    }
+  },
   "exports": {
-    ".": "./dist/index.mjs"
+    ".": "./src/index.ts",
+    "./augments": "./src/augments.ts",
+    "./h3": "./src/h3.ts",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepack": "unbuild",
-    "build:stub": "unbuild --stub",
-    "test:attw": "attw --pack"
+    "prepack": "tsdown",
+    "build": "tsdown",
+    "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "@nuxt/devalue": "^2.0.2",
+    "@ampproject/remapping": "catalog:build",
     "@nuxt/kit": "workspace:*",
-    "@unhead/vue": "^2.0.19",
-    "@vue/shared": "^3.5.26",
-    "consola": "^3.4.2",
-    "defu": "^6.1.4",
-    "destr": "^2.0.5",
-    "devalue": "^5.6.1",
-    "errx": "^0.1.0",
-    "escape-string-regexp": "^5.0.0",
-    "exsolve": "^1.0.8",
-    "h3": "^1.15.4",
-    "impound": "^1.0.0",
-    "klona": "^2.0.6",
-    "mocked-exports": "^0.1.1",
-    "nitropack": "^2.12.9",
-    "ohash": "^2.0.11",
-    "pathe": "^2.0.3",
-    "pkg-types": "^2.3.0",
-    "rou3": "^0.7.12",
-    "std-env": "^3.10.0",
-    "ufo": "^1.6.1",
-    "unctx": "^2.5.0",
-    "unstorage": "^1.17.3",
-    "vue": "^3.5.26",
-    "vue-bundle-renderer": "^2.2.0",
-    "vue-devtools-stub": "^0.1.0"
+    "@unhead/vue": "catalog:app-runtime",
+    "@vue/shared": "catalog:app-runtime",
+    "consola": "catalog:app-runtime",
+    "defu": "catalog:app-runtime",
+    "destr": "catalog:nitro-runtime",
+    "devalue": "catalog:app-runtime",
+    "errx": "catalog:app-runtime",
+    "escape-string-regexp": "catalog:build",
+    "exsolve": "catalog:build",
+    "impound": "catalog:build",
+    "klona": "catalog:app-runtime",
+    "lru-cache": "catalog:nitro-runtime",
+    "magic-string": "catalog:vite",
+    "mlly": "catalog:build",
+    "mocked-exports": "catalog:build",
+    "nitro": "catalog:nitro-runtime",
+    "nostics": "catalog:app-runtime",
+    "ohash": "catalog:app-runtime",
+    "pathe": "catalog:app-runtime",
+    "srvx": "catalog:nitro-runtime",
+    "std-env": "catalog:build",
+    "ufo": "catalog:app-runtime",
+    "unctx": "catalog:app-runtime",
+    "unstorage": "catalog:nitro-runtime",
+    "vue": "catalog:app-runtime",
+    "vue-bundle-renderer": "catalog:app-runtime",
+    "vue-devtools-stub": "catalog:vue"
   },
   "peerDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.25.0 || ^8.0.0",
+    "@babel/plugin-syntax-typescript": "^7.25.0 || ^8.0.0",
+    "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
     "nuxt": "workspace:^"
   },
+  "peerDependenciesMeta": {
+    "@babel/plugin-proposal-decorators": {
+      "optional": true
+    },
+    "@babel/plugin-syntax-typescript": {
+      "optional": true
+    },
+    "@rollup/plugin-babel": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "catalog:dev",
+    "@babel/plugin-syntax-typescript": "catalog:dev",
     "@nuxt/schema": "workspace:*",
+    "@rollup/plugin-babel": "catalog:dev",
+    "hookable": "catalog:app-runtime",
     "nuxt": "workspace:*",
-    "unbuild": "3.6.1",
-    "vitest": "3.2.4"
+    "tsdown": "catalog:dev",
+    "vitest": "catalog:dev"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./augments": "./dist/augments.mjs",
+      "./h3": "./dist/h3.mjs",
+      "./package.json": "./package.json"
+    },
+    "types": "./dist/index.d.mts"
   }
 }

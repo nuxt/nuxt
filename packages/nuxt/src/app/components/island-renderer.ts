@@ -1,13 +1,19 @@
-import type { defineAsyncComponent } from 'vue'
+import type { DefineSetupFnComponent, defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 
-import { injectHead } from '../composables/head'
 import { createError } from '../composables/error'
+import { useRoute } from '../composables/router'
+import { renderDiagnostics } from '../diagnostics/render'
 
-// @ts-expect-error virtual file
-import { islandComponents } from '#build/components.islands.mjs'
+import { islandComponents, pageIslandRoutes, providePageIslandDepth } from '#build/components.islands.mjs'
 
-export default defineComponent({
+interface IslandRendererProps {
+  context: { name: string, props?: Record<string, any> }
+}
+
+const PAGE_ISLAND_PREFIX = 'page_'
+
+const IslandRenderer = defineComponent({
   name: 'IslandRenderer',
   props: {
     context: {
@@ -16,11 +22,10 @@ export default defineComponent({
     },
   },
   setup (props) {
-    // reset head - we don't want to have any head tags from plugin or anywhere else.
-    const head = injectHead()
-    head.entries.clear()
-
-    const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
+    const name = props.context.name
+    const component = Object.hasOwn(islandComponents, name)
+      ? islandComponents[name] as ReturnType<typeof defineAsyncComponent>
+      : undefined
 
     if (!component) {
       throw createError({
@@ -29,10 +34,18 @@ export default defineComponent({
       })
     }
 
+    // A `.server.vue` page rendered as an island mounts the SFC directly here,
+    // bypassing the `<RouterView>` chain that would normally set view depth.
+    if (props.context.name.startsWith(PAGE_ISLAND_PREFIX)) {
+      providePageIslandDepth(useRoute(), pageIslandRoutes[props.context.name])
+    }
+
     onErrorCaptured((e) => {
-      console.log(e)
+      renderDiagnostics.NUXT_E4015({ name, cause: e })
     })
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })
   },
-})
+}) as unknown as DefineSetupFnComponent<IslandRendererProps>
+
+export default IslandRenderer

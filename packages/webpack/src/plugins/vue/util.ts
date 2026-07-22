@@ -3,18 +3,16 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/util.js
  */
 
-import { logger } from '@nuxt/kit'
+import { bundlerDiagnostics, configDiagnostics } from '@nuxt/kit'
 import type { Compiler } from 'webpack'
 
 export const validate = (compiler: Compiler) => {
   if (compiler.options.target !== 'node') {
-    logger.warn('webpack config `target` should be "node".')
+    configDiagnostics.NUXT_B5007()
   }
 
   if (!compiler.options.externals) {
-    logger.info(
-      'It is recommended to externalize dependencies in the server build for better build performance.',
-    )
+    bundlerDiagnostics.NUXT_B7019()
   }
 }
 

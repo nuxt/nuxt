@@ -7,10 +7,14 @@
     <div>RuntimeConfig | testConfig: {{ config.public.testConfig }}</div>
     <div>Composable | foo: {{ foo }}</div>
     <div>Composable | bar: {{ bar }}</div>
+    <div>Composable | customFetch: {{ typeof customFetch }}</div>
     <div>Composable | template: {{ templateAutoImport }}</div>
     <div>Composable | star: {{ useNestedBar() }}</div>
     <DevOnly>Some dev-only info</DevOnly>
     <div><DevOnly>Some dev-only info</DevOnly></div>
+    <DevOnly class="test-attr">
+      Dev-only with attributes
+    </DevOnly>
     <div>
       <DevOnly>
         Some dev-only info
@@ -24,22 +28,10 @@
       Link
     </NuxtLink>
     <NuxtLink
-      id="islands"
-      to="/islands"
-    >
-      islands
-    </NuxtLink>
-    <NuxtLink
       id="to-immediate-remove-unmounted"
       to="/useAsyncData/immediate-remove-unmounted"
     >
       Immediate remove unmounted
-    </NuxtLink>
-    <NuxtLink
-      no-prefetch
-      to="/chunk-error"
-    >
-      Chunk error
     </NuxtLink>
     <NuxtLink
       id="to-client-only-components"
@@ -61,10 +53,6 @@
     >
       Middleware abort navigation with error
     </NuxtLink>
-    Some value: {{ someValue }}
-    <button @click="someValue++">
-      Increment state
-    </button>
     <NuxtLink to="/no-scripts">
       to no script
     </NuxtLink>
@@ -88,22 +76,6 @@
       class="server-only"
       style="background-color: gray;"
     />
-    <NuxtLink to="/big-page-1">
-      to big 1
-    </NuxtLink>
-    <NuxtLink to="/server-page">
-      to server page
-    </NuxtLink>
-    <NuxtLink to="/page-load-hook">
-      to page load hook
-    </NuxtLink>
-    <NuxtLink
-      data-testid="server-page-404"
-      to="/server-components/lost-page"
-    >
-      to 404 server page
-    </NuxtLink>
-
     <NuxtLink
       data-testid="route-rules-redirect"
       to="/route-rules/redirect#hello"
@@ -125,8 +97,6 @@ toDisplayString(useRoute())
 setupDevtoolsPlugin({}, () => {}) as any
 const island = ref<InstanceType<typeof ServerOnlyComponent>>()
 const config = useRuntimeConfig()
-
-const someValue = useState('val', () => 1)
 
 const NestedCounter = resolveComponent('NestedCounter')
 if (!NestedCounter) {

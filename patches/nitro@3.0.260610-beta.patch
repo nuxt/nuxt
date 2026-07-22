@@ -1,0 +1,81 @@
+diff --git a/dist/runtime/internal/error/dev.mjs b/dist/runtime/internal/error/dev.mjs
+index 129d65476eff5b8f4486600a247a612dbdafd137..8b209fdd581bac45646de4cbed124bd78ab9b3ae 100644
+--- a/dist/runtime/internal/error/dev.mjs
++++ b/dist/runtime/internal/error/dev.mjs
+@@ -79,35 +79,60 @@ export async function loadStackTrace(error) {
+ 		return;
+ 	}
+ 	const { ErrorParser } = await import("youch-core");
+-	const parsed = await new ErrorParser().defineSourceLoader(sourceLoader).parse(error);
++	const consumerCache = new Map();
++	let parsed;
++	try {
++		parsed = await new ErrorParser().defineSourceLoader((frame) => sourceLoader(frame, consumerCache)).parse(error);
++	} finally {
++		for (const consumer of consumerCache.values()) {
++			await consumer.then((c) => c?.destroy()).catch(() => {});
++		}
++	}
+ 	const stack = error.message + "\n" + parsed.frames.map((frame) => fmtFrame(frame)).join("\n");
+ 	Object.defineProperty(error, "stack", { value: stack });
+ 	if (error.cause) {
+ 		await loadStackTrace(error.cause).catch(consola.error);
+ 	}
+ }
+-async function sourceLoader(frame) {
++async function loadConsumer(fileName, cache) {
++	const cached = cache.get(fileName);
++	if (cached) {
++		return cached;
++	}
++	const promise = (async () => {
++		const rawSourceMap = await readFile(`${fileName}.map`, "utf8").catch(() => {});
++		if (!rawSourceMap) {
++			return undefined;
++		}
++		const { SourceMapConsumer } = await import("source-map");
++		return new SourceMapConsumer(rawSourceMap);
++	})().catch(() => undefined);
++	cache.set(fileName, promise);
++	return promise;
++}
++async function sourceLoader(frame, consumerCache) {
+ 	if (!frame.fileName || frame.fileType !== "fs" || frame.type === "native") {
+ 		return;
+ 	}
+ 	if (frame.type === "app") {
+ 		
+-		const rawSourceMap = await readFile(`${frame.fileName}.map`, "utf8").catch(() => {});
+-		if (rawSourceMap) {
+-			const { SourceMapConsumer } = await import("source-map");
+-			const consumer = await new SourceMapConsumer(rawSourceMap);
+-			
+-			const originalPosition = consumer.originalPositionFor({
+-				line: frame.lineNumber,
+-				column: frame.columnNumber
+-			});
+-			if (originalPosition.source && originalPosition.line) {
++		const bundleFileName = frame.fileName;
++		try {
++			const consumer = await loadConsumer(bundleFileName, consumerCache);
++			if (consumer) {
+ 				
+-				frame.fileName = resolve(dirname(frame.fileName), originalPosition.source);
+-				frame.lineNumber = originalPosition.line;
+-				frame.columnNumber = originalPosition.column || 0;
++				const originalPosition = consumer.originalPositionFor({
++					line: frame.lineNumber,
++					column: frame.columnNumber
++				});
++				if (originalPosition.source && originalPosition.line) {
++					
++					frame.fileName = resolve(dirname(bundleFileName), originalPosition.source);
++					frame.lineNumber = originalPosition.line;
++					frame.columnNumber = originalPosition.column || 0;
++				}
+ 			}
+-		}
++		} catch {}
+ 	}
+ 	const contents = await readFile(frame.fileName, "utf8").catch(() => {});
+ 	return contents ? { contents } : undefined;

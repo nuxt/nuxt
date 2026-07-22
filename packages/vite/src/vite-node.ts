@@ -144,12 +144,13 @@ function connectSocket (): Promise<Socket> {
               if (requestHandlers) {
                 const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
                 if (response.type === 'error') {
-                  const err = new Error(response.error.message)
-                  err.stack = response.error.stack
-                  // @ts-expect-error We are augmenting the error object
+                  const err: Error & { stack?: string, data?: unknown, status?: number, statusCode?: number, _fromServer?: boolean } = new Error(response.error.message)
+                  if (response.error.stack) {
+                    err.stack = response.error.stack
+                  }
                   err.data = response.error.data
-                  // @ts-expect-error We are augmenting the error object
                   err.statusCode = err.status = response.error.status || response.error.statusCode
+                  err._fromServer = true
                   rejectRequest(err)
                 } else {
                   resolveRequest(response.data)
@@ -227,7 +228,7 @@ async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload
     try {
       const socket = await connectSocket()
 
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
           pendingRequests.delete(requestId)
           reject(new Error(`Request timeout after ${REQUEST_TIMEOUT_MS}ms for type: ${type}`))
@@ -263,6 +264,10 @@ async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload
       })
     } catch (error) {
       lastError = error
+      // Don't retry application-level errors from the server
+      if (error && typeof error === 'object' && '_fromServer' in error) {
+        break
+      }
       if (requestAttempt < MAX_RETRY_ATTEMPTS) {
         const delay = calculateRetryDelay(requestAttempt)
         await new Promise(resolve => setTimeout(resolve, delay))

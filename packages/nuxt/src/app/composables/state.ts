@@ -2,8 +2,12 @@ import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
+import { stateDiagnostics } from '../diagnostics/state'
+
+import { useStateDefaults } from '#build/nuxt.config.mjs'
 
 const useStateKeyPrefix = '$s'
+
 /**
  * Create a global reactive ref that will be hydrated but not shared across ssr requests
  * @since 3.0.0
@@ -17,15 +21,21 @@ export function useState<T> (...args: any): Ref<T> {
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, init] = args as [string, (() => T | Ref<T>)]
   if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [useState] key must be a string: ' + _key)
+    throw stateDiagnostics.NUXT_E7009({ key: _key })
   }
   if (init !== undefined && typeof init !== 'function') {
-    throw new Error('[nuxt] [useState] init must be a function: ' + init)
+    throw stateDiagnostics.NUXT_E7007({ type: typeof init })
   }
   const key = useStateKeyPrefix + _key
 
   const nuxtApp = useNuxtApp()
   const state = toRef(nuxtApp.payload.state, key)
+
+  // Register the init function for reset support
+  if (init) {
+    nuxtApp._state[key] ??= { _default: init }
+  }
+
   if (state.value === undefined && init) {
     const initialValue = init()
     if (isRef(initialValue)) {
@@ -38,12 +48,27 @@ export function useState<T> (...args: any): Ref<T> {
   return state
 }
 
+export interface ClearNuxtStateOptions {
+  /**
+   * Reset the state to the initial value provided by the `init` function of `useState`
+   * instead of setting it to `undefined`.
+   *
+   * When not specified, this defaults to the value of `experimental.defaults.useState.resetOnClear`
+   * in your Nuxt config (which defaults to `true` with `compatibilityVersion: 5`).
+   */
+  reset?: boolean
+}
+
 /** @since 3.6.0 */
 export function clearNuxtState (
   keys?: string | string[] | ((key: string) => boolean),
+  opts?: ClearNuxtStateOptions,
 ): void {
+  const reset = opts?.reset ?? useStateDefaults.resetOnClear
+
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)
+    .filter(key => key.startsWith(useStateKeyPrefix))
     .map(key => key.substring(useStateKeyPrefix.length))
 
   const _keys: string[] = !keys
@@ -55,7 +80,11 @@ export function clearNuxtState (
   for (const _key of _keys) {
     const key = useStateKeyPrefix + _key
     if (key in nuxtApp.payload.state) {
-      nuxtApp.payload.state[key] = undefined
+      if (reset && nuxtApp._state[key]) {
+        nuxtApp.payload.state[key] = nuxtApp._state[key]._default()
+      } else {
+        delete nuxtApp.payload.state[key]
+      }
     }
   }
 }
