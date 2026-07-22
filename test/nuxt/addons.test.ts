@@ -7,6 +7,7 @@ import { defineUseAsyncDataAddon, defineUseFetchAddon } from '#app/composables/a
 import type { UseAsyncDataAddonOptions, UseFetchAddonOptions } from '#app/composables/addons'
 import { createUseFetch as _createUseFetch } from '#app/composables/fetch'
 import { createUseAsyncData as _createUseAsyncData } from '#app/composables/asyncData'
+import type { AsyncDataExecuteOptions } from '#app/composables/asyncData'
 
 const createUseFetch = (_createUseFetch as unknown as { __nuxt_factory: typeof _createUseFetch }).__nuxt_factory
 const createUseAsyncData = (_createUseAsyncData as unknown as { __nuxt_factory: typeof _createUseAsyncData }).__nuxt_factory
@@ -204,6 +205,43 @@ describe('useAsyncData addons', () => {
 
     expect(result.data.value).toBe('hi!')
     expect(result.upper.value).toBe('HI!')
+  })
+
+  it('lets extensions override instance members', async () => {
+    const addon = defineUseAsyncDataAddon({
+      setup: () => (asyncData) => {
+        const refresh = asyncData.refresh
+        const wrapped = async (opts?: AsyncDataExecuteOptions) => {
+          const result = await refresh(opts)
+          if (asyncData.error.value) { throw asyncData.error.value }
+          return result
+        }
+        return { refresh: wrapped, execute: wrapped }
+      },
+    })
+
+    const useOverriddenAsyncData = createUseAsyncData({ addons: [addon] })
+
+    let fail = false
+    const result = useOverriddenAsyncData(
+      'addons:override-execute',
+      () => fail ? Promise.reject(new Error('boom')) : Promise.resolve('ok'),
+      { immediate: false },
+    )
+
+    // the overridden members survive destructuring from the promise-like return value
+    const { execute, refresh } = result
+
+    await execute()
+    expect(result.data.value).toBe('ok')
+
+    fail = true
+    await expect(refresh()).rejects.toThrow('boom')
+    expect(result.status.value).toBe('error')
+
+    // the awaited instance exposes the same overridden member
+    const awaited = await result
+    expect(awaited.execute).toBe(execute)
   })
 
   it('provides the abort signal to middleware', async () => {
