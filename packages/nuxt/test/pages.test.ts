@@ -1,7 +1,7 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob, relativizeToParent } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, relativizeToParent } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -409,23 +409,6 @@ describe('pages:generateRouteKey', () => {
       expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }
-})
-
-const pathToNitroGlobTests = {
-  '/': '/',
-  '/:id': '/**',
-  '/:id()': '/**',
-  '/:id?': '/**',
-  '/some-:id?': '/**',
-  '/other/some-:id?': '/other/**',
-  '/other/some-:id()-more': '/other/**',
-  '/other/nested': '/other/nested',
-}
-
-describe('pages:pathToNitroGlob', () => {
-  it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
-    expect(pathToNitroGlob(path)).to.equal(expected)
-  })
 })
 
 describe('pages:relativizeToParent', () => {
