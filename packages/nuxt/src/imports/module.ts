@@ -208,6 +208,8 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
   const resolvedImportPathMap = new Map<string, string>()
   const r = (i: Import) => resolvedImportPathMap.get(i.typeFrom || i.from)
 
+  const warnedUnresolvedSources = new Set<string>()
+
   const SUPPORTED_EXTENSION_RE = new RegExp(`\\.(?:${nuxt.options.extensions.map(i => i.replace('.', '')).join('|')})$`)
 
   async function cacheImportPaths (imports: Import[]) {
@@ -217,6 +219,13 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
     const aliasedPaths = new Map(importSource.map(from => [from, resolveAlias(from)] as const))
     const bareSpecifiers = importSource.filter(from => !isAbsolute(aliasedPaths.get(from)!))
     const resolved = new Map(await resolveTypePaths(bareSpecifiers, nuxt.options.modulesDir))
+
+    for (const from of bareSpecifiers) {
+      if (resolved.has(from) || warnedUnresolvedSources.has(from)) { continue }
+      warnedUnresolvedSources.add(from)
+      const name = imports.find(i => (i.typeFrom || i.from) === from)
+      headDiagnostics.NUXT_B6005({ name: name ? (name.as || name.name) : from, from })
+    }
 
     await Promise.all(importSource.map(async (from) => {
       let path = aliasedPaths.get(from)!
