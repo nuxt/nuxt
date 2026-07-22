@@ -451,6 +451,9 @@ interface NormalizeRoutesOptions {
 }
 
 function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined, islandKey: string | undefined): string {
+  if (page._noScripts) {
+    return `import.meta.server ? ${pageImport} : () => Promise.resolve(_noScriptsPageStub)`
+  }
   if (page.mode === 'server') {
     return `() => createIslandPage(${routeName}, import.meta.server ? ${islandKey} : undefined)`
   }
@@ -461,6 +464,9 @@ function normalizeComponent (page: NuxtPage, pageImport: string, routeName: stri
 }
 
 function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | undefined, pageImportName: string, pageImport: string, routeName: string | undefined, metaRouteName: string, islandKey: string | undefined): string {
+  if (page._noScripts && !isSyncImport) {
+    return `import.meta.server ? ${pageImport}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} })) : () => Promise.resolve(_noScriptsPageStub)`
+  }
   if (isSyncImport) {
     return `Object.assign(${pageImportName}, { __name: ${metaRouteName} })`
   }
@@ -571,6 +577,13 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
       if (componentsObject) {
         metaRoute.components = componentsObject
+      }
+
+      if (page._noScripts) {
+        // never reached when the no-scripts router guard forces a document
+        // load; reloading recovers the script-free document if it is
+        metaImports.add(`
+const _noScriptsPageStub = { mounted: () => window.location.reload(), render: () => null };`)
       }
 
       if (page.mode === 'server') {

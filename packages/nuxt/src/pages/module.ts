@@ -11,7 +11,7 @@ import type { Nitro, NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
-import { logger } from '../utils.ts'
+import { logger, toArray } from '../utils.ts'
 import picomatch from 'picomatch'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
@@ -703,6 +703,39 @@ export default defineNuxtModule({
     const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
+    // Routes served under a `noScripts` route rule need no client-side component
+    // chunk; client-side navigation to them loads the full document (see the
+    // guard in `runtime/plugins/router.ts`, which uses the compiled route-rules
+    // matcher shipped for the app manifest)
+    let nitroForNoScripts: Nitro | undefined
+    nuxt.hook('nitro:init', (nitro) => {
+      nitroForNoScripts = nitro
+    })
+    function markNoScriptsPages (pages: NuxtPage[]) {
+      const nitro = nitroForNoScripts
+      if (!nitro || !('routing' in nitro)) { return }
+      // returns `null` for paths that cannot be matched against route rules at
+      // build time (dynamic segments, wildcards, relative child paths)
+      function isNoScriptsPath (path: string): boolean | null {
+        if (!path.startsWith('/') || path.includes(':') || path.includes('*')) { return null }
+        const normalized = path.length > 1 ? path.replace(/\/$/, '') : path
+        const rules = defu({} as Record<string, any>, ...nitro!.routing.routeRules.matchAll('', normalized).reverse())
+        return !!rules.noScripts
+      }
+      for (const page of pages) {
+        if (page.children?.length) {
+          markNoScriptsPages(page.children)
+          continue
+        }
+        // A page is only safe to drop from the client bundle when every path it
+        // can be reached by is served without scripts. If any alias resolves to
+        // a scripted route (or cannot be checked statically), keep the component
+        // so client-side navigation to that alias still renders it.
+        const paths = [page.path, ...toArray(page.alias || [])]
+        page._noScripts = paths.every(path => isNoScriptsPath(path) === true)
+      }
+    }
+
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
@@ -710,6 +743,7 @@ export default defineNuxtModule({
       dependsOn: nuxt.options.experimental.scanPageMeta ? ['pages'] : [],
       getContents ({ app }) {
         if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
+        markNoScriptsPages(app.pages)
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
           serverComponentRuntime,
           clientComponentRuntime,
