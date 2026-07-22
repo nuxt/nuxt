@@ -23,11 +23,15 @@ test.describe('noScripts route rules', () => {
     expect(html).not.toContain('__NUXT_DATA__')
   })
 
-  test('emits blanket speculation rules and a view transition on a noScripts route', async ({ fetch }) => {
+  test('scopes noScripts-page speculation rules to page routes and emits a view transition', async ({ fetch }) => {
     const html = await (await fetch('/no-scripts')).text()
 
     expect(html).toContain('type="speculationrules"')
-    expect(html).toContain('"href_matches":"/*"')
+    // scoped to same-origin page routes (safe to GET), never a blanket `/*`
+    // that could reach non-idempotent server routes
+    expect(html).toContain('"href_matches":"/report"')
+    expect(html).toContain('"href_matches":"/products/:id"')
+    expect(html).not.toContain('"href_matches":"/*"')
     expect(html).toContain('@view-transition{navigation:auto}')
   })
 

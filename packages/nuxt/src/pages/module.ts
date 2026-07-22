@@ -13,7 +13,7 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { logger, toArray } from '../utils.ts'
 import picomatch from 'picomatch'
-import { vueRouterToRou3 } from 'unrouting'
+import { rou3PatternToURLPattern, vueRouterToRou3 } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
@@ -585,6 +585,19 @@ export default defineNuxtModule({
     }
 
     nuxt.hook('nitro:build:before', () => warnPublicAssetConflicts())
+
+    // Expose the URLPattern of every page route so pages served without scripts
+    // can scope their speculation rules to same-origin *page* navigations, which
+    // are safe to GET, instead of a blanket rule that could prefetch/prerender
+    // non-idempotent server routes (`~/server/routes/*`). A catch-all page
+    // (`[...slug]`) widens this back to a blanket `*`.
+    nuxt.hook('nitro:build:before', (nitro) => {
+      const patterns = new Set<string>()
+      for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
+        patterns.add(rou3PatternToURLPattern(route).pattern)
+      }
+      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...patterns]
+    })
 
     nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }

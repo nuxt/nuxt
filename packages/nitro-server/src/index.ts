@@ -223,6 +223,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         const noScriptsPatterns = [...new Set(nitro.routing.routeRules.routes
           .filter(r => r.data.noScripts)
           .map(r => rou3PatternToURLPattern(r.route).pattern))]
+        // `href_matches` patterns for every page route, provided by the pages
+        // module; pages served without scripts scope their blanket speculation
+        // rules to these (safe-to-GET) same-origin navigations
+        const pagePatterns = (nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns ?? []
         return [
           `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
           `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
@@ -231,6 +235,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
           `export const NUXT_VIEW_TRANSITIONS = ${!!(nuxt.options.app.viewTransition && typeof nuxt.options.app.viewTransition === 'object' && nuxt.options.app.viewTransition.enabled)}`,
           `export const NUXT_NO_SCRIPTS_PATTERNS = ${JSON.stringify(noScriptsPatterns)}`,
+          `export const NUXT_PAGE_PATTERNS = ${JSON.stringify(pagePatterns)}`,
           `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
           `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
