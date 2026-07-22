@@ -229,6 +229,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
           `export const NUXT_NO_SCRIPTS_PROD = ${nuxt.options.features.noScripts === 'production'}`,
           `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
+          `export const NUXT_VIEW_TRANSITIONS = ${!!(nuxt.options.app.viewTransition && typeof nuxt.options.app.viewTransition === 'object' && nuxt.options.app.viewTransition.enabled)}`,
           `export const NUXT_NO_SCRIPTS_PATTERNS = ${JSON.stringify(noScriptsPatterns)}`,
           `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
