@@ -113,6 +113,16 @@ export interface ConfigSchema {
     runtimeCompiler: boolean
 
     /**
+     * Include support for the Vue Options API in the client bundle.
+     *
+     * Disabling this compiles out Vue's Options API runtime (via the `__VUE_OPTIONS_API__` feature
+     * flag), shrinking the client bundle for apps that only use the Composition API / `<script setup>`.
+     *
+     * Defaults to `false` when `future.compatibilityVersion` is `5` or higher, otherwise `true`.
+     */
+    optionsApi: boolean
+
+    /**
      * Enable reactive destructure for `defineProps`
      */
     propsDestructure: boolean
