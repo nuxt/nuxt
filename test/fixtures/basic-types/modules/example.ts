@@ -1,4 +1,4 @@
-import { addPlugin, createResolver, defineNuxtModule, useNuxt } from 'nuxt/kit'
+import { addPlugin, addSharedImports, createResolver, defineNuxtModule, useNuxt } from 'nuxt/kit'
 
 export default defineNuxtModule({
   defaults: {
@@ -13,6 +13,7 @@ export default defineNuxtModule({
     const resolver = createResolver(import.meta.url)
 
     addPlugin(resolver.resolve('./runtime/plugin'))
+    addSharedImports({ name: 'sharedKitUtil', from: resolver.resolve('./runtime/shared-util') })
     useNuxt().hook('app:resolve', (app) => {
       app.middleware.push({
         name: 'unctx-test',
