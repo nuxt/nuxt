@@ -226,7 +226,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       router.beforeEach((to) => {
         if (nuxtApp.isHydrating) { return }
         if ((_routeRulesMatcher(to.path) as { noScripts?: boolean }).noScripts) {
-          window.location.assign(to.fullPath)
+          window.location.assign(router.resolve(to.fullPath).href)
           return false
         }
       })
