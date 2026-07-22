@@ -19,7 +19,7 @@ function createMockNuxt (): Nuxt {
         '#app': '/nuxt/app',
       },
       optimization: {
-        keyedComposables: [],
+        keyedFunctions: [],
       },
     },
   } satisfies DeepPartial<Nuxt>) as unknown as Nuxt
@@ -80,7 +80,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -105,7 +105,7 @@ describe('keyed function factories scan plugin', () => {
     // check that it converts to camel case from kebab case file name
     await callScanPlugin('@/composables/use-my-api.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -124,7 +124,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('@/composables/use-my-api.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -154,7 +154,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -174,7 +174,7 @@ describe('keyed function factories scan plugin', () => {
     await callScanPlugin('file1.ts', code, mockNuxt)
     await callScanPlugin('file2.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -198,7 +198,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot('[]')
   })
 
   it('should collect functions created by renamed factories ', async () => {
@@ -209,7 +209,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -227,7 +227,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -250,7 +250,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt, { autoImportsToSources })
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot('[]')
   })
 
   it('should not collect functions created by auto-imported factories when there are no auto-imports', async () => {
@@ -260,7 +260,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt, { autoImportsToSources: new Map() })
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot('[]')
   })
 
   it('should collect functions when factory is imported with or without an extension', async () => {
@@ -272,7 +272,7 @@ describe('keyed function factories scan plugin', () => {
     `
 
     await callScanPlugin('file.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -296,7 +296,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -313,7 +313,7 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch = factories['createUseFetch']()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -334,7 +334,7 @@ describe('keyed function factories scan plugin', () => {
     export const useFifthFetch = factories['createUseFetch']?.()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -374,7 +374,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot('[]')
   })
 
   it('should collect function when accessed through one of multiple namespaces of the correct source', async () => {
@@ -387,7 +387,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -412,7 +412,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot('[]')
   })
 
   it('should collect functions when factory is imported both normally and via *', async () => {
@@ -425,7 +425,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('fetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -452,7 +452,7 @@ describe('keyed function factories scan plugin', () => {
       autoImportsToSources: new Map(),
     })
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot('[]')
   })
 
   it('should collect functions from default export of factories accessed via a namespace', async () => {
@@ -463,7 +463,7 @@ describe('keyed function factories scan plugin', () => {
 
     await callScanPlugin('useFetch.ts', code, mockNuxt)
 
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
@@ -482,7 +482,7 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch2 = createUseFetch()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`[]`)
   })
 
   it('does not collect when factory is pulled out of a namespace via destructuring', async () => {
@@ -492,7 +492,7 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch = createUseFetch()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot('[]')
   })
 
   it('does not collect when factory is assigned to an alias variable before calling', async () => {
@@ -502,7 +502,7 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch = mk()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot('[]')
   })
 
   it('should ignore type-only named import', async () => {
@@ -512,7 +512,7 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch = createUseFetch()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`[]`)
   })
 
   it('should ignore type-modified specifier', async () => {
@@ -522,7 +522,7 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch = createUseFetch()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`[]`)
   })
 
   it('should ignore type-only namespace import', async () => {
@@ -532,7 +532,7 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch = factories.createUseFetch()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
+    expect(mockNuxt.options.optimization.keyedFunctions).toMatchInlineSnapshot(`[]`)
   })
 })
 
@@ -673,8 +673,8 @@ describe('keyed function factories scan plugin per-file tracking', () => {
 
     plugin.afterScan?.(nuxt)
 
-    expect(nuxt.options.optimization.keyedComposables).toHaveLength(2)
-    expect(nuxt.options.optimization.keyedComposables.map(k => k.name)).toEqual(['useApiFetch', 'useOtherFetch'])
+    expect(nuxt.options.optimization.keyedFunctions).toHaveLength(2)
+    expect(nuxt.options.optimization.keyedFunctions.map(k => k.name)).toEqual(['useApiFetch', 'useOtherFetch'])
   })
 })
 

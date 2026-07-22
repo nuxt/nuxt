@@ -34,5 +34,10 @@ export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Use a known preset name, or pass a function to `postcss.order`.',
       docs: false,
     },
+    NUXT_B5016: {
+      why: (p: { option: string, replacement: string }) => `\`${p.option}\` is deprecated.`,
+      fix: (p: { option: string, replacement: string }) => `Use \`${p.replacement}\` instead.`,
+      docs: false,
+    },
   },
 })

@@ -512,11 +512,23 @@ export interface ConfigSchema {
      * The key will be unique based on the location of the function being invoked within the file.
      *
      */
+    keyedFunctions: KeyedFunction[]
+    /**
+     * Functions to inject a key for.
+     *
+     * @deprecated Use `optimization.keyedFunctions` instead.
+     */
     keyedComposables: KeyedFunction[]
     /**
      * Factories for functions that should be registered for automatic key injection.
      *
-     * @see keyedComposables
+     * @see keyedFunctions
+     */
+    keyedFunctionFactories: KeyedFunctionFactory[]
+    /**
+     * Factories for functions that should be registered for automatic key injection.
+     *
+     * @deprecated Use `optimization.keyedFunctionFactories` instead.
      */
     keyedComposableFactories: KeyedFunctionFactory[]
 

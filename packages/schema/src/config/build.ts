@@ -1,8 +1,24 @@
 import { defu } from 'defu'
 import { join } from 'pathe'
 import type { Nuxt } from '../types/nuxt.ts'
+import type { KeyedFunction, KeyedFunctionFactory } from '../types/compiler.ts'
 import { defineResolvers } from '../utils/definition.ts'
 import { schemaDiagnostics } from '../diagnostics.ts'
+
+const KEYED_FUNCTION_DEFAULTS: KeyedFunction[] = [
+  { name: 'callOnce', argumentLength: 3, source: '#app/composables/once' },
+  { name: 'defineNuxtComponent', argumentLength: 2, source: '#app/composables/component' },
+  { name: 'useState', argumentLength: 2, source: '#app/composables/state' },
+  { name: 'useFetch', argumentLength: 3, source: '#app/composables/fetch' },
+  { name: 'useAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
+  { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
+  { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
+]
+
+const KEYED_FUNCTION_FACTORY_DEFAULTS: KeyedFunctionFactory[] = [
+  { name: 'createUseFetch', source: '#app/composables/fetch', argumentLength: 3 },
+  { name: 'createUseAsyncData', source: '#app/composables/asyncData', argumentLength: 3 },
+]
 
 export default defineResolvers({
   builder: {
@@ -74,32 +90,41 @@ export default defineResolvers({
     },
   },
   optimization: {
+    keyedFunctions: {
+      $resolve: async (val, get) => [
+        ...(await get('future.compatibilityVersion')) >= 5 ? KEYED_FUNCTION_DEFAULTS : [],
+        ...Array.isArray(val) ? val : [],
+      ].filter(Boolean),
+    },
     keyedComposables: {
-      $resolve: val => [
-        { name: 'callOnce', argumentLength: 3, source: '#app/composables/once' },
-        { name: 'defineNuxtComponent', argumentLength: 2, source: '#app/composables/component' },
-        { name: 'useState', argumentLength: 2, source: '#app/composables/state' },
-        { name: 'useFetch', argumentLength: 3, source: '#app/composables/fetch' },
-        { name: 'useAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
-        { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
-        { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
+      $resolve: async (val, get) => {
+        const isV5 = (await get('future.compatibilityVersion')) >= 5
+        if (isV5 && Array.isArray(val) && val.length > 0) {
+          schemaDiagnostics.NUXT_B5016({ option: 'optimization.keyedComposables', replacement: 'optimization.keyedFunctions' })
+        }
+        return [
+          ...isV5 ? [] : KEYED_FUNCTION_DEFAULTS,
+          ...Array.isArray(val) ? val : [],
+        ].filter(Boolean)
+      },
+    },
+    keyedFunctionFactories: {
+      $resolve: async (val, get) => [
+        ...(await get('future.compatibilityVersion')) >= 5 ? KEYED_FUNCTION_FACTORY_DEFAULTS : [],
         ...Array.isArray(val) ? val : [],
       ].filter(Boolean),
     },
     keyedComposableFactories: {
-      $resolve: val => [
-        {
-          name: 'createUseFetch',
-          source: '#app/composables/fetch',
-          argumentLength: 3,
-        },
-        {
-          name: 'createUseAsyncData',
-          source: '#app/composables/asyncData',
-          argumentLength: 3,
-        },
-        ...Array.isArray(val) ? val : [],
-      ].filter(Boolean),
+      $resolve: async (val, get) => {
+        const isV5 = (await get('future.compatibilityVersion')) >= 5
+        if (isV5 && Array.isArray(val) && val.length > 0) {
+          schemaDiagnostics.NUXT_B5016({ option: 'optimization.keyedComposableFactories', replacement: 'optimization.keyedFunctionFactories' })
+        }
+        return [
+          ...isV5 ? [] : KEYED_FUNCTION_FACTORY_DEFAULTS,
+          ...Array.isArray(val) ? val : [],
+        ].filter(Boolean)
+      },
     },
     treeShake: {
       composables: {

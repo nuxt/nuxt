@@ -373,7 +373,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
     },
     afterScan: (nuxt) => {
       for (const functions of fileResults.values()) {
-        nuxt.options.optimization.keyedComposables.push(...functions)
+        nuxt.options.optimization.keyedFunctions.push(...functions)
       }
     },
   }
