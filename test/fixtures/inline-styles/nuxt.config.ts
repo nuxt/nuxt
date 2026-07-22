@@ -8,6 +8,20 @@ import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
 // Regression for https://github.com/nuxt/nuxt/issues/35591: when
 // vite.css.modules.generateScopedName is a string pattern, the class names in
 // the SSR inlined `<style>` tags must match those in the server-rendered markup.
+// Regression for https://github.com/nuxt/nuxt/issues/29232: custom style attributes
+// like `layout="xs"` should be transformed by Vite plugins for SSR inline styles.
+const layoutStylePlugin = () => {
+  return {
+    name: 'layout-style-plugin',
+    enforce: 'pre' as const,
+    transform (code, id) {
+      if (id.endsWith('.css') && id.includes('layout=')) {
+        return `.xs { ${code} }`
+      }
+    },
+  }
+}
+
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   sourcemap: false,
@@ -24,5 +38,8 @@ export default withMatrix({
         generateScopedName: '_[hash:base64:8]',
       },
     },
+    plugins: [
+      layoutStylePlugin(),
+    ],
   },
 })

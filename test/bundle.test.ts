@@ -19,7 +19,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"119k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"120k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -54,14 +54,9 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"38.5k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"38.8k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"232k"`)
-
-    const packages = modules.files
-      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
-      .sort()
+    const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
@@ -75,7 +70,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "pathe",
         "scule",
         "ufo",
-        "unctx",
         "unhead",
         "unstorage",
         "vue",
@@ -89,14 +83,9 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"83.2k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"63.8k"`)
 
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"232k"`)
-
-    const packages = modules.files
-      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
-      .sort()
+    const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
@@ -111,16 +100,28 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "scule",
         "ufo",
         "uncrypto",
-        "unctx",
         "unhead",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
+        "vue-devtools-stub",
+        "vue-router",
         "vue__server-renderer",
       ]
     `)
   })
 })
+
+// we strip packages that are small enough rolldown might inline them
+// depending on humidity or the time of day
+const MERGE_BOUNDARY_PACKAGES = new Set(['unctx'])
+
+function getVendorPackages (files: string[]) {
+  return files
+    .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
+    .filter(pkg => !MERGE_BOUNDARY_PACKAGES.has(pkg))
+    .sort()
+}
 
 async function analyzeSizes (pattern: string[], rootDir: string, projectDir: string) {
   const files: string[] = await glob(pattern, { cwd: rootDir })

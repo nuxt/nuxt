@@ -113,6 +113,10 @@ async function main () {
       // Bump versions to nightly
       console.info('🌙 Bumping versions to nightly...')
       await import('./bump-nightly.ts').then(r => r.bumpNightly())
+
+      // The committed ui-templates output bakes in the nuxt package version,
+      // so it must be regenerated after the nightly bump.
+      execFile('vp', ['exec', 'pnpm', '--filter', '@nuxt/ui-templates', 'build'])
     }
 
     // Use absolute URLs for better rendering on npm
