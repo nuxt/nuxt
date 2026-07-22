@@ -152,6 +152,9 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(bundle).not.toContain('no-scripts-page')
     expect(bundle).not.toContain('product-page')
 
+    // a nested child route (relative path resolved against its parent)
+    expect(bundle).not.toContain('dashstatsheading')
+
     // a page whose canonical path is `noScripts` but which has a scripted alias
     // keeps its component so the alias can still render client-side
     expect(bundle).toContain('aliased-page')

@@ -723,7 +723,7 @@ export default defineNuxtModule({
     nuxt.hook('nitro:init', (nitro) => {
       nitroForNoScripts = nitro
     })
-    function markNoScriptsPages (pages: NuxtPage[]) {
+    function markNoScriptsPages (pages: NuxtPage[], prefix = '/') {
       const nitro = nitroForNoScripts
       if (!nitro || !('routing' in nitro)) { return }
       const routeRules = nitro.routing.routeRules
@@ -756,25 +756,26 @@ export default defineNuxtModule({
       // `unrouting` collapses the compiled Vue Router path into one or more rou3
       // patterns (dynamic params become catch-alls, finite alternations expand
       // into concrete paths); the page is safe to drop only when every one of
-      // them is. Returns `null` when it cannot be determined statically (e.g. a
-      // relative child path with no leading slash).
+      // them is. Returns `null` when it cannot be determined statically.
       function isNoScriptsPath (path: string): boolean | null {
-        if (!path.startsWith('/')) { return null }
         const { patterns } = vueRouterToRou3(path, { collapse: true })
         if (!patterns.length) { return null }
         return patterns.every(patternIsNoScripts)
       }
       for (const page of pages) {
+        // child paths are relative to the parent, so resolve them against the
+        // accumulated prefix before matching against route rules
+        const path = page.path.startsWith('/') ? page.path : joinURL(prefix, page.path)
         if (page.children?.length) {
-          markNoScriptsPages(page.children)
+          markNoScriptsPages(page.children, path)
           continue
         }
         // A page is only safe to drop from the client bundle when every path it
         // can be reached by is served without scripts. If any alias resolves to
         // a scripted route (or cannot be checked statically), keep the component
         // so client-side navigation to that alias still renders it.
-        const paths = [page.path, ...toArray(page.alias || [])]
-        page._noScripts = paths.every(path => isNoScriptsPath(path) === true)
+        const aliases = toArray(page.alias || []).map(alias => alias.startsWith('/') ? alias : joinURL(prefix, alias))
+        page._noScripts = [path, ...aliases].every(path => isNoScriptsPath(path) === true)
       }
     }
 

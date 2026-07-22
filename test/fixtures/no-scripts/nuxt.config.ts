@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     // canonical path is served without scripts, but the `/aliased-alt` alias is not
     '/aliased': { noScripts: true },
     '/products/**': { noScripts: true },
+    '/dash/**': { noScripts: true },
   },
   experimental: {
     viewTransition: true,
