@@ -54,6 +54,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/fetch',
   },
   {
+    imports: ['defineUseFetchAddon', 'defineUseAsyncDataAddon', { name: 'UseFetchAddonOptions', type: true }, { name: 'UseAsyncDataAddonOptions', type: true }],
+    from: '#app/composables/addons',
+  },
+  {
     imports: ['$fetch'],
     from: '#build/fetch',
   },
