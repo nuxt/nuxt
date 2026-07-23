@@ -17,8 +17,7 @@ import type { Nitro, NitroConfig, NitroRouteRules } from 'nitropack/types'
 import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { defineEventHandler, dynamicEventHandler, getRequestHeader, handleCors, setHeader, setResponseStatus } from 'h3'
-import type { H3Event } from 'h3'
+import { defineEventHandler, dynamicEventHandler, handleCors, setHeader, setResponseStatus } from 'h3'
 import { addDependency } from 'nypm'
 import { hasTTY, isCI, isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
@@ -27,6 +26,7 @@ import { runtimeDependencies } from 'nitropack/runtime/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { distDir, getLayerNodeModulesExcludePattern, toArray } from './utils.ts'
+import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -958,7 +958,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitro.options.devHandlers.push({
       route: '/.well-known/appspecific/com.chrome.devtools.json',
       handler: defineEventHandler((event) => {
-        if (!isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
+        // The response discloses the absolute project root and a stable workspace UUID, so
+        // require a genuine loopback peer: `isLocalDevRequest` alone is forgeable by a
+        // non-browser LAN client sending `Host: localhost`.
+        if (!isLoopbackPeer(event) || !isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
           setResponseStatus(event, 403)
           return 'Forbidden'
         }
@@ -1136,8 +1139,6 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
   return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
 }
 
-const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
-
 function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
   const allowedHosts = nuxt.options.vite?.server?.allowedHosts
   if (allowedHosts === true) {
@@ -1152,32 +1153,6 @@ function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
     }
   }
   return hosts
-}
-
-function isLocalDevRequest (event: H3Event, allowedHosts: ReadonlySet<string> | true): boolean {
-  const hostHeader = getRequestHeader(event, 'host')
-  if (allowedHosts !== true) {
-    const host = hostHeader?.split(':')[0]
-    if (!host || !allowedHosts.has(host)) {
-      return false
-    }
-  }
-
-  const site = getRequestHeader(event, 'sec-fetch-site')
-  if (site !== undefined) {
-    return site === 'same-origin' || site === 'none'
-  }
-
-  const initiator = getRequestHeader(event, 'origin') || getRequestHeader(event, 'referer')
-  if (!initiator) {
-    return true
-  }
-
-  try {
-    return new URL(initiator).host === hostHeader
-  } catch {
-    return false
-  }
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {
