@@ -6,12 +6,12 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { flushPromises } from '@vue/test-utils'
-import { Transition } from 'vue'
+import { Transition, ref } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
-import type { AsyncDataRefreshCause } from '#app/composables/asyncData'
+import type { AsyncDataRefreshCause, CreatedAsyncData } from '#app/composables/asyncData'
 import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
@@ -237,6 +237,119 @@ describe('useAsyncData', () => {
     // Clean up
     delete nuxtApp.payload.data.IslandComponent_abc123
     delete nuxtApp.payload.data._internal_key
+  })
+
+  describe('clearNuxtData scope option', () => {
+    function mockFetchEntry (nuxtApp: NuxtApp, key: string, value: string) {
+      // Minimal mock of a useFetch _asyncData entry — full internal type is not constructible in tests
+      nuxtApp._asyncData[key] = {
+        data: ref(value),
+        error: ref(undefined),
+        pending: ref(false),
+        status: ref('success'),
+        _default: () => undefined,
+        _init: true,
+        _deps: 0,
+        _execute: () => Promise.resolve(),
+      } as unknown as CreatedAsyncData
+      nuxtApp.payload.data[key] = value
+    }
+
+    it('should clear only useFetch entries with scope: fetch', async () => {
+      const nuxtApp = useNuxtApp()
+      const asyncKey = `scope-async-${++counter}`
+      const fetchKey = `$f${++counter}`
+
+      await useAsyncData(asyncKey, () => Promise.resolve('async-data'))
+      mockFetchEntry(nuxtApp, fetchKey, 'fetch-data')
+
+      clearNuxtData({ scope: 'fetch' })
+
+      // fetch entry cleared
+      expect(nuxtApp.payload.data[fetchKey]).toBeUndefined()
+      expect(nuxtApp._asyncData[fetchKey]!.status.value).toBe('idle')
+      expect(nuxtApp._asyncData[fetchKey]!.data.value).toBeUndefined()
+      // async entry untouched
+      expect(nuxtApp.payload.data[asyncKey]).toBe('async-data')
+      expect(nuxtApp._asyncData[asyncKey]!.status.value).toBe('success')
+
+      clearNuxtData(asyncKey)
+    })
+
+    it('should clear only useAsyncData entries with scope: async', async () => {
+      const nuxtApp = useNuxtApp()
+      const asyncKey = `scope-async2-${++counter}`
+      const fetchKey = `$f${++counter}`
+
+      await useAsyncData(asyncKey, () => Promise.resolve('async-data'))
+      mockFetchEntry(nuxtApp, fetchKey, 'fetch-data')
+
+      clearNuxtData({ scope: 'async' })
+
+      // async entry cleared
+      expect(nuxtApp.payload.data[asyncKey]).toBeUndefined()
+      expect(nuxtApp._asyncData[asyncKey]!.status.value).toBe('idle')
+      // fetch entry untouched
+      expect(nuxtApp.payload.data[fetchKey]).toBe('fetch-data')
+      expect(nuxtApp._asyncData[fetchKey]!.status.value).toBe('success')
+
+      clearNuxtData(fetchKey)
+    })
+
+    it('should clear island payload data with scope: island', async () => {
+      const nuxtApp = useNuxtApp()
+      const islandKey = `IslandComponent_${++counter}`
+      const asyncKey = `scope-async3-${++counter}`
+
+      nuxtApp.payload.data[islandKey] = { __nuxt_island: { key: islandKey }, html: '<div />' }
+      nuxtApp._islandPromises ||= {}
+      nuxtApp._islandPromises[islandKey] = Promise.resolve()
+      await useAsyncData(asyncKey, () => Promise.resolve('async-data'))
+
+      clearNuxtData({ scope: 'island' })
+
+      // island entry cleared
+      expect(nuxtApp.payload.data[islandKey]).toBeUndefined()
+      expect(nuxtApp._islandPromises?.[islandKey]).toBeUndefined()
+      // async entry untouched
+      expect(nuxtApp.payload.data[asyncKey]).toBe('async-data')
+      expect(nuxtApp._asyncData[asyncKey]!.status.value).toBe('success')
+
+      clearNuxtData(asyncKey)
+    })
+
+    it('should accept options as second parameter with specific keys', async () => {
+      const nuxtApp = useNuxtApp()
+      const asyncKey = `scope-async4-${++counter}`
+      const fetchKey = `$f${++counter}`
+
+      await useAsyncData(asyncKey, () => Promise.resolve('async-data'))
+      mockFetchEntry(nuxtApp, fetchKey, 'fetch-data')
+
+      clearNuxtData(fetchKey, { scope: 'fetch' })
+
+      expect(nuxtApp.payload.data[fetchKey]).toBeUndefined()
+      expect(nuxtApp._asyncData[fetchKey]!.status.value).toBe('idle')
+      expect(nuxtApp.payload.data[asyncKey]).toBe('async-data')
+
+      clearNuxtData(asyncKey)
+    })
+
+    it('should default to scope: all when no options provided', async () => {
+      const nuxtApp = useNuxtApp()
+      const asyncKey = `scope-async5-${++counter}`
+      const fetchKey = `$f${++counter}`
+
+      await useAsyncData(asyncKey, () => Promise.resolve('async-data'))
+      mockFetchEntry(nuxtApp, fetchKey, 'fetch-data')
+
+      clearNuxtData()
+
+      expect(nuxtApp.payload.data[asyncKey]).toBeUndefined()
+      expect(nuxtApp.payload.data[fetchKey]).toBeUndefined()
+      expect(nuxtApp._asyncData[asyncKey]!.status.value).toBe('idle')
+      expect(nuxtApp._asyncData[fetchKey]!.status.value).toBe('idle')
+    })
   })
 
   it('should allow overriding requests', async () => {
