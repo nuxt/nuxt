@@ -6,13 +6,14 @@ import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-
 import { defineNuxtLink } from '../src/app/components/nuxt-link.ts'
 import { useRuntimeConfig } from '../src/app/nuxt.ts'
 
-// mocks `useRuntimeConfig()`
+// mocks `useRuntimeConfig()` and `useNuxtApp()`
 vi.mock('../src/app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
     app: {
       baseURL: '/',
     },
   })),
+  useNuxtApp: () => nuxtAppMock,
 }))
 
 // Mocks `h()`
@@ -570,6 +571,7 @@ describe('nuxt-link:useLink', () => {
   })
 
   it('exposes prefetch state', async () => {
+    nuxtAppMock._prefetchedPaths?.clear()
     const component = defineNuxtLink({ componentName: 'NuxtLink' })
     const link = component.useLink({ to: '/about', prefetchOn: 'visibility' })
 
@@ -584,6 +586,7 @@ describe('nuxt-link:useLink', () => {
   })
 
   it('reads prefetch props through Refs', () => {
+    nuxtAppMock._prefetchedPaths?.clear()
     const component = defineNuxtLink({ componentName: 'NuxtLink' })
     const noPrefetch = ref(true)
     const link = component.useLink({ to: '/about', prefetchOn: ref('visibility' as const), noPrefetch })
@@ -591,5 +594,24 @@ describe('nuxt-link:useLink', () => {
     expect(link.shouldPrefetch('visibility')).toBe(false)
     noPrefetch.value = false
     expect(link.shouldPrefetch('visibility')).toBe(true)
+  })
+
+  it('shares prefetch state between links to the same destination', async () => {
+    nuxtAppMock._prefetchedPaths?.clear()
+    nuxtAppMock.hooks.callHook.mockClear()
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const first = component.useLink({ to: '/about' })
+    const second = component.useLink({ to: '/about', prefetchOn: 'visibility' })
+    const other = component.useLink({ to: '/other' })
+
+    await first.prefetch(nuxtAppMock)
+
+    expect(second.prefetched.value).toBe(true)
+    expect(second.shouldPrefetch('visibility')).toBe(false)
+    expect(other.prefetched.value).toBe(false)
+
+    // already prefetched via `first`, so this is a no-op
+    await second.prefetch(nuxtAppMock)
+    expect(nuxtAppMock.hooks.callHook).toHaveBeenCalledTimes(1)
   })
 })

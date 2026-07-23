@@ -137,6 +137,9 @@ interface _NuxtApp {
   '_observer'?: { observe: (element: Element, callback: () => void) => () => void }
 
   /** @internal */
+  '_prefetchedPaths'?: Set<string>
+
+  /** @internal */
   '_appConfig': AppConfig
   /** @internal */
   '_route': RouteLocationNormalizedLoaded & {

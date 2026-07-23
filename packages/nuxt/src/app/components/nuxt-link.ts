@@ -6,13 +6,12 @@ import type {
   InjectionKey,
   MaybeRef,
   PropType,
-  ShallowRef,
   SlotsType,
   UnwrapRef,
   VNode,
   VNodeProps,
 } from 'vue'
-import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
+import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowReactive, unref } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
 import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
@@ -259,8 +258,18 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       return applyTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), effectiveTrailingSlash)
     })
 
-    // Prefetching
-    const prefetched = shallowRef(false)
+    // Prefetching (state is shared per destination so every link/`useLink` for the same URL agrees)
+    const prefetchedPaths = import.meta.server ? undefined : (useNuxtApp()._prefetchedPaths ||= shallowReactive(new Set<string>()))
+
+    const prefetchKey = computed(() => {
+      if (import.meta.server || href.value === null) { return null }
+      const path = typeof to.value === 'string'
+        ? to.value
+        : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
+      return isExternal.value ? new URL(path, window.location.href).href : path
+    })
+
+    const prefetched = computed(() => prefetchKey.value !== null && !!prefetchedPaths?.has(prefetchKey.value))
 
     function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
       if (import.meta.server) { return false }
@@ -271,18 +280,13 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     async function prefetch (nuxtApp = useNuxtApp()) {
       if (import.meta.server) { return }
 
-      if (prefetched.value) { return }
+      const path = prefetchKey.value
+      if (path === null || prefetchedPaths!.has(path)) { return }
 
-      if (href.value === null) { return }
+      prefetchedPaths!.add(path)
 
-      prefetched.value = true
-
-      const path = typeof to.value === 'string'
-        ? to.value
-        : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-      const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
       await Promise.all([
-        nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
+        nuxtApp.hooks.callHook('link:prefetch', path)?.catch(() => {}),
         !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
       ])
     }
@@ -317,7 +321,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       isAbsoluteUrl: ComputedRef<boolean>
       isExternal: ComputedRef<boolean>
       prefetch: (nuxtApp?: NuxtApp) => Promise<void>
-      prefetched: ShallowRef<boolean>
+      prefetched: ComputedRef<boolean>
       shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
     }
   }

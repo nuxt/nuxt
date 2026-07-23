@@ -1,12 +1,17 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 describe('nuxt-link:prefetch', () => {
+  // prefetch state is shared per destination on the nuxt app, so reset it between tests
+  beforeEach(() => {
+    useNuxtApp()._prefetchedPaths?.clear()
+  })
+
   it('should prefetch on visibility by default', async () => {
     const component = defineNuxtLink(nuxtLinkDefaults)
 
