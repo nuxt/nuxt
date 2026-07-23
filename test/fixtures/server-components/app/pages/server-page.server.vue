@@ -13,6 +13,13 @@
     >
       to other server page
     </NuxtLink>
+    <NuxtLink
+      id="island-link-replace"
+      to="/server-page-with-nuxtpage"
+      replace
+    >
+      replace with other server page
+    </NuxtLink>
   </div>
 </template>
 

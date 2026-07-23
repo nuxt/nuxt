@@ -202,6 +202,20 @@ describe('server components/islands', () => {
     await page.close()
   })
 
+  it('/server-page - island links with `replace` do not add a history entry', async () => {
+    const { page } = await renderPage('/')
+    await page.getByText('to server page').click()
+    await page.locator('#island-link-replace').waitFor()
+    await page.click('#island-link-replace')
+    await page.locator('#server-page-with-nuxtpage').waitFor()
+
+    await page.goBack()
+    await page.locator('#islands').waitFor()
+    expect(page.url().endsWith('/')).toBe(true)
+
+    await page.close()
+  })
+
   it('/server-page-with-nuxtpage/child renders the parent server page with the child route', async () => {
     const html = await $fetch<string>('/server-page-with-nuxtpage/child')
     expect(html).toContain('id="server-page-with-nuxtpage"')

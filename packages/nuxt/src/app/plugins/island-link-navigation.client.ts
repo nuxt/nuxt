@@ -11,7 +11,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) { return }
 
       const anchor = (e.target as Element | null)?.closest('a')
-      if (!anchor || !anchor.hasAttribute('data-internal')) { return }
+      if (!anchor || !anchor.hasAttribute('data-internal') || anchor.hasAttribute('download')) { return }
 
       const href = anchor.getAttribute('href')
       if (!href || href.startsWith('#')) { return }
@@ -35,7 +35,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       if (!route.matched.length) { return }
 
       e.preventDefault()
-      router.push(route.fullPath)
+      if (anchor.getAttribute('data-internal') === 'replace') {
+        router.replace(route.fullPath)
+      } else {
+        router.push(route.fullPath)
+      }
     }
 
     document.addEventListener('click', onClick)

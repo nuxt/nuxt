@@ -531,7 +531,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
             if (import.meta.server && useNuxtApp().ssrContext?.islandContext) {
               // marks internal links within island HTML for client-side navigation
-              routerLinkProps['data-internal'] = ''
+              routerLinkProps['data-internal'] = props.replace ? 'replace' : ''
             }
           }
 
