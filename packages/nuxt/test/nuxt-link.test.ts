@@ -614,4 +614,18 @@ describe('nuxt-link:useLink', () => {
     await second.prefetch(nuxtAppMock)
     expect(nuxtAppMock.hooks.callHook).toHaveBeenCalledTimes(1)
   })
+
+  it('does not prefetch hash-only links or share their state', async () => {
+    nuxtAppMock._prefetchedPaths?.clear()
+    nuxtAppMock.hooks.callHook.mockClear()
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const link = component.useLink({ to: '#top', prefetchOn: 'visibility' })
+
+    expect(link.shouldPrefetch('visibility')).toBe(false)
+
+    await link.prefetch(nuxtAppMock)
+
+    expect(link.prefetched.value).toBe(false)
+    expect(nuxtAppMock.hooks.callHook).not.toHaveBeenCalled()
+  })
 })

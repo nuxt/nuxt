@@ -114,6 +114,34 @@ describe('nuxt-link:prefetch', () => {
     expect(shouldPrefetch?.('visibility')).toBe(false)
   })
 
+  it('useLink should track the prefetch state of a rendered link to the same destination', async () => {
+    const NuxtLink = defineNuxtLink(nuxtLinkDefaults)
+    const { observer } = useMockObserver()
+
+    const nuxtApp = useNuxtApp()
+    nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
+
+    let link: any
+    const wrapper = await mountSuspended(defineComponent({
+      setup () {
+        link = (NuxtLink as any).useLink({ to: '/to' })
+        return () => h(NuxtLink, { to: '/to', prefetchedClass: 'is-prefetched' }, () => 'link')
+      },
+    }))
+
+    expect(link.prefetched.value).toBe(false)
+
+    await observer.trigger()
+    await vi.waitFor(() => {
+      expect(link.prefetched.value).toBe(true)
+      expect(wrapper.find('a').classes()).toContain('is-prefetched')
+    })
+
+    // already prefetched by the rendered link, so this is a no-op
+    await link.prefetch(nuxtApp)
+    expect(nuxtApp.hooks.callHook).toHaveBeenCalledTimes(1)
+  })
+
   it('should preserve RouterLink slot props on an internal custom link', async () => {
     const NuxtLink = defineNuxtLink(nuxtLinkDefaults)
     const router = useRouter()

@@ -262,7 +262,8 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     const prefetchedPaths = import.meta.server ? undefined : (useNuxtApp()._prefetchedPaths ||= shallowReactive(new Set<string>()))
 
     const prefetchKey = computed(() => {
-      if (import.meta.server || href.value === null) { return null }
+      // hash-only links have no page context, so a shared key like `#top` would leak across pages
+      if (import.meta.server || href.value === null || isHashLinkWithoutHashMode(to.value)) { return null }
       const path = typeof to.value === 'string'
         ? to.value
         : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
@@ -274,14 +275,14 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
       if (import.meta.server) { return false }
       const prefetchOn = unref(props.prefetchOn)
-      return Boolean((!prefetched.value && (typeof prefetchOn === 'string' ? prefetchOn === mode : (prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (unref(props.prefetch) ?? options.prefetch) !== false && unref(props.noPrefetch) !== true && unref(props.target) !== '_blank' && !isSlowConnection()))
+      return Boolean((!prefetched.value && !isHashLinkWithoutHashMode(to.value) && (typeof prefetchOn === 'string' ? prefetchOn === mode : (prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (unref(props.prefetch) ?? options.prefetch) !== false && unref(props.noPrefetch) !== true && unref(props.target) !== '_blank' && !isSlowConnection()))
     }
 
     async function prefetch (nuxtApp = useNuxtApp()) {
       if (import.meta.server) { return }
 
       const path = prefetchKey.value
-      if (path === null || prefetchedPaths!.has(path)) { return }
+      if (path === null || prefetched.value) { return }
 
       prefetchedPaths!.add(path)
 
