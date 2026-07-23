@@ -1,12 +1,13 @@
 import { useNitroHooks } from 'nitro/app'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
-import { H3Event, HTTPError, getQuery, readBody } from 'nitro/h3'
+import { H3Event, HTTPError, getQuery } from 'nitro/h3'
 import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
-import { getIslandHash } from '#app/island-hash'
+import { filterIslandProps, getIslandHash } from '#app/island-hash'
+import { MAX_ISLAND_BODY_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
@@ -139,6 +140,56 @@ export default {
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 
+// Read a non-GET island body, refusing oversized or deeply nested input before the JSON
+// parse and hash run on it.
+async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext> {
+  const contentLength = Number(event.req.headers.get('content-length'))
+  if (contentLength > MAX_ISLAND_BODY_BYTES) {
+    throw new HTTPError({ status: 413, statusText: 'Island request body too large' })
+  }
+
+  // Stream with a running byte count rather than buffering: a chunked request carries no
+  // `content-length`, so the header check alone can't bound an unbounded body.
+  let received = 0
+  let raw = ''
+  let overflowed = false
+  if (event.req.body) {
+    const decoder = new TextDecoder()
+    // Read through a reader rather than `for await`: async iteration of a `ReadableStream` is
+    // a runtime extension, not part of the stream spec, so it is absent on some deploy targets.
+    const reader = event.req.body.getReader()
+    try {
+      for (;;) {
+        const { done, value } = await reader.read()
+        if (done) { break }
+        received += value.byteLength
+        if (received > MAX_ISLAND_BODY_BYTES) {
+          // Stop buffering (memory stays bounded) but keep draining so the request is fully
+          // consumed: bailing out mid-upload resets the socket and poisons connection reuse
+          // for the next request on the same keep-alive connection.
+          overflowed = true
+          continue
+        }
+        raw += decoder.decode(value, { stream: true })
+      }
+    } finally {
+      reader.releaseLock()
+    }
+    raw += decoder.decode()
+  }
+  if (overflowed) {
+    throw new HTTPError({ status: 413, statusText: 'Island request body too large' })
+  }
+  if (!raw) {
+    return {} as NuxtIslandContext
+  }
+  if (exceedsMaxDepth(raw)) {
+    throw new HTTPError({ status: 400, statusText: 'Island request body too deeply nested' })
+  }
+
+  return destr<NuxtIslandContext>(raw) || {} as NuxtIslandContext
+}
+
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   let url = event.url.pathname + event.url.search + event.url.hash
   const islandPath = event.url.pathname
@@ -160,8 +211,17 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     throw new HTTPError({ status: 400, statusText: 'Invalid island component name' })
   }
 
-  const rawContext = event.req.method === 'GET' ? getQuery<NuxtIslandContext>(event) : await readBody<NuxtIslandContext>(event)
+  const rawContext = event.req.method === 'GET' ? getQuery<NuxtIslandContext>(event) : await readGuardedIslandBody(event)
   const serializedProps = typeof rawContext?.props === 'string' ? rawContext.props : '{}'
+
+  // Bound the props string before parsing/hashing (GET carries them in the query, not the
+  // guarded body).
+  if (exceedsMaxBytes(serializedProps)) {
+    throw new HTTPError({ status: 413, statusText: 'Island request props too large' })
+  }
+  if (exceedsMaxDepth(serializedProps)) {
+    throw new HTTPError({ status: 400, statusText: 'Island request props too deeply nested' })
+  }
 
   // Reconstruct the `context` object as the client computed its hash over.
   // `<NuxtIsland>` sends `{ ...props.context, props: serializedProps }`
@@ -174,14 +234,15 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     }
   }
 
+  // Strip `data-v-*` scoped-style markers so the hashed and rendered prop sets match.
+  const parsedProps = filterIslandProps(destr<Record<string, any> | null | undefined>(serializedProps) || {})
+
   // Bind the response to the URL: a request whose URL-resident `hashId` does not match
-  // the actual (name, serialized props, context) is rejected.
-  const expectedHash = getIslandHash({ name: componentName, props: serializedProps, context: clientContext })
+  // the actual (name, props, context) is rejected.
+  const expectedHash = getIslandHash({ name: componentName, props: parsedProps, context: clientContext })
   if (!hashId || hashId !== expectedHash) {
     throw new HTTPError({ status: 400, statusText: 'Invalid island request hash' })
   }
-
-  const parsedProps = destr<Record<string, any> | null | undefined>(serializedProps) || {}
 
   return {
     url: typeof rawContext?.url === 'string' ? rawContext.url : '/',
