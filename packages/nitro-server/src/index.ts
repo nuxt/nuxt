@@ -782,6 +782,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const appDir = nuxt.options.alias['#app']
   if (appDir) {
     tsConfig.compilerOptions.paths['#app/island-hash'] ||= [resolve(appDir, 'island-hash')]
+    tsConfig.compilerOptions.paths['#app/island-props'] ||= [resolve(appDir, 'island-props')]
     tsConfig.compilerOptions.paths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
     tsConfig.compilerOptions.paths['#app/types'] ||= [resolve(appDir, 'types')]
   }

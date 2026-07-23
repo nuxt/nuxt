@@ -622,6 +622,16 @@ describe('hash/render input alignment', () => {
   })
 })
 
+describe('reserved island prop keys', () => {
+  // Without `vue.runtimeCompiler` a `template` value is inert, so data that merely contains
+  // that key (e.g. CMS content) must still render.
+  it('allows a nested template key when the runtime compiler is disabled', async () => {
+    const props = { content: { template: 'blog' } }
+    const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', { props }))
+    expect(result.html).toBeTruthy()
+  })
+})
+
 describe('page-island middleware', () => {
   it('runs page middleware and honours redirects for `page_*` islands', async () => {
     const res = await fetch(islandURL('page_gated-server-page', {

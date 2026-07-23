@@ -44,5 +44,10 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Ensure the Nuxt build completed successfully and the server entry was emitted by your builder.',
       docs: false,
     },
+    NUXT_E8005: {
+      why: 'Island props cannot contain a `template` key, which the Vue runtime compiler would compile and execute.',
+      fix: 'Rename the prop (e.g. `templateName`), or disable `vue.runtimeCompiler` if you do not need runtime template compilation.',
+      docs: false,
+    },
   },
 })
