@@ -89,5 +89,10 @@ export const renderDiagnostics = !import.meta.dev
           why: (p: { fullPath: string, childPath: string, parentPath: string }) => `The route \`${p.fullPath}\` matches a nested page (\`${p.childPath}\`), but the parent page (\`${p.parentPath}\`) does not render \`<NuxtPage />\`, so the nested page cannot be displayed. If \`<NuxtPage />\` is rendered conditionally, this warning can be triggered before it is mounted.`,
           fix: (p: { parentPath: string }) => `Add \`<NuxtPage />\` to the page component for \`${p.parentPath}\`, or restructure your \`pages/\` directory if you did not intend nesting.`,
         },
+        NUXT_E4017: {
+          why: (p: { source: number, max: number }) => `A \`v-for\` in a server component asked for ${p.source} iterations; only the first ${p.max} were rendered. Island props come from the request, so the count is capped to bound server-side expansion.`,
+          fix: (p: { max: number }) => `Paginate the data, or clamp the value to at most ${p.max} before passing it to the island.`,
+          docs: false,
+        },
       },
     })

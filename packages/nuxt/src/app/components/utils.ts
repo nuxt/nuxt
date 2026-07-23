@@ -5,6 +5,7 @@ import { defu } from 'defu'
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
 import { renderDiagnostics } from '../diagnostics/render'
+import { MAX_VFOR_LENGTH } from './vfor'
 import { START_LOCATION } from '#build/pages'
 
 /**
@@ -95,8 +96,12 @@ export function vforToArray (source: any): any[] {
     if (import.meta.dev && !Number.isInteger(source)) {
       renderDiagnostics.NUXT_E4013({ source })
     }
+    if (import.meta.dev && source > MAX_VFOR_LENGTH) {
+      renderDiagnostics.NUXT_E4017({ source, max: MAX_VFOR_LENGTH })
+    }
+    const length = source > MAX_VFOR_LENGTH ? MAX_VFOR_LENGTH : source
     const array: number[] = []
-    for (let i = 0; i < source; i++) {
+    for (let i = 0; i < length; i++) {
       array[i] = i
     }
     return array
