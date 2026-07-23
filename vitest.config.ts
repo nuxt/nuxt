@@ -166,7 +166,7 @@ export default defineConfig({
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/routerules-case/**'],
           environment: 'nuxt',
           setupFiles: ['./test/setup-runtime.ts'],
           env: {
@@ -179,6 +179,29 @@ export default defineConfig({
           },
         },
       }))),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': 'globalThis.__TEST_DEV__',
+        },
+        test: {
+          name: 'nuxt-routerules-case',
+          dir: './test/nuxt/routerules-case',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              // Case-insensitive routing (3.x default) must still match mixed-case rule keys.
+              overrides: defu({
+                router: { options: { sensitive: false } },
+                routeRules: {
+                  '/Secret/Docs/**': { ssr: false },
+                  '/Legacy/Home': { redirect: '/target' },
+                },
+              } satisfies NuxtConfig, commonSettings),
+            },
+          },
+        },
+      }),
     ],
   },
 })

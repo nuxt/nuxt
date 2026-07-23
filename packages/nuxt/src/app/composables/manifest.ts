@@ -71,7 +71,10 @@ export function getRouteRules (url: string): Record<string, any>
 export function getRouteRules (arg: string | H3Event | { path: string }) {
   const path = typeof arg === 'string' ? arg : arg.path
   try {
-    return routeRulesMatcher(path.toLowerCase())
+    // The compiled matcher case-folds the lookup path itself (unless routing is
+    // `sensitive`), so callers pass the path verbatim; folding here as well would
+    // force case-insensitive matching even when `sensitive: true` is configured.
+    return routeRulesMatcher(path)
   } catch (e) {
     console.error('[nuxt] Error matching route rules.', e)
     return {}
