@@ -104,6 +104,15 @@ export interface ConfigSchema {
     /**
      * Include Vue compiler in runtime bundle.
      *
+     * Enabling this allows components to compile templates at runtime (for example,
+     * string `template` options or templates supplied via data).
+     *
+     * Runtime-compiled templates can execute arbitrary JavaScript. Never pass
+     * user-provided or otherwise untrusted content to a runtime-compiled template;
+     * treat any string that reaches the compiler as executable code.
+     *
+     * @see [Vue security guide](https://vuejs.org/guide/best-practices/security.html)
+     *
      * @default false
      */
     runtimeCompiler: boolean
