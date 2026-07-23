@@ -25,6 +25,11 @@ function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extend
           // but keep them in modules so CSS links are still rendered
           ssrContext!['~lazyHydratedModules'] ||= new Set()
           ssrContext!['~lazyHydratedModules'].add(id)
+          if (never) {
+            // never-hydrated chunks are also excluded from prefetch hints, as they can never be needed
+            ssrContext!['~neverHydratedModules'] ||= new Set()
+            ssrContext!['~neverHydratedModules'].add(id)
+          }
         })
       }
       // wrap the async component in a second component to avoid loading the chunk too soon
