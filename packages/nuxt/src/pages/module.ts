@@ -524,12 +524,17 @@ export default defineNuxtModule({
 
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static) {
+        // Match route rules case-insensitively (unless routing is `sensitive`) to
+        // mirror the compiled `#build/route-rules.mjs` matcher, so a `prerender: true`
+        // rule keyed `/Admin` is honoured for the page derived at `/Admin`.
+        const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
+        const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules ? route : route.toLowerCase()
         const routeRulesRouter = createRou3Router<NitroRouteRules>()
         for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
-          addRoute(routeRulesRouter, undefined, route, rules)
+          addRoute(routeRulesRouter, undefined, foldRouteRuleKey(route), rules)
         }
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, route).reverse())
+          const rules = defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, foldRouteRuleKey(route)).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }

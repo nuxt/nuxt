@@ -392,13 +392,30 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr', 'ssr']
 
-  function getRouteRulesRouter () {
+  // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
+  // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
+  // folded lookup and silently lose its protections. `sensitive` can also come from
+  // `app/router.options.ts` (runtime-only), so emit both a verbatim and a folded matcher
+  // and pick at runtime.
+  const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
+  const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules || typeof route !== 'string' ? route : route.toLowerCase()
+
+  function getRouteRulesRouter (fold: boolean) {
     const routeRulesRouter = createRou3Router<NitroRouteRules>()
     if (nuxt._nitro) {
+      const foldedKeys = new Map<string, string>()
       for (const [route, rules] of Object.entries(nuxt._nitro.options.routeRules)) {
         if (route === '/__nuxt_error') { continue }
         if (validManifestKeys.every(key => !(key in rules))) { continue }
-        addRoute(routeRulesRouter, undefined, route, rules)
+        const key = fold && typeof route === 'string' ? route.toLowerCase() : route
+        if (fold) {
+          const existing = foldedKeys.get(key)
+          if (existing !== undefined && existing !== route && !caseSensitiveRouteRules) {
+            logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path when matched case-insensitively; \`${route}\` takes precedence. Disambiguate the keys or set \`router.options.sensitive: true\`.`)
+          }
+          foldedKeys.set(key, route)
+        }
+        addRoute(routeRulesRouter, undefined, key, rules)
       }
     }
     return routeRulesRouter
@@ -412,7 +429,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (cachedMatchers[key]) {
         return cachedMatchers[key]
       }
-      const matcher = compileRouterToString(getRouteRulesRouter(), '', {
+      const compile = (fold: boolean) => compileRouterToString(getRouteRulesRouter(fold), '', {
         matchAll: true,
         serialize (routeRules) {
           return `{${Object.entries(routeRules)
@@ -443,11 +460,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           }}`
         },
       })
-      return cachedMatchers[key] = `
-      import { defu } from 'defu'
-      const matcher = ${matcher}
-      export default (path) => defu({}, ...matcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())
-      `
+      const sensitiveMatcher = compile(false)
+      const foldedMatcher = compile(true)
+      return cachedMatchers[key] = [
+        `import { defu } from 'defu'`,
+        `import routerOptions from '#build/router.options.mjs'`,
+        `const sensitiveMatcher = ${sensitiveMatcher}`,
+        foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`,
+        `export default (path) => routerOptions.sensitive`,
+        `  ? defu({}, ...sensitiveMatcher('', path).map(r => r.data).reverse())`,
+        `  : defu({}, ...foldedMatcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())`,
+      ].join('\n')
     },
   })
 
@@ -530,13 +553,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       nitro.hooks.hook('rollup:before', async (nitro) => {
         // Add pages prerendered but not covered by route rules
         const prerenderedRoutes = new Set<string>()
-        const routeRulesMatcher = getRouteRulesRouter()
+        const routeRulesMatcher = getRouteRulesRouter(!caseSensitiveRouteRules)
         if (nitro._prerenderedRoutes?.length) {
           const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
           for (const route of nitro._prerenderedRoutes) {
             if (!route.error && route.route.endsWith(payloadSuffix)) {
               const url = route.route.slice(0, -payloadSuffix.length) || '/'
-              const rules = defu({}, ...findAllRoutes(routeRulesMatcher, undefined, url).reverse()) as Record<string, any>
+              const rules = defu({}, ...findAllRoutes(routeRulesMatcher, undefined, foldRouteRuleKey(url)).reverse()) as Record<string, any>
               if (!rules.prerender) {
                 prerenderedRoutes.add(url)
               }

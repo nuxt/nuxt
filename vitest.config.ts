@@ -16,6 +16,9 @@ const commonSettings: NuxtConfig = {
     '/pre/test': { redirect: '/' },
     '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
+    // Mixed-case keys must still match case-insensitively (vue-router's default).
+    '/Secret/Docs/**': { ssr: false },
+    '/Legacy/Home': { redirect: '/target' },
   },
   experimental: {
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
@@ -179,7 +182,7 @@ export default defineConfig({
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/sensitive/**'],
           environment: 'nuxt',
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
@@ -206,6 +209,28 @@ export default defineConfig({
           environmentOptions: {
             nuxt: {
               overrides: defu(nuxtTestProjects.nuxt, commonSettings),
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+        },
+        test: {
+          name: 'nuxt-sensitive',
+          dir: './test/nuxt/sensitive',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu({
+                router: { options: { sensitive: true } },
+                routeRules: {
+                  '/Admin/Dashboard': { redirect: '/admin-target' },
+                  '/admin/dashboard': { redirect: '/lower-target' },
+                },
+              } satisfies NuxtConfig, commonSettings),
             },
           },
         },

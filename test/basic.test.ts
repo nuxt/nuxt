@@ -107,6 +107,23 @@ describe('route rules', () => {
     expect(html).toContain('Hello from routeRules!')
   })
 
+  it('should run appMiddleware from an uppercase-keyed route rule regardless of request casing', async () => {
+    for (const path of ['/route-rules/case-insensitive', '/Route-Rules/Case-Insensitive', '/ROUTE-RULES/CASE-INSENSITIVE']) {
+      const html = await $fetch<string>(path)
+      expect(html, path).toContain('Hello from routeRules!')
+    }
+  })
+
+  itFailsIf(builder === 'webpack' && isDev)('should run appMiddleware from an uppercase-keyed route rule on client navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/route-rules/case-insensitive'))
+    await vi.waitFor(async () => {
+      expect(await page.getByText('Greeting: Hello from routeRules!').textContent()).toBeTruthy()
+    }, { timeout: 5_000 })
+    await page.close()
+  })
+
   it('should set layout defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')

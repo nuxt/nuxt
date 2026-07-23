@@ -580,6 +580,9 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
         "matcher": {
           "dynamic": {},
           "static": {
+            "/Legacy/Home": {
+              "redirect": "/target",
+            },
             "/pre/test": {
               "redirect": "/",
             },
@@ -588,6 +591,9 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             },
           },
           "wildcard": {
+            "/Secret/Docs": {
+              "ssr": false,
+            },
             "/isr": {
               "isr": 60,
             },
@@ -632,6 +638,20 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     expect(getRouteRules({ path: '/PRE/test' })).toMatchObject({
       redirect: '/',
     })
+  })
+})
+
+describe('case-insensitive route rules', () => {
+  it('applies an uppercase-keyed ssr rule for any request casing', () => {
+    for (const path of ['/Secret/Docs/index', '/secret/docs/index', '/SECRET/DOCS/index']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ ssr: false })
+    }
+  })
+
+  it('applies an uppercase-keyed redirect rule for any request casing', () => {
+    for (const path of ['/Legacy/Home', '/legacy/home', '/LEGACY/HOME']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/target' })
+    }
   })
 })
 

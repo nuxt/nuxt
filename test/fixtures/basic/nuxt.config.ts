@@ -182,6 +182,8 @@ export default withMatrix({
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
+      // Uppercase-keyed rule must still apply to the case-insensitively served page.
+      '/Route-Rules/Case-Insensitive': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
       '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },
