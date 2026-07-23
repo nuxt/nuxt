@@ -18,6 +18,7 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
+import { createFoldedRouteRulesRouter } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -567,8 +568,15 @@ export default defineNuxtModule({
 
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static) {
+        // Fold keys (unless `sensitive`) to mirror the compiled `#build/route-rules.mjs`
+        // matcher, so a `prerender: true` rule keyed `/Admin` is honoured at `/Admin`.
+        const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
+        const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules ? route : route.toLowerCase()
+        const ruleMatcher = caseSensitiveRouteRules
+          ? nitro.routing.routeRules
+          : createFoldedRouteRulesRouter(nitro.routing.routeRules, nitro.options.baseURL)
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...nitro.routing.routeRules.matchAll('', route).reverse())
+          const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', foldRouteRuleKey(route)).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }

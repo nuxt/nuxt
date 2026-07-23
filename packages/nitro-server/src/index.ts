@@ -10,7 +10,7 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { createNitro, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
@@ -27,6 +27,7 @@ import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { createFoldedRouteRulesRouter } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -382,7 +383,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (!nuxt._nitro) {
         return `export default () => ({})`
       }
-      const matcher = nuxt._nitro.routing.routeRules.compileToString({
+      // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
+      // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
+      // folded lookup and silently lose its protections. `sensitive` can also come from
+      // `app/router.options.ts` (runtime-only), so emit both a verbatim and a folded matcher
+      // and pick at runtime.
+      const sourceRouter = nuxt._nitro.routing.routeRules
+      const foldedRouter = createFoldedRouteRulesRouter(sourceRouter, nuxt._nitro.options.baseURL, (existing, route) => {
+        if (nuxt.options.router.options.sensitive) { return }
+        logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path when matched case-insensitively; \`${route}\` takes precedence. Disambiguate the keys or set \`router.options.sensitive: true\`.`)
+      })
+      const compileOptions: NonNullable<Parameters<typeof sourceRouter.compileToString>[0]> = {
         matchAll: true,
         serialize (routeRules) {
           return `{${Object.entries(routeRules)
@@ -412,13 +423,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             }).join(',')
           }}`
         },
-      })
-      return `
-      import { defu } from 'defu'
-      import routerOptions from '#build/router.options.mjs'
-      const matcher = ${matcher}
-      export default (path) => defu({}, ...matcher('', typeof path === 'string' && !routerOptions.sensitive ? path.toLowerCase() : path).map(r => r.data).reverse())
-      `
+      }
+      const sensitiveMatcher = sourceRouter.compileToString(compileOptions)
+      const foldedMatcher = foldedRouter.compileToString(compileOptions)
+      return [
+        `import { defu } from 'defu'`,
+        `import routerOptions from '#build/router.options.mjs'`,
+        `const sensitiveMatcher = ${sensitiveMatcher}`,
+        foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`,
+        `export default (path) => routerOptions.sensitive`,
+        `  ? defu({}, ...sensitiveMatcher('', path).map(r => r.data).reverse())`,
+        `  : defu({}, ...foldedMatcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())`,
+      ].join('\n')
     },
   })
 
