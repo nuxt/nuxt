@@ -47,6 +47,7 @@
     "rolldown-string": "catalog:vite",
     "seroval": "catalog:build",
     "std-env": "catalog:build",
+    "source-map-js": "^1.2.1",
     "ufo": "catalog:build",
     "unenv": "catalog:build",
     "vite": "catalog:vite",
