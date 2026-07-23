@@ -610,6 +610,20 @@ describe('reserved island prop keys', () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', { props }))
     expect(result.html).toBeTruthy()
   })
+
+  it('rejects a top-level `as` prop the island does not declare', async () => {
+    const res = await fetch(islandURL('PureComponent', { props: { as: 'iframe' } }))
+    expect(res.status).toBe(400)
+    // the reason is fixed, so a caller cannot probe which islands declare which props
+    const body = await res.text()
+    expect(body).toContain('Invalid island request props')
+    expect(body).not.toContain('declare')
+  })
+
+  it('renders a top-level `as` prop the island declares', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('AsPropComponent', { props: { as: 'section' } }))
+    expect(result.html).toContain('as: section')
+  })
 })
 
 describe('page-island middleware', () => {
