@@ -275,7 +275,10 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
       if (import.meta.server) { return false }
       const prefetchOn = unref(props.prefetchOn)
-      return Boolean((!prefetched.value && !isHashLinkWithoutHashMode(to.value) && (typeof prefetchOn === 'string' ? prefetchOn === mode : (prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (unref(props.prefetch) ?? options.prefetch) !== false && unref(props.noPrefetch) !== true && unref(props.target) !== '_blank' && !isSlowConnection()))
+      const enabledForMode = typeof prefetchOn === 'string' ? prefetchOn === mode : (prefetchOn?.[mode] ?? options.prefetchOn?.[mode])
+      const optedOut = (unref(props.prefetch) ?? options.prefetch) === false || unref(props.noPrefetch) === true
+      const prefetchableLink = !prefetched.value && !isHashLinkWithoutHashMode(to.value) && unref(props.target) !== '_blank'
+      return Boolean(enabledForMode) && !optedOut && prefetchableLink && !isSlowConnection()
     }
 
     async function prefetch (nuxtApp = useNuxtApp()) {
