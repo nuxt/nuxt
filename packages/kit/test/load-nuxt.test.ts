@@ -9,7 +9,7 @@ import { findWorkspaceDir } from 'pkg-types'
 const repoRoot = await findWorkspaceDir()
 
 describe('loadNuxt', () => {
-  const tempDir = join(repoRoot, 'temp')
+  const tempDir = join(repoRoot, 'temp', 'load-nuxt')
 
   beforeAll(async () => {
     await mkdir(join(tempDir, 'nuxt'), { recursive: true })
