@@ -141,8 +141,11 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     ssrContext.url = url + payloadURL.search
 
     event._path = event.node.req.url = ssrContext.url
+    // Replay a cached payload only during prerender. At runtime the cache is keyed by path
+    // alone, so serving it would return one principal's SSR data to another and skip route
+    // middleware / page guards; runtime payload requests must fall through to a full render.
     const cacheKey = getPayloadCacheKey(ssrContext.url)
-    if (payloadCache && await payloadCache.hasItem(cacheKey)) {
+    if (import.meta.prerender && payloadCache && await payloadCache.hasItem(cacheKey)) {
       return payloadCache.getItem(cacheKey) as Promise<Partial<RenderResponse>>
     }
   }
@@ -232,19 +235,17 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   // Directly render payload routes
   if (isRenderingPayload) {
     const response = renderPayloadResponse(ssrContext)
-    if (payloadCache) {
+    if (import.meta.prerender && payloadCache) {
       await payloadCache.setItem(getPayloadCacheKey(ssrContext.url), response)
     }
     return response
   }
 
-  if (_PAYLOAD_EXTRACTION) {
-    if (import.meta.prerender) {
-      // Hint nitro to prerender payload for this route
-      appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
-    }
-    // Cache payload from the current SSR context so _payload.json requests can be served
-    // without a full re-render (during prerender via LRU+FS, at runtime via in-memory TTL cache)
+  if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
+    // Hint nitro to prerender payload for this route
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    // Warm the cache for prerendered `_payload.json` requests. Confined to prerender: a
+    // runtime write would persist one principal's payload under a path-only key.
     if (payloadCache) {
       await payloadCache.setItem(getPayloadCacheKey(ssrContext.url), renderPayloadResponse(ssrContext))
     }

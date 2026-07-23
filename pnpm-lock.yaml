@@ -1947,6 +1947,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/payload-cache-leak:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/preview:
     dependencies:
       nuxt:
