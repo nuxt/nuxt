@@ -1,14 +1,11 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
+import { joinURL, withQuery } from 'ufo'
 import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
 import { createError } from '../composables/error'
-import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
-import type { $Fetch } from 'ofetch'
+import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
 import { componentIslands } from '#build/nuxt.config.mjs'
-import { $fetch as _$fetch } from '#build/fetch'
-
-const $fetch = _$fetch as $Fetch
 
 function parseRevivedData (data: string) {
   try {
@@ -32,9 +29,12 @@ if (componentIslands) {
   revivers.push(['Island', ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.isHydrating) {
-      nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
-        responseType: 'json',
-        ...params ? { params } : {},
+      const url = withQuery(joinURL(useRuntimeConfig().app.baseURL ?? '', `/__nuxt_island/${key}.json`), params ?? {})
+      nuxtApp.payload.data[key] ||= fetch(url).then((r) => {
+        if (!r.ok) {
+          throw createError({ status: r.status, statusText: r.statusText })
+        }
+        return r.json()
       }).then((r) => {
         nuxtApp.payload.data[key] = r
         return r

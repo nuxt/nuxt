@@ -30,6 +30,8 @@ export default createConfigForNuxt({
         'packages/nuxt/src/app/components/error-*.vue',
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
         'packages/nitro-server/src/runtime/templates/error-*',
+        'packages/nitro-server/src/templates/spa-loading-icon.ts',
+        'packages/schema/src/templates/loading.ts',
         'packages/kit/test/types-fixture/**',
       ],
     },

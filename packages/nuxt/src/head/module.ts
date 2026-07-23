@@ -4,7 +4,9 @@ import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, headDiagnostics } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
+import { Unhead } from '@unhead/vue/vite'
 import { streamingIifeCode } from 'unhead/stream/iife'
+
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
@@ -68,8 +70,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       const rolldownURL = rolldownPath ? pathToFileURL(rolldownPath).href : undefined
       const lightningcssURL = lightningcssPath ? pathToFileURL(lightningcssPath).href : undefined
 
-      addVitePlugin(async () => {
-        const { Unhead } = await import('@unhead/vue/vite')
+      addVitePlugin(() => {
         const viteOptions = options.vite || {}
         return Unhead({
           validate: !nuxt.options.test,

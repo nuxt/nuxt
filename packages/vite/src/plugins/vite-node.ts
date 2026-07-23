@@ -193,6 +193,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   if (!nuxt.options.dev) {
     return
   }
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    return
+  }
 
   let socketServer: net.Server | undefined
   const { socketPath, parentDir } = generateSocketPath()
@@ -219,6 +222,20 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
+
+  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath].map(p => pathToFileURL(p).href))
+  nitro.options.rollupConfig ||= {}
+  const existingExternal = nitro.options.rollupConfig.external
+  nitro.options.rollupConfig.external = (id, ...args) => {
+    if (externalRuntimeUrls.has(id)) {
+      return true
+    }
+    if (typeof existingExternal === 'function') {
+      return existingExternal(id, ...args)
+    }
+    const patterns = existingExternal == null ? [] : (Array.isArray(existingExternal) ? existingExternal : [existingExternal])
+    return patterns.some(e => typeof e === 'string' ? e === id : e.test(id))
+  }
 
   const serverEntryCode = `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`
   setBuildOutput('serverEntry', () => serverEntryCode)

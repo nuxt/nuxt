@@ -21,6 +21,13 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+    optionsApi: {
+      async $resolve (val, get) {
+        if (typeof val === 'boolean') { return val }
+        // Options API support is compiled out of the client bundle from v5 onwards.
+        return (await get('future.compatibilityVersion')) < 5
+      },
+    },
     propsDestructure: true,
 
     config: {},

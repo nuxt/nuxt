@@ -1,16 +1,11 @@
-import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 
 import { glob } from 'tinyglobby'
-import { exec } from 'tinyexec'
+
+import { fixturesDir, getFixtureDirs, prepareFixtures } from './fixture-prepare.ts'
 
 async function initTesting () {
-  const fixturesDir = fileURLToPath(new URL('./fixtures', import.meta.url))
-  const dirs = await glob(['*'], {
-    onlyDirectories: true,
-    cwd: fixturesDir,
-    absolute: true,
-  })
+  const dirs = await getFixtureDirs()
 
   const stalePerProjectDirs = await glob(['*/.nuxt-*', '*/.output-*'], {
     onlyDirectories: true,
@@ -26,9 +21,7 @@ async function initTesting () {
     ...dirs.map(dir => rm(`${dir}/node_modules/.cache`, { force: true, recursive: true })),
   ])
 
-  await Promise.all(
-    dirs.map(dir => exec('pnpm', ['nuxt', 'prepare'], { nodeOptions: { cwd: dir } })),
-  )
+  await prepareFixtures(dirs)
 }
 
 initTesting()

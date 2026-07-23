@@ -39,6 +39,21 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     }
   })
 
+  // https://github.com/nuxt/nuxt/issues/14766
+  it.skipIf(isWebpack)('resolves dynamic and glob asset imports during SSR', async () => {
+    const testIds = ['dynamic-import-asset', 'lazy-glob-asset', 'eager-glob-asset'] as const
+    const html = await $fetch<string>('/dynamic-assets?asset=two')
+
+    for (const testId of testIds) {
+      const image = html.match(new RegExp(`<img[^>]*data-testid="${testId}"[^>]*>`))?.[0]
+      const src = image?.match(/src="([^"]+)"/)?.[1]
+
+      expect(src).toMatch(/^\/_nuxt\/.+\.svg$/)
+      const asset = await fetch(src!)
+      expect(await asset.text()).toContain('dynamic-two')
+    }
+  })
+
   // webpack injects CSS differently
   it.skipIf(isWebpack)('adds relative paths to CSS', async () => {
     const html: string = await $fetch<string>('/assets')

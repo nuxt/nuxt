@@ -395,6 +395,22 @@ export const clientConfigTemplate: NuxtTemplate = {
   },
 }
 
+const APP_CONFIG_MERGE_TYPES = `type IsAny<T> = 0 extends 1 & T ? true : false
+
+type MergedAppConfig<Resolved extends Record<string, unknown>, Custom extends Record<string, unknown>> = {
+  [K in keyof (Resolved & Custom)]: K extends keyof Custom
+    ? unknown extends Custom[K]
+      ? Resolved[K]
+      : IsAny<Custom[K]> extends true
+        ? Resolved[K]
+        : Custom[K] extends Record<string, any>
+            ? Resolved[K] extends Record<string, any>
+              ? MergedAppConfig<Resolved[K], Custom[K]>
+              : Exclude<Custom[K], undefined>
+            : Exclude<Custom[K], undefined>
+    : Resolved[K]
+}`
+
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents ({ app, nuxt }) {
@@ -412,27 +428,35 @@ declare global {
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
-type IsAny<T> = 0 extends 1 & T ? true : false
-
-type MergedAppConfig<Resolved extends Record<string, unknown>, Custom extends Record<string, unknown>> = {
-  [K in keyof (Resolved & Custom)]: K extends keyof Custom
-    ? unknown extends Custom[K]
-      ? Resolved[K]
-      : IsAny<Custom[K]> extends true
-        ? Resolved[K]
-        : Custom[K] extends Record<string, any>
-            ? Resolved[K] extends Record<string, any>
-              ? MergedAppConfig<Resolved[K], Custom[K]>
-              : Exclude<Custom[K], undefined>
-            : Exclude<Custom[K], undefined>
-    : Resolved[K]
-}
+${APP_CONFIG_MERGE_TYPES}
 
 declare module 'nuxt/schema' {
   interface AppConfig extends MergedAppConfig<ResolvedAppConfig, CustomAppConfig> { }
 }
 declare module '@nuxt/schema' {
   interface AppConfig extends MergedAppConfig<ResolvedAppConfig, CustomAppConfig> { }
+}
+`
+  },
+}
+
+// This declaration must not import user `app.config` files: their import graph
+// can rely on app auto-imports, which do not exist in the shared, node and
+// server programs (https://github.com/nuxt/nuxt/issues/34140).
+export const sharedAppConfigDeclarationTemplate: NuxtTemplate = {
+  filename: 'types/shared-app.config.d.ts',
+  getContents ({ nuxt }) {
+    return `
+import type { CustomAppConfig } from 'nuxt/schema'
+
+declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
+${APP_CONFIG_MERGE_TYPES}
+
+declare module 'nuxt/schema' {
+  interface AppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
+}
+declare module '@nuxt/schema' {
+  interface AppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
 }
 `
   },
@@ -511,13 +535,13 @@ export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.server.mjs',
   getContents () {
     return [
-      'import { $fetch as _$fetch } from \'ofetch\'',
+      'import { createFetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
-      'import { serverFetch } from "nitro";',
-      'globalThis.fetch = serverFetch',
+      'import { fetch } from \'nitro\'',
       'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = _$fetch.create({',
-      '    baseURL: baseURL()',
+      '  globalThis.$fetch = createFetch({',
+      '    fetch,',
+      '    defaults: { baseURL: baseURL() }',
       '  })',
       '}',
       'export const $fetch = globalThis.$fetch',
@@ -531,20 +555,29 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
     return [
       'import { $fetch as _$fetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
-      'if (!globalThis.$fetch) {',
-      '  globalThis.$fetch = _$fetch.create({',
-      '    baseURL: baseURL()',
-      '  })',
-      '}',
-      'export const $fetch = globalThis.$fetch',
+      'export const $fetch = import.meta.test ? globalThis.$fetch || _$fetch.create({ baseURL: baseURL() }) : /*#__PURE__*/ _$fetch.create({ baseURL: /*#__PURE__*/ baseURL() })',
     ].join('\n')
   },
+}
+
+// `#build/fetch-setup` is imported for its side effects as the first import in the app entry.
+// On the server it seeds `globalThis.$fetch` before any other module evaluates. On the client
+// `$fetch` is an auto-import, so this stays empty to keep a static entry import from pulling
+// `ofetch` into bundles that never use `$fetch`.
+export const dollarFetchSetupServerTemplate: NuxtTemplate = {
+  filename: 'fetch-setup.server.mjs',
+  getContents: () => 'import \'#build/fetch\'\n',
+}
+
+export const dollarFetchSetupClientTemplate: NuxtTemplate = {
+  filename: 'fetch-setup.client.mjs',
+  getContents: () => 'export {}\n',
 }
 
 export const dollarFetchTypeTemplate: NuxtTemplate = {
   filename: 'fetch.d.ts',
   getContents () {
-    return 'export { $fetch } from \'ofetch\'\n'
+    return 'export declare const $fetch: import(\'nitro/types\').$Fetch\n'
   },
 }
 
