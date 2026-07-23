@@ -12,7 +12,7 @@ export function LayerDepOptimizePlugin (nuxt: Nuxt): Plugin | undefined {
   // Primary fix is adding layer app dirs to optimizeDeps.entries in client.ts (see #28631).
   // Identify which layers will need to have an extra resolve step.
   const layerDirs: string[] = []
-  const rootDirWithSlash = nuxt.options.rootDir + (nuxt.options.rootDir.endsWith('/') ? '' : '/')
+  const rootDirWithSlash = nuxt.options.rootDir.replace(/\/?$/, '/')
   for (const dirs of getLayerDirectories(nuxt)) {
     if (dirs.app !== nuxt.options.srcDir && !dirs.app.startsWith(rootDirWithSlash)) {
       layerDirs.push(dirs.app)
