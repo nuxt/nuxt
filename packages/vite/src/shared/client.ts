@@ -14,7 +14,7 @@ import { getTranspileStrings } from '../utils/transpile.ts'
  */
 export function getOptimizeDepsEntries (nuxt: Nuxt, mainEntry: string): string[] {
   const entries: string[] = [mainEntry]
-  const rootDirWithSlash = nuxt.options.rootDir + (nuxt.options.rootDir.endsWith('/') ? '' : '/')
+  const rootDirWithSlash = nuxt.options.rootDir.replace(/\/?$/, '/')
   const srcDir = nuxt.options.srcDir
 
   for (const dirs of getLayerDirectories(nuxt)) {
