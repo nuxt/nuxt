@@ -4,6 +4,7 @@ import { defu } from 'defu'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
+import { MAX_VFOR_LENGTH } from './vfor'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -95,8 +96,12 @@ export function vforToArray (source: any): any[] {
     if (import.meta.dev && !Number.isInteger(source)) {
       console.warn(`The v-for range expect an integer value but got ${source}.`)
     }
+    if (import.meta.dev && source > MAX_VFOR_LENGTH) {
+      console.warn(`A v-for in a server component asked for ${source} iterations; only the first ${MAX_VFOR_LENGTH} were rendered. Island props come from the request, so the count is capped. Paginate the data, or clamp the value before passing it to the island.`)
+    }
+    const length = source > MAX_VFOR_LENGTH ? MAX_VFOR_LENGTH : source
     const array: number[] = []
-    for (let i = 0; i < source; i++) {
+    for (let i = 0; i < length; i++) {
       array[i] = i
     }
     return array

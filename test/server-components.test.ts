@@ -6,6 +6,8 @@ import { normalize } from 'pathe'
 import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { computeIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
+import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
+import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
@@ -527,6 +529,76 @@ describe('hash binding', () => {
       props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
     }))
     expect(res.status).toBe(400)
+  })
+})
+
+describe('denial-of-service protections', () => {
+  it('rejects an oversized island body before hashing', async () => {
+    const props = JSON.stringify(Object.fromEntries(Array.from({ length: 150_000 }, (_, i) => [`k${i}`, i])))
+    expect(props.length).toBeGreaterThan(MAX_ISLAND_BODY_BYTES)
+    const res = await fetch('/__nuxt_island/PureComponent_deadbeef.json', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ props }),
+    })
+    expect(res.status).toBe(413)
+  })
+
+  it('rejects an oversized chunked island body without content-length', async () => {
+    const chunk = JSON.stringify(Object.fromEntries(Array.from({ length: 10_000 }, (_, i) => [`k${i}`, i])))
+    const body = new ReadableStream<Uint8Array>({
+      start (controller) {
+        for (let i = 0; i < 20; i++) {
+          controller.enqueue(new TextEncoder().encode(chunk))
+        }
+        controller.close()
+      },
+    })
+    const res = await fetch('/__nuxt_island/PureComponent_deadbeef.json', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+      // @ts-expect-error `duplex` is required for a streamed request body but missing from the types
+      duplex: 'half',
+    })
+    expect(res.status).toBe(413)
+  })
+
+  it('rejects a deeply nested island body before hashing', async () => {
+    const props = '['.repeat(500) + ']'.repeat(500)
+    const res = await fetch('/__nuxt_island/PureComponent_deadbeef.json', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ props }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('still accepts a well-formed small island body', async () => {
+    const name = 'PureComponent'
+    const props = { bool: false, number: 1, str: 's', obj: {} }
+    const hashId = computeIslandHash(name, serializeIslandProps(props), {}, undefined)
+    const res = await fetch(`/__nuxt_island/${name}_${hashId}.json`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ props: serializeIslandProps(props) }),
+    })
+    expect(res.status).toBe(200)
+  })
+
+  // Bounds both the plain-element path (`ssrRenderList`) and the slot path (`vforToArray`).
+  it('bounds plain and slot v-for over a large-integer prop', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 10_000_000 } }))
+    expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
+    expect(result.slots?.loop?.props?.length ?? 0).toBe(MAX_VFOR_LENGTH)
+    expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
+  })
+
+  it('renders a small v-for prop unchanged', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 3 } }))
+    expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
+    expect(result.slots?.loop?.props?.length ?? 0).toBe(3)
+    expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(3)
   })
 })
 
