@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { hash } from 'ohash'
 import { filterIslandProps, getIslandHash, serializeIslandProps } from '#app/island-hash'
+import { findUnsafeIslandPropKey } from '#app/island-props'
 
 describe('filterIslandProps', () => {
   it('returns an empty object for nullish input', () => {
@@ -123,5 +124,56 @@ describe('getIslandHash', () => {
       const h = getIslandHash({ name: 'Comp', props: JSON.stringify({ i, salt: `${i}-${i}` }) })
       expect(h).not.toMatch(/[-_]/)
     }
+  })
+})
+
+describe('findUnsafeIslandPropKey', () => {
+  it('returns undefined for null and undefined', () => {
+    expect(findUnsafeIslandPropKey(null)).toBeUndefined()
+    expect(findUnsafeIslandPropKey(undefined)).toBeUndefined()
+  })
+
+  it('returns undefined for primitives', () => {
+    expect(findUnsafeIslandPropKey(42)).toBeUndefined()
+    expect(findUnsafeIslandPropKey('hello')).toBeUndefined()
+    expect(findUnsafeIslandPropKey(true)).toBeUndefined()
+  })
+
+  it('returns undefined for plain objects without a template key', () => {
+    expect(findUnsafeIslandPropKey({ foo: 1, bar: 'baz' })).toBeUndefined()
+    expect(findUnsafeIslandPropKey({ content: { title: 'Hello' }, items: [{ label: 'One' }] })).toBeUndefined()
+  })
+
+  it('returns undefined for arrays without a template key', () => {
+    expect(findUnsafeIslandPropKey([1, 2, 3])).toBeUndefined()
+    expect(findUnsafeIslandPropKey([{ ok: true }])).toBeUndefined()
+  })
+
+  it('returns the template key at the top level', () => {
+    expect(findUnsafeIslandPropKey({ template: '<div>evil</div>' })).toBe('template')
+  })
+
+  it('returns the template key when nested in an object', () => {
+    expect(findUnsafeIslandPropKey({ as: { template: '<div />' } })).toBe('template')
+  })
+
+  it('returns the template key when nested in an array', () => {
+    expect(findUnsafeIslandPropKey({ items: [{ id: 1 }, { template: 'evil' }] })).toBe('template')
+  })
+
+  it('does not match keys that merely contain template as a substring', () => {
+    expect(findUnsafeIslandPropKey({ template_id: 42, pretemplate: true })).toBeUndefined()
+  })
+
+  it('only considers own enumerable properties', () => {
+    const inherited = Object.create({ template: '<div />' })
+    inherited.label = 'safe'
+    expect(findUnsafeIslandPropKey({ inherited })).toBeUndefined()
+  })
+
+  it('handles circular values without infinite loop', () => {
+    const value: Record<string, unknown> = {}
+    value.self = value
+    expect(findUnsafeIslandPropKey(value)).toBeUndefined()
   })
 })

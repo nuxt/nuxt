@@ -7,10 +7,12 @@ import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
 import { filterIslandProps, getIslandHash } from '#app/island-hash'
+import { findUnsafeIslandPropKey } from '#app/island-props'
 import { MAX_ISLAND_BODY_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
-import { tracingChannelNuxt } from '#internal/nuxt.config.mjs'
+import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
+import { serverDiagnostics } from '../diagnostics'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
@@ -242,6 +244,17 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   const expectedHash = getIslandHash({ name: componentName, props: parsedProps, context: clientContext })
   if (!hashId || hashId !== expectedHash) {
     throw new HTTPError({ status: 400, statusText: 'Invalid island request hash' })
+  }
+
+  // A `template` prop is only executable with the runtime compiler bundled, so this reject
+  // (which would otherwise trip on legitimate data keyed `template`) is scoped to it.
+  if (runtimeCompiler && findUnsafeIslandPropKey(parsedProps)) {
+    // The detail goes to the server console; echoing it would confirm to an unauthenticated
+    // caller that the runtime compiler is bundled.
+    if (import.meta.dev) {
+      serverDiagnostics.NUXT_E8005()
+    }
+    throw new HTTPError({ status: 400, statusText: 'Invalid island request props' })
   }
 
   return {
