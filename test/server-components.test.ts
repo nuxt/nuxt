@@ -202,6 +202,12 @@ describe('server components/islands', () => {
     await page.close()
   })
 
+  it('/server-page - island links are prefetched when visible', async () => {
+    const { page } = await renderPage('/server-page')
+    await page.waitForFunction(() => (window as any).__prefetchedLinks?.includes('/server-page-with-nuxtpage'))
+    await page.close()
+  })
+
   it('/server-page - island links with `replace` do not add a history entry', async () => {
     const { page } = await renderPage('/')
     await page.getByText('to server page').click()
