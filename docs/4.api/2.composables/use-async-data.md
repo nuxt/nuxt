@@ -75,8 +75,8 @@ const { data: user } = useAsyncData(
 </script>
 ```
 
-::tip{to="/docs/4.x/api/composables/use-async-route-data"}
-For data that should always be scoped to the current page path (and receive `route` in the handler), see [`useAsyncRouteData`](/docs/4.x/api/composables/use-async-route-data).
+::tip
+For data that should always be scoped to the current page path (and receive `route` in the handler), use `useAsyncRouteData`.
 ::
 
 ### Make Your `handler` Abortable
