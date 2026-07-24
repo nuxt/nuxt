@@ -16,7 +16,7 @@ export { hashKey } from './utils/hash'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
 export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
 export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, SerializedErrorCause } from './types'
-export type { PageMeta, NuxtPageProps, NuxtLayouts } from '../pages/runtime/index'
+export type { PageMeta, NuxtPageProps, NuxtLayouts, PageValidateResult } from '../pages/runtime/index'
 
 export const isVue2 = false
 export const isVue3 = true

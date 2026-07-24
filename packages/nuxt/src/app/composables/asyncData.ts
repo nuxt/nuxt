@@ -350,7 +350,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       DefaultT = undefined,
     > (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
       const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-      if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
+      if (isAsyncDataAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
       // eslint-disable-next-line prefer-const
       let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
@@ -679,8 +679,6 @@ export function isAsyncDataAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGette
   }
   return true
 }
-
-const _isAutoKeyNeeded = isAsyncDataAutoKeyNeeded
 
 /** @since 3.1.0 */
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> } {

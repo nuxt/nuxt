@@ -10,11 +10,7 @@ links:
 
 :badge[v4.6+]
 
-`useAsyncRouteData` is a thin wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) for data that should refresh when the page path changes. It prefixes your key with an encoded `route.path`, passes the current route into the handler, and can validate the result (for example as a missing entity).
-
-::note
-Payload entries stay **flat** strings on `nuxtApp.payload.data` (for example `$r:%2Fposts%2F1:article`). Nested `payload.data[path][key]` is not used, so [`useNuxtData`](/docs/4.x/api/composables/use-nuxt-data), [`clearNuxtData`](/docs/4.x/api/utils/clear-nuxt-data), and refresh helpers keep working. Encoding the path keeps `/foo/bar` and `/foo-bar` distinct.
-::
+`useAsyncRouteData` is a thin wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) for data that should refresh when the page path changes. It scopes your key to the current route, passes that route into the handler, and can validate the result (for example as a missing entity).
 
 ## Usage
 
@@ -49,7 +45,7 @@ export function useAsyncRouteData<ResT> (
 
 ### `key`
 
-A unique key within the current route. Combined with an encoded `route.path` into one payload key.
+A unique key within the current route. Nuxt scopes it to the current path so each page keeps its own cache slot.
 
 ### `handler`
 
