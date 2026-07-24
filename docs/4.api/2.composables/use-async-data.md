@@ -76,7 +76,7 @@ const { data: user } = useAsyncData(
 ```
 
 ::tip
-For data that should always be scoped to the current page path (and receive `route` in the handler), use `useAsyncRouteData`.
+You can use `useAsyncRouteData` for fetching data that is scoped to the current page.
 ::
 
 ### Make Your `handler` Abortable
