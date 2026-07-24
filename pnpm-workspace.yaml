@@ -10,7 +10,6 @@ packages:
 
 patchedDependencies:
   changelogen: patches/changelogen.patch
-  knip@6.27.0: patches/knip@6.27.0.patch
   nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
 
 publicHoistPattern:
@@ -53,6 +52,7 @@ minimumReleaseAgeExclude:
   - '@unhead/bundler@3.2.1'
   - '@unhead/vue@3.2.1'
   - unhead@3.2.1
+  - impound@1.1.6
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
@@ -242,7 +242,6 @@ catalogs:
     html-validate: 11.5.6
     htmlnano: 3.4.0
     installed-check: 10.0.1
-    # must match the patchedDependencies key above
     knip: 6.29.0
     magic-regexp: 0.11.0
     markdownlint-cli: 0.49.1
