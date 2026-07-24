@@ -84,6 +84,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const isIgnored = createIsIgnored(nuxt)
   const serverEntry = nuxt.options.ssr ? entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
+  const assetFileNames: vite.Rolldown.OutputOptions['assetFileNames'] = nuxt.options.dev
+    ? undefined
+    : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`))
   const config: vite.InlineConfig = mergeConfig(
     {
       base: nuxt.options.dev
@@ -176,14 +179,19 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             },
             sanitizeFileName: sanitizeFilePath,
             // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/build.ts#L464-L478
-            assetFileNames: nuxt.options.dev
-              ? undefined
-              : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
+            assetFileNames,
           },
         },
 
         // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
         watch: { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] },
+      },
+      worker: {
+        rolldownOptions: {
+          output: {
+            assetFileNames,
+          },
+        },
       },
       plugins: [
         // per-plugin timing when profiling is enabled

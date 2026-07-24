@@ -2061,6 +2061,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/vite-worker-assets:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
 packages:
 
   '@ampproject/remapping@2.3.0':
