@@ -49,7 +49,7 @@ export function useAsyncRouteData<ResT> (
 
 ### `key`
 
-A unique key within the current route. Combined with an encoded `route.path` into one flat payload key. Optional when the Nuxt compiler injects an auto-key.
+A unique key within the current route. Combined with an encoded `route.path` into one payload key.
 
 ### `handler`
 
