@@ -75,6 +75,10 @@ const { data: user } = useAsyncData(
 </script>
 ```
 
+::tip{to="/docs/4.x/api/composables/use-async-route-data"}
+For data that should always be scoped to the current page path (and receive `route` in the handler), see [`useAsyncRouteData`](/docs/4.x/api/composables/use-async-route-data).
+::
+
 ### Make Your `handler` Abortable
 
 You can make your `handler` function abortable by using the `signal` provided in the second argument. This is useful for cancelling requests when they are no longer needed, such as when a user navigates away from a page. `$fetch` natively supports abort signals.
