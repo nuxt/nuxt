@@ -7,6 +7,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { clearNuxtData, useNuxtData } from '#app/composables/asyncData'
 import { createRouteAsyncDataKey, useAsyncRouteData } from '#app/composables/asyncRouteData'
 import { navigateTo, useRoute } from '#app/composables/router'
+import * as ssr from '#app/composables/ssr'
 
 describe('createRouteAsyncDataKey', () => {
   it('builds a flat composite key from path and user key', () => {
@@ -78,23 +79,50 @@ describe('useAsyncRouteData', () => {
     comp.unmount()
   })
 
+  it('does not re-run when only the query string changes', async () => {
+    const handler = vi.fn((route: ReturnType<typeof useRoute>) => Promise.resolve(route.fullPath))
+
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncRouteData(uniqueKey, handler)
+        return () => h('div', [data.value])
+      },
+    })
+
+    const comp = await mountSuspended(component)
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    await navigateTo({ path: useRoute().path, query: { page: '2' } })
+    await flushPromises()
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    comp.unmount()
+  })
+
   it('sets a 404 error when validate returns false', async () => {
-    const setStatus = vi.spyOn(await import('#app/composables/ssr'), 'setResponseStatus')
+    const setStatus = vi.spyOn(ssr, 'setResponseStatus')
+    const route = useRoute()
+    const validate = vi.fn(() => false)
 
     const { data, error, status } = await useAsyncRouteData(
       uniqueKey,
       () => Promise.resolve({ ok: false }),
       {
-        validate: () => false,
+        validate,
         default: () => null,
       },
     )
 
+    expect(validate).toHaveBeenCalledWith({ ok: false }, route)
     expect(data.value).toBe(null)
     expect(status.value).toBe('error')
     expect(error.value?.status).toBe(404)
     if (import.meta.server) {
-      expect(setStatus).toHaveBeenCalled()
+      expect(setStatus).toHaveBeenCalledWith(
+        expect.anything(),
+        404,
+        expect.stringContaining('Page Not Found'),
+      )
     }
     setStatus.mockRestore()
   })
