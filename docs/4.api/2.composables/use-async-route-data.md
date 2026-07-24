@@ -10,13 +10,13 @@ links:
 
 :badge[v4.6+]
 
-`useAsyncRouteData` is a thin wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) for data that should refresh when the page path changes. It scopes your key to the current route, passes that route into the handler, and can validate the result (for example as a missing entity).
+`useAsyncRouteData` is a thin wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) for data that should refresh when the page path changes. It scopes your key to the current route, passes that route into the handler context, and can validate the result (for example as a missing entity).
 
 ## Usage
 
 ```vue [app/pages/posts/[id\\].vue]
 <script setup lang="ts">
-const { data, error } = await useAsyncRouteData('post', (route, _nuxtApp, { signal }) => {
+const { data, error } = await useAsyncRouteData('post', (_nuxtApp, { signal, route }) => {
   return $fetch(`/api/posts/${route.params.id}`, { signal })
 }, {
   validate: post => !!post,
@@ -30,13 +30,13 @@ When the path changes, Nuxt migrates to a new cache slot and runs the handler ag
 
 ```ts [Signature]
 export function useAsyncRouteData<ResT> (
-  handler: (route, nuxtApp, { signal }) => Promise<ResT>,
+  handler: (nuxtApp, { signal, route }) => Promise<ResT>,
   options?: AsyncRouteDataOptions<ResT>,
 ): AsyncData<ResT> & Promise<AsyncData<ResT>>
 
 export function useAsyncRouteData<ResT> (
   key: MaybeRefOrGetter<string>,
-  handler: (route, nuxtApp, { signal }) => Promise<ResT>,
+  handler: (nuxtApp, { signal, route }) => Promise<ResT>,
   options?: AsyncRouteDataOptions<ResT>,
 ): AsyncData<ResT> & Promise<AsyncData<ResT>>
 ```
@@ -49,7 +49,7 @@ A unique key within the current route. Nuxt scopes it to the current path so eac
 
 ### `handler`
 
-An asynchronous function. The first argument is the current route; the second and third match [`useAsyncData`](/docs/4.x/api/composables/use-async-data) (`nuxtApp`, `{ signal }`).
+Same shape as [`useAsyncData`](/docs/4.x/api/composables/use-async-data): `(nuxtApp, { signal, route })`. The only addition is `route` on the context object.
 
 ### `options`
 
