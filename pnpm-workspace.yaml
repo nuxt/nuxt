@@ -47,3 +47,5 @@ minimumReleaseAgeExclude:
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1
   - unimport@6.3.1
+  # Renovate catalog bump to ^1.1.6; drop once 1.1.6 clears the release-age window
+  - impound@1.1.6
