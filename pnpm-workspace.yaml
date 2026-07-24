@@ -121,7 +121,7 @@ catalogs:
   build:
     '@dxup/nuxt': ^0.5.3
     '@nuxt/cli': ^3.37.0
-    '@nuxt/devtools': ^3.2.4
+    '@nuxt/devtools': ^3.3.1
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.40
     autoprefixer: ^10.5.4
