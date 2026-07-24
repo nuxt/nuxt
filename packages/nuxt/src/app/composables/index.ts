@@ -1,6 +1,6 @@
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
-export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataRequestStatus } from './asyncData'
+export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataErrorOf, AsyncDataRequestStatus } from './asyncData'
 export { useAsyncRouteData } from './asyncRouteData'
 export type { AsyncRouteDataHandler, AsyncRouteDataOptions, AsyncRouteDataOptionsWithTransform, AsyncRouteDataValidateResult, UseAsyncRouteData } from './asyncRouteData'
 export { useHydration } from './hydrate'
