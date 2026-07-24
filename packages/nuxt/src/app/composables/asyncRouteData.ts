@@ -7,6 +7,7 @@ import type { AsyncData, AsyncDataErrorOf, AsyncDataOptions, AsyncDataOptionsWit
 import { isAsyncDataAutoKeyNeeded, useAsyncData } from './asyncData'
 import type { NuxtError } from './error'
 import { createError } from './error'
+import type { PageValidateResult } from './pages'
 import { useRoute } from './router'
 import { setResponseStatus, useRequestEvent } from './ssr'
 
@@ -15,12 +16,6 @@ export type AsyncRouteDataHandler<ResT> = (
   nuxtApp: NuxtApp,
   options: { signal: AbortSignal },
 ) => Promise<ResT>
-
-/** Matches page `meta.validate` shape (`status` / `statusText`). */
-export type AsyncRouteDataValidateResult = boolean | {
-  status?: number
-  statusText?: string
-}
 
 export interface AsyncRouteDataOptions<
   ResT,
@@ -32,11 +27,12 @@ export interface AsyncRouteDataOptions<
    * Validate resolved data for the current route.
    * Returning anything other than `true` rejects with a Nuxt error (default status 404)
    * and sets the SSR response status when an event is available.
+   * Same result shape as page `meta.validate` ({@link PageValidateResult}).
    */
   validate?: (
     data: ResT,
     route: RouteLocationNormalizedLoaded,
-  ) => AsyncRouteDataValidateResult | Promise<AsyncRouteDataValidateResult>
+  ) => PageValidateResult | Promise<PageValidateResult>
 }
 
 export interface AsyncRouteDataOptionsWithTransform<
@@ -58,7 +54,7 @@ export function createRouteAsyncDataKey (routePath: string, key: string): string
 }
 
 function toRouteDataError (
-  result: Exclude<AsyncRouteDataValidateResult, true>,
+  result: Exclude<PageValidateResult, true>,
   route: RouteLocationNormalizedLoaded,
 ): NuxtError {
   const details = result && typeof result === 'object' ? result : undefined
