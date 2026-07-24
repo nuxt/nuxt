@@ -388,8 +388,8 @@ export const clientConfigTemplate: NuxtTemplate = {
     return [
       'export const useRuntimeConfig = () => ',
       (!nuxt.options.future.multiApp
-        ? 'window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config'
-        : `window?.__NUXT__?.[${appId}]?.config || window?.useNuxtApp?.(${appId}).payload?.config`)
+        ? 'typeof window !== \'undefined\' && (window.__NUXT__?.config || window.useNuxtApp?.().payload?.config)'
+        : `typeof window !== 'undefined' && (window.__NUXT__?.[${appId}]?.config || window.useNuxtApp?.(${appId}).payload?.config)`)
         || {},
     ].join('\n')
   },
