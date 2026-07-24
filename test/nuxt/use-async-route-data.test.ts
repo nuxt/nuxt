@@ -32,12 +32,12 @@ describe('useAsyncRouteData', () => {
 
   it('passes the current route into the handler', async () => {
     const route = useRoute()
-    const handler = vi.fn((r: ReturnType<typeof useRoute>) => Promise.resolve({ path: r.path }))
+    const handler = vi.fn((_nuxtApp: unknown, { route: r }: { route: ReturnType<typeof useRoute> }) => Promise.resolve({ path: r.path }))
 
     const { data } = await useAsyncRouteData(uniqueKey, handler)
 
     expect(handler).toHaveBeenCalledTimes(1)
-    expect(handler.mock.calls[0]![0].path).toBe(route.path)
+    expect(handler.mock.calls[0]![1].route.path).toBe(route.path)
     expect(data.value).toEqual({ path: route.path })
   })
 
@@ -52,7 +52,7 @@ describe('useAsyncRouteData', () => {
   })
 
   it('migrates the cache slot when the route path changes', async () => {
-    const handler = vi.fn((route: ReturnType<typeof useRoute>) => Promise.resolve(route.path))
+    const handler = vi.fn((_nuxtApp: unknown, { route }: { route: ReturnType<typeof useRoute> }) => Promise.resolve(route.path))
 
     const component = defineComponent({
       setup () {
@@ -80,7 +80,7 @@ describe('useAsyncRouteData', () => {
   })
 
   it('does not re-run when only the query string changes', async () => {
-    const handler = vi.fn((route: ReturnType<typeof useRoute>) => Promise.resolve(route.fullPath))
+    const handler = vi.fn((_nuxtApp: unknown, { route }: { route: ReturnType<typeof useRoute> }) => Promise.resolve(route.fullPath))
 
     const component = defineComponent({
       setup () {

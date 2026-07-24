@@ -11,10 +11,14 @@ import type { PageValidateResult } from './pages'
 import { useRoute } from './router'
 import { setResponseStatus, useRequestEvent } from './ssr'
 
+export type AsyncRouteDataHandlerContext = {
+  signal: AbortSignal
+  route: RouteLocationNormalizedLoaded
+}
+
 export type AsyncRouteDataHandler<ResT> = (
-  route: RouteLocationNormalizedLoaded,
   nuxtApp: NuxtApp,
-  options: { signal: AbortSignal },
+  context: AsyncRouteDataHandlerContext,
 ) => Promise<ResT>
 
 export interface AsyncRouteDataOptions<
@@ -131,7 +135,7 @@ export interface UseAsyncRouteData {
 /**
  * Route-scoped wrapper around {@link useAsyncData}.
  * Keys are automatically prefixed with an encoded `route.path` so data stays unique across page transitions.
- * The handler receives the current route as its first argument.
+ * The handler matches {@link useAsyncData}, with the current `route` added to the context object.
  * @see https://github.com/nuxt/nuxt/issues/31556
  * @since 4.6.0
  */
@@ -163,8 +167,8 @@ export const useAsyncRouteData: UseAsyncRouteData = function useAsyncRouteData (
 
   return useAsyncData(
     key,
-    async (nuxtApp, context) => {
-      const data = await handler(route, nuxtApp, context)
+    async (nuxtApp, { signal }) => {
+      const data = await handler(nuxtApp, { signal, route })
       return assertValidRouteData(data, route, validate)
     },
     asyncDataOpts,
