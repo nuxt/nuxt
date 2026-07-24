@@ -64,7 +64,7 @@ All [`useAsyncData`](/docs/4.x/api/composables/use-async-data#params) options, p
 - **Type**: `(data: ResT, route) => boolean | { status?: number, statusText?: string } | Promise<...>`
 - **Required**: false
 
-If the result is not `true`, the composable rejects with a Nuxt error (default status `404`). On the server it also calls [`setResponseStatus`](/docs/4.x/api/composables/set-response-status). The error is available on the returned `error` ref, same as other [`useAsyncData`](/docs/4.x/api/composables/use-async-data) failures.
+If the result is not `true`, the composable rejects with a Nuxt error (default status `404`). On the server it also calls [`setResponseStatus`](/docs/4.x/api/composables/set-response-status) when a request event is available. The error is available on the returned `error` ref, same as other [`useAsyncData`](/docs/4.x/api/composables/use-async-data) failures. The result shape matches page `meta.validate` (`status` / `statusText`).
 
 ## Return Values
 

@@ -202,7 +202,8 @@ export type AugmentedAsyncData<Data, Error, Ext> = [keyof Ext] extends [never] ?
 // Expressed as a callable interface so we can spell out all eight overloads
 // without losing them in an inline function expression: oxc's isolated
 // declarations dts pipeline can't infer them otherwise.
-type NuxtErrorFor<NuxtErrorDataT> = NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>
+export type AsyncDataErrorOf<NuxtErrorDataT> = NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>
+type NuxtErrorFor<NuxtErrorDataT> = AsyncDataErrorOf<NuxtErrorDataT>
 type FactoryDataT<FDataT, ResT> = [unknown] extends [FDataT] ? ResT : FDataT
 type FactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
 type FactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
@@ -736,8 +737,11 @@ function writableComputedRef<T> (getter: () => Ref<T>, shallow = false): Ref<T> 
   return forwardedRef
 }
 
-/** @internal */
-export function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (() => any), fetcher: () => any): boolean {
+/**
+ * Whether the first argument to a keyed async-data composable is a handler (auto-key needed)
+ * rather than an explicit key.
+ */
+export function isAsyncDataAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (() => any), fetcher: (() => any) | unknown): boolean {
   // string key
   if (typeof keyOrFetcher === 'string') {
     return false
@@ -752,6 +756,9 @@ export function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string
   }
   return true
 }
+
+/** @internal */
+export const _isAutoKeyNeeded = isAsyncDataAutoKeyNeeded
 
 /** @since 3.1.0 */
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> } {
