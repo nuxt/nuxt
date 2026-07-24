@@ -2348,16 +2348,16 @@ packages:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
 
-  '@devframes/hub@0.7.13':
-    resolution: {integrity: sha512-fr/5bTFU5AOB3D/5vGj/HDUlNRDJrem0AV3AL5Z9ON2wcawIzSbpFN6bNmeLSxlst2ojUJHXUiq4LQ/dNsyk3A==}
+  '@devframes/hub@0.7.11':
+    resolution: {integrity: sha512-r+qyGg0Hu1w1q7mNDCmuZUryeZAi2sUC8FTwEbwjqPT5SGjWnIoj1rMmRbJIOIBaC+2ofOejTGel4jklmzHc3w==}
     peerDependencies:
-      devframe: 0.7.13
+      devframe: 0.7.11
 
-  '@devframes/json-render@0.7.13':
-    resolution: {integrity: sha512-QHP7C/kT6utf/eXUN6+09jMj9E64W9x/CJ6Z+0pFK6QvSMfKNHKY/y+g3v6AjtttaiaIuDxISzMGvt7SkGwNhQ==}
+  '@devframes/json-render@0.7.11':
+    resolution: {integrity: sha512-Iza65fq6U9OSxKUEhGokfpfMz21ISLkWF9jeS0bQHugTLKRGcPRO/tu3YE+nTe6EiKP3kQFBvSNZ1FcZ1FPfSg==}
     peerDependencies:
-      '@devframes/hub': 0.7.13
-      devframe: 0.7.13
+      '@devframes/hub': 0.7.11
+      devframe: 0.7.11
     peerDependenciesMeta:
       '@devframes/hub':
         optional: true
@@ -4705,8 +4705,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@vitejs/devtools-kit@0.4.6':
-    resolution: {integrity: sha512-JGAmxfsF/6oNBuHc+qgN2xEqYiQKro09VwlXPwwKE6A0wpEGkSIqE1G9TTgIi+dacsST1cV5scoCHlhChQmu9g==}
+  '@vitejs/devtools-kit@0.4.5':
+    resolution: {integrity: sha512-fBjJ8Dyv0XvtyxxWyraah3+WC+7QDePfRQZ60Hh+gS0KrbuvgxoESiBVikE5IG9hwy03WliOM4yPWO/sVRP3+A==}
     peerDependencies:
       vite: 8.1.5
 
@@ -5767,8 +5767,8 @@ packages:
   devalue@5.8.2:
     resolution: {integrity: sha512-DObPPAfdtFbXjxLqK8s2Xk9ZuWz5+ZoFEhC7J76es4GU/rEiXwHTmbImoCdyoCOcBH1UF3+Cz6Z2sYD4hyl5TA==}
 
-  devframe@0.7.13:
-    resolution: {integrity: sha512-Ay/FJxXpzlLuN0dT4f4F4uE+XTmUO3mGe+lkbkWIALg95fUdlBZWkRq/nMi7S2B7xll/b2FhvjUi/sXm8IQPcw==}
+  devframe@0.7.11:
+    resolution: {integrity: sha512-EC65NA7B1Q1H0daTMiPn2BLCjekIVC8V1WvoPyXAM/pBhNGGlRRaSVSfmAsaYmqSDT3osD8nWZ6KYhExU2KOfA==}
     peerDependencies:
       '@modelcontextprotocol/sdk': ^1.0.0
       cac: ^7.0.0
@@ -6464,6 +6464,16 @@ packages:
 
   h3@2.0.1-rc.20:
     resolution: {integrity: sha512-28ljodXuUp0fZovdiSRq4G9OgrxCztrJe5VdYzXAB7ueRvI7pIUqLU14Xi3XqdYJ/khXjfpUOOD2EQa6CmBgsg==}
+    engines: {node: '>=20.11.1'}
+    hasBin: true
+    peerDependencies:
+      crossws: ^0.4.1
+    peerDependenciesMeta:
+      crossws:
+        optional: true
+
+  h3@2.0.1-rc.22:
+    resolution: {integrity: sha512-Esv0DMIuPkCTSWCA0vO73vcTqwzH1wjSrAO1TXNu/K3up1sZHa9EKMapbmxCDYBeymC3fVTk4qxp7ogQWQ+KgA==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -10498,25 +10508,25 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
-  '@devframes/hub@0.7.13(devframe@0.7.13(srvx@0.12.4)(typescript@6.0.3))':
+  '@devframes/hub@0.7.11(devframe@0.7.11(srvx@0.12.4)(typescript@6.0.3))':
     dependencies:
       birpc: 4.0.0
       destr: 2.0.5
-      devframe: 0.7.13(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)
+      devframe: 0.7.11(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)
       nostics: 1.2.0
       pathe: 2.0.3
       perfect-debounce: 2.1.0
       tinyexec: 1.2.4
       zigpty: 0.2.1
 
-  '@devframes/json-render@0.7.13(@devframes/hub@0.7.13(devframe@0.7.13(srvx@0.12.4)(typescript@6.0.3)))(devframe@0.7.13(srvx@0.12.4)(typescript@6.0.3))':
+  '@devframes/json-render@0.7.11(@devframes/hub@0.7.11(devframe@0.7.11(srvx@0.12.4)(typescript@6.0.3)))(devframe@0.7.11(srvx@0.12.4)(typescript@6.0.3))':
     dependencies:
       '@json-render/core': 0.19.0(zod@4.4.3)
-      devframe: 0.7.13(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)
+      devframe: 0.7.11(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)
       nostics: 1.2.0
       zod: 4.4.3
     optionalDependencies:
-      '@devframes/hub': 0.7.13(devframe@0.7.13(srvx@0.12.4)(typescript@6.0.3))
+      '@devframes/hub': 0.7.11(devframe@0.7.11(srvx@0.12.4)(typescript@6.0.3))
 
   '@discoveryjs/json-ext@0.6.3': {}
 
@@ -12516,7 +12526,7 @@ snapshots:
 
   '@unhead/bundler@3.2.3(@rspack/core@2.1.5(@swc/helpers@0.5.23))(cac@7.0.0)(esbuild@0.28.1)(lightningcss@1.32.0)(rolldown@1.2.0)(rollup@4.62.2)(srvx@0.12.4)(typescript@6.0.3)(unhead@3.2.3(@rspack/core@2.1.5(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.22))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)))(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.22))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22))':
     dependencies:
-      '@vitejs/devtools-kit': 0.4.6(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))
+      '@vitejs/devtools-kit': 0.4.5(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))
       magic-string: 1.0.0
       oxc-parser: 0.140.0
       oxc-walker: 1.0.0(@rspack/core@2.1.5(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.140.0)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.22))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22))
@@ -12789,11 +12799,11 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vitejs/devtools-kit@0.4.6(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))':
+  '@vitejs/devtools-kit@0.4.5(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))':
     dependencies:
-      '@devframes/hub': 0.7.13(devframe@0.7.13(srvx@0.12.4)(typescript@6.0.3))
-      '@devframes/json-render': 0.7.13(@devframes/hub@0.7.13(devframe@0.7.13(srvx@0.12.4)(typescript@6.0.3)))(devframe@0.7.13(srvx@0.12.4)(typescript@6.0.3))
-      devframe: 0.7.13(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)
+      '@devframes/hub': 0.7.11(devframe@0.7.11(srvx@0.12.4)(typescript@6.0.3))
+      '@devframes/json-render': 0.7.11(@devframes/hub@0.7.11(devframe@0.7.11(srvx@0.12.4)(typescript@6.0.3)))(devframe@0.7.11(srvx@0.12.4)(typescript@6.0.3))
+      devframe: 0.7.11(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3)
       local-pkg: 1.2.1
       mlly: 1.8.2
       nostics: 1.2.0
@@ -13979,13 +13989,13 @@ snapshots:
 
   devalue@5.8.2: {}
 
-  devframe@0.7.13(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3):
+  devframe@0.7.11(cac@7.0.0)(srvx@0.12.4)(typescript@6.0.3):
     dependencies:
       '@valibot/to-json-schema': 1.7.1(valibot@1.4.2(typescript@6.0.3))
       birpc: 4.0.0
       crossws: 0.4.10(srvx@0.12.4)
       destr: 2.0.5
-      h3: 2.0.1-rc.25(crossws@0.4.10(srvx@0.12.4))
+      h3: 2.0.1-rc.22(crossws@0.4.10(srvx@0.12.4))
       mrmime: 2.0.1
       nostics: 1.2.0
       pathe: 2.0.3
@@ -14740,6 +14750,13 @@ snapshots:
       uncrypto: 0.1.3
 
   h3@2.0.1-rc.20(crossws@0.4.10(srvx@0.12.4)):
+    dependencies:
+      rou3: 0.8.1
+      srvx: 0.11.22
+    optionalDependencies:
+      crossws: 0.4.10(srvx@0.12.4)
+
+  h3@2.0.1-rc.22(crossws@0.4.10(srvx@0.12.4)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.22

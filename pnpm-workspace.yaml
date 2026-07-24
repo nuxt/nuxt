@@ -51,6 +51,8 @@ minimumReleaseAgeExclude:
   - unctx@3.0.0
   - magic-string@1.0.0
   - verkit@0.1.2
+  # Renovate catalog bump to ^1.1.6; drop once 1.1.6 clears the release-age window
+  - impound@1.1.6
 
 catalogs:
   app-runtime:
