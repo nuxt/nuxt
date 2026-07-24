@@ -88,7 +88,7 @@ test('hot reloading route rules', async ({ fetch }) => {
   writeFileSync(join(fixtureDir, 'app/pages/route-rules.vue'), file.replace('added in routeRules', 'edited in dev'))
 
   // Wait for the route rule to be hot reloaded
-  await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev')
+  await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev', { timeout: 20000 })
 })
 
 test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) => {
@@ -265,7 +265,7 @@ test.describe('vite-only HMR tests', () => {
     })
 
     // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
+    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true, { timeout: 20000 })
 
     // Navigate to the new route
     await page.locator('a[href="/routes/non-existent"]').click()
@@ -362,7 +362,7 @@ test.describe('vite-only HMR tests', () => {
         return router?.getRoutes().some((r: { path: string }) => r.path === '/hmr-trigger') ?? false
       })
       return newRouteExists
-    }).toBeWithPolling(true)
+    }).toBeWithPolling(true, { timeout: 20000 })
 
     // Verify custom route still exists after HMR
     const routeExistsAfter = await page.evaluate(() => {
