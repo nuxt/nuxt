@@ -3,6 +3,8 @@ export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxt
 export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataRequestStatus, AsyncDataMiddleware, AsyncDataHandlerContext } from './asyncData'
 export { defineUseFetchAddon, defineUseAsyncDataAddon } from './addons'
 export type { UseFetchAddon, UseAsyncDataAddon, UseFetchAddonOptions, UseAsyncDataAddonOptions, AsyncDataAddonInstance } from './addons'
+export { useAsyncRouteData } from './asyncRouteData'
+export type { AsyncRouteDataHandler, AsyncRouteDataOptions, AsyncRouteDataOptionsWithTransform, AsyncRouteDataValidateResult, UseAsyncRouteData } from './asyncRouteData'
 export { useHydration } from './hydrate'
 export { callOnce } from './once'
 export { useState, clearNuxtState } from './state'

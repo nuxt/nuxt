@@ -82,6 +82,7 @@ export default defineResolvers({
         { name: 'useFetch', argumentLength: 3, source: '#app/composables/fetch' },
         { name: 'useAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
         { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
+        { name: 'useAsyncRouteData', argumentLength: 3, source: '#app/composables/asyncRouteData' },
         { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
         ...Array.isArray(val) ? val : [],
       ].filter(Boolean),

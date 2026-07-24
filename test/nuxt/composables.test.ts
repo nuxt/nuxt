@@ -79,6 +79,7 @@ describe('composables', () => {
       'clearNuxtData',
       'refreshNuxtData',
       'useAsyncData',
+      'useAsyncRouteData',
       'useNuxtData',
       'createError',
       'isNuxtError',
