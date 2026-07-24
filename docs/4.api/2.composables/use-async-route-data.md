@@ -28,7 +28,7 @@ const { data, error } = await useAsyncRouteData('post', (route, _nuxtApp, { sign
 </script>
 ```
 
-When the path changes, Nuxt migrates to a new cache slot and runs the handler again with the updated route. You do not need a separate lazy composable; pass `{ lazy: true }` if navigation should not wait for the request.
+When the path changes, Nuxt migrates to a new cache slot and runs the handler again with the updated route.
 
 ## Type
 
