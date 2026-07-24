@@ -11,6 +11,7 @@ import type { ViteBuildContext } from './vite.ts'
 import { createViteLogger } from './utils/logger.ts'
 import { writeManifest } from './manifest.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
+import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { ssr, ssrEnvironment } from './shared/server.ts'
 
@@ -43,6 +44,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     plugins: [
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
+      TemplateHMRPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'ssr'),
       {
         name: 'nuxt:server-hmr-port',
@@ -112,16 +114,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   nuxt.hook('close', () => ssrServer.close())
 
   await nuxt.callHook('vite:serverCreated', ssrServer, { isClient: false, isServer: true })
-
-  // Invalidate virtual modules when templates are re-generated
-  nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
-    await Promise.all(changedTemplates.map(async (template) => {
-      for (const mod of ssrServer.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
-        ssrServer.moduleGraph.invalidateModule(mod)
-        await ssrServer.reloadModule(mod)
-      }
-    }))
-  })
 
   // Initialize plugins
   await ssrServer.pluginContainer.buildStart({})

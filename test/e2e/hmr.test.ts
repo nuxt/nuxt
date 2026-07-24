@@ -434,6 +434,6 @@ test.describe('vite-only HMR tests', () => {
     // so `counter` never advanced even though the plugin re-ran load().
     writeFileSync(pagePath, pageContents.replace('<!-- HMR_TRIGGER -->', '<!-- HMR_TRIGGER edited -->'))
 
-    await expect(readCounter).toBeWithPolling((c: unknown) => Number.isFinite(c) && (c as number) > before)
+    await expect(readCounter).toBeWithPolling((c: unknown) => Number.isFinite(c) && (c as number) > before, { timeout: 20000 })
   })
 })

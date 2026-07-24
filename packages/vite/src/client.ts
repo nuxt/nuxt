@@ -17,6 +17,7 @@ import { OptimizeDepsHintPlugin, optimizerCallbacks } from './plugins/optimize-d
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
+import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { clientEnvironment } from './shared/client.ts'
 
@@ -44,6 +45,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       StableEntryPlugin(nuxt),
       AnalyzePlugin(nuxt),
       DevServerPlugin(nuxt),
+      TemplateHMRPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'client'),
       OptimizeDepsHintPlugin(nuxt),
     ],
