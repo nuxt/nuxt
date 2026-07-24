@@ -398,7 +398,7 @@ export function _createUseAsyncData<
       DefaultT = undefined,
     > (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
       const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-      if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
+      if (isAsyncDataAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
       // eslint-disable-next-line prefer-const
       let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]

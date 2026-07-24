@@ -18,7 +18,7 @@ export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
 export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, SerializedErrorCause } from './types'
 export type { JsonPrimitive, NonJsonPrimitive, Serialize, SerializeObject, SerializeTuple } from './types/serialize'
 export type { AnyHTTPMethod, DynamicParam, Endpoint, HTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput, WildcardParam } from 'fetchdts'
-export type { PageMeta, NuxtPageProps, NuxtLayouts } from '../pages/runtime/index'
+export type { PageMeta, NuxtPageProps, NuxtLayouts, PageValidateResult } from '../pages/runtime/index'
 
 export const isVue2 = false
 export const isVue3 = true
