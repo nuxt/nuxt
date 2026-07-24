@@ -1,6 +1,6 @@
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
-export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataRequestStatus, AsyncDataMiddleware, AsyncDataHandlerContext } from './asyncData'
+export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataErrorOf, AsyncDataRequestStatus, AsyncDataMiddleware, AsyncDataHandlerContext } from './asyncData'
 export { defineUseFetchAddon, defineUseAsyncDataAddon } from './addons'
 export type { UseFetchAddon, UseAsyncDataAddon, UseFetchAddonOptions, UseAsyncDataAddonOptions, AsyncDataAddonInstance } from './addons'
 export { useAsyncRouteData } from './asyncRouteData'
