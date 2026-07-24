@@ -17,29 +17,33 @@ export async function getPostcssConfig (nuxt: Nuxt) {
     return false
   }
 
-  const postcssOptions = defu({}, nuxt.options.postcss, {
-    plugins: {
-      'autoprefixer': {},
+  const defaultPlugins = {
+    'autoprefixer': {},
 
-      'cssnano': nuxt.options.dev ? false : {},
+    'cssnano': nuxt.options.dev ? false : {},
 
-      /**
-       * https://github.com/postcss/postcss-import
-       */
-      'postcss-import': {
-        resolve: createResolver({
-          alias: { ...nuxt.options.alias },
-          modules: nuxt.options.modulesDir,
-        }),
-      },
-
-      /**
-       * https://github.com/postcss/postcss-url
-       */
-      'postcss-url': {},
+    /**
+     * https://github.com/postcss/postcss-import
+     */
+    'postcss-import': {
+      resolve: createResolver({
+        alias: { ...nuxt.options.alias },
+        modules: nuxt.options.modulesDir,
+      }),
     },
+
+    /**
+     * https://github.com/postcss/postcss-url
+     */
+    'postcss-url': {},
+  }
+
+  const postcssOptions = defu({}, nuxt.options.postcss, {
+    plugins: defaultPlugins,
     sourceMap: nuxt.options.webpack.cssSourceMap,
   })
+
+  const defaultPluginNames = new Set(Object.keys(defaultPlugins))
 
   const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
 
@@ -51,8 +55,11 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions) { continue }
 
+      const isDefault = defaultPluginNames.has(pluginName)
+      const parentURLs = isDefault ? [import.meta.url] : nuxt.options.modulesDir
+
       let pluginFn: ((opts: Record<string, any>) => Plugin) | undefined
-      for (const parentURL of nuxt.options.modulesDir) {
+      for (const parentURL of parentURLs) {
         pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true, default: true }) as (opts: Record<string, any>) => Plugin
         if (typeof pluginFn === 'function') {
           plugins.push(pluginFn(pluginOptions))
@@ -61,7 +68,11 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       }
 
       if (typeof pluginFn !== 'function') {
-        bundlerDiagnostics.NUXT_B7011({ pluginName })
+        if (isDefault) {
+          bundlerDiagnostics.NUXT_B7011({ pluginName })
+        } else {
+          bundlerDiagnostics.NUXT_B7007({ pluginName })
+        }
       }
     }
 
