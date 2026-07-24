@@ -13,7 +13,7 @@ links:
 `useAsyncRouteData` is a thin wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) for data that should refresh when the page path changes. It prefixes your key with an encoded `route.path`, passes the current route into the handler, and can validate the result (for example as a missing entity).
 
 ::note
-Payload entries stay **flat** strings on `nuxtApp.payload.data` (for example `$r:%2Fposts%2F1:article`). Nested `payload.data[path][key]` is not used, so [`useNuxtData`](/docs/4.x/api/composables/use-nuxt-data), [`clearNuxtData`](/docs/4.x/api/composables/clear-nuxt-data), and refresh helpers keep working. Encoding the path keeps `/foo/bar` and `/foo-bar` distinct.
+Payload entries stay **flat** strings on `nuxtApp.payload.data` (for example `$r:%2Fposts%2F1:article`). Nested `payload.data[path][key]` is not used, so [`useNuxtData`](/docs/4.x/api/composables/use-nuxt-data), [`clearNuxtData`](/docs/4.x/api/utils/clear-nuxt-data), and refresh helpers keep working. Encoding the path keeps `/foo/bar` and `/foo-bar` distinct.
 ::
 
 ## Usage
@@ -64,7 +64,7 @@ All [`useAsyncData`](/docs/4.x/api/composables/use-async-data#params) options, p
 - **Type**: `(data: ResT, route) => boolean | { status?: number, statusText?: string } | Promise<...>`
 - **Required**: false
 
-If the result is not `true`, the composable rejects with a Nuxt error (default status `404`). On the server it also calls [`setResponseStatus`](/docs/4.x/api/composables/set-response-status) when a request event is available. The error is available on the returned `error` ref, same as other [`useAsyncData`](/docs/4.x/api/composables/use-async-data) failures. The result shape matches page `meta.validate` (`status` / `statusText`).
+If the result is not `true`, the composable rejects with a Nuxt error (default status `404`). On the server it also calls [`setResponseStatus`](/docs/4.x/api/utils/set-response-status) when a request event is available. The error is available on the returned `error` ref, same as other [`useAsyncData`](/docs/4.x/api/composables/use-async-data) failures. The result shape matches page `meta.validate` (`status` / `statusText`).
 
 ## Return Values
 
