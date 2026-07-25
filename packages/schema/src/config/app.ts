@@ -92,10 +92,9 @@ export default defineResolvers({
     /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime. */
     buildAssetsDir: {
       $resolve: (val) => {
-        if (typeof val === 'string') {
-          return val
-        }
-        return process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+        const dir = typeof val === 'string' ? val : (process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/')
+        // normalised so consumers can compare it directly against request paths
+        return dir.replace(/^\/?/, '/').replace(/\/?$/, '/')
       },
     },
 
