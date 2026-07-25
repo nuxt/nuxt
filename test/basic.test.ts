@@ -1519,6 +1519,12 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
     expect(html).not.toContain('inline-only.css')
     expect(html).toContain('assets/plugin.css')
   })
+
+  it('should emit a single link for globally-registered css', async () => {
+    const html = await $fetch<string>('/')
+    const links = html.match(/<link[^>]+global\.css[^>]*>/g) || []
+    expect(links).toHaveLength(1)
+  })
 })
 
 describe.skipIf(isDev)('module identifiers', () => {
