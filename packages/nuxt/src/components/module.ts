@@ -1,6 +1,8 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, componentDiagnostics, defineNuxtModule, findPath, getLayerDirectories, resolveAlias } from '@nuxt/kit'
+import { defu } from 'defu'
+import type { Nitro, NitroRouteConfig } from 'nitro/types'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -51,9 +53,14 @@ export default defineNuxtModule<ComponentsOptions>({
   },
   async setup (moduleOptions, nuxt) {
     let componentDirs: ComponentsDir[] = []
+    let nitro: Nitro | undefined
     const context = {
       components: [] as Component[],
     }
+
+    nuxt.hook('nitro:init', (_nitro) => {
+      nitro = _nitro
+    })
 
     const getComponents: getComponentsT = (mode) => {
       return (mode && mode !== 'all')
@@ -244,7 +251,17 @@ export default defineNuxtModule<ComponentsOptions>({
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
-    addBuildPlugin(TreeShakeTemplatePlugin({ getComponents }), { client: false })
+    const pageComponentStubPath = await findPath(join(distDir, 'pages/runtime/component-stub')) ?? join(distDir, 'pages/runtime/component-stub')
+    addBuildPlugin(TreeShakeTemplatePlugin({
+      getComponents,
+      getPages: () => nuxt.apps.default?.pages || [],
+      getRouteRules (path) {
+        if (!nitro || !('routing' in nitro)) { return }
+        return defu({}, ...nitro.routing.routeRules.matchAll('', path).reverse()) as NitroRouteConfig
+      },
+      dev: nuxt.options.dev,
+      pageComponentStubPath,
+    }), { client: false })
 
     const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
 

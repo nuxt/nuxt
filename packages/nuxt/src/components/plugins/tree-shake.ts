@@ -1,27 +1,44 @@
 import type { RolldownString } from 'rolldown-string'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { createUnplugin } from 'unplugin'
-import type { Component } from '@nuxt/schema'
-import { resolve } from 'pathe'
+import type { Component, NuxtPage } from '@nuxt/schema'
+import type { NitroRouteConfig } from 'nitro/types'
+import { normalize, resolve } from 'pathe'
+import { joinURL } from 'ufo'
 
 import { parseAndWalk, walk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 import { distDir } from '../../dirs.ts'
-import { VUE_ID_RE } from '../../core/utils/plugins.ts'
+import { VUE_ID_RE, parseModuleId } from '../../core/utils/plugins.ts'
 
 interface TreeShakeTemplatePluginOptions {
   getComponents (): Component[]
+  getPages?: () => NuxtPage[]
+  getRouteRules?: (path: string) => NitroRouteConfig | undefined
+  dev?: boolean
+  pageComponentStubPath?: string
 }
 
 const SSR_RENDER_RE = /ssrRenderComponent/
 const PLACEHOLDER_EXACT_RE = /^(?:fallback|placeholder)$/
 const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:client_only|ClientOnly\)?)$/
+const DYNAMIC_ROUTE_RE = /[:*]/
 
 export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions) => createUnplugin(() => {
   const regexpMap = new WeakMap<Component[], [RegExp, RegExp, string[]]>()
   return {
     name: 'nuxt:tree-shake-template',
     enforce: 'post',
+    resolveId: {
+      order: 'pre',
+      filter: {
+        id: { include: VUE_ID_RE },
+      },
+      handler (id) {
+        if (!shouldStubPage(id, options)) { return }
+        return options.pageComponentStubPath
+      },
+    },
     transform: {
       filter: {
         id: { include: VUE_ID_RE },
@@ -103,6 +120,63 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
     },
   }
 })
+
+function shouldStubPage (id: string, options: TreeShakeTemplatePluginOptions): boolean {
+  if (options.dev || !options.getPages || !options.getRouteRules || !options.pageComponentStubPath) { return false }
+
+  const { pathname, search } = parseModuleId(id)
+  if (search) { return false }
+
+  const match = getPageRouteMatch(options.getPages(), normalize(pathname))
+  return !!match && !match.hasAmbiguousRoute && match.paths.every(path => options.getRouteRules!(path)?.ssr === false)
+}
+
+interface PageRouteMatch {
+  paths: string[]
+  hasAmbiguousRoute: boolean
+}
+
+function getPageRouteMatch (pages: NuxtPage[], file: string): PageRouteMatch | undefined {
+  const match: PageRouteMatch = {
+    paths: [],
+    hasAmbiguousRoute: false,
+  }
+
+  collectPageRouteMatches(pages, file, '/', match, false)
+  return match.paths.length ? match : undefined
+}
+
+function collectPageRouteMatches (pages: NuxtPage[], file: string, parent: string, match: PageRouteMatch, hasAliasedParent: boolean) {
+  for (const page of pages) {
+    const path = joinURL(parent, page.path)
+    const files = [page.file, ...Object.values(page.components || {})]
+    const hasAliasedRoute = hasAliasedParent || !!page.alias
+
+    if (files.some(pageFile => pageFile && normalize(pageFile) === file)) {
+      collectPageSubtreeRoutes(page, parent, match, hasAliasedParent)
+    }
+
+    if (page.children?.length) {
+      collectPageRouteMatches(page.children, file, path, match, hasAliasedRoute)
+    }
+  }
+}
+
+function collectPageSubtreeRoutes (page: NuxtPage, parent: string, match: PageRouteMatch, hasAliasedParent: boolean) {
+  const path = joinURL(parent, page.path)
+  match.paths.push(path)
+
+  const hasAliasedRoute = hasAliasedParent || !!page.alias
+  if (hasAliasedRoute || DYNAMIC_ROUTE_RE.test(path)) {
+    // A single build-time path cannot prove that every aliased or parameterized URL
+    // resolves to `ssr: false` when more-specific route rules may override it.
+    match.hasAmbiguousRoute = true
+  }
+
+  for (const child of page.children || []) {
+    collectPageSubtreeRoutes(child, path, match, hasAliasedRoute)
+  }
+}
 
 /**
  * find and remove all property with the name parameter from the setup return statement and the __returned__ object
