@@ -24,16 +24,52 @@ export const islandPropCache: Storage<string> | null = import.meta.prerender ? u
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
+// Prerendering fetches the same island from every page that embeds it, so
+// without this those renders race to write the same cache entry.
+const inFlightIslands: Map<string, Promise<NuxtIslandResponse>> | null = import.meta.prerender ? new Map() : null
+
 export default {
   async fetch (request: Request): Promise<Response> {
     const event = new H3Event(request)
+    const islandPath = event.url.pathname
+    let inFlight: Promise<NuxtIslandResponse> | undefined
+    let resolveIsland: ((response: NuxtIslandResponse) => void) | undefined
+    let rejectIsland: ((reason: unknown) => void) | undefined
     try {
       event.res.headers.set('content-type', 'application/json;charset=utf-8')
       event.res.headers.set('x-powered-by', 'Nuxt')
 
-      const islandPath = event.url.pathname
+      if (import.meta.prerender) {
+        let pending = inFlightIslands!.get(islandPath)
+        while (pending) {
+          // same result as a cache hit, hooks included
+          const islandResponse = await pending.catch(() => null)
+          if (islandResponse) {
+            return new FastResponse(JSON.stringify(islandResponse), event.res)
+          }
+          // that render failed: follow whoever claimed it next instead of
+          // every waiter starting its own
+          const next = inFlightIslands!.get(islandPath)
+          if (!next || next === pending) {
+            break
+          }
+          pending = next
+        }
+        // set before the first `await`, or a concurrent request slips past
+        inFlight = new Promise<NuxtIslandResponse>((resolve, reject) => {
+          resolveIsland = resolve
+          rejectIsland = reject
+        })
+        inFlight.catch(() => {})
+        inFlightIslands!.set(islandPath, inFlight)
+      }
+
       if (import.meta.prerender && await islandCache!.hasItem(islandPath)) {
-        return new FastResponse(JSON.stringify(await islandCache!.getItem(islandPath)), event.res)
+        const cached = await islandCache!.getItem(islandPath)
+        if (cached) {
+          resolveIsland?.(cached)
+          return new FastResponse(JSON.stringify(cached), event.res)
+        }
       }
 
       const islandContext = await getIslandContext(event)
@@ -64,6 +100,8 @@ export default {
       await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
 
       if (ssrContext['~renderResponse']) {
+        // not shareable: it carries this request's own response
+        rejectIsland?.(new Error('island rendered a raw response'))
         return returnRenderResponse(event, ssrContext['~renderResponse'])
       }
 
@@ -124,16 +162,31 @@ export default {
 
       await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
 
+      resolveIsland?.(islandResponse)
+
       if (import.meta.prerender) {
         const requestUrl = islandPath + event.url.search + event.url.hash
-        await islandCache!.setItem(islandPath, islandResponse)
-        await islandPropCache!.setItem(islandPath, requestUrl)
+        // independent: without the props entry a later request for the bare
+        // path hashes empty props and is rejected
+        await islandCache!.setItem(islandPath, islandResponse).catch(warnCacheFailure)
+        await islandPropCache!.setItem(islandPath, requestUrl).catch(warnCacheFailure)
       }
       return new FastResponse(JSON.stringify(islandResponse), event.res)
     } catch (error) {
+      rejectIsland?.(error)
       rethrowWithResponseHeaders(event, error)
+    } finally {
+      // only the render that claimed it may retire it, or a waiter returning
+      // early reopens the race
+      if (inFlight && inFlightIslands?.get(islandPath) === inFlight) {
+        inFlightIslands.delete(islandPath)
+      }
     }
   },
+}
+
+function warnCacheFailure (error: unknown) {
+  console.warn('[nuxt] could not cache island render:', error)
 }
 
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
