@@ -1,9 +1,9 @@
 import { KeepAlive, h } from 'vue'
 import type { VNode } from 'vue'
+import type { ComponentSlots } from 'vue-component-type-helpers'
 import type { RouteLocationMatched, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
 
-type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
-type RouterViewSlot = Exclude<InstanceOf<typeof RouterView>['$slots']['default'], undefined>
+type RouterViewSlot = NonNullable<ComponentSlots<typeof RouterView>['default']>
 export type RouterViewSlotProps = Parameters<RouterViewSlot>[0]
 
 type SerializablePrimitive = string | number | boolean | null | undefined

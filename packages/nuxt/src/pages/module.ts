@@ -4,6 +4,7 @@ import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, 
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'
+import { resolveModulePath } from 'exsolve'
 import { createRoutesContext, resolveOptions } from 'vue-router/unplugin'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
 import type { Nitro, NitroRouteConfig } from 'nitro/types'
@@ -204,16 +205,15 @@ export default defineNuxtModule({
       }
     })
 
+    const componentTypeHelpersPath = resolveModulePath('vue-component-type-helpers', { from: import.meta.url })
+
     // layouts can be used without pages (e.g. `<NuxtLayout>`), so always generate their types
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
       getContents: ({ app }) => {
         return [
           'import type { ComputedRef, MaybeRef } from \'vue\'',
-          '',
-          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
-          '  : T extends (props: infer P, ...args: any) => any ? P',
-          '  : {}',
+          `import type { ComponentProps } from ${genString(componentTypeHelpersPath)}`,
           '',
           'declare module \'nuxt/app\' {',
           '  interface NuxtLayouts {',

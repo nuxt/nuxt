@@ -104,6 +104,7 @@
     "vitest": "catalog:dev",
     "vitest-environment-nuxt": "catalog:dev",
     "vue": "catalog:app-runtime",
+    "vue-component-type-helpers": "catalog:vue",
     "vue-router": "catalog:app-runtime",
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
