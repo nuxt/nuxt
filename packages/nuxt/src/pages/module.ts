@@ -25,7 +25,6 @@ import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
-const componentTypeHelpersPath = resolveModulePath('vue-component-type-helpers', { from: import.meta.url })
 
 export const pagesImportPresets: InlinePreset[] = [
   { imports: ['definePageMeta'], from: '#app/composables/pages' },
@@ -205,6 +204,8 @@ export default defineNuxtModule({
         }
       }
     })
+
+    const componentTypeHelpersPath = resolveModulePath('vue-component-type-helpers', { from: import.meta.url })
 
     // layouts can be used without pages (e.g. `<NuxtLayout>`), so always generate their types
     addTypeTemplate({
