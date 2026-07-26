@@ -44,6 +44,7 @@ jobs:
       pull-requests: read
     outputs:
       src: ${{ (github.event_name == 'push' && (github.ref_name == '4.x' || github.ref_name == '3.x')) && 'true' || steps.filter.outputs.src }}
+      playwright: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -67,6 +68,15 @@ jobs:
               - 'playwright.config.ts'
               - 'eslint.config.mjs'
               - '.github/workflows/ci.yml'
+
+      # Keyed on the browser version rather than the lockfile, which changes
+      # weekly for unrelated reasons and would evict the cache each time.
+      - name: Resolve Playwright version
+        id: playwright
+        run: |
+          version="$(grep -oE '^[[:space:]]+playwright-core: [0-9.]+' pnpm-workspace.yaml | tr -d ' ' | cut -d: -f2)"
+          test -n "$version" || { echo "::error::could not resolve playwright-core version from pnpm-workspace.yaml"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
   build:
     needs: changes
@@ -414,13 +424,19 @@ jobs:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-*" --project "fixtures:vite-env-api-*"'
+            projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*" --project "fixtures:vite-env-api-*"'
+          - os: ubuntu-24.04-arm
+            projects: '--project "fixtures:webpack-dev-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-dev-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-built-*"'
 
     timeout-minutes: 45
+
+    env:
+      # `runner` is not available in job-level `env`, so anchor on `github`
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -430,6 +446,12 @@ jobs:
         with:
           node-version: 22
           cache: true
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.pw-browsers
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ needs.changes.outputs.playwright }}
 
       - name: Install Playwright
         run: vp exec playwright-core install chromium
@@ -480,6 +502,10 @@ jobs:
 
     timeout-minutes: 25
 
+    env:
+      # `runner` is not available in job-level `env`, so anchor on `github`
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -488,6 +514,12 @@ jobs:
         with:
           node-version: 22
           cache: true
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.pw-browsers
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ needs.changes.outputs.playwright }}
 
       - name: Install Playwright
         run: vp exec playwright-core install chromium
