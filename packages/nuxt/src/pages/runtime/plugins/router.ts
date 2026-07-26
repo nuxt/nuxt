@@ -1,5 +1,5 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
-import type { Ref } from 'vue'
+import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
@@ -8,7 +8,6 @@ import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
 
 import { generateRouteKey, toArray } from '../utils'
-import type { RouterViewSlotProps } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
@@ -120,8 +119,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         // Only sync eagerly when the reused page is not remounted (unchanged key). When the key
         // changes (e.g. catch-all/param navigation) the page remounts and `Suspense.onResolve`
         // syncs the route once it resolves; syncing here would update it too early (#33107).
-        const toKey = generateRouteKey({ route: to, Component: { type: lastTo } } as RouterViewSlotProps)
-        const fromKey = generateRouteKey({ route: from, Component: { type: lastFrom } } as RouterViewSlotProps)
+        const toKey = generateRouteKey({ route: to, Component: { type: lastTo } as VNode })
+        const fromKey = generateRouteKey({ route: from, Component: { type: lastFrom } as VNode })
         if (toKey === fromKey) {
           syncCurrentRoute()
         }
