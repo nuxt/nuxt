@@ -23,7 +23,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       })
     })
     // Prefetch layouts & middleware
-    nuxtApp.hooks.hook('link:prefetch', (url) => {
+    nuxtApp.hooks.hook('link:prefetch', async (url) => {
       if (hasProtocol(url)) { return }
       const route = router.resolve(url)
       if (!route) { return }
@@ -44,14 +44,13 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       }
 
       if (componentIslands) {
-        for (const record of route.matched) {
+        await Promise.all(route.matched.map((record) => {
           const component = record.components?.default
-          if (typeof component === 'function') {
-            Promise.resolve((component as () => unknown)())
-              .then((c: any) => (c?.default || c)?.__nuxt_prefetch?.(nuxtApp, route))
-              .catch(() => {})
-          }
-        }
+          if (typeof component !== 'function') { return }
+          return Promise.resolve((component as () => unknown)())
+            .then((c: any) => (c?.default || c)?.__nuxt_prefetch?.(nuxtApp, route))
+            .catch(() => {})
+        }))
       }
     })
   },
