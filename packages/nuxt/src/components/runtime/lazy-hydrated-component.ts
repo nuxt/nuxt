@@ -8,7 +8,7 @@ type LazyHydrationEmits = {
 
 type LazyComponentFactory<Props extends Record<string, any>> = (id: string, loader: AsyncComponentLoader) => DefineSetupFnComponent<Props, LazyHydrationEmits>
 
-function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extends Record<string, any> = ExtractPropTypes<P>> (props: P, defineStrategy: (props: ExtractPropTypes<P>) => HydrationStrategy | undefined): LazyComponentFactory<Props> {
+function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extends Record<string, any> = ExtractPropTypes<P>> (props: P, defineStrategy: (props: ExtractPropTypes<P>) => HydrationStrategy | undefined, never = false): LazyComponentFactory<Props> {
   return (id: string, loader: AsyncComponentLoader) => defineComponent({
     inheritAttrs: false,
     props,
@@ -21,6 +21,11 @@ function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extend
           // but keep them in modules so CSS links are still rendered
           ssrContext!['~lazyHydratedModules'] ||= new Set()
           ssrContext!['~lazyHydratedModules'].add(id)
+          if (never) {
+            // never-hydrated chunks are also excluded from prefetch hints, as they can never be needed
+            ssrContext!['~neverHydratedModules'] ||= new Set()
+            ssrContext!['~neverHydratedModules'].add(id)
+          }
         })
       }
       // wrap the async component in a second component to avoid loading the chunk too soon
@@ -133,4 +138,5 @@ export const createLazyNeverComponent: LazyComponentFactory<LazyNeverProps> = de
   },
 },
 () => hydrateNever,
+true,
 )

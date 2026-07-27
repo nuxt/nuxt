@@ -321,13 +321,26 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
       ? { exclude: ssrContext['~lazyHydratedModules'] }
       : undefined
-    const stylesheetHrefs = new Set(link.map(l => l.href))
-    ssrContext.head.push({
-      link: [
-        ...getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
-        ...getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
-      ].filter(l => !stylesheetHrefs.has(l.href)),
-    })
+    // exclude hrefs already linked as stylesheets, plus never-hydrated chunks which the client can never fetch
+    const excludeHrefs = new Set(link.map(l => l.href))
+    for (const id of ssrContext['~neverHydratedModules'] ?? []) {
+      const file = renderer.rendererContext.manifest?.[id]?.file
+      if (file) {
+        excludeHrefs.add(renderer.rendererContext.buildAssetsURL(file))
+      }
+    }
+    const hints: Link[] = []
+    for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+      if (!excludeHrefs.has(l.href)) {
+        hints.push(l)
+      }
+    }
+    for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+      if (!excludeHrefs.has(l.href)) {
+        hints.push(l)
+      }
+    }
+    ssrContext.head.push({ link: hints })
     // 5. Payloads
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
