@@ -40,13 +40,15 @@ The resulting composable has the same signature and return type as [`useAsyncDat
 
 ```ts [Signature]
 function createUseAsyncData (
-  options?: Partial<AsyncDataOptions>,
+  options?: Partial<AsyncDataOptions> & { addons?: UseAsyncDataAddon[] },
 ): typeof useAsyncData
 
 function createUseAsyncData (
-  options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions>,
+  options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions> & { addons?: UseAsyncDataAddon[] },
 ): typeof useAsyncData
 ```
+
+The returned composable's signature includes any custom options and return-value extensions contributed by the [addons](#addons).
 
 ## Options
 
@@ -85,6 +87,47 @@ export const useStrictData = createUseAsyncData(callerOptions => ({
   deep: false,
 }))
 ```
+
+## Addons
+
+In addition to `useAsyncData` options, `createUseAsyncData` accepts an `addons` array. Addons are reusable units of behavior defined with [`defineUseAsyncDataAddon`](/docs/4.x/api/utils/define-use-async-data-addon). They can declare custom call-site options, run middleware around the handler, extend the returned object, and attach custom logic to the composable.
+
+For example, an addon that refreshes the data whenever the window regains focus, gated behind a custom `refreshOnFocus` option, so callers opt in per call:
+
+```ts [app/composables/useCustomAsyncData.ts]
+const refreshOnFocus = defineUseAsyncDataAddon({
+  // augment the call-site options for the custom useFetch instance 👇
+  setup: (options: UseAsyncDataAddonOptions<{ refreshOnFocus?: boolean }>) => {
+    // 👈 run code *before* creating the `useAsyncData` instance
+    if (import.meta.server || !options.refreshOnFocus) { return }
+
+    return (asyncData) => {
+      // 👈 run code *after* creating the `useAsyncData` instance
+      const focused = useWindowFocus()
+      watch(focused, (focused) => {
+        if (focused) { asyncData.refresh() }
+      })
+
+      return { focused } // 👈 extend the returned object with a new property
+    }
+  },
+})
+
+export const useCustomAsyncData = createUseAsyncData({ addons: [refreshOnFocus] })
+```
+
+```vue [app/pages/index.vue]
+<script setup lang="ts">
+// `refreshOnFocus` is typed on the created composable
+const { data } = await useCustomAsyncData(
+  'mountains',
+  () => $fetch('https://api.nuxtjs.dev/mountains'),
+  { refreshOnFocus: true },
+)
+</script>
+```
+
+:read-more{to="/docs/4.x/api/utils/define-use-async-data-addon"}
 
 :read-more{to="/docs/4.x/guide/recipes/custom-usefetch"}
 

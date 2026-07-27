@@ -5,6 +5,9 @@ export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
 
+export type ArrayItems<T> = NonNullable<T> extends readonly (infer U)[] ? U : NonNullable<T>
+export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
+
 const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
 
 export function isBotUserAgent (userAgent: string): boolean {

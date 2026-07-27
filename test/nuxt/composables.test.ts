@@ -108,6 +108,8 @@ describe('composables', () => {
       'setPageLayout',
       'defineNuxtComponent',
       'useRuntimeHook',
+      'defineUseFetchAddon',
+      'defineUseAsyncDataAddon',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',

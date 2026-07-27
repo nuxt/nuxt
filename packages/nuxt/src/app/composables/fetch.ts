@@ -4,8 +4,10 @@ import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { isPlainObject } from '@vue/shared'
 import { hashKey } from '../utils/hash'
-import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
+import type { AsyncData, AsyncDataOptions, AugmentedAsyncData, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
+import { runAddonSetups } from './addons'
+import type { AsyncDataAddonSetup, MergedAddonsExtensions, MergedAddonsOptions, UseFetchAddon } from './addons'
 import { dataDiagnostics } from '../diagnostics/data'
 import type { NuxtError } from './error'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
@@ -58,6 +60,8 @@ export interface UseFetchOptionsWithTransform<
 
 const MAYBE_REF_OR_GETTER_OPTION_KEYS = ['method', 'baseURL', 'query', 'params', 'body', 'headers'] as const
 
+const FETCH_HOOK_ARRAY_KEYS = ['onRequest', 'onRequestError', 'onResponse', 'onResponseError'] as const
+
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
@@ -108,7 +112,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
 type FetchFactoryDataT<FDataT, _ResT> = [unknown] extends [FDataT] ? _ResT : FDataT
 type FetchFactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
 type FetchFactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
-export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined> {
+export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined, FAddonOpts = {}, FAddonExt = {}> {
   // Auto-key, opts with transform, default = undefined
   <
     ResT = void,
@@ -121,8 +125,8 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, opts with transform, default = DataT
   <
     ResT = void,
@@ -135,8 +139,8 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, default = undefined
   <
     ResT = void,
@@ -149,8 +153,8 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, default = DataT
   <
     ResT = void,
@@ -163,8 +167,8 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined, FAddonExt>
   // Explicit auto-key as positional arg
   <
     ResT = void,
@@ -177,10 +181,20 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = undefined,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    arg1?: string | (UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method> & FAddonOpts),
     arg2?: string,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
 }
+
+type CreateUseFetchOptions<
+  ResT,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = undefined,
+  R extends NitroFetchRequest = string & {},
+  M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
+  Addons extends ReadonlyArray<UseFetchAddon<any, any>> = [],
+> = Partial<UseFetchOptions<ResT, DataT, PickKeys, DefaultT, R, M>> & { addons?: Addons }
 
 export interface CreateUseFetch {
   <
@@ -191,16 +205,17 @@ export interface CreateUseFetch {
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
     FDefaultT = undefined,
+    const FAddons extends ReadonlyArray<UseFetchAddon<any, any>> = [],
   >(
     options?:
-      | Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
-      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>),
-  ): UseFetch<FDataT, FPickKeys, FDefaultT>
+      | CreateUseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod, FAddons>
+      | ((callerOptions: UseFetchOptions<unknown>) => CreateUseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod, FAddons>),
+  ): UseFetch<FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 }
 
 /**
  * A factory function to create a custom `useFetch` composable with pre-defined default options.
- * @since 4.2.0
+ * @since 4.4.0
  */
 export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateUseFetch>({
   name: 'createUseFetch',
@@ -212,10 +227,11 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
     FDefaultT = undefined,
+    const FAddons extends ReadonlyArray<UseFetchAddon<any, any>> = [],
   >(options:
-      Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
-      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>) = {},
-  ): UseFetch<FDataT, FPickKeys, FDefaultT> {
+      CreateUseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod, FAddons>
+      | ((callerOptions: UseFetchOptions<unknown>) => CreateUseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod, FAddons>) = {},
+  ): UseFetch<FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>> {
     /**
      * Fetch data from an API endpoint with an SSR-friendly composable.
      * See {@link https://nuxt.com/docs/4.x/api/composables/use-fetch}
@@ -291,11 +307,19 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
     ) {
       const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-      const factoryOptions = (typeof options === 'function' ? options(opts as any) : options) as typeof opts
+      const { addons, ...factoryOptions } = (typeof options === 'function' ? options(opts as any) : options) as typeof opts & { addons?: ReadonlyArray<UseFetchAddon<any, any>> }
 
       // Merge factory options with user options:
       // - defaults mode (plain object): factory < user opts (factory provides defaults)
       // - override mode (function): user opts < factory (factory overrides user opts)
+      const merged = {
+        ...(typeof options === 'function' ? {} : factoryOptions),
+        ...opts,
+        ...(typeof options === 'function' ? factoryOptions : {}),
+      }
+
+      const { setups, keyed: keyedAddons } = addons?.length ? runAddonSetups(addons, merged, FETCH_HOOK_ARRAY_KEYS) : { setups: undefined, keyed: undefined }
+
       const {
         server,
         lazy,
@@ -309,16 +333,18 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        middleware,
         ...fetchOptions
-      } = {
-        ...(typeof options === 'function' ? {} : factoryOptions),
-        ...opts,
-        ...(typeof options === 'function' ? factoryOptions : {}),
-      }
+      } = merged
 
       const _request = computed(() => toValue(request))
 
-      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
+      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([
+        autoKey,
+        typeof _request.value === 'string' ? _request.value : '',
+        ...generateOptionSegments(fetchOptions),
+        ...keyedAddons?.length ? keyedAddons.map(addon => addon.key(merged)).filter(value => value !== undefined) : [],
+      ])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
         throw dataDiagnostics.NUXT_E3001({ url: _request.value })
@@ -330,7 +356,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         cache: typeof fetchOptions.cache === 'boolean' ? undefined : fetchOptions.cache,
       })
 
-      const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
+      const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> & { _externalSetups?: AsyncDataAddonSetup<any>[], _functionName?: string, _keyTriggersExecute?: boolean } = {
         server,
         lazy,
         default: defaultFn,
@@ -342,17 +368,22 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        middleware,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
+      }
+
+      if (setups) {
+        _asyncDataOptions._externalSetups = setups
       }
 
       if (import.meta.dev) {
         // private property
-        (_asyncDataOptions as typeof _asyncDataOptions & { _functionName?: string })._functionName ||= (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useFetch'
+        _asyncDataOptions._functionName ||= (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useFetch'
       }
 
       if (watchSources === false) {
         // opt-out of automatic re-execution while keeping key reactive
-        ;(_asyncDataOptions as typeof _asyncDataOptions & { _keyTriggersExecute?: boolean })._keyTriggersExecute = false
+        _asyncDataOptions._keyTriggersExecute = false
       }
 
       if (alwaysRunFetchOnKeyChange && !immediate) {
@@ -380,7 +411,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       return asyncData
     }
 
-    return useFetch as unknown as UseFetch<FDataT, FPickKeys, FDefaultT>
+    return useFetch as unknown as UseFetch<FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
   },
 })
 
