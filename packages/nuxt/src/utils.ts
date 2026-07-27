@@ -8,7 +8,14 @@ export function toArray<T> (value: T | T[]): T[] {
 }
 
 export async function isDirectory (path: string) {
-  return (await fsp.lstat(path)).isDirectory()
+  try {
+    return (await fsp.lstat(path)).isDirectory()
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    // A missing path (ENOENT) or a non-directory ancestor (ENOTDIR) is simply not a directory
+    if (code === 'ENOENT' || code === 'ENOTDIR') { return false }
+    throw err
+  }
 }
 
 export function isDirectorySync (path: string) {

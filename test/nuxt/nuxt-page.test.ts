@@ -1046,3 +1046,83 @@ describe('NuxtPage route sync when leaf component is reused (#33107)', () => {
     el.unmount()
   })
 })
+
+// Bug #6592
+describe('NuxtPage with page keys', () => {
+  let router: ReturnType<typeof useRouter>
+  let setupRuns = 0
+
+  function addChildParentRoute (name: string, key: string | ((route: ReturnType<typeof useRoute>) => string)) {
+    router.addRoute({
+      name,
+      path: `/${name}`,
+      component: defineComponent({
+        name,
+        setup: () => () => h('div', [`${name}`, h(NuxtPage)]),
+      }),
+      children: [
+        {
+          name: `${name}-foo`,
+          path: ':foo',
+          meta: { key },
+          component: defineComponent({
+            name: `${name}-foo`,
+            setup () {
+              setupRuns++
+              const route = useRoute()
+              return () => h('div', { id: `page-${route.params.foo}` }, `[${name}/${route.params.foo}]`)
+            },
+          }),
+        },
+      ],
+    })
+  }
+
+  beforeEach(() => {
+    router = useRouter()
+    setupRuns = 0
+    addChildParentRoute('fixed-keyed-child-parent', 'keyed')
+    addChildParentRoute('keyed-child-parent', route => 'keyed-' + route.params.foo)
+  })
+
+  afterEach(async () => {
+    await navigateTo('/')
+    await flushPromises()
+    router.removeRoute('fixed-keyed-child-parent')
+    router.removeRoute('keyed-child-parent')
+  })
+
+  it('should not cause run of setup if navigation not change page key and layout', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/fixed-keyed-child-parent/0')
+    await flushPromises()
+    expect(setupRuns).toBe(1)
+
+    await navigateTo('/fixed-keyed-child-parent/1')
+    await flushPromises()
+    expect(el.html()).toContain('id="page-1"')
+    expect(setupRuns).toBe(1)
+
+    el.unmount()
+  })
+
+  it('will cause run of setup if navigation changed page key', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/keyed-child-parent/0')
+    await flushPromises()
+    expect(setupRuns).toBe(1)
+
+    await navigateTo('/keyed-child-parent/1')
+    await flushPromises()
+    expect(el.html()).toContain('id="page-1"')
+    expect(setupRuns).toBe(2)
+
+    el.unmount()
+  })
+})

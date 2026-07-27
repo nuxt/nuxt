@@ -1,12 +1,9 @@
-import type { FetchError } from 'ofetch'
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getAppManifest } from '../composables/manifest'
 import type { NuxtAppManifestMeta } from '../composables/manifest'
 import { onNuxtReady } from '../composables/ready'
-// @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
-// @ts-expect-error virtual file
 import { outdatedBuildInterval } from '#build/nuxt.config.mjs'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
@@ -19,7 +16,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
     try {
       currentManifest = await getAppManifest()
     } catch (e) {
-      const err = e as FetchError | Error
+      const err = e as { status?: number } & Error
       // The build is already outdated but the manifest was not cached
       if (!('status' in err && (err.status === 404 || err.status === 403))) {
         throw err
@@ -28,7 +25,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
     if (timeout) { clearTimeout(timeout) }
     timeout = setTimeout(getLatestManifest, outdatedBuildInterval)
     try {
-      const meta = await $fetch<NuxtAppManifestMeta>(buildAssetsURL('builds/latest.json') + `?${Date.now()}`)
+      const res = await fetch(buildAssetsURL('builds/latest.json') + `?${Date.now()}`, { priority: 'low' })
+      if (!res.ok) { return }
+      const meta = await res.json() as NuxtAppManifestMeta
       if (meta.id !== currentManifest?.id) {
         // There is a newer build which we will let the user handle
         nuxtApp.hooks.callHook('app:manifest:update', meta)

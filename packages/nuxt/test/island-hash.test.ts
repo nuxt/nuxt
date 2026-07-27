@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { hash } from 'ohash'
-import { computeIslandHash, filterIslandProps, serializeIslandProps } from '#app/island-hash'
+import { filterIslandProps, getIslandHash, serializeIslandProps } from '#app/island-hash'
+import { findReservedRootIslandPropKey, findUnsafeIslandPropKey } from '#app/island-props'
 
 describe('filterIslandProps', () => {
   it('returns an empty object for nullish input', () => {
@@ -59,13 +60,13 @@ describe('serializeIslandProps', () => {
   })
 })
 
-describe('computeIslandHash', () => {
+describe('getIslandHash', () => {
   it('matches the ohash-based shape the client embeds in the URL', () => {
     const name = 'PureComponent'
     const serializedProps = '{"count":3,"label":"hi"}'
     const context = { url: '/foo' }
     const expected = hash([name, JSON.parse(serializedProps), context, undefined]).replace(/[-_]/g, '')
-    expect(computeIslandHash(name, serializedProps, context, undefined)).toBe(expected)
+    expect(getIslandHash({ name, props: serializedProps, context })).toBe(expected)
   })
 
   // External island clients (e.g. `@nuxtjs/og-image`) hash the plain props object and send
@@ -74,49 +75,141 @@ describe('computeIslandHash', () => {
     const name = 'OgImageCommunityNuxtSeoSatori'
     const props = { title: 'Hello World' }
     const objectHash = hash([name, props, {}, undefined]).replace(/[-_]/g, '')
-    expect(computeIslandHash(name, JSON.stringify(props), {}, undefined)).toBe(objectHash)
+    expect(getIslandHash({ name, props: JSON.stringify(props) })).toBe(objectHash)
+  })
+
+  it('agrees whether props are passed as an object or as the serialized string', () => {
+    const props = { title: 'Hello World', count: 3 }
+    expect(getIslandHash({ name: 'X', props })).toBe(getIslandHash({ name: 'X', props: JSON.stringify(props) }))
   })
 
   // #35349
   it('is stable across the JSON round-trip for dropped values', () => {
     const serialized = serializeIslandProps({ label: 'hi', onClick: () => {}, missing: undefined })
     const objectHash = hash(['X', { label: 'hi' }, {}, undefined]).replace(/[-_]/g, '')
-    expect(computeIslandHash('X', serialized, {}, undefined)).toBe(objectHash)
+    expect(getIslandHash({ name: 'X', props: serialized })).toBe(objectHash)
   })
 
   // The server hashes attacker-controllable query input before validating it.
   it('does not throw on malformed serialized props', () => {
-    expect(() => computeIslandHash('X', '{"a":1', {}, undefined)).not.toThrow()
+    expect(() => getIslandHash({ name: 'X', props: '{"a":1' })).not.toThrow()
   })
 
   it('changes when props change', () => {
-    const a = computeIslandHash('X', '{"n":1}', {}, undefined)
-    const b = computeIslandHash('X', '{"n":2}', {}, undefined)
+    const a = getIslandHash({ name: 'X', props: '{"n":1}' })
+    const b = getIslandHash({ name: 'X', props: '{"n":2}' })
     expect(a).not.toBe(b)
   })
 
   it('changes when context changes', () => {
-    const a = computeIslandHash('X', '{}', { url: '/a' }, undefined)
-    const b = computeIslandHash('X', '{}', { url: '/b' }, undefined)
+    const a = getIslandHash({ name: 'X', props: '{}', context: { url: '/a' } })
+    const b = getIslandHash({ name: 'X', props: '{}', context: { url: '/b' } })
     expect(a).not.toBe(b)
   })
 
   it('changes when name changes', () => {
-    const a = computeIslandHash('A', '{}', {}, undefined)
-    const b = computeIslandHash('B', '{}', {}, undefined)
+    const a = getIslandHash({ name: 'A', props: '{}' })
+    const b = getIslandHash({ name: 'B', props: '{}' })
     expect(a).not.toBe(b)
   })
 
   it('changes when source changes', () => {
-    const a = computeIslandHash('X', '{}', {}, undefined)
-    const b = computeIslandHash('X', '{}', {}, 'https://remote.example')
+    const a = getIslandHash({ name: 'X', props: '{}' })
+    const b = getIslandHash({ name: 'X', props: '{}', source: 'https://remote.example' })
     expect(a).not.toBe(b)
   })
 
   it('produces URL-safe output (no - or _)', () => {
     for (let i = 0; i < 20; i++) {
-      const h = computeIslandHash('Comp', JSON.stringify({ i, salt: `${i}-${i}` }), {}, undefined)
+      const h = getIslandHash({ name: 'Comp', props: JSON.stringify({ i, salt: `${i}-${i}` }) })
       expect(h).not.toMatch(/[-_]/)
     }
+  })
+})
+
+describe('findUnsafeIslandPropKey', () => {
+  it('returns undefined for null and undefined', () => {
+    expect(findUnsafeIslandPropKey(null)).toBeUndefined()
+    expect(findUnsafeIslandPropKey(undefined)).toBeUndefined()
+  })
+
+  it('returns undefined for primitives', () => {
+    expect(findUnsafeIslandPropKey(42)).toBeUndefined()
+    expect(findUnsafeIslandPropKey('hello')).toBeUndefined()
+    expect(findUnsafeIslandPropKey(true)).toBeUndefined()
+  })
+
+  it('returns undefined for plain objects without a template key', () => {
+    expect(findUnsafeIslandPropKey({ foo: 1, bar: 'baz' })).toBeUndefined()
+    expect(findUnsafeIslandPropKey({ content: { title: 'Hello' }, items: [{ label: 'One' }] })).toBeUndefined()
+  })
+
+  it('returns undefined for arrays without a template key', () => {
+    expect(findUnsafeIslandPropKey([1, 2, 3])).toBeUndefined()
+    expect(findUnsafeIslandPropKey([{ ok: true }])).toBeUndefined()
+  })
+
+  it('returns the template key at the top level', () => {
+    expect(findUnsafeIslandPropKey({ template: '<div>evil</div>' })).toBe('template')
+  })
+
+  it('returns the template key when nested in an object', () => {
+    expect(findUnsafeIslandPropKey({ as: { template: '<div />' } })).toBe('template')
+  })
+
+  it('returns the template key when nested in an array', () => {
+    expect(findUnsafeIslandPropKey({ items: [{ id: 1 }, { template: 'evil' }] })).toBe('template')
+  })
+
+  it('does not match keys that merely contain template as a substring', () => {
+    expect(findUnsafeIslandPropKey({ template_id: 42, pretemplate: true })).toBeUndefined()
+  })
+
+  it('only considers own enumerable properties', () => {
+    const inherited = Object.create({ template: '<div />' })
+    inherited.label = 'safe'
+    expect(findUnsafeIslandPropKey({ inherited })).toBeUndefined()
+  })
+
+  it('handles circular values without infinite loop', () => {
+    const value: Record<string, unknown> = {}
+    value.self = value
+    expect(findUnsafeIslandPropKey(value)).toBeUndefined()
+  })
+})
+
+describe('findReservedRootIslandPropKey', () => {
+  const undeclared = {}
+
+  it('returns undefined for nullish, primitives, and arrays', () => {
+    expect(findReservedRootIslandPropKey(null, undeclared)).toBeUndefined()
+    expect(findReservedRootIslandPropKey(undefined, undeclared)).toBeUndefined()
+    expect(findReservedRootIslandPropKey('as', undeclared)).toBeUndefined()
+    expect(findReservedRootIslandPropKey([{ as: 'iframe' }], undeclared)).toBeUndefined()
+  })
+
+  it('returns the reserved key when the island does not declare `as`', () => {
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, undeclared)).toBe('as')
+    expect(findReservedRootIslandPropKey({ as: { some: 'object' }, other: 1 }, undeclared)).toBe('as')
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { props: { other: String } })).toBe('as')
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { props: ['other'] })).toBe('as')
+  })
+
+  it('allows `as` when the island declares it', () => {
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { props: { as: String } })).toBeUndefined()
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { props: ['as'] })).toBeUndefined()
+  })
+
+  it('allows `as` when the island opts out of attribute inheritance', () => {
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { inheritAttrs: false })).toBeUndefined()
+  })
+
+  it('ignores `as` nested below the top level', () => {
+    expect(findReservedRootIslandPropKey({ user: { as: 'iframe' } }, undeclared)).toBeUndefined()
+    expect(findReservedRootIslandPropKey({ items: [{ as: 'iframe' }] }, undeclared)).toBeUndefined()
+  })
+
+  it('does not match keys that merely contain `as`', () => {
+    expect(findReservedRootIslandPropKey({ aside: 1, hasChildren: true, canvas: 'x' }, undeclared)).toBeUndefined()
   })
 })

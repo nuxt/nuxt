@@ -1,6 +1,7 @@
 ---
 title: 'useRouteAnnouncer'
 description: This composable observes the page title changes and updates the announcer message accordingly.
+minimalVersion: "3.12"
 links:
   - label: Source
     icon: i-simple-icons-github

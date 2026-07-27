@@ -4,7 +4,8 @@ import { defu } from 'defu'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
-// @ts-expect-error virtual file
+import { renderDiagnostics } from '../diagnostics/render'
+import { MAX_VFOR_LENGTH } from './vfor'
 import { START_LOCATION } from '#build/pages'
 
 /**
@@ -24,7 +25,7 @@ function generateRouteKey (route: RouteLocationNormalized) {
   const source = route?.meta.key ?? route.path
     .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
     .replace(ROUTE_KEY_SYMBOLS_RE, '$1')
-    .replace(ROUTE_KEY_NORMAL_RE, r => route.params[r.slice(1)]?.toString() || '')
+    .replace(ROUTE_KEY_NORMAL_RE, r => (route.params as Record<string, unknown>)[r.slice(1)]?.toString() || '')
   return typeof source === 'function' ? source(route) : source
 }
 
@@ -93,10 +94,14 @@ export function vforToArray (source: any): any[] {
     return source.split('')
   } else if (typeof source === 'number') {
     if (import.meta.dev && !Number.isInteger(source)) {
-      console.warn(`The v-for range expect an integer value but got ${source}.`)
+      renderDiagnostics.NUXT_E4013({ source })
     }
+    if (import.meta.dev && source > MAX_VFOR_LENGTH) {
+      renderDiagnostics.NUXT_E4017({ source, max: MAX_VFOR_LENGTH })
+    }
+    const length = source > MAX_VFOR_LENGTH ? MAX_VFOR_LENGTH : source
     const array: number[] = []
-    for (let i = 0; i < source; i++) {
+    for (let i = 0; i < length; i++) {
       array[i] = i
     }
     return array

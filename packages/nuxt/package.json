@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "4.3.1",
+  "version": "5.0.0-0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -10,16 +10,13 @@
   "description": "Nuxt is a free and open-source framework with an intuitive and extendable way to create type-safe, performant and production-grade full-stack web applications and websites with Vue.js.",
   "license": "MIT",
   "type": "module",
-  "types": "./types.d.ts",
+  "types": "./types.dev.d.ts",
   "bin": {
     "nuxi": "bin/nuxt.mjs",
     "nuxt": "bin/nuxt.mjs"
   },
   "exports": {
-    ".": {
-      "types": "./types.d.mts",
-      "import": "./dist/index.mjs"
-    },
+    ".": "./src/index.ts",
     "./config": {
       "types": "./config.d.ts",
       "import": "./config.js",
@@ -28,14 +25,42 @@
     "./schema": "./schema.js",
     "./kit": "./kit.js",
     "./meta": "./meta.js",
-    "./app": "./dist/app/index.js",
+    "./app": "./src/app/index.ts",
+    "./entry": "./src/runtime/server/entry.ts",
+    "./manifest": "./src/runtime/server/manifest.ts",
+    "./precomputed": "./src/runtime/server/precomputed.ts",
+    "./styles": "./src/runtime/server/styles.ts",
+    "./entry-chunk": "./src/runtime/server/entry-chunk.ts",
+    "./entry-ids": "./src/runtime/server/entry-ids.ts",
     "./package.json": "./package.json"
   },
+  "typesVersions": {
+    "*": {
+      "entry": [
+        "./dist/runtime/server/entry.d.ts"
+      ],
+      "manifest": [
+        "./dist/runtime/server/manifest.d.ts"
+      ],
+      "precomputed": [
+        "./dist/runtime/server/precomputed.d.ts"
+      ],
+      "styles": [
+        "./dist/runtime/server/styles.d.ts"
+      ],
+      "entry-chunk": [
+        "./dist/runtime/server/entry-chunk.d.ts"
+      ],
+      "entry-ids": [
+        "./dist/runtime/server/entry-ids.d.ts"
+      ]
+    }
+  },
   "imports": {
-    "#app": "./dist/app/index.js",
-    "#app/nuxt": "./dist/app/nuxt.js",
-    "#unhead/composables": "./dist/head/runtime/composables.js",
-    "#pages/composables": "./dist/pages/runtime/composables.js"
+    "#app": "./src/app/index.ts",
+    "#app/nuxt": "./src/app/nuxt.ts",
+    "#unhead/composables": "./src/head/runtime/composables.ts",
+    "#pages/composables": "./src/pages/runtime/composables.ts"
   },
   "files": [
     "app.d.ts",
@@ -54,77 +79,78 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "@dxup/nuxt": "^0.5.2",
-    "@nuxt/cli": "^3.36.1",
-    "@nuxt/devtools": "^4.0.0-alpha.7",
+    "@dxup/nuxt": "catalog:build",
+    "@nuxt/cli": "catalog:build",
+    "@nuxt/devtools": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/schema": "workspace:*",
-    "@nuxt/telemetry": "^2.8.0",
+    "@nuxt/telemetry": "catalog:build",
     "@nuxt/vite-builder": "workspace:*",
-    "@unhead/vue": "^3.1.6",
-    "@vue/shared": "^3.5.38",
-    "chokidar": "^5.0.0",
-    "compatx": "^0.2.0",
-    "consola": "^3.4.2",
-    "cookie-es": "^3.1.1",
-    "defu": "^6.1.7",
-    "devalue": "^5.8.1",
-    "errx": "^0.1.0",
-    "escape-string-regexp": "^5.0.0",
-    "exsolve": "^1.1.0",
-    "hookable": "^6.1.1",
-    "ignore": "^7.0.5",
-    "impound": "^1.1.5",
-    "jiti": "^2.7.0",
-    "klona": "^2.0.6",
-    "knitwork": "^1.3.0",
-    "magic-string": "^0.30.21",
-    "mlly": "^1.8.2",
-    "nanotar": "^0.3.0",
-    "ofetch": "^2.0.0-alpha.3",
-    "ohash": "^2.0.11",
-    "on-change": "^6.0.2",
-    "oxc-walker": "^1.0.0",
-    "pathe": "^2.0.3",
-    "perfect-debounce": "^2.1.0",
-    "picomatch": "^4.0.4",
-    "pkg-types": "^2.3.1",
-    "rolldown": "^1.1.3",
-    "rolldown-string": "^0.3.0",
-    "scule": "^1.3.0",
-    "semver": "^7.8.5",
-    "std-env": "^4.1.0",
-    "tinyglobby": "^0.2.17",
-    "ufo": "^1.6.4",
-    "ultrahtml": "^1.6.0",
-    "uncrypto": "^0.1.3",
-    "unctx": "^2.5.0",
-    "undici": "^8.5.0",
-    "unhead": "^3.1.6",
-    "unimport": "^6.3.0",
-    "unplugin": "^3.2.0",
-    "unrouting": "^0.1.7",
-    "untyped": "^2.0.0",
-    "vue": "^3.5.38",
-    "vue-router": "^5.1.0"
+    "@unhead/vue": "catalog:app-runtime",
+    "@vue/shared": "catalog:app-runtime",
+    "chokidar": "catalog:build",
+    "compatx": "catalog:build",
+    "consola": "catalog:app-runtime",
+    "cookie-es": "catalog:app-runtime",
+    "defu": "catalog:app-runtime",
+    "devalue": "catalog:app-runtime",
+    "errx": "catalog:app-runtime",
+    "escape-string-regexp": "catalog:build",
+    "exsolve": "catalog:build",
+    "fnv1a-64": "catalog:app-runtime",
+    "hookable": "catalog:app-runtime",
+    "ignore": "catalog:build",
+    "impound": "catalog:build",
+    "jiti": "catalog:build",
+    "klona": "catalog:app-runtime",
+    "knitwork": "catalog:build",
+    "magic-string": "catalog:vite",
+    "mlly": "catalog:build",
+    "nanotar": "catalog:build",
+    "nostics": "catalog:app-runtime",
+    "object-identity": "catalog:app-runtime",
+    "ofetch": "catalog:app-runtime",
+    "ohash": "catalog:app-runtime",
+    "on-change": "catalog:build",
+    "oxc-walker": "catalog:vite",
+    "pathe": "catalog:app-runtime",
+    "perfect-debounce": "catalog:app-runtime",
+    "picomatch": "catalog:build",
+    "pkg-types": "catalog:build",
+    "rolldown": "catalog:vite",
+    "rolldown-string": "catalog:vite",
+    "scule": "catalog:build",
+    "std-env": "catalog:build",
+    "tinyglobby": "catalog:build",
+    "ufo": "catalog:app-runtime",
+    "ultrahtml": "catalog:build",
+    "uncrypto": "catalog:app-runtime",
+    "unctx": "catalog:app-runtime",
+    "undici": "catalog:build",
+    "unhead": "catalog:app-runtime",
+    "unimport": "catalog:build",
+    "unplugin": "catalog:build",
+    "unrouting": "catalog:build",
+    "untyped": "catalog:build",
+    "verkit": "catalog:build",
+    "vue": "catalog:app-runtime",
+    "vue-router": "catalog:app-runtime"
   },
   "devDependencies": {
-    "@nuxt/scripts": "1.2.1",
-    "@oxc-project/types": "0.137.0",
-    "@parcel/watcher": "2.5.6",
-    "@types/estree": "1.0.9",
-    "@types/picomatch": "4.0.3",
-    "@vitejs/plugin-vue": "6.0.7",
-    "@vitejs/plugin-vue-jsx": "5.1.6",
-    "@vue/compiler-sfc": "3.5.38",
-    "rolldown": "1.1.3",
-    "tsdown": "0.22.3",
-    "typescript": "6.0.3",
-    "vite": "8.1.0",
-    "vitest": "4.1.9",
-    "vue-bundle-renderer": "2.3.1",
-    "vue-sfc-transformer": "0.2.3"
+    "@nuxt/scripts": "catalog:dev",
+    "@parcel/watcher": "catalog:dev",
+    "@types/estree": "catalog:dev",
+    "@types/picomatch": "catalog:dev",
+    "@vitejs/plugin-vue": "catalog:vue",
+    "@vitejs/plugin-vue-jsx": "catalog:dev",
+    "@vue/compiler-sfc": "catalog:vue",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:vite",
+    "vitest": "catalog:dev",
+    "vue-bundle-renderer": "catalog:build",
+    "vue-sfc-transformer": "catalog:dev"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
@@ -140,5 +166,36 @@
   },
   "engines": {
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./types.d.mts",
+        "import": "./dist/index.mjs"
+      },
+      "./config": {
+        "types": "./config.d.ts",
+        "import": "./config.js",
+        "require": "./config.cjs"
+      },
+      "./schema": "./schema.js",
+      "./kit": "./kit.js",
+      "./meta": "./meta.js",
+      "./app": "./dist/app/index.js",
+      "./entry": "./dist/runtime/server/entry.js",
+      "./manifest": "./dist/runtime/server/manifest.js",
+      "./precomputed": "./dist/runtime/server/precomputed.js",
+      "./styles": "./dist/runtime/server/styles.js",
+      "./entry-chunk": "./dist/runtime/server/entry-chunk.js",
+      "./entry-ids": "./dist/runtime/server/entry-ids.js",
+      "./package.json": "./package.json"
+    },
+    "imports": {
+      "#app": "./dist/app/index.js",
+      "#app/nuxt": "./dist/app/nuxt.js",
+      "#unhead/composables": "./dist/head/runtime/composables.js",
+      "#pages/composables": "./dist/pages/runtime/composables.js"
+    },
+    "types": "./types.d.ts"
   }
 }

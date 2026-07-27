@@ -3,7 +3,7 @@ import type { Component, ComponentsDir } from '@nuxt/schema'
 import { resolveModuleExportNames } from 'mlly'
 
 import { useNuxt } from './context.ts'
-import { logger } from './logger.ts'
+import { componentDiagnostics } from './diagnostics/components.ts'
 import { resolvePath } from './resolve.ts'
 import { MODE_RE } from './utils.ts'
 
@@ -65,7 +65,7 @@ function addComponents (addedComponents: Component[]) {
         // but we warn if they are equal.
         if (newPriority === existingPriority) {
           const name = existingComponent.pascalName || existingComponent.kebabName
-          logger.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`)
+          componentDiagnostics.NUXT_B3012({ name })
         }
         components.splice(existingComponentIndex, 1, component)
       } else {

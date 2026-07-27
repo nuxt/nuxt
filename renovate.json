@@ -11,7 +11,6 @@
     "3.x"
   ],
   "ignoreDeps": [
-    "node",
     "npm"
   ],
   "minimumReleaseAge": "1 day",
@@ -65,7 +64,23 @@
       "groupSlug": "rolldown",
       "matchPackageNames": [
         "rolldown",
-        "obuild"
+        "obuild",
+        "tsdown",
+        "oxc-parser",
+        "oxc-walker",
+        "@oxc-project/types"
+      ]
+    },
+    {
+      "groupName": "nitro",
+      "groupSlug": "nitro",
+      "matchPackageNames": [
+        "nitro",
+        "h3",
+        "ofetch",
+        "srvx",
+        "unenv",
+        "unstorage"
       ]
     },
     {

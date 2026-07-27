@@ -2,11 +2,11 @@ import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
-import { isIgnored, useNuxt } from '@nuxt/kit'
+import { componentDiagnostics, isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 
 import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
-import { logger, resolveToAlias } from '../utils.ts'
+import { resolveToAlias } from '../utils.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
@@ -23,6 +23,9 @@ const MODE_REPLACEMENT_RE = /(?:\.(?:client|server))?(?:\.global|\.island)*$/
 export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Promise<Component[]> {
   // All scanned components
   const components: Component[] = []
+
+  // Index into `components` by pascal name to avoid a linear scan per file
+  const componentsByName = new Map<string, Array<{ component: Component, index: number }>>()
 
   // Keep resolved path to avoid duplicates
   const filePaths = new Set<string>()
@@ -47,7 +50,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
             const nuxt = useNuxt()
             const original = resolveToAlias(dir.path, nuxt)
             const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
-            logger.warn(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`)
+            componentDiagnostics.NUXT_B3008({ scannedPath: corrected, expectedPath: original })
             break
           }
         }
@@ -57,7 +60,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
     for (const _file of files) {
       const filePath = join(dir.path, _file)
 
-      if (scannedPaths.find(d => filePath.startsWith(withTrailingSlash(d))) || isIgnored(filePath)) {
+      if (scannedPaths.some(d => filePath.startsWith(d)) || isIgnored(filePath)) {
         continue
       }
 
@@ -99,7 +102,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const pascalName = pascalCase(componentNameSegments)
 
       if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
-        logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
+        componentDiagnostics.NUXT_B3009({ component: pascalName, filePath })
       }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
@@ -139,20 +142,22 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        logger.warn(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`)
+        componentDiagnostics.NUXT_B3010({ filePath: resolveToAlias(filePath) })
         continue
       }
 
-      const validModes = new Set(['all', component.mode])
-      const existingComponent = components.find(c => c.pascalName === component.pascalName && validModes.has(c.mode))
+      const existingEntries = componentsByName.get(component.pascalName)
+      const existingEntry = existingEntries?.find(e => e.component.mode === 'all' || e.component.mode === component.mode)
       // Ignore component if component is already defined (with same mode)
-      if (existingComponent) {
+      if (existingEntry) {
+        const existingComponent = existingEntry.component
         const existingPriority = existingComponent.priority ?? 0
         const newPriority = component.priority ?? 0
 
         // Replace component if priority is higher
         if (newPriority > existingPriority) {
-          components.splice(components.indexOf(existingComponent), 1, component)
+          components[existingEntry.index] = component
+          existingEntry.component = component
         }
         // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
         if (newPriority > 0 && newPriority === existingPriority) {
@@ -162,19 +167,22 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
+      const entry = { component, index: components.length }
+      if (existingEntries) {
+        existingEntries.push(entry)
+      } else {
+        componentsByName.set(component.pascalName, [entry])
+      }
       components.push(component)
     }
-    scannedPaths.push(dir.path)
+    scannedPaths.push(withTrailingSlash(dir.path))
   }
 
   return components
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
-    `\n - ${filePath}` +
-    `\n - ${duplicatePath}`,
-  )
+  componentDiagnostics.NUXT_B3011({ component: componentName, filePath, duplicatePath })
 }
 
 const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/

@@ -2,7 +2,7 @@ import fs from 'node:fs'
 
 import { normalize, relative } from 'pathe'
 import { joinURL } from 'ufo'
-import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
+import { getLayerDirectories, pageDiagnostics, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
@@ -44,11 +44,11 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   const treeOptions: BuildTreeOptions = {
     roots: options.roots,
     modes,
-    warn: msg => logger.warn(msg),
+    warn: message => pageDiagnostics.NUXT_B4011({ message }),
   }
   const emitOptions: VueRouterEmitOptions = {
     onDuplicateRouteName: (_name, file, existingFile) => {
-      logger.warn(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+      pageDiagnostics.NUXT_B4004({ file, existingFile })
     },
     attrs: { mode: modes },
   }
@@ -88,7 +88,7 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
 // resolvePagesRoutes — full glob + build (initial load & fallback)
 // ---------------------------------------------------------------------------
 
-export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt(), ctx?: PagesContext): Promise<NuxtPage[]> {
+export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt(), ctx?: PagesContext, originalPagePaths?: WeakMap<NuxtPage, string>): Promise<NuxtPage[]> {
   const pagesDirs = getLayerDirectories(nuxt).map(d => d.appPages)
 
   const inputFiles: InputFile[] = []
@@ -111,14 +111,14 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
     pages = oneShot.emit()
   }
 
-  return augmentAndResolve(pages, ctx?.trackedFiles ?? new Set(inputFiles.map(f => f.path)), nuxt)
+  return augmentAndResolve(pages, ctx?.trackedFiles ?? new Set(inputFiles.map(f => f.path)), nuxt, originalPagePaths)
 }
 
 // ---------------------------------------------------------------------------
 // augmentAndResolve — downstream pipeline (augmentation + hooks)
 // ---------------------------------------------------------------------------
 
-export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt()): Promise<NuxtPage[]> {
+export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt(), originalPagePaths?: WeakMap<NuxtPage, string>): Promise<NuxtPage[]> {
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
   if (shouldAugment === false) {
@@ -134,6 +134,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
       ...extraPageMetaExtractionKeys,
     ]),
     fullyResolvedPaths: trackedFiles,
+    originalPagePaths,
   }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
@@ -155,6 +156,7 @@ interface AugmentPagesContext {
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
   extraExtractionKeys?: Set<string>
+  originalPagePaths?: WeakMap<NuxtPage, string>
 }
 
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
@@ -170,6 +172,18 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
         routeMeta.rules = defu({}, routeMeta.rules, route.rules)
       }
 
+      // Only the first route per file takes the file's `name`/`path`; a `pages:extend` route
+      // reusing that file keeps its own, else the duplicate route name drops the original (#27358).
+      if (ctx.augmentedPages.has(route.file)) {
+        delete routeMeta.name
+        delete routeMeta.path
+      }
+
+      // Store original paths when they are overridden.
+      if (routeMeta.path !== undefined && routeMeta.path !== route.path) {
+        ctx.originalPagePaths?.set(route, route.path)
+      }
+
       Object.assign(route, routeMeta)
       ctx.augmentedPages.add(route.file)
     }
@@ -182,7 +196,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
 }
 
 const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/gi
-export function extractScriptContent (sfc: string) {
+function extractScriptContent (sfc: string) {
   const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
   for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
     if (match?.groups?.content) {
@@ -270,14 +284,14 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       const pageExtractArgument = unwrapStaticExpression(node.expression.arguments[0])
 
       if (pageExtractArgument?.type !== 'ObjectExpression') {
-        logger.warn(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`)
+        pageDiagnostics.NUXT_B4005({ fnName, file: absolutePath, receivedType: String(pageExtractArgument?.type) })
         return
       }
 
       if (fnName === 'defineRouteRules') {
         const { value, serializable } = isSerializable(code, pageExtractArgument)
         if (!serializable) {
-          logger.warn(`\`${fnName}\` must be called with a serializable object literal (reading \`${absolutePath}\`).`)
+          pageDiagnostics.NUXT_B4006({ fnName, file: absolutePath })
           return
         }
 
@@ -375,7 +389,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
+      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] as Set<string> | undefined ?? new Set<string>()
       const metaFiltered: Record<string, any> = {}
       let skipMeta = true
       for (const key in page.meta || {}) {
@@ -520,24 +534,37 @@ async function createClientPage(loader) {
   }
 }
 
-const PATH_TO_NITRO_GLOB_RE = /\/[^:/]*:\w.*$/
-export function pathToNitroGlob (path: string) {
-  if (!path) {
-    return null
-  }
-  // Ignore pages with multiple dynamic parameters.
-  if (path.indexOf(':') !== path.lastIndexOf(':')) {
-    return null
-  }
-
-  return path.replace(PATH_TO_NITRO_GLOB_RE, '/**')
-}
-
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
   return [
     joinURL(parent, page.path),
     ...page.children?.flatMap(child => resolveRoutePaths(child, joinURL(parent, page.path))) || [],
   ]
+}
+
+// `:id()` matches identically to `:id` in vue-router (an empty regex falls back to the
+// default matcher), so collapse an empty param regex before comparing segments.
+const EMPTY_PARAM_REGEXP_RE = /:(\w+)\(\)([+*?]?)/g
+function canonicalizeParams (path: string): string {
+  return path.replace(EMPTY_PARAM_REGEXP_RE, ':$1$2')
+}
+/**
+ * Strip the leading segments an absolute child path shares with its parent's `fullPath`.
+ * Inserting only the remainder avoids re-declaring the parent's params on the child node.
+ * The remainder only determines the node's own params, as the absolute child path is
+ * re-applied as a path override afterwards and becomes the route's `fullPath`. A child
+ * path that shares nothing with its parent therefore still resolves correctly.
+ */
+export function relativizeToParent (parentFullPath: string, childPath: string): string {
+  if (!childPath.startsWith('/')) {
+    return childPath
+  }
+  const parentSegments = canonicalizeParams(parentFullPath).split('/')
+  const childSegments = childPath.split('/')
+  let index = 0
+  while (index < parentSegments.length && index < childSegments.length && canonicalizeParams(childSegments[index]!) === parentSegments[index]) {
+    index++
+  }
+  return index === 0 ? childPath : childSegments.slice(index).join('/')
 }
 
 export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {

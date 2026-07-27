@@ -12,7 +12,7 @@ links:
 
 Within your pages, components, and plugins, you can use `useCookie` to read and write cookies in an SSR-friendly way.
 
-```ts
+```ts [Usage]
 const cookie = useCookie(name, options)
 ```
 
@@ -61,10 +61,10 @@ Most of the options will be directly passed to the [cookie](https://github.com/j
 | `encode`      | `(value: T) => string` | `JSON.stringify` + `encodeURIComponent`                        | Custom function to encode the cookie value. Since the value of a cookie has a limited character set (and must be a simple string), this function can be used to encode a value into a string suited for a cookie's value.                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `default`     | `() => T \| Ref<T>`    | `undefined`                                                    | Function returning the default value if the cookie does not exist.  The function can also return a `Ref`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `watch`       | `boolean \| 'shallow'` | `true`                                                         | Whether to watch for changes and update the cookie. `true` for deep watch, `'shallow'` for shallow watch, i.e. data changes for only top level properties, `false` to disable. <br/> **Note:** Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/docs/4.x/api/utils/refresh-cookie).                                                                                                                                                                                                                                                                                                                           |
-| `refresh`     | `boolean`              | `false`                                                        | If `true`, the cookie expiration will be refreshed on every explicit write (e.g. `cookie.value = cookie.value`), even if the value itself hasn’t changed. Note: the expiration is not refreshed automatically — you must assign to `.value` to trigger it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `refresh` :badge[v4.4]{color="info" size="xs" class="align-middle"} | `boolean`              | `false`                                                        | If `true`, the cookie expiration will be refreshed on every explicit write (e.g. `cookie.value = cookie.value`), even if the value itself hasn’t changed. Note: the expiration is not refreshed automatically — you must assign to `.value` to trigger it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `readonly`    | `boolean`              | `false`                                                        | If `true`, disables writing to the cookie.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `maxAge`      | `number`               | `undefined`                                                    | Max age in seconds for the cookie, i.e. the value for the [`Max-Age` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/rfc6265#section-5.2.2). The given number will be converted to an integer by rounding down. By default, no maximum age is set.                                                                                                                                                                                                                                                                                                                                                                                   |
-| `expires`     | `Date`                 | `undefined`                                                    | Expiration date for the cookie. By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and will delete it on a condition like exiting a web browser application. <br/> **Note:** The [cookie storage model specification](https://datatracker.ietf.org/doc/html/rfc6265#section-5.3) states that if both `expires` and `maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this, so if both are set, they should point to the same date and time! <br/>If neither of `expires` and `maxAge` is set, the cookie will be session-only and removed when the user closes their browser. |
+| `expires`     | `Date \| (() => Date \| undefined)` | `undefined`                                                    | Expiration date for the cookie, or a getter that returns one. When a function is provided, it is evaluated on every cookie write, so the expiration can be refreshed when the value is re-set. Returning `undefined` creates a session cookie. The getter should be pure (no side effects). By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and will delete it on a condition like exiting a web browser application. <br/> **Note:** The [cookie storage model specification](https://datatracker.ietf.org/doc/html/rfc6265#section-5.3) states that if both `expires` and `maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this, so if both are set, they should point to the same date and time! <br/>If neither of `expires` and `maxAge` is set, the cookie will be session-only and removed when the user closes their browser. |
 | `httpOnly`    | `boolean`              | `false`                                                        | Sets the HttpOnly attribute. <br/> **Note:** Be careful when setting this to `true`, as compliant clients will not allow client-side JavaScript to see the cookie in `document.cookie`.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `secure`      | `boolean`              | `false`                                                        | Sets the [`Secure` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/rfc6265#section-5.2.5). <br/>**Note:** Be careful when setting this to `true`, as compliant clients will not send the cookie back to the server in the future if the browser does not have an HTTPS connection. This can lead to hydration errors.                                                                                                                                                                                                                                                                                                                |
 | `partitioned` | `boolean`              | `false`                                                        | Sets the [`Partitioned` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/draft-cutler-httpbis-partitioned-cookies#section-2.1). <br/>**Note:** This is an attribute that has not yet been fully standardized, and may change in the future. <br/>This also means many clients may ignore this attribute until they understand it.<br/>More information can be found in the [proposal](https://github.com/privacycg/CHIPS).                                                                                                                                                                                                            |
@@ -76,7 +76,7 @@ Most of the options will be directly passed to the [cookie](https://github.com/j
 
 Returns a Vue `Ref<T>` representing the cookie value. Updating the ref will update the cookie (unless `readonly` is set). The ref is SSR-friendly and will work on both client and server.
 
-## Examples
+## Example
 
 ### Basic Usage
 
@@ -107,7 +107,7 @@ counter.value ||= Math.round(Math.random() * 1000)
 
 ### Readonly Cookies
 
-```vue
+```vue [app/app.vue]
 <script setup lang="ts">
 const user = useCookie(
   'userInfo',
@@ -130,7 +130,7 @@ if (user.value) {
 
 ### Writable Cookies
 
-```vue
+```vue [app/app.vue]
 <script setup lang="ts">
 const list = useCookie(
   'list',
@@ -167,7 +167,7 @@ function save () {
 
 ### Refreshing Cookies
 
-```vue
+```vue [app/app.vue]
 <script setup lang="ts">
 const session = useCookie(
   'session', {
@@ -185,6 +185,22 @@ session.value = 'active'
 <template>
   <div>Session: {{ session }}</div>
 </template>
+```
+
+### Dynamic Expiration with a Getter
+
+Use a function for `expires` when you want a fresh expiration date every time the cookie is written (for example, sliding sessions or tokens):
+
+```vue [app/app.vue]
+<script setup lang="ts">
+const token = useCookie('token', {
+  // Re-evaluated on every write — keep this getter pure
+  expires: () => new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
+})
+
+// Assigning a new value also refreshes the cookie expiration
+token.value = 'new-token'
+</script>
 ```
 
 ### Cookies in API Routes

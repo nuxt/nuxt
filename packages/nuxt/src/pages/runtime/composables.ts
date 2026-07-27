@@ -3,8 +3,9 @@ import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitro/types'
-import type { NuxtError } from 'nuxt/app'
+import type { NuxtError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
+import { appDiagnostics } from '../../app/diagnostics/core'
 import type { SerializableValue } from './utils'
 
 // Generated at runtime to be extended
@@ -66,11 +67,7 @@ declare module 'vue-router' {
 }
 
 const warnRuntimeUsage = (method: string) => {
-  console.warn(
-    `${method}() is a compiler-hint helper that is only usable inside ` +
-    'the script block of a single file component which is also a page. Its arguments should be ' +
-    'compiled away and passing it at runtime has no effect.',
-  )
+  appDiagnostics.NUXT_E1007({ name: method })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

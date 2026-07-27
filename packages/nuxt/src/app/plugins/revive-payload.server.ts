@@ -4,7 +4,6 @@ import { isNuxtError } from '../composables/error'
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
-// @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
 import { isValidIslandKey } from './utils'
 

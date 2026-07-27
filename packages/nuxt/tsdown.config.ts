@@ -16,6 +16,7 @@ const RUNTIME_TREES = [
   'src/components/runtime',
   'src/pages/runtime',
   'src/compiler/runtime',
+  'src/runtime/server',
 ]
 const RUNTIME_ENTRY_GLOBS = RUNTIME_TREES.flatMap(tree => [
   `${tree}/**/*.ts`,
@@ -75,7 +76,9 @@ export default defineConfig([
     hooks: {
       'build:prepare': ({ options }) => cleanDist(options.outDir),
     },
-    dts: { oxc: true, sideEffects: true },
+    // No `oxc: true`: it can't infer `defineDiagnostics()`'s return type, which the
+    // diagnostics catalogs rely on. tsc handles it.
+    dts: { sideEffects: true },
     // TODO: remove in Nuxt v5 to switch to `.mjs`
     fixedExtension: false,
     entry: RUNTIME_ENTRY_GLOBS,

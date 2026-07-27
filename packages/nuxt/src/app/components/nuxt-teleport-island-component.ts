@@ -1,9 +1,7 @@
 import type { Component, DefineSetupFnComponent, InjectionKey, SlotsType, VNode } from 'vue'
 import { Teleport, defineComponent, h, inject, provide, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
-// @ts-expect-error virtual file
 import paths from '#build/component-chunk'
-// @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
 
 type ExtendedComponent = Component & {

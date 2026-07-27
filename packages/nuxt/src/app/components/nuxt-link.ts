@@ -20,11 +20,13 @@ import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../c
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
+import { renderDiagnostics } from '../diagnostics/render'
+import { navigationDiagnostics } from '../diagnostics/navigation'
 
-// @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
+import type { NuxtLinkOptions } from '../types'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
@@ -52,6 +54,8 @@ function sanitizeExternalHref (value: string): string | null {
 }
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
+
+export type { NuxtLinkOptions } from '../types'
 
 /**
  * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
@@ -109,59 +113,48 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
   trailingSlash?: 'append' | 'remove'
 }
 
-/**
- * Create a NuxtLink component with given options as defaults.
- * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
- */
-export interface NuxtLinkOptions extends
-  Partial<Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>>,
-  Partial<Pick<NuxtLinkProps, 'prefetch' | 'prefetchedClass'>> {
-  /**
-   * The name of the component.
-   * @default "NuxtLink"
-   */
-  componentName?: string
-  /**
-   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
-   */
-  externalRelAttribute?: string | null
-  /**
-   * An option to either add or remove trailing slashes in the `href`.
-   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
-   */
-  trailingSlash?: 'append' | 'remove'
-
-  /**
-   * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
-   */
-  prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
-}
-
 type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
   ? {
       href: string | null
       navigate: (e?: MouseEvent) => Promise<void>
       prefetch: (nuxtApp?: NuxtApp) => Promise<void>
+      prefetched: boolean
+      shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
       route: (RouteLocation & { href: string }) | undefined
       rel: string | null
       target: '_blank' | '_parent' | '_self' | '_top' | (string & {}) | null
       isExternal: boolean
-      isActive: false
-      isExactActive: false
+      isActive: boolean
+      isExactActive: boolean
     }
   : UnwrapRef<UseLinkReturn>
+
+type RouterLinkSlotProps = Partial<Pick<NuxtLinkDefaultSlotProps<true>, 'href' | 'navigate' | 'route' | 'isActive' | 'isExactActive'>>
 
 type NuxtLinkSlots<CustomProp extends boolean = false> = {
   default?: (props: NuxtLinkDefaultSlotProps<CustomProp>) => VNode[]
 }
 
-export type NuxtLinkComponent = new<CustomProp extends boolean = false>(
-  props: NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
-) => InstanceType<DefineSetupFnComponent<
-  NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
+type NuxtLinkComponentProps<CustomProp extends boolean = false> =
+  NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>
+
+type NuxtLinkComponentInstance<CustomProp extends boolean = false> = InstanceType<DefineSetupFnComponent<
+  NuxtLinkComponentProps<CustomProp>,
   [],
   SlotsType<NuxtLinkSlots<CustomProp>>
 >>
+
+export type NuxtLinkComponent = {
+  new (
+    props: NuxtLinkComponentProps<true> & { custom: true }
+  ): NuxtLinkComponentInstance<true>
+  new (
+    props: NuxtLinkComponentProps<false>
+  ): NuxtLinkComponentInstance<false>
+  new<CustomProp extends boolean = false>(
+    props: NuxtLinkComponentProps<CustomProp>
+  ): NuxtLinkComponentInstance<CustomProp>
+}
 
 /* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & Record<string, any> {
@@ -169,7 +162,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
   function checkPropConflicts (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void {
     if (import.meta.dev && props[main] !== undefined && props[sub] !== undefined) {
-      console.warn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`)
+      renderDiagnostics.NUXT_E4010({ componentName, main, sub })
     }
   }
 
@@ -278,7 +271,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       async navigate (_e?: MouseEvent) {
         if (href.value === null) {
           if (import.meta.dev) {
-            console.warn(`[${componentName}] refused to navigate to a URL with a script-capable protocol.`)
+            navigationDiagnostics.NUXT_E2011({ componentName })
           }
           return
         }
@@ -402,9 +395,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
-      function shouldPrefetch (mode: 'visibility' | 'interaction') {
-        if (import.meta.server) { return }
-        return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
+      function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
+        if (import.meta.server) { return false }
+        return Boolean((!prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()))
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
@@ -426,7 +419,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         ])
       }
 
-      if (import.meta.client) {
+      if (import.meta.client && !props.custom) {
         checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
@@ -457,13 +450,60 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       if (import.meta.dev && import.meta.server && !props.custom) {
         const isNuxtLinkChild = inject(NuxtLinkDevKeySymbol, false)
         if (isNuxtLinkChild) {
-          console.log('[nuxt] [NuxtLink] You can\'t nest one <a> inside another <a>. This will cause a hydration error on client-side. You can pass the `custom` prop to take full control of the markup.')
+          renderDiagnostics.NUXT_E4009()
         } else {
           provide(NuxtLinkDevKeySymbol, true)
         }
       }
 
       return () => {
+        // Resolves `target` value
+        const target = props.target || null
+
+        // Resolves `rel`
+        checkPropConflicts(props, 'noRel', 'rel')
+        const rel = firstNonUndefined<string | null>(
+          // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
+          props.noRel ? '' : props.rel,
+          options.externalRelAttribute,
+          /*
+          * A fallback rel of `noopener noreferrer` is applied for external links or links that open in a new tab.
+          * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
+          */
+          (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
+        ) || null
+
+        const getCustomSlotProps = (routerLinkSlotProps?: RouterLinkSlotProps): NuxtLinkDefaultSlotProps<true> => ({
+          href: href.value,
+          navigate,
+          get route () {
+            if (!href.value) { return undefined }
+
+            const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
+            return {
+              path: url.pathname,
+              fullPath: url.pathname,
+              get query () { return parseQuery(url.search) },
+              hash: url.hash,
+              params: {},
+              name: undefined,
+              matched: [],
+              redirectedFrom: undefined,
+              meta: {},
+              href: href.value,
+            } as unknown as RouteLocation & { href: string }
+          },
+          rel,
+          target,
+          isExternal: isExternal.value || hasTarget.value,
+          isActive: false,
+          isExactActive: false,
+          ...routerLinkSlotProps,
+          prefetch,
+          prefetched: prefetched.value,
+          shouldPrefetch,
+        })
+
         if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
@@ -494,25 +534,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           return h(
             resolveComponent('RouterLink'),
             routerLinkProps,
-            slots.default,
+            props.custom && slots.default
+              ? { default: (slotProps: RouterLinkSlotProps) => slots.default!(getCustomSlotProps(slotProps)) }
+              : slots.default,
           )
         }
-
-        // Resolves `target` value
-        const target = props.target || null
-
-        // Resolves `rel`
-        checkPropConflicts(props, 'noRel', 'rel')
-        const rel = firstNonUndefined<string | null>(
-          // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
-          props.noRel ? '' : props.rel,
-          options.externalRelAttribute,
-          /*
-          * A fallback rel of `noopener noreferrer` is applied for external links or links that open in a new tab.
-          * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
-          */
-          (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
-        ) || null
 
         // https://router.vuejs.org/api/interfaces/routerlinkprops#custom-
         if (props.custom) {
@@ -520,33 +546,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             return null
           }
 
-          return slots.default({
-            href: href.value,
-            navigate,
-            prefetch,
-            get route () {
-              if (!href.value) { return undefined }
-
-              const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
-              return {
-                path: url.pathname,
-                fullPath: url.pathname,
-                get query () { return parseQuery(url.search) },
-                hash: url.hash,
-                params: {},
-                name: undefined,
-                matched: [],
-                redirectedFrom: undefined,
-                meta: {},
-                href: href.value,
-              } satisfies RouteLocation & { href: string }
-            },
-            rel,
-            target,
-            isExternal: isExternal.value || hasTarget.value,
-            isActive: false,
-            isExactActive: false,
-          } satisfies NuxtLinkDefaultSlotProps<true>)
+          return slots.default(getCustomSlotProps())
         }
 
         return h('a', {
@@ -591,6 +591,10 @@ export default NuxtLink
 
 // -- NuxtLink utils --
 function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {
+  // When `trailingSlash` is unset (or not a valid value) the URL is returned untouched
+  if (trailingSlash !== 'append' && trailingSlash !== 'remove') {
+    return to
+  }
   const normalizeFn = trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
   // Until https://github.com/unjs/ufo/issues/189 is resolved
   const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')

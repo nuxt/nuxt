@@ -21,15 +21,13 @@ jobs:
     steps:
       - name: AgentScan
         id: agentscan
-        uses: MatteoGabriele/agentscan-action@51fb33d2bf6290780418ae231d7e7096ef5d8311 # v1.15.0
+        uses: MatteoGabriele/agentscan-action@e02ef270c024bfad3541b2a71619c3c9f20b3312 # v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          skip-members: "dependabot[bot],renovate[bot]"
-          agent-scan-comment: false
+          mode: 'labels'
+          trusted-author-associations: 'owner, member'
       - name: Handle flagged PR
-        if: |
-          !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
-          && (contains(fromJSON('["automation","mixed"]'), steps.agentscan.outputs.classification) || steps.agentscan.outputs.community-flagged == 'true')
+        if: (contains(fromJSON('["automation","mixed"]'), steps.agentscan.outputs.classification) || steps.agentscan.outputs.community-flagged == 'true')
         env:
           CLASSIFICATION: ${{ steps.agentscan.outputs.classification }}
           COMMUNITY_FLAGGED: ${{ steps.agentscan.outputs.community-flagged }}
@@ -88,6 +86,14 @@ jobs:
               core.info('Possible-bot comment already exists - skipping comment.')
             }
 
+            const unlinkIssues = body => body?.replace(
+              /\b(close[sd]?|fix(?:e[sd])?|resolve[sd]?)(\s*:?\s*)(?=(?:[\w.-]+\/[\w.-]+)?#\d+|GH-\d+|https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/gi,
+              (_, keyword, separator) => {
+                const refs = keyword === keyword.toUpperCase() ? 'REFS' : keyword[0] === keyword[0].toUpperCase() ? 'Refs' : 'refs'
+                return `${refs}${separator}`
+              },
+            )
+
             if (shouldClose && issue.state === 'open' && !alreadyCommented) {
               await github.rest.pulls.update({
                 owner: context.repo.owner,
@@ -95,6 +101,7 @@ jobs:
                 pull_number: prNumber,
                 state: 'closed',
                 title: '🚨 unwelcome pr from bot 🚨',
+                body: unlinkIssues(issue.body),
               })
             }
 

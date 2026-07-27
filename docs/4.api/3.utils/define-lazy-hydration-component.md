@@ -1,6 +1,7 @@
 ---
 title: 'defineLazyHydrationComponent'
 description: 'Define a lazy hydration component with a specific strategy.'
+minimalVersion: "3.18"
 links:
   - label: Source
     icon: i-simple-icons-github

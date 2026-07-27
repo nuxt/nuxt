@@ -1,4 +1,4 @@
-import { directoryToURL, importModule } from '@nuxt/kit'
+import { buildDiagnostics, directoryToURL, importModule } from '@nuxt/kit'
 
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
@@ -24,6 +24,6 @@ async function loadServerBuilder (nuxt: Nuxt, builder = '@nuxt/nitro-server'): P
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err) {
-    throw new Error(`Loading \`${builder}\` server builder failed. You can read more about the nuxt \`server.builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder-1\``, { cause: err })
+    throw buildDiagnostics.NUXT_B1018({ builder, cause: err })
   }
 }

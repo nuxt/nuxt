@@ -39,12 +39,12 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
           regexpMap.set(components, [new RegExp(`(${clientOnlyComponents.join('|')})`), new RegExp(`^(${clientOnlyComponents.map(c => `(?:(?:_unref\\()?(?:_component_)?(?:Lazy|lazy_)?${c}\\)?)`).join('|')})$`), clientOnlyComponents])
         }
 
-        const s = rolldownString(code, id, meta)
-
         const [COMPONENTS_RE, COMPONENTS_IDENTIFIERS_RE] = regexpMap.get(components)!
         if (!COMPONENTS_RE.test(code)) { return }
 
-        const componentsToRemoveSet = new Set<string>()
+        const s = rolldownString(code, id, meta)
+
+        const candidateNames = new Set<string>()
 
         // remove client only components or components called in ClientOnly default slot
         const { program: ast } = parseAndWalk(code, id, (node) => {
@@ -65,24 +65,28 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
             for (const slot of slotsToRemove) {
               s.remove(slot.start, slot.end + 1)
               const removedCode = `({${code.slice(slot.start, slot.end + 1)}})`
-              const currentState = s.toString()
 
               parseAndWalk(removedCode, id, (node) => {
                 if (!isSsrRender(node)) { return }
                 const name = getComponentName(node)
-                if (!name) { return }
-
-                // detect if the component is called else where
-                const nameToRemove = isComponentNotCalledInSetup(currentState, id, name)
-                if (nameToRemove) {
-                  componentsToRemoveSet.add(nameToRemove)
+                if (name) {
+                  candidateNames.add(name)
                 }
               })
             }
           }
         })
 
-        const componentsToRemove = [...componentsToRemoveSet]
+        // detect which candidates are still called elsewhere with a single re-parse of the transformed code
+        const componentsToRemove: string[] = []
+        if (candidateNames.size) {
+          const referencedNames = getSetupReferencedNames(s.toString(), id)
+          for (const name of candidateNames) {
+            if (!referencedNames.has(name)) {
+              componentsToRemove.push(name)
+            }
+          }
+        }
         const removedNodes = new WeakSet<ESTree.Node>()
 
         for (const componentName of componentsToRemove) {
@@ -175,31 +179,34 @@ function removeImportDeclaration (ast: ESTree.Program, importName: string, magic
 }
 
 /**
- * detect if the component is called else where
- * ImportDeclarations and VariableDeclarations are ignored
- * return the name of the component if is not called
+ * return the set of identifiers referenced inside the setup function and the ssrRender function.
+ * identifiers inside variable declarations are skipped, so a component's own declaration does not count as a reference.
+ * a component whose name is absent from this set is not used anywhere and can be removed.
  */
-function isComponentNotCalledInSetup (code: string, id: string, name: string): string | void {
-  if (!name) { return }
-  let found = false
+function getSetupReferencedNames (code: string, id: string): Set<string> {
+  const names = new Set<string>()
   parseAndWalk(code, id, function (node) {
     if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && (node.id?.name === '_sfc_ssrRender' || node.id?.name === 'ssrRender'))) {
       // walk through the setup function node or the ssrRender function
       walk(node, {
         enter (node) {
-          if (found || node.type === 'VariableDeclaration') {
+          if (node.type === 'VariableDeclaration') {
             this.skip()
-          } else if (node.type === 'Identifier' && node.name === name) {
-            found = true
+          } else if (node.type === 'Identifier') {
+            names.add(node.name)
           } else if (node.type === 'MemberExpression') {
             // dev only with $setup or _ctx
-            found = (node.property.type === 'Literal' && node.property.value === name) || (node.property.type === 'Identifier' && node.property.name === name)
+            if (node.property.type === 'Literal' && typeof node.property.value === 'string') {
+              names.add(node.property.value)
+            } else if (node.property.type === 'Identifier') {
+              names.add(node.property.name)
+            }
           }
         },
       })
     }
   })
-  if (!found) { return name }
+  return names
 }
 
 /**

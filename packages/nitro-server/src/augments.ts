@@ -1,7 +1,8 @@
+/// <reference path="./internal.d.ts" />
 import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from 'nuxt/app'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 import type { HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
 
 /**
@@ -23,6 +24,7 @@ declare module 'nitro/types' {
     baseURL: string
     buildAssetsDir: string
     cdnURL: string
+    buildId: string
   }
   interface NitroRouteRules {
     ssr?: boolean
@@ -54,6 +56,8 @@ declare module 'nitro/types' {
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }
+
+type _NitroOnlyRuntimeConfig = Omit<NonNullable<NitroRuntimeConfig['nitro']>, 'envPrefix'> & { envPrefix: string }
 
 declare module '@nuxt/schema' {
   interface NuxtHooks {
@@ -160,7 +164,7 @@ declare module '@nuxt/schema' {
   interface RuntimeConfig {
     app: NitroRuntimeConfigApp
     /** Only available on the server. */
-    nitro?: NitroRuntimeConfig['nitro']
+    nitro?: _NitroOnlyRuntimeConfig
   }
 
   interface NuxtDebugOptions {
@@ -278,7 +282,7 @@ declare module 'nuxt/schema' {
   interface RuntimeConfig {
     app: NitroRuntimeConfigApp
     /** Only available on the server. */
-    nitro?: NitroRuntimeConfig['nitro']
+    nitro?: _NitroOnlyRuntimeConfig
   }
 
   interface NuxtDebugOptions {

@@ -2,6 +2,7 @@ import process from 'node:process'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
 import type { AppHeadMetaObject } from '../types/head.ts'
 import type { NuxtAppConfig, ViewTransitionOptions } from '../types/config.ts'
 
@@ -20,6 +21,13 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+    optionsApi: {
+      async $resolve (val, get) {
+        if (typeof val === 'boolean') { return val }
+        // Options API support is compiled out of the client bundle from v5 onwards.
+        return (await get('future.compatibilityVersion')) < 5
+      },
+    },
     propsDestructure: true,
 
     config: {},
@@ -35,10 +43,9 @@ export default defineResolvers({
     },
     buildAssetsDir: {
       $resolve: (val) => {
-        if (typeof val === 'string') {
-          return val
-        }
-        return process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+        const dir = typeof val === 'string' ? val : (process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/')
+        // normalised so consumers can compare it directly against request paths
+        return dir.replace(/^\/?/, '/').replace(/\/?$/, '/')
       },
     },
 
@@ -178,7 +185,7 @@ export default defineResolvers({
         if (typeof val !== 'boolean') { return false }
         if ((await get('future.compatibilityVersion') as number) >= 5) {
           if (val) {
-            console.warn('`unhead.legacy` is ignored when `future.compatibilityVersion` >= 5. Remove deprecated head patterns (`hid`, `vmid`, `children`, `body: true`, `renderPriority`) and resolve promise values before passing to `useHead`.')
+            schemaDiagnostics.NUXT_B5013()
           }
           return false
         }
