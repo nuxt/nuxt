@@ -162,8 +162,7 @@ async function main () {
     try {
       await comment(issue.number, body)
       consola.success(`Commented on #${issue.number} (resolved by ${prs}).`)
-    }
-    catch (error) {
+    } catch (error) {
       // One inaccessible issue (locked while we ran, transferred, deleted) should
       // not stop the rest of the release from being notified.
       consola.warn(`Could not comment on #${issue.number}:`, (error as Error).message)
@@ -182,8 +181,7 @@ async function comment (issueNumber: number, body: string, attempt = 1): Promise
       headers: { authorization: `bearer ${TOKEN}` },
       body: { body },
     })
-  }
-  catch (error) {
+  } catch (error) {
     const response = (error as { response?: { status?: number, _data?: { message?: string } } }).response
     const message = response?._data?.message || ''
     const isRateLimited = response?.status === 403 && /rate limit|abuse/i.test(message)
