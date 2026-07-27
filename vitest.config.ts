@@ -183,7 +183,7 @@ export default defineConfig({
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/insensitive/**', '**/sensitive/**'],
           environment: 'nuxt',
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
@@ -197,6 +197,53 @@ export default defineConfig({
           },
         },
       }))),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+        },
+        test: {
+          name: 'nuxt-insensitive',
+          dir: './test/nuxt/insensitive',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              // `sensitive: false` on a v5 app: the config the route-rule case-folding targets.
+              overrides: defu({
+                future: { compatibilityVersion: 5 },
+                router: { options: { sensitive: false } },
+                routeRules: {
+                  '/Secret/Docs/**': { ssr: false },
+                  '/Legacy/Home': { redirect: '/target' },
+                },
+              } satisfies NuxtConfig, commonSettings),
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+        },
+        test: {
+          name: 'nuxt-sensitive',
+          dir: './test/nuxt/sensitive',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu({
+                future: { compatibilityVersion: 5 },
+                router: { options: { sensitive: true } },
+                routeRules: {
+                  '/Admin/Dashboard': { redirect: '/admin-target' },
+                  '/admin/dashboard': { redirect: '/lower-target' },
+                },
+              } satisfies NuxtConfig, commonSettings),
+            },
+          },
+        },
+      }),
       await defineVitestProject({
         define: {
           'import.meta.dev': 'true',

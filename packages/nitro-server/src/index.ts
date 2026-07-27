@@ -10,11 +10,10 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { createNitro, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
-import type { H3Event } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
@@ -24,9 +23,11 @@ import nitroBuilder from '../package.json' with { type: 'json' }
 import { NUXT_BUILD_OUTPUT_MAP, distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, toArray } from './utils.ts'
 import { setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
+import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { createFoldedRouteRulesRouter } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -382,7 +383,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (!nuxt._nitro) {
         return `export default () => ({})`
       }
-      const matcher = nuxt._nitro.routing.routeRules.compileToString({
+      // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
+      // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
+      // folded lookup and silently lose its protections. `sensitive` can also come from
+      // `app/router.options.ts` (runtime-only), so emit both a verbatim and a folded matcher
+      // and pick at runtime.
+      const sourceRouter = nuxt._nitro.routing.routeRules
+      const foldedRouter = createFoldedRouteRulesRouter(sourceRouter, nuxt._nitro.options.baseURL, (existing, route) => {
+        if (nuxt.options.router.options.sensitive) { return }
+        logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path when matched case-insensitively; \`${route}\` takes precedence. Disambiguate the keys or set \`router.options.sensitive: true\`.`)
+      })
+      const compileOptions: NonNullable<Parameters<typeof sourceRouter.compileToString>[0]> = {
         matchAll: true,
         serialize (routeRules) {
           return `{${Object.entries(routeRules)
@@ -412,13 +423,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             }).join(',')
           }}`
         },
-      })
-      return `
-      import { defu } from 'defu'
-      import routerOptions from '#build/router.options.mjs'
-      const matcher = ${matcher}
-      export default (path) => defu({}, ...matcher('', typeof path === 'string' && !routerOptions.sensitive ? path.toLowerCase() : path).map(r => r.data).reverse())
-      `
+      }
+      const sensitiveMatcher = sourceRouter.compileToString(compileOptions)
+      const foldedMatcher = foldedRouter.compileToString(compileOptions)
+      return [
+        `import { defu } from 'defu'`,
+        `import routerOptions from '#build/router.options.mjs'`,
+        `const sensitiveMatcher = ${sensitiveMatcher}`,
+        foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`,
+        `export default (path) => routerOptions.sensitive`,
+        `  ? defu({}, ...sensitiveMatcher('', path).map(r => r.data).reverse())`,
+        `  : defu({}, ...foldedMatcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())`,
+      ].join('\n')
     },
   })
 
@@ -667,16 +683,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
   const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath
 
-  // Use hash-based cache driver for runtime payload cache to avoid conflicts when
-  // path is both a file and a directory prefix: https://github.com/nuxt/nuxt/issues/34547
-  if (nuxt.options.dev) {
-    const payloadCacheDir = resolve(nuxt.options.buildDir, 'cache/nuxt/payload')
-    nitroConfig.devStorage['cache:nuxt:payload'] ||= {
-      driver: cacheDriverOption,
-      base: payloadCacheDir,
-    }
-  }
-
   // Hoist types for nitro implicit dependencies
   nuxt.options.typescript.hoist.push(
     // Nitro auto-imported/augmented dependencies
@@ -746,6 +752,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const appDir = nuxt.options.alias['#app']
   if (appDir) {
     tsConfig.compilerOptions.paths['#app/island-hash'] ||= [resolve(appDir, 'island-hash')]
+    tsConfig.compilerOptions.paths['#app/island-props'] ||= [resolve(appDir, 'island-props')]
     tsConfig.compilerOptions.paths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
     tsConfig.compilerOptions.paths['#app/types'] ||= [resolve(appDir, 'types')]
   }
@@ -941,7 +948,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitro.options.devHandlers.push({
       route: '/.well-known/appspecific/com.chrome.devtools.json',
       handler: defineEventHandler((event) => {
-        if (!isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
+        // The response discloses the absolute project root and a stable workspace UUID, so
+        // require a genuine loopback peer: `isLocalDevRequest` alone is forgeable by a
+        // non-browser LAN client sending `Host: localhost`.
+        if (!isLoopbackPeer(event) || !isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
           event.res.status = 403
           return 'Forbidden'
         }
@@ -1037,8 +1047,6 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
   return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
 }
 
-const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
-
 function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
   const allowedHosts = nuxt.options.vite?.server?.allowedHosts
   if (allowedHosts === true) {
@@ -1053,32 +1061,6 @@ function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
     }
   }
   return hosts
-}
-
-function isLocalDevRequest (event: H3Event, allowedHosts: ReadonlySet<string> | true): boolean {
-  const hostHeader = event.req.headers.get('host')
-  if (allowedHosts !== true) {
-    const host = hostHeader?.split(':')[0]
-    if (!host || !allowedHosts.has(host)) {
-      return false
-    }
-  }
-
-  const site = event.req.headers.get('sec-fetch-site')
-  if (site !== null) {
-    return site === 'same-origin' || site === 'none'
-  }
-
-  const initiator = event.req.headers.get('origin') || event.req.headers.get('referer')
-  if (!initiator) {
-    return true
-  }
-
-  try {
-    return new URL(initiator).host === hostHeader
-  } catch {
-    return false
-  }
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {

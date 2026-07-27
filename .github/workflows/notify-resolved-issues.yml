@@ -1,0 +1,48 @@
+name: notify resolved issues
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: release tag to notify for (e.g. v4.2.0)
+        required: true
+        type: string
+      dry-run:
+        description: log the issues that would be commented on, without commenting
+        default: true
+        type: boolean
+      notify-once:
+        description: skip issues already notified for an earlier release (e.g. a backport)
+        default: true
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  group: notify-resolved-issues-${{ inputs.tag || github.event.release.tag_name }}
+
+jobs:
+  notify:
+    if: github.repository_owner == 'nuxt' && !github.event.release.prerelease
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+        with:
+          node-version: latest
+          cache: true
+
+      - run: node ./scripts/notify-resolved-issues.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag || github.event.release.tag_name }}
+          DRY_RUN: ${{ inputs.dry-run || false }}
+          NOTIFY_ONCE: ${{ github.event_name != 'workflow_dispatch' || inputs.notify-once }}

@@ -25,15 +25,17 @@ const DEV_CLIENT_CSS_SEED = 'nuxt:dev-client-css:seed'
  * so this is eventually consistent rather than a strict per-request subset
  * (which nothing tracks).
  */
-function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): string[] {
-  const css = new Set<string>()
+function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: string[], files: Set<string> } {
+  const urls = new Set<string>()
+  const files = new Set<string>()
   for (const [mod, node] of moduleGraph.urlToModuleMap.entries()) {
     if (!IS_CSS_RE.test(mod) || 'raw' in getQuery(mod)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
-    css.add(mod)
+    urls.add(mod)
+    if (node.file) { files.add(node.file) }
   }
-  return [...css]
+  return { urls: [...urls], files }
 }
 
 /**
@@ -41,13 +43,13 @@ function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): string[] {
  * styles are always present in the dev SSR manifest, even before the ssr graph
  * has loaded the component that imports them.
  */
-function collectGlobalCss (nuxt: Nuxt): string[] {
-  const out: string[] = []
+function resolveGlobalCss (nuxt: Nuxt): Array<{ file: string, url: string }> {
+  const out = new Map<string, string>()
   for (const entry of nuxt.options.css) {
     if (typeof entry !== 'string') { continue }
     const resolved = resolveAlias(entry, nuxt.options.alias)
     if (isAbsolute(resolved)) {
-      out.push(resolved)
+      out.set(resolved, toFsUrl(resolved))
       continue
     }
     const fromModules = resolveModulePath(resolved, {
@@ -55,10 +57,25 @@ function collectGlobalCss (nuxt: Nuxt): string[] {
       from: nuxt.options.modulesDir.map(d => directoryToURL(d)),
     })
     if (fromModules) {
-      out.push('/@fs' + fromModules.replace(/^(?!\/)/, '/'))
+      out.set(fromModules, toFsUrl(fromModules))
     }
   }
-  return out
+  return Array.from(out, ([file, url]) => ({ file, url }))
+}
+
+function toFsUrl (path: string): string {
+  return '/@fs' + path.replace(/^(?!\/)/, '/')
+}
+
+/**
+ * Union of the CSS the ssr graph has loaded and the globally-registered CSS,
+ * with global entries the graph already covers dropped: the graph url and the
+ * `/@fs/...` url for the same file are different strings that would otherwise
+ * both be emitted as `<link>` tags.
+ */
+function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string[] {
+  const { urls, files } = collectSsrGraphCss(moduleGraph)
+  return [...urls, ...resolveGlobalCss(nuxt).filter(e => !files.has(e.file)).map(e => e.url)]
 }
 
 /**
@@ -76,9 +93,9 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   // the latest set and serves it, unioned with the globally-registered CSS.
   if (nuxt.options.dev) {
     nuxt.options.vite.plugins ||= []
-    nuxt.options.vite.plugins.push(DevClientCssPlugin())
+    nuxt.options.vite.plugins.push(DevClientCssPlugin(nuxt))
 
-    const globalCssCode = JSON.stringify(collectGlobalCss(nuxt))
+    const globalCssCode = JSON.stringify(resolveGlobalCss(nuxt).map(e => e.url))
     // The virtual is evaluated once per importer in the ssr runner, so the
     // cache lives on a worker-scoped `globalThis` property shared across those
     // instances rather than a module-local binding. On eval the worker asks
@@ -86,13 +103,15 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
     // already holds without waiting for a new transform.
     nitro.options.virtual['#internal/nuxt/dev-client-css'] = () => [
       `const globalCss = ${globalCssCode}`,
-      `const store = (globalThis.__nuxtDevClientCss__ ??= { css: [] })`,
+      `const store = (globalThis.__nuxtDevClientCss__ ??= { css: null })`,
       `if (import.meta.hot) {`,
       `  import.meta.hot.on(${JSON.stringify(DEV_CLIENT_CSS_EVENT)}, (css) => { store.css = css || [] })`,
       `  import.meta.hot.send(${JSON.stringify(DEV_CLIENT_CSS_SEED)})`,
       `}`,
+      // the pushed set already includes the global CSS, deduplicated against
+      // the ssr graph; `globalCss` only covers the window before the first push
       'export function getDevClientCss () {',
-      '  return [...new Set([...globalCss, ...store.css])]',
+      '  return [...new Set(store.css ?? globalCss)]',
       '}',
     ].join('\n')
   }
@@ -292,14 +311,14 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
  * Dev-only: push the CSS the ssr module graph has loaded to the ssr
  * module-runner worker over the env hot channel.
  */
-function DevClientCssPlugin (): VitePlugin {
+function DevClientCssPlugin (nuxt: Nuxt): VitePlugin {
   let push: (() => void) | undefined
   return {
     name: 'nuxt:dev-client-css',
     configureServer (server) {
       const env = server.environments.ssr
       if (!env) { return }
-      push = () => env.hot.send(DEV_CLIENT_CSS_EVENT, collectSsrGraphCss(env.moduleGraph))
+      push = () => env.hot.send(DEV_CLIENT_CSS_EVENT, collectDevCss(nuxt, env.moduleGraph))
       env.hot.on(DEV_CLIENT_CSS_SEED, push)
     },
     transform: {
