@@ -29,15 +29,15 @@ export const islandPropCache: Storage<string> | null = import.meta.prerender ? u
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 
-/** A render that produced a `Response` of its own (redirect, abort, ...), which is bound to the request that made it. */
+/** A response produced by the render itself (redirect, abort, ...), bound to the request that made it. */
 interface RawIslandResponse { raw: Response }
 
 type IslandRenderResult = NuxtIslandResponse | RawIslandResponse
 
 /**
- * Renders in flight, keyed by island path. Prerendering requests the same island from
- * every page that embeds it, so without this those renders duplicate work and race to
- * write the same cache entry (which fails the build with `EPERM` on Windows).
+ * Renders in flight, keyed by island path, so that pages prerendered in parallel share a
+ * single render of an island they both embed instead of racing to write its cache entry
+ * (which fails the build with `EPERM` on Windows).
  */
 const inFlightIslands: Map<string, Promise<IslandRenderResult>> | null = import.meta.prerender ? new Map() : null
 
@@ -62,11 +62,10 @@ export default {
         })
       }
 
-      // Only a render holding no claim of its own may wait on another, or two nested
-      // island renders could end up awaiting each other's claim and hang the build.
+      // Only a render holding no claim of its own may wait on another, or two nested island
+      // renders could await each other's claim and hang the build.
       if (!stack?.some(url => url.startsWith(ISLAND_PATH_PREFIX))) {
-        // A raw response belongs to the request that produced it, so it cannot be shared;
-        // fall through and render our own.
+        // a raw response cannot be shared, so fall through and render our own
         const shared = await inFlightIslands!.get(islandPath)
         if (shared && !('raw' in shared)) {
           return toResponse(event, shared)
@@ -97,12 +96,12 @@ function prerenderIsland (event: H3Event, islandPath: string): Promise<IslandRen
     const result = await renderIsland(event)
     if (!('raw' in result)) {
       await islandCache!.setItem(islandPath, result)
-      // Without the props entry, a later request for the bare path hashes empty props and is rejected.
+      // without the props entry, a later request for the bare path hashes empty props and is rejected
       await islandPropCache!.setItem(islandPath, islandPath + event.url.search + event.url.hash)
     }
     return result
   }).finally(() => {
-    // a waiter that received a raw response claims the path while we are still
+    // a waiter that received a raw response can claim the path while we are still
     // registered, so only retire our own entry
     if (inFlightIslands!.get(islandPath) === promise) {
       inFlightIslands!.delete(islandPath)
