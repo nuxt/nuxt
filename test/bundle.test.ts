@@ -141,7 +141,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"146k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1920k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1707k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -154,26 +154,20 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/compiler-dom",
         "@vue/compiler-ssr",
         "@vue/devtools-api",
-        "@vue/devtools-kit",
-        "@vue/devtools-kit/node_modules/hookable",
-        "@vue/devtools-shared",
         "@vue/reactivity",
         "@vue/runtime-core",
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
-        "birpc",
         "devalue",
         "entities",
         "entities/dist/commonjs",
         "estree-walker",
         "hookable",
         "nostics",
-        "perfect-debounce",
         "source-map-js",
         "ufo",
         "unhead",
-        "unhead/node_modules/hookable",
         "vue",
         "vue-bundle-renderer",
         "vue-router",
