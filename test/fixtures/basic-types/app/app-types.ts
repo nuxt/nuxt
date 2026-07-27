@@ -12,9 +12,9 @@ import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
+import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
-import { useRouter } from '#imports'
+import { prefetchComponents, preloadComponents, useRouter } from '#imports'
 
 type DefaultAsyncDataErrorValue = undefined
 type DefaultAsyncDataValue = undefined
@@ -572,6 +572,19 @@ describe('components', () => {
 
   it('include fallback slot in server components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
+  })
+
+  it('types preloadComponents/prefetchComponents against global component names', () => {
+    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
+    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
+    // @ts-expect-error not a global component
+    void preloadComponents('WithTypes')
+  })
+
+  it('types NuxtIsland name against island component names', () => {
+    h(NuxtIsland, { name: 'ServerComponent' })
+    // @ts-expect-error not an island component
+    h(NuxtIsland, { name: 'WithTypes' })
   })
 })
 

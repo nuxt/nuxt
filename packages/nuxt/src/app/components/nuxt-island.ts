@@ -6,7 +6,7 @@ import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 
-import type { NuxtIslandResponse } from '../types'
+import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
@@ -48,7 +48,7 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
 }
 
 interface NuxtIslandProps {
-  name: string
+  name: NuxtAppLiterals['islandName']
   lazy?: boolean
   props?: Record<string, any>
   context?: Record<string, any>
