@@ -193,7 +193,7 @@ async function comment (issueNumber: number, body: string, attempt = 1): Promise
       await delay(backoff)
       return comment(issueNumber, body, attempt + 1)
     }
-    throw new Error(message || (error as Error).message)
+    throw new Error(message || (error as Error).message, { cause: error })
   }
 }
 
