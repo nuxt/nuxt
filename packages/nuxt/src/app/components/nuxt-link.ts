@@ -22,7 +22,7 @@ import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
-import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
+import { componentIslands, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
 
@@ -457,7 +457,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       return () => {
         if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
-          const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
+          const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes & { 'data-internal'?: string } = {
             ref: elRef,
             to: to.value,
             activeClass: props.activeClass || options.activeClass,
@@ -480,6 +480,15 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
               }
             }
             routerLinkProps.rel = props.rel || undefined
+
+            if (import.meta.server && componentIslands && useNuxtApp().ssrContext?.islandContext) {
+              // marks internal links within island HTML for client-side navigation
+              const flags: string[] = []
+              if (props.replace) { flags.push('replace') }
+              const prefetchOnVisibility = typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : (props.prefetchOn?.visibility ?? options.prefetchOn?.visibility)
+              if (prefetchOnVisibility && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true) { flags.push('prefetch') }
+              routerLinkProps['data-internal'] = flags.join(' ')
+            }
           }
 
           // Internal link
@@ -603,7 +612,8 @@ function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions[
 type CallbackFn = () => void
 type ObserveFn = (element: Element, callback: CallbackFn) => () => void
 
-function useObserver (): { observe: ObserveFn } | undefined {
+/** @internal */
+export function useObserver (): { observe: ObserveFn } | undefined {
   if (import.meta.server) { return }
 
   const nuxtApp = useNuxtApp()
@@ -643,7 +653,8 @@ function useObserver (): { observe: ObserveFn } | undefined {
 }
 
 const IS_2G_RE = /2g/
-function isSlowConnection () {
+/** @internal */
+export function isSlowConnection () {
   if (import.meta.server) { return }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
