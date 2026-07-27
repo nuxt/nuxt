@@ -95,7 +95,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('lazy server components', async () => {
+  it('lazy server components', async () => {
     const { page, consoleLogs } = await renderPage('/server-components/lazy/start')
 
     await page.getByText('Go to page with lazy server component').click()
@@ -166,14 +166,14 @@ describe('server components/islands', () => {
     expect(html).toContain('<title>Server Page - Fixture</title>')
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('/server-page - should preserve title after hydration', async () => {
+  it('/server-page - should preserve title after hydration', async () => {
     const { page } = await renderPage('/server-page')
     await page.waitForLoadState('networkidle')
     expect(await page.title()).toBe('Server Page - Fixture')
     await page.close()
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('/server-page - client side navigation', async () => {
+  it('/server-page - client side navigation', async () => {
     const { page } = await renderPage('/')
     await page.getByText('to server page').click()
     await page.waitForLoadState('networkidle')
