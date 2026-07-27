@@ -234,7 +234,7 @@ describe('server components/islands', () => {
     expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('/server-page - island response is prefetched by NuxtLink', async () => {
+  it('/server-page - island response is prefetched by NuxtLink', async () => {
     const { page, requests } = await renderPage('/')
     await page.waitForLoadState('networkidle')
 
