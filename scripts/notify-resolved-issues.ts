@@ -14,8 +14,13 @@ const MARKER_PREFIX = '<!-- released-in:'
 interface Issue {
   number: number
   state: string
+  locked: boolean
   url: string
   prs: Set<number>
+}
+
+function delay (ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 function git (...args: string[]) {
@@ -65,7 +70,7 @@ async function getClosedIssues (prNumbers: number[]) {
       repository: {
         pullRequest: null | {
           merged: boolean
-          closingIssuesReferences: { nodes: { number: number, state: string, url: string }[] }
+          closingIssuesReferences: { nodes: Omit<Issue, 'prs'>[] }
         }
       }
     }>(`
@@ -74,7 +79,7 @@ async function getClosedIssues (prNumbers: number[]) {
           pullRequest(number: $number) {
             merged
             closingIssuesReferences(first: 50) {
-              nodes { number state url }
+              nodes { number state locked url }
             }
           }
         }
@@ -134,6 +139,11 @@ async function main () {
       'If you are still seeing this problem after upgrading, please let us know (ideally with an updated reproduction) and we will take another look.',
     ].join('\n')
 
+    if (issue.locked) {
+      consola.log(`Skipping #${issue.number} - issue is locked.`)
+      continue
+    }
+
     if (DRY_RUN) {
       consola.log(`[dry run] would comment on #${issue.number} (resolved by ${prs})`)
       continue
@@ -144,12 +154,41 @@ async function main () {
       continue
     }
 
-    await $fetch(`https://api.github.com/repos/${REPO}/issues/${issue.number}/comments`, {
+    try {
+      await comment(issue.number, body)
+      consola.success(`Commented on #${issue.number} (resolved by ${prs}).`)
+    }
+    catch (error) {
+      // One inaccessible issue (locked while we ran, transferred, deleted) should
+      // not stop the rest of the release from being notified.
+      consola.warn(`Could not comment on #${issue.number}:`, (error as Error).message)
+    }
+
+    // GitHub asks for at least a second between write requests to avoid
+    // tripping the secondary rate limit.
+    await delay(1000)
+  }
+}
+
+async function comment (issueNumber: number, body: string, attempt = 1): Promise<void> {
+  try {
+    await $fetch(`https://api.github.com/repos/${REPO}/issues/${issueNumber}/comments`, {
       method: 'POST',
       headers: { authorization: `bearer ${TOKEN}` },
       body: { body },
     })
-    consola.success(`Commented on #${issue.number} (resolved by ${prs}).`)
+  }
+  catch (error) {
+    const response = (error as { response?: { status?: number, _data?: { message?: string } } }).response
+    const message = response?._data?.message || ''
+    const isRateLimited = response?.status === 403 && /rate limit|abuse/i.test(message)
+    if (isRateLimited && attempt <= 5) {
+      const backoff = 30_000 * attempt
+      consola.warn(`Rate limited, retrying #${issueNumber} in ${backoff / 1000}s.`)
+      await delay(backoff)
+      return comment(issueNumber, body, attempt + 1)
+    }
+    throw new Error(message || (error as Error).message)
   }
 }
 
