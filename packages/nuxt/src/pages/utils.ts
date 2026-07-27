@@ -551,8 +551,9 @@ function canonicalizeParams (path: string): string {
  * Strip the leading segments an absolute child path shares with its parent's `fullPath`.
  * Inserting only the remainder avoids re-declaring the parent's params on the child node.
  * The remainder only determines the node's own params, as the absolute child path is
- * re-applied as a path override afterwards and becomes the route's `fullPath`. A child
- * path that shares nothing with its parent therefore still resolves correctly.
+ * re-applied as a path override afterwards and becomes the route's `fullPath`. Detached
+ * absolute children must stay absolute unless they share at least one non-root segment with
+ * the parent, so callers can fall back to the file-derived insertion path.
  */
 export function relativizeToParent (parentFullPath: string, childPath: string): string {
   if (!childPath.startsWith('/')) {
@@ -565,6 +566,24 @@ export function relativizeToParent (parentFullPath: string, childPath: string): 
     index++
   }
   return index === 0 ? childPath : childSegments.slice(index).join('/')
+}
+
+export function sharesRoutePrefix (parentFullPath: string, childPath: string): boolean {
+  if (!childPath.startsWith('/')) {
+    return false
+  }
+
+  if (parentFullPath === '/') {
+    return true
+  }
+
+  const parentSegments = canonicalizeParams(parentFullPath).split('/').slice(1)
+  const childSegments = canonicalizeParams(childPath).split('/').slice(1)
+  if (childSegments.length < parentSegments.length) {
+    return false
+  }
+
+  return parentSegments.every((segment, index) => childSegments[index] === segment)
 }
 
 export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {

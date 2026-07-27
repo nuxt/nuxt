@@ -28,6 +28,34 @@ describe.skipIf(!runsOnceInMatrix)('typed router integration', () => {
     expect(typedRouterDts).not.toMatch(/\{\s*id:\s*ParamValue<\w+>,\s*id:\s*ParamValue<\w+>\s*\}/)
   })
 
+  it('keeps params added by a root-page definePageMeta path override when the file-based path has none', async () => {
+    const r = await x('nuxt', ['prepare', rootDir])
+    expect(r.exitCode, r.stderr).toBe(0)
+    const typedRouterDts = readTypedRouterDts()
+    expect(typedRouterDts).toMatch(/'home-optional':\s*RouteRecordInfo<\s*'home-optional',\s*'\/home\/:someRouteParam\?',\s*\{\s*someRouteParam\?:\s*ParamValueZeroOrOne<true>\s*\},\s*\{\s*someRouteParam\?:\s*ParamValueZeroOrOne<false>\s*\}/)
+  })
+
+  it('keeps params added by a nested static-page definePageMeta path override when the file-based path has none', async () => {
+    const r = await x('nuxt', ['prepare', rootDir])
+    expect(r.exitCode, r.stderr).toBe(0)
+    const typedRouterDts = readTypedRouterDts()
+    expect(typedRouterDts).toMatch(/'static-parent-child-optional':\s*RouteRecordInfo<\s*'static-parent-child-optional',\s*'\/static-parent\/:someRouteParam\?\/child',\s*\{\s*someRouteParam\?:\s*ParamValueZeroOrOne<true>\s*\},\s*\{\s*someRouteParam\?:\s*ParamValueZeroOrOne<false>\s*\}/)
+  })
+
+  it('keeps child params added by a nested absolute definePageMeta path override when the parent also has an absolute override', async () => {
+    const r = await x('nuxt', ['prepare', rootDir])
+    expect(r.exitCode, r.stderr).toBe(0)
+    const typedRouterDts = readTypedRouterDts()
+    expect(typedRouterDts).toMatch(/'overridden-child-optional':\s*RouteRecordInfo<\s*'overridden-child-optional',\s*'\/overridden\/:id\(\)\/:childId\?\/child-optional',\s*\{\s*id:\s*ParamValue<true>,\s*childId\?:\s*ParamValueZeroOrOne<true>\s*\},\s*\{\s*id:\s*ParamValue<false>,\s*childId\?:\s*ParamValueZeroOrOne<false>\s*\}/)
+  })
+
+  it('keeps file-derived insertion params for a detached child under an absolute-overridden parent', async () => {
+    const r = await x('nuxt', ['prepare', rootDir])
+    expect(r.exitCode, r.stderr).toBe(0)
+    const typedRouterDts = readTypedRouterDts()
+    expect(typedRouterDts).toMatch(/'overridden-detached-child-param':\s*RouteRecordInfo<\s*'overridden-detached-child-param',\s*'\/detached',\s*\{\s*id:\s*ParamValue<true>,\s*childId:\s*ParamValue<true>\s*\},\s*\{\s*id:\s*ParamValue<false>,\s*childId:\s*ParamValue<false>\s*\}/)
+  })
+
   // The keys in `_RouteFileInfoMap` are consumed by the `sfc-typed-router` Volar
   // plugin, which resolves each SFC via `relative(rootDir, file)`. If they are
   // generated relative to `process.cwd()` instead, they only match when
