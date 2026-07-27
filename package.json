@@ -55,7 +55,7 @@
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/test-utils": "4.0.3",
     "@nuxt/webpack-builder": "workspace:*",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.62.0",
     "@rspack/core": "1.7.12",
     "@testing-library/vue": "8.1.0",
     "@types/babel__core": "7.20.5",
@@ -75,7 +75,7 @@
     "defu": "6.1.7",
     "destr": "2.0.5",
     "devalue": "5.8.2",
-    "eslint": "10.7.0",
+    "eslint": "10.8.0",
     "eslint-plugin-import-x": "4.17.1",
     "eslint-plugin-no-only-tests": "3.4.0",
     "eslint-plugin-perfectionist": "5.10.0",
@@ -95,8 +95,8 @@
     "nuxt-content-twoslash": "0.4.0",
     "ofetch": "1.5.1",
     "pathe": "2.0.3",
-    "pkg-pr-new": "0.0.79",
-    "playwright-core": "1.61.1",
+    "pkg-pr-new": "0.0.80",
+    "playwright-core": "1.62.0",
     "rollup": "4.62.2",
     "semver": "7.8.5",
     "sherif": "1.13.0",
@@ -112,8 +112,8 @@
     "vitest-environment-nuxt": "2.0.0",
     "vue": "3.5.40",
     "vue-tsc": "3.3.8",
-    "webpack": "5.108.4"
+    "webpack": "5.109.0"
   },
-  "packageManager": "pnpm@11.16.0",
+  "packageManager": "pnpm@11.17.0",
   "version": ""
 }
