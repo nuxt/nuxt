@@ -1,12 +1,13 @@
+import type { MockInstance } from 'vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MAX_VFOR_LENGTH, vforBound } from '#app/components/vfor'
 
 describe('vforBound', () => {
-  let reported: ReturnType<typeof vi.spyOn>[]
+  let reported: Array<MockInstance<(...args: any[]) => void>>
 
   // The catalog picks its reporter (`console.warn` in dev, `console.error` in prod) when the
   // module is first loaded, so assert on whichever channel it settled on.
-  const reportedText = () => reported.flatMap(spy => spy.mock.calls.map(call => call.join(' '))).join('\n')
+  const reportedText = () => reported.flatMap(spy => spy.mock.calls.map((call: unknown[]) => call.join(' '))).join('\n')
 
   beforeEach(() => {
     reported = [
