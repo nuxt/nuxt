@@ -13,7 +13,9 @@ import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 import { dataDiagnostics } from '../diagnostics/data'
 
-import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { neverHydratedSymbol } from './lazy-hydration'
+
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -99,6 +101,14 @@ interface BaseAsyncDataOptions<
    * @default true
    */
   enabled?: MaybeRefOrGetter<boolean>
+  /**
+   * Whether to store resolved data in the Nuxt payload (and therefore serialize it into `__NUXT_DATA__` when server-rendered).
+   * When `false`, data fetched on the server is kept out of the payload entirely and the client will refetch
+   * after hydration if a component renders it. Pair with lazy hydration (e.g. `hydrate-never`) to avoid
+   * hydration mismatches and unnecessary client fetches.
+   * @default true
+   */
+  serialize?: boolean
 }
 
 export interface AsyncDataOptions<
@@ -393,6 +403,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       opts.dedupe ??= 'cancel'
       opts.enabled ??= true
 
+      if (import.meta.server && stripNeverHydratedData && opts.serialize === undefined && getCurrentInstance() && inject(neverHydratedSymbol, false)) {
+        opts.serialize = false
+      }
+
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
         for (const key in factoryOptions) {
@@ -409,7 +423,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         if (values.handler !== currentData._hash?.handler) {
           warnings.push(`different handler`)
         }
-        for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
+        for (const opt of ['transform', 'pick', 'getCachedData', 'serialize'] as const) {
           if (values[opt] !== currentData._hash![opt]) {
             warnings.push(`different \`${opt}\` option`)
           }
@@ -832,7 +846,10 @@ function buildAsyncData<
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (cachedData !== undefined) {
-          nuxtApp.payload.data[key] = asyncData.data.value = cachedData as DataT
+          if (options.serialize !== false) {
+            nuxtApp.payload.data[key] = cachedData
+          }
+          asyncData.data.value = cachedData as DataT
           asyncData.error.value = undefined
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
@@ -891,7 +908,9 @@ function buildAsyncData<
             dataDiagnostics.NUXT_E3006({ fn: options._functionName || 'useAsyncData', sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
           }
 
-          nuxtApp.payload.data[key] = result
+          if (options.serialize !== false) {
+            nuxtApp.payload.data[key] = result
+          }
 
           asyncData.data.value = result
           asyncData.error.value = undefined
@@ -986,6 +1005,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     transform: options.transform ? hashFunction(options.transform as (...args: any[]) => any) : undefined,
     pick: options.pick ? hashKey(options.pick) : undefined,
     getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
+    serialize: String(options.serialize ?? true),
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {

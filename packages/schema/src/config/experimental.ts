@@ -241,6 +241,7 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    stripNeverHydratedData: false,
     alwaysRunFetchOnKeyChange: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false
