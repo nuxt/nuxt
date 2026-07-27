@@ -1,6 +1,7 @@
-import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps } from 'vue'
+import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, provide } from 'vue'
 import type { AsyncComponentLoader, ComponentObjectPropsOptions, DefineSetupFnComponent, ExtractPropTypes, HydrationStrategy } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
+import { neverHydratedSymbol } from '#app/composables/lazy-hydration'
 
 type LazyHydrationEmits = {
   hydrated: () => void
@@ -15,6 +16,9 @@ function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extend
     emits: ['hydrated'],
     setup (props, ctx) {
       if (import.meta.server) {
+        if (never) {
+          provide(neverHydratedSymbol, true)
+        }
         const nuxtApp = useNuxtApp()
         nuxtApp.hook('app:rendered', ({ ssrContext }) => {
           // track lazy hydrated components so prefetch/preload tags are not rendered for them
