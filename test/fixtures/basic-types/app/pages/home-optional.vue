@@ -6,16 +6,14 @@ definePageMeta({
 
 const route = useRoute()
 true satisfies IsEqual<typeof route.name, 'home-optional'>
-const _valid = route.params.someRouteParam
-// @ts-expect-error this param does not exist
-const _invalid = route.params.notAParam
+true satisfies IsEqual<typeof route.params, { someRouteParam?: string }>
 </script>
 
 <template>
   <div>
     <template v-if="false">
       {{ (true satisfies IsEqual<typeof $route.name, 'home-optional'>) }}
-      {{ $route.params.someRouteParam }}
+      {{ (true satisfies IsEqual<typeof $route.params, { someRouteParam?: string }>) }}
     </template>
   </div>
 </template>

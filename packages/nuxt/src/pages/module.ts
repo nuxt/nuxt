@@ -12,7 +12,7 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { logger } from '../utils.ts'
 import picomatch from 'picomatch'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, relativizeToParent, resolveRoutePaths, sharesRoutePrefix, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, relativizeToParent, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
@@ -102,10 +102,8 @@ export default defineNuxtModule({
 
     /*
      * Page paths as derived by unrouting, captured (keyed by the live page object) before a
-     * `definePageMeta` path override replaces them. Typed-pages DTS generation uses the
-     * override-derived relative path when it shares the file parent, preserving params added
-     * by the override without duplicating parent params. Detached overrides still use the
-     * original file-derived path to keep the page nested in the component tree. Every rebuild
+     * `definePageMeta` path override replaces them. Typed-pages DTS generation falls back to
+     * this path to nest a page whose override is detached from its file parent. Every rebuild
      * emits fresh page objects, so stale entries are garbage-collected with the objects keying
      * them.
      */
@@ -306,16 +304,12 @@ export default defineNuxtModule({
           function addPage (parent: EditableTreeNode, page: NuxtPage) {
             let route: EditableTreeNode
             if (page.path[0] === '/') {
-              const relativePagePath = relativizeToParent(parent.fullPath, page.path)
-              const insertedPath = sharesRoutePrefix(parent.fullPath, page.path)
-                ? relativePagePath
-                : originalPagePaths.get(page) ?? relativePagePath
-
-              // Nest a page with an absolute path under its file parent. Use the
-              // override-derived relative path when it shares the parent's path so params
-              // introduced only by `definePageMeta({ path })` are preserved. If the override
-              // is detached from the parent, use the file-derived path to keep the page nested
-              // in the same component tree.
+              // Nest a page with an absolute path (a top-level page, or a child whose path
+              // was overridden) under its file parent. Inserting the path relative to the
+              // parent keeps params added by the override without duplicating the parent's
+              // own params; a path detached from the parent has no such remainder, so fall
+              // back to the path derived by unrouting.
+              const insertedPath = relativizeToParent(parent.fullPath, page.path) ?? originalPagePaths.get(page) ?? page.path
               // TODO: waiting on vuejs/router#2748 to allow adding a route without a
               // file, or we need to find another way if it is not merged
               // @ts-expect-error `page.file` is possibly undefined

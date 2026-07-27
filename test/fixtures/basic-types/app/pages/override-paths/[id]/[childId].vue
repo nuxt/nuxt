@@ -1,13 +1,12 @@
 <script setup lang="ts">
 definePageMeta({
   name: 'overridden-detached-child-param',
-  // Known inaccuracy: typed routes still claim file-derived params even though `/detached`
-  // itself has none. This detached child regression check verifies we keep that insertion path.
-  path: '/detached',
+  path: '/detached-child',
 })
 
 const route = useRoute()
 true satisfies IsEqual<typeof route.name, 'overridden-detached-child-param'>
+// Known inaccuracy: file-derived params are still claimed even though `/detached-child` has none.
 true satisfies IsEqual<typeof route.params, { id: string, childId: string }>
 </script>
 

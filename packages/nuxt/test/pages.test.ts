@@ -1,7 +1,7 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, relativizeToParent, sharesRoutePrefix } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, relativizeToParent } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -412,36 +412,22 @@ describe('pages:generateRouteKey', () => {
 })
 
 describe('pages:relativizeToParent', () => {
-  const tests: Array<[parentFullPath: string, childPath: string, expected: string]> = [
+  const tests: Array<[parentFullPath: string, childPath: string, expected: string | undefined]> = [
     ['/parent', '/parent/child', 'child'],
     ['/parent/:id()', '/parent/:id/child', 'child'],
     ['/parent/:id', '/parent/:id()/child', 'child'],
     ['/parent/:id()+', '/parent/:id+/child', 'child'],
     ['/parent/:id(\\d+)', '/parent/:id(\\d+)/child', 'child'],
-    ['/parent/:id()', '/parent/:id(\\d+)/child', ':id(\\d+)/child'],
-    ['/parent', '/detached', 'detached'],
-    ['/parent', '/parent-sibling/child', 'parent-sibling/child'],
+    ['/parent/:id()', '/parent/:id()/:childId?/child', ':childId?/child'],
     ['/parent', 'relative/child', 'relative/child'],
     ['/', '/child', 'child'],
+    ['/parent/:id()', '/parent/:id(\\d+)/child', undefined],
+    ['/parent', '/detached', undefined],
+    ['/parent', '/parent-sibling/child', undefined],
+    ['/parent/:id()', '/parent', undefined],
   ]
   it.each(tests)('should relativize %s + %s to %s', (parentFullPath, childPath, expected) => {
     expect(relativizeToParent(parentFullPath, childPath)).toBe(expected)
-  })
-})
-
-describe('pages:sharesRoutePrefix', () => {
-  const tests: Array<[parentFullPath: string, childPath: string, expected: boolean]> = [
-    ['/parent', '/parent/child', true],
-    ['/parent/:id()', '/parent/:id/child', true],
-    ['/parent', '/detached', false],
-    ['/parent', '/parent-sibling/child', false],
-    ['/overridden/:id()', '/overridden/:id()/:childId?/child-optional', true],
-    ['/overridden/:id()', '/detached', false],
-    ['/', '/child', true],
-  ]
-
-  it.each(tests)('should detect whether %s contains %s', (parentFullPath, childPath, expected) => {
-    expect(sharesRoutePrefix(parentFullPath, childPath)).toBe(expected)
   })
 })
 

@@ -551,39 +551,23 @@ function canonicalizeParams (path: string): string {
  * Strip the leading segments an absolute child path shares with its parent's `fullPath`.
  * Inserting only the remainder avoids re-declaring the parent's params on the child node.
  * The remainder only determines the node's own params, as the absolute child path is
- * re-applied as a path override afterwards and becomes the route's `fullPath`. Detached
- * absolute children must stay absolute unless they share at least one non-root segment with
- * the parent, so callers can fall back to the file-derived insertion path.
+ * re-applied as a path override afterwards and becomes the route's `fullPath`.
+ *
+ * Returns `undefined` when the child path does not extend the parent's full path, as there
+ * is then no remainder that declares the child's own params and nothing else.
  */
-export function relativizeToParent (parentFullPath: string, childPath: string): string {
+export function relativizeToParent (parentFullPath: string, childPath: string): string | undefined {
   if (!childPath.startsWith('/')) {
     return childPath
   }
-  const parentSegments = canonicalizeParams(parentFullPath).split('/')
+  const parentSegments = canonicalizeParams(parentFullPath).replace(/\/$/, '').split('/')
   const childSegments = childPath.split('/')
-  let index = 0
-  while (index < parentSegments.length && index < childSegments.length && canonicalizeParams(childSegments[index]!) === parentSegments[index]) {
-    index++
+  for (let index = 0; index < parentSegments.length; index++) {
+    if (canonicalizeParams(childSegments[index] ?? '') !== parentSegments[index]) {
+      return
+    }
   }
-  return index === 0 ? childPath : childSegments.slice(index).join('/')
-}
-
-export function sharesRoutePrefix (parentFullPath: string, childPath: string): boolean {
-  if (!childPath.startsWith('/')) {
-    return false
-  }
-
-  if (parentFullPath === '/') {
-    return true
-  }
-
-  const parentSegments = canonicalizeParams(parentFullPath).split('/').slice(1)
-  const childSegments = canonicalizeParams(childPath).split('/').slice(1)
-  if (childSegments.length < parentSegments.length) {
-    return false
-  }
-
-  return parentSegments.every((segment, index) => childSegments[index] === segment)
+  return childSegments.slice(parentSegments.length).join('/')
 }
 
 export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {
