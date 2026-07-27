@@ -524,6 +524,17 @@ describe('component islands', () => {
     await page.locator('#server-page').waitFor()
   })
 
+  it.skipIf(isDev)('should render an island shared by prerendered pages only once', async () => {
+    const [a, b] = await Promise.all([
+      $fetch<string>('/prerender/island-a'),
+      $fetch<string>('/prerender/island-b'),
+    ])
+    const renderId = (html: string) => html.match(/id="prerender-dedupe"[^>]*>([^<]*)</)?.[1]?.trim()
+
+    expect(renderId(a)).toBeTruthy()
+    expect(renderId(a)).toBe(renderId(b))
+  })
+
   it('should show error on 404 error for server pages during client navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('[href="/server-components/lost-page"]')
