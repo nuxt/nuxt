@@ -16,6 +16,7 @@ interface Issue {
   state: string
   locked: boolean
   url: string
+  repository: { nameWithOwner: string }
   prs: Set<number>
 }
 
@@ -79,7 +80,7 @@ async function getClosedIssues (prNumbers: number[]) {
           pullRequest(number: $number) {
             merged
             closingIssuesReferences(first: 50) {
-              nodes { number state locked url }
+              nodes { number state locked url repository { nameWithOwner } }
             }
           }
         }
@@ -90,6 +91,10 @@ async function getClosedIssues (prNumbers: number[]) {
     if (!pr?.merged) { continue }
 
     for (const issue of pr.closingIssuesReferences.nodes) {
+      // A PR can close issues in other repositories, which we have neither the
+      // permission nor the intent to comment on.
+      if (issue.repository.nameWithOwner !== REPO) { continue }
+
       const existing = issues.get(issue.number)
       if (existing) {
         existing.prs.add(prNumber)
