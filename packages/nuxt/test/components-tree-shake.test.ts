@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { describe, expect, it, vi } from 'vitest'
 import * as VueCompilerSFC from 'vue/compiler-sfc'
 import type { Plugin } from 'vite'
 import { createLogger } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
-import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
-import { componentsFixtureDir, normalizeLineEndings } from './utils'
+import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake.ts'
+import { componentsFixtureDir, normalizeLineEndings } from './utils.ts'
 
 // mock due to differences of results between windows and linux
 vi.spyOn(path, 'relative').mockImplementation((from: string, to: string) => {
@@ -28,7 +29,6 @@ function vuePlugin (options: Options) {
 const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(componentsFixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
 
 const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
-  sourcemap: false,
   getComponents () {
     return [{
       pascalName: 'NotDotClientComponent',
@@ -52,11 +52,11 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
       mode: 'client',
     }]
   },
-}).raw({}, { framework: 'rollup' }) as Plugin
+}).raw({}, { framework: 'rollup', versions: {} }) as Plugin
 
 const treeshake = async (source: string): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await (treeshakeTemplatePlugin.transform! as Function)(source, 'test.ts')
+  const result = await ((treeshakeTemplatePlugin.transform as any)!.handler as Function)(source, 'test.vue')
   return typeof result === 'string' ? result : result?.code
 }
 
@@ -211,5 +211,28 @@ describe('treeshake client only in ssr', () => {
 
     expect(treeshaken).toContain('resolveComponent("AppIcon")')
     expect(treeshaken).not.toContain('caret-up')
+  })
+
+  it('should not treeshake a reused component referenced via member expression', async () => {
+    const treeshaken = await treeshake(`import { resolveComponent as _resolveComponent, withCtx as _withCtx, createVNode as _createVNode } from "vue"
+    import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "vue/server-renderer"
+
+    export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+      _push(\`<div\${_ssrRenderAttrs(_attrs)}>\`)
+      _push(_ssrRenderComponent($setup["Reused"], null, null, _parent))
+      _push(_ssrRenderComponent($setup["ClientOnly"], null, {
+        default: _withCtx((_, _push, _parent, _scopeId) => {
+          if (_push) {
+            _push(_ssrRenderComponent($setup["Reused"], null, null, _parent, _scopeId))
+          } else {
+            return [_createVNode($setup["Reused"])]
+          }
+        }),
+        _: 1 /* STABLE */
+      }, _parent))
+      _push(\`</div>\`)
+    }`)
+
+    expect(treeshaken).toContain('$setup["Reused"], null, null, _parent))')
   })
 })

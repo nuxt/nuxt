@@ -1,12 +1,11 @@
 import type { Plugin } from 'vite'
-import replacePlugin from '@rollup/plugin-replace'
-import * as vite from 'vite'
+import { replacePlugin } from 'rolldown/plugins'
 
 export function ReplacePlugin (): Plugin {
   return {
     name: 'nuxt:replace',
     enforce: 'post',
-    async applyToEnvironment (environment) {
+    applyToEnvironment (environment) {
       const config = environment.getTopLevelConfig()
 
       const replaceOptions: Record<string, string> = Object.create(null)
@@ -19,13 +18,7 @@ export function ReplacePlugin (): Plugin {
         }
       }
 
-      // @ts-expect-error Rolldown-specific check
-      if (vite.rolldownVersion) {
-        const { replacePlugin } = await import('rolldown/experimental')
-        return replacePlugin(replaceOptions)
-      } else {
-        return replacePlugin({ ...replaceOptions, preventAssignment: true })
-      }
+      return replacePlugin(replaceOptions, { preventAssignment: true })
     },
   }
 }

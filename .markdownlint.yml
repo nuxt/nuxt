@@ -4,7 +4,6 @@ default: true
 MD013: false
 # Allow duplicated heading for different sections
 MD024:
-  allow_different_nesting: true
   siblings_only: true
 # Allow multiple top-level headings
 MD025: false
@@ -17,3 +16,11 @@ MD046:
 MD034: false
 MD031: false
 MD007: false
+# Allow setext-style headings (for MDC YAML frontmatter with --- delimiters)
+MD003: false
+# Allow headings without surrounding blank lines (for MDC component props)
+MD022: false
+# Allow headings not at the start of the line (for indented MDC components)
+MD023: false
+# Do not require aligned columns in tables
+MD060: false

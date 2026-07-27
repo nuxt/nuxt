@@ -1,18 +1,19 @@
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 import { withoutLeadingSlash } from 'ufo'
-import * as vite from 'vite'
+import type { OutputOptions } from 'rolldown'
 import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { useNitro } from '@nuxt/kit'
 import { resolveModulePath } from 'exsolve'
 import { defineEnv } from 'unenv'
+import escapeStringRegexp from 'escape-string-regexp'
 
 export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
   const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
   const clientOutputDir = join(useNitro().options.output.publicDir, nuxt.options.app.buildAssetsDir)
 
   const clientAliases: Record<string, string> = {
-    'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+    'nitro/runtime-config': join(nuxt.options.buildDir, 'nitro.client.mjs'),
     // TODO: remove in v5
     '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
     'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
@@ -22,6 +23,7 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
 
   return {
     name: 'nuxt:environments',
+    enforce: 'pre', // run before other plugins
     config () {
       if (!nuxt.options.dev) {
         return {
@@ -31,10 +33,10 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
     },
     configEnvironment (name, config) {
       if (name === 'client') {
-        const outputConfig = config.build?.rollupOptions?.output as vite.Rollup.OutputOptions
+        const outputConfig = config.build?.rolldownOptions?.output as OutputOptions | undefined
         return {
           build: {
-            rollupOptions: {
+            rolldownOptions: {
               output: {
                 chunkFileNames: outputConfig?.chunkFileNames ?? (nuxt.options.dev ? undefined : fileNames),
                 entryFileNames: outputConfig?.entryFileNames ?? (nuxt.options.dev ? 'entry.js' : fileNames),
@@ -52,18 +54,6 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
           },
         }
       }
-
-      if (name === 'ssr') {
-        if (config.build?.rollupOptions?.output && !Array.isArray(config.build.rollupOptions.output)) {
-          config.build.rollupOptions.output.manualChunks = undefined
-
-          // @ts-expect-error non-public property
-          if (vite.rolldownVersion) {
-            // @ts-expect-error rolldown-specific
-            config.build.rollupOptions.output.advancedChunks = undefined
-          }
-        }
-      }
     },
     applyToEnvironment (environment) {
       if (environment.name === 'client') {
@@ -72,11 +62,14 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
           {
             name: 'nuxt:client:aliases',
             enforce: 'post',
-            resolveId: source => clientAliases[source],
+            resolveId: {
+              filter: {
+                id: Object.keys(clientAliases).map(id => new RegExp('^' + escapeStringRegexp(id) + '$')),
+              },
+              handler: source => clientAliases[source],
+            },
           },
         ]
-      } else if (environment.name === 'ssr') {
-        //
       }
       return false
     },

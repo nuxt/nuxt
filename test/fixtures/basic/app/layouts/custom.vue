@@ -12,12 +12,16 @@
     >
       add count
     </button>
+    <p>{{ foo }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 const count = ref(0)
 
+defineProps<{
+  foo?: string
+}>()
 function logHello () {
   console.log('world')
 }

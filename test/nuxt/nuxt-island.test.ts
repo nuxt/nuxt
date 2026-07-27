@@ -1,8 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, popScopeId, pushScopeId } from 'vue'
-import { type ServerHandler, serve } from 'srvx'
+import { serve } from 'srvx/node'
+import type { ServerHandler } from 'srvx'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { getPort } from 'get-port-please'
+import { $fetch } from '#build/fetch'
 
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
 import NuxtIsland from '../../packages/nuxt/src/app/components/nuxt-island'
@@ -22,20 +24,54 @@ async function createServer (handler: ServerHandler) {
   }
 }
 
-vi.mock('#build/nuxt.config.mjs', async (original) => {
+vi.mock('#build/nuxt.config.mjs', () => {
   return {
-    // @ts-expect-error virtual file
-    ...(await original()),
+    // app config defaults
+    appBaseURL: '/',
+    appBuildAssetsDir: '/_nuxt/',
+    appCdnURL: '',
+    appHead: {},
+    appId: 'nuxt-app',
+    appKeepalive: false,
+    appLayoutTransition: false,
+    appPageTransition: false,
+    appRootAttrs: { id: '__nuxt' },
+    appRootTag: 'div',
+    appSpaLoaderAttrs: {},
+    appSpaLoaderTag: 'div',
+    appSpaLoadingTemplate: false,
+    appTeleportAttrs: { id: 'teleports' },
+    appTeleportTag: 'div',
+    appViewTransition: false,
+    componentIslands: true,
+    payloadExtraction: false,
+    cookieStore: false,
+    appManifest: false,
     remoteComponentIslands: true,
     selectiveClient: true,
-  }
-})
-
-vi.mock('vue', async (original) => {
-  const vue = await original<typeof import('vue')>()
-  return {
-    ...vue,
-    h: vi.fn(vue.h),
+    devPagesDir: null,
+    devRootDir: null,
+    devLogs: false,
+    nuxtLinkDefaults: { componentName: 'NuxtLink' },
+    asyncDataDefaults: {},
+    fetchDefaults: {},
+    vueAppRootContainer: '#__nuxt',
+    viewTransition: false,
+    outdatedBuildInterval: 3600000,
+    multiApp: false,
+    chunkErrorEvent: false,
+    crawlLinks: false,
+    spaLoadingTemplateOutside: false,
+    purgeCachedData: false,
+    granularCachedData: false,
+    pendingWhenIdle: false,
+    alwaysRunFetchOnKeyChange: false,
+    asyncCallHook: false,
+    clientNodePlaceholder: true,
+    hasPluginDependencies: true,
+    hasParallelPlugins: true,
+    hasPluginHooks: true,
+    hasIslandOptOutPlugins: true,
   }
 })
 
@@ -47,6 +83,28 @@ function expectNoConsoleIssue () {
   expect(consoleWarn).not.toHaveBeenCalled()
 }
 
+function islandResponse (data: unknown) {
+  return {
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    _data: data,
+    headers: new Headers(),
+  }
+}
+
+let fetchRawSpy: ReturnType<typeof vi.spyOn> | undefined
+
+function stubFetchRaw (impl: (...args: any[]) => any) {
+  fetchRawSpy = vi.spyOn($fetch, 'raw').mockImplementation(impl)
+  return fetchRawSpy
+}
+
+afterEach(() => {
+  fetchRawSpy?.mockRestore()
+  fetchRawSpy = undefined
+})
+
 describe('runtime server component', () => {
   beforeEach(() => {
     consoleError.mockClear()
@@ -54,11 +112,8 @@ describe('runtime server component', () => {
   })
 
   it('expect no data-v- attributes #23051', () => {
-    // @ts-expect-error mock
-    vi.mocked(h).mockImplementation(() => null)
-
     // @ts-expect-error test setup
-    createServerComponent('DummyName').setup!({
+    const vnode = createServerComponent('DummyName').setup!({
       lazy: false,
     }, {
       attrs: {
@@ -70,16 +125,14 @@ describe('runtime server component', () => {
       expose: vi.fn(),
     })()
 
-    expect(h).toHaveBeenCalledOnce()
-    if (!vi.mocked(h).mock.lastCall) { throw new Error('no last call') }
-    expect(vi.mocked(h).mock.lastCall![1]?.props).toBeTypeOf('object')
-    expect(vi.mocked(h).mock.lastCall![1]?.props).toMatchInlineSnapshot(`
+    expect(vnode).toBeTruthy()
+    expect(vnode.props?.props).toBeTypeOf('object')
+    expect(vnode.props?.props).toMatchInlineSnapshot(`
       {
         "data-v-123": "",
         "test": 1,
       }
     `)
-    vi.mocked(h).mockRestore()
   })
 
   it('expect remote island to be rendered', async () => {
@@ -122,9 +175,9 @@ describe('runtime server component', () => {
   })
   it('force refresh', async () => {
     let count = 0
-    const stubFetch = vi.fn(() => {
+    const fetchRaw = stubFetchRaw(() => {
       count++
-      return Promise.resolve({
+      return Promise.resolve(islandResponse({
         id: '123',
         html: `<div>${count}</div>`,
         state: {},
@@ -132,32 +185,25 @@ describe('runtime server component', () => {
           link: [],
           style: [],
         },
-        json () {
-          return this
-        },
-        ok: true,
-      })
+      }))
     })
 
-    vi.stubGlobal('fetch', stubFetch)
     const component = await mountSuspended(createServerComponent('dummyName'))
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
 
     expect(component.html()).toBe('<div>1</div>')
 
     await component.vm.$.exposed!.refresh()
-    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetchRaw).toHaveBeenCalledTimes(2)
     await nextTick()
     expect(component.html()).toBe('<div>2</div>')
-    vi.mocked(fetch).mockReset()
+    fetchRaw.mockReset()
   })
 
   it('expect NuxtIsland to emit an error', async () => {
-    const stubFetch = vi.fn(() => {
+    const fetchRaw = stubFetchRaw(() => {
       throw new Error('fetch error')
     })
-
-    vi.stubGlobal('fetch', stubFetch)
 
     const wrapper = await mountSuspended(createServerComponent('ErrorServerComponent'), {
       props: {
@@ -169,12 +215,19 @@ describe('runtime server component', () => {
       attachTo: 'body',
     })
 
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
     expect(wrapper.emitted('error')).toHaveLength(1)
-    vi.mocked(fetch).mockReset()
+    fetchRaw.mockReset()
   })
 
   it('expect NuxtIsland to have parent scopeId', async () => {
+    stubFetchRaw(() => Promise.resolve(islandResponse({
+      id: '123',
+      html: '<div>hello</div>',
+      state: {},
+      head: { link: [], style: [] },
+    })))
+
     const wrapper = await mountSuspended(defineComponent({
       render () {
         pushScopeId('data-v-654e2b21')
@@ -202,8 +255,8 @@ describe('client components', () => {
       },
     }))
 
-    const stubFetch = vi.fn(() => {
-      return Promise.resolve({
+    const fetchRaw = stubFetchRaw(() => {
+      return Promise.resolve(islandResponse({
         id: '123',
         html: `<div data-island-uid>hello<div data-island-uid data-island-component="${componentId}"></div></div>`,
         state: {},
@@ -218,14 +271,8 @@ describe('client components', () => {
             chunk: mockPath,
           },
         },
-        json () {
-          return this
-        },
-        ok: true,
-      })
+      }))
     })
-
-    vi.stubGlobal('fetch', stubFetch)
 
     const wrapper = await mountSuspended(NuxtIsland, {
       props: {
@@ -237,7 +284,7 @@ describe('client components', () => {
       attachTo: 'body',
     })
 
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
     expect(removeDataIslandUid(wrapper.html())).toMatchInlineSnapshot(`
       "<div>hello<div data-island-component="Client-12345">
           <div>client component</div>
@@ -247,7 +294,7 @@ describe('client components', () => {
       <!--teleport end-->"
     `)
 
-    vi.mocked(fetch).mockImplementation(() => Promise.resolve(({
+    fetchRaw.mockImplementation(() => Promise.resolve(islandResponse({
       id: '123',
       html: '<div data-island-uid>hello<div><div>fallback</div></div></div>',
       state: {},
@@ -256,11 +303,6 @@ describe('client components', () => {
         style: [],
       },
       components: {},
-      // @ts-expect-error mock
-      json () {
-        return this
-      },
-      ok: true,
     })))
 
     await wrapper.vm.$.exposed!.refresh()
@@ -272,15 +314,15 @@ describe('client components', () => {
         </div>"
       `)
 
-    vi.mocked(fetch).mockReset()
+    fetchRaw.mockReset()
     expectNoConsoleIssue()
   })
 
   it('should not replace nested client components data-island-uid', async () => {
     const componentId = 'Client-12345'
 
-    const stubFetch = vi.fn(() => {
-      return Promise.resolve({
+    const fetchRaw = stubFetchRaw(() => {
+      return Promise.resolve(islandResponse({
         id: '1234',
         html: `<div data-island-uid>hello<div data-island-uid="not-to-be-replaced" data-island-component="${componentId}"></div></div>`,
         state: {},
@@ -288,14 +330,8 @@ describe('client components', () => {
           link: [],
           style: [],
         },
-        json () {
-          return this
-        },
-        ok: true,
-      })
+      }))
     })
-
-    vi.stubGlobal('fetch', stubFetch)
 
     const wrapper = await mountSuspended(NuxtIsland, {
       props: {
@@ -307,9 +343,9 @@ describe('client components', () => {
       attachTo: 'body',
     })
 
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
     expect(wrapper.html()).toContain('data-island-uid="not-to-be-replaced"')
-    vi.mocked(fetch).mockReset()
+    fetchRaw.mockReset()
     expectNoConsoleIssue()
   })
 
@@ -326,8 +362,8 @@ describe('client components', () => {
       }),
     }))
 
-    const stubFetch = vi.fn(() => {
-      return Promise.resolve({
+    const fetchRaw = stubFetchRaw(() => {
+      return Promise.resolve(islandResponse({
         id: '123',
         html: `<div data-island-uid>hello<div data-island-uid data-island-component="${componentId}"></div></div>`,
         state: {},
@@ -345,21 +381,16 @@ describe('client components', () => {
             },
           },
         },
-        json () {
-          return this
-        },
-        ok: true,
-      })
+      }))
     })
 
-    vi.stubGlobal('fetch', stubFetch)
     const wrapper = await mountSuspended(NuxtIsland, {
       props: {
         name: 'NuxtClientWithSlot',
       },
       attachTo: 'body',
     })
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetchRaw).toHaveBeenCalledOnce()
     expect(removeDataIslandUid(wrapper.html())).toMatchInlineSnapshot(`
       "<div>hello<div data-island-component="ClientWithSlot-12345">
           <div class="client-component">

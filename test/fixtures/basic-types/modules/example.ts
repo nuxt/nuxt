@@ -19,5 +19,17 @@ export default defineNuxtModule({
         path: resolver.resolve('./runtime/middleware'),
       })
     })
+    useNuxt().hook('my-module:augmented-hook', (payload) => {
+      // Asserts the augmented hook signature is reachable from inside the
+      // module's own `useNuxt().hook(...)` call.
+      const _: string = payload.message
+    })
   },
 })
+
+declare module '@nuxt/schema' {
+  interface NuxtHooks {
+    /** Test hook used to verify augmented hooks reach `NuxtConfig['hooks']`. */
+    'my-module:augmented-hook': (payload: { message: string }) => void
+  }
+}

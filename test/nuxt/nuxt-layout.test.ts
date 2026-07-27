@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
@@ -10,7 +10,7 @@ import layouts from '#build/layouts.mjs'
 import { useRoute } from '#app/composables/router'
 
 describe('NuxtLayout', () => {
-  const router = useRouter()
+  let router: ReturnType<typeof useRouter>
   let resolveDeferredPage: () => void
 
   let routeChanges = 0
@@ -22,6 +22,7 @@ describe('NuxtLayout', () => {
   const addedPages = ['no-layout', 'layout-1', 'layout-2', 'layout-2-deferred', 'deferred']
 
   beforeAll(async () => {
+    router = useRouter()
     for (const layout of addedLayouts) {
       layouts[layout] = defineComponent({
         setup (_, ctx) {
@@ -132,10 +133,10 @@ describe('NuxtLayout', () => {
     await flushPromises()
 
     // TODO: avoid secondary rerender
-    expect.soft(routeChanges).toBe(3 /* should be 1 */)
+    expect.soft(routeChanges).toBe(2 /* should be 1 */)
     expect.soft(renders).toMatchInlineSnapshot(`
       {
-        "[layout] layout-1": ${3 /* should be 1 */},
+        "[layout] layout-1": ${2 /* should be 1 */},
         "[layout] layout-2": 1,
         "[page] layout-1": 1,
       }
@@ -143,7 +144,7 @@ describe('NuxtLayout', () => {
     expect.soft(el.html()).toMatchInlineSnapshot(`
       "<div>
         <h1>'layout-1' layout</h1>
-        <h2>Current route: /${'layout-2-deferred' /* should be layout-1 */} (initialised at: /layout-1)</h2>
+        <h2>Current route: /layout-1 (initialised at: /layout-1)</h2>
         <h3>Current route: /layout-1</h3>
       </div>"
     `)
@@ -151,7 +152,7 @@ describe('NuxtLayout', () => {
     await flushPromises()
     expect.soft(renders).toMatchInlineSnapshot(`
       {
-        "[layout] layout-1": 3,
+        "[layout] layout-1": 2,
         "[layout] layout-2": 1,
         "[page] layout-1": 1,
         "[page] layout-2-deferred": 1,
@@ -164,7 +165,7 @@ describe('NuxtLayout', () => {
         <h3>Current route: /layout-2-deferred</h3>
       </div>"
     `)
-    expect.soft(routeChanges).toBe(3 /* should be 2 */)
+    expect.soft(routeChanges).toBe(2)
 
     // route only updates in layout in the new suspense fork, not the old one
     await navigateTo('/layout-2')
@@ -179,14 +180,39 @@ describe('NuxtLayout', () => {
     `)
     expect.soft(renders).toMatchInlineSnapshot(`
       {
-        "[layout] layout-1": 3,
+        "[layout] layout-1": 2,
         "[layout] layout-2": 3,
         "[page] layout-1": 1,
         "[page] layout-2": 2,
         "[page] layout-2-deferred": 1,
       }
     `)
-    expect.soft(routeChanges).toBe(4)
+    expect.soft(routeChanges).toBe(3)
+  })
+
+  it('should update NuxtPage when nested NuxtLayout has name=false', async () => {
+    // Test for https://github.com/nuxt/nuxt/issues/34074
+    // Mount component with nested layouts where inner layout has name=false
+    const nestedEl = await mountSuspended({
+      // @ts-expect-error dynamically-added layout is not typed
+      setup: () => () => h(NuxtLayout, { name: 'layout-1' }, {
+        default: () => h(NuxtLayout, { name: false }, {
+          default: () => h(NuxtPage),
+        }),
+      }),
+    })
+
+    await navigateTo('/layout-1')
+    await flushPromises()
+
+    // Check that the page content shows the current route
+    expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-1')
+
+    await navigateTo('/layout-2')
+    await flushPromises()
+
+    // Page content (h3) should update even with name=false on inner layout
+    expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-2')
   })
 
   it.todo('should not change layout before child page resolves', async () => {
@@ -207,5 +233,52 @@ describe('NuxtLayout', () => {
     resolveDeferredPage()
     await flushPromises()
     expect.soft(el.html()).toMatchInlineSnapshot(`"<h3>Current route: /deferred</h3>"`)
+  })
+})
+
+describe('layout switching', () => {
+  // #13309
+  it('does not cause TypeError: Cannot read properties of null', async () => {
+    const router = useRouter()
+    const consoleError = vi.spyOn(console, 'error')
+
+    layouts['layout-async'] = defineAsyncComponent(() => Promise.resolve(defineComponent({
+      setup: (_, ctx) => () => h('div', [h('h1', 'async layout'), ...ctx.slots.default?.() || []]),
+    })))
+    router.addRoute({
+      name: 'layout-switch-start',
+      path: '/layout-switch-start',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: { layout: 'layout-async' },
+      component: defineComponent({
+        setup: () => () => h('div', 'start'),
+      }),
+    })
+    router.addRoute({
+      name: 'layout-switch-end',
+      path: '/layout-switch-end',
+      component: defineComponent({
+        setup: () => () => h('div', { id: 'end' }),
+      }),
+    })
+
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/layout-switch-start')
+    await flushPromises()
+    expect(el.html()).toContain('async layout')
+
+    await navigateTo('/layout-switch-end')
+    await flushPromises()
+    expect(el.html()).toContain('id="end"')
+    expect(consoleError).not.toHaveBeenCalled()
+
+    consoleError.mockRestore()
+    el.unmount()
+    router.removeRoute('layout-switch-start')
+    router.removeRoute('layout-switch-end')
+    delete layouts['layout-async']
   })
 })

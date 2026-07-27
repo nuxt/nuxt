@@ -2,14 +2,15 @@ import { pathToFileURL } from 'node:url'
 import { interopDefault } from 'mlly'
 import { resolveModulePath } from 'exsolve'
 import { createJiti } from 'jiti'
-import { getUserCaller, warn } from './trace'
-import { resolveAlias } from '../resolve'
+import { getUserCaller, warn } from './trace.ts'
+import { resolveAlias } from '../resolve.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export interface ResolveModuleOptions {
   /** @deprecated use `url` with URLs pointing at a file - never a directory */
   paths?: string | string[]
   url?: URL | URL[]
-  /** @default ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'] */
+  /** @default ['.mjs', '.js', '.cjs', '.mts', '.ts', '.cts', '.tsx', '.jsx'] */
   extensions?: string[]
 }
 
@@ -34,11 +35,11 @@ export function tryResolveModule (id: string, url: string | string[] | URL | URL
   }))
 }
 
-export function resolveModule (id: string, options?: ResolveModuleOptions) {
+export function resolveModule (id: string, options?: ResolveModuleOptions): string {
   return resolveModulePath(id, {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     from: options?.url ?? options?.paths ?? [import.meta.url],
-    extensions: options?.extensions ?? ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+    extensions: options?.extensions ?? DEFAULT_JS_FILE_EXTENSIONS,
   })
 }
 
@@ -47,12 +48,12 @@ export interface ImportModuleOptions extends ResolveModuleOptions {
   interopDefault?: boolean
 }
 
-export async function importModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
+export async function importModule<T = unknown> (id: string, opts?: ImportModuleOptions): Promise<T> {
   const resolvedPath = resolveModule(id, opts)
   return await import(pathToFileURL(resolvedPath).href).then(r => opts?.interopDefault !== false ? interopDefault(r) : r) as Promise<T>
 }
 
-export function tryImportModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
+export function tryImportModule<T = unknown> (id: string, opts?: ImportModuleOptions): Promise<T | undefined> | undefined {
   try {
     return importModule<T>(id, opts).catch(() => undefined)
   } catch {
@@ -79,7 +80,7 @@ export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptio
 /**
  * @deprecated Please use `tryImportModule` instead.
  */
-export function tryRequireModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
+export function tryRequireModule<T = unknown> (id: string, opts?: ImportModuleOptions): T | undefined {
   try {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     return requireModule<T>(id, opts)

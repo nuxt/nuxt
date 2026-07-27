@@ -1,12 +1,12 @@
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets } from '../utils/config.ts'
 
-import { assets } from './assets'
-import { base } from './base'
-import { esbuild } from './esbuild'
-import { pug } from './pug'
-import { style } from './style'
-import { vue } from './vue'
+import { assets } from './assets.ts'
+import { base } from './base.ts'
+import { esbuild } from './esbuild.ts'
+import { pug } from './pug.ts'
+import { style } from './style.ts'
+import { vue } from './vue.ts'
 
 export async function nuxt (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [

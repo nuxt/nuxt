@@ -10,14 +10,14 @@
     "nuxt": "workspace:*"
   },
   "devDependencies": {
-    "@vue/devtools-api": "latest",
-    "defu": "latest",
-    "postcss": "^8.4.47",
-    "ufo": "latest",
-    "unplugin": "latest",
-    "vue": "latest"
+    "@vue/devtools-api": "catalog:dev",
+    "defu": "catalog:build",
+    "postcss": "catalog:build",
+    "ufo": "catalog:build",
+    "unplugin": "catalog:build",
+    "vue": "catalog:app-runtime"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
   }
 }

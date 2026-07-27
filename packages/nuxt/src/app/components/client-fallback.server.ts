@@ -1,9 +1,29 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured, shallowRef, useId } from 'vue'
-import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
+import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
+import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
 
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
-import { createBuffer } from './utils'
+import { createBuffer, sanitizeTag } from './utils'
+import { renderDiagnostics } from '../diagnostics/render'
+
+interface NuxtClientFallbackProps {
+  fallbackTag?: string
+  fallback?: string
+  placeholder?: string
+  placeholderTag?: string
+  keepFallback?: boolean
+}
+
+type NuxtClientFallbackEmits = {
+  'ssr-error': (error: unknown) => void
+}
+
+type NuxtClientFallbackSlots = SlotsType<{
+  default?: () => VNode[]
+  fallback?: () => VNode[]
+  placeholder?: () => VNode[]
+}>
 
 const NuxtClientFallbackServer = defineComponent({
   name: 'NuxtClientFallback',
@@ -57,12 +77,14 @@ const NuxtClientFallbackServer = defineComponent({
 
       const buffer = ssrVNodes.getBuffer()
       if (buffer.hasAsync) {
-        await Promise.all(buffer.filter(isPromise))
+        await Promise.all((buffer as unknown[]).flat(Infinity).filter(isPromise))
       }
 
       return { ssrFailed, ssrVNodes }
     } catch (ssrError) {
-      // catch in dev
+      if (import.meta.dev) {
+        renderDiagnostics.NUXT_E4006({ cause: ssrError })
+      }
       error.value = true
       ctx.emit('ssr-error', ssrError)
       return { ssrFailed: true, ssrVNodes: [] }
@@ -75,8 +97,8 @@ const NuxtClientFallbackServer = defineComponent({
         ssrRenderSlot(ctx.$slots, fallback ? 'fallback' : 'placeholder', {}, null, push, parent)
       } else {
         const content = ctx.placeholder || ctx.fallback
-        const tag = ctx.placeholderTag || ctx.fallbackTag
-        push(`<${tag}${ssrRenderAttrs(ctx.$attrs)}>${content}</${tag}>`)
+        const tag = sanitizeTag(ctx.placeholderTag || ctx.fallbackTag, 'div')
+        push(`<${tag}${ssrRenderAttrs(ctx.$attrs)}>${ssrInterpolate(content)}</${tag}>`)
       }
     } else {
       // push Fragment markup
@@ -85,6 +107,6 @@ const NuxtClientFallbackServer = defineComponent({
       push('<!--]-->')
     }
   },
-})
+}) as unknown as DefineSetupFnComponent<NuxtClientFallbackProps, NuxtClientFallbackEmits, NuxtClientFallbackSlots>
 
 export default NuxtClientFallbackServer

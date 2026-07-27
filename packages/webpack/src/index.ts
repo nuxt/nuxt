@@ -1,1 +1,3 @@
-export { bundle } from './webpack'
+import './impl.ts'
+
+export { bundle } from './webpack.ts'

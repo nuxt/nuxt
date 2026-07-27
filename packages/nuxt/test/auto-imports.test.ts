@@ -7,8 +7,8 @@ import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
-import { TransformPlugin } from '../src/imports/transform'
-import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets'
+import { TransformPlugin } from '../src/imports/transform.ts'
+import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets.ts'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -19,10 +19,11 @@ describe('imports:transform', () => {
 
   const ctx = createUnimport({
     injectAtEnd: true,
+    parser: 'oxc',
     imports,
   })
 
-  const transformPlugin = TransformPlugin({ ctx, options: { transform: { exclude: [/node_modules/] } } }).raw({}, { framework: 'rollup' }) as Plugin
+  const transformPlugin = TransformPlugin({ ctx, options: { transform: { exclude: [/node_modules/] } } }).raw({}, { framework: 'rollup', versions: {} }) as Plugin
   const transform = async (source: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const result = await (transformPlugin.transform! as Function).call({ error: null, warn: null } as any, source, '')
@@ -41,6 +42,10 @@ describe('imports:transform', () => {
     expect(await transform('let ref = () => {}; const a = ref(0)')).to.equal(undefined)
     expect(await transform('let { ref } = Vue; const a = ref(0)')).to.equal(undefined)
     expect(await transform('let [\ncomputed,\nref\n] = Vue; const a = ref(0); const b = ref(0)')).to.equal(undefined)
+  })
+
+  it('should inject when a local variable of the same name is declared in a nested scope', async () => {
+    expect(await transform('const a = ref(0); function foo () { const ref = 1; return ref }')).toMatchInlineSnapshot('"import { ref } from \'vue\';\nconst a = ref(0); function foo () { const ref = 1; return ref }"')
   })
 
   it('should ignore comments', async () => {
@@ -194,6 +199,8 @@ const excludedVueHelpers = [
   'hydrateOnIdle',
   'onWatcherCleanup',
   'getCurrentWatcher',
+  'patchProp',
+  'nodeOps',
   'module.exports',
 ]
 

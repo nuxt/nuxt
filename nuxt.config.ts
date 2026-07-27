@@ -1,5 +1,6 @@
 // For pnpm typecheck:docs to generate correct types
 
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { addPluginTemplate, addRouteMiddleware, addVitePlugin } from 'nuxt/kit'
 
@@ -26,9 +27,15 @@ export default defineNuxtConfig({
         enforce: 'pre',
         transform (code, id) {
           let replaced = false
-          if (code.includes('export function onPrehydrate')) {
+          // Strip the early client return so `onPrehydrate` runs under test.
+          // Scoped to the `onPrehydrate` function body so the same guard is
+          // left intact in sibling functions in `ssr.ts`.
+          const onPrehydrateStart = code.search(/(?:export\s+)?function onPrehydrate\s*\(/)
+          if (onPrehydrateStart !== -1) {
+            const head = code.slice(0, onPrehydrateStart)
+            const tail = code.slice(onPrehydrateStart).replace(/if \(import\.meta\.client\)\s*(?:\{\s*return\s*\}|return;?)/, '')
+            code = head + tail
             replaced = true
-            code = code.replaceAll('if (import.meta.client) { return }', '')
           }
           if (id.includes('nuxt-time.vue')) {
             replaced = true

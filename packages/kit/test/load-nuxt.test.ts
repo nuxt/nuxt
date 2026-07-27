@@ -3,13 +3,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { x } from 'tinyexec'
 
-import { loadNuxt } from '../src'
+import { loadNuxt } from '../src/loader/nuxt.ts'
 import { findWorkspaceDir } from 'pkg-types'
 
 const repoRoot = await findWorkspaceDir()
 
 describe('loadNuxt', () => {
-  const tempDir = join(repoRoot, 'temp')
+  const tempDir = join(repoRoot, 'temp', 'load-nuxt')
 
   beforeAll(async () => {
     await mkdir(join(tempDir, 'nuxt'), { recursive: true })

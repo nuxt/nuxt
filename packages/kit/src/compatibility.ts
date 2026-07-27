@@ -1,10 +1,11 @@
-import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
+import { satisfies } from 'verkit'
 import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
-import { useNuxt } from './context'
+import { useNuxt } from './context.ts'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
 const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
-export function normalizeSemanticVersion (version: string) {
+export function normalizeSemanticVersion (version: string): string {
   return version.replace(SEMANTIC_VERSION_RE, '') // Remove edge prefix
 }
 
@@ -14,7 +15,7 @@ const builderMap = {
   '@nuxt/webpack-builder': 'webpack',
 }
 
-export function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()) {
+function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
   const nuxtVersion = getNuxtVersion(nuxt)
   return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
 }
@@ -79,7 +80,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
 export async function assertNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<true> {
   const issues = await checkNuxtCompatibility(constraints, nuxt)
   if (issues.length) {
-    throw new Error('Nuxt compatibility issues found:\n' + issues.toString())
+    throw kitDiagnostics.NUXT_B8004({ issues: issues.toString() })
   }
   return true
 }
@@ -92,10 +93,12 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
   return !issues.length
 }
 
+export type NuxtMajorVersion = 2 | 3 | 4
+
 /**
  * Check if current Nuxt instance is of specified major version
  */
-export function isNuxtMajorVersion (majorVersion: 2 | 3 | 4, nuxt: Nuxt = useNuxt()) {
+export function isNuxtMajorVersion (majorVersion: NuxtMajorVersion, nuxt: Nuxt = useNuxt()): boolean {
   const version = getNuxtVersion(nuxt)
 
   return version[0] === majorVersion.toString() && version[1] === '.'
@@ -104,14 +107,14 @@ export function isNuxtMajorVersion (majorVersion: 2 | 3 | 4, nuxt: Nuxt = useNux
 /**
  * @deprecated Use `isNuxtMajorVersion(2, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
  */
-export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
+export function isNuxt2 (nuxt: Nuxt = useNuxt()): boolean {
   return isNuxtMajorVersion(2, nuxt)
 }
 
 /**
  * @deprecated Use `isNuxtMajorVersion(3, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
  */
-export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
+export function isNuxt3 (nuxt: Nuxt = useNuxt()): boolean {
   return isNuxtMajorVersion(3, nuxt)
 }
 
@@ -119,10 +122,10 @@ const NUXT_VERSION_RE = /^v/g
 /**
  * Get nuxt version
  */
-export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */) {
+export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */): string {
   const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
   if (typeof rawVersion !== 'string') {
-    throw new TypeError('Cannot determine nuxt version! Is current instance passed?')
+    throw kitDiagnostics.NUXT_B8005()
   }
   return rawVersion.replace(NUXT_VERSION_RE, '')
 }

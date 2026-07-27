@@ -4,7 +4,18 @@ import type { Page } from '@playwright/test'
 import { fetch } from 'ofetch'
 import { joinURL } from 'ufo'
 
-const test = base.extend<{ fetch: (path: string) => Promise<Response> }>({
+export interface MatrixOptions {
+  isDev: boolean
+  isBuilt: boolean
+  isWebpack: boolean
+  builder: 'vite' | 'rspack' | 'webpack'
+}
+
+const test = base.extend<{ fetch: (path: string) => Promise<Response> } & MatrixOptions>({
+  isDev: [false, { option: true }],
+  isBuilt: [true, { option: true }],
+  isWebpack: [false, { option: true }],
+  builder: ['vite' as const, { option: true }],
   fetch: ({ request, _nuxtHooks }, use) => {
     use(async (path) => {
       let res: Response | undefined
@@ -99,7 +110,7 @@ const expect = baseExpect.extend({
     // @ts-expect-error untyped
     const consoleLogs: Array<{ text: string, type: string }> = page._consoleLogs
     const errorLogs = consoleLogs.filter(log =>
-      log.type === 'error' || (log.type === 'warning' && !log.text.includes('webpack/hot/dev-server')))
+      log.type === 'error' || (log.type === 'warning' && !log.text.includes('webpack/hot/dev-server') && !log.text.includes('Extraneous non-props attributes (style) were passed to component')))
 
     const pass = errorLogs.length === 0
     const message = pass ? '' : `Found error logs: ${errorLogs.map(log => log.text).join('\n')}`

@@ -1,1 +1,1 @@
-export const defineAppConfig = (config: any) => config
+export const defineAppConfig = (config: any): any => config
