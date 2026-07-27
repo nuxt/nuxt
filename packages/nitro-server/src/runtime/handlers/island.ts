@@ -66,7 +66,10 @@ export default {
       // renders could await each other's claim and hang the build.
       if (!stack?.some(url => url.startsWith(ISLAND_PATH_PREFIX))) {
         // a raw response cannot be shared, so fall through and render our own
-        const shared = await inFlightIslands!.get(islandPath)
+        const shared = await inFlightIslands!.get(islandPath)?.catch((error: any) => {
+          // `rethrowWithResponseHeaders` mutates the error it is given, so rethrow a copy
+          throw new HTTPError({ status: error?.status, statusText: error?.statusText, message: error?.message, cause: error })
+        })
         if (shared && !('raw' in shared)) {
           return toResponse(event, shared)
         }
