@@ -11,6 +11,8 @@ export default withMatrix({
     prerender: {
       routes: [
         '/prefetch/server-components',
+        '/prerender/island-a',
+        '/prerender/island-b',
       ],
     },
   },
