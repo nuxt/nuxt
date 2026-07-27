@@ -50,7 +50,7 @@ function createUseAsyncData (
 
 ## Options
 
-`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/4.x/api/composables/use-async-data#parameters), including `server`, `lazy`, `immediate`, `default`, `transform`, `pick`, `getCachedData`, `deep`, `dedupe`, `timeout`, and `watch`.
+`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/4.x/api/composables/use-async-data#parameters), including `server`, `lazy`, `immediate`, `default`, `transform`, `pick`, `getCachedData`, `fetchPolicy`, `deep`, `dedupe`, `timeout`, and `watch`.
 
 See the full list of options in the [`useAsyncData` documentation](/docs/4.x/api/composables/use-async-data#parameters).
 

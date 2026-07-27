@@ -165,13 +165,16 @@ type AsyncDataOptions<ResT, DataT = ResT> = {
   pick?: string[]
   watch?: MultiWatchSources
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
+  fetchPolicy?: AsyncDataFetchPolicy
   timeout?: number
   enabled?: MaybeRefOrGetter<boolean>
 }
 
+type AsyncDataFetchPolicy = 'cache-first' | 'cache-and-network' | 'network-only' | 'cache-only' | 'no-cache'
+
 type AsyncDataRequestContext = {
   /** The reason for this data request */
-  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'watch'
+  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'refresh:revalidate' | 'watch'
 }
 
 type AsyncData<DataT, ErrorT> = {
@@ -213,6 +216,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
 | `timeout` :badge[v4.2]{color="info" size="xs" class="align-middle"}       | `number`                                    | -          | A number in milliseconds to wait before timing out the call (defaults to `undefined`, which means no timeout)                                                                                                                                                                        |
 | `transform`                                                               | `(input: DataT) => DataT \| Promise<DataT>` | -          | Function to transform the result after resolving.                                                                                                                                                                                                                                    |
 | `getCachedData` :badge[v3.8]{color="info" size="xs" class="align-middle"} | `(key, nuxtApp, ctx) => DataT \| undefined` | -          | Function to return cached data. See below for default.                                                                                                                                                                                                                               |
+| `fetchPolicy` :badge[v4.4]{color="info" size="xs" class="align-middle"}   | `AsyncDataFetchPolicy`                      | `'cache-first'` | Control how fetching interacts with cached data. See below for details.                                                                                                                                                                                                         |
 | `pick`                                                                    | `string[]`                                  | -          | Only pick specified keys from the result.                                                                                                                                                                                                                                            |
 | `watch`                                                                   | `MultiWatchSources`                         | -          | Array of reactive sources to watch and auto-refresh.                                                                                                                                                                                                                                 |
 | `deep` :badge[v3.8]{color="info" size="xs" class="align-middle"}          | `boolean`                                   | `false`    | Return data in a deep ref object. Defaults to `false` for improved performance (shallow ref object).                                                                                                                                                                                 |
@@ -231,6 +235,24 @@ const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
   : nuxtApp.static.data[key]
 ```
 This only caches data when `experimental.payloadExtraction` in `nuxt.config` is enabled.
+
+**fetchPolicy:**
+
+The `fetchPolicy` option controls _whether_ cached data (as read by `getCachedData`) is used and updated; `getCachedData` controls _how_ cached data is read. The two options compose.
+
+- `cache-first` (default): if cached data is present, return it without fetching; otherwise fetch and update the cache.
+- `cache-and-network`: if cached data is present, return it immediately, then fetch in the background and update the cache and `data` when the response resolves. While revalidating, `status` stays `'success'` and `pending` stays `false`; if the background fetch fails, the stale `data` is kept and `error` is set (with `status: 'error'`). Background revalidations call `getCachedData` with `cause: 'refresh:revalidate'`.
+- `network-only`: always fetch, ignoring cached data, but still update the cache with the result.
+- `cache-only`: only return cached data; never fetch. With an empty cache, `data` stays at the `default()` value and `status` is `'idle'`. Manual `execute()` and `refresh()` calls re-consult the cache but never trigger a fetch.
+- `no-cache`: always fetch and do not update the cache with the result. Because the cache is never written on the client, `useNuxtData` will not reflect results fetched with this policy.
+
+::note
+During first-load hydration the server-rendered payload is always adopted, whatever the policy: it is how server data is transferred to the client, not a cache. This also means the server always writes to `nuxtApp.payload.data`, even with `no-cache`, and that `network-only` does not trigger a client-side fetch on first load. With `cache-and-network`, the payload is additionally revalidated in the background once hydration completes.
+::
+
+::note
+With the default `getCachedData`, cached data only exists when `experimental.payloadExtraction` is enabled. To get the most out of `cache-and-network` or `cache-only`, pair them with a custom `getCachedData` that reads from your own cache.
+::
 
 ::note
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
@@ -252,6 +274,7 @@ The following options **must be consistent** across all calls with the same key:
 - `transform` function
 - `pick` array
 - `getCachedData` function
+- `fetchPolicy` option
 - `default` value
 
 The following options **can differ** without triggering warnings:

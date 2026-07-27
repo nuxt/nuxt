@@ -45,7 +45,9 @@ export type { MultiWatchSources }
 
 export type NoInfer<T> = [T][T extends any ? 0 : never]
 
-export type AsyncDataRefreshCause = 'initial' | 'refresh:hook' | 'refresh:manual' | 'watch'
+export type AsyncDataRefreshCause = 'initial' | 'refresh:hook' | 'refresh:manual' | 'refresh:revalidate' | 'watch'
+
+export type AsyncDataFetchPolicy = 'cache-first' | 'cache-and-network' | 'network-only' | 'cache-only' | 'no-cache'
 
 interface BaseAsyncDataOptions<
   ResT,
@@ -99,6 +101,19 @@ interface BaseAsyncDataOptions<
    * @default true
    */
   enabled?: MaybeRefOrGetter<boolean>
+  /**
+   * Control how fetching interacts with cached data (as read by `getCachedData`):
+   * - `cache-first`: if cached data is present, return it without fetching; otherwise fetch and update the cache
+   * - `cache-and-network`: if cached data is present, return it immediately, then fetch in the background and update the cache and `data` when the response resolves; `status` stays `'success'` and stale data is kept if the background fetch fails
+   * - `network-only`: always fetch, ignoring cached data, but still update the cache with the result
+   * - `cache-only`: only return cached data; never fetch
+   * - `no-cache`: always fetch and do not update the cache with the result
+   *
+   * The policy controls _whether_ the cache is consulted and updated; `getCachedData` controls _how_ cached data is read.
+   * During first-load hydration the server-rendered payload is always adopted (it is transport, not cache), whatever the policy.
+   * @default 'cache-first'
+   */
+  fetchPolicy?: AsyncDataFetchPolicy
 }
 
 export interface AsyncDataOptions<
@@ -392,6 +407,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       opts.deep ??= asyncDataDefaults.deep
       opts.dedupe ??= 'cancel'
       opts.enabled ??= true
+      opts.fetchPolicy ??= 'cache-first'
 
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
@@ -409,7 +425,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         if (values.handler !== currentData._hash?.handler) {
           warnings.push(`different handler`)
         }
-        for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
+        for (const opt of ['transform', 'pick', 'getCachedData', 'fetchPolicy'] as const) {
           if (values[opt] !== currentData._hash![opt]) {
             warnings.push(`different \`${opt}\` option`)
           }
@@ -431,7 +447,13 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
         const existing = nuxtApp._asyncData[key.value]
         if (!existing?._init) {
-          initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+          // `network-only`/`no-cache` must not be seeded with cached data, except from the
+          // server payload during hydration (transport, not cache, so `getCachedData` is bypassed)
+          if (opts.fetchPolicy !== 'network-only' && opts.fetchPolicy !== 'no-cache') {
+            initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+          } else if (nuxtApp.isHydrating) {
+            initialFetchOptions.cachedData = nuxtApp.payload.data[key.value]
+          }
           nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
           nuxtApp._asyncData[key.value]!._initialCachedData = initialFetchOptions.cachedData
         } else if (nuxtApp._asyncDataPromises[key.value]) {
@@ -450,9 +472,14 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
       const fetchOnServer = opts.server !== false && nuxtApp.payload.serverRendered
 
+      // Tracks the promise of a synchronous initial fetch so `await useAsyncData(...)` can
+      // resolve with what `execute` returned — for `cache-and-network` this is the cached
+      // data, not the in-flight background revalidation in `_asyncDataPromises`.
+      let initialFetchPromise: Promise<unknown> | undefined
+
       // Server side
       if (import.meta.server && fetchOnServer && opts.immediate) {
-        const promise = initialFetch()
+        const promise = initialFetchPromise = initialFetch()
         if (getCurrentInstance()) {
           onServerPrefetch(() => promise)
         } else {
@@ -491,13 +518,21 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
             asyncData.pending.value = false
           }
           asyncData.status.value = asyncData.error.value ? 'error' : 'success'
+          if (opts.fetchPolicy === 'cache-and-network' && opts.immediate) {
+            // revalidate the server-rendered payload in the background once hydration completes
+            onNuxtReady(() => {
+              if (nuxtApp._asyncData[key.value]?._init) {
+                nuxtApp._asyncData[key.value]!.execute({ cause: 'refresh:revalidate', dedupe: opts.dedupe })
+              }
+            })
+          }
         } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || opts.lazy) && opts.immediate) {
           // 2. Initial load (server: false): fetch on mounted
           // 3. Initial load or navigation (lazy: true): fetch on mounted
           instance._nuxtOnBeforeMountCbs.push(initialFetch)
         } else if (opts.immediate && asyncData.status.value !== 'success') {
           // 4. Navigation (lazy: false) - or plugin usage: await fetch
-          initialFetch()
+          initialFetchPromise = initialFetch()
         }
 
         function unregister (key: string) {
@@ -530,8 +565,16 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
                 if (!nuxtApp._asyncData[newKey]?._init) {
                   // Resolve the new key's cached data before seeding the container, so getCachedData
                   // cannot see the previous key's display-only data as a cache hit for the new key.
-                  const cachedData = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-                  initialFetchOptions.cachedData = cachedData
+                  // `network-only`/`no-cache` must not be seeded with cached data, except from the
+                  // server payload during hydration (transport, not cache, so `getCachedData` is bypassed)
+                  let cachedData: NoInfer<DataT> | undefined
+                  if (opts.fetchPolicy !== 'network-only' && opts.fetchPolicy !== 'no-cache') {
+                    cachedData = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+                    initialFetchOptions.cachedData = cachedData
+                  } else if (nuxtApp.isHydrating) {
+                    cachedData = nuxtApp.payload.data[newKey] as NoInfer<DataT> | undefined
+                    initialFetchOptions.cachedData = cachedData
+                  }
                   const initialValue = (oldKey && hadData && cachedData === undefined)
                     ? nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
                     : cachedData
@@ -622,7 +665,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       }
 
       // Allow directly awaiting on asyncData
-      const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
+      // With `cache-and-network` and displayed cached data, any in-flight promise is a
+      // background revalidation and awaiting must not block on it.
+      const inFlightPromise = (opts.fetchPolicy === 'cache-and-network' && asyncData.status.value === 'success') ? undefined : nuxtApp._asyncDataPromises[key.value]
+      const asyncDataPromise = Promise.resolve(initialFetchPromise ?? inFlightPromise).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
       Object.assign(asyncDataPromise, asyncReturn)
       // Allow destructuring without losing promise methods
       Object.defineProperties(asyncDataPromise, {
@@ -782,12 +828,18 @@ function buildAsyncData<
 
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
 
+  const fetchPolicy = options.fetchPolicy ?? 'cache-first'
+  const policyReadsCache = fetchPolicy === 'cache-first' || fetchPolicy === 'cache-and-network' || fetchPolicy === 'cache-only'
+
   // When prerendering, share payload data automatically between requests
   const baseHandler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?.['~sharedPrerenderCache']
     ? _handler
     : (nuxtApp, options) => {
-        const value = nuxtApp.ssrContext!['~sharedPrerenderCache']!.get(key)
-        if (value) { return value as Promise<ResT> }
+        // policies that promise a real fetch skip the shared read but still populate it
+        if (fetchPolicy !== 'network-only' && fetchPolicy !== 'no-cache') {
+          const value = nuxtApp.ssrContext!['~sharedPrerenderCache']!.get(key)
+          if (value) { return value as Promise<ResT> }
+        }
 
         const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(nuxtApp, options)))
 
@@ -829,27 +881,59 @@ function buildAsyncData<
         }
       }
       // Avoid fetching same key that is already fetched
-      if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
-        const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
+      // `network-only`/`no-cache` skip the cache, except during hydration where the
+      // server-rendered payload is adopted regardless of policy (transport, not cache)
+      let backgroundRevalidationResult: DataT | undefined
+      if (fetchPolicy === 'cache-only' || ((policyReadsCache || nuxtApp.isHydrating) && (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating))) {
+        const cachedData = 'cachedData' in opts
+          ? opts.cachedData
+          : policyReadsCache
+            ? options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
+            : nuxtApp.payload.data[key] as DataT | undefined
         if (cachedData !== undefined) {
-          nuxtApp.payload.data[key] = asyncData.data.value = cachedData as DataT
+          if (import.meta.server || fetchPolicy !== 'no-cache') {
+            nuxtApp.payload.data[key] = cachedData as DataT
+          }
+          asyncData.data.value = cachedData as DataT
           asyncData.error.value = undefined
           asyncData.status.value = 'success'
-          return Promise.resolve(cachedData)
+          if (import.meta.client && fetchPolicy === 'cache-and-network' && !nuxtApp.isHydrating && !nuxtApp._asyncDataPromises[key]) {
+            // fall through to revalidate in the background; resolve with the cached data
+            // (when a revalidation is already in flight, leave it running and just return the cache)
+            backgroundRevalidationResult = cachedData as DataT
+          } else {
+            return Promise.resolve(cachedData)
+          }
         }
+      }
+      // `cache-only` never triggers a fetch
+      if (fetchPolicy === 'cache-only') {
+        if (pendingWhenIdle) {
+          asyncData.pending.value = false
+        }
+        if (asyncData.status.value !== 'success') {
+          asyncData.status.value = 'idle'
+        }
+        return Promise.resolve(asyncData.data.value)
       }
       // if is not enabled, the fetch is prevented
       if (toValue(options.enabled) === false) {
         return Promise.resolve(asyncData.data.value)
       }
-      if (pendingWhenIdle) {
+      // Background revalidation keeps stale data on display: `status` stays `'success'` and
+      // the shared `.catch` below preserves `data` if the revalidation fails.
+      const isBackgroundRevalidation = backgroundRevalidationResult !== undefined
+        || (opts.cause === 'refresh:revalidate' && asyncData.status.value === 'success' && asyncData.data.value !== undefined)
+      if (pendingWhenIdle && !isBackgroundRevalidation) {
         asyncData.pending.value = true
       }
       if (asyncData._abortController) {
         asyncData._abortController.abort(new DOMException('AsyncData request cancelled by deduplication', 'AbortError'))
       }
       asyncData._abortController = new AbortController()
-      asyncData.status.value = 'pending'
+      if (!isBackgroundRevalidation) {
+        asyncData.status.value = 'pending'
+      }
       const cleanupController = new AbortController()
       const promise: Promise<ResT | void> = new Promise<ResT>(
         (resolve, reject) => {
@@ -891,7 +975,11 @@ function buildAsyncData<
             dataDiagnostics.NUXT_E3006({ fn: options._functionName || 'useAsyncData', sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
           }
 
-          nuxtApp.payload.data[key] = result
+          // `no-cache` skips the client-side write-back; the server always writes so the
+          // payload can be transferred for hydration
+          if (import.meta.server || fetchPolicy !== 'no-cache') {
+            nuxtApp.payload.data[key] = result
+          }
 
           asyncData.data.value = result
           asyncData.error.value = undefined
@@ -915,7 +1003,9 @@ function buildAsyncData<
           }
 
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
-          asyncData.data.value = unref(options.default!())
+          if (!isBackgroundRevalidation) {
+            asyncData.data.value = unref(options.default!())
+          }
           asyncData.status.value = 'error'
         })
         .finally(() => {
@@ -930,6 +1020,11 @@ function buildAsyncData<
           }
         })
       nuxtApp._asyncDataPromises[key] = promise
+      if (backgroundRevalidationResult !== undefined) {
+        // `cache-and-network` hit: the fetch continues in the background (tracked in
+        // `_asyncDataPromises` for dedupe/abort) but callers resolve with the cached data
+        return Promise.resolve(backgroundRevalidationResult)
+      }
       return nuxtApp._asyncDataPromises[key]!
     },
     _execute: debounceTick((...args) => asyncData.execute(...args)),
@@ -968,7 +1063,7 @@ const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtA
     return nuxtApp.payload.data[key]
   }
 
-  if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook') {
+  if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook' && ctx.cause !== 'refresh:revalidate') {
     return nuxtApp.static.data[key]
   }
 }
@@ -979,6 +1074,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     transform: options.transform ? hashFunction(options.transform as (...args: any[]) => any) : undefined,
     pick: options.pick ? hashKey(options.pick) : undefined,
     getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
+    fetchPolicy: options.fetchPolicy as string | undefined,
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {

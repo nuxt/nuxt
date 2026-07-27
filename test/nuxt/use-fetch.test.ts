@@ -446,6 +446,29 @@ describe('useFetch', () => {
     expect.soft(d1.value).toMatchObject({ url: '/api/key/2' })
     expect.soft(d2.value).toStrictEqual(undefined)
   })
+
+  describe('fetchPolicy', () => {
+    it('is forwarded to useAsyncData', async () => {
+      const key = 'fetch-policy-cache-first'
+      useNuxtApp().static.data[key] = 'cached'
+      const customFetch = vi.fn().mockResolvedValue('network')
+
+      const { data } = await useFetch('/api/test', { key, fetchPolicy: 'cache-first', $fetch: customFetch as unknown as typeof $fetch })
+      expect(customFetch).not.toHaveBeenCalled()
+      expect(data.value).toBe('cached')
+    })
+
+    it('is not forwarded to ofetch options', async () => {
+      const key = 'fetch-policy-network-only'
+      useNuxtApp().static.data[key] = 'cached'
+      const customFetch = vi.fn().mockResolvedValue('network')
+
+      const { data } = await useFetch('/api/test', { key, fetchPolicy: 'network-only', $fetch: customFetch as unknown as typeof $fetch })
+      expect(customFetch).toHaveBeenCalledTimes(1)
+      expect(customFetch.mock.calls[0]![1]).not.toHaveProperty('fetchPolicy')
+      expect(data.value).toBe('network')
+    })
+  })
 })
 
 describe('createUseFetch', () => {
@@ -510,5 +533,19 @@ describe('createUseFetch', () => {
 
     const keysAfter = Object.keys(nuxtApp.payload.data)
     expect(keysAfter.length - originalKeys.length).toEqual(2)
+  })
+
+  it('should use fetchPolicy from factory as a default', async () => {
+    const key = 'factory-fetch-policy'
+    useNuxtApp().static.data[key] = 'cached'
+    const customFetch = vi.fn().mockResolvedValue('network')
+
+    const { data } = await scope.run(() => {
+      const useCustomFetch = createUseFetch({ fetchPolicy: 'network-only', $fetch: customFetch as unknown as typeof $fetch })
+      return useCustomFetch('/api/test', { key })
+    })!
+
+    expect(customFetch).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('network')
   })
 })
