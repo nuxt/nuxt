@@ -9,7 +9,7 @@ import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/is
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { isDev, isWebpack } from './matrix'
+import { isDev, isRenderingJson, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
@@ -222,6 +222,13 @@ describe('server components/islands', () => {
     expect(page.url().endsWith('/')).toBe(true)
 
     await page.close()
+  })
+
+  // JS payloads are serialised with `devalue` on the nitro side, which does not run the app's
+  // payload reducers, so the island stub that keeps the html out of the payload never applies.
+  it.skipIf(!isRenderingJson)('/server-page - should ship island html only once in the initial response', async () => {
+    const html = await $fetch<string>('/server-page')
+    expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
   })
 
   it('/server-page-with-nuxtpage/child renders the parent server page with the child route', async () => {
