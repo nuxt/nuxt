@@ -8,7 +8,7 @@ import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/tes
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
