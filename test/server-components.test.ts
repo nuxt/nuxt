@@ -9,7 +9,7 @@ import { computeIslandHash, serializeIslandProps } from '../packages/nuxt/src/ap
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { isDev, isWebpack } from './matrix'
+import { isDev, isRenderingJson, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
@@ -178,6 +178,13 @@ describe('server components/islands', () => {
 
     expect(await page.innerHTML('head')).toContain('<meta name="author" content="Nuxt">')
     await page.close()
+  })
+
+  // JS payloads are serialised with `devalue` on the nitro side, which does not run the app's
+  // payload reducers, so the island stub that keeps the html out of the payload never applies.
+  it.skipIf(!isRenderingJson)('/server-page - should ship island html only once in the initial response', async () => {
+    const html = await $fetch<string>('/server-page')
+    expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
   })
 })
 
