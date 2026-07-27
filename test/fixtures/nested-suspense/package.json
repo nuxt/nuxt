@@ -8,7 +8,7 @@
     "nuxt": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"

@@ -113,6 +113,7 @@ export default withMatrix({
   },
   css: ['~/assets/global.css'],
   vue: {
+    optionsApi: true,
     compilerOptions: {
       isCustomElement: (tag) => {
         return tag === 'custom-component'
@@ -186,6 +187,7 @@ export default withMatrix({
       '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
+      '/payload-query': { cache: { swr: true, maxAge: 60 } },
       '/swr': { swr: 60 },
     },
     prerender: {

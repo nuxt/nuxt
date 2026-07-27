@@ -4,31 +4,35 @@ import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import type { Nuxt, NuxtBuildOutputs, NuxtOptions } from '@nuxt/schema'
+import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { createNitro, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
-import type { H3Event } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
-import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, toArray } from './utils.ts'
+import { NUXT_BUILD_OUTPUT_MAP, distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, toArray } from './utils.ts'
+import { setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
-import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
+import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
+import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { createFoldedRouteRulesRouter } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
+// Re-export a type from the augment module rather than a bare `import './augments.ts'`
+// side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
+export type { NuxtTracingChannelOptions } from './augments.ts'
 
 type NitroTSConfig = NonNullable<NonNullable<NitroConfig['typescript']>['tsConfig']>
 
@@ -38,14 +42,6 @@ const logLevelMapReverse = {
   verbose: 3,
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
-const NUXT_BUILD_OUTPUT_MAP: Record<string, keyof NuxtBuildOutputs> = {
-  'nuxt/entry': 'serverEntry',
-  'nuxt/manifest': 'clientManifest',
-  'nuxt/precomputed': 'clientPrecomputed',
-  'nuxt/styles': 'ssrStyles',
-  'nuxt/entry-chunk': 'entryChunkName',
-  'nuxt/entry-ids': 'entryIds',
-}
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
@@ -102,6 +98,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       route: '',
       middleware: true,
       handler: resolve(distDir, 'runtime/middleware/base-url'),
+    })
+  }
+
+  // In dev, record per-request CSS (from the builder's module graph) into the
+  // request context so the SSR renderer can emit the right stylesheet links.
+  if (nuxt.options.dev) {
+    nuxt.options.serverHandlers.unshift({
+      route: '',
+      middleware: true,
+      handler: resolve(distDir, 'runtime/middleware/dev-client-css'),
     })
   }
 
@@ -201,6 +207,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // environment even when the loop is scoped away from it.
       'nuxt/entry-chunk': () => nuxt.buildOutputs.entryChunkName(),
       'nuxt/entry-ids': () => nuxt.buildOutputs.entryIds(),
+      // Dev-only per-request CSS source; overridden by the builder in dev to
+      // read its module graph (see `dev-client-css` middleware).
+      '#internal/nuxt/dev-client-css': () => `export const getDevClientCss = () => []`,
       // overridden by head module when SSR streaming is enabled
       '#internal/streaming-iife-chunk.mjs': () => `export const iifeChunkFileName = undefined`,
       '#internal/nuxt/nitro-config.mjs': () => {
@@ -374,7 +383,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (!nuxt._nitro) {
         return `export default () => ({})`
       }
-      const matcher = nuxt._nitro.routing.routeRules.compileToString({
+      // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
+      // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
+      // folded lookup and silently lose its protections. `sensitive` can also come from
+      // `app/router.options.ts` (runtime-only), so emit both a verbatim and a folded matcher
+      // and pick at runtime.
+      const sourceRouter = nuxt._nitro.routing.routeRules
+      const foldedRouter = createFoldedRouteRulesRouter(sourceRouter, nuxt._nitro.options.baseURL, (existing, route) => {
+        if (nuxt.options.router.options.sensitive) { return }
+        logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path when matched case-insensitively; \`${route}\` takes precedence. Disambiguate the keys or set \`router.options.sensitive: true\`.`)
+      })
+      const compileOptions: NonNullable<Parameters<typeof sourceRouter.compileToString>[0]> = {
         matchAll: true,
         serialize (routeRules) {
           return `{${Object.entries(routeRules)
@@ -404,13 +423,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             }).join(',')
           }}`
         },
-      })
-      return `
-      import { defu } from 'defu'
-      import routerOptions from '#build/router.options.mjs'
-      const matcher = ${matcher}
-      export default (path) => defu({}, ...matcher('', typeof path === 'string' && !routerOptions.sensitive ? path.toLowerCase() : path).map(r => r.data).reverse())
-      `
+      }
+      const sensitiveMatcher = sourceRouter.compileToString(compileOptions)
+      const foldedMatcher = foldedRouter.compileToString(compileOptions)
+      return [
+        `import { defu } from 'defu'`,
+        `import routerOptions from '#build/router.options.mjs'`,
+        `const sensitiveMatcher = ${sensitiveMatcher}`,
+        foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`,
+        `export default (path) => routerOptions.sensitive`,
+        `  ? defu({}, ...sensitiveMatcher('', path).map(r => r.data).reverse())`,
+        `  : defu({}, ...foldedMatcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())`,
+      ].join('\n')
     },
   })
 
@@ -480,10 +504,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
 
     // write stub manifest before build so external import of #app-manifest can be resolved
-    if (!nuxt.options.dev) {
+    if (!nuxt.options.dev || nuxt.options.experimental.nitroViteEnvironment) {
       nuxt.hook('build:before', async () => {
         await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
-        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({}))
+        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({
+          id: buildId,
+          timestamp: buildTimestamp,
+          prerendered: [],
+        }))
       })
     }
 
@@ -493,7 +521,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
 
     nuxt.hook('nitro:init', (nitro) => {
-      nitro.hooks.hook('rollup:before', async (nitro) => {
+      async function writeAppManifest () {
         // Add pages prerendered but not covered by route rules
         const prerenderedRoutes = new Set<string>()
         if (nitro._prerenderedRoutes?.length) {
@@ -515,13 +543,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes],
         }
 
-        await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
-        await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
+        const dir = nuxt.options.experimental.nitroViteEnvironment
+          ? join(nitro.options.output.publicDir, manifestPrefix)
+          : tempDir
+        await fsp.mkdir(join(dir, 'meta'), { recursive: true })
+        await fsp.writeFile(join(dir, 'latest.json'), JSON.stringify({
           id: buildId,
           timestamp: buildTimestamp,
         }))
-        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
-      })
+        await fsp.writeFile(join(dir, `meta/${buildId}.json`), JSON.stringify(manifest))
+      }
+      // seed the manifest so `#app-manifest` resolves during bundling,
+      // and refresh it after prerendering with the actual prerendered routes
+      nitro.hooks.hook('rollup:before', writeAppManifest)
+      nitro.hooks.hook('prerender:done', writeAppManifest)
     })
   }
 
@@ -530,11 +565,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.options.alias['#app-manifest'] = mockProxy
   }
 
-  for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
-    if (specifier === 'nuxt/entry-chunk' || specifier === 'nuxt/entry-ids') {
-      continue // already registered above in the virtual block
+  // with `nitroViteEnvironment` these specifiers provided by `NuxtBuildOutputsPlugin`
+  if (!nuxt.options.experimental.nitroViteEnvironment) {
+    for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
+      if (specifier === 'nuxt/entry-chunk' || specifier === 'nuxt/entry-ids') {
+        continue // already registered above in the virtual block
+      }
+      nitroConfig.virtual![specifier] = () => nuxt.buildOutputs[key]()
     }
-    nitroConfig.virtual![specifier] = () => nuxt.buildOutputs[key]()
   }
 
   const nitroDecoratorSetup = new WeakMap<NitroConfig, Promise<void>>()
@@ -645,16 +683,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
   const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath
 
-  // Use hash-based cache driver for runtime payload cache to avoid conflicts when
-  // path is both a file and a directory prefix: https://github.com/nuxt/nuxt/issues/34547
-  if (nuxt.options.dev) {
-    const payloadCacheDir = resolve(nuxt.options.buildDir, 'cache/nuxt/payload')
-    nitroConfig.devStorage['cache:nuxt:payload'] ||= {
-      driver: cacheDriverOption,
-      base: payloadCacheDir,
-    }
-  }
-
   // Hoist types for nitro implicit dependencies
   nuxt.options.typescript.hoist.push(
     // Nitro auto-imported/augmented dependencies
@@ -724,8 +752,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const appDir = nuxt.options.alias['#app']
   if (appDir) {
     tsConfig.compilerOptions.paths['#app/island-hash'] ||= [resolve(appDir, 'island-hash')]
+    tsConfig.compilerOptions.paths['#app/island-props'] ||= [resolve(appDir, 'island-props')]
     tsConfig.compilerOptions.paths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
     tsConfig.compilerOptions.paths['#app/types'] ||= [resolve(appDir, 'types')]
+  }
+
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    nitroConfig.renderer = undefined
   }
 
   // Init nitro
@@ -890,11 +923,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   nitro.options.devHandlers.push(...nuxt.options.devServerHandlers)
-  nitro.options.handlers.unshift({
-    route: '/__nuxt_error',
-    lazy: true,
-    handler: resolve(distDir, 'runtime/handlers/renderer'),
-  })
+  if (!nuxt.options.experimental.nitroViteEnvironment) {
+    nitro.options.handlers.unshift({
+      route: '/__nuxt_error',
+      lazy: true,
+      handler: resolve(distDir, 'runtime/handlers/renderer'),
+    })
+  }
 
   // TODO: refactor into a module when this is more full-featured
   // add Chrome devtools integration
@@ -913,7 +948,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitro.options.devHandlers.push({
       route: '/.well-known/appspecific/com.chrome.devtools.json',
       handler: defineEventHandler((event) => {
-        if (!isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
+        // The response discloses the absolute project root and a stable workspace UUID, so
+        // require a genuine loopback peer: `isLocalDevRequest` alone is forgeable by a
+        // non-browser LAN client sending `Host: localhost`.
+        if (!isLoopbackPeer(event) || !isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
           event.res.status = 403
           return 'Forbidden'
         }
@@ -987,7 +1025,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  setupLegacyDevAndBuild(nuxt, nitro)
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    setupNitroViteEnvironment(nuxt, nitro)
+  } else {
+    setupLegacyDevAndBuild(nuxt, nitro)
+  }
 }
 
 const RELATIVE_RE = /^([^.])/
@@ -1005,8 +1047,6 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
   return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
 }
 
-const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
-
 function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
   const allowedHosts = nuxt.options.vite?.server?.allowedHosts
   if (allowedHosts === true) {
@@ -1021,32 +1061,6 @@ function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
     }
   }
   return hosts
-}
-
-function isLocalDevRequest (event: H3Event, allowedHosts: ReadonlySet<string> | true): boolean {
-  const hostHeader = event.req.headers.get('host')
-  if (allowedHosts !== true) {
-    const host = hostHeader?.split(':')[0]
-    if (!host || !allowedHosts.has(host)) {
-      return false
-    }
-  }
-
-  const site = event.req.headers.get('sec-fetch-site')
-  if (site !== null) {
-    return site === 'same-origin' || site === 'none'
-  }
-
-  const initiator = event.req.headers.get('origin') || event.req.headers.get('referer')
-  if (!initiator) {
-    return true
-  }
-
-  try {
-    return new URL(initiator).host === hostHeader
-  } catch {
-    return false
-  }
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {

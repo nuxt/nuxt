@@ -24,7 +24,7 @@ interface ParsedKeyedFunctionFactory {
  * Check if the node is a named export of a keyed function factory, and if so,
  * return its VariableDeclarator node.
  */
-export function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
+function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
   if (node.type === 'ExportNamedDeclaration') {
     const parsed: ParsedKeyedFunctionFactory[] = []
 

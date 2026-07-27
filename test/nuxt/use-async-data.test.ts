@@ -80,7 +80,7 @@ describe('useAsyncData', () => {
   })
 
   it('should throw TypeError when key is empty', () => {
-    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[NUXT_E3008: NUXT_E3008]')
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot(`[NUXT_E3008: https://nuxt.com/docs/4.x/errors/e3008]`)
   })
 
   it('should keep promise methods after destructuring', async () => {

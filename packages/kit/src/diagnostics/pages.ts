@@ -81,5 +81,15 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Rename or move the public asset, change its public asset base URL, or remove the conflicting page.',
       docs: false,
     },
+    NUXT_B4016: {
+      why: (p: { path: string, detail: string }) => `Inline route rules for \`${p.path}\` cannot be represented exactly by Nitro route rules, so they were not applied: ${p.detail}.`,
+      fix: 'Define the affected route rules explicitly in `nitro.routeRules`.',
+      docs: false,
+    },
+    NUXT_B4017: {
+      why: (p: { path: string, pattern: string }) => `Inline route rules for \`${p.path}\` generated \`${p.pattern}\`, which is already used by another page.`,
+      fix: 'The later inline route rules override the earlier ones. Use distinct routes, or define the rules explicitly in `nitro.routeRules`.',
+      docs: false,
+    },
   },
 })

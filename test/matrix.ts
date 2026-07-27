@@ -1,13 +1,13 @@
 import { defu } from 'defu'
 import type { NuxtConfig } from 'nuxt/schema'
 
-export const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
+export const builder = (process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' | 'nitro-vite') || 'vite'
+
+export const isWebpack = builder === 'webpack' || builder === 'rspack'
+export const nitroViteEnvironment = builder === 'nitro-vite'
 
 export const isDev = process.env.TEST_ENV === 'dev'
 export const isBuilt = !isDev
-
-const _builder = process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite'
-export const builder = _builder ?? 'vite'
 
 export const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 
@@ -50,7 +50,7 @@ export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
 
 export function withMatrix (config: NuxtConfig) {
   return defu(config, {
-    builder,
+    builder: builder === 'nitro-vite' ? 'vite' : builder,
     devtools: { enabled: false },
     future: {
       typescriptBundlerResolution,
@@ -58,6 +58,7 @@ export function withMatrix (config: NuxtConfig) {
     experimental: {
       asyncContext,
       appManifest: isTestingAppManifest,
+      nitroViteEnvironment,
     },
     compatibilityDate: 'latest',
   })

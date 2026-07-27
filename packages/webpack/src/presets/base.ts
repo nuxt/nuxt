@@ -20,7 +20,7 @@ import { applyPresets, fileName } from '../utils/config.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
 import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
-import { WebpackBarPlugin, builder, webpack } from '#builder'
+import { WebpackBarPlugin, builder, webpack } from '../builder.ts'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [

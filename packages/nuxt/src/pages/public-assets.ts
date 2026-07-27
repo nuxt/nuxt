@@ -3,7 +3,7 @@ import type { NuxtPage } from 'nuxt/schema'
 
 const INDEX_HTML_SUFFIX = '/index.html'
 
-export function normalizeRoute (path: string) {
+function normalizeRoute (path: string) {
   return withoutTrailingSlash(withLeadingSlash(path)) || '/'
 }
 

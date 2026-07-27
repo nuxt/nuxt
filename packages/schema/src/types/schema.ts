@@ -109,8 +109,27 @@ export interface ConfigSchema {
 
     /**
      * Include Vue compiler in runtime bundle.
+     *
+     * Enabling this allows components to compile templates at runtime (for example,
+     * string `template` options or templates supplied via data).
+     *
+     * Runtime-compiled templates can execute arbitrary JavaScript. Never pass
+     * user-provided or otherwise untrusted content to a runtime-compiled template;
+     * treat any string that reaches the compiler as executable code.
+     *
+     * @see [Vue security guide](https://vuejs.org/guide/best-practices/security.html)
      */
     runtimeCompiler: boolean
+
+    /**
+     * Include support for the Vue Options API in the client bundle.
+     *
+     * Disabling this compiles out Vue's Options API runtime (via the `__VUE_OPTIONS_API__` feature
+     * flag), shrinking the client bundle for apps that only use the Composition API / `<script setup>`.
+     *
+     * Defaults to `false` when `future.compatibilityVersion` is `5` or higher, otherwise `true`.
+     */
+    optionsApi: boolean
 
     /**
      * Enable reactive destructure for `defineProps`
@@ -1644,6 +1663,15 @@ export interface ConfigSchema {
        */
       botRegex?: RegExp
     }
+
+    /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Only effective when using `@nuxt/vite-builder`.
+     * @default false
+     */
+    nitroViteEnvironment: boolean
 
     /**
      * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.

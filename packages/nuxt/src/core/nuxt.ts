@@ -3,11 +3,11 @@ import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { join, normalize, relative, resolve } from 'pathe'
+import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -202,10 +202,6 @@ const nightlies = {
   '@nuxt/schema': '@nuxt/schema-nightly',
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
-
-export const keyDependencies: string[] = [
-  '@nuxt/kit',
-]
 
 let warnedAboutCompatDate = false
 
@@ -415,7 +411,7 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt, 'client'), { server: false })
 
   // Add transform for `onPrehydrate` lifecycle hook
-  addBuildPlugin(PrehydrateTransformPlugin())
+  addBuildPlugin(PrehydrateTransformPlugin({ enforce: nuxt.options.experimental.nitroViteEnvironment ? 'pre' : undefined }))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
@@ -736,6 +732,8 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.options.css = nuxt.options.css
     .filter((value, index, array) => !array.includes(value, index + 1))
 
+  warnUnresolvableGlobalCss(nuxt)
+
   // Add <NuxtIsland>
   if (nuxt.options.experimental.componentIslands) {
     addComponent({
@@ -751,17 +749,19 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
   }
 
+  // Route chunk errors require route-level chunks and client-side navigation
+  const pagesEnabled = nuxt.options.pages !== false && (nuxt.options.pages as { enabled?: boolean } | undefined)?.enabled !== false
   // Add experimental page reload support
-  if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
+  if (pagesEnabled && nuxt.options.experimental.emitRouteChunkError === 'automatic') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
   }
   // Add experimental immediate page reload support
-  if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
+  if (pagesEnabled && nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
   }
   // Reload for crawlers when a chunk fails during initial hydration, so they
   // index the server-rendered HTML rather than a blank page
-  if (nuxt.options.experimental.emitRouteChunkError) {
+  if (pagesEnabled && nuxt.options.experimental.emitRouteChunkError) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-crawler.client'))
   }
 
@@ -776,7 +776,6 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add support for custom types in JSON payload
-  addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
   addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
 
   addRouteMiddleware({
@@ -863,9 +862,16 @@ export default defineNuxtPlugin({
   await bundleServer(nuxt)
   nuxt._perf?.startPhase('ready')
 
+  if (nuxt.options.ssr !== false) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+  }
+
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    // The client payload plugin only loads payloads during client-side nav
+    if (pagesEnabled) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    }
     if (nuxt.options.experimental.prefetchPreloadTags) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/prefetch-preload-tags.server'))
     }
@@ -1209,4 +1215,29 @@ async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [stri
 
 function withTrailingSlash (dir: string) {
   return dir.replace(/[^/]$/, '$&/')
+}
+
+const RELATIVE_CSS_ENTRY_RE = /^\.{1,2}\//
+/**
+ * Warn about `css` entries that cannot resolve, which otherwise fail silently:
+ * the dev server emits a `<link>` to a URL nothing serves, and production
+ * builds drop the styles entirely.
+ */
+function warnUnresolvableGlobalCss (nuxt: Nuxt) {
+  for (const entry of nuxt.options.css) {
+    if (typeof entry !== 'string') { continue }
+
+    if (RELATIVE_CSS_ENTRY_RE.test(entry)) {
+      const asAlias = '~/' + relative(nuxt.options.srcDir, resolve(nuxt.options.rootDir, entry))
+      logger.warn(`\`css\` entries are resolved as module ids, not relative to \`nuxt.config\`. Replace \`${entry}\` with ${existsSync(resolve(nuxt.options.rootDir, entry)) ? `\`${asAlias}\`` : 'an aliased or absolute path'}.`)
+      continue
+    }
+
+    // build-dir entries are generated later in startup, and bare specifiers may
+    // be resolved by builder-specific aliases, so neither can be checked here
+    const resolved = resolveAlias(entry, nuxt.options.alias)
+    if (isAbsolute(resolved) && !resolved.startsWith(nuxt.options.buildDir) && !existsSync(resolved)) {
+      logger.warn(`\`css\` entry \`${entry}\` could not be found${resolved === entry ? '' : ` (resolved to \`${resolved}\`)`}.`)
+    }
+  }
 }
