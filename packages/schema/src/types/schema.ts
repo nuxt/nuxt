@@ -1228,6 +1228,8 @@ export interface ConfigSchema {
     /**
      * Enable the new experimental typed router using vue-router.
      *
+     * This is enabled by default with compatibility version 5.
+     *
      * @default false
      */
     typedPages: boolean
