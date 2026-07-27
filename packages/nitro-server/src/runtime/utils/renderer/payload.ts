@@ -5,6 +5,7 @@ import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
+import { serverDiagnostics } from '../../diagnostics'
 
 import { appId, multiApp } from '#internal/nuxt.config.mjs'
 import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
@@ -25,6 +26,9 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderRespon
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   const contents = opts.data ? encodeForwardSlashes(stringify(opts.data, opts.ssrContext['~payloadReducers'])) : ''
+  if (import.meta.dev) {
+    warnOnLargePayload(opts.ssrContext, opts.data, contents.length)
+  }
   const payload: Script = {
     'type': 'application/json',
     'innerHTML': contents,
@@ -93,6 +97,37 @@ export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOp
       innerHTML: multiApp ? multiAppPayload : singleAppPayload,
     },
   ]
+}
+
+const PAYLOAD_SIZE_WARNING_BYTES = 100 * 1024
+const warnedPayloadURLs = new Set<string>()
+
+function formatPayloadSize (bytes: number): string {
+  return `${(bytes / 1024).toFixed(1)} kB`
+}
+
+export function getPayloadKeySizes (data: NuxtPayload['data'] | undefined, reducers: NuxtSSRContext['~payloadReducers']): Array<[string, number]> {
+  const sizes: Array<[string, number]> = []
+  for (const key in data) {
+    try {
+      sizes.push([key, stringify(data[key], reducers).length])
+    } catch {
+      // ignore entries that cannot be stringified on their own
+    }
+  }
+  return sizes.sort((a, b) => b[1] - a[1])
+}
+
+function warnOnLargePayload (ssrContext: NuxtSSRContext, data: Partial<NuxtPayload> | undefined, size: number) {
+  if (size <= PAYLOAD_SIZE_WARNING_BYTES || warnedPayloadURLs.has(ssrContext.url)) {
+    return
+  }
+  warnedPayloadURLs.add(ssrContext.url)
+  const keys = getPayloadKeySizes(data?.data, ssrContext['~payloadReducers'])
+    .slice(0, 5)
+    .map(([key, keySize]) => `\`${key}\` (${formatPayloadSize(keySize)})`)
+    .join('\n  - ')
+  serverDiagnostics.NUXT_E8006({ path: ssrContext.url, size: formatPayloadSize(size), keys: keys || undefined })
 }
 
 interface SplitPayload {
