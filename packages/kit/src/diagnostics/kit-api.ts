@@ -36,7 +36,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B8006: {
       why: (p: { cwd: string }) => `No Nuxt version could be found from \`${p.cwd}\`.`,
-      fix: 'Run `npm install nuxt` in your project directory to install Nuxt.',
+      fix: (p: { install: string }) => `Run \`${p.install}\` in your project directory to install Nuxt.`,
       docs: false,
     },
     NUXT_B8007: {
@@ -91,7 +91,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B8017: {
       why: (p: { module: string }) => `The module \`${p.module}\` could not be loaded. It may not be installed.`,
-      fix: (p: { module: string }) => `Run \`npm install ${p.module}\` to install it.`,
+      fix: (p: { install: string }) => `Run \`${p.install}\` to install it.`,
       docs: false,
     },
     NUXT_B8018: {

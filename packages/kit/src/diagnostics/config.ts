@@ -17,7 +17,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5002: {
       why: (p: { rootDir: string }) => `\`@nuxt/webpack-builder\` could not be installed in \`${p.rootDir}\`.`,
-      fix: 'Install it manually with `npm install -D @nuxt/webpack-builder`, or change the `builder` option to `vite` in `nuxt.config`.',
+      fix: (p: { install: string }) => `Install it manually with \`${p.install}\`, or change the \`builder\` option to \`vite\` in \`nuxt.config\`.`,
       docs: false,
     },
     NUXT_B5003: {
@@ -45,12 +45,12 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5009: {
       why: '`@parcel/watcher` cannot be resolved in your project, so `chokidar` is being used instead.',
-      fix: 'Install `@parcel/watcher` for better file watching: `npm install -D @parcel/watcher`.',
+      fix: (p: { install: string }) => `Install \`@parcel/watcher\` for better file watching: \`${p.install}\`.`,
       docs: false,
     },
     NUXT_B5010: {
       why: (p: { names: string }) => `Required packages are not installed: ${p.names}.`,
-      fix: (p: { install: string }) => `Run \`npm install ${p.install}\` to install them.`,
+      fix: (p: { install: string }) => `Run \`${p.install}\` to install them.`,
       docs: false,
     },
     NUXT_B5011: {
