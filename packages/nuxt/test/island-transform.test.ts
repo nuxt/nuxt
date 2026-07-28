@@ -166,6 +166,68 @@ defineProps<{ items: any[] }>()
       expect(result).toContain('v-for="(item, index) of __vforBound(items)"')
     })
 
+    it('injects helpers into a setup block when the SFC uses the Options API (#35876)', async () => {
+      const result = await viteTransform(`<template>
+  <div v-for="item in items" :key="item">{{ item }}</div>
+</template>
+<script lang="ts">
+export default {
+  props: { items: { type: Array, required: true } },
+}
+</script>
+`, 'hello.server.vue')
+      expect(result).toContain('<script setup lang="ts">')
+      expect(result).toContain('v-for="item in __vforBound(items)"')
+      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+    })
+
+    it('injects helpers once when the SFC has both <script> and <script setup>', async () => {
+      const result = await viteTransform(`<template>
+  <div v-for="item in items" :key="item">{{ item }}</div>
+</template>
+<script lang="ts">
+export const foo = 'bar'
+</script>
+<script setup lang="ts">
+defineProps<{ items: any[] }>()
+</script>
+`, 'hello.server.vue')
+      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+      expect(result).toContain(`<script setup lang="ts">\nimport { mergeProps as __mergeProps }`)
+    })
+
+    it('does not treat a non-setup script as a setup block', async () => {
+      const result = await viteTransform(`<template>
+  <div v-for="item in items" :key="item">{{ item }}</div>
+</template>
+<script lang="ts" data-setup="true">
+export default {
+  props: { items: { type: Array, required: true } },
+}
+</script>
+`, 'hello.server.vue')
+      expect(result).toContain('<script setup lang="ts">')
+      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+      expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('data-setup'))
+    })
+
+    it('ignores script openers inside comments and string literals', async () => {
+      const result = await viteTransform(`<template>
+  <div v-for="item in items" :key="item">{{ item }}</div>
+</template>
+<!-- <script setup> -->
+<script lang="ts">
+const example = '<script setup>'
+export default {
+  props: { items: { type: Array, required: true } },
+}
+</script>
+`, 'hello.server.vue')
+      expect(result).toContain('<script setup lang="ts">')
+      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+      expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('<!--'))
+    })
+
     it('bounds a v-for on a nuxt-client element', async () => {
       const result = await viteTransform(`<template>
   <HelloWorld v-for="n in count" :key="n" nuxt-client />
