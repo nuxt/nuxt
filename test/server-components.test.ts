@@ -229,22 +229,19 @@ describe('server components/islands', () => {
     expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
   })
 
-  it('/server-page - should ship island html only once in the initial response', async () => {
-    const html = await $fetch<string>('/server-page')
-    expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
-  })
-
   it('/server-page - island response is prefetched by NuxtLink', async () => {
     const { page, requests } = await renderPage('/')
     await page.waitForLoadState('networkidle')
 
-    expect(requests.some(req => req.startsWith('/__nuxt_island/page_server-page'))).toBe(true)
+    const isServerPageIsland = (req: string) => /^\/__nuxt_island\/page_server-page_/.test(req)
+
+    expect(requests.some(isServerPageIsland)).toBe(true)
     requests.length = 0
 
     await page.getByText('to server page').click()
     await page.waitForFunction(() => !!document.head.querySelector('meta[name="author"][content="Nuxt"]'))
 
-    expect(requests.some(req => req.startsWith('/__nuxt_island/page_server-page'))).toBe(false)
+    expect(requests.some(isServerPageIsland)).toBe(false)
     await page.close()
   })
 
