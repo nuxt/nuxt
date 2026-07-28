@@ -2025,6 +2025,12 @@ importers:
         specifier: catalog:dev
         version: 6.0.3
 
+  test/fixtures/worker-assets:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
 packages:
 
   '@andrewbranch/untar.js@1.0.3':

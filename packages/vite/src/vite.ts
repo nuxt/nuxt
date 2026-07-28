@@ -5,6 +5,7 @@ import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
+import type { PreRenderedAsset } from 'rolldown'
 import { sanitizeFilePath } from 'mlly'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import vuePlugin from '@vitejs/plugin-vue'
@@ -87,6 +88,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const isIgnored = createIsIgnored(nuxt)
   const serverEntry = nuxt.options.ssr ? entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
+
+  // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/build.ts#L464-L478
+  const assetFileNames = nuxt.options.dev
+    ? undefined
+    : (chunk: PreRenderedAsset) => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`))
+
   const config: vite.InlineConfig = mergeConfig(
     {
       base: nuxt.options.dev
@@ -177,15 +184,21 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
             },
             sanitizeFileName: sanitizeFilePath,
-            // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/build.ts#L464-L478
-            assetFileNames: nuxt.options.dev
-              ? undefined
-              : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
+            assetFileNames,
           },
         },
 
         // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
         watch: { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] },
+      },
+      worker: {
+        rolldownOptions: {
+          output: {
+            // matching the main build ensures assets shared with workers are emitted only once
+            assetFileNames,
+            sanitizeFileName: sanitizeFilePath,
+          },
+        },
       },
       plugins: [
         // per-plugin timing when profiling is enabled
