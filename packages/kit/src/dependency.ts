@@ -123,6 +123,5 @@ function isResolvable (name: string, searchPaths: string[]): boolean {
  */
 export async function getAddDependencyCommand (names: string | string[], cwd: string, options: { dev?: boolean } = {}): Promise<string> {
   const packageManager = await detectPackageManager(cwd, { includeParentDirs: true }).catch(() => undefined)
-  // `--dev`, nypm's long form, is not a valid npm flag
   return addDependencyCommand(packageManager?.name || 'npm', names, { ...options, short: true })
 }
