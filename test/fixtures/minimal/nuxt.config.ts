@@ -17,6 +17,9 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   sourcemap: false,
   compatibilityDate: 'latest',
+  nitro: {
+    minify: true,
+  },
   typescript: {
     typeCheck: 'build',
   },

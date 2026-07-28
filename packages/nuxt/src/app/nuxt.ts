@@ -11,7 +11,7 @@ import type { LogObject } from 'consola'
 
 import type { NuxtPayload, NuxtSSRContext, NuxtServerRuntimeHooks, PluginMeta } from './types'
 import type { RouteMiddleware } from './composables/router'
-import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn } from './composables/asyncData'
+import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
 import type { LoadingIndicator } from './composables/loading-indicator'
@@ -19,7 +19,7 @@ import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
-import { appDiagnostics } from './diagnostics/core.ts'
+import { appDiagnostics } from './diagnostics/core'
 import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
 export type { NuxtPayload, NuxtSSRContext, PluginMeta } from './types'
@@ -96,7 +96,7 @@ interface _NuxtApp {
     /** @internal */
     _init: boolean
     /** @internal */
-    _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>
+    _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
     /** @internal */
     _hash?: Record<string, string | undefined>
     /** @internal */
@@ -124,6 +124,9 @@ interface _NuxtApp {
 
   /** @internal */
   '_processingMiddleware'?: string | boolean
+
+  /** @internal */
+  '_middlewareTo'?: Pick<RouteLocationNormalizedLoaded, 'meta'>
 
   /** @internal */
   '_once': {

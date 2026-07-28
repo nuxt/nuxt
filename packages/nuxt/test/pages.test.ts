@@ -1,7 +1,7 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, relativizeToParent } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -411,20 +411,23 @@ describe('pages:generateRouteKey', () => {
   }
 })
 
-const pathToNitroGlobTests = {
-  '/': '/',
-  '/:id': '/**',
-  '/:id()': '/**',
-  '/:id?': '/**',
-  '/some-:id?': '/**',
-  '/other/some-:id?': '/other/**',
-  '/other/some-:id()-more': '/other/**',
-  '/other/nested': '/other/nested',
-}
-
-describe('pages:pathToNitroGlob', () => {
-  it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
-    expect(pathToNitroGlob(path)).to.equal(expected)
+describe('pages:relativizeToParent', () => {
+  const tests: Array<[parentFullPath: string, childPath: string, expected: string | undefined]> = [
+    ['/parent', '/parent/child', 'child'],
+    ['/parent/:id()', '/parent/:id/child', 'child'],
+    ['/parent/:id', '/parent/:id()/child', 'child'],
+    ['/parent/:id()+', '/parent/:id+/child', 'child'],
+    ['/parent/:id(\\d+)', '/parent/:id(\\d+)/child', 'child'],
+    ['/parent/:id()', '/parent/:id()/:childId?/child', ':childId?/child'],
+    ['/parent', 'relative/child', 'relative/child'],
+    ['/', '/child', 'child'],
+    ['/parent/:id()', '/parent/:id(\\d+)/child', undefined],
+    ['/parent', '/detached', undefined],
+    ['/parent', '/parent-sibling/child', undefined],
+    ['/parent/:id()', '/parent', undefined],
+  ]
+  it.each(tests)('should relativize %s + %s to %s', (parentFullPath, childPath, expected) => {
+    expect(relativizeToParent(parentFullPath, childPath)).toBe(expected)
   })
 })
 
@@ -463,6 +466,25 @@ describe('page:extends', () => {
         meta: { [DYNAMIC_META_KEY]: new Set(['meta']), snap: true },
       },
     ])
+  })
+
+  it('keeps an explicit route name/path when reusing a file with a `definePageMeta` name (#27358)', async () => {
+    const files: NuxtPage[] = [
+      { path: '/test', file: 'pages/test.vue' },
+      { path: '/testExtend', name: 'testExtend', file: 'pages/test.vue' },
+    ]
+    const vfs: Record<string, string> = {
+      'pages/test.vue': `
+        <script setup lang="ts">
+        definePageMeta({ name: 'test' })
+        </script>
+      `,
+    }
+    await augmentPages(files, vfs)
+    // first route takes the file's name; the second keeps its own, else both are `test` -> dropped
+    expect(files[0]!.name).toBe('test')
+    expect(files[1]!.name).toBe('testExtend')
+    expect(files[1]!.path).toBe('/testExtend')
   })
 })
 

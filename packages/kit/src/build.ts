@@ -169,11 +169,13 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
   }
 
   let needsEnvInjection = false
+  const isIsomorphic = options.server !== false && options.client !== false
+
   nuxt.hook('vite:extend', async ({ config }) => {
     config.plugins ||= []
 
     const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
-    if (options.server !== false && options.client !== false) {
+    if (isIsomorphic && !nuxt.options.experimental.nitroViteEnvironment) {
       const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
       config.plugins[method](...plugin)
       return
@@ -188,9 +190,10 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     const pluginName = plugin.map(p => p.name).join('|')
     config.plugins.push({
       name: `${pluginName}:wrapper`,
-      enforce: options?.prepend ? 'pre' : 'post',
+      // isomorphic plugins are normally just added to plugins, so only force when `prepend` is set
+      enforce: isIsomorphic ? (options?.prepend ? 'pre' : undefined) : (options?.prepend ? 'pre' : 'post'),
       applyToEnvironment (environment) {
-        if (environment.name === environmentName) {
+        if (isIsomorphic ? environment.name === 'client' || environment.name === 'ssr' : environment.name === environmentName) {
           return plugin
         }
       },

@@ -12,5 +12,5 @@ export default withMatrix({
   // so exclude the page there rather than ship a bespoke scheme handler.
   ...builder === 'vite'
     ? { vite: { plugins: [virtualCounterPlugin()] } }
-    : { ignore: ['**/virtual-module.vue'] },
+    : { ignore: ['**/virtual-module.vue', '**/jsx.vue'] },
 })

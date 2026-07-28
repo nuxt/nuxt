@@ -2,7 +2,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { InlineConfig as ViteConfig } from 'vite'
 import type { Plugin } from 'postcss'
 import { createJiti } from 'jiti'
-import { bundlerDiagnostics, ensureDependencyInstalled } from '@nuxt/kit'
+import { bundlerDiagnostics, ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
@@ -58,5 +58,5 @@ async function resolvePostcssPlugin (jiti: ReturnType<typeof createJiti>, plugin
     }
   }
 
-  bundlerDiagnostics.NUXT_B7007({ pluginName })
+  bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand: await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true }) })
 }

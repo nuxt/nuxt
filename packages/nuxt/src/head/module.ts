@@ -4,7 +4,9 @@ import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, headDiagnostics } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
+import { Unhead } from '@unhead/vue/vite'
 import { streamingIifeCode } from 'unhead/stream/iife'
+
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
@@ -55,6 +57,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }
 
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
+    const resolveNuxtUnhead = (id: string) => resolveModulePath(id, { from: import.meta.url })
 
     // Register @unhead/vue/vite plugin for v5 compat mode
     // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
@@ -67,8 +70,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       const rolldownURL = rolldownPath ? pathToFileURL(rolldownPath).href : undefined
       const lightningcssURL = lightningcssPath ? pathToFileURL(lightningcssPath).href : undefined
 
-      addVitePlugin(async () => {
-        const { Unhead } = await import('@unhead/vue/vite')
+      addVitePlugin(() => {
         const viteOptions = options.vite || {}
         return Unhead({
           validate: !nuxt.options.test,
@@ -95,8 +97,8 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    const unheadLegacy = resolveModulePath('@unhead/vue/legacy', { try: true, from: importPaths }) || '@unhead/vue/legacy'
-    const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
+    const unheadLegacy = resolveNuxtUnhead('@unhead/vue/legacy')
+    const unheadPlugins = resolveNuxtUnhead('@unhead/vue/plugins')
 
     addTemplate({
       filename: 'unhead-options.mjs',

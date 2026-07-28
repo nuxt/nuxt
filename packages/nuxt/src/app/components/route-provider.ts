@@ -1,7 +1,7 @@
 import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { DefineSetupFnComponent, Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { renderDiagnostics } from '../diagnostics/render.ts'
+import { renderDiagnostics } from '../diagnostics/render'
 import { PageRouteSymbol } from './injections'
 
 interface RouteProviderProps {

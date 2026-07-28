@@ -30,7 +30,7 @@ A function that takes two Vue Router's route location objects as parameters: the
 
 Learn more about available properties of `RouteLocationNormalized` in the **[Vue Router docs](https://router.vuejs.org/api/type-aliases/routelocationnormalized)**.
 
-## Examples
+## Example
 
 ### Showing Error Page
 

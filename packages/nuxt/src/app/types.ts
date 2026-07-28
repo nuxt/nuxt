@@ -166,6 +166,8 @@ export interface NuxtSSRContext extends SSRContext {
   ['~preloadManifest']?: boolean
   /** @internal */
   ['~lazyHydratedModules']?: Set<string>
+  /** @internal */
+  ['~neverHydratedModules']?: Set<string>
 }
 
 export interface NuxtIslandSlotResponse {
@@ -178,6 +180,7 @@ export interface NuxtIslandClientResponse {
   props: unknown
   chunk: string
   slots?: Record<string, string>
+  uid?: string
 }
 
 export interface NuxtIslandContext {

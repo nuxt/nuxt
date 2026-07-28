@@ -19,6 +19,7 @@ describe('imports:transform', () => {
 
   const ctx = createUnimport({
     injectAtEnd: true,
+    parser: 'oxc',
     imports,
   })
 
@@ -41,6 +42,10 @@ describe('imports:transform', () => {
     expect(await transform('let ref = () => {}; const a = ref(0)')).to.equal(undefined)
     expect(await transform('let { ref } = Vue; const a = ref(0)')).to.equal(undefined)
     expect(await transform('let [\ncomputed,\nref\n] = Vue; const a = ref(0); const b = ref(0)')).to.equal(undefined)
+  })
+
+  it('should inject when a local variable of the same name is declared in a nested scope', async () => {
+    expect(await transform('const a = ref(0); function foo () { const ref = 1; return ref }')).toMatchInlineSnapshot('"import { ref } from \'vue\';\nconst a = ref(0); function foo () { const ref = 1; return ref }"')
   })
 
   it('should ignore comments', async () => {

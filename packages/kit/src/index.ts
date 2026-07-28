@@ -5,8 +5,8 @@ export { getDirectory, installModule, installModules, loadNuxtModuleInstance, no
 export { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './module/compatibility.ts'
 
 // Loader
-export { loadNuxtConfig } from './loader/config.ts'
-export type { LoadNuxtConfigOptions } from './loader/config.ts'
+export { diffNuxtConfig, loadNuxtConfig } from './loader/config.ts'
+export type { LoadNuxtConfigOptions, NuxtConfigDiffEntry, ResolvedNuxtConfigContext } from './loader/config.ts'
 export { extendNuxtSchema } from './loader/schema.ts'
 export { buildNuxt, loadNuxt } from './loader/nuxt.ts'
 export type { LoadNuxtOptions } from './loader/nuxt.ts'
@@ -15,9 +15,13 @@ export type { LoadNuxtOptions } from './loader/nuxt.ts'
 export { getLayerDirectories } from './layers.ts'
 export type { LayerDirectories } from './layers.ts'
 
+// Constants
+export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from './constants.ts'
+
 // Utils
 export { setGlobalHead } from './head.ts'
 export { addImports, addImportsDir, addImportsSources } from './imports.ts'
+export { updateAppConfig } from './app-config.ts'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config.ts'
 export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig, setBuildOutput } from './build.ts'
 export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigOptions } from './build.ts'
@@ -55,7 +59,7 @@ export { headDiagnostics } from './diagnostics/head.ts'
 export { bundlerDiagnostics } from './diagnostics/bundler.ts'
 
 // Dependencies
-export { ensureDependencyInstalled } from './dependency.ts'
+export { ensureDependencyInstalled, getAddDependencyCommand } from './dependency.ts'
 export type { EnsureDependencyInstalledOptions } from './dependency.ts'
 
 // Internal Utils

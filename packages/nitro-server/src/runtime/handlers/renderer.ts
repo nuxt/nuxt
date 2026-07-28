@@ -22,6 +22,7 @@ import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
+import { patchDevClientCss } from '../utils/renderer/dev-css'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
@@ -50,6 +51,7 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/
 const PAYLOAD_FILENAME = '_payload.json'
+const PAYLOAD_BUILD_ID_PARAM = '_b'
 
 let entryPath: string
 
@@ -138,20 +140,27 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
-    const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
-    ssrContext.url = url
+    const payloadURL = new URL(ssrContext.url, 'http://localhost')
+    const url = payloadURL.pathname.slice(0, -`/${PAYLOAD_FILENAME}`.length) || '/'
 
-    if (import.meta.prerender && await payloadCache!.hasItem(url + '.json')) {
+    payloadURL.searchParams.delete(PAYLOAD_BUILD_ID_PARAM)
+    ssrContext.url = url + payloadURL.search
+
+    if (import.meta.prerender && await payloadCache!.hasItem(ssrContext.url + '.json')) {
       event.res.headers.set('content-type', 'application/json')
-      const response = await payloadCache!.getItem(url + '.json') || undefined
+      const response = await payloadCache!.getItem(ssrContext.url + '.json') || undefined
       return new FastResponse(response?.body, response)
     }
   }
 
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? buildPayloadURL(ssrContext) : undefined
 
   // Render app
   const renderer = await getRenderer(ssrContext)
+
+  if (import.meta.dev) {
+    patchDevClientCss(event, renderer.rendererContext)
+  }
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
@@ -313,17 +322,31 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   if (!NO_SCRIPTS) {
     // 4. Resource Hints
-    // Exclude lazy hydrated modules so their JS chunks don't get preloaded
-    // (CSS links are already added above, this only affects JS preloads).
+    // Excluding lazy hydrated modules keeps their JS chunks from being preloaded, but also
+    // resurfaces their CSS as hints, so filter out anything already linked as a stylesheet.
     const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
       ? { exclude: ssrContext['~lazyHydratedModules'] }
       : undefined
-    ssrContext.head.push({
-      link: getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
-    })
-    ssrContext.head.push({
-      link: getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
-    })
+    // exclude hrefs already linked as stylesheets, plus never-hydrated chunks which the client can never fetch
+    const excludeHrefs = new Set(link.map(l => l.href))
+    for (const id of ssrContext['~neverHydratedModules'] ?? []) {
+      const file = renderer.rendererContext.manifest?.[id]?.file
+      if (file) {
+        excludeHrefs.add(renderer.rendererContext.buildAssetsURL(file))
+      }
+    }
+    const hints: Link[] = []
+    for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+      if (!excludeHrefs.has(l.href)) {
+        hints.push(l)
+      }
+    }
+    for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+      if (!excludeHrefs.has(l.href)) {
+        hints.push(l)
+      }
+    }
+    ssrContext.head.push({ link: hints })
     // 5. Payloads
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
@@ -819,6 +842,16 @@ async function renderStreamedResponse (ctx: {
   return new FastResponse(outputStream, event.res)
 }
 
+function buildPayloadURL (ssrContext: NuxtSSRContext): string {
+  const url = new URL(ssrContext.url, 'http://localhost')
+  const baseURL = ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL
+  const payloadURL = joinURL(baseURL, url.pathname, PAYLOAD_FILENAME)
+
+  url.searchParams.set(PAYLOAD_BUILD_ID_PARAM, ssrContext.runtimeConfig.app.buildId)
+
+  return payloadURL + url.search
+}
+
 function normalizeChunks (chunks: (string | undefined)[]) {
   const result: string[] = []
   for (const _chunk of chunks) {
@@ -870,6 +903,12 @@ interface NuxtRequestContext {
   '~internal'?: boolean
   /** @internal */
   '~rendering-error'?: boolean
+  /**
+   * Dev-only: CSS module URLs the builder has loaded for this request, provided
+   * by a dev integration so the SSR renderer can emit the right stylesheet
+   * links / inline styles. @internal
+   */
+  '~devClientCss'?: string[]
   /** @internal */
   '~error-cause'?: SerializedErrorCause
 }

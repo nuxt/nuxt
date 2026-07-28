@@ -24,6 +24,10 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 // thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if RawVueCompilerOptions is available.
 export type VueTSConfig = 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
+export interface NuxtPageMeta {
+  [key: PropertyKey]: unknown
+}
+
 export interface NuxtPage {
   name?: string
   path: string
@@ -36,7 +40,7 @@ export interface NuxtPage {
    * option so multiple `<NuxtPage name="..." />` outlets can render.
    */
   components?: Record<string, string>
-  meta?: Record<string, any>
+  meta?: NuxtPageMeta
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]

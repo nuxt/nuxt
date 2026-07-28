@@ -11,6 +11,7 @@ import { tryUseNuxt } from './context.ts'
 import { isIgnored } from './ignore.ts'
 import { type RequirePicked, toArray } from './utils.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from './constants.ts'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -195,7 +196,7 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
   // Use current nuxt options
   const nuxt = tryUseNuxt()
   const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
-  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
+  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : [...DEFAULT_JS_FILE_EXTENSIONS, '.json'])
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases

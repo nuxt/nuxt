@@ -44,7 +44,7 @@ The `create-nuxt` command initializes a fresh Nuxt project using [unjs/giget](ht
 | `--nightly`                          |         | Use Nuxt nightly release channel (3x or latest)          |
 <!--/init-opts-->
 
-## Environment variables
+## Environment Variables
 
 - `NUXI_INIT_REGISTRY`: Set to a custom template registry. ([learn more](https://github.com/unjs/giget#custom-registry)).
   - Default registry is loaded from [nuxt/starter/templates](https://github.com/nuxt/starter/tree/templates/templates)

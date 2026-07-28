@@ -24,7 +24,7 @@ function checkViteConfig () {
 
 function checkWebpackConfig () {
   // https://webpack.js.org/configuration/configuration-languages/
-  return checkConfigFileExistence('webpack.config', ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', 'coffee'])
+  return checkConfigFileExistence('webpack.config', ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', '.coffee'])
 }
 
 function checkNitroConfig () {
