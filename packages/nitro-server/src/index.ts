@@ -541,7 +541,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
 
     nuxt.hook('nitro:init', (nitro) => {
-      async function writeAppManifest () {
+      const isEnvApi = nuxt.options.experimental.nitroViteEnvironment
+      async function writeAppManifest (target?: 'public') {
         // Add pages prerendered but not covered by route rules
         const prerenderedRoutes = new Set<string>()
         if (nitro._prerenderedRoutes?.length) {
@@ -563,7 +564,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes],
         }
 
-        const dir = nuxt.options.experimental.nitroViteEnvironment
+        const dir = target === 'public'
           ? join(nitro.options.output.publicDir, manifestPrefix)
           : tempDir
         await fsp.mkdir(join(dir, 'meta'), { recursive: true })
@@ -574,9 +575,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         await fsp.writeFile(join(dir, `meta/${buildId}.json`), JSON.stringify(manifest))
       }
       // seed the manifest so `#app-manifest` resolves during bundling,
-      // and refresh it after prerendering with the actual prerendered routes
-      nitro.hooks.hook('rollup:before', writeAppManifest)
-      nitro.hooks.hook('prerender:done', writeAppManifest)
+      // and refresh it after prerendering with the actual prerendered routes.
+      // `rollup:before` is not called when nitro runs as a vite environment,
+      // and its output directory is emptied after `build:before`, so the final
+      // copy is emitted once public assets have been copied.
+      nitro.hooks.hook(isEnvApi ? 'build:before' : 'rollup:before', () => writeAppManifest())
+      if (isEnvApi) {
+        nitro.hooks.hook('compiled', () => writeAppManifest('public'))
+      }
+      nitro.hooks.hook('prerender:done', () => writeAppManifest(isEnvApi ? 'public' : undefined))
     })
   }
 
