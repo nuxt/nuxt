@@ -235,6 +235,68 @@ function unwrapStaticExpression (node: ESTree.Node | undefined): ESTree.Node | u
   return current
 }
 
+/**
+ * The keys of `definePageMeta` whose values are read at build time, given the user's
+ * `experimental.extraPageMetaExtractionKeys`.
+ *
+ * Both halves of the macro pipeline have to agree on this set: `getRouteMeta` reads these keys
+ * into the route record, and `PageMetaPlugin` removes them from the macro module.
+ */
+export function resolvePageMetaExtractionKeys (extraKeys: Iterable<string> = []): Set<keyof NuxtPage> {
+  return new Set<keyof NuxtPage>([...defaultExtractionKeys, ...extraKeys as Iterable<keyof NuxtPage>])
+}
+
+/**
+ * How a single `definePageMeta` property reaches the route record.
+ *
+ * - `extract` - the value is statically known, so it is written into the route record and removed
+ *   from the macro module.
+ * - `reshape` - the macro transform rewrites the property into keys the route record cannot
+ *   express (`layout: { name, props }` becomes `layout` plus `layoutProps`), so it is resolved by
+ *   the macro module instead.
+ * - `runtime` - the value can only be resolved by evaluating the macro module. `key` is set when
+ *   the property key itself is statically known.
+ */
+export type PageMetaProperty =
+  | { kind: 'extract', key: keyof NuxtPage, value: any }
+  | { kind: 'reshape', key: keyof NuxtPage, node: ESTree.ObjectExpression }
+  | { kind: 'runtime', key?: keyof NuxtPage }
+
+/**
+ * Classify a property of a `definePageMeta` object literal.
+ *
+ * A property may only be removed from the macro module when it is also extracted into the route
+ * record, and vice versa, or its value is lost. Both sides call this so that the two cannot
+ * drift apart.
+ */
+export function classifyPageMetaProperty (code: string, property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>): PageMetaProperty {
+  // Spreads, computed keys, getters and methods cannot be resolved without evaluating the module.
+  if (property.type !== 'Property' || property.computed || property.kind !== 'init' || property.method) {
+    return { kind: 'runtime' }
+  }
+
+  let key: keyof NuxtPage
+  if (property.key.type === 'Identifier') {
+    key = property.key.name as keyof NuxtPage
+  } else if (property.key.type === 'Literal' && (typeof property.key.value === 'string' || typeof property.key.value === 'number')) {
+    key = String(property.key.value) as keyof NuxtPage
+  } else {
+    return { kind: 'runtime' }
+  }
+
+  const value = unwrapStaticExpression(property.value)
+  if (key === 'layout' && value?.type === 'ObjectExpression') {
+    return { kind: 'reshape', key, node: value }
+  }
+
+  if (!extractionKeys.has(key)) {
+    return { kind: 'runtime', key }
+  }
+
+  const serialized = isSerializable(code, property.value)
+  return serialized.serializable ? { kind: 'extract', key, value: serialized.value } : { kind: 'runtime', key }
+}
+
 const pageContentsCache: Record<string, string> = {}
 const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set()): Partial<Record<keyof NuxtPage, any>> {
@@ -257,7 +319,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
   const extractedData: Partial<Record<keyof NuxtPage, any>> = {}
 
-  const extractionKeys = new Set<keyof NuxtPage>([...defaultExtractionKeys, ...extraExtractionKeys as Set<keyof NuxtPage>])
+  const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
 
   for (const script of scriptBlocks) {
     const found: Record<string, boolean> = {}
@@ -305,36 +367,43 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
 
       if (fnName === 'definePageMeta') {
-        for (const key of extractionKeys) {
-          const property = pageExtractArgument.properties.find((property): property is ESTree.ObjectProperty => property.type === 'Property' && !property.computed && property.key.type === 'Identifier' && property.key.name === key)
-          if (!property) { continue }
+        const classified = new Map<keyof NuxtPage, PageMetaProperty>()
+        let hasRuntimeProperty = false
 
-          const { value, serializable } = isSerializable(code, property.value)
-          if (!serializable) {
-            logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+        for (const property of pageExtractArgument.properties) {
+          const classification = classifyPageMetaProperty(code, property, extractionKeys)
+          if (classification.key === undefined || !extractionKeys.has(classification.key)) {
+            hasRuntimeProperty = true
+            continue
+          }
+          // Duplicate keys keep the first classification, matching the previous lookup.
+          if (!classified.has(classification.key)) {
+            classified.set(classification.key, classification)
+          }
+        }
+
+        for (const key of extractionKeys) {
+          const classification = classified.get(key)
+          if (!classification) { continue }
+
+          if (classification.kind !== 'extract') {
+            logger.debug(classification.kind === 'reshape'
+              ? `Skipping extraction of \`${key}\` metadata as the \`definePageMeta\` macro rewrites it (reading \`${absolutePath}\`).`
+              : `Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
             dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
             continue
           }
 
           if (extraExtractionKeys.has(key)) {
             extractedData.meta ??= {}
-            extractedData.meta[key] = value
+            extractedData.meta[key] = classification.value
           } else {
-            extractedData[key] = value
+            extractedData[key] = classification.value
           }
         }
 
-        for (const property of pageExtractArgument.properties) {
-          const isIdentifierOrLiteral = property.type === 'Property' && (property.key.type === 'Literal' || property.key.type === 'Identifier')
-          if (!isIdentifierOrLiteral || property.computed) {
-            dynamicProperties.add('meta')
-            break
-          }
-          const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
-          if (!extractionKeys.has(name as keyof NuxtPage)) {
-            dynamicProperties.add('meta')
-            break
-          }
+        if (hasRuntimeProperty) {
+          dynamicProperties.add('meta')
         }
       }
     })

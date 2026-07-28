@@ -6,7 +6,7 @@ import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
-import { augmentPages, getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
+import { augmentPages, defaultExtractionKeys, getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
 import type { NuxtPage } from '../schema.ts'
 
 const filePath = '/app/pages/index.vue'
@@ -1215,6 +1215,65 @@ definePageMeta({
       }
       // verify for valid JS
       expect(() => toAst(result!, { ecmaVersion: 'latest', sourceType: 'module' })).not.toThrow()
+    })
+  })
+
+  describe('agreement with extracted route meta', () => {
+    const extractionKeys = [...defaultExtractionKeys]
+
+    function macroModule (sfc: string, extractedKeys: string[]) {
+      const plugin = PageMetaPlugin({ extractedKeys }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+      const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+      return plugin.transform.handler(res.content, 'component.vue?macro=true')?.code
+    }
+
+    it('should keep a computed key whose name collides with an extracted key', () => {
+      const sfc = `
+<script setup lang="ts">
+const name = 'title'
+definePageMeta({ [name]: 'some-title' })
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).toContain('[name]: \'some-title\'')
+      expect(getRouteMeta(sfc, '/app/pages/computed.vue')).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    it('should reshape an object layout even when `layout` is an extraction key', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
+</script>
+      `
+      const macro = macroModule(sfc, [...extractionKeys, 'layout'])
+      expect(macro).toContain('layout: \'admin\'')
+      expect(macro).toContain('layoutProps: { collapsed: true }')
+      expect(getRouteMeta(sfc, '/app/pages/layout.vue', new Set(['layout']))).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    it('should strip a quoted key that is extracted into the route record', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ 'name': 'quoted-name' })
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).not.toContain('quoted-name')
+      expect(getRouteMeta(sfc, '/app/pages/quoted.vue')).toEqual({ name: 'quoted-name' })
+    })
+
+    it('should keep a getter whose name collides with an extracted key', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ get name () { return 'from-getter' } })
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).toContain('from-getter')
+      expect(getRouteMeta(sfc, '/app/pages/getter.vue')).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
     })
   })
 })
