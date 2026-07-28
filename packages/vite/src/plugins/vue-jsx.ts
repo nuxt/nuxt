@@ -41,7 +41,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
 
     if (!result) {
       installFailed = true
-      bundlerDiagnostics.NUXT_B7008({ install: await getAddDependencyCommand('@vitejs/plugin-vue-jsx', nuxt.options.rootDir, { dev: true }) })
+      bundlerDiagnostics.NUXT_B7008({ installCommand: await getAddDependencyCommand('@vitejs/plugin-vue-jsx', nuxt.options.rootDir, { dev: true }) })
       return undefined
     }
 

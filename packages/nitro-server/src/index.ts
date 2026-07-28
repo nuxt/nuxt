@@ -592,7 +592,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       })
 
       if (result !== true) {
-        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), install: await getAddDependencyCommand(result, nuxt.options.rootDir, { dev: true }) })
+        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), installCommand: await getAddDependencyCommand(result, nuxt.options.rootDir, { dev: true }) })
       }
 
       if (result === true) {

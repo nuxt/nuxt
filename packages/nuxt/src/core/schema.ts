@@ -80,7 +80,7 @@ export default defineNuxtModule({
           }
           return
         } catch {
-          configDiagnostics.NUXT_B5009({ install: await getAddDependencyCommand('@parcel/watcher', nuxt.options.rootDir, { dev: true }) })
+          configDiagnostics.NUXT_B5009({ installCommand: await getAddDependencyCommand('@parcel/watcher', nuxt.options.rootDir, { dev: true }) })
         }
       }
 

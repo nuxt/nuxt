@@ -58,5 +58,5 @@ async function resolvePostcssPlugin (jiti: ReturnType<typeof createJiti>, plugin
     }
   }
 
-  bundlerDiagnostics.NUXT_B7007({ pluginName, install: await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true }) })
+  bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand: await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true }) })
 }

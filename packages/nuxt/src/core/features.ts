@@ -44,7 +44,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     logger.success(`Installed ${name}`)
     return true
   } catch (err) {
-    buildDiagnostics.NUXT_B1004({ install: await getAddDependencyCommand(name, rootDir), cause: err })
+    buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(name, rootDir), cause: err })
     return false
   }
 }

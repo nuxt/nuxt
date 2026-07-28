@@ -240,7 +240,7 @@ async function createParcelWatcher () {
   try {
     ({ subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', { url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) }))
   } catch {
-    buildDiagnostics.NUXT_B1015({ install: await getAddDependencyCommand('@parcel/watcher', nuxt.options.rootDir, { dev: true }) })
+    buildDiagnostics.NUXT_B1015({ installCommand: await getAddDependencyCommand('@parcel/watcher', nuxt.options.rootDir, { dev: true }) })
     return false
   }
   try {
@@ -300,7 +300,7 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err: any) {
-    throw buildDiagnostics.NUXT_B1017({ builder, install: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }), cause: err })
+    throw buildDiagnostics.NUXT_B1017({ builder, installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }), cause: err })
   }
 }
 

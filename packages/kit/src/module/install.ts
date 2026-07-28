@@ -331,7 +331,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   } catch (error: unknown) {
     throw kitDiagnostics.NUXT_B8017({
       module: nuxtModule,
-      install: await getAddDependencyCommand(nuxtModule, nuxt.options.rootDir),
+      installCommand: isAbsolute(nuxtModule) ? undefined : await getAddDependencyCommand(nuxtModule, nuxt.options.rootDir),
       cause: error,
     })
   }

@@ -68,11 +68,11 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       }
 
       if (typeof pluginFn !== 'function') {
-        const install = await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true })
+        const installCommand = await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true })
         if (isDefault) {
-          bundlerDiagnostics.NUXT_B7011({ pluginName, install })
+          bundlerDiagnostics.NUXT_B7011({ pluginName, installCommand })
         } else {
-          bundlerDiagnostics.NUXT_B7007({ pluginName, install })
+          bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand })
         }
       }
     }

@@ -945,7 +945,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       rootDir: options.rootDir,
       searchPaths: options.modulesDir,
     })) {
-      configDiagnostics.NUXT_B5002({ rootDir: options.rootDir, install: await getAddDependencyCommand('@nuxt/webpack-builder', options.rootDir, { dev: true }) })
+      configDiagnostics.NUXT_B5002({ rootDir: options.rootDir, installCommand: await getAddDependencyCommand('@nuxt/webpack-builder', options.rootDir, { dev: true }) })
     }
   }
 
