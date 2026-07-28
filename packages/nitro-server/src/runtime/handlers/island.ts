@@ -313,7 +313,11 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     }
   }
 
-  const parsedProps = destr<Record<string, any> | null | undefined>(serializedProps) || {}
+  const parsed = destr(serializedProps)
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid island request props' })
+  }
+  const parsedProps = parsed as Record<string, any>
 
   // Bind the response to the URL: a request whose URL-resident `hashId` does not match
   // the actual (name, serialized props, context) is rejected.

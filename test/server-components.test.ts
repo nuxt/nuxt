@@ -548,6 +548,33 @@ describe('hash binding', () => {
     }))
     expect(res.status).toBe(400)
   })
+
+  it('rejects array props even when the hash matches their indexed form', async () => {
+    const name = 'PureComponent'
+    const hashId = computeIslandHash(name, serializeIslandProps({ 0: 3, 1: 0, 2: 3 }), {}, undefined)
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: JSON.stringify([3, 0, 3]),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects primitive props', async () => {
+    const name = 'PureComponent'
+    const hashId = computeIslandHash(name, serializeIslandProps({}), {}, undefined)
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: 'false',
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects null props', async () => {
+    const name = 'PureComponent'
+    const hashId = computeIslandHash(name, serializeIslandProps({}), {}, undefined)
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: 'null',
+    }))
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('denial-of-service protections', () => {
