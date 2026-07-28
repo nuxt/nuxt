@@ -8,6 +8,10 @@ Most of what makes an app accessible is not specific to Nuxt: color contrast, fo
 
 What Nuxt does change is navigation. Once your app has hydrated, it routes on the client, so the document is never reloaded and the browser no longer announces a new page or resets focus for you. Nuxt ships with features that fill some of that gap, and a few conventions cover the rest. This guide outlines best practices for handling that.
 
+::tip
+[`@nuxt/a11y`](https://github.com/nuxt/a11y) surfaces accessibility problems in your components while you develop, alongside the practices below. It is in alpha, so expect its API to change.
+::
+
 ## Route Announcements
 
 Screen readers announce a full page load by themselves, but they have no way of knowing that a client-side navigation happened. [`<NuxtRouteAnnouncer>`](/docs/4.x/api/components/nuxt-route-announcer) solves this by rendering a hidden live region and writing the new page title into it after every navigation:
