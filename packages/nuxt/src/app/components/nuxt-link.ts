@@ -128,21 +128,29 @@ type NuxtLinkSlotProps<CustomProp extends boolean = false> = CustomProp extends 
   }
   : RouterLinkSlotProps
 
-export interface NuxtLinkComponent {
+type NuxtLinkComponentProps<CustomProp extends boolean = false> =
+  NuxtLinkProps<CustomProp> & PublicProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>
+
+type NuxtLinkComponentInstance<CustomProp extends boolean = false> = InstanceType<DefineSetupFnComponent<
+  NuxtLinkComponentProps<CustomProp>,
+  [],
+  SlotsType<{
+    default?: (props: NuxtLinkSlotProps<CustomProp>) => VNode[]
+  }>
+>>
+
+// the non-generic signatures are required for `ComponentProps`/`ComponentSlots` and Vue Language
+// Tools to resolve the component: inference against a solely generic construct signature yields `{}`
+export type NuxtLinkComponent = {
+  new (
+    props: NuxtLinkComponentProps<true> & { custom: true }
+  ): NuxtLinkComponentInstance<true>
+  new (
+    props: NuxtLinkComponentProps<false>
+  ): NuxtLinkComponentInstance<false>
   new<CustomProp extends boolean = false>(
-    props:
-      & NuxtLinkProps<CustomProp>
-      & PublicProps
-      & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>
-  ): InstanceType<
-    DefineSetupFnComponent<
-      typeof props,
-      [],
-      SlotsType<{
-        default?: (props: NuxtLinkSlotProps<CustomProp>) => VNode[]
-      }>
-    >
-  >
+    props: NuxtLinkComponentProps<CustomProp>
+  ): NuxtLinkComponentInstance<CustomProp>
 }
 
 /* @__NO_SIDE_EFFECTS__ */

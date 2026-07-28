@@ -25,6 +25,11 @@ import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+const RELATIVE_WITH_DOT_RE = /^([^.])/
+
+function relativeWithDot (from: string, to: string) {
+  return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
 
 export const pagesImportPresets: InlinePreset[] = [
   { imports: ['definePageMeta'], from: '#app/composables/pages' },
@@ -205,15 +210,20 @@ export default defineNuxtModule({
       }
     })
 
-    const componentTypeHelpersPath = resolveModulePath('vue-component-type-helpers', { from: import.meta.url })
+    const componentTypeHelpersPath = resolveModulePath('vue-component-type-helpers', { from: import.meta.url, try: true })
 
     // layouts can be used without pages (e.g. `<NuxtLayout>`), so always generate their types
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ app }) => {
+      getContents: ({ app, nuxt }) => {
+        // a path relative to the generated declaration keeps `buildDir` portable between machines
+        const componentTypeHelpers = componentTypeHelpersPath
+          ? relativeWithDot(join(nuxt.options.buildDir, 'types'), componentTypeHelpersPath)
+          : 'vue-component-type-helpers'
+
         return [
           genTypeImport('vue', ['ComputedRef', 'MaybeRef']),
-          genTypeImport(componentTypeHelpersPath, ['ComponentProps']),
+          genTypeImport(componentTypeHelpers, ['ComponentProps']),
           '',
           'declare module \'nuxt/app\' {',
           '  interface NuxtLayouts {',
