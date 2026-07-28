@@ -23,8 +23,13 @@ describe.skipIf(!runsOnceInMatrix)('assets shared between app and worker', () =>
     const wasmFiles = files.filter(file => file.endsWith('.wasm'))
     expect(wasmFiles).toHaveLength(1)
 
-    const chunks = await Promise.all(files.filter(file => file.endsWith('.js')).map(file => readFile(join(assetsDir, file), 'utf-8')))
-    const referencedAssets = new Set(chunks.flatMap(code => code.match(/[\w.-]+\.wasm/g) ?? []))
+    const chunks = await Promise.all(files.filter(file => file.endsWith('.js')).map(async file => [file, await readFile(join(assetsDir, file), 'utf-8')] as const))
+    const referencedAssets = new Set(chunks.flatMap(([, code]) => code.match(/[\w.-]+\.wasm/g) ?? []))
     expect([...referencedAssets]).toEqual(wasmFiles)
+
+    // the worker chunk and an app chunk must each point at the single emitted copy
+    const referencingChunks = chunks.filter(([, code]) => code.includes(wasmFiles[0]!))
+    expect(referencingChunks.some(([file]) => file.startsWith('worker-'))).toBe(true)
+    expect(referencingChunks.some(([file]) => !file.startsWith('worker-'))).toBe(true)
   })
 })
