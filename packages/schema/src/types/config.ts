@@ -51,6 +51,7 @@ type RuntimeConfigNamespace = Record<string, unknown>
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
+  secretKey: string
   public: PublicRuntimeConfig
 }
 

@@ -11,11 +11,16 @@ import { createRegExp, exactly } from 'magic-regexp'
 import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
+const secretKey = 'nuxt-runtime-secret-key-test-value'
+
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
   server: true,
   browser: true,
+  env: {
+    NUXT_SECRET_KEY: secretKey,
+  },
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     hooks: {
@@ -32,6 +37,11 @@ await setup({
 })
 
 describe.skipIf(!runsOnceInMatrix)('server api', () => {
+  it('provides the application secret only in private runtime config', async () => {
+    expect(await $fetch<string>('/api/runtime-config')).toBe(secretKey)
+    expect(await $fetch<string>('/')).not.toContain(secretKey)
+  })
+
   it('should serialize', async () => {
     expect(await $fetch<string>('/api/hello')).toBe('Hello API')
     expect(await $fetch('/api/hey')).toEqual({
