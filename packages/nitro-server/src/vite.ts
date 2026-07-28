@@ -85,6 +85,11 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   addVitePlugin(NuxtBuildOutputsPlugin(nuxt))
   addVitePlugin(NitroVirtualBridge(nitro))
 
+  // `nitro/vite` calls `build:before` before it derives its bundler config,
+  // which is where the legacy path calls `nitro:build:before`: consumers use it
+  // to adjust nitro options and to collect the build cache.
+  nitro.hooks.hook('build:before', () => nuxt.callHook('nitro:build:before', nitro))
+
   // In dev, feed the CSS the ssr graph has loaded to `@nuxt/nitro-server`'s
   // `dev-client-css` middleware. `devClientCssPlugin` (registered at the root,
   // not via `addVitePlugin`, so its `configureServer` hook runs in the main
