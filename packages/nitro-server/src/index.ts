@@ -380,6 +380,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   addTemplate({
     filename: 'route-rules.mjs',
+    // `defineRouteRules` is extracted from page sources, so without it route rules come only
+    // from configuration
+    dependsOn: nuxt.options.experimental.inlineRouteRules ? ['pages'] : [],
     getContents () {
       if (!nuxt._nitro) {
         return `export default () => ({})`

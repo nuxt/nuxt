@@ -34,6 +34,7 @@ export default defineNuxtPlugin({
 
 export const componentsPluginTemplate: NuxtPluginTemplate = {
   filename: 'components.plugin.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const lazyGlobalComponents = new Set<string>()
     const syncGlobalComponents = new Set<string>()
@@ -71,6 +72,7 @@ export default defineNuxtPlugin({
 
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const componentNames = new Set<string>()
     for (const c of app.components) {
@@ -84,6 +86,7 @@ export const componentNamesTemplate: NuxtTemplate = {
 
 export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
+  dependsOn: [],
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
       return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)\nexport const providePageIslandDepth = () => {}'
@@ -217,6 +220,7 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 `
 export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
+  dependsOn: [],
   write: true,
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir, nuxt.options.experimental.typescriptPlugin)
@@ -235,6 +239,7 @@ export const componentNames: string[]
 
 export const componentsTypeTemplate = {
   filename: 'types/components.d.ts' as const,
+  dependsOn: [],
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, join(nuxt.options.buildDir, 'types'), nuxt.options.experimental.typescriptPlugin)
     const globalComponentNames = new Set<string>()
@@ -280,6 +285,7 @@ export {}
 
 export const componentsMetadataTemplate: NuxtTemplate = {
   filename: 'components.json',
+  dependsOn: [],
   write: true,
   getContents: ({ app }) => JSON.stringify(app.components, null, 2),
 }
