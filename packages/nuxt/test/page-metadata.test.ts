@@ -469,11 +469,11 @@ definePageMeta({ name: 'bar' })
     `)
   })
 
-  it('should mark metadata as dynamic when the macro is not called as a statement', () => {
+  it('should mark metadata as dynamic when the macro is not passed an object literal', () => {
     const meta = getRouteMeta(`
     <script setup>
     const meta = { name: 'some-custom-name' }
-    if (condition) { void definePageMeta(meta) }
+    definePageMeta(meta)
     </script>
     `, filePath)
 
@@ -486,6 +486,27 @@ definePageMeta({ name: 'bar' })
         },
       }
     `)
+  })
+
+  it('should extract metadata from a macro call that is not a statement', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    if (condition) { void definePageMeta({ name: 'some-custom-name' }) }
+    </script>
+    `, filePath)
+
+    expect(meta).toEqual({ name: 'some-custom-name' })
+  })
+
+  it('should not treat a mention of a macro name as a call', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    // definePageMeta({ name: 'commented-out' })
+    const doc = 'call definePageMeta to set page metadata'
+    </script>
+    `, filePath)
+
+    expect(meta).toEqual({})
   })
 })
 
@@ -1262,6 +1283,29 @@ definePageMeta({ 'name': 'quoted-name' })
       `
       expect(macroModule(sfc, extractionKeys)).not.toContain('quoted-name')
       expect(getRouteMeta(sfc, '/app/pages/quoted.vue')).toEqual({ name: 'quoted-name' })
+    })
+
+    it('should extract from a call the transform also strips, whatever its position', () => {
+      const sfc = `
+<script setup lang="ts">
+void definePageMeta({ name: 'voided-name' })
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).not.toContain('voided-name')
+      expect(getRouteMeta(sfc, '/app/pages/voided.vue')).toEqual({ name: 'voided-name' })
+    })
+
+    it('should keep the macro module when the argument is not an object literal', () => {
+      const sfc = `
+<script setup lang="ts">
+const meta = { name: 'from-variable', title: 'hello' }
+definePageMeta(meta)
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).toContain('const __nuxt_page_meta = meta')
+      expect(getRouteMeta(sfc, '/app/pages/variable.vue')).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
     })
 
     it('should keep a getter whose name collides with an extracted key', () => {

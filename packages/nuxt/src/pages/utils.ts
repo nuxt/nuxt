@@ -210,10 +210,10 @@ function extractScriptContent (sfc: string) {
   return contents
 }
 
-const PAGE_META_MACRO_NAMES = ['definePageMeta', 'defineRouteRules'] as const
-// Cheap pre-scan only. The AST walk below validates call expressions so this
-// intentionally matches macro names, not JavaScript/TypeScript call syntax.
-const PAGE_EXTRACT_RE = new RegExp(`\\b(${PAGE_META_MACRO_NAMES.join('|')})\\b`, 'g')
+const PAGE_META_MACRO_NAMES = new Set(['definePageMeta', 'defineRouteRules'])
+// Cheap pre-scan only, to skip parsing scripts that cannot contain a macro. The AST walk below
+// is what actually identifies calls.
+const PAGE_EXTRACT_RE = new RegExp(`\\b(?:${[...PAGE_META_MACRO_NAMES].join('|')})\\b`)
 export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
@@ -322,95 +322,18 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
 
   for (const script of scriptBlocks) {
-    const found: Record<string, boolean> = {}
-    // properties track which macros need to be extracted
-    for (const macro of script.code.matchAll(PAGE_EXTRACT_RE)) {
-      found[macro[1]!] = false
-    }
+    if (!PAGE_EXTRACT_RE.test(script.code)) { continue }
 
-    if (Object.keys(found).length === 0) {
-      continue
-    }
-
+    const code = script.code
     const dynamicProperties = new Set<keyof NuxtPage>()
-    const macroCalls: Array<{ fnName: string, start: number }> = []
+    const macroCalls: Array<{ fnName: string, node: ESTree.CallExpression }> = []
 
-    const { program } = parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
-      if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name in found) {
-        macroCalls.push({ fnName: node.callee.name, start: node.start })
-      }
-
-      if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier') { return }
-
-      // function name is one of the extracted macro functions and not yet found
-      const fnName = node.expression.callee.name
-      if (fnName in found === false || found[fnName] !== false) { return }
-      found[fnName] = true
-
-      const code = script.code
-      const pageExtractArgument = unwrapStaticExpression(node.expression.arguments[0])
-
-      if (pageExtractArgument?.type !== 'ObjectExpression') {
-        pageDiagnostics.NUXT_B4005({ fnName, file: absolutePath, receivedType: String(pageExtractArgument?.type) })
-        return
-      }
-
-      if (fnName === 'defineRouteRules') {
-        const { value, serializable } = isSerializable(code, pageExtractArgument)
-        if (!serializable) {
-          pageDiagnostics.NUXT_B4006({ fnName, file: absolutePath })
-          return
-        }
-
-        extractedData.rules = value
-        return
-      }
-
-      if (fnName === 'definePageMeta') {
-        const classified = new Map<keyof NuxtPage, PageMetaProperty>()
-        let hasRuntimeProperty = false
-
-        for (const property of pageExtractArgument.properties) {
-          const classification = classifyPageMetaProperty(code, property, extractionKeys)
-          if (classification.key === undefined || !extractionKeys.has(classification.key)) {
-            hasRuntimeProperty = true
-            continue
-          }
-          // Duplicate keys keep the first classification, matching the previous lookup.
-          if (!classified.has(classification.key)) {
-            classified.set(classification.key, classification)
-          }
-        }
-
-        for (const key of extractionKeys) {
-          const classification = classified.get(key)
-          if (!classification) { continue }
-
-          if (classification.kind !== 'extract') {
-            logger.debug(classification.kind === 'reshape'
-              ? `Skipping extraction of \`${key}\` metadata as the \`definePageMeta\` macro rewrites it (reading \`${absolutePath}\`).`
-              : `Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-            dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
-            continue
-          }
-
-          if (extraExtractionKeys.has(key)) {
-            extractedData.meta ??= {}
-            extractedData.meta[key] = classification.value
-          } else {
-            extractedData[key] = classification.value
-          }
-        }
-
-        if (hasRuntimeProperty) {
-          dynamicProperties.add('meta')
-        }
+    const { program } = parseAndWalk(code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+      if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && PAGE_META_MACRO_NAMES.has(node.callee.name)) {
+        macroCalls.push({ fnName: node.callee.name, node })
       }
     })
 
-    // Compiler macros are extracted whatever position they appear in, so a call that is not a
-    // top-level statement (nested in a condition or used as an expression) does not mean what it
-    // looks like it means.
     const topLevelCalls = new Set<number>()
     for (const statement of program.body) {
       if (statement.type !== 'ExpressionStatement') { continue }
@@ -420,15 +343,79 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
     }
 
-    for (const { fnName, start } of macroCalls) {
-      if (topLevelCalls.has(start)) { continue }
-      pageDiagnostics.NUXT_B4007({ fnName, file: absolutePath })
-    }
+    const extractedMacros = new Set<string>()
 
-    // A macro we could not resolve to a call expression may still contribute meta at runtime,
-    // so treat the whole object as dynamic rather than assuming there is nothing to extract.
-    for (const macro in found) {
-      if (!found[macro]) {
+    for (const { fnName, node } of macroCalls) {
+      // The macros are extracted whatever position they appear in, so a call that is not a
+      // top-level statement (nested in a condition, or used as an expression) does not mean what
+      // it looks like it means.
+      if (!topLevelCalls.has(node.start)) {
+        pageDiagnostics.NUXT_B4007({ fnName, file: absolutePath })
+      }
+
+      // The macro transform only keeps the first call per macro (and errors on a second
+      // `definePageMeta`), so read the same one.
+      if (extractedMacros.has(fnName)) { continue }
+      extractedMacros.add(fnName)
+
+      const argument = unwrapStaticExpression(node.arguments[0])
+
+      if (argument?.type !== 'ObjectExpression') {
+        pageDiagnostics.NUXT_B4005({ fnName, file: absolutePath, receivedType: String(argument?.type) })
+        if (fnName === 'definePageMeta') {
+          // The macro module resolves the object at runtime, so the route record cannot own it.
+          dynamicProperties.add('meta')
+        }
+        continue
+      }
+
+      if (fnName === 'defineRouteRules') {
+        const { value, serializable } = isSerializable(code, argument)
+        if (!serializable) {
+          pageDiagnostics.NUXT_B4006({ fnName, file: absolutePath })
+          continue
+        }
+
+        extractedData.rules = value
+        continue
+      }
+
+      const classified = new Map<keyof NuxtPage, PageMetaProperty>()
+      let hasRuntimeProperty = false
+
+      for (const property of argument.properties) {
+        const classification = classifyPageMetaProperty(code, property, extractionKeys)
+        if (classification.key === undefined || !extractionKeys.has(classification.key)) {
+          hasRuntimeProperty = true
+          continue
+        }
+        // Duplicate keys keep the first classification, matching the previous lookup.
+        if (!classified.has(classification.key)) {
+          classified.set(classification.key, classification)
+        }
+      }
+
+      for (const key of extractionKeys) {
+        const classification = classified.get(key)
+        if (!classification) { continue }
+
+        if (classification.kind !== 'extract') {
+          logger.debug(classification.kind === 'reshape'
+            ? `Skipping extraction of \`${key}\` metadata as the \`definePageMeta\` macro rewrites it (reading \`${absolutePath}\`).`
+            : `Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+          dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
+          continue
+        }
+
+        if (extraExtractionKeys.has(key)) {
+          extractedData.meta ??= {}
+          extractedData.meta[key] = classification.value
+        } else {
+          extractedData[key] = classification.value
+        }
+      }
+
+      if (hasRuntimeProperty) {
         dynamicProperties.add('meta')
       }
     }
@@ -632,12 +619,10 @@ async function createClientPage(loader) {
         }
       }
 
-      for (const key in metaRoute) {
-        if (key === 'children') { continue }
-        if (metaRoute[key as keyof NormalizedRoute]?.includes(metaImportName)) {
-          metaImports.add(metaImport)
-          break
-        }
+      // Nested routes reference their own macro modules, so they are excluded here.
+      const { children, ...ownFields } = metaRoute
+      if (Object.values(ownFields).some(field => field?.includes(metaImportName))) {
+        metaImports.add(metaImport)
       }
 
       return metaRoute
