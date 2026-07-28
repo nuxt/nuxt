@@ -122,6 +122,11 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
 
   /**
    * Warmup vite entrypoint caches on dev startup.
+   *
+   * In dev mode Nuxt crawls the client entry's import graph once Nitro has built, transforming
+   * modules the browser is about to request. Set to `false` to skip this speculative work, which
+   * also disables Vite's own entry warmup.
+   * @default true
    */
   warmupEntry?: boolean
 
