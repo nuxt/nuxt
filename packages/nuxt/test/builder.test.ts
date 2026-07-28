@@ -74,6 +74,15 @@ describe('builder:watch', { sequential: true }, async () => {
       },
     })
 
+    // `app:templatesGenerated` only fires when generated output differs, so without a template
+    // whose output actually changes the selection for a page change is never reported
+    let pageDependentOutput = 'initial'
+    nuxt.options.build.templates.push({
+      filename: 'test-page-dependent.mjs',
+      dependsOn: ['pages'],
+      getContents: () => `export default ${JSON.stringify(pageDependentOutput)}`,
+    })
+
     await build(nuxt)
 
     let generations = 0
@@ -85,10 +94,16 @@ describe('builder:watch', { sequential: true }, async () => {
 
     await nuxt.callHook('builder:watch', 'change', 'components/Foo.vue')
     expect.soft(generations).toBe(0)
+    expect.soft(selections).toStrictEqual([])
 
+    pageDependentOutput = 'changed'
     await nuxt.callHook('builder:watch', 'change', 'pages/index.vue')
-    expect.soft(generations).toBe(1)
-    expect.soft(selections.every(selection => selection?.includes('routes.mjs'))).toBe(true)
+    // regenerating a template whose output changed makes the imports module refresh its own
+    // templates in turn, so more than one generation can be recorded here
+    expect.soft(generations).toBeGreaterThan(0)
+    expect.soft(selections[0]).toContain('routes.mjs')
+    expect.soft(selections[0]).toContain('test-page-dependent.mjs')
+    expect.soft(selections[0]).not.toContain('components.plugin.mjs')
 
     await nuxt.close()
   })

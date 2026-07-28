@@ -623,7 +623,9 @@ function shouldEnableComponentIslands (nuxt: { options: NuxtOptions }, app: Nuxt
 // Allow direct access to specific exposed nuxt.config
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
-  dependsOn: ['plugins'],
+  // `payloadExtraction` below is derived from nitro route rules, and `defineRouteRules`
+  // (`experimental.inlineRouteRules`) extracts those from page sources
+  dependsOn: ['plugins', 'pages'],
   async getContents (ctx) {
     const annotatedPlugins = ctx.nuxt.options.dev || ctx.nuxt.options.test
       ? null

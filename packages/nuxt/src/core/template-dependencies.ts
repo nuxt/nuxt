@@ -1,8 +1,11 @@
+import { normalize } from 'pathe'
 import type { Nuxt, NuxtApp, NuxtPage, NuxtTemplateChange, NuxtTemplateDependency, ResolvedNuxtTemplate } from 'nuxt/schema'
+
+const isSamePath = (a: string | undefined, b: string) => !!a && (a === b || normalize(a) === b)
 
 function isPageFile (pages: NuxtPage[], path: string): boolean {
   for (const page of pages) {
-    if (page.file === path) { return true }
+    if (isSamePath(page.file, path)) { return true }
     if (page.children && isPageFile(page.children, path)) { return true }
   }
   return false
@@ -12,7 +15,7 @@ const dependencyMatchers: Record<NuxtTemplateDependency, (app: NuxtApp, path: st
   // `app.pages` is undefined for the whole session when the pages module is disabled, and adding
   // or removing a pages directory restarts Nuxt, so there is no page whose contents could matter
   pages: (app, path) => !!app.pages && isPageFile(app.pages, path),
-  plugins: (app, path) => app.plugins.some(plugin => plugin.src === path),
+  plugins: (app, path) => app.plugins.some(plugin => isSamePath(plugin.src, path)),
 }
 
 /**
@@ -35,7 +38,7 @@ export function createChangedFileFilter (nuxt: Nuxt, app: NuxtApp, path: string)
     }
     // a template read from disk depends on its own source and nothing else
     if (template.src) {
-      return template.src === path
+      return isSamePath(template.src, path)
     }
     return true
   }

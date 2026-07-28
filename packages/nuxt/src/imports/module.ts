@@ -135,7 +135,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
 
-    const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
+    // matches `imports.mjs`, `imports.d.ts`, `types/imports.d.ts` and `types/shared-imports.d.ts`;
+    // these templates render unimport state that this module refreshes itself, so they must all be
+    // caught by `regenerateImports` rather than relying on a full template regeneration
+    const IMPORTS_TEMPLATE_RE = /(?:^|\/)(?:shared-)?imports\.(?:d\.ts|mjs)$/
     function isImportsTemplate (template: ResolvedNuxtTemplate) {
       return IMPORTS_TEMPLATE_RE.test(template.filename)
     }

@@ -78,6 +78,24 @@ describe('createChangedFileFilter', () => {
     expect(select(app, '/src/components/Foo.vue')).toBeUndefined()
   })
 
+  it('matches platform-native paths against the normalised changed path', () => {
+    const app = createApp(
+      [
+        { filename: 'from-src.mjs', src: 'C:\\app\\some-template.mjs' },
+        { filename: 'routes.mjs', dependsOn: ['pages'] },
+        { filename: 'plugins.mjs', dependsOn: ['plugins'] },
+      ],
+      {
+        pages: [{ file: 'C:\\app\\pages\\index.vue' }] as NuxtApp['pages'],
+        plugins: [{ src: 'C:\\app\\plugins\\foo.ts' }],
+      },
+    )
+
+    expect(select(app, 'C:/app/some-template.mjs')).toStrictEqual(['from-src.mjs'])
+    expect(select(app, 'C:/app/pages/index.vue')).toStrictEqual(['routes.mjs'])
+    expect(select(app, 'C:/app/plugins/foo.ts')).toStrictEqual(['plugins.mjs'])
+  })
+
   it('regenerates a file-backed template only when its own source changes', () => {
     const app = createApp([
       { filename: 'from-src.mjs', src: '/src/some-template.mjs' },
