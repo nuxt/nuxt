@@ -1,3 +1,5 @@
-export default eventHandler((_event) => {
+import { defineHandler } from 'h3'
+
+export default defineHandler(() => {
   return 'Hello!'
 })

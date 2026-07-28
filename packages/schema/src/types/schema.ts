@@ -1640,8 +1640,11 @@ export interface ConfigSchema {
     runtimeBaseURL: boolean
 
     /**
-     * Whether to enable a compatibility layer for Nitro auto imports.
-     * We recommend migrating to direct imports instead.
+     * Whether to auto-import Nitro and h3 helpers (such as `defineEventHandler`) in the
+     * server context. We recommend migrating to direct imports instead.
+     *
+     * This does not affect auto-imports from your own `server/utils` and `shared/utils`
+     * directories, which are controlled by `imports.autoImport` and `nitro.imports`.
      * @default true
      * @default false with compatibilityVersion >= 5
      */

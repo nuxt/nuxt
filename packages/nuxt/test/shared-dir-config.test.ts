@@ -40,10 +40,15 @@ describe('loadNuxt', () => {
     expect(normalized).not.toContain('<rootDir>/server/types')
   })
 
-  it('does not register server type directories when nitro auto-imports are opted out', async () => {
+  it('still scans user directories when the nitro auto-import compatibility presets are opted out', async () => {
     const importDirs = await getNitroImportDirs({ experimental: { nitroAutoImports: false } })
-    // `nitro.imports` is disabled entirely, so no directories (incl. `server/types`) are scanned
-    expect(normalizePaths(importDirs)).not.toContain('<rootDir>/server/types')
+    const normalized = normalizePaths(importDirs)
+    expect(normalized).toContain('<rootDir>/shared/utils')
+    expect(normalized).toContain('<rootDir>/server/types')
+  })
+
+  it('does not register any directories when nitro imports are disabled', async () => {
+    const importDirs = await getNitroImportDirs({ nitro: { imports: false } })
     expect(importDirs).toHaveLength(0)
   })
 })
