@@ -59,7 +59,7 @@ export { headDiagnostics } from './diagnostics/head.ts'
 export { bundlerDiagnostics } from './diagnostics/bundler.ts'
 
 // Dependencies
-export { ensureDependencyInstalled } from './dependency.ts'
+export { ensureDependencyInstalled, getAddDependencyCommand } from './dependency.ts'
 export type { EnsureDependencyInstalledOptions } from './dependency.ts'
 
 // Internal Utils

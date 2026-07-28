@@ -3,7 +3,7 @@ import { transformWithOxc } from 'vite'
 import { defu } from 'defu'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { RenderedModule } from 'rolldown'
-import { bundlerDiagnostics, ensureDependencyInstalled } from '@nuxt/kit'
+import { bundlerDiagnostics, ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
 
 export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   if (nuxt.options.test) {
@@ -20,7 +20,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })) {
-    bundlerDiagnostics.NUXT_B7001()
+    bundlerDiagnostics.NUXT_B7001({ installCommand: await getAddDependencyCommand('rollup-plugin-visualizer', nuxt.options.rootDir, { dev: true }) })
     return
   }
 

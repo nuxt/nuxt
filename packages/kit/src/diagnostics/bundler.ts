@@ -13,7 +13,7 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
   codes: {
     NUXT_B7001: {
       why: '`rollup-plugin-visualizer` is not installed, so bundle analysis cannot run.',
-      fix: 'Run `npm install -D rollup-plugin-visualizer` to enable bundle analysis.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable bundle analysis.`,
       docs: false,
     },
     NUXT_B7002: {
@@ -43,22 +43,22 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B7007: {
       why: (p: { pluginName: string }) => `The PostCSS plugin \`${p.pluginName}\` could not be loaded.`,
-      fix: (p: { pluginName: string }) => `Run \`npm install -D ${p.pluginName}\` to install the PostCSS plugin.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install the PostCSS plugin.`,
       docs: false,
     },
     NUXT_B7008: {
       why: '`@vitejs/plugin-vue-jsx` is not installed, so JSX support is unavailable.',
-      fix: 'Run `npm install -D @vitejs/plugin-vue-jsx` to install it.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
       docs: false,
     },
     NUXT_B7009: {
       why: (p: { deps: string }) => `The Babel dependencies required for decorator support are missing: ${p.deps}.`,
-      fix: (p: { install: string }) => `Run \`npm install -D ${p.install}\` to install the required Babel decorator dependencies.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install the required Babel decorator dependencies.`,
       docs: false,
     },
     NUXT_B7011: {
       why: (p: { pluginName: string }) => `The PostCSS plugin \`${p.pluginName}\` could not be imported, which is unexpected.`,
-      fix: (p: { pluginName: string }) => `Run \`npm install -D ${p.pluginName}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.`,
       docs: false,
     },
     NUXT_B7012: {
