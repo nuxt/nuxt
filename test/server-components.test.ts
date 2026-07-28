@@ -638,6 +638,15 @@ describe('hash binding', () => {
     }))
     expect(res.status).toBe(400)
   })
+
+  it('rejects null props', async () => {
+    const name = 'PureComponent'
+    const hashId = getIslandHash({ name, props: {} })
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: 'null',
+    }))
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('denial-of-service protections', () => {
