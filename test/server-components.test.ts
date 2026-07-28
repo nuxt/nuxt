@@ -231,6 +231,25 @@ describe('server components/islands', () => {
     expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
   })
 
+  it('/server-page - should ship island html only once in the initial response', async () => {
+    const html = await $fetch<string>('/server-page')
+    expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
+  })
+
+  it('/server-page - island response is prefetched by NuxtLink', async () => {
+    const { page, requests } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+
+    expect(requests.some(req => req.startsWith('/__nuxt_island/page_server-page'))).toBe(true)
+    requests.length = 0
+
+    await page.getByText('to server page').click()
+    await page.waitForFunction(() => !!document.head.querySelector('meta[name="author"][content="Nuxt"]'))
+
+    expect(requests.some(req => req.startsWith('/__nuxt_island/page_server-page'))).toBe(false)
+    await page.close()
+  })
+
   it('/server-page-with-nuxtpage/child renders the parent server page with the child route', async () => {
     const html = await $fetch<string>('/server-page-with-nuxtpage/child')
     expect(html).toContain('id="server-page-with-nuxtpage"')
