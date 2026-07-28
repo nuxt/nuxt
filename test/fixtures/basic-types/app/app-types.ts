@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import type { Ref, SlotsType } from 'vue'
+import type { Component, Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
 import type { $Fetch, NitroFetchRequest } from 'nitro/types'
@@ -8,7 +8,7 @@ import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksF
 import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, PageMeta } from '#app'
+import type { NuxtError, NuxtLayouts, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -21,9 +21,11 @@ interface TestResponse { message: string }
 
 declare module 'nuxt/app' {
   interface NuxtLayouts {
-    withFunction: {
-      someProp: number
-      function: () => void
+    withFunction: new () => {
+      $props: {
+        someProp: number
+        function: () => void
+      }
     }
   }
 }
@@ -370,10 +372,15 @@ describe('typed router integration', () => {
 })
 
 describe('layouts', () => {
+  it('exposes layout components through NuxtLayouts', () => {
+    expectTypeOf<NuxtLayouts['with-props']>().toExtend<Component>()
+  })
+
   it('definePageMeta recognizes named layouts', () => {
     definePageMeta({ layout: 'custom' })
     definePageMeta({ layout: 'pascal-case' })
     definePageMeta({ layout: 'override' })
+    definePageMeta({ layout: { name: 'with-props', props: { aProp: 42 } } })
     // @ts-expect-error Invalid layout
     definePageMeta({ layout: 'invalid-layout' })
   })
@@ -401,7 +408,7 @@ describe('layouts', () => {
 
   it('expect setPageLayout to raise TS error when using non-serializable props values', () => {
     // @ts-expect-error Non-serializable layout props
-    setPageLayout('withFunction', { aProp: () => {}, someProp: 5 })
+    setPageLayout('withFunction', { function: () => {}, someProp: 5 })
   })
 })
 

@@ -95,6 +95,7 @@ catalogs:
     # kept in lockstep with the vue override above
     '@vue/compiler-sfc': 3.5.40
     rspack-vue-loader: ^17.6.1
+    vue-component-type-helpers: ^3.3.8
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
 

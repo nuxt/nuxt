@@ -1,5 +1,6 @@
 import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
+import type { ComponentProps } from 'vue-component-type-helpers'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
 import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
@@ -312,7 +313,12 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
  * Sets the layout for the current page.
  * @since 3.0.0
  */
-export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? MakeSerializableObject<NuxtLayouts[Layout]> : never): void => {
+export const setPageLayout = <Layout extends keyof NuxtLayouts>(
+  layout: unknown extends Layout ? string : Layout,
+  props?: typeof layout extends Layout
+    ? MakeSerializableObject<ComponentProps<NuxtLayouts[Layout]>>
+    : never,
+): void => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
