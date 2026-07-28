@@ -187,7 +187,7 @@ session.value = 'active'
 </template>
 ```
 
-### Dynamic Expiration with a Getter
+### Dynamic Expiration with a Getter :versionBadge{version="4.6"}
 
 Use a function for `expires` when you want a fresh expiration date every time the cookie is written (for example, sliding sessions or tokens):
 
