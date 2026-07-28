@@ -211,6 +211,23 @@ export default {
       expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('data-setup'))
     })
 
+    it('ignores script openers inside comments and string literals', async () => {
+      const result = await viteTransform(`<template>
+  <div v-for="item in items" :key="item">{{ item }}</div>
+</template>
+<!-- <script setup> -->
+<script lang="ts">
+const example = '<script setup>'
+export default {
+  props: { items: { type: Array, required: true } },
+}
+</script>
+`, 'hello.server.vue')
+      expect(result).toContain('<script setup lang="ts">')
+      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+      expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('<!--'))
+    })
+
     it('bounds a v-for on a nuxt-client element', async () => {
       const result = await viteTransform(`<template>
   <HelloWorld v-for="n in count" :key="n" nuxt-client />
