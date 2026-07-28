@@ -251,7 +251,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                const classification = classifyPageMetaProperty(metaCode, prop, extractedKeys)
+                const classification = classifyPageMetaProperty(prop, extractedKeys)
 
                 // The route record now carries the value, so drop it here to keep the two in step.
                 if (classification.kind === 'extract') {

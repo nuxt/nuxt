@@ -213,7 +213,7 @@ function extractScriptContent (sfc: string) {
 const PAGE_META_MACRO_NAMES = new Set(['definePageMeta', 'defineRouteRules'])
 // Cheap pre-scan only, to skip parsing scripts that cannot contain a macro. The AST walk below
 // is what actually identifies calls.
-const PAGE_EXTRACT_RE = new RegExp(`\\b(?:${[...PAGE_META_MACRO_NAMES].join('|')})\\b`)
+const HAS_PAGE_MACRO_RE = new RegExp(`\\b(?:${[...PAGE_META_MACRO_NAMES].join('|')})\\b`)
 export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
@@ -251,16 +251,19 @@ export function resolvePageMetaExtractionKeys (extraKeys: Iterable<string> = [])
  *
  * - `extract` - the value is statically known, so it is written into the route record and removed
  *   from the macro module.
+ * - `dynamic` - an extracted key whose value needs evaluating, so that one route field falls back
+ *   to the macro module.
  * - `reshape` - the macro transform rewrites the property into keys the route record cannot
- *   express (`layout: { name, props }` becomes `layout` plus `layoutProps`), so it is resolved by
- *   the macro module instead.
- * - `runtime` - the value can only be resolved by evaluating the macro module. `key` is set when
- *   the property key itself is statically known.
+ *   express (`layout: { name, props }` becomes `layout` plus `layoutProps`), so the macro module
+ *   resolves it.
+ * - `runtime` - the property is not extracted at all, so the whole meta object falls back to the
+ *   macro module.
  */
 export type PageMetaProperty =
-  | { kind: 'extract', key: keyof NuxtPage, value: any }
-  | { kind: 'reshape', key: keyof NuxtPage, node: ESTree.ObjectExpression }
-  | { kind: 'runtime', key?: keyof NuxtPage }
+  | { kind: 'extract', key: string, value: any }
+  | { kind: 'dynamic', key: string }
+  | { kind: 'reshape', key: string, node: ESTree.ObjectExpression }
+  | { kind: 'runtime' }
 
 /**
  * Classify a property of a `definePageMeta` object literal.
@@ -269,17 +272,17 @@ export type PageMetaProperty =
  * record, and vice versa, or its value is lost. Both sides call this so that the two cannot
  * drift apart.
  */
-export function classifyPageMetaProperty (code: string, property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>): PageMetaProperty {
+export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>): PageMetaProperty {
   // Spreads, computed keys, getters and methods cannot be resolved without evaluating the module.
   if (property.type !== 'Property' || property.computed || property.kind !== 'init' || property.method) {
     return { kind: 'runtime' }
   }
 
-  let key: keyof NuxtPage
+  let key: string
   if (property.key.type === 'Identifier') {
-    key = property.key.name as keyof NuxtPage
+    key = property.key.name
   } else if (property.key.type === 'Literal' && (typeof property.key.value === 'string' || typeof property.key.value === 'number')) {
-    key = String(property.key.value) as keyof NuxtPage
+    key = String(property.key.value)
   } else {
     return { kind: 'runtime' }
   }
@@ -290,11 +293,11 @@ export function classifyPageMetaProperty (code: string, property: ESTree.ObjectP
   }
 
   if (!extractionKeys.has(key)) {
-    return { kind: 'runtime', key }
+    return { kind: 'runtime' }
   }
 
-  const serialized = isSerializable(code, property.value)
-  return serialized.serializable ? { kind: 'extract', key, value: serialized.value } : { kind: 'runtime', key }
+  const serialized = isSerializable(property.value)
+  return serialized.serializable ? { kind: 'extract', key, value: serialized.value } : { kind: 'dynamic', key }
 }
 
 const pageContentsCache: Record<string, string> = {}
@@ -320,26 +323,25 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   const extractedData: Partial<Record<keyof NuxtPage, any>> = {}
 
   const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
+  const dynamicProperties = new Set<keyof NuxtPage>()
 
   for (const script of scriptBlocks) {
-    if (!PAGE_EXTRACT_RE.test(script.code)) { continue }
+    if (!HAS_PAGE_MACRO_RE.test(script.code)) { continue }
 
-    const code = script.code
-    const dynamicProperties = new Set<keyof NuxtPage>()
     const macroCalls: Array<{ fnName: string, node: ESTree.CallExpression }> = []
 
-    const { program } = parseAndWalk(code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+    const { program } = parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
       if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && PAGE_META_MACRO_NAMES.has(node.callee.name)) {
         macroCalls.push({ fnName: node.callee.name, node })
       }
     })
 
-    const topLevelCalls = new Set<number>()
+    const topLevelCalls = new Set<ESTree.Node>()
     for (const statement of program.body) {
       if (statement.type !== 'ExpressionStatement') { continue }
       const expression = unwrapStaticExpression(statement.expression)
       if (expression?.type === 'CallExpression') {
-        topLevelCalls.add(expression.start)
+        topLevelCalls.add(expression)
       }
     }
 
@@ -349,11 +351,11 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // The macros are extracted whatever position they appear in, so a call that is not a
       // top-level statement (nested in a condition, or used as an expression) does not mean what
       // it looks like it means.
-      if (!topLevelCalls.has(node.start)) {
+      if (!topLevelCalls.has(node)) {
         pageDiagnostics.NUXT_B4007({ fnName, file: absolutePath })
       }
 
-      // The macro transform only keeps the first call per macro (and errors on a second
+      // The macro transform reads the first call per macro (and errors on a second
       // `definePageMeta`), so read the same one.
       if (extractedMacros.has(fnName)) { continue }
       extractedMacros.add(fnName)
@@ -370,7 +372,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
 
       if (fnName === 'defineRouteRules') {
-        const { value, serializable } = isSerializable(code, argument)
+        const { value, serializable } = isSerializable(argument)
         if (!serializable) {
           pageDiagnostics.NUXT_B4006({ fnName, file: absolutePath })
           continue
@@ -380,29 +382,29 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         continue
       }
 
-      const classified = new Map<keyof NuxtPage, PageMetaProperty>()
+      const classified = new Map<string, Extract<PageMetaProperty, { kind: 'extract' | 'dynamic' }>>()
       let hasRuntimeProperty = false
 
       for (const property of argument.properties) {
-        const classification = classifyPageMetaProperty(code, property, extractionKeys)
-        if (classification.key === undefined || !extractionKeys.has(classification.key)) {
-          hasRuntimeProperty = true
+        const classification = classifyPageMetaProperty(property, extractionKeys)
+        if (classification.kind === 'extract' || classification.kind === 'dynamic') {
+          // A duplicate key keeps its first occurrence.
+          if (!classified.has(classification.key)) {
+            classified.set(classification.key, classification)
+          }
           continue
         }
-        // Duplicate keys keep the first classification, matching the previous lookup.
-        if (!classified.has(classification.key)) {
-          classified.set(classification.key, classification)
-        }
+        hasRuntimeProperty = true
       }
 
+      // Iterating the key set rather than the properties keeps the emitted order of `meta` keys
+      // independent of the order they were written in.
       for (const key of extractionKeys) {
         const classification = classified.get(key)
         if (!classification) { continue }
 
-        if (classification.kind !== 'extract') {
-          logger.debug(classification.kind === 'reshape'
-            ? `Skipping extraction of \`${key}\` metadata as the \`definePageMeta\` macro rewrites it (reading \`${absolutePath}\`).`
-            : `Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+        if (classification.kind === 'dynamic') {
+          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
           dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
           continue
         }
@@ -419,11 +421,11 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         dynamicProperties.add('meta')
       }
     }
+  }
 
-    if (dynamicProperties.size) {
-      extractedData.meta ??= {}
-      extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
-    }
+  if (dynamicProperties.size) {
+    extractedData.meta ??= {}
+    extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
   }
 
   extractCache[absolutePath] = extractedData
@@ -666,7 +668,7 @@ export function relativizeToParent (parentFullPath: string, childPath: string): 
   return childSegments.slice(parentSegments.length).join('/')
 }
 
-export function isSerializable (code: string, node: ESTree.Node): { value?: any, serializable: boolean } {
+export function isSerializable (node: ESTree.Node): { value?: any, serializable: boolean } {
   node = unwrapStaticExpression(node) || node
 
   if (node.type === 'Literal') {
@@ -691,7 +693,7 @@ export function isSerializable (code: string, node: ESTree.Node): { value?: any,
       if (!element || element.type === 'SpreadElement') {
         return { serializable: false }
       }
-      const { serializable, value } = isSerializable(code, element)
+      const { serializable, value } = isSerializable(element)
       if (!serializable) {
         return { serializable: false }
       }
@@ -714,7 +716,7 @@ export function isSerializable (code: string, node: ESTree.Node): { value?: any,
       } else {
         return { serializable: false }
       }
-      const { serializable, value: propertyValue } = isSerializable(code, property.value)
+      const { serializable, value: propertyValue } = isSerializable(property.value)
       if (!serializable) {
         return { serializable: false }
       }

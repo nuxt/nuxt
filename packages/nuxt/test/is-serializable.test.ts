@@ -4,18 +4,16 @@ import type { ESTree } from 'rolldown/utils'
 
 import { isSerializable } from '../src/pages/utils.ts'
 
-function parseExpression (source: string): { code: string, node: ESTree.Expression } {
+function parseExpression (source: string): ESTree.Expression {
   // Parse as a variable initialiser so a leading `{` isn't ambiguous with a block, and we get the
   // raw expression node rather than a ParenthesizedExpression wrapper.
-  const code = `const __x = ${source}`
-  const ast = parseSync('test.js', code, { lang: 'js' })
+  const ast = parseSync('test.js', `const __x = ${source}`, { lang: 'js' })
   const decl = ast.program.body[0] as ESTree.VariableDeclaration
-  return { code, node: decl.declarations[0]!.init as ESTree.Expression }
+  return decl.declarations[0]!.init as ESTree.Expression
 }
 
 function check (source: string) {
-  const { code, node } = parseExpression(source)
-  return isSerializable(code, node)
+  return isSerializable(parseExpression(source))
 }
 
 describe('isSerializable', () => {
