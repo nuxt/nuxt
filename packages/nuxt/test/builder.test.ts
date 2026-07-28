@@ -108,6 +108,69 @@ describe('builder:watch', { sequential: true }, async () => {
     await nuxt.close()
   })
 
+  it('should recompile templates affected by a change in a local layer', async () => {
+    const rootDir = join(tmpDir, 'project')
+    const layerDir = join(tmpDir, 'layer')
+    await mkdir(join(rootDir, 'app'), { recursive: true })
+    await mkdir(join(layerDir, 'app/pages'), { recursive: true })
+    await mkdir(join(layerDir, 'app/plugins'), { recursive: true })
+    await writeFile(join(layerDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({})')
+    await writeFile(join(layerDir, 'app/pages/from-layer.vue'), '<template><div>layer</div></template>')
+    await writeFile(join(layerDir, 'app/plugins/from-layer.ts'), 'export default defineNuxtPlugin(() => {})')
+
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        dev: true,
+        _prepare: true,
+        extends: [layerDir],
+        experimental: { watcher: 'chokidar' },
+      },
+    })
+
+    const layerPage = join(layerDir, 'app/pages/from-layer.vue')
+    const layerPlugin = join(layerDir, 'app/plugins/from-layer.ts')
+
+    await build(nuxt)
+
+    // the layer's files must be resolved under their own absolute paths for the filter to match
+    expect.soft(nuxt.apps.default!.pages?.map(p => p.file)).toContain(layerPage)
+    expect.soft(nuxt.apps.default!.plugins.map(p => p.src)).toContain(layerPlugin)
+
+    const selections: Array<string[] | undefined> = []
+    nuxt.hook('app:templatesGenerated', (app, _templates, options) => {
+      selections.push(options?.filter ? app.templates.filter(t => options.filter!(t as ResolvedNuxtTemplate<any>)).map(t => t.filename!).sort() : undefined)
+    })
+
+    let pageDependentOutput = 'initial'
+    let pluginDependentOutput = 'initial'
+    nuxt.options.build.templates.push(
+      {
+        filename: 'test-layer-page-dependent.mjs',
+        dependsOn: ['pages'],
+        getContents: () => `export default ${JSON.stringify(pageDependentOutput)}`,
+      },
+      {
+        filename: 'test-layer-plugin-dependent.mjs',
+        dependsOn: ['plugins'],
+        getContents: () => `export default ${JSON.stringify(pluginDependentOutput)}`,
+      },
+    )
+
+    pageDependentOutput = 'changed'
+    await nuxt.callHook('builder:watch', 'change', layerPage)
+    expect.soft(selections.at(-1)).toContain('test-layer-page-dependent.mjs')
+    expect.soft(selections.at(-1)).not.toContain('test-layer-plugin-dependent.mjs')
+
+    pluginDependentOutput = 'changed'
+    await nuxt.callHook('builder:watch', 'change', layerPlugin)
+    expect.soft(selections.at(-1)).toContain('test-layer-plugin-dependent.mjs')
+    expect.soft(selections.at(-1)).not.toContain('test-layer-page-dependent.mjs')
+
+    await nuxt.close()
+  })
+
   it('should restart Nuxt when a file is added with builder strategy', async () => {
     const rootDir = join(tmpDir, 'project')
     const nuxt = await loadNuxt({
