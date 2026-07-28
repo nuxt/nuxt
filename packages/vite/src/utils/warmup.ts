@@ -131,8 +131,8 @@ export async function warmupViteServer (
     try {
       mod = await environment.moduleGraph.getModuleByUrl(url)
       if (!mod?.transformResult) {
-        transformed++
         await environment.transformRequest(url)
+        transformed++
         mod = await environment.moduleGraph.getModuleByUrl(url)
       }
     } catch (error) {

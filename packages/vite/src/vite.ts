@@ -309,7 +309,7 @@ function warmupEntries (nuxt: Nuxt, entry: string) {
 }
 
 function startClientWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string) {
-  if (nuxt.options.vite.warmupEntry === false) { return }
+  if (nuxt.options.test || nuxt.options.vite.warmupEntry === false) { return }
 
   let stop = false
   let inFlight = 0
