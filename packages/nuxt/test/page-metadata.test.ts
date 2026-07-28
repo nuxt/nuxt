@@ -6,7 +6,7 @@ import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
-import { getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
+import { augmentPages, getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
 import type { NuxtPage } from '../schema.ts'
 
 const filePath = '/app/pages/index.vue'
@@ -647,6 +647,38 @@ describe('normalizeRoutes', () => {
       overrideMeta: true,
     })
     expect(imports).toEqual(new Set())
+  })
+
+  it('should import the macro module for a route whose name was stripped as a duplicate', async () => {
+    const vfs = { [filePath]: `<script setup>definePageMeta({ name: 'from-macro', alias: ['/some-alias'] })</script>` }
+    const pages: NuxtPage[] = [
+      { path: '/', file: filePath },
+      { path: '/duplicate', file: filePath },
+    ]
+    await augmentPages(pages, vfs, { fullyResolvedPaths: new Set([filePath]) })
+
+    const { routes, imports } = normalizeRoutes(pages, new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports.size).toBe(1)
+    expect(routes).toMatchInlineSnapshot(`
+      "[
+        {
+          name: "from-macro",
+          path: "/",
+          alias: ["/some-alias"],
+          component: () => import("/app/pages/index.vue")
+        },
+        {
+          name: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.name,
+          path: "/duplicate",
+          alias: ["/some-alias"],
+          component: () => import("/app/pages/index.vue")
+        }
+      ]"
+    `)
   })
 
   it('should import the macro module when metadata is not statically analysable', () => {

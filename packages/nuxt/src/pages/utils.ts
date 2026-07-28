@@ -464,11 +464,13 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       const isSyncImport = page._sync && page.mode !== 'client'
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
-      // When every key of `definePageMeta` was extracted at build time the macro module cannot
-      // contribute anything, so referencing it here would make the browser request one module
-      // per page before the router can be created.
-      const canResolveNameStatically = !!options?.overrideMeta && !markedDynamic.has('name') && route.name !== undefined
-      const metaRouteName = canResolveNameStatically ? route.name : `${metaImportName}?.name ?? ${route.name}`
+      // Mirror whatever the route's own `name` resolves to below, so that a name extracted at
+      // build time does not pull in the macro module purely to set `__name`. That import is the
+      // only static import in the route table, so keeping it costs one browser request per page
+      // before the router can be created.
+      const metaRouteName = options?.overrideMeta && !markedDynamic.has('name')
+        ? route.name ?? `${metaImportName}?.name`
+        : `${metaImportName}?.name ?? ${route.name}`
 
       // we use this to validate that a server page is rendering the correct url
       const islandKey = page.mode === 'server' && page.file
