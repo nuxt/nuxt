@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useRuntimeConfig } from './runtime-config'
+import * as context from './context.ts'
+import { useRuntimeConfig } from './runtime-config.ts'
 
-const { useNuxt, klona } = vi.hoisted(() => ({ useNuxt: vi.fn(), klona: vi.fn() }))
-
-vi.mock('./context', () => ({ useNuxt }))
-vi.mock('klona', () => ({ klona }))
+const { mockKlona } = vi.hoisted(() => ({
+  mockKlona: vi.fn(),
+}))
+vi.mock('klona', () => ({
+  klona: mockKlona,
+}))
 
 const testCases = [
   {
@@ -64,13 +67,48 @@ const testCases = [
 describe('useRuntimeConfig', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
+    vi.restoreAllMocks()
   })
 
   it.each(testCases)('$description', ({ runtimeConfig, envExpansion, env, expected }) => {
-    useNuxt.mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } } } })
-    klona.mockReturnValue(runtimeConfig)
+    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } } } } as any)
+    mockKlona.mockReturnValue(runtimeConfig)
     Object.entries(env).forEach(([key, value]) => vi.stubEnv(key, value))
 
     expect(useRuntimeConfig()).toEqual(expected)
+  })
+})
+
+// These tests document the current environment variable value coercion
+// behaviour (see https://github.com/nuxt/nuxt/issues/24812). Environment
+// variable values are passed through `destr`, so JSON-compatible values are
+// deserialized. They pin the existing behaviour to catch unintended changes.
+describe('useRuntimeConfig env value casting', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.restoreAllMocks()
+  })
+
+  it.each([
+    { envValue: '', expected: '' },
+    { envValue: 'hello-world', expected: 'hello-world' },
+    { envValue: '0', expected: 0 },
+    { envValue: '3000', expected: 3000 },
+    { envValue: 'true', expected: true },
+    { envValue: 'false', expected: false },
+    { envValue: undefined, expected: '' },
+    { envValue: 'undefined', expected: '' },
+    { envValue: 'null', expected: '' },
+    { envValue: '4848e0', expected: 4848 },
+    { envValue: '"4848e0"', expected: '4848e0' },
+    { envValue: '""4848e0""', expected: '"4848e0"' },
+    { envValue: '{ foo: "bar" }', expected: '{ foo: "bar" }' },
+  ])('casts $envValue to $expected', ({ envValue, expected }) => {
+    const runtimeConfig = { myVar: '' }
+    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion: false } } } } as any)
+    mockKlona.mockReturnValue(runtimeConfig)
+    vi.stubEnv('NITRO_MY_VAR', envValue)
+
+    expect(useRuntimeConfig().myVar).toEqual(expected)
   })
 })

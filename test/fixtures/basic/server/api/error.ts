@@ -1,3 +1,5 @@
+import { HTTPError, defineEventHandler } from 'nitro/h3'
+
 export default defineEventHandler(() => {
-  throw createError({ statusCode: 400 })
+  throw new HTTPError({ status: 400 })
 })

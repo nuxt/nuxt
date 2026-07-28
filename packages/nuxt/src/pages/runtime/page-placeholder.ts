@@ -1,13 +1,20 @@
 import { defineComponent } from 'vue'
-// @ts-expect-error virtual file
+import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
+import { renderDiagnostics } from '../../app/diagnostics/render'
 import { devPagesDir } from '#build/nuxt.config.mjs'
 
-export default defineComponent({
+type PagePlaceholderSlots = SlotsType<{
+  default?: () => VNode[]
+}>
+
+const PagePlaceholder = defineComponent({
   name: 'NuxtPage',
   setup (_, props) {
     if (import.meta.dev) {
-      console.warn(`Create a Vue component in the \`${devPagesDir}/\` directory to enable \`<NuxtPage>\``)
+      renderDiagnostics.NUXT_E4014({ dir: devPagesDir })
     }
     return () => props.slots.default?.()
   },
-})
+}) as unknown as DefineSetupFnComponent<{}, {}, PagePlaceholderSlots>
+
+export default PagePlaceholder

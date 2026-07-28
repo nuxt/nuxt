@@ -1,16 +1,17 @@
-import { pathToFileURL } from 'node:url'
 import type { SourceMapInput } from 'rollup'
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
+import type { RolldownString } from 'rolldown-string'
 import { dirname } from 'pathe'
-import { parseQuery, parseURL } from 'ufo'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
-import type { ArrowFunctionExpression, Function } from 'oxc-parser'
+import type { ESTree } from 'rolldown/utils'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
-const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)$/
+const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
+const STYLE_QUERY_RE = /[?&]type=style/
+const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 
 export interface ExtractAsyncDataHandlersOptions {
   sourcemap: boolean
@@ -35,21 +36,18 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
         return asyncDatas[id]
       }
     },
-    transformInclude (id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return SUPPORTED_EXT_RE.test(pathname) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
-    },
     transform: {
       filter: {
         id: {
-          exclude: [/nuxt\/(src|dist)\/app/],
+          include: SUPPORTED_EXT_RE,
+          exclude: [/nuxt\/(src|dist)\/app/, STYLE_QUERY_RE, MACRO_QUERY_RE],
         },
         code: { include: FUNCTIONS_RE },
       },
-      handler (code, id) {
+      handler (code, id, meta?: unknown) {
         const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { index: 0, 0: code }
 
-        let s: MagicString | undefined
+        let s: RolldownString | undefined
 
         const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
         const parseResult = parseAndWalk(script, id, { scopeTracker })
@@ -64,13 +62,13 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
 
             const callExpression = node
 
-            const fetcherFunction = callExpression.arguments.find((fn): fn is Function | ArrowFunctionExpression => fn.type === 'ArrowFunctionExpression' || fn.type === 'FunctionExpression')
+            const fetcherFunction = callExpression.arguments.find((fn): fn is ESTree.Function | ESTree.ArrowFunctionExpression => fn.type === 'ArrowFunctionExpression' || fn.type === 'FunctionExpression')
 
             if (!fetcherFunction || (fetcherFunction.type !== 'ArrowFunctionExpression' && fetcherFunction.type !== 'FunctionExpression') || !fetcherFunction.body) {
               return
             }
 
-            s ||= new MagicString(code)
+            s ||= rolldownString(code, id, meta)
 
             const referencedVariables = new Set<string>()
             const imports = new Set<string>()
@@ -168,7 +166,7 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
 
             asyncDatas[key] = {
               code: chunk.toString(),
-              map: options.sourcemap ? chunk.generateMap({ hires: true }) : undefined,
+              map: options.sourcemap ? chunk.generateMap({ hires: true }) as SourceMapInput : undefined,
             }
 
             // Replace the original function with a dynamic import
@@ -177,14 +175,7 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
           },
         })
 
-        if (s?.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
-        }
+        return generateTransform(s, id)
       },
     },
   }

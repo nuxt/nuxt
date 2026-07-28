@@ -1,10 +1,17 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
-import type { RspackPluginInstance } from '@rspack/core'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
-import { useNuxt } from './context'
-import { toArray } from './utils'
-import { resolveAlias } from './resolve'
-import { getUserCaller, warn } from './internal/trace'
+import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
+import { useNuxt } from './context.ts'
+import { toArray } from './utils.ts'
+import { resolveAlias } from './resolve.ts'
+import { getUserCaller, warn } from './internal/trace.ts'
+
+type Arrayable<T> = T | T[]
+type Thenable<T> = T | Promise<T>
+type RspackCompatiblePluginInstance = {
+  apply: (...args: any[]) => void
+  [k: string]: any
+}
 
 export interface ExtendConfigOptions {
   /**
@@ -55,7 +62,7 @@ export interface ExtendViteConfigOptions extends Omit<ExtendConfigOptions, 'serv
   client?: boolean
 }
 
-const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((config: WebpackConfig) => void), options: ExtendWebpackConfigOptions = {}) => {
+const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((config: WebpackConfig) => Thenable<void>), options: ExtendWebpackConfigOptions = {}) => {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
@@ -65,21 +72,23 @@ const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((
     return
   }
 
-  nuxt.hook(`${builder}:config`, (configs) => {
+  nuxt.hook(`${builder}:config`, async (configs) => {
     if (options.server !== false) {
       const config = configs.find(i => i.name === 'server')
       if (config) {
-        fn(config)
+        await fn(config)
       }
     }
     if (options.client !== false) {
       const config = configs.find(i => i.name === 'client')
       if (config) {
-        fn(config)
+        await fn(config)
       }
     }
   })
 }
+
+type ExtendWebpacklikeConfig = (fn: (config: WebpackConfig) => void, options?: ExtendWebpackConfigOptions) => void
 
 /**
  * Extend webpack config
@@ -87,19 +96,19 @@ const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((
  * The fallback function might be called multiple times
  * when applying to both client and server builds.
  */
-export const extendWebpackConfig = extendWebpackCompatibleConfig('webpack')
+export const extendWebpackConfig: ExtendWebpacklikeConfig = extendWebpackCompatibleConfig('webpack')
 /**
  * Extend rspack config
  *
  * The fallback function might be called multiple times
  * when applying to both client and server builds.
  */
-export const extendRspackConfig = extendWebpackCompatibleConfig('rspack')
+export const extendRspackConfig: ExtendWebpacklikeConfig = extendWebpackCompatibleConfig('rspack')
 
 /**
  * Extend Vite config
  */
-export function extendViteConfig (fn: ((config: ViteConfig) => void), options: ExtendViteConfigOptions = {}) {
+export function extendViteConfig (fn: ((config: ViteConfig) => Thenable<void>), options: ExtendViteConfigOptions = {}): (() => void) | undefined {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
@@ -124,10 +133,10 @@ export function extendViteConfig (fn: ((config: ViteConfig) => void), options: E
 /**
  * Append webpack plugin to the config.
  */
-export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | WebpackPluginInstance[] | (() => WebpackPluginInstance | WebpackPluginInstance[]), options?: ExtendWebpackConfigOptions) {
-  extendWebpackConfig((config) => {
+export function addWebpackPlugin (pluginOrGetter: Arrayable<WebpackPluginInstance> | (() => Thenable<Arrayable<WebpackPluginInstance>>), options?: ExtendWebpackConfigOptions): void {
+  extendWebpackConfig(async (config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+    const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
 
     config.plugins ||= []
     config.plugins[method](...toArray(plugin))
@@ -136,10 +145,10 @@ export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | Webpac
 /**
  * Append rspack plugin to the config.
  */
-export function addRspackPlugin (pluginOrGetter: RspackPluginInstance | RspackPluginInstance[] | (() => RspackPluginInstance | RspackPluginInstance[]), options?: ExtendWebpackConfigOptions) {
-  extendRspackConfig((config) => {
+export function addRspackPlugin (pluginOrGetter: Arrayable<RspackCompatiblePluginInstance> | (() => Thenable<Arrayable<RspackCompatiblePluginInstance>>), options?: ExtendWebpackConfigOptions): void {
+  extendRspackConfig(async (config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+    const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
 
     config.plugins ||= []
     config.plugins[method](...toArray(plugin))
@@ -149,7 +158,7 @@ export function addRspackPlugin (pluginOrGetter: RspackPluginInstance | RspackPl
 /**
  * Append Vite plugin to the config.
  */
-export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options: ExtendConfigOptions = {}) {
+export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Thenable<Arrayable<VitePlugin>>), options: ExtendConfigOptions = {}): void {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
@@ -160,11 +169,13 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
   }
 
   let needsEnvInjection = false
-  nuxt.hook('vite:extend', ({ config }) => {
+  const isIsomorphic = options.server !== false && options.client !== false
+
+  nuxt.hook('vite:extend', async ({ config }) => {
     config.plugins ||= []
 
-    const plugin = toArray(typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter)
-    if (options.server !== false && options.client !== false) {
+    const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
+    if (isIsomorphic && !nuxt.options.experimental.nitroViteEnvironment) {
       const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
       config.plugins[method](...plugin)
       return
@@ -179,20 +190,21 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
     const pluginName = plugin.map(p => p.name).join('|')
     config.plugins.push({
       name: `${pluginName}:wrapper`,
-      enforce: options?.prepend ? 'pre' : 'post',
+      // isomorphic plugins are normally just added to plugins, so only force when `prepend` is set
+      enforce: isIsomorphic ? (options?.prepend ? 'pre' : undefined) : (options?.prepend ? 'pre' : 'post'),
       applyToEnvironment (environment) {
-        if (environment.name === environmentName) {
+        if (isIsomorphic ? environment.name === 'client' || environment.name === 'ssr' : environment.name === environmentName) {
           return plugin
         }
       },
     })
   })
 
-  nuxt.hook('vite:extendConfig', (config, env) => {
+  nuxt.hook('vite:extendConfig', async (config, env) => {
     if (!needsEnvInjection) {
       return
     }
-    const plugin = toArray(typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter)
+    const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     if (env.isClient && options.server === false) {
       config.plugins![method](...plugin)
@@ -204,12 +216,12 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
 }
 
 interface AddBuildPluginFactory {
-  vite?: () => VitePlugin | VitePlugin[]
-  webpack?: () => WebpackPluginInstance | WebpackPluginInstance[]
-  rspack?: () => RspackPluginInstance | RspackPluginInstance[]
+  vite?: () => Thenable<Arrayable<VitePlugin>>
+  webpack?: () => Thenable<Arrayable<WebpackPluginInstance>>
+  rspack?: () => Thenable<Arrayable<RspackCompatiblePluginInstance>>
 }
 
-export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions) {
+export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions): void {
   if (pluginFactory.vite) {
     addVitePlugin(pluginFactory.vite, options)
   }
@@ -221,4 +233,11 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
   if (pluginFactory.rspack) {
     addRspackPlugin(pluginFactory.rspack, options)
   }
+}
+
+/**
+ * Set the build output for the given key. See {@link NuxtBuildOutputs}.
+ */
+export function setBuildOutput<K extends keyof NuxtBuildOutputs> (key: K, provider: NuxtBuildOutputs[K], nuxt: Nuxt = useNuxt()): void {
+  nuxt.buildOutputs[key] = provider
 }

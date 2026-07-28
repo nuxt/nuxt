@@ -1,11 +1,11 @@
 import type { AsyncLocalStorage } from 'node:async_hooks'
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
-import type { NuxtModule } from './module'
-import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks'
-import type { Component } from './components'
-import type { NuxtOptions } from './config'
-import type { NuxtDebugContext } from './debug'
+import type { NuxtModule } from './module.ts'
+import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks.ts'
+import type { Component } from './components.ts'
+import type { NuxtOptions } from './config.ts'
+import type { NuxtDebugContext } from './debug.ts'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -86,31 +86,84 @@ export interface NuxtApp {
   pages?: NuxtPage[]
 }
 
+/**
+ * Build artifacts consumed by the Nitro server runtime via `nuxt/*` subpath imports.
+ *
+ * Builders populate this with the `setBuildOutput()` kit helper. Each key is a
+ * (possibly async) function returning the module body as a string.
+ */
+export interface NuxtBuildOutputs {
+  /** Module body re-exporting the SSR app entry. */
+  serverEntry: () => string | Promise<string>
+  /**
+   * Module body for the per-component SSR styles map. Defaults to
+   * `export default {}` when the build produces no inline styles.
+   */
+  ssrStyles: () => string | Promise<string>
+  /** Serialized client manifest for `vue-bundle-renderer`. */
+  clientManifest: () => string | Promise<string>
+  /** Serialized precomputed client dependency data for `vue-bundle-renderer`. */
+  clientPrecomputed: () => string | Promise<string>
+  /** Module body exporting the hashed entry chunk filename for import maps. */
+  entryChunkName: () => string | Promise<string>
+  /** Module body exporting the entry module IDs used for inline style extraction. */
+  entryIds: () => string | Promise<string>
+}
+
 export interface Nuxt {
   // Private fields.
-  __name: string
-  _version: string
-  _ignore?: Ignore
-  _dependencies?: Set<string>
-  _debug?: NuxtDebugContext
+  '__name': string
+  '_version': string
+  '_ignore'?: Ignore
+  '_dependencies'?: Set<string>
+  '~runtimeDependencies'?: string[]
+  '_debug'?: NuxtDebugContext
+  /**
+   * Performance profiler instance, available when `debug.perf` is enabled.
+   * @internal
+   */
+  '_perf'?: {
+    startPhase: (name: string) => void
+    endPhase: (name?: string) => void
+    collectModuleTimings: (modules: Array<{ meta?: { name?: string }, timings?: Record<string, number | undefined> }>) => void
+    recordBundlerPluginHook: (pluginName: string, hookName: string, durationMs: number, startTime?: number) => void
+    printReport: (options?: { title?: string }) => void
+    writeReport: (buildDir: string, options?: { quiet?: boolean }) => string
+    dispose: () => void
+  }
   /** Async local storage for current running Nuxt module instance. */
-  _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
+  '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
+
+  /**
+   * The Node HTTP(S) server the dev server is listening on, captured from the
+   * `listen` hook. Builders use it to attach their HMR websocket to the same
+   * server (and therefore the same port and certificate) as the app.
+   * @internal
+   */
+  '_devServerListener'?: import('node:http').Server | import('node:https').Server
+  /**
+   * Module options functions collected from moduleDependencies.
+   * @internal
+   */
+  '_moduleOptionsFunctions'?: Map<string | NuxtModule, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>
 
   /** The resolved Nuxt configuration. */
-  options: NuxtOptions
-  hooks: Hookable<NuxtHooks>
-  hook: Nuxt['hooks']['hook']
-  callHook: Nuxt['hooks']['callHook']
-  addHooks: Nuxt['hooks']['addHooks']
-  runWithContext: <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
+  'options': NuxtOptions
+  'hooks': Hookable<NuxtHooks>
+  'hook': Nuxt['hooks']['hook']
+  'callHook': Nuxt['hooks']['callHook']
+  'addHooks': Nuxt['hooks']['addHooks']
+  'runWithContext': <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
 
-  ready: () => Promise<void>
-  close: () => Promise<void>
+  'ready': () => Promise<void>
+  'close': () => Promise<void>
 
   /** The production or development server. */
-  server?: any
+  'server'?: any
 
-  vfs: Record<string, string>
+  'vfs': Record<string, string>
 
-  apps: Record<string, NuxtApp>
+  'apps': Record<string, NuxtApp>
+
+  'buildOutputs': NuxtBuildOutputs
 }

@@ -41,6 +41,11 @@
           color-scheme: dark;
         }
       }
+      @media (prefers-reduced-motion: reduce) {
+        #snow-canvas {
+          display: none !important;
+        }
+      }
     </style>
   </head>
   <body class="font-sans antialiased relative overflow-hidden min-h-screen bg-white dark:bg-[#020420] text-[#020420] dark:text-white flex flex-col justify-center items-center text-center">
@@ -74,6 +79,87 @@
           setTimeout(check, 200)
         }
         check()
+      }
+    </script>
+    <script>
+      // Snow effect with localStorage toggle
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      function whatHemisphere() {
+        let y = new Date()
+        if (y.getTimezoneOffset == undefined) return null
+        y = y.getFullYear()
+        let jan = -(new Date(y, 0, 1, 0, 0, 0, 0).getTimezoneOffset())
+        let jul = -(new Date(y, 6, 1, 0, 0, 0, 0).getTimezoneOffset())
+        let diff = jan - jul
+        return diff < 0 ? 'N' : diff > 0 ? 'S' : null
+      }
+      // Only run in November, December, and January (N hemisphere) or May, June, and July (S hemisphere)
+      const months = { N: [10, 11, 0], S: [4, 5, 6] }
+      const hemisphere = whatHemisphere()
+      if (hemisphere && months[hemisphere].includes(new Date().getMonth()) && !prefersReducedMotion) {
+        let snowEnabled = localStorage.getItem('nuxt-snow') !== 'false'
+        let animationId = null, particles = [], lastCall = Date.now()
+        const density = 0.00025, gravity = 1.25
+        const wind = { current: 0, maxCurrent: 4, force: 0.1, target: 0.1, min: 0.1, max: 0.4, easing: 0.01 }
+        const mod = (a, b) => ((a % b) + b) % b
+
+        // Create toggle button and canvas
+        const $btn = document.createElement('button')
+        $btn.id = 'snow-toggle'
+        $btn.style = 'position:fixed;bottom:16px;right:16px;z-index:100;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:20px;'
+        document.body.appendChild($btn)
+
+        const $canvas = document.createElement('canvas')
+        $canvas.id = 'snow-canvas'
+        $canvas.style = 'position:fixed;inset:0;z-index:-10;pointer-events:none;opacity:0;transition:opacity 0.5s;filter:blur(4px);'
+        document.body.appendChild($canvas)
+        const ctx = $canvas.getContext('2d')
+
+        // Resize and initialize particles
+        function resize() {
+          $canvas.width = window.innerWidth
+          $canvas.height = window.innerHeight
+          particles = Array.from({ length: Math.floor($canvas.width * $canvas.height * density) }, () => ({
+            x: Math.random() * $canvas.width, y: Math.random() * $canvas.height,
+            vx: 1 + Math.random(), vy: 1 + Math.random(), vsin: Math.random() * 10,
+            rangle: Math.random() * 2 * Math.PI, rsin: Math.random() * 10,
+            color: `rgba(255,255,255,${0.1 + Math.random() * 0.15})`,
+            size: 5 * Math.random() * 4 * ($canvas.height / 1000)
+          }))
+        }
+
+        // Draw particles
+        function draw() {
+          ctx.clearRect(0, 0, $canvas.width, $canvas.height)
+          const now = Date.now(), delta = now - lastCall
+          lastCall = now
+          wind.force += (wind.target - wind.force) * wind.easing
+          wind.current = Math.max(-wind.maxCurrent, Math.min(wind.current + wind.force * delta * 0.05, wind.maxCurrent))
+          if (Math.random() > 0.995) wind.target = (wind.min + Math.random() * (wind.max - wind.min)) * (Math.random() > 0.5 ? -1 : 1)
+          const uTime = delta * 0.2
+          particles.forEach(p => {
+            p.x = mod(p.x + uTime + wind.current * p.vx, $canvas.width)
+            p.y = mod(p.y + uTime * p.vy * gravity, $canvas.height)
+            p.x += Math.sin(uTime * p.vsin) * p.rsin * 0.5
+            p.rangle += uTime * 0.01
+            ctx.fillStyle = p.color
+            ctx.beginPath()
+            ctx.ellipse(p.x, p.y, p.size, p.size * 0.66, p.rangle, 0, Math.PI * 2)
+            ctx.fill()
+          })
+          animationId = requestAnimationFrame(draw)
+        }
+
+        // Update snow effect and handle toggle (resize)
+        function update() {
+          $btn.innerHTML = snowEnabled ? '☀️' : '❄️'
+          $btn.title = snowEnabled ? 'Disable snow' : 'Enable snow'
+          if (snowEnabled) { resize(); window.addEventListener('resize', resize); $canvas.style.opacity = 1; lastCall = Date.now(); draw() }
+          else { if (animationId) cancelAnimationFrame(animationId); animationId = null; window.removeEventListener('resize', resize); $canvas.style.opacity = 0 }
+        }
+
+        $btn.onclick = () => { snowEnabled = !snowEnabled; localStorage.setItem('nuxt-snow', snowEnabled); update() }
+        update()
       }
     </script>
   </body>

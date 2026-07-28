@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { ExtractAsyncDataHandlersPlugin } from '../src/core/plugins/extract-async-data-handlers'
-import { clean } from './utils'
+import { ExtractAsyncDataHandlersPlugin } from '../src/core/plugins/extract-async-data-handlers.ts'
+import { clean } from './utils.ts'
 
 describe('extract async data handlers plugin', () => {
   const defaultOptions = {
@@ -10,7 +10,7 @@ describe('extract async data handlers plugin', () => {
   }
 
   function createTransform (options = defaultOptions) {
-    const plugin = ExtractAsyncDataHandlersPlugin(options).raw({}, { framework: 'rollup' }) as {
+    const plugin = ExtractAsyncDataHandlersPlugin(options).raw({}, { framework: 'rollup', versions: {} }) as {
       load: (id: string) => { code: string } | undefined
       transform: { handler: (code: string, id: string) => { code: string } | undefined }
     }

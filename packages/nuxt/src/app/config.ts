@@ -2,11 +2,10 @@ import { reactive } from 'vue'
 import { klona } from 'klona'
 import { useNuxtApp } from './nuxt'
 import type { AppConfig } from 'nuxt/schema'
-// @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
+export type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
 // Workaround for vite HMR with virtual modules
 export const _getAppConfig = () => __appConfig as AppConfig
@@ -64,7 +63,7 @@ export function useAppConfig (): AppConfig {
   return nuxtApp._appConfig
 }
 
-export function _replaceAppConfig (newConfig: AppConfig) {
+export function _replaceAppConfig (newConfig: AppConfig): void {
   const appConfig = useAppConfig()
 
   deepAssign(appConfig, newConfig)
@@ -76,7 +75,7 @@ export function _replaceAppConfig (newConfig: AppConfig) {
  *
  * Will preserve existing properties.
  */
-export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
+export function updateAppConfig (appConfig: DeepPartial<AppConfig>): void {
   const _appConfig = useAppConfig()
   deepAssign(_appConfig, appConfig)
 }

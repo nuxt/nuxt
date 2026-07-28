@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { pascalCase } from 'scule'
-import { getNameFromPath, resolveComponentNameSegments } from '../src/core/utils'
+import { getNameFromPath, resolveComponentNameSegments } from '../src/core/utils/index.ts'
 
 describe('getNameFromPath', () => {
   const cases: Record<string, string> = {
@@ -27,6 +27,10 @@ const tests: Array<[string, string[], string]> = [
   ['ThingItemTest', ['Item', 'Thing', 'Foo'], 'ItemThingFooThingItemTest'],
   ['ItemIn', ['Item', 'Holder', 'Item', 'In'], 'ItemHolderItemIn'],
   ['Item', ['Item', 'Holder', 'Test'], 'ItemHolderTestItem'],
+  ['Item', ['(group)'], 'Item'],
+  ['Item', ['(group)', 'Thing'], 'ThingItem'],
+  ['Thing', ['(group)', 'Thing'], 'Thing'],
+  ['Thing', ['Thing', '(group)'], 'Thing'],
   ['ItemHolderItem', ['Item', 'Holder', 'Item', 'Holder'], 'ItemHolderItemHolderItem'],
   ['Icones', ['Icon'], 'IconIcones'],
   ['Icon', ['Icones'], 'IconesIcon'],

@@ -1,5 +1,6 @@
 import type { Component } from 'vue'
 import type { RouteLocationRaw, Router } from 'vue-router'
+import type { NuxtAppLiterals } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import { useRouter } from './router'
@@ -9,7 +10,7 @@ import { useRouter } from './router'
  * @param components Pascal-cased name or names of components to prefetch
  * @since 3.0.0
  */
-export const preloadComponents = async (components: string | string[]) => {
+export const preloadComponents = async (components: NuxtAppLiterals['componentName'] | Array<NuxtAppLiterals['componentName']>): Promise<void> => {
   if (import.meta.server) { return }
   const nuxtApp = useNuxtApp()
 
@@ -27,7 +28,7 @@ export const preloadComponents = async (components: string | string[]) => {
  * @param components Pascal-cased name or names of components to prefetch
  * @since 3.0.0
  */
-export const prefetchComponents = (components: string | string[]) => {
+export const prefetchComponents = (components: NuxtAppLiterals['componentName'] | Array<NuxtAppLiterals['componentName']>): Promise<void> | undefined => {
   if (import.meta.server) { return }
 
   // TODO
@@ -36,7 +37,7 @@ export const prefetchComponents = (components: string | string[]) => {
 
 // --- Internal ---
 
-export function _loadAsyncComponent (component: Component) {
+export function _loadAsyncComponent (component: Component): unknown {
   if ((component as any)?.__asyncLoader && !(component as any).__asyncResolved) {
     return (component as any).__asyncLoader()
   }
@@ -68,7 +69,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
     }
     const promise = Promise.resolve((component as () => unknown)())
       .catch(() => {})
-      .finally(() => promises.splice(promises.indexOf(promise)))
+      .finally(() => promises.splice(promises.indexOf(promise), 1))
     promises.push(promise)
   }
 

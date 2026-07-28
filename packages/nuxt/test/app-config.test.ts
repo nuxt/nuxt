@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { _replaceAppConfig } from '../src/app/config'
+import { _replaceAppConfig } from '../src/app/config.ts'
 
 const mockNuxt = {
   _appConfig: {} as Partial<{

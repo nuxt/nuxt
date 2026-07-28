@@ -6,16 +6,16 @@
     "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
   },
   "dependencies": {
-    "nuxt": "workspace:*"
+    "hook-augmenting-module": "workspace:*",
+    "nuxt": "workspace:*",
+    "ofetch": "catalog:app-runtime",
+    "vue": "catalog:app-runtime",
+    "vue-router": "catalog:app-runtime"
   },
   "devDependencies": {
-    "ofetch": "latest",
-    "unplugin-vue-router": "latest",
-    "vitest": "latest",
-    "vue": "latest",
-    "vue-router": "latest"
+    "vitest": "catalog:dev"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
   }
 }

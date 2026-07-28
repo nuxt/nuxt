@@ -41,6 +41,15 @@
           <div>Hello world !</div>
         </template>
       </NuxtClientFallback>
+      <!-- async failure inside a wrapping component (nested promise in SSR buffer) -->
+      <NuxtClientFallback>
+        <BreakInAsyncSetupWrapper />
+        <template #fallback>
+          <div class="nested-async-fallback">
+            Nested async fallback rendered
+          </div>
+        </template>
+      </NuxtClientFallback>
       <ClientFallbackStateful />
       <ClientFallbackStatefulSetup />
       <ClientFallbackNonStatefulSetup />
@@ -56,6 +65,13 @@
           </div>
         </template>
       </NuxtClientFallback>
+      <NuxtClientFallback
+        fallback-tag="section"
+        class="escaped-fallback"
+        :fallback="unsafe"
+      >
+        <BreakInSetup />
+      </NuxtClientFallback>
     </div>
     <button
       id="increment-count"
@@ -68,4 +84,6 @@
 
 <script setup>
 const multiplier = ref(0)
+const route = useRoute()
+const unsafe = computed(() => String(route.query.unsafe ?? ''))
 </script>

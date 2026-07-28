@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake'
-import { clean } from './utils'
+import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake.ts'
+import { clean } from './utils.ts'
 
 describe('tree-shake', () => {
   const transformPlugin: any = TreeShakeComposablesPlugin({
-    sourcemap: false,
     composables: { 'vue': ['onMounted'] },
   }).raw({}, {} as any)
 
