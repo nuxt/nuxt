@@ -427,6 +427,7 @@ definePageMeta({ name: 'bar' })
       }
     `)
   })
+
   it('should mark metadata as dynamic when properties are spread', () => {
     const meta = getRouteMeta(`
     <script setup>
@@ -532,6 +533,66 @@ describe('normalizeRoutes', () => {
       ]",
       }
     `)
+  })
+
+  it('should not import the macro module when all metadata was extracted', () => {
+    const page: NuxtPage = { path: '/', file: filePath }
+    Object.assign(page, getRouteMeta(`
+      <script setup>
+      definePageMeta({
+        name: 'some-custom-name',
+        alias: ['/some-alias'],
+      })
+      </script>
+      `, filePath))
+
+    const { routes, imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports).toEqual(new Set())
+    expect(routes).toMatchInlineSnapshot(`
+      "[
+        {
+          name: "some-custom-name",
+          path: "/",
+          alias: ["/some-alias"],
+          component: () => import("/app/pages/index.vue")
+        }
+      ]"
+    `)
+  })
+
+  it('should not import the macro module for pages without page metadata', () => {
+    const page: NuxtPage = { path: '/', name: 'index', file: filePath }
+
+    const { imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports).toEqual(new Set())
+  })
+
+  it('should import the macro module when metadata is not statically analysable', () => {
+    const page: NuxtPage = { path: '/', name: 'index', file: filePath }
+    Object.assign(page, getRouteMeta(`
+      <script setup>
+      definePageMeta({
+        layout: 'custom',
+      })
+      </script>
+      `, filePath))
+
+    const { imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports).toEqual(new Set([
+      'import { default as indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta } from "/app/pages/index.vue?macro=true";',
+    ]))
   })
 
   it('should produce valid route objects when used without extracted meta', () => {

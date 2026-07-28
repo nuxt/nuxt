@@ -434,7 +434,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const file = normalize(page.file)
       const pageImportName = genSafeVariableName(filename(file) + hash(file).replace(/-/g, '_'))
       const metaImportName = pageImportName + 'Meta'
-      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
+      const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
       if (page._sync) {
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
@@ -442,7 +442,11 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       const isSyncImport = page._sync && page.mode !== 'client'
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
-      const metaRouteName = `${metaImportName}?.name ?? ${route.name}`
+      // When every key of `definePageMeta` was extracted at build time the macro module cannot
+      // contribute anything, so referencing it here would make the browser request one module
+      // per page before the router can be created.
+      const canResolveNameStatically = !!options?.overrideMeta && !markedDynamic.has('name') && route.name !== undefined
+      const metaRouteName = canResolveNameStatically ? route.name : `${metaImportName}?.name ?? ${route.name}`
 
       // we use this to validate that a server page is rendering the correct url
       const islandKey = page.mode === 'server' && page.file
@@ -532,6 +536,14 @@ async function createClientPage(loader) {
 
         if (route.redirect != null) {
           metaRoute.redirect = route.redirect
+        }
+      }
+
+      for (const key in metaRoute) {
+        if (key === 'children') { continue }
+        if (metaRoute[key as keyof NormalizedRoute]?.includes(metaImportName)) {
+          metaImports.add(metaImport)
+          break
         }
       }
 
