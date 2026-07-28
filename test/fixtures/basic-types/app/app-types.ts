@@ -367,6 +367,30 @@ describe('typed router integration', () => {
     // doesn't throw an error when accessing properties of component
     const _props = NuxtLink.props
   })
+
+  it('types NuxtLink slot props', () => {
+    type DefaultSlotProps = Parameters<NonNullable<InstanceType<typeof NuxtLink<false>>['$slots']['default']>>[0]
+    expectTypeOf<DefaultSlotProps['href']>().toEqualTypeOf<string>()
+    expectTypeOf<DefaultSlotProps['isActive']>().toEqualTypeOf<boolean>()
+    // @ts-expect-error prefetch state is only exposed to `custom` links
+    expectTypeOf<DefaultSlotProps['prefetched']>().toEqualTypeOf<boolean>()
+
+    type CustomSlotProps = Parameters<NonNullable<InstanceType<typeof NuxtLink<true>>['$slots']['default']>>[0]
+    expectTypeOf<CustomSlotProps['href']>().toEqualTypeOf<string | null>()
+    expectTypeOf<CustomSlotProps['isActive']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['isExternal']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['prefetched']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['route']>().toExtend<{ href: string } | undefined>()
+  })
+
+  // `vue-component-type-helpers` and Vue Language Tools both infer against a construct signature,
+  // and inference against a solely generic construct signature resolves to the empty fallback
+  it('exposes props and slots to structural component type inference', () => {
+    type Props<T> = T extends new (...args: any) => { $props: infer P } ? NonNullable<P> : Record<never, never>
+    type Slots<T> = T extends new (...args: any) => { $slots: infer S } ? NonNullable<S> : Record<never, never>
+    expectTypeOf<'to' | 'href' | 'custom'>().toExtend<keyof Props<typeof NuxtLink>>()
+    expectTypeOf<'default'>().toExtend<keyof Slots<typeof NuxtLink>>()
+  })
 })
 
 describe('layouts', () => {
