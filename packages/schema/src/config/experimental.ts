@@ -131,7 +131,14 @@ export default defineResolvers({
       },
     },
     localLayerAliases: true,
-    typedPages: false,
+    typedPages: {
+      $resolve: async (val, get) => {
+        if (typeof val === 'boolean') {
+          return val
+        }
+        return (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
@@ -236,6 +243,7 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    stripNeverHydratedData: false,
     alwaysRunFetchOnKeyChange: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false

@@ -147,6 +147,7 @@ export default defineConfig({
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
+            '#internal/nuxt/nitro-config.mjs': resolve('./test/mocks/nitro-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),
@@ -155,6 +156,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           benchmark: { include: [] },
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
           include: ['packages/**/*.{test,spec}.ts'],
           testTimeout: isWindows ? 60000 : 10000,
@@ -167,6 +169,7 @@ export default defineConfig({
           name: 'nuxt-universal',
           dir: './test/nuxt/universal',
           environment: 'nuxt',
+          globalSetup: ['./test/setup-prepare.ts'],
           environmentOptions: {
             nuxt: {
               overrides: { pages: false },
@@ -181,8 +184,9 @@ export default defineConfig({
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/insensitive/**', '**/sensitive/**'],
           environment: 'nuxt',
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
           env: {
             PROJECT: project,
@@ -196,12 +200,60 @@ export default defineConfig({
       }))),
       await defineVitestProject({
         define: {
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+        },
+        test: {
+          name: 'nuxt-insensitive',
+          dir: './test/nuxt/insensitive',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              // `sensitive: false` on a v5 app: the config the route-rule case-folding targets.
+              overrides: defu({
+                future: { compatibilityVersion: 5 },
+                router: { options: { sensitive: false } },
+                routeRules: {
+                  '/Secret/Docs/**': { ssr: false },
+                  '/Legacy/Home': { redirect: '/target' },
+                },
+              } satisfies NuxtConfig, commonSettings),
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+        },
+        test: {
+          name: 'nuxt-sensitive',
+          dir: './test/nuxt/sensitive',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu({
+                future: { compatibilityVersion: 5 },
+                router: { options: { sensitive: true } },
+                routeRules: {
+                  '/Admin/Dashboard': { redirect: '/admin-target' },
+                  '/admin/dashboard': { redirect: '/lower-target' },
+                },
+              } satisfies NuxtConfig, commonSettings),
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        define: {
           'import.meta.dev': 'true',
         },
         test: {
           name: 'nuxt-dev',
           dir: './test/nuxt/dev',
           environment: 'nuxt',
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
           environmentOptions: {
             nuxt: {

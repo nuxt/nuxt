@@ -19,6 +19,7 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
+import { createFoldedRouteRulesRouter } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -107,10 +108,10 @@ export default defineNuxtModule({
 
     /*
      * Page paths as derived by unrouting, captured (keyed by the live page object) before a
-     * `definePageMeta` path override replaces them. Typed-pages DTS generation nests an
-     * absolute-path page under its file parent by inserting this original (always relative)
-     * path, then re-applies the absolute path as an override. Every rebuild emits fresh page
-     * objects, so stale entries are garbage-collected with the objects keying them.
+     * `definePageMeta` path override replaces them. Typed-pages DTS generation falls back to
+     * this path to nest a page whose override is detached from its file parent. Every rebuild
+     * emits fresh page objects, so stale entries are garbage-collected with the objects keying
+     * them.
      */
     const originalPagePaths = new WeakMap<NuxtPage, string>()
 
@@ -314,12 +315,15 @@ export default defineNuxtModule({
             let route: EditableTreeNode
             if (page.path[0] === '/') {
               // Nest a page with an absolute path (a top-level page, or a child whose path
-              // was overridden) under its file parent, inserting its original path as
-              // derived by unrouting so the parent's params are not duplicated.
+              // was overridden) under its file parent. Inserting the path relative to the
+              // parent keeps params added by the override without duplicating the parent's
+              // own params; a path detached from the parent has no such remainder, so fall
+              // back to the path derived by unrouting.
+              const insertedPath = relativizeToParent(parent.fullPath, page.path) ?? originalPagePaths.get(page) ?? page.path
               // TODO: waiting on vuejs/router#2748 to allow adding a route without a
               // file, or we need to find another way if it is not merged
               // @ts-expect-error `page.file` is possibly undefined
-              route = parent.insert(originalPagePaths.get(page) ?? relativizeToParent(parent.fullPath, page.path), page.file)
+              route = parent.insert(insertedPath, page.file)
               if (route.path !== page.path) {
                 // The path setter records the absolute path as an override on the node.
                 // Since the override is absolute, `fullPath` returns it as-is instead of
@@ -577,8 +581,15 @@ export default defineNuxtModule({
 
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static) {
+        // Fold keys (unless `sensitive`) to mirror the compiled `#build/route-rules.mjs`
+        // matcher, so a `prerender: true` rule keyed `/Admin` is honoured at `/Admin`.
+        const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
+        const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules ? route : route.toLowerCase()
+        const ruleMatcher = caseSensitiveRouteRules
+          ? nitro.routing.routeRules
+          : createFoldedRouteRulesRouter(nitro.routing.routeRules, nitro.options.baseURL)
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...nitro.routing.routeRules.matchAll('', route).reverse())
+          const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', foldRouteRuleKey(route)).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }

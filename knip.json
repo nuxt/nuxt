@@ -1,14 +1,12 @@
 {
-  "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignore": [
-    "**/.nuxt/**",
-    "**/.output/**",
-    "test/fixtures/basic/app/components/Tsx.tsx"
-  ],
+  "$schema": "https://unpkg.com/knip@6/schema.json",
   "rules": {
     "duplicates": "off"
   },
   "ignoreExportsUsedInFile": true,
+  "ignoreIssues": {
+    "**/.nuxt/**": ["unlisted", "unresolved"]
+  },
   "ignoreDependencies": [
     "bing",
     "uno.css",
@@ -17,21 +15,10 @@
     "sherif",
     "nonexistent-package",
     "pkg-pr-new",
-    "nuxt",
     "ofetch",
-    "@nuxt/telemetry",
     "@nuxt/webpack-builder",
     "@nuxt/rspack-builder",
     "@rspack/core"
-  ],
-  "ignoreUnresolved": [
-    "^#build/",
-    "^#internal/",
-    "^#shared/",
-    "^#nitro-internal-pollyfills$",
-    "^#spa-template$",
-    "\\.\\./schema\\.ts$",
-    "\\.\\./hmr-sibling-layer$"
   ],
   "workspaces": {
     ".": {
@@ -45,15 +32,12 @@
     },
     "test/fixtures/*": {
       "entry": [
-        "**/*.{js,ts,mjs,vue}!"
+        "**/*.{js,ts,tsx,mjs,vue}!"
       ],
       "paths": {
-        "~~/*": [
-          "./*"
-        ],
-        "~/*": [
-          "./*"
-        ]
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
       }
     },
     "packages/nitro-server": {
@@ -96,10 +80,11 @@
         "test/**/*.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,vue}"
       ],
+      "ignoreUnresolved": ["../schema.ts"],
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
-        "@nuxt/telemetry!",
+        "@nuxt/telemetry",
         "@nuxt/vite-builder"
       ]
     },
@@ -139,7 +124,6 @@
         "defu",
         "esbuild-loader",
         "escape-string-regexp",
-        "exsolve",
         "file-loader",
         "h3",
         "h3-next",

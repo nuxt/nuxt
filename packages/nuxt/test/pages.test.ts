@@ -412,17 +412,19 @@ describe('pages:generateRouteKey', () => {
 })
 
 describe('pages:relativizeToParent', () => {
-  const tests: Array<[parentFullPath: string, childPath: string, expected: string]> = [
+  const tests: Array<[parentFullPath: string, childPath: string, expected: string | undefined]> = [
     ['/parent', '/parent/child', 'child'],
     ['/parent/:id()', '/parent/:id/child', 'child'],
     ['/parent/:id', '/parent/:id()/child', 'child'],
     ['/parent/:id()+', '/parent/:id+/child', 'child'],
     ['/parent/:id(\\d+)', '/parent/:id(\\d+)/child', 'child'],
-    ['/parent/:id()', '/parent/:id(\\d+)/child', ':id(\\d+)/child'],
-    ['/parent', '/detached', 'detached'],
-    ['/parent', '/parent-sibling/child', 'parent-sibling/child'],
+    ['/parent/:id()', '/parent/:id()/:childId?/child', ':childId?/child'],
     ['/parent', 'relative/child', 'relative/child'],
     ['/', '/child', 'child'],
+    ['/parent/:id()', '/parent/:id(\\d+)/child', undefined],
+    ['/parent', '/detached', undefined],
+    ['/parent', '/parent-sibling/child', undefined],
+    ['/parent/:id()', '/parent', undefined],
   ]
   it.each(tests)('should relativize %s + %s to %s', (parentFullPath, childPath, expected) => {
     expect(relativizeToParent(parentFullPath, childPath)).toBe(expected)

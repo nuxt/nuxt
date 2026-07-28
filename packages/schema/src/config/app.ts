@@ -43,10 +43,9 @@ export default defineResolvers({
     },
     buildAssetsDir: {
       $resolve: (val) => {
-        if (typeof val === 'string') {
-          return val
-        }
-        return process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+        const dir = typeof val === 'string' ? val : (process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/')
+        // normalised so consumers can compare it directly against request paths
+        return dir.replace(/^\/?/, '/').replace(/\/?$/, '/')
       },
     },
 

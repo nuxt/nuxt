@@ -109,6 +109,15 @@ export interface ConfigSchema {
 
     /**
      * Include Vue compiler in runtime bundle.
+     *
+     * Enabling this allows components to compile templates at runtime (for example,
+     * string `template` options or templates supplied via data).
+     *
+     * Runtime-compiled templates can execute arbitrary JavaScript. Never pass
+     * user-provided or otherwise untrusted content to a runtime-compiled template;
+     * treat any string that reaches the compiler as executable code.
+     *
+     * @see [Vue security guide](https://vuejs.org/guide/best-practices/security.html)
      */
     runtimeCompiler: boolean
 
@@ -1204,6 +1213,8 @@ export interface ConfigSchema {
     /**
      * Enable the new experimental typed router using vue-router.
      *
+     * This is enabled by default with compatibility version 5.
+     *
      * @default false
      */
     typedPages: boolean
@@ -1556,6 +1567,14 @@ export interface ConfigSchema {
      * @default true
      */
     granularCachedData: boolean
+
+    /**
+     * Apply `serialize: false` by default to `useAsyncData` and `useFetch` calls made within components lazily hydrated with `hydrate-never`, keeping their data out of the `__NUXT_DATA__` payload.
+     *
+     * An explicit `serialize` option always takes precedence. Note that data shared with other components via a common key follows the options of whichever call creates the shared entry first.
+     * @default false
+     */
+    stripNeverHydratedData: boolean
 
     /**
      * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.

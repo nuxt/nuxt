@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { genDynamicImport, genDynamicTypeImport, genObjectKey } from 'knitwork'
+import { genDynamicImport, genDynamicTypeImport, genObjectKey, genString } from 'knitwork'
 import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
 import type { ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
@@ -237,6 +237,21 @@ export const componentsTypeTemplate = {
   filename: 'types/components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, join(nuxt.options.buildDir, 'types'), nuxt.options.experimental.typescriptPlugin)
+    const globalComponentNames = new Set<string>()
+    const islandComponentNames = new Set<string>()
+    for (const component of app.components) {
+      if (component.global) {
+        globalComponentNames.add(component.pascalName)
+        globalComponentNames.add(`Lazy${component.pascalName}`)
+      }
+      if (nuxt.options.experimental.componentIslands && (component.island || (component.mode === 'server' && !app.components.some(c => c.pascalName === component.pascalName && c.mode === 'client')))) {
+        islandComponentNames.add(component.pascalName)
+      }
+    }
+    const literals = [
+      globalComponentNames.size ? `    componentName: ${[...globalComponentNames].map(name => genString(name)).join(' | ')}` : '',
+      islandComponentNames.size ? `    islandName: ${[...islandComponentNames].map(name => genString(name)).join(' | ')}` : '',
+    ].filter(Boolean)
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
@@ -249,7 +264,15 @@ ${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(met
 declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
-
+${literals.length
+      ? `
+declare module '#app' {
+  interface NuxtAppLiterals {
+${literals.join('\n')}
+  }
+}
+`
+      : ''}
 export {}
 `
   },
