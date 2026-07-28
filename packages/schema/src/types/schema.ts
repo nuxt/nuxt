@@ -1701,8 +1701,10 @@ export interface ConfigSchema {
      * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
      * Nitro's own Rolldown pipeline.
      *
+     * Enabled by default when `future.compatibilityVersion` is `5` or higher.
+     *
      * Only effective when using `@nuxt/vite-builder`.
-     * @default false
+     * @default true
      */
     nitroViteEnvironment: boolean
 

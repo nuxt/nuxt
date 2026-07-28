@@ -302,19 +302,24 @@ export default defineResolvers({
      * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
      * Nitro's own Rolldown pipeline.
      *
+     * Enabled by default when `future.compatibilityVersion` is `5` or higher.
+     *
      * Only effective when using `@nuxt/vite-builder`.
      */
     nitroViteEnvironment: {
       $resolve: async (val, get) => {
-        if (val !== true) {
+        const enabled = typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+        if (!enabled) {
           return false
         }
         const builder = await get('builder')
         if (builder !== 'vite' && (builder as string) !== '@nuxt/vite-builder') {
-          console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+          if (val === true) {
+            console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+          }
           return false
         }
-        return val
+        return true
       },
     },
     asyncCallHook: {
