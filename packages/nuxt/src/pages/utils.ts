@@ -289,7 +289,14 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
 
   const value = unwrapStaticExpression(property.value)
   if (key === 'layout' && value?.type === 'ObjectExpression') {
-    return { kind: 'reshape', key, node: value }
+    // Only `{ name, props }` can be rewritten into `layout` + `layoutProps`. Any other shape
+    // (spreads, computed keys, unknown keys) has no equivalent, so leave the object untouched
+    // rather than silently dropping parts of it.
+    const reshapable = value.properties.every(subProperty =>
+      subProperty.type === 'Property' && !subProperty.computed && subProperty.kind === 'init' && !subProperty.method
+      && subProperty.key.type === 'Identifier' && (subProperty.key.name === 'name' || subProperty.key.name === 'props'),
+    )
+    return reshapable ? { kind: 'reshape', key, node: value } : { kind: 'runtime' }
   }
 
   if (!extractionKeys.has(key)) {
@@ -388,10 +395,8 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       for (const property of argument.properties) {
         const classification = classifyPageMetaProperty(property, extractionKeys)
         if (classification.kind === 'extract' || classification.kind === 'dynamic') {
-          // A duplicate key keeps its first occurrence.
-          if (!classified.has(classification.key)) {
-            classified.set(classification.key, classification)
-          }
+          // A duplicate key keeps its last occurrence, mirroring object-literal evaluation.
+          classified.set(classification.key, classification)
           continue
         }
         hasRuntimeProperty = true

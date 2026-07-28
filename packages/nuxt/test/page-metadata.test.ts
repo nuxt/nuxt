@@ -1308,6 +1308,33 @@ definePageMeta(meta)
       })
     })
 
+    it('should keep an object layout with sub-properties that cannot be reshaped', () => {
+      const sfc = `
+<script setup lang="ts">
+const shared = { name: 'admin' }
+definePageMeta({ layout: { ...shared, props: { collapsed: true } } })
+</script>
+      `
+      const macro = macroModule(sfc, extractionKeys)
+      expect(macro).toContain('...shared')
+      expect(macro).not.toContain('layoutProps')
+      expect(getRouteMeta(sfc, '/app/pages/layout-spread.vue')).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    it('should extract the last occurrence of a duplicate key', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ name: 'first', name: 'last' })
+</script>
+      `
+      const macro = macroModule(sfc, extractionKeys)
+      expect(macro).not.toContain('first')
+      expect(macro).not.toContain('last')
+      expect(getRouteMeta(sfc, '/app/pages/duplicate.vue')).toEqual({ name: 'last' })
+    })
+
     it('should keep a getter whose name collides with an extracted key', () => {
       const sfc = `
 <script setup lang="ts">
