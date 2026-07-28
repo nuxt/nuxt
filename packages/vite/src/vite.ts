@@ -17,6 +17,7 @@ import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
+import { recoverThrottledChanges } from './utils/watch-recovery.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
@@ -294,6 +295,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
+    recoverThrottledChanges(server.watcher)
     nuxt.hook('close', () => server.close())
     await server.environments.ssr.pluginContainer.buildStart({})
     startClientWarmup(nuxt, server, entry)
