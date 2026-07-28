@@ -18,17 +18,11 @@ This composable is available in Nuxt v3.12+.
 A composable which observes the page title changes and updates the announcer message accordingly. Used by [`<NuxtRouteAnnouncer>`](/docs/4.x/api/components/nuxt-route-announcer) and controllable.
 It hooks into Unhead's `dom:rendered` hook to read the page's title and set it as the announcer message.
 
-::read-more{to="/docs/4.x/guide/best-practices/accessibility"}
-Read more about page titles, focus, and route announcements.
-::
-
-::read-more{to="/docs/4.x/guide/best-practices/performance"}
-Read more about built-in performance features for navigation and routing.
-::
+:read-more{title="Nuxt accessibility" to="/docs/4.x/guide/best-practices/accessibility#route-announcements"}
 
 ## Parameters
 
-- `politeness`: Sets how screen readers prioritize announcements (`polite`, `assertive`, or `off`). (default `polite`).
+- `politeness`: Sets the urgency for screen reader announcements: `off` (disable the announcement), `polite` (waits for silence), or `assertive` (interrupts immediately).  (default `polite`).
 
 ## Properties
 
@@ -40,13 +34,13 @@ Read more about built-in performance features for navigation and routing.
 ### `politeness`
 
 - **type**: `Ref<string>`
-- **description**: Screen reader announcement priority (`politeness`): `off`, `polite`, or `assertive`
+- **description**: Screen reader announcement urgency level `off`, `polite`, or `assertive`
 
 ## Methods
 
 ### `set(message, politeness = "polite")`
 
-Sets the message to announce with the given `politeness` level.
+Sets the message to announce with its urgency level.
 
 ### `polite(message)`
 
