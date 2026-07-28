@@ -301,7 +301,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
       if (fnName === 'definePageMeta') {
         for (const key of extractionKeys) {
-          const property = pageExtractArgument.properties.find((property): property is ESTree.ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+          const property = pageExtractArgument.properties.find((property): property is ESTree.ObjectProperty => property.type === 'Property' && !property.computed && property.key.type === 'Identifier' && property.key.name === key)
           if (!property) { continue }
 
           const { value, serializable } = isSerializable(code, property.value)
@@ -320,12 +320,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         }
 
         for (const property of pageExtractArgument.properties) {
-          if (property.type !== 'Property') {
-            continue
-          }
-          const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
-          if (!isIdentifierOrLiteral) {
-            continue
+          const isIdentifierOrLiteral = property.type === 'Property' && (property.key.type === 'Literal' || property.key.type === 'Identifier')
+          if (!isIdentifierOrLiteral || property.computed) {
+            dynamicProperties.add('meta')
+            break
           }
           const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
           if (!extractionKeys.has(name as keyof NuxtPage)) {
@@ -333,13 +331,21 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
             break
           }
         }
-
-        if (dynamicProperties.size) {
-          extractedData.meta ??= {}
-          extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
-        }
       }
     })
+
+    // A macro we could not resolve to a call expression may still contribute meta at runtime,
+    // so treat the whole object as dynamic rather than assuming there is nothing to extract.
+    for (const macro in found) {
+      if (!found[macro]) {
+        dynamicProperties.add('meta')
+      }
+    }
+
+    if (dynamicProperties.size) {
+      extractedData.meta ??= {}
+      extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
+    }
   }
 
   extractCache[absolutePath] = extractedData

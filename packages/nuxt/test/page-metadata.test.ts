@@ -427,6 +427,64 @@ definePageMeta({ name: 'bar' })
       }
     `)
   })
+  it('should mark metadata as dynamic when properties are spread', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      ...common,
+    })
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+      }
+    `)
+  })
+
+  it('should mark metadata as dynamic when keys are computed', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      [name]: 'some-custom-name',
+    })
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+      }
+    `)
+  })
+
+  it('should mark metadata as dynamic when the macro is not called as a statement', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    const meta = { name: 'some-custom-name' }
+    if (condition) { void definePageMeta(meta) }
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+      }
+    `)
+  })
 })
 
 describe('normalizeRoutes', () => {
