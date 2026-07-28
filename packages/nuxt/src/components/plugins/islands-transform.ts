@@ -23,8 +23,9 @@ interface ServerOnlyComponentTransformPluginOptions {
   selectiveClient?: boolean | 'deep'
 }
 
-const SCRIPT_RE = /<script[^>]*>/i
 const SCRIPT_RE_GLOBAL = /<script[^>]*>/gi
+const ATTR_VALUE_RE = /=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/g
+const LANG_ATTR_RE = /\slang\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const HAS_VFOR_RE = /\sv-for=/
 const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
@@ -52,6 +53,10 @@ function boundVForInTag (tag: string): string {
 function wrapWithVForDiv (code: string, vfor: string): string {
   // `vfor` is already passed through `boundVForExpression` by the caller.
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
+}
+
+function isSetupScript (tag: string): boolean {
+  return /\bsetup\b/.test(tag.replace(ATTR_VALUE_RE, ''))
 }
 
 export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
@@ -87,12 +92,17 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           return
         }
 
-        if (!SCRIPT_RE.test(code)) {
-          s.prepend('<script setup>' + IMPORT_CODE + '</script>')
+        // The injected helpers are referenced from the template, so they must be setup bindings:
+        // adding them to a plain `<script>` leaves them in module scope only and the template
+        // compiler resolves them off `_ctx` instead, which is `undefined` at render time.
+        const scriptTags = [...code.matchAll(SCRIPT_RE_GLOBAL)]
+        const setupTag = scriptTags.find(match => isSetupScript(match[0]))
+        if (setupTag) {
+          s.appendRight(setupTag.index + setupTag[0].length, IMPORT_CODE)
         } else {
-          for (const match of code.matchAll(SCRIPT_RE_GLOBAL)) {
-            s.appendRight(match.index + match[0].length, IMPORT_CODE)
-          }
+          // `<script>` and `<script setup>` in one SFC must agree on `lang`.
+          const lang = scriptTags[0]?.[0].match(LANG_ATTR_RE)?.[1]
+          s.prepend(`<script setup${lang ? ` lang=${lang}` : ''}>` + IMPORT_CODE + '</script>')
         }
 
         let hasNuxtClient = false
