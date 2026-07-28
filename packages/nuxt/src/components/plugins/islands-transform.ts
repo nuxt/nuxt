@@ -23,9 +23,8 @@ interface ServerOnlyComponentTransformPluginOptions {
   selectiveClient?: boolean | 'deep'
 }
 
-const SCRIPT_RE_GLOBAL = /<script[^>]*>/gi
-const ATTR_VALUE_RE = /=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/g
-const LANG_ATTR_RE = /\slang\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i
+const SCRIPT_RE_GLOBAL = /<script(?=[\s>])[^>]*>/gi
+const ATTR_RE = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const HAS_VFOR_RE = /\sv-for=/
 const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
@@ -55,8 +54,12 @@ function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
 }
 
-function isSetupScript (tag: string): boolean {
-  return /\bsetup\b/.test(tag.replace(ATTR_VALUE_RE, ''))
+function parseScriptAttributes (tag: string): Record<string, string> {
+  const attributes: Record<string, string> = {}
+  for (const match of tag.slice('<script'.length, -1).matchAll(ATTR_RE)) {
+    attributes[match[1]!.toLowerCase()] = match[2] ?? match[3] ?? match[4] ?? ''
+  }
+  return attributes
 }
 
 export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
@@ -95,14 +98,14 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         // The injected helpers are referenced from the template, so they must be setup bindings:
         // adding them to a plain `<script>` leaves them in module scope only and the template
         // compiler resolves them off `_ctx` instead, which is `undefined` at render time.
-        const scriptTags = [...code.matchAll(SCRIPT_RE_GLOBAL)]
-        const setupTag = scriptTags.find(match => isSetupScript(match[0]))
+        const scriptTags = [...code.matchAll(SCRIPT_RE_GLOBAL)].map(match => ({ match, attributes: parseScriptAttributes(match[0]) }))
+        const setupTag = scriptTags.find(({ attributes }) => 'setup' in attributes)
         if (setupTag) {
-          s.appendRight(setupTag.index + setupTag[0].length, IMPORT_CODE)
+          s.appendRight(setupTag.match.index + setupTag.match[0].length, IMPORT_CODE)
         } else {
           // `<script>` and `<script setup>` in one SFC must agree on `lang`.
-          const lang = scriptTags[0]?.[0].match(LANG_ATTR_RE)?.[1]
-          s.prepend(`<script setup${lang ? ` lang=${lang}` : ''}>` + IMPORT_CODE + '</script>')
+          const lang = scriptTags[0]?.attributes.lang
+          s.prepend(`<script setup${lang ? ` lang="${lang}"` : ''}>` + IMPORT_CODE + '</script>')
         }
 
         let hasNuxtClient = false
