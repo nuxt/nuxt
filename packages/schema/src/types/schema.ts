@@ -12,7 +12,7 @@ import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
-import type { NuxtLinkOptions } from 'nuxt/app'
+import type { NuxtLinkOptions } from '#app/types'
 import type { FetchOptions } from 'ofetch'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
@@ -109,8 +109,27 @@ export interface ConfigSchema {
 
     /**
      * Include Vue compiler in runtime bundle.
+     *
+     * Enabling this allows components to compile templates at runtime (for example,
+     * string `template` options or templates supplied via data).
+     *
+     * Runtime-compiled templates can execute arbitrary JavaScript. Never pass
+     * user-provided or otherwise untrusted content to a runtime-compiled template;
+     * treat any string that reaches the compiler as executable code.
+     *
+     * @see [Vue security guide](https://vuejs.org/guide/best-practices/security.html)
      */
     runtimeCompiler: boolean
+
+    /**
+     * Include support for the Vue Options API in the client bundle.
+     *
+     * Disabling this compiles out Vue's Options API runtime (via the `__VUE_OPTIONS_API__` feature
+     * flag), shrinking the client bundle for apps that only use the Composition API / `<script setup>`.
+     *
+     * Defaults to `false` when `future.compatibilityVersion` is `5` or higher, otherwise `true`.
+     */
+    optionsApi: boolean
 
     /**
      * Enable reactive destructure for `defineProps`
@@ -1194,6 +1213,8 @@ export interface ConfigSchema {
     /**
      * Enable the new experimental typed router using vue-router.
      *
+     * This is enabled by default with compatibility version 5.
+     *
      * @default false
      */
     typedPages: boolean
@@ -1548,6 +1569,14 @@ export interface ConfigSchema {
     granularCachedData: boolean
 
     /**
+     * Apply `serialize: false` by default to `useAsyncData` and `useFetch` calls made within components lazily hydrated with `hydrate-never`, keeping their data out of the `__NUXT_DATA__` payload.
+     *
+     * An explicit `serialize` option always takes precedence. Note that data shared with other components via a common key follows the options of whichever call creates the shared entry first.
+     * @default false
+     */
+    stripNeverHydratedData: boolean
+
+    /**
      * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
      *
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
@@ -1644,6 +1673,15 @@ export interface ConfigSchema {
        */
       botRegex?: RegExp
     }
+
+    /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Only effective when using `@nuxt/vite-builder`.
+     * @default false
+     */
+    nitroViteEnvironment: boolean
 
     /**
      * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.
@@ -1765,6 +1803,8 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
+   * @note `sensitive` defaults to `true` with `future.compatibilityVersion >= 5`.
+   *
    * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */
     options: RouterConfigSerializable
@@ -1808,14 +1848,30 @@ export interface ConfigSchema {
     typeCheck: boolean | 'build'
 
     /**
-     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
+     * Extend the generated tsconfig files with shared options.
+     *
+     * `compilerOptions` set here apply to all generated tsconfigs (`.nuxt/tsconfig.app.json`, `.nuxt/tsconfig.server.json`, `.nuxt/tsconfig.node.json` and `.nuxt/tsconfig.shared.json`), while `include`, `exclude` and `vueCompilerOptions` apply only to `.nuxt/tsconfig.app.json` (and the legacy `.nuxt/tsconfig.json`).
+     *
+     * Two groups of `compilerOptions` are exceptions: DOM- and Vue-specific options (such as `lib`, `jsx` and `jsxImportSource`) apply only to `.nuxt/tsconfig.app.json`, and `types`, `paths` and `noEmit` are managed by Nuxt per context, so they cannot be set globally for the `node`, `shared` and `server` tsconfigs.
+     *
+     * Use `appTsConfig`, `serverTsConfig`, `nodeTsConfig` or `sharedTsConfig` for context-specific overrides; they take precedence over this option.
      */
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option. Options set here take precedence over `tsConfig`.
+     */
+    appTsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
     /**
      * You can extend the generated `.nuxt/tsconfig.node.json` using this option.
      */
     nodeTsConfig: TSConfig
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.server.json` using this option. Options set here take precedence over `tsConfig`.
+     */
+    serverTsConfig: TSConfig
 
     /**
      * You can extend the generated `.nuxt/tsconfig.shared.json` using this option.

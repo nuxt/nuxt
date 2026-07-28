@@ -104,7 +104,7 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
   }
 })
 
-function isStringLiteral (node: ESTree.Argument | undefined) {
+function isStringLiteral (node: ESTree.Argument | undefined): node is ESTree.StringLiteral {
   return !!node && node.type === 'Literal' && typeof node.value === 'string'
 }
 

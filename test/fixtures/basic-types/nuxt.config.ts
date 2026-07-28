@@ -96,6 +96,8 @@ export default withMatrix({
     typedPages: true,
     appManifest: true,
   },
+  nitro: {
+  },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'schema:extend' (schemas) {

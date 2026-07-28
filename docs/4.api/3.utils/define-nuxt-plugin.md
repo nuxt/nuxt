@@ -58,7 +58,7 @@ interface ObjectPlugin<T> {
 
 :video-accordion{title="Watch a video from Alexander Lichter about the Object Syntax for Nuxt plugins" videoId="2aXZyXB1QGQ"}
 
-## Examples
+## Example
 
 ### Basic Usage
 

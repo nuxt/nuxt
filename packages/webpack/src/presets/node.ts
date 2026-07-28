@@ -1,5 +1,5 @@
 import type { WebpackConfigContext } from '../utils/config.ts'
-import { builder } from '#builder'
+import { builder } from '../builder.ts'
 
 export function node (ctx: WebpackConfigContext) {
   ctx.config.target = 'node'

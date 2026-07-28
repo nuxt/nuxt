@@ -8,12 +8,12 @@
   "dependencies": {
     "hook-augmenting-module": "workspace:*",
     "nuxt": "workspace:*",
-    "ofetch": "^2.0.0-alpha.3",
-    "vue": "^3.5.34",
-    "vue-router": "^5.0.6"
+    "ofetch": "catalog:app-runtime",
+    "vue": "catalog:app-runtime",
+    "vue-router": "catalog:app-runtime"
   },
   "devDependencies": {
-    "vitest": "4.1.6"
+    "vitest": "catalog:dev"
   },
   "engines": {
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"

@@ -7,13 +7,16 @@ export type { CreateOptions, NuxtApp, NuxtPayload, NuxtPluginIndicator, NuxtSSRC
 
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { defineNuxtComponent, useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData, useHydration, callOnce, useState, clearNuxtState, clearError, createError, isNuxtError, showError, useError, useFetch, useLazyFetch, useCookie, refreshCookie, onPrehydrate, prerenderRoutes, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus, useResponseHeader, onNuxtReady, abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, onBeforeRouteLeave, onBeforeRouteUpdate, setPageLayout, navigateTo, useRoute, useRouter, preloadComponents, prefetchComponents, preloadRouteComponents, isPrerendered, loadPayload, preloadPayload, definePayloadReducer, definePayloadReviver, getAppManifest, getRouteRules, reloadNuxtApp, useRequestURL, usePreviewMode, useId, useRouteAnnouncer, useAnnouncer, useHead, useHeadSafe, useServerSeoMeta, useServerHeadSafe, useServerHead, useSeoMeta, injectHead, useRuntimeHook } from './composables/index'
-export type { AddRouteMiddlewareOptions, AnnouncerPoliteness, AsyncData, AsyncDataOptions, AsyncDataRequestStatus, CookieOptions, CookieRef, FetchResult, NuxtAnnouncer, NuxtAnnouncerOpts, NuxtAppManifest, NuxtAppManifestMeta, NuxtError, Politeness, ReloadNuxtAppOptions, RouteMiddleware, UseFetchOptions } from './composables/index'
+export type { AddRouteMiddlewareOptions, AnnouncerPoliteness, AsyncData, AsyncDataOptions, AsyncDataRequestStatus, CookieOptions, CookieRef, FetchResult, NuxtAnnouncer, NuxtAnnouncerOpts, NuxtAppManifest, NuxtAppManifestMeta, NuxtError, Politeness, ReloadNuxtAppOptions, RouteMiddleware, UseFetchOptions, $Fetch } from './composables/index'
 
 export { defineNuxtLink } from './components/index'
 export type { NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
+export { getIslandHash, serializeIslandProps } from './island-hash'
+export { hashKey } from './utils/hash'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
 export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
-export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, PageMeta, NuxtPageProps, NuxtLayouts } from './types'
+export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, SerializedErrorCause } from './types'
+export type { PageMeta, NuxtPageProps, NuxtLayouts } from '../pages/runtime/index'
 
 export const isVue2 = false
 export const isVue3 = true

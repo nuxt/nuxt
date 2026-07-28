@@ -10,7 +10,7 @@ export default defineConfig({
       '@nuxt/schema',
       '#vite-node',
       '#vite-node-runner',
-      '#internal/nuxt/vite-node-runner',
+      '#internal/nuxt/vite-node-runner.mjs',
     ],
   },
 })

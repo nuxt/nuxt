@@ -29,10 +29,7 @@ export default defineResolvers({
               ? runtimeConfig.app.baseURL.slice(1)
               : runtimeConfig.app.baseURL,
           },
-          nitro: {
-            envPrefix: 'NUXT_',
-            ...runtimeConfig.nitro,
-          },
+          nitro: Object.assign({ envPrefix: 'NUXT_' }, runtimeConfig.nitro),
         }
       },
     },
@@ -44,8 +41,39 @@ export default defineResolvers({
         }
       },
     },
+    tracingChannel: {
+      $resolve: async (val, get) => {
+        if (val === false) {
+          return false
+        }
+        const topLevel = await get('tracingChannel')
+        const base = typeof topLevel === 'object' ? topLevel : null
+        const override = val && typeof val === 'object' ? val : null
+        if (!base && !override) {
+          return val === true ? {} : false
+        }
+        return { ...(base || {}), ...(override || {}) }
+      },
+    },
   },
   routeRules: {},
   serverHandlers: [],
   devServerHandlers: [],
+  tracingChannel: {
+    $resolve: (val) => {
+      if (val === true) {
+        return { nuxt: true, srvx: true, h3: true, unstorage: true }
+      }
+      if (val && typeof val === 'object') {
+        return {
+          nuxt: true,
+          srvx: true,
+          h3: true,
+          unstorage: true,
+          ...val,
+        }
+      }
+      return false
+    },
+  },
 })

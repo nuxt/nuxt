@@ -1,6 +1,7 @@
 ---
 title: 'useRouteAnnouncer'
 description: This composable observes the page title changes and updates the announcer message accordingly.
+minimalVersion: "3.12"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -16,6 +17,8 @@ This composable is available in Nuxt v3.12+.
 
 A composable which observes the page title changes and updates the announcer message accordingly. Used by [`<NuxtRouteAnnouncer>`](/docs/4.x/api/components/nuxt-route-announcer) and controllable.
 It hooks into Unhead's `dom:rendered` hook to read the page's title and set it as the announcer message.
+
+:read-more{title="Nuxt accessibility" to="/docs/4.x/guide/best-practices/accessibility#route-announcements"}
 
 ## Parameters
 

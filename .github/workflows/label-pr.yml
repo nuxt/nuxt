@@ -45,7 +45,7 @@ jobs:
               'nuxt:3.x': '3.x'
             }[pullRequest.baseLabel]
 
-            if (!pullRequest.labelsNames.includes(baseBranchLabelName)) {
+            if (baseBranchLabelName && !pullRequest.labelsNames.includes(baseBranchLabelName)) {
               labelsToAdd.push(baseBranchLabelName)
             }
 

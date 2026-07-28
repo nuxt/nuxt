@@ -5,6 +5,7 @@ import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleS
 import { logger } from '../logger.ts'
 import { tryUseNuxt, useNuxt } from '../context.ts'
 import { checkNuxtCompatibility } from '../compatibility.ts'
+import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
@@ -85,7 +86,7 @@ function _defineNuxtModule<
   // Module format is always a simple function
   async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
-      throw new TypeError(`Cannot use ${module.meta.name || 'module'} outside of Nuxt context`)
+      throw kitDiagnostics.NUXT_B8012({ name: module.meta.name || 'module' })
     }
 
     // Avoid duplicate installs
@@ -108,7 +109,7 @@ function _defineNuxtModule<
           error.name = 'ModuleCompatibilityError'
           throw error
         }
-        logger.warn(errorMessage)
+        kitDiagnostics.NUXT_B8013({ message: errorMessage })
         return
       }
     }
@@ -125,7 +126,7 @@ function _defineNuxtModule<
     const moduleName = uniqueKey || module.meta.name || '<no name>'
     nuxt._perf?.startPhase(`module:${moduleName}`)
     const start = performance.now()
-    let res = {} as ModuleSetupReturn
+    let res: ModuleSetupReturn
     try {
       res = await module.setup?.call(null as any, _options, nuxt) ?? {}
     } finally {
@@ -136,7 +137,7 @@ function _defineNuxtModule<
 
     // Measure setup time
     if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
-      logger.warn(`Slow module \`${moduleName}\` took \`${setupTime}ms\` to setup.`)
+      kitDiagnostics.NUXT_B8014({ name: moduleName, time: setupTime })
     } else if (nuxt.options.debug && nuxt.options.debug.modules) {
       logger.info(`Module \`${moduleName}\` took \`${setupTime}ms\` to setup.`)
     }

@@ -6,7 +6,15 @@
       "#app/*": ["./src/app/*"],
       "#unhead/composables": ["./src/head/runtime/composables"],
       "nuxt/app": ["./src/app/index"],
-      "nuxt/app/*": ["./src/app/*"]
+      "nuxt/app/*": ["./src/app/*"],
+      "#build/nuxt.config.mjs": ["./src/build-stub-nuxt-config.d.ts"],
+      "#build/pages": ["./src/build-stub-pages.d.ts"],
+      "#build/fetch": ["./src/build-stub-fetch.d.ts"],
+      "#build/*": ["./src/build-stub-module.d.ts"],
+      "#app-manifest": ["./src/build-stub-module.d.ts"],
+      "#internal/*": ["./src/build-stub-module.d.ts"],
+      "#spa-template": ["./src/build-stub-module.d.ts"]
     }
-  }
+  },
+  "include": ["src/**/*"]
 }
