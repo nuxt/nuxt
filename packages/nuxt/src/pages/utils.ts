@@ -271,8 +271,13 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     }
 
     const dynamicProperties = new Set<keyof NuxtPage>()
+    const macroCalls: Array<{ fnName: string, start: number }> = []
 
-    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+    const { program } = parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+      if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name in found) {
+        macroCalls.push({ fnName: node.callee.name, start: node.start })
+      }
+
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier') { return }
 
       // function name is one of the extracted macro functions and not yet found
@@ -333,6 +338,23 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         }
       }
     })
+
+    // Compiler macros are extracted whatever position they appear in, so a call that is not a
+    // top-level statement (nested in a condition or used as an expression) does not mean what it
+    // looks like it means.
+    const topLevelCalls = new Set<number>()
+    for (const statement of program.body) {
+      if (statement.type !== 'ExpressionStatement') { continue }
+      const expression = unwrapStaticExpression(statement.expression)
+      if (expression?.type === 'CallExpression') {
+        topLevelCalls.add(expression.start)
+      }
+    }
+
+    for (const { fnName, start } of macroCalls) {
+      if (topLevelCalls.has(start)) { continue }
+      pageDiagnostics.NUXT_B4007({ fnName, file: absolutePath })
+    }
 
     // A macro we could not resolve to a call expression may still contribute meta at runtime,
     // so treat the whole object as dynamic rather than assuming there is nothing to extract.

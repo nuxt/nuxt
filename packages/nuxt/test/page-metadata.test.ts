@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
+import { pageDiagnostics } from '@nuxt/kit'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
@@ -485,6 +486,79 @@ definePageMeta({ name: 'bar' })
         },
       }
     `)
+  })
+})
+
+describe('page metadata macro position', () => {
+  let warn: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    warn = vi.spyOn(pageDiagnostics, 'NUXT_B4007').mockReturnValue(undefined as never)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should not warn when the macros are called at the top level', () => {
+    getRouteMeta(`
+    <script setup>
+    definePageMeta({ name: 'some-custom-name' })
+    defineRouteRules({ prerender: true })
+    </script>
+    `, '/app/pages/top-level.vue')
+
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('should not warn when a macro call is wrapped in parentheses or type assertions', () => {
+    getRouteMeta(`
+    <script setup lang="ts">
+    ;(definePageMeta({ name: 'some-custom-name' }))
+    </script>
+    `, '/app/pages/wrapped.vue')
+
+    getRouteMeta(`
+    <script setup lang="ts">
+    definePageMeta({ name: 'some-custom-name' }) as void
+    </script>
+    `, '/app/pages/asserted.vue')
+
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('should warn when a macro is called conditionally', () => {
+    getRouteMeta(`
+    <script setup>
+    if (condition) {
+      definePageMeta({ name: 'some-custom-name' })
+    }
+    </script>
+    `, '/app/pages/conditional.vue')
+
+    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: '/app/pages/conditional.vue' })
+  })
+
+  it('should warn when a macro is used as an expression', () => {
+    getRouteMeta(`
+    <script setup>
+    void definePageMeta({ name: 'some-custom-name' })
+    </script>
+    `, '/app/pages/expression.vue')
+
+    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: '/app/pages/expression.vue' })
+  })
+
+  it('should warn when a macro is called inside a function', () => {
+    getRouteMeta(`
+    <script setup>
+    function setup () {
+      defineRouteRules({ prerender: true })
+    }
+    </script>
+    `, '/app/pages/nested.vue')
+
+    expect(warn).toHaveBeenCalledWith({ fnName: 'defineRouteRules', file: '/app/pages/nested.vue' })
   })
 })
 
