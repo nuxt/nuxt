@@ -1,7 +1,8 @@
 import { writeFileSync } from 'node:fs'
-import { mkdir, rm } from 'node:fs/promises'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
 
 import type { FSWatcher } from 'vite'
+import type { ResolvedNuxtTemplate } from 'nuxt/schema'
 import { join, relative, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
@@ -54,6 +55,42 @@ describe('builder:watch', { sequential: true }, async () => {
       'other',
       'test',
     ])
+  })
+
+  it('should only recompile templates that can be affected by a changed file', async () => {
+    const rootDir = join(tmpDir, 'project')
+    await mkdir(join(rootDir, 'app/pages'), { recursive: true })
+    await mkdir(join(rootDir, 'app/components'), { recursive: true })
+    await writeFile(join(rootDir, 'app/pages/index.vue'), '<template><div>index</div></template>')
+    await writeFile(join(rootDir, 'app/components/Foo.vue'), '<template><div>foo</div></template>')
+
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        dev: true,
+        _prepare: true,
+        experimental: { watcher: 'chokidar' },
+      },
+    })
+
+    await build(nuxt)
+
+    let generations = 0
+    const selections: Array<string[] | undefined> = []
+    nuxt.hook('app:templates', () => { generations++ })
+    nuxt.hook('app:templatesGenerated', (app, _templates, options) => {
+      selections.push(options?.filter ? app.templates.filter(t => options.filter!(t as ResolvedNuxtTemplate<any>)).map(t => t.filename!).sort() : undefined)
+    })
+
+    await nuxt.callHook('builder:watch', 'change', 'components/Foo.vue')
+    expect.soft(generations).toBe(0)
+
+    await nuxt.callHook('builder:watch', 'change', 'pages/index.vue')
+    expect.soft(generations).toBe(1)
+    expect.soft(selections.every(selection => selection?.includes('routes.mjs'))).toBe(true)
+
+    await nuxt.close()
   })
 
   it('should restart Nuxt when a file is added with builder strategy', async () => {

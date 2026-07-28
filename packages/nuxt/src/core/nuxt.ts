@@ -248,6 +248,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   addTypeTemplate({
     filename: 'types/nitro-layouts.d.ts',
+    dependsOn: [],
     getContents: ({ app }) => {
       return [
         `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
@@ -287,6 +288,7 @@ async function initNuxt (nuxt: Nuxt) {
       nuxt.options.typescript.hoist.push(environmentTypes)
       addTypeTemplate({
         filename: 'types/builder-env.d.ts',
+        dependsOn: [],
         getContents: () => genImport(environmentTypes),
       })
     }
@@ -803,6 +805,7 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.vue.config && Object.values(nuxt.options.vue.config).some(v => v !== null && v !== undefined)) {
     addPluginTemplate({
       filename: 'vue-app-config.mjs',
+      dependsOn: [],
       getContents: () => `
 import { defineNuxtPlugin } from '#app/nuxt'
 export default defineNuxtPlugin({

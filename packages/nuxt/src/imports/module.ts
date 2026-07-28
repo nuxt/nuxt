@@ -119,6 +119,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
+      dependsOn: [],
       getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }',
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
@@ -262,6 +263,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
   addTypeTemplate({
     filename: 'imports.d.ts',
+    dependsOn: [],
     getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true, { declaration: true }),
   })
 
@@ -270,6 +272,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
   addTypeTemplate({
     filename: 'types/imports.d.ts',
+    dependsOn: [],
     getContents: async () => {
       const imports = await ctx.getImports()
       await cacheImportPaths(imports)
@@ -283,6 +286,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
   addTemplate({
     filename: 'types/shared-imports.d.ts',
+    dependsOn: [],
     getContents: async () => {
       if (!options.autoImport) {
         return GENERATED_BY_COMMENT + AUTO_IMPORTS_DISABLED_COMMENT

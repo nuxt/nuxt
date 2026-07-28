@@ -303,6 +303,7 @@ export default defineNuxtModule<ComponentsOptions>({
       } else {
         addTemplate({
           filename: 'component-chunk.mjs',
+          dependsOn: [],
           getContents: () => `export default {}`,
         })
       }

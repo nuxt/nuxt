@@ -8,6 +8,7 @@ import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { isDirectory } from '../utils.ts'
 import { generateApp as _generateApp, createApp } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
+import { createChangedFileFilter } from './template-dependencies.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
@@ -62,6 +63,13 @@ export async function build (nuxt: Nuxt): Promise<void> {
       }
 
       // Recompile app templates
+      if (event === 'change' && app.templates.length) {
+        const filter = createChangedFileFilter(nuxt, app, resolve(nuxt.options.srcDir, relativePath))
+        if (!filter) { return }
+        await track(() => _generateApp(nuxt, app, { filter }))
+        return
+      }
+
       await track(() => generateApp())
     })
     nuxt.hook('builder:generateApp', (options) => {
