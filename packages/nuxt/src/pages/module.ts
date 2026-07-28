@@ -2,7 +2,7 @@ import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, pageDiagnostics, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
+import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
 import { createRoutesContext, resolveOptions } from 'vue-router/unplugin'
@@ -212,8 +212,8 @@ export default defineNuxtModule({
       filename: 'types/layouts.d.ts',
       getContents: ({ app }) => {
         return [
-          'import type { ComputedRef, MaybeRef } from \'vue\'',
-          `import type { ComponentProps } from ${genString(componentTypeHelpersPath)}`,
+          genTypeImport('vue', ['ComputedRef', 'MaybeRef']),
+          genTypeImport(componentTypeHelpersPath, ['ComponentProps']),
           '',
           'declare module \'nuxt/app\' {',
           '  interface NuxtLayouts {',
