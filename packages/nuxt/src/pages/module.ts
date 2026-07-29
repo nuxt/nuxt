@@ -736,7 +736,7 @@ export default defineNuxtModule({
     nuxt.hook('nitro:init', (nitro) => {
       nitroForNoScripts = nitro
     })
-    function markNoScriptsPages (pages: NuxtPage[], prefix = '/') {
+    function markNoScriptsPages (pages: NuxtPage[]) {
       const nitro = nitroForNoScripts
       if (!nitro || !('routing' in nitro)) { return }
       const routeRules = nitro.routing.routeRules
@@ -775,21 +775,31 @@ export default defineNuxtModule({
         if (!patterns.length) { return null }
         return patterns.every(patternIsNoScripts)
       }
-      for (const page of pages) {
-        // child paths are relative to the parent, so resolve them against the
-        // accumulated prefix before matching against route rules
-        const path = page.path.startsWith('/') ? page.path : joinURL(prefix, page.path)
-        if (page.children?.length) {
-          markNoScriptsPages(page.children, path)
-          continue
+      // A page is only safe to drop from the client bundle when every path it
+      // can be reached by is served without scripts. If any alias resolves to a
+      // scripted route (or cannot be checked statically), keep the component so
+      // client-side navigation to that alias still renders it. A parent page
+      // renders for all of its descendants, so it additionally requires the
+      // whole subtree below it to be script-free. Returns whether that holds for
+      // every page passed in.
+      function markPages (pages: NuxtPage[], prefix: string): boolean {
+        let allNoScripts = true
+        for (const page of pages) {
+          // child paths are relative to the parent, so resolve them against the
+          // accumulated prefix before matching against route rules
+          const path = page.path.startsWith('/') ? page.path : joinURL(prefix, page.path)
+          const aliases = toArray(page.alias || []).map(alias => alias.startsWith('/') ? alias : joinURL(prefix, alias))
+          let noScripts = [path, ...aliases].every(path => isNoScriptsPath(path) === true)
+          if (page.children?.length) {
+            noScripts = markPages(page.children, path) && noScripts
+          }
+          page._noScripts = noScripts
+          allNoScripts &&= noScripts
         }
-        // A page is only safe to drop from the client bundle when every path it
-        // can be reached by is served without scripts. If any alias resolves to
-        // a scripted route (or cannot be checked statically), keep the component
-        // so client-side navigation to that alias still renders it.
-        const aliases = toArray(page.alias || []).map(alias => alias.startsWith('/') ? alias : joinURL(prefix, alias))
-        page._noScripts = [path, ...aliases].every(path => isNoScriptsPath(path) === true)
+        return allNoScripts
       }
+
+      markPages(pages, '/')
     }
 
     // Add routes template

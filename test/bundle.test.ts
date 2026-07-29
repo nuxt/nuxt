@@ -152,8 +152,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(bundle).not.toContain('no-scripts-page')
     expect(bundle).not.toContain('product-page')
 
-    // a nested child route (relative path resolved against its parent)
+    // a nested child route (relative path resolved against its parent), and the
+    // parent shell it renders inside
     expect(bundle).not.toContain('dashstatsheading')
+    expect(bundle).not.toContain('dash-page')
 
     // the default and named views of a `noScripts` route are both stubbed
     expect(bundle).not.toContain('report-default')
