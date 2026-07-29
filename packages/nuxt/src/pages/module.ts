@@ -13,7 +13,7 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { logger } from '../utils.ts'
 import picomatch from 'picomatch'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, relativizeToParent, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
@@ -655,11 +655,7 @@ export default defineNuxtModule({
     })
 
     // Extract macros from pages
-    const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
-    const extractedKeys = [
-      ...defaultExtractionKeys,
-      ...extraPageMetaExtractionKeys,
-    ]
+    const extractedKeys = [...resolvePageMetaExtractionKeys(nuxt.options.experimental.extraPageMetaExtractionKeys)]
 
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({
