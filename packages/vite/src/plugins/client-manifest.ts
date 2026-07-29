@@ -10,14 +10,14 @@ import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { bundlerDiagnostics, setBuildOutput } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import { resolveClientEntry, resolveClientManifestPath } from '../utils/config.ts'
+import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
 import { collectGlobalCss } from '../utils/css.ts'
 
 export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let clientEntry: string
   let key: string
   let disableCssCodeSplit: boolean
-  let clientOutDir: string
+  let manifestFileName: string
   let manifestFile: string
 
   let precomputedCode = 'export default undefined'
@@ -80,7 +80,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       order: 'post',
       handler (_options, bundle) {
         if (!envApi || nuxt.options.dev || this.environment?.name !== 'client') { return }
-        const asset = bundle[relative(clientOutDir, manifestFile)]
+        const asset = bundle[manifestFileName]
         if (asset?.type === 'asset') {
           rawClientManifest = JSON.parse(asset.source.toString()) as ViteClientManifest
         }
@@ -91,9 +91,9 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       key = relative(config.root, clientEntry)
       disableCssCodeSplit = config.build?.cssCodeSplit === false
       if (!nuxt.options.dev) {
-        const clientBuild = config.environments.client?.build
-        clientOutDir = clientBuild?.outDir ?? resolve(nuxt.options.buildDir, 'dist/client')
-        manifestFile = resolveClientManifestPath(clientOutDir, clientBuild?.manifest)
+        const clientBuild = config.environments.client?.build ?? config.build
+        manifestFileName = resolveClientManifestFile(clientBuild.manifest)
+        manifestFile = resolve(clientBuild.outDir, manifestFileName)
       }
     },
     async closeBundle () {
