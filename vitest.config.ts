@@ -158,7 +158,7 @@ export default defineConfig({
           benchmark: { include: [] },
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
-          include: ['packages/**/*.{test,spec}.ts'],
+          include: ['packages/**/*.{test,spec}.ts', 'scripts/**/*.{test,spec}.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
           exclude: fixtureExclude,
