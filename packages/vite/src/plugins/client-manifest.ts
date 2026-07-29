@@ -116,7 +116,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       ? devClientManifest
       : envApi
         ? (rawClientManifest ?? raiseMissingManifest())
-        : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
+        : JSON.parse(readManifestFromDisk()) as ViteClientManifest
     const manifestEntries = Object.values(clientManifest)
 
     const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
@@ -157,6 +157,17 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       if (!envApi) {
         await rm(manifestFile, { force: true })
       }
+    }
+  }
+
+  function readManifestFromDisk (): string {
+    try {
+      return readFileSync(manifestFile, 'utf-8')
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        raiseMissingManifest()
+      }
+      throw error
     }
   }
 
