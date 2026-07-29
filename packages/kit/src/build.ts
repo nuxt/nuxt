@@ -1,5 +1,5 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
-import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
+import type { ConfigEnv, UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
@@ -188,13 +188,22 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
 
     const environmentName = options.server === false ? 'client' : 'ssr'
     const pluginName = plugin.map(p => p.name).join('|')
+    // Vite only honours `apply` and nested `applyToEnvironment` for plugins it
+    // finds in the top-level array, so plugins we nest behind a wrapper have to
+    // be filtered here or dev-only plugins would leak into production builds.
+    const configEnv: ConfigEnv = {
+      command: nuxt.options.dev ? 'serve' : 'build',
+      mode: config.mode || nuxt.options.vite.mode || (nuxt.options.dev ? 'development' : 'production'),
+      isPreview: false,
+    }
+    const applicablePlugins = plugin.filter(p => p && (!p.apply || (typeof p.apply === 'function' ? p.apply(config, configEnv) : p.apply === configEnv.command))) as VitePlugin[]
     config.plugins.push({
       name: `${pluginName}:wrapper`,
       // isomorphic plugins are normally just added to plugins, so only force when `prepend` is set
       enforce: isIsomorphic ? (options?.prepend ? 'pre' : undefined) : (options?.prepend ? 'pre' : 'post'),
       applyToEnvironment (environment) {
         if (isIsomorphic ? environment.name === 'client' || environment.name === 'ssr' : environment.name === environmentName) {
-          return plugin
+          return resolveNestedPlugins(applicablePlugins, environment)
         }
       },
     })
@@ -213,6 +222,28 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
       config.plugins![method](...plugin)
     }
   })
+}
+
+type VitePluginEnvironment = Parameters<NonNullable<VitePlugin['applyToEnvironment']>>[0]
+
+async function resolveNestedPlugins (plugins: VitePlugin[], environment: VitePluginEnvironment): Promise<VitePlugin[]> {
+  const resolved: VitePlugin[] = []
+  for (const plugin of plugins) {
+    if (!plugin.applyToEnvironment) {
+      resolved.push(plugin)
+      continue
+    }
+    const applied = await plugin.applyToEnvironment(environment)
+    if (!applied) {
+      continue
+    }
+    if (applied === true) {
+      resolved.push(plugin)
+      continue
+    }
+    resolved.push(...toArray(applied).flat().filter(Boolean) as VitePlugin[])
+  }
+  return resolved
 }
 
 interface AddBuildPluginFactory {
