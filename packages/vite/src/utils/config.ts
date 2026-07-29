@@ -1,5 +1,4 @@
 import type { ResolvedConfig } from 'vite'
-import { resolve } from 'pathe'
 import { bundlerDiagnostics } from '@nuxt/kit'
 
 /**
@@ -12,13 +11,6 @@ export function resolveClientManifestFile (manifest: string | boolean | undefine
     throw bundlerDiagnostics.NUXT_B7020()
   }
   return manifest === true ? '.vite/manifest.json' : manifest
-}
-
-/**
- * Resolve the absolute path Vite writes the client build manifest to.
- */
-export function resolveClientManifestPath (outDir: string, manifest: string | boolean | undefined) {
-  return resolve(outDir, resolveClientManifestFile(manifest))
 }
 
 export function resolveClientEntry (config: ResolvedConfig) {
