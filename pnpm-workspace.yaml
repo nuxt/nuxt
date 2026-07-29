@@ -55,6 +55,7 @@ minimumReleaseAgeExclude:
   - '@unhead/vue@3.2.1'
   - unhead@3.2.1
   - impound@1.1.6
+  - oxc-walker@1.1.1
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
@@ -104,7 +105,7 @@ catalogs:
   # vite/rolldown/oxc toolchain
   vite:
     magic-string: ^1.1.0
-    oxc-walker: ^1.0.0
+    oxc-walker: ^1.1.1
     # needs to match vite's own `~1.1.5` pin
     rolldown: ~1.1.5
     rolldown-string: ^0.3.1
