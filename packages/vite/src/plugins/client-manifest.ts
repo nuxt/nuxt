@@ -8,15 +8,17 @@ import { normalizeViteManifest, precomputeDependencies } from 'vue-bundle-render
 import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
-import { setBuildOutput } from '@nuxt/kit'
+import { bundlerDiagnostics, setBuildOutput } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import { resolveClientEntry } from '../utils/config.ts'
+import { resolveClientEntry, resolveClientManifestPath } from '../utils/config.ts'
 import { collectGlobalCss } from '../utils/css.ts'
 
 export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let clientEntry: string
   let key: string
   let disableCssCodeSplit: boolean
+  let clientOutDir: string
+  let manifestFile: string
 
   let precomputedCode = 'export default undefined'
   // Default empty manifest so the build output is loadable before the real one is populated.
@@ -78,7 +80,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       order: 'post',
       handler (_options, bundle) {
         if (!envApi || nuxt.options.dev || this.environment?.name !== 'client') { return }
-        const asset = bundle['manifest.json']
+        const asset = bundle[relative(clientOutDir, manifestFile)]
         if (asset?.type === 'asset') {
           rawClientManifest = JSON.parse(asset.source.toString()) as ViteClientManifest
         }
@@ -88,6 +90,11 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       clientEntry = resolveClientEntry(config)
       key = relative(config.root, clientEntry)
       disableCssCodeSplit = config.build?.cssCodeSplit === false
+      if (!nuxt.options.dev) {
+        const clientBuild = config.environments.client?.build
+        clientOutDir = clientBuild?.outDir ?? resolve(nuxt.options.buildDir, 'dist/client')
+        manifestFile = resolveClientManifestPath(clientOutDir, clientBuild?.manifest)
+      }
     },
     async closeBundle () {
       // In env-API mode finalisation is triggered lazily by the provider
@@ -102,14 +109,13 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
     const devClientManifest = buildDevClientManifest()
 
-    // Legacy reads the client `manifest.json` from disk, written by the time
-    // the ssr env's `closeBundle` runs. Env-API uses the in-memory capture
+    // Legacy reads the client manifest from disk, written by the time the ssr
+    // env's `closeBundle` runs. Env-API uses the in-memory capture
     // (`rawClientManifest`).
-    const manifestFile = resolve(nuxt.options.buildDir, 'dist/client', 'manifest.json')
     const clientManifest = nuxt.options.dev
       ? devClientManifest
       : envApi
-        ? (rawClientManifest ?? {})
+        ? (rawClientManifest ?? raiseMissingManifest())
         : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
     const manifestEntries = Object.values(clientManifest)
 
@@ -147,10 +153,14 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
         await writeFile(resolve(serverDist, 'client.precomputed.mjs'), precomputedCode, 'utf8')
       }
 
-      // The legacy build reads `manifest.json` from disk, so we can remove it once consumed.
+      // The legacy build reads the manifest from disk, so we can remove it once consumed.
       if (!envApi) {
         await rm(manifestFile, { force: true })
       }
     }
+  }
+
+  function raiseMissingManifest (): never {
+    throw bundlerDiagnostics.NUXT_B7021({ manifestFile })
   }
 }

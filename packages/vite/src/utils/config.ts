@@ -1,5 +1,17 @@
 import type { ResolvedConfig } from 'vite'
+import { resolve } from 'pathe'
 import { bundlerDiagnostics } from '@nuxt/kit'
+
+/**
+ * Resolve the absolute path Vite writes the client build manifest to, honouring
+ * any `build.manifest` override from user config or a Vite plugin.
+ */
+export function resolveClientManifestPath (outDir: string, manifest: string | boolean | undefined) {
+  if (!manifest) {
+    throw bundlerDiagnostics.NUXT_B7020()
+  }
+  return resolve(outDir, manifest === true ? '.vite/manifest.json' : manifest)
+}
 
 export function resolveClientEntry (config: ResolvedConfig) {
   const input = config.environments.client?.build.rolldownOptions.input ?? config.build.rolldownOptions.input
