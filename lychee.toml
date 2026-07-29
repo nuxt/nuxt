@@ -54,6 +54,8 @@ exclude = [
   'https://nuxt\.com/docs/4\.x/errors/\$%7B.*',
   # TODO: fix upstream API issues
   "https://nuxt.com/modules",
+  # new concept page — not yet on nuxt.com when PR CI runs
+  "https://nuxt.com/docs/4.x/guide/concepts/server-and-client",
   # single-quotes are required for regexp
   'https://res.cloudinary.com/nuxt/video/upload/(.*)',
   'https://www.npmjs.com/package/(.*)',
