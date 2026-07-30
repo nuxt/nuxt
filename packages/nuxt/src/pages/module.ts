@@ -736,9 +736,9 @@ export default defineNuxtModule({
       markPagesCoveredByRouteRule(pages, nitro, {
         isCovered: rules => rules.ssr === false,
         filter: page => page.mode !== 'server',
-        mark: (page, covered) => {
+        mark: (page, covered, resolvedPath) => {
           if (covered && page._noScripts) {
-            conflicting.push(page.path)
+            conflicting.push(resolvedPath)
           }
           page._spaOnly = covered && !page._noScripts
         },

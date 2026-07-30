@@ -18,7 +18,8 @@ const TRAILING_SLASH_RE = /\/$/
 
 export interface RouteRuleCoverageOptions {
   isCovered: (rules: NitroRouteConfig) => boolean
-  mark: (page: NuxtPage, covered: boolean) => void
+  /** `resolvedPath` is the full route the page is reachable by, unlike the possibly relative `page.path`. */
+  mark: (page: NuxtPage, covered: boolean, resolvedPath: string) => void
   /** Excluded pages count as uncovered, which also keeps every ancestor that renders them. */
   filter?: (page: NuxtPage) => boolean
 }
@@ -78,7 +79,7 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: Nitro, op
       if (page.children?.length) {
         covered = markPages(page.children, path) && covered
       }
-      options.mark(page, covered)
+      options.mark(page, covered, path)
       allCovered &&= covered
     }
     return allCovered
