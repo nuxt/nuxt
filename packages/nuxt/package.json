@@ -135,6 +135,7 @@
     "untyped": "catalog:build",
     "verkit": "catalog:build",
     "vue": "catalog:app-runtime",
+    "vue-component-type-helpers": "catalog:vue",
     "vue-router": "catalog:app-runtime"
   },
   "devDependencies": {

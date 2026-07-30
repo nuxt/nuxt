@@ -63,8 +63,8 @@ catalogs:
     cookie-es: ^3.1.1
     defu: ^6.1.7
     devalue: ^5.8.2
-    errx: ^0.1.0
-    fnv1a-64: ^0.1.1
+    errx: ^0.1.2
+    fnv1a-64: ^0.1.2
     hookable: ^6.1.1
     klona: ^2.0.6
     nostics: ^1.2.0
@@ -95,6 +95,7 @@ catalogs:
     # kept in lockstep with the vue override above
     '@vue/compiler-sfc': 3.5.40
     rspack-vue-loader: ^17.6.1
+    vue-component-type-helpers: ^3.3.8
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
 
@@ -125,7 +126,7 @@ catalogs:
     pug-plain-loader: ^1.1.0
     raw-loader: ^4.0.2
     time-fix-plugin: ^2.0.7
-    ts-checker-rspack-plugin: ^1.5.3
+    ts-checker-rspack-plugin: ^1.6.0
     url-loader: ^4.1.1
     webpack: ^5.109.0
     webpack-bundle-analyzer: ^5.3.1
@@ -136,7 +137,7 @@ catalogs:
   # build-time deps of published packages
   build:
     '@ampproject/remapping': ^2.3.0
-    '@dxup/nuxt': ^0.5.4
+    '@dxup/nuxt': ^0.5.5
     '@nuxt/cli': ^3.37.0
     '@nuxt/devtools': ^4.0.0-alpha.9
     '@nuxt/telemetry': ^2.8.0
@@ -149,9 +150,9 @@ catalogs:
     cssnano: ^8.0.2
     defu: ^6.1.7
     destr: ^2.0.5
-    errx: ^0.1.0
+    errx: ^0.1.2
     escape-string-regexp: ^5.0.0
-    exsolve: ^1.1.0
+    exsolve: ^1.1.1
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
     ignore: ^7.0.6
@@ -189,7 +190,7 @@ catalogs:
     unplugin: ^3.3.0
     unrouting: ^0.2.2
     untyped: ^2.0.0
-    verkit: ^0.3.0
+    verkit: ^0.3.1
     vue-bundle-renderer: ^2.3.1
 
   # dev/test/workspace tooling (pinned)
@@ -226,7 +227,7 @@ catalogs:
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.8
     '@vue/test-utils': 2.4.11
-    acorn: 8.17.0
+    acorn: 8.18.0
     beasties: 0.4.3
     case-police: 2.2.1
     changelogen: 0.6.2
@@ -247,7 +248,7 @@ catalogs:
     markdownlint-cli: 0.49.1
     nitropack: 2.13.4
     nuxt-content-twoslash: 0.4.0
-    oxc-transform: 0.141.0
+    oxc-transform: 0.142.0
     pkg-pr-new: 0.0.80
     playwright-core: 1.62.0
     prettier: 3.9.6
@@ -261,5 +262,5 @@ catalogs:
     unocss: 66.7.5
     vitest: 4.1.10
     vitest-environment-nuxt: 2.0.0
-    vue-sfc-transformer: 0.2.3
+    vue-sfc-transformer: 0.2.5
     vue-tsc: 3.3.8

@@ -14,6 +14,7 @@ import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
+import { getAddDependencyCommand } from '../dependency.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
@@ -328,7 +329,11 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       extensions: DEFAULT_JS_FILE_EXTENSIONS,
     })
   } catch (error: unknown) {
-    throw kitDiagnostics.NUXT_B8017({ module: nuxtModule, cause: error })
+    throw kitDiagnostics.NUXT_B8017({
+      module: nuxtModule,
+      installCommand: isAbsolute(nuxtModule) ? undefined : await getAddDependencyCommand(nuxtModule, nuxt.options.rootDir),
+      cause: error,
+    })
   }
 
   // module is resolved on disk, so import failures are real load errors, not a missing install

@@ -97,7 +97,11 @@ describe('route rules', () => {
 
   it('test noScript routeRules', async () => {
     const html = await $fetch<string>('/no-scripts')
-    expect(html).not.toContain('<script')
+    // no executable scripts are shipped; the only `<script>` permitted is the
+    // declarative speculation-rules JSON, which runs no JavaScript
+    const scripts = html.match(/<script[^>]*>/g) ?? []
+    expect(scripts.some(tag => tag.includes('type="speculationrules"'))).toBe(true)
+    expect(scripts.every(tag => tag.includes('type="speculationrules"'))).toBe(true)
   })
 
   it('client-side navigation should redirect if hash included', async () => {
@@ -711,6 +715,15 @@ describe('pages', () => {
     // the query should already be restored by the time the page is mounted, so
     // `onMounted` reads the real query rather than the prerendered empty one
     expect(await page.innerText('#mounted-query')).toBe('true')
+
+    await page.close()
+  })
+
+  it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
+    const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
+
+    await page.waitForFunction(() => document.querySelector('#preview-enabled')?.textContent === 'true')
+    expect(await page.innerText('#preview-token')).toBe('hehe')
 
     await page.close()
   })

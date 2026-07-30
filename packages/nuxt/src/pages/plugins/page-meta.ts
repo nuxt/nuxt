@@ -8,7 +8,7 @@ import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { pageDiagnostics } from '@nuxt/kit'
 import { parseModuleId } from '../../core/utils/plugins.ts'
-import { isSerializable } from '../utils.ts'
+import { classifyPageMetaProperty } from '../utils.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
 
 interface PageMetaPluginOptions {
@@ -45,6 +45,8 @@ if (import.meta.webpackHot) {
 }`
 
 export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
+  const extractedKeys = new Set(options.extractedKeys)
+
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
@@ -249,34 +251,35 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                if (prop.type !== 'Property' || prop.key.type !== 'Identifier') {
+                const classification = classifyPageMetaProperty(prop, extractedKeys)
+
+                // The route record now carries the value, so drop it here to keep the two in step.
+                if (classification.kind === 'extract') {
+                  omitProp(prop, i)
                   continue
                 }
 
-                if (options.extractedKeys?.includes(prop.key.name)) {
-                  const { serializable } = isSerializable(metaCode, prop.value)
-                  if (serializable) {
-                    omitProp(prop, i)
-                  }
-                } else if (prop.key.name === 'layout' && prop.value.type === 'ObjectExpression') {
-                  for (const layoutProp of prop.value.properties) {
-                    if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
-                      continue
-                    }
-                    if (layoutProp.key.name === 'name') {
-                      m.appendLeft(
-                        prop.start - meta.start,
-                        `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
-                      )
-                    } else if (layoutProp.key.name === 'props') {
-                      m.appendLeft(
-                        prop.start - meta.start,
-                        `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
-                      )
-                    }
-                  }
-                  omitProp(prop, i)
+                if (classification.kind !== 'reshape') {
+                  continue
                 }
+
+                for (const layoutProp of classification.node.properties) {
+                  if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
+                    continue
+                  }
+                  if (layoutProp.key.name === 'name') {
+                    m.appendLeft(
+                      prop.start - meta.start,
+                      `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                    )
+                  } else if (layoutProp.key.name === 'props') {
+                    m.appendLeft(
+                      prop.start - meta.start,
+                      `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                    )
+                  }
+                }
+                omitProp(prop, i)
               }
             }
 

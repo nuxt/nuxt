@@ -1,13 +1,14 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { buildDiagnostics, createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
+import { buildDiagnostics, createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
 import { isDirectory } from '../utils.ts'
 import { generateApp as _generateApp, createApp } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
+import { createChangedFileFilter } from './template-dependencies.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
@@ -62,6 +63,13 @@ export async function build (nuxt: Nuxt): Promise<void> {
       }
 
       // Recompile app templates
+      if (event === 'change' && app.templates.length) {
+        const filter = createChangedFileFilter(nuxt, app, resolve(nuxt.options.srcDir, relativePath))
+        if (!filter) { return }
+        await track(() => _generateApp(nuxt, app, { filter }))
+        return
+      }
+
       await track(() => generateApp())
     })
     nuxt.hook('builder:generateApp', (options) => {
@@ -240,7 +248,7 @@ async function createParcelWatcher () {
   try {
     ({ subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', { url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) }))
   } catch {
-    buildDiagnostics.NUXT_B1015()
+    buildDiagnostics.NUXT_B1015({ installCommand: await getAddDependencyCommand('@parcel/watcher', nuxt.options.rootDir, { dev: true }) })
     return false
   }
   try {
@@ -300,7 +308,7 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err: any) {
-    throw buildDiagnostics.NUXT_B1017({ builder, cause: err })
+    throw buildDiagnostics.NUXT_B1017({ builder, installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }), cause: err })
   }
 }
 

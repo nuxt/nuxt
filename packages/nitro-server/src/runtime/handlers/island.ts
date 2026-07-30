@@ -305,7 +305,11 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   }
 
   // Strip `data-v-*` scoped-style markers so the hashed and rendered prop sets match.
-  const parsedProps = filterIslandProps(destr<Record<string, any> | null | undefined>(serializedProps) || {})
+  const parsed = destr(serializedProps)
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new HTTPError({ status: 400, statusText: 'Invalid island request props' })
+  }
+  const parsedProps = filterIslandProps(parsed)
 
   // Bind the response to the URL: a request whose URL-resident `hashId` does not match
   // the actual (name, props, context) is rejected.

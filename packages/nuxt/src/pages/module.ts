@@ -2,17 +2,19 @@ import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, pageDiagnostics, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
+import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
+import { resolveModulePath } from 'exsolve'
 import { createRoutesContext, resolveOptions } from 'vue-router/unplugin'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
 import type { Nitro, NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
-import { logger } from '../utils.ts'
+import { logger, toArray } from '../utils.ts'
 import picomatch from 'picomatch'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, relativizeToParent, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { rou3PatternToURLPattern, vueRouterToRou3 } from 'unrouting'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
@@ -25,6 +27,22 @@ import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+const RELATIVE_WITH_DOT_RE = /^([^.])/
+
+function relativeWithDot (from: string, to: string) {
+  return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
+
+// Unlikely to collide with a real exact route rule, so matching it surfaces only
+// the wildcard rules that apply across a glob region.
+const NO_SCRIPTS_PROBE_SEGMENT = '__nuxt_no_scripts_probe__'
+
+// Concretises a rou3 route pattern into a matchable path by replacing catch-alls
+// (`**`, `**:name`) and params (`*`, `:name`) with a literal segment.
+const ROUTE_WILDCARD_RE = /\*\*(?::\w+)?|\*|:\w+/g
+function globToProbePath (route: string): string {
+  return route.replace(ROUTE_WILDCARD_RE, NO_SCRIPTS_PROBE_SEGMENT)
+}
 
 export const pagesImportPresets: InlinePreset[] = [
   { imports: ['definePageMeta'], from: '#app/composables/pages' },
@@ -205,16 +223,21 @@ export default defineNuxtModule({
       }
     })
 
+    const componentTypeHelpersPath = resolveModulePath('vue-component-type-helpers', { from: import.meta.url, try: true })
+
     // layouts can be used without pages (e.g. `<NuxtLayout>`), so always generate their types
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ app }) => {
+      dependsOn: [],
+      getContents: ({ app, nuxt }) => {
+        // a path relative to the generated declaration keeps `buildDir` portable between machines
+        const componentTypeHelpers = componentTypeHelpersPath
+          ? relativeWithDot(join(nuxt.options.buildDir, 'types'), componentTypeHelpersPath)
+          : 'vue-component-type-helpers'
+
         return [
-          'import type { ComputedRef, MaybeRef } from \'vue\'',
-          '',
-          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
-          '  : T extends (props: infer P, ...args: any) => any ? P',
-          '  : {}',
+          genTypeImport('vue', ['ComputedRef', 'MaybeRef']),
+          genTypeImport(componentTypeHelpers, ['ComponentProps']),
           '',
           'declare module \'nuxt/app\' {',
           '  interface NuxtLayouts {',
@@ -238,6 +261,7 @@ export default defineNuxtModule({
       addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
         filename: 'pages.mjs',
+        dependsOn: [],
         getContents: () => [
           'export { useRoute } from \'#app/composables/router\'',
           'export const START_LOCATION = Symbol(\'router:start-location\')',
@@ -246,6 +270,7 @@ export default defineNuxtModule({
       // used by `<NuxtLink>`
       addTemplate({
         filename: 'router.options.mjs',
+        dependsOn: [],
         getContents: () => {
           return [
             'export const hashMode = false',
@@ -255,6 +280,7 @@ export default defineNuxtModule({
       })
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
+        dependsOn: [],
         getContents: () => [
           'declare module \'nitro/types\' {',
           '  interface NitroRouteConfig {',
@@ -377,6 +403,7 @@ export default defineNuxtModule({
         const dts = await readFile(declarationFile, 'utf-8')
         addTemplate({
           filename: 'types/typed-router.d.ts',
+          dependsOn: [],
           getContents: () => dts,
         })
       }
@@ -559,6 +586,19 @@ export default defineNuxtModule({
 
     nuxt.hook('nitro:build:before', () => warnPublicAssetConflicts())
 
+    // Expose the URLPattern of every page route so pages served without scripts
+    // can scope their speculation rules to same-origin *page* navigations, which
+    // are safe to GET, instead of a blanket rule that could prefetch/prerender
+    // non-idempotent server routes (`~/server/routes/*`). A catch-all page
+    // (`[...slug]`) widens this back to a blanket `*`.
+    nuxt.hook('nitro:build:before', (nitro) => {
+      const patterns = new Set<string>()
+      for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
+        patterns.add(rou3PatternToURLPattern(route).pattern)
+      }
+      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...patterns]
+    })
+
     nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
 
@@ -640,11 +680,7 @@ export default defineNuxtModule({
     })
 
     // Extract macros from pages
-    const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
-    const extractedKeys = [
-      ...defaultExtractionKeys,
-      ...extraPageMetaExtractionKeys,
-    ]
+    const extractedKeys = [...resolvePageMetaExtractionKeys(nuxt.options.experimental.extraPageMetaExtractionKeys)]
 
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({
@@ -692,11 +728,88 @@ export default defineNuxtModule({
     const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
+    // Routes served under a `noScripts` route rule need no client-side component
+    // chunk; client-side navigation to them loads the full document (see the
+    // guard in `runtime/plugins/router.ts`, which uses the compiled route-rules
+    // matcher shipped for the app manifest)
+    let nitroForNoScripts: Nitro | undefined
+    nuxt.hook('nitro:init', (nitro) => {
+      nitroForNoScripts = nitro
+    })
+    function markNoScriptsPages (pages: NuxtPage[]) {
+      const nitro = nitroForNoScripts
+      if (!nitro || !('routing' in nitro)) { return }
+      const routeRules = nitro.routing.routeRules
+      const effectiveNoScripts = (path: string) =>
+        !!defu({} as Record<string, any>, ...routeRules.matchAll('', path).reverse()).noScripts
+      // Whether a rou3 pattern is *always* served without scripts. A fully
+      // static pattern is matched directly. A dynamic one serves a subset of
+      // the region below its first dynamic segment (`/products/*` and
+      // `/products/*/reviews` both live under `/products`), so it is only safe
+      // to drop when that whole region resolves to `noScripts` with no more
+      // specific rule carving out a scripted exception.
+      function patternIsNoScripts (pattern: string): boolean {
+        if (!pattern.includes(':') && !pattern.includes('*')) {
+          const normalized = pattern.length > 1 ? pattern.replace(/\/$/, '') : pattern
+          return effectiveNoScripts(normalized)
+        }
+        const segments = pattern.split('/')
+        const dynamicAt = segments.findIndex(segment => segment.includes(':') || segment.includes('*'))
+        const prefix = segments.slice(0, dynamicAt).join('/') || '/'
+        const probe = (prefix === '/' ? '' : prefix) + '/' + NO_SCRIPTS_PROBE_SEGMENT
+        if (!effectiveNoScripts(probe)) { return false }
+        const within = prefix === '/' ? '/' : prefix + '/'
+        for (const { route } of routeRules.routes) {
+          if (route !== prefix && !route.startsWith(within)) { continue }
+          if (!effectiveNoScripts(globToProbePath(route))) { return false }
+        }
+        return true
+      }
+      // Whether a page reachable at `path` is *always* served without scripts.
+      // `unrouting` collapses the compiled Vue Router path into one or more rou3
+      // patterns (dynamic params become catch-alls, finite alternations expand
+      // into concrete paths); the page is safe to drop only when every one of
+      // them is. Returns `null` when it cannot be determined statically.
+      function isNoScriptsPath (path: string): boolean | null {
+        const { patterns } = vueRouterToRou3(path, { collapse: true })
+        if (!patterns.length) { return null }
+        return patterns.every(patternIsNoScripts)
+      }
+      // A page is only safe to drop from the client bundle when every path it
+      // can be reached by is served without scripts. If any alias resolves to a
+      // scripted route (or cannot be checked statically), keep the component so
+      // client-side navigation to that alias still renders it. A parent page
+      // renders for all of its descendants, so it additionally requires the
+      // whole subtree below it to be script-free. Returns whether that holds for
+      // every page passed in.
+      function markPages (pages: NuxtPage[], prefix: string): boolean {
+        let allNoScripts = true
+        for (const page of pages) {
+          // child paths are relative to the parent, so resolve them against the
+          // accumulated prefix before matching against route rules
+          const path = page.path.startsWith('/') ? page.path : joinURL(prefix, page.path)
+          const aliases = toArray(page.alias || []).map(alias => alias.startsWith('/') ? alias : joinURL(prefix, alias))
+          let noScripts = [path, ...aliases].every(path => isNoScriptsPath(path) === true)
+          if (page.children?.length) {
+            noScripts = markPages(page.children, path) && noScripts
+          }
+          page._noScripts = noScripts
+          allNoScripts &&= noScripts
+        }
+        return allNoScripts
+      }
+
+      markPages(pages, '/')
+    }
+
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
+      // route metadata is extracted from page sources only when `scanPageMeta` is enabled
+      dependsOn: nuxt.options.experimental.scanPageMeta ? ['pages'] : [],
       getContents ({ app }) {
         if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
+        markNoScriptsPages(app.pages)
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
           serverComponentRuntime,
           clientComponentRuntime,
@@ -709,6 +822,7 @@ export default defineNuxtModule({
     // Add vue-router import for `<NuxtLayout>` integration
     addTemplate({
       filename: 'pages.mjs',
+      dependsOn: [],
       getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\'',
     })
 
@@ -719,6 +833,7 @@ export default defineNuxtModule({
     // Add router options template
     addTemplate({
       filename: 'router.options.mjs',
+      dependsOn: [],
       getContents: async ({ nuxt }) => {
         // Scan and register app/router.options files
         const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
@@ -751,6 +866,7 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/middleware.d.ts',
+      dependsOn: [],
       getContents: ({ app }) => {
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
@@ -767,6 +883,7 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/nitro-middleware.d.ts',
+      dependsOn: [],
       getContents: ({ app }) => {
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
@@ -789,6 +906,7 @@ export default defineNuxtModule({
     if (nuxt.options.experimental.viewTransition) {
       addTypeTemplate({
         filename: 'types/view-transitions.d.ts',
+        dependsOn: [],
         getContents: () => {
           return [
             'import type { ViewTransitionPageOptions } from \'../types/config\'',

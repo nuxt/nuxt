@@ -3,7 +3,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import type { Plugin } from 'postcss'
-import { bundlerDiagnostics } from '@nuxt/kit'
+import { bundlerDiagnostics, getAddDependencyCommand } from '@nuxt/kit'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -68,10 +68,11 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       }
 
       if (typeof pluginFn !== 'function') {
+        const installCommand = await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true })
         if (isDefault) {
-          bundlerDiagnostics.NUXT_B7011({ pluginName })
+          bundlerDiagnostics.NUXT_B7011({ pluginName, installCommand })
         } else {
-          bundlerDiagnostics.NUXT_B7007({ pluginName })
+          bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand })
         }
       }
     }

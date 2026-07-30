@@ -10,11 +10,12 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { createNitro, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, bundlerDiagnostics, createIsIgnored, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
 import { isWindows } from 'std-env'
+import { rou3PatternToURLPattern } from 'unrouting'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
@@ -215,11 +216,26 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#internal/streaming-iife-chunk.mjs': () => `export const iifeChunkFileName = undefined`,
       '#internal/nuxt/nitro-config.mjs': () => {
         const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)
+        // `href_matches` patterns (URLPattern syntax) for routes served under a
+        // `noScripts` route rule, so scripted documents can speculatively
+        // prefetch/prerender the full-page navigation the client router forces
+        // to them.
+        const noScriptsPatterns = [...new Set(nitro.routing.routeRules.routes
+          .filter(r => r.data.noScripts)
+          .map(r => rou3PatternToURLPattern(r.route).pattern))]
+        // `href_matches` patterns for every page route, provided by the pages
+        // module; pages served without scripts scope their blanket speculation
+        // rules to these (safe-to-GET) same-origin navigations
+        const pagePatterns = (nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns ?? []
         return [
           `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
           `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
           `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
+          `export const NUXT_NO_SCRIPTS_PROD = ${nuxt.options.features.noScripts === 'production'}`,
           `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
+          `export const NUXT_VIEW_TRANSITIONS = ${!!(nuxt.options.app.viewTransition && typeof nuxt.options.app.viewTransition === 'object' && nuxt.options.app.viewTransition.enabled)}`,
+          `export const NUXT_NO_SCRIPTS_PATTERNS = ${JSON.stringify(noScriptsPatterns)}`,
+          `export const NUXT_PAGE_PATTERNS = ${JSON.stringify(pagePatterns)}`,
           `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
           `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
@@ -376,10 +392,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitroConfig.ignore ||= []
   nitroConfig.ignore.push(...resolveIgnorePatterns(nitroConfig.serverDir))
 
-  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr', 'ssr']
+  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr', 'ssr', 'noScripts']
 
   addTemplate({
     filename: 'route-rules.mjs',
+    // `defineRouteRules` is extracted from page sources, so without it route rules come only
+    // from configuration
+    dependsOn: nuxt.options.experimental.inlineRouteRules ? ['pages'] : [],
     getContents () {
       if (!nuxt._nitro) {
         return `export default () => ({})`
@@ -592,7 +611,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       })
 
       if (result !== true) {
-        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), install: result.join(' ') })
+        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), installCommand: await getAddDependencyCommand(result, nuxt.options.rootDir, { dev: true }) })
       }
 
       if (result === true) {
