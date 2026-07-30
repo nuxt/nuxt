@@ -1301,6 +1301,19 @@ export interface ConfigSchema {
     extraPageMetaExtractionKeys: string[]
 
     /**
+     * Extract every JSON-serializable `definePageMeta` property into the generated route record,
+     * rather than only the keys Nuxt reads at build time.
+     *
+     * When every property of a page's `definePageMeta` can be resolved statically, the generated
+     * route no longer imports the page's macro module at all, removing one module per page from
+     * the dev module graph. Properties whose values cannot be serialized are unaffected and are
+     * still resolved by the macro module at runtime.
+     *
+     * @default true
+     */
+    extractSerializablePageMeta: boolean
+
+    /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same data in different pages.
      *
      * It is particularly important when enabling this feature to make sure that any unique key of your data is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch` should do this automatically for you.)

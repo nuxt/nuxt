@@ -1347,4 +1347,253 @@ definePageMeta({ get name () { return 'from-getter' } })
       })
     })
   })
+
+  describe('extractSerializablePageMeta', () => {
+    const options = { extractSerializable: true }
+    let fileCounter = 0
+
+    function extract (sfc: string, extraExtractionKeys = new Set<string>()) {
+      return getRouteMeta(sfc, `/app/pages/serializable-${fileCounter++}.vue`, extraExtractionKeys, options)
+    }
+
+    function macroModule (sfc: string, extractedKeys: string[] = [...defaultExtractionKeys]) {
+      const plugin = PageMetaPlugin({ extractedKeys, extractSerializable: true }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+      const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+      return plugin.transform.handler(res.content, 'component.vue?macro=true')?.code
+    }
+
+    it('should extract an unlisted serializable key into route meta', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ title: 'hello', order: -2, tags: ['a', 'b'], nested: { deep: true } })
+</script>
+      `
+      expect(extract(sfc)).toEqual({
+        meta: { title: 'hello', order: -2, tags: ['a', 'b'], nested: { deep: true } },
+      })
+      const macro = macroModule(sfc)
+      expect(macro).not.toContain('hello')
+      expect(macro).toContain('const __nuxt_page_meta = {')
+    })
+
+    it('should fall back to the macro module for an unlisted key that is not serializable', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ title: 'hello', validate: () => true })
+</script>
+      `
+      expect(extract(sfc)).toEqual({
+        meta: { title: 'hello', __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+      expect(macroModule(sfc)).toContain('validate')
+    })
+
+    it('should still mark a listed key as dynamic rather than runtime', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ path: ref('/dynamic') })
+</script>
+      `
+      expect(extract(sfc)).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['path']) },
+      })
+      expect(macroModule(sfc)).toContain('ref(\'/dynamic\')')
+    })
+
+    it('should keep the last occurrence of a duplicate unlisted key', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ title: 'first', title: 'last' })
+</script>
+      `
+      expect(extract(sfc)).toEqual({ meta: { title: 'last' } })
+      const macro = macroModule(sfc)
+      expect(macro).not.toContain('first')
+      expect(macro).not.toContain('last')
+    })
+
+    it('should key the extraction cache on the flag', () => {
+      const sfc = `<script setup lang="ts">definePageMeta({ title: 'hello' })</script>`
+      const path = '/app/pages/cache-key.vue'
+      expect(getRouteMeta(sfc, path, new Set(), options)).toEqual({ meta: { title: 'hello' } })
+      expect(getRouteMeta(sfc, path)).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    describe('layout reshapes', () => {
+      it('should extract a string layout', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: 'dark' })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'dark' } })
+        expect(macroModule(sfc)).not.toContain('dark')
+      })
+
+      it('should extract `layout: false`', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: false })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: false } })
+        expect(macroModule(sfc)).not.toContain('layout')
+      })
+
+      it('should split `{ name }` into `layout`', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin' } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'admin' } })
+        const macro = macroModule(sfc)
+        expect(macro).not.toContain('admin')
+        expect(macro).not.toContain('layoutProps')
+      })
+
+      it('should split `{ name, props }` into `layout` and `layoutProps`', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'admin', layoutProps: { collapsed: true } } })
+        const macro = macroModule(sfc)
+        expect(macro).not.toContain('admin')
+        expect(macro).not.toContain('collapsed')
+      })
+
+      it('should unwrap a statically wrapped layout object', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } as const })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'admin', layoutProps: { collapsed: true } } })
+        expect(macroModule(sfc)).not.toContain('admin')
+      })
+
+      it('should leave `{ props }` without a name to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { props: { collapsed: true } } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        const macro = macroModule(sfc)
+        expect(macro).toContain('layoutProps: { collapsed: true }')
+        expect(macro).not.toContain('layout:')
+      })
+
+      it('should leave an empty layout object to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: {} })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+      })
+
+      it('should leave a non-serializable layout name to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+const layoutName = 'admin'
+definePageMeta({ layout: { name: layoutName } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(macroModule(sfc)).toContain('layout: layoutName')
+      })
+
+      it('should leave non-serializable layout props to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { onClick: () => {} } } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        const macro = macroModule(sfc)
+        expect(macro).toContain('layout: \'admin\'')
+        expect(macro).toContain('layoutProps: { onClick: () => {} }')
+      })
+
+      it('should leave a spread layout object to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+const shared = { name: 'admin' }
+definePageMeta({ layout: { ...shared } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(macroModule(sfc)).toContain('...shared')
+      })
+
+      it('should leave a layout object with unknown keys to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', other: 1 } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(macroModule(sfc)).toContain('other: 1')
+      })
+
+      it('should keep the last occurrence when a string layout follows an object layout', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } }, layout: 'dark' })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'dark' } })
+        const macro = macroModule(sfc)
+        expect(macro).not.toContain('admin')
+        expect(macro).not.toContain('dark')
+      })
+
+      it('should reshape into meta when `layout` is also an extraction key', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
+</script>
+        `
+        expect(extract(sfc, new Set(['layout']))).toEqual({
+          meta: { layout: 'admin', layoutProps: { collapsed: true } },
+        })
+        expect(macroModule(sfc, [...defaultExtractionKeys, 'layout'])).not.toContain('admin')
+      })
+    })
+
+    it('should not import the macro module when every key is serializable', () => {
+      const page: NuxtPage = { path: '/', file: filePath }
+      Object.assign(page, getRouteMeta(`
+      <script setup>
+      definePageMeta({
+        name: 'some-custom-name',
+        layout: { name: 'admin', props: { collapsed: true } },
+        title: 'hello',
+      })
+      </script>
+      `, filePath, new Set(), options))
+
+      const { routes, imports } = normalizeRoutes([page], new Set(), {
+        clientComponentRuntime: '<client-component-runtime>',
+        serverComponentRuntime: '<server-component-runtime>',
+        overrideMeta: true,
+      })
+      expect(imports).toEqual(new Set())
+      expect(routes).toMatchInlineSnapshot(`
+        "[
+          {
+            name: "some-custom-name",
+            path: "/",
+            meta: {"layout":"admin","layoutProps":{"collapsed":true},"title":"hello"},
+            component: () => import("/app/pages/index.vue")
+          }
+        ]"
+      `)
+    })
+  })
 })

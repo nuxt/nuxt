@@ -1,4 +1,5 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
+
 const root = Number(process.argv[2])
 const rows = []
 for (const e of readdirSync('/proc')) {
