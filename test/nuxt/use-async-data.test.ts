@@ -817,6 +817,23 @@ describe('useAsyncData', () => {
     expect(nuxtApp._asyncDataPromises[key]).toBeUndefined()
   })
 
+  it('should settle status when unmounting mid-fetch with custom getCachedData', async () => {
+    const key = `settle-on-unmount-${++counter}`
+    const nuxtApp = useNuxtApp()
+    const scope = effectScope()
+    let res!: ReturnType<typeof useAsyncData>
+    scope.run(() => {
+      res = useAsyncData(key, () => new Promise<string>(() => {}), { getCachedData: () => undefined })
+    })
+    expect(res.status.value).toBe('pending')
+    scope.stop()
+    await nextTick()
+    await nextTick()
+    expect(res.status.value).toBe('idle')
+    expect(res.pending.value).toBe(false)
+    expect(nuxtApp._asyncData[key]?.status.value).toBe('idle')
+  })
+
   it('should be synced with useNuxtData', async () => {
     const { data: nuxtData } = useNuxtData('nuxtdata-sync')
     const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
