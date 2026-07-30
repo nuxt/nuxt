@@ -1,4 +1,4 @@
-import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
+import { promises as fsp, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { performance } from 'node:perf_hooks'
 import { dirname, join, relative, resolve } from 'pathe'
@@ -96,7 +96,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       logger.info(`Compiled \`${template.filename}\` in ${compileTime}ms`)
     }
 
-    if (template.modified && template.write) {
+    if (template.modified && template.write && !matchesDisk(fullPath, contents)) {
       dirs.add(dirname(fullPath))
       writes.push(() => writeFileSync(fullPath, contents, 'utf8'))
     }
@@ -116,6 +116,20 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
+  }
+}
+
+/**
+ * On a fresh start the in-memory comparison always reports a template as
+ * modified, so check the file we are about to overwrite: an unchanged
+ * `buildDir` keeps its mtimes stable for anything downstream that caches
+ * against them.
+ */
+function matchesDisk (path: string, contents: string) {
+  try {
+    return readFileSync(path, 'utf8') === contents
+  } catch {
+    return false
   }
 }
 

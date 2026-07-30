@@ -666,14 +666,25 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
 
   await fsp.mkdir(nuxt.options.buildDir, { recursive: true })
   await Promise.all([
-    fsp.writeFile(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
-    fsp.writeFile(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
-    fsp.writeFile(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
-    fsp.writeFile(sharedTsConfigPath, JSON.stringify(sharedTsConfig, null, 2)),
-    fsp.writeFile(declarationPath, declaration),
-    fsp.writeFile(nodeDeclarationPath, nodeDeclaration),
-    fsp.writeFile(sharedDeclarationPath, sharedDeclaration),
+    writeIfChanged(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
+    writeIfChanged(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
+    writeIfChanged(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
+    writeIfChanged(sharedTsConfigPath, JSON.stringify(sharedTsConfig, null, 2)),
+    writeIfChanged(declarationPath, declaration),
+    writeIfChanged(nodeDeclarationPath, nodeDeclaration),
+    writeIfChanged(sharedDeclarationPath, sharedDeclaration),
   ])
+}
+
+/**
+ * Types are regenerated on every start and are usually identical, so avoid
+ * touching the files: an unchanged mtime keeps editors and `tsc --watch` from
+ * redoing work they have already done.
+ */
+async function writeIfChanged (path: string, contents: string) {
+  const existing = await fsp.readFile(path, 'utf8').catch(() => undefined)
+  if (existing === contents) { return }
+  await fsp.writeFile(path, contents)
 }
 
 /**
