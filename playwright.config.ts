@@ -5,11 +5,12 @@ import type { MatrixOptions } from './test/e2e/test-utils'
 
 type E2eConfigOptions = ConfigOptions & MatrixOptions
 
+// dev-mode tests are placed third to spread them across both Windows shards
 const e2eMatrix = [
+  { builder: 'webpack', isDev: false },
+  { builder: 'rspack', isDev: false },
   { builder: 'vite', isDev: true },
   { builder: 'vite', isDev: false },
-  { builder: 'rspack', isDev: false },
-  { builder: 'webpack', isDev: false },
 ] as const
 
 const devOnlyTests = ['**/hmr.test.ts']
