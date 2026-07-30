@@ -21,6 +21,17 @@ import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { clientEnvironment } from './shared/client.ts'
 
+const resolvedClientBuild = new WeakMap<Nuxt, { outDir: string, manifest: string | boolean | undefined }>()
+
+/**
+ * The client `build` options as resolved by Vite, including any overrides applied
+ * by a plugin `config`/`configEnvironment` hook. Available once the client build
+ * has started.
+ */
+export function getResolvedClientBuild (nuxt: Nuxt) {
+  return resolvedClientBuild.get(nuxt)
+}
+
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
@@ -48,6 +59,13 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       TemplateHMRPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'client'),
       OptimizeDepsHintPlugin(nuxt),
+      {
+        name: 'nuxt:capture-client-build',
+        configResolved (config) {
+          const build = config.environments.client?.build ?? config.build
+          resolvedClientBuild.set(nuxt, { outDir: build.outDir, manifest: build.manifest })
+        },
+      },
     ],
     appType: 'custom',
     server: {
