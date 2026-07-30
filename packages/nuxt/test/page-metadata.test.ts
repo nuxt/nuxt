@@ -6,7 +6,7 @@ import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
-import { augmentPages, defaultExtractionKeys, getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
+import { augmentPages, defaultExtractionKeys, getRouteMeta, invalidatePageContents, normalizeRoutes } from '../src/pages/utils.ts'
 import type { NuxtPage } from '../schema.ts'
 
 const filePath = '/app/pages/index.vue'
@@ -580,6 +580,38 @@ describe('page metadata macro position', () => {
     `, '/app/pages/nested.vue')
 
     expect(warn).toHaveBeenCalledWith({ fnName: 'defineRouteRules', file: expect.stringMatching(/app\/pages\/nested\.vue:4:7$/) })
+  })
+})
+
+describe('cached page contents', () => {
+  const cachedPath = '/app/pages/cached-contents.vue'
+
+  it('should reuse cached contents instead of reading from disk', async () => {
+    getRouteMeta(`<script setup>definePageMeta({ name: 'from-cache' })</script>`, cachedPath)
+
+    const pages: NuxtPage[] = [{ path: '/', file: cachedPath }]
+    await augmentPages(pages, {}, { useCachedContents: true, fullyResolvedPaths: new Set([cachedPath]) })
+    expect(pages[0]!.name).toBe('from-cache')
+  })
+
+  it('should fall back to disk once contents are invalidated', async () => {
+    getRouteMeta(`<script setup>definePageMeta({ name: 'from-cache' })</script>`, cachedPath)
+    invalidatePageContents(cachedPath)
+
+    const pages: NuxtPage[] = [{ path: '/', file: cachedPath }]
+    await expect(augmentPages(pages, {}, { useCachedContents: true, fullyResolvedPaths: new Set([cachedPath]) })).rejects.toThrow()
+  })
+
+  it('should invalidate both extraction modes', () => {
+    const contents = `<script setup>definePageMeta({ title: 'hello' })</script>`
+    const path = '/app/pages/invalidate-both.vue'
+    getRouteMeta(contents, path)
+    getRouteMeta(contents, path, new Set(), { extractSerializable: true })
+    invalidatePageContents(path)
+
+    const updated = `<script setup>definePageMeta({ title: 'goodbye' })</script>`
+    expect(getRouteMeta(updated, path, new Set(), { extractSerializable: true })).toEqual({ meta: { title: 'goodbye' } })
+    expect(getRouteMeta(updated, path)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
   })
 })
 

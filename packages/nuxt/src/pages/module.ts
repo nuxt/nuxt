@@ -13,7 +13,7 @@ import { distDir } from '../dirs.ts'
 import { linkToAlias, logger, toArray } from '../utils.ts'
 import picomatch from 'picomatch'
 import { rou3PatternToURLPattern, vueRouterToRou3 } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, invalidatePageContents, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
@@ -142,8 +142,8 @@ export default defineNuxtModule({
     }
 
     /** Emit from existing tree + augment + hooks + route rules (used for incremental updates). */
-    const augmentAndResolvePages = async (pages: NuxtPage[], trackedFiles: Set<string>, nuxt: Nuxt) => {
-      const resolved = await augmentAndResolve(pages, trackedFiles, nuxt, originalPagePaths)
+    const augmentAndResolvePages = async (pages: NuxtPage[], trackedFiles: Set<string>, nuxt: Nuxt, useCachedContents = false) => {
+      const resolved = await augmentAndResolve(pages, trackedFiles, nuxt, originalPagePaths, { useCachedContents })
       await handleRouteRules(resolved)
       return resolved
     }
@@ -471,7 +471,12 @@ export default defineNuxtModule({
       const layerIndex = pagesDirs.findIndex(dir => path.startsWith(dir))
       const isInPagesDir = layerIndex !== -1
 
-      if (pagesCtx && isInPagesDir && !shouldAlwaysRegenerate) {
+      // A content change leaves the file tree untouched, so the routes can be re-emitted from the
+      // existing tree instead of re-globbing every layer's pages directory. Every other page's
+      // cached contents are still current, as the watcher invalidates each page it sees change.
+      const canReuseTree = event === 'change' && !!pagesCtx?.trackedFiles.has(path)
+
+      if (pagesCtx && isInPagesDir && (!shouldAlwaysRegenerate || canReuseTree)) {
         try {
           if (event === 'add') {
             const relativeToDir = relative(pagesDirs[layerIndex]!, path)
@@ -479,10 +484,12 @@ export default defineNuxtModule({
             pagesCtx.addFile(path, layerIndex)
           } else if (event === 'unlink') {
             if (!pagesCtx.removeFile(path)) { return }
+          } else if (canReuseTree) {
+            invalidatePageContents(path)
           }
           // Re-emit from mutated tree + run downstream pipeline
           const pages = pagesCtx.emit()
-          nuxt.apps.default!.pages = await augmentAndResolvePages(pages, pagesCtx.trackedFiles, nuxt)
+          nuxt.apps.default!.pages = await augmentAndResolvePages(pages, pagesCtx.trackedFiles, nuxt, canReuseTree)
         } catch (err) {
           // Fallback: full rebuild on unexpected tree error
           pageDiagnostics.NUXT_B4012({ event, path, cause: err })

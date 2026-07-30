@@ -118,7 +118,15 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
 // augmentAndResolve — downstream pipeline (augmentation + hooks)
 // ---------------------------------------------------------------------------
 
-export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt(), originalPagePaths?: WeakMap<NuxtPage, string>): Promise<NuxtPage[]> {
+export interface AugmentAndResolveOptions {
+  /**
+   * Read page contents from the extraction cache rather than from disk. Only safe when a watcher
+   * invalidates the cache for every page it sees change, via `invalidatePageContents`.
+   */
+  useCachedContents?: boolean
+}
+
+export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt(), originalPagePaths?: WeakMap<NuxtPage, string>, options: AugmentAndResolveOptions = {}): Promise<NuxtPage[]> {
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
   if (shouldAugment === false) {
@@ -136,6 +144,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
     extractSerializable: !!nuxt.options.experimental.extractSerializablePageMeta,
     fullyResolvedPaths: trackedFiles,
     originalPagePaths,
+    useCachedContents: options.useCachedContents,
   }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
@@ -158,6 +167,7 @@ interface AugmentPagesContext {
   augmentedPages?: Set<string>
   extraExtractionKeys?: Set<string>
   extractSerializable?: boolean
+  useCachedContents?: boolean
   originalPagePaths?: WeakMap<NuxtPage, string>
 }
 
@@ -165,7 +175,9 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
-      const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
+      const fileContent = vfs[route.file]
+        ?? (ctx.useCachedContents ? pageContentsCache[route.file] : undefined)
+        ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys, { extractSerializable: ctx.extractSerializable })
       if (route.meta) {
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
@@ -339,15 +351,26 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
   return isExtractionKey ? { kind: 'dynamic', key } : { kind: 'runtime' }
 }
 
+const SERIALIZABLE_CACHE_SUFFIX = '\0serializable'
 const pageContentsCache: Record<string, string> = {}
 const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
+
+/** Drop cached contents and extracted metadata for a page whose file changed on disk. */
+export function invalidatePageContents (absolutePath: string): void {
+  delete pageContentsCache[absolutePath]
+  delete extractCache[absolutePath]
+  delete extractCache[absolutePath + SERIALIZABLE_CACHE_SUFFIX]
+}
+
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {
-  const cacheKey = options.extractSerializable ? absolutePath + '\0serializable' : absolutePath
+  // The extracted metadata differs between the two extraction modes, but the file contents do not.
+  const cacheKey = options.extractSerializable ? absolutePath + SERIALIZABLE_CACHE_SUFFIX : absolutePath
 
   // set/update pageContentsCache, invalidate extractCache on cache mismatch
-  if (!(cacheKey in pageContentsCache) || pageContentsCache[cacheKey] !== contents) {
-    pageContentsCache[cacheKey] = contents
-    delete extractCache[cacheKey]
+  if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
+    pageContentsCache[absolutePath] = contents
+    delete extractCache[absolutePath]
+    delete extractCache[absolutePath + SERIALIZABLE_CACHE_SUFFIX]
   }
 
   if (cacheKey in extractCache && extractCache[cacheKey]) {
