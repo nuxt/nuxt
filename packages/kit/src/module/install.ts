@@ -286,14 +286,13 @@ export function resolveModuleWithOptions (
 
 type Jiti = ReturnType<typeof import('jiti')['createJiti']>
 
-let _jitiCache: WeakMap<Nuxt, Jiti> | undefined
+let _jitiCache: WeakMap<Nuxt, Promise<Jiti>> | undefined
 
-async function getSharedJiti (nuxt: Nuxt): Promise<Jiti> {
+function getSharedJiti (nuxt: Nuxt): Promise<Jiti> {
   _jitiCache ||= new WeakMap()
   let jiti = _jitiCache.get(nuxt)
   if (!jiti) {
-    const { createJiti } = await import('jiti')
-    jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+    jiti = import('jiti').then(({ createJiti }) => createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias }))
     _jitiCache.set(nuxt, jiti)
   }
   return jiti

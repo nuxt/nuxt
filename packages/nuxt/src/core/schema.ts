@@ -21,19 +21,16 @@ export default defineNuxtModule({
 
     // `untyped/babel-plugin` pulls in the whole of `@babel/core`, so the loader is
     // only created if a layer actually ships a `nuxt.schema.*` file.
-    let _resolveSchema: Jiti | undefined
-    async function getSchemaLoader () {
-      if (!_resolveSchema) {
-        const { default: untypedPlugin } = await import('untyped/babel-plugin')
-        _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
-          fsCache: false,
-          transformOptions: {
-            babel: {
-              plugins: [untypedPlugin],
-            },
+    let _resolveSchema: Promise<Jiti> | undefined
+    function getSchemaLoader () {
+      _resolveSchema ||= import('untyped/babel-plugin').then(({ default: untypedPlugin }) => createJiti(fileURLToPath(import.meta.url), {
+        fsCache: false,
+        transformOptions: {
+          babel: {
+            plugins: [untypedPlugin],
           },
-        })
-      }
+        },
+      }))
       return _resolveSchema
     }
 
