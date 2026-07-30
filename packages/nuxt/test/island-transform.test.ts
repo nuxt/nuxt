@@ -228,6 +228,22 @@ export default {
       expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('<!--'))
     })
 
+    it('ignores an unclosed script opener in a line comment within <script setup> (#35893)', async () => {
+      const result = await viteTransform(`<script lang="ts" setup>
+// <script>
+const fields: any[] = []
+</script>
+
+<template>
+  <div>
+    <div v-for="f in fields">TEST</div>
+  </div>
+</template>
+`, 'hello.server.vue')
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
+      expect(result.indexOf('__mergeProps')).toBeLessThan(result.indexOf('// <script>'))
+    })
+
     it('bounds a v-for on a nuxt-client element', async () => {
       const result = await viteTransform(`<template>
   <HelloWorld v-for="n in count" :key="n" nuxt-client />
