@@ -6,7 +6,7 @@ import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
 import { isDirectory } from '../utils.ts'
-import { generateApp as _generateApp, createApp } from './app.ts'
+import { generateApp as _generateApp, createApp, invalidateAppStructure } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
@@ -46,6 +46,10 @@ export async function build (nuxt: Nuxt): Promise<void> {
         watch(nuxt)
       }
       nuxt.hook('builder:watch', async (event, relativePath) => {
+        if (event !== 'change') {
+          invalidateAppStructure(nuxt)
+        }
+
         // Unset mainComponent and errorComponent if app or error component is changed
         if (event === 'add' || event === 'unlink') {
           const path = resolve(nuxt.options.srcDir, relativePath)
@@ -69,6 +73,8 @@ export async function build (nuxt: Nuxt): Promise<void> {
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
       if (options) { return track(() => _generateApp(nuxt, app, options)) }
+      // An unfiltered request is a request to rebuild everything, including scans
+      invalidateAppStructure(nuxt)
       return track(() => generateApp())
     })
   }
