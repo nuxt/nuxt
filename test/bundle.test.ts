@@ -132,6 +132,23 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       ]
     `)
   })
+
+  it('splits page components by the environment they can render in', async () => {
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(pagesRootDir, '.output/server') }))
+        .map(file => fsp.readFile(join(pagesRootDir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    const client = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: join(pagesRootDir, '.output/public') }))
+        .map(file => fsp.readFile(join(pagesRootDir, '.output/public', file), 'utf8')),
+    )).join('\n')
+
+    expect(server).not.toContain('Client-only page')
+    expect(client).toContain('Client-only page')
+
+    expect(server).toContain('Server-only page')
+    expect(client).not.toContain('Server-only page')
+  })
 })
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('noScripts route rules', () => {

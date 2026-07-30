@@ -479,9 +479,15 @@ function normalizeComponent (page: NuxtPage, pageImport: string, routeName: stri
     return `() => createIslandPage(${routeName}, import.meta.server ? ${islandKey} : undefined)`
   }
   if (page.mode === 'client') {
-    return `() => createClientPage(${pageImport})`
+    return `() => createClientPage(${onlyOnClient(pageImport)})`
   }
   return pageImport
+}
+
+// Dropping the loader on the server keeps the page chunk out of that bundle;
+// `createClientPage` falls back to a placeholder without it.
+function onlyOnClient (pageImport: string) {
+  return `import.meta.client ? ${pageImport} : undefined`
 }
 
 function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | undefined, pageImportName: string, pageImport: string, routeName: string | undefined, metaRouteName: string, islandKey: string | undefined): string {
@@ -494,7 +500,7 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
   }
   // Client components return a processed component (not a module with .default)
   if (page.mode === 'client') {
-    return `() => createClientPage(${pageImport}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
+    return `() => createClientPage(${onlyOnClient(pageImport)}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
   }
   return `${pageImport}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
 }
