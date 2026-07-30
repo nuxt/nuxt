@@ -1,7 +1,7 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { buildDiagnostics, createIsIgnored } from '@nuxt/kit'
+import { buildDiagnostics, createIsIgnored, setBuildOutput } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
@@ -59,6 +59,13 @@ export async function getVueHash (nuxt: Nuxt) {
       const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
       if (res) {
+        // Vite is skipped on a cache hit, so re-point nuxt/* build outputs at
+        // the restored modules (same as packages/vite/src/manifest.ts does
+        // after a real client build).
+        const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
+        setBuildOutput('clientManifest', () => `export { default } from ${JSON.stringify(resolve(serverDist, 'client.manifest.mjs'))}`)
+        setBuildOutput('clientPrecomputed', () => `export { default } from ${JSON.stringify(resolve(serverDist, 'client.precomputed.mjs'))}`)
+        setBuildOutput('serverEntry', () => `export { default } from ${JSON.stringify(resolve(serverDist, 'server.mjs'))}`)
         consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
       }
       return res
