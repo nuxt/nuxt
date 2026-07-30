@@ -678,6 +678,7 @@ export default defineNuxtModule({
         isPage,
         routesId: toVirtualId(resolve(nuxt.options.buildDir, 'routes.mjs'), nuxt),
         extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],
+        extractSerializable: !!nuxt.options.experimental.scanPageMeta && !!nuxt.options.experimental.extractSerializablePageMeta,
       }))
     })
 

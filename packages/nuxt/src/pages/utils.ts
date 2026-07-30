@@ -133,6 +133,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
       'middleware',
       ...extraPageMetaExtractionKeys,
     ]),
+    extractSerializable: !!nuxt.options.experimental.extractSerializablePageMeta,
     fullyResolvedPaths: trackedFiles,
     originalPagePaths,
   }
@@ -156,6 +157,7 @@ interface AugmentPagesContext {
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
   extraExtractionKeys?: Set<string>
+  extractSerializable?: boolean
   originalPagePaths?: WeakMap<NuxtPage, string>
 }
 
@@ -164,7 +166,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
-      const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
+      const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys, { extractSerializable: ctx.extractSerializable })
       if (route.meta) {
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
       }
@@ -258,16 +260,25 @@ export function resolvePageMetaExtractionKeys (extraKeys: Iterable<string> = [])
  * - `dynamic` - an extracted key whose value needs evaluating, so that one route field falls back
  *   to the macro module.
  * - `reshape` - the macro transform rewrites the property into keys the route record cannot
- *   express (`layout: { name, props }` becomes `layout` plus `layoutProps`), so the macro module
- *   resolves it.
+ *   express (`layout: { name, props }` becomes `layout` plus `layoutProps`). A `value` means the
+ *   reshaped keys are statically known, so the route record owns them; without one the macro
+ *   module resolves it.
  * - `runtime` - the property is not extracted at all, so the whole meta object falls back to the
  *   macro module.
  */
 export type PageMetaProperty =
   | { kind: 'extract', key: string, value: any }
   | { kind: 'dynamic', key: string }
-  | { kind: 'reshape', key: string, node: ESTree.ObjectExpression }
+  | { kind: 'reshape', key: string, node: ESTree.ObjectExpression, value?: { name: any, props?: any } }
   | { kind: 'runtime' }
+
+export interface ClassifyPageMetaOptions {
+  /**
+   * Extract any JSON-serializable property, not just the keys in `extractionKeys`. Properties
+   * whose values cannot be serialized still fall back to the macro module.
+   */
+  extractSerializable?: boolean
+}
 
 /**
  * Classify a property of a `definePageMeta` object literal.
@@ -276,7 +287,7 @@ export type PageMetaProperty =
  * record, and vice versa, or its value is lost. Both sides call this so that the two cannot
  * drift apart.
  */
-export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>): PageMetaProperty {
+export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>, options: ClassifyPageMetaOptions = {}): PageMetaProperty {
   // Spreads, computed keys, getters and methods cannot be resolved without evaluating the module.
   if (property.type !== 'Property' || property.computed || property.kind !== 'init' || property.method) {
     return { kind: 'runtime' }
@@ -300,34 +311,56 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
       subProperty.type === 'Property' && !subProperty.computed && subProperty.kind === 'init' && !subProperty.method
       && subProperty.key.type === 'Identifier' && (subProperty.key.name === 'name' || subProperty.key.name === 'props'),
     )
-    return reshapable ? { kind: 'reshape', key, node: value } : { kind: 'runtime' }
+    if (!reshapable) {
+      return { kind: 'runtime' }
+    }
+    if (options.extractSerializable) {
+      const serialized = isSerializable(value)
+      // Without a `name` there is no `layout` key to write, and a route record cannot express
+      // `layoutProps` on its own, so leave the whole object to the macro module.
+      if (serialized.serializable && serialized.value && 'name' in serialized.value) {
+        return { kind: 'reshape', key, node: value, value: serialized.value }
+      }
+    }
+    return { kind: 'reshape', key, node: value }
   }
 
-  if (!extractionKeys.has(key)) {
+  const isExtractionKey = extractionKeys.has(key)
+  if (!isExtractionKey && !options.extractSerializable) {
     return { kind: 'runtime' }
   }
 
   const serialized = isSerializable(property.value)
-  return serialized.serializable ? { kind: 'extract', key, value: serialized.value } : { kind: 'dynamic', key }
+  if (serialized.serializable) {
+    return { kind: 'extract', key, value: serialized.value }
+  }
+  // An unlisted key has no route field of its own to fall back to, so the whole meta object has
+  // to come from the macro module.
+  return isExtractionKey ? { kind: 'dynamic', key } : { kind: 'runtime' }
 }
 
+const SERIALIZABLE_CACHE_SUFFIX = '\0serializable'
 const pageContentsCache: Record<string, string> = {}
 const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set()): Partial<Record<keyof NuxtPage, any>> {
+export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {
+  // The extracted metadata differs between the two extraction modes, but the file contents do not.
+  const cacheKey = options.extractSerializable ? absolutePath + SERIALIZABLE_CACHE_SUFFIX : absolutePath
+
   // set/update pageContentsCache, invalidate extractCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
     delete extractCache[absolutePath]
+    delete extractCache[absolutePath + SERIALIZABLE_CACHE_SUFFIX]
   }
 
-  if (absolutePath in extractCache && extractCache[absolutePath]) {
-    return klona(extractCache[absolutePath])
+  if (cacheKey in extractCache && extractCache[cacheKey]) {
+    return klona(extractCache[cacheKey])
   }
 
   const loader = getLoader(absolutePath)
   const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
   if (!scriptBlocks) {
-    extractCache[absolutePath] = {}
+    extractCache[cacheKey] = {}
     return {}
   }
 
@@ -394,12 +427,12 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         continue
       }
 
-      const classified = new Map<string, Extract<PageMetaProperty, { kind: 'extract' | 'dynamic' }>>()
+      const classified = new Map<string, Extract<PageMetaProperty, { kind: 'extract' | 'dynamic' | 'reshape' }>>()
       let hasRuntimeProperty = false
 
       for (const property of argument.properties) {
-        const classification = classifyPageMetaProperty(property, extractionKeys)
-        if (classification.kind === 'extract' || classification.kind === 'dynamic') {
+        const classification = classifyPageMetaProperty(property, extractionKeys, options)
+        if (classification.kind === 'extract' || classification.kind === 'dynamic' || (classification.kind === 'reshape' && classification.value)) {
           // A duplicate key keeps its last occurrence, mirroring object-literal evaluation.
           classified.set(classification.key, classification)
           continue
@@ -411,7 +444,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // independent of the order they were written in.
       for (const key of extractionKeys) {
         const classification = classified.get(key)
-        if (!classification) { continue }
+        if (!classification || classification.kind === 'reshape') { continue }
 
         if (classification.kind === 'dynamic') {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${fileAt(script.offset + node.start)}\`).`)
@@ -427,6 +460,21 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         }
       }
 
+      // Keys with no route field of their own keep the order they were written in.
+      for (const [key, classification] of classified) {
+        if (classification.kind === 'reshape') {
+          extractedData.meta ??= {}
+          extractedData.meta.layout = classification.value!.name
+          if (classification.value!.props !== undefined) {
+            extractedData.meta.layoutProps = classification.value!.props
+          }
+          continue
+        }
+        if (extractionKeys.has(key) || classification.kind !== 'extract') { continue }
+        extractedData.meta ??= {}
+        extractedData.meta[key] = classification.value
+      }
+
       if (hasRuntimeProperty) {
         dynamicProperties.add('meta')
       }
@@ -438,7 +486,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
   }
 
-  extractCache[absolutePath] = extractedData
+  extractCache[cacheKey] = extractedData
   return klona(extractedData)
 }
 

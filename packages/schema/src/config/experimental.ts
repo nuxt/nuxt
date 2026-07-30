@@ -168,6 +168,11 @@ export default defineResolvers({
       },
     },
     extraPageMetaExtractionKeys: [],
+    extractSerializablePageMeta: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     sharedPrerenderData: {
       $resolve (val) {
         return typeof val === 'boolean' ? val : true
