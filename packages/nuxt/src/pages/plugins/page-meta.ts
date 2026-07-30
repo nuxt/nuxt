@@ -9,6 +9,7 @@ import type { ScopeTrackerNode } from 'oxc-walker'
 import { pageDiagnostics } from '@nuxt/kit'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { classifyPageMetaProperty } from '../utils.ts'
+import { linkToAlias } from '../../utils.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
 
 interface PageMetaPluginOptions {
@@ -106,7 +107,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!code) {
             s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
             const { pathname } = parseModuleId(id)
-            pageDiagnostics.NUXT_B4001({ pathname })
+            pageDiagnostics.NUXT_B4001({ pathname: linkToAlias(pathname) })
           } else {
             s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           }
@@ -346,7 +347,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          throw pageDiagnostics.NUXT_B4003({ callCount: instances, file: id })
+          throw pageDiagnostics.NUXT_B4003({ callCount: instances, file: linkToAlias(id) })
         }
 
         if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {

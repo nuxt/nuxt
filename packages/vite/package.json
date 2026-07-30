@@ -33,6 +33,7 @@
     "@vitejs/plugin-vue": "catalog:vue",
     "@vitejs/plugin-vue-jsx": "catalog:dev",
     "autoprefixer": "catalog:build",
+    "clickable-path": "catalog:build",
     "consola": "catalog:build",
     "cssnano": "catalog:build",
     "defu": "catalog:build",

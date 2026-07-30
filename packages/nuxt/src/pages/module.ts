@@ -12,7 +12,7 @@ import type { Nitro, NitroRouteConfig, NitroRouteRules } from 'nitropack/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
-import { logger } from '../utils.ts'
+import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
@@ -563,9 +563,9 @@ export default defineNuxtModule({
             warnedConflicts.add(key)
 
             pageDiagnostics.NUXT_B4015({
-              asset: relative(nuxt.options.rootDir, file),
+              asset: linkToAlias(file, nuxt),
               route,
-              page: page && relative(nuxt.options.rootDir, page),
+              page: page && linkToAlias(page, nuxt),
             })
           }
         }
