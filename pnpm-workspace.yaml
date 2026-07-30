@@ -95,6 +95,7 @@ catalogs:
   vite:
     magic-string: ^1.1.0
     oxc-walker: ^1.1.1
+    # needs to match vite's own `~1.2.0` pin
     rolldown: ^1.2.1
     rolldown-string: ^0.3.1
     vite: ^8.2.0

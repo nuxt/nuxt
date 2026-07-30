@@ -1092,9 +1092,6 @@ importers:
       pkg-types:
         specifier: catalog:build
         version: 2.3.1
-      rolldown:
-        specifier: catalog:vite
-        version: 1.2.1
       rolldown-string:
         specifier: catalog:vite
         version: 0.3.1(rolldown@1.2.1)
@@ -1174,6 +1171,9 @@ importers:
       '@vue/compiler-sfc':
         specifier: catalog:vue
         version: 3.5.40
+      rolldown:
+        specifier: catalog:vite
+        version: 1.2.1
       tsdown:
         specifier: catalog:dev
         version: 0.22.14(@arethetypeswrong/core@0.18.5)(@volar/typescript@2.4.28)(oxc-resolver@11.24.2)(typescript@6.0.3)(vue-tsc@3.3.9(typescript@6.0.3))
