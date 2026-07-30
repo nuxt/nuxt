@@ -351,7 +351,11 @@ function startClientWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: strin
   }
 
   // we hook to avoid blocking nitro's build, and do not await crawl so we don't block the dev server
-  useNitro().hooks.hookOnce('compiled', () => { void run() })
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    nuxt.hooks.hookOnce('build:done', () => { void run() })
+  } else {
+    useNitro().hooks.hookOnce('compiled', () => { void run() })
+  }
 }
 
 async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
