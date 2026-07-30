@@ -239,10 +239,6 @@ async function getDeferredExpression (nuxt: Nuxt, key: keyof NuxtBuildOutputs): 
 function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
   return {
     name: 'nuxt:build-outputs',
-    // `post` so the deferred substitution in `generateBundle` runs after
-    // `SSRStylesPlugin` (`enforce: 'pre'`) has emitted its styles and populated
-    // the data that `build:manifest` listeners consume.
-    enforce: 'post',
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
