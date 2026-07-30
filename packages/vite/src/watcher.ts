@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories } from '@nuxt/kit'
 import { normalize, resolve } from 'pathe'
@@ -58,10 +58,12 @@ export const setupWatcher: NonNullable<NuxtBuilder['setupWatcher']> = (nuxt: Nux
       for (const delay of RECONCILE_DELAYS) {
         const timeout = setTimeout(() => {
           for (const path of missing) {
-            if (!existsSync(path)) { continue }
+            const stats = statSync(path, { throwIfNoEntry: false })
+            if (!stats) { continue }
             missing.delete(path)
-            watcher.emit('add', path)
-            watcher.emit('all', 'add', path)
+            const event = stats.isDirectory() ? 'addDir' : 'add'
+            watcher.emit(event, path)
+            watcher.emit('all', event, path)
           }
         }, delay)
         timeout.unref()
