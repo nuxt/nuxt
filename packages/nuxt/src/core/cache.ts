@@ -1,8 +1,8 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { buildDiagnostics, createIsIgnored } from '@nuxt/kit'
-import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
+import { buildDiagnostics, createIsIgnored, setBuildOutput } from '@nuxt/kit'
+import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
@@ -45,6 +45,7 @@ export async function getVueHash (nuxt: Nuxt) {
     hash,
     async collectCache () {
       const start = Date.now()
+      await persistBuildOutputs(nuxt)
       await writeCache(nuxt.options.buildDir, nuxt.options.buildDir, cacheFile)
 
       // Cache buildId so it can be restored before modules are initialised on the next build
@@ -59,10 +60,36 @@ export async function getVueHash (nuxt: Nuxt) {
       const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
       if (res) {
+        await restoreBuildOutputs(nuxt)
         consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
       }
       return res
     },
+  }
+}
+
+const BUILD_OUTPUTS_FILE = 'build-outputs.json'
+
+/**
+ * The bundler is skipped entirely on a cache hit, so the `nuxt/*` build outputs
+ * it would normally provide are snapshotted into the cached build directory and
+ * replayed on restore.
+ */
+async function persistBuildOutputs (nuxt: Nuxt) {
+  const outputs: Partial<Record<keyof NuxtBuildOutputs, string>> = {}
+  for (const key of Object.keys(nuxt.buildOutputs) as Array<keyof NuxtBuildOutputs>) {
+    outputs[key] = String(await nuxt.buildOutputs[key]())
+  }
+  await writeFile(resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE), JSON.stringify(outputs), 'utf8')
+}
+
+async function restoreBuildOutputs (nuxt: Nuxt) {
+  const file = resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE)
+  if (!existsSync(file)) { return }
+  const outputs = JSON.parse(await readFile(file, 'utf8')) as Record<keyof NuxtBuildOutputs, string>
+  for (const key of Object.keys(outputs) as Array<keyof NuxtBuildOutputs>) {
+    const code = outputs[key]
+    setBuildOutput(key, () => code, nuxt)
   }
 }
 
