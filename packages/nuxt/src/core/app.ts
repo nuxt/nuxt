@@ -23,6 +23,26 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
   } as unknown as NuxtApp) as NuxtApp
 }
 
+const structureVersions = new WeakMap<Nuxt, number>()
+const resolvedStructureVersions = new WeakMap<NuxtApp, number>()
+
+/**
+ * Version of the app's file structure, bumped whenever a file is added to or removed
+ * from a watched directory. Scans whose result depends only on which files exist
+ * (layouts, middleware, plugins, components) can be reused while it is unchanged.
+ *
+ * While it is unchanged, `app:resolve` and `components:extend` are not re-run in dev.
+ * Modules whose contributions depend on state other than the file tree should call
+ * `updateTemplates()` with no filter to force a full re-resolution.
+ */
+export function getAppStructureVersion (nuxt: Nuxt): number {
+  return structureVersions.get(nuxt) ?? 0
+}
+
+export function invalidateAppStructure (nuxt: Nuxt): void {
+  structureVersions.set(nuxt, getAppStructureVersion(nuxt) + 1)
+}
+
 const postTemplates = new Set([
   defaultTemplates.clientPluginTemplate.filename,
   defaultTemplates.serverPluginTemplate.filename,
@@ -30,14 +50,17 @@ const postTemplates = new Set([
 ])
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
+  const generateStart = performance.now()
   // Resolve app
   await resolveApp(nuxt, app)
+  const resolvedAt = performance.now()
 
   // User templates from options.build.templates
   app.templates = Object.values(defaultTemplates).concat(nuxt.options.build.templates) as NuxtTemplate[]
 
   // Extend templates with hook
   await nuxt.callHook('app:templates', app)
+  const scannedAt = performance.now()
 
   // Normalize templates
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl, nuxt.options.buildDir))
@@ -117,6 +140,10 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     write()
   }
 
+  if (nuxt.options.debug && nuxt.options.debug.templates) {
+    logger.info(`Generated app in ${Math.round(performance.now() - generateStart)}ms (resolve ${Math.round(resolvedAt - generateStart)}ms, scan ${Math.round(scannedAt - resolvedAt)}ms, compile ${Math.round(performance.now() - scannedAt)}ms), ${changedTemplates.length} template(s) changed`)
+  }
+
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
   }
@@ -155,6 +182,11 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+  // In dev, re-globbing every layer on each save is pure overhead unless a file has
+  // been added or removed since the last resolution.
+  const version = getAppStructureVersion(nuxt)
+  if (nuxt.options.dev && resolvedStructureVersions.get(app) === version) { return }
+
   // resolve layer
   const layerDirs = getLayerDirectories(nuxt)
   const reversedLayerDirs = layerDirs.toReversed()
@@ -249,6 +281,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
   app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
   app.configs = [...new Set(app.configs)]
+
+  // committed only once resolution has fully succeeded, so a throwing `app:resolve`
+  // hook doesn't leave a partially resolved app cached for subsequent rebuilds
+  resolvedStructureVersions.set(app, version)
 }
 
 function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
