@@ -10,6 +10,7 @@ import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import { createJiti } from 'jiti'
 import type { Jiti } from 'jiti'
+import { linkToAlias } from '../utils.ts'
 
 export default defineNuxtModule({
   meta: {
@@ -123,7 +124,7 @@ export default defineNuxtModule({
             // TODO: fix type for second argument of `import`
             loadedConfig = await (await getSchemaLoader()).import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
-            configDiagnostics.NUXT_B5005({ filePath, cause: err })
+            configDiagnostics.NUXT_B5005({ filePath: linkToAlias(filePath, nuxt), cause: err })
             continue
           }
           schemaDefs.push(loadedConfig)

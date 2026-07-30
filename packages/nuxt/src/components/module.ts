@@ -4,7 +4,7 @@ import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addT
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, linkToAlias, logger } from '../utils.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
@@ -100,7 +100,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          componentDiagnostics.NUXT_B3001({ dirPath })
+          componentDiagnostics.NUXT_B3001({ dirPath: linkToAlias(dirPath, nuxt) })
         }
 
         const inNodeModules = dirPath.includes('node_modules')
@@ -186,7 +186,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
       const path = resolve(nuxt.options.srcDir, relativePath)
       if (componentDirs.some(dir => dir.path === path)) {
-        logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        logger.info(`Directory \`${linkToAlias(path, nuxt)}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
     })

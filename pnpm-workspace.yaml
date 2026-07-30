@@ -132,6 +132,7 @@ catalogs:
     autoprefixer: ^10.5.4
     c12: ^3.3.4
     chokidar: ^5.0.0
+    clickable-path: ^0.0.1
     compatx: ^0.2.0
     consola: ^3.4.2
     cssnano: ^8.0.2

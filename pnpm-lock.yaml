@@ -97,6 +97,9 @@ catalogs:
     chokidar:
       specifier: ^5.0.0
       version: 5.0.0
+    clickable-path:
+      specifier: ^0.0.1
+      version: 0.0.1
     compatx:
       specifier: ^0.2.0
       version: 0.2.0
@@ -1005,6 +1008,9 @@ importers:
       chokidar:
         specifier: catalog:build
         version: 5.0.0
+      clickable-path:
+        specifier: catalog:build
+        version: 0.0.1
       compatx:
         specifier: catalog:build
         version: 0.2.0
@@ -1530,6 +1536,9 @@ importers:
       autoprefixer:
         specifier: catalog:build
         version: 10.5.4(postcss@8.5.25)
+      clickable-path:
+        specifier: catalog:build
+        version: 0.0.1
       consola:
         specifier: catalog:build
         version: 3.4.2
@@ -2037,13 +2046,13 @@ importers:
         specifier: catalog:dev
         version: 6.0.3
 
-  test/fixtures/worker-assets:
+  test/fixtures/ui-templates:
     dependencies:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
-  test/fixtures/ui-templates:
+  test/fixtures/worker-assets:
     dependencies:
       nuxt:
         specifier: workspace:*
@@ -5275,6 +5284,10 @@ packages:
   cli-table3@0.6.5:
     resolution: {integrity: sha512-+W/5efTR7y5HRD7gACw9yQjqMVvEMLBHmboM/kPWam+H+Hmyrgjh6YncVKK122YZkXrLudzTuAukUw9FnMf7IQ==}
     engines: {node: 10.* || >= 12.*}
+
+  clickable-path@0.0.1:
+    resolution: {integrity: sha512-PkJJGbxFRoWoxyYImJPPyd/RW+aVe0HQVBPhbp2KUaYZdpVNcIopUcE9UmCNAwdbj9frP5SzundqaePJF4ZWrw==}
+    engines: {node: '>=22.1.0'}
 
   cliui@7.0.4:
     resolution: {integrity: sha512-OcRE68cOsVMXp1Yvonl/fzkQOyjLSu/8bhPDfQt0e0/Eb283TKP20Fs2MqoPsr9SwA595rRCA+QMzYc9nBP+JQ==}
@@ -13321,6 +13334,8 @@ snapshots:
       string-width: 4.2.3
     optionalDependencies:
       '@colors/colors': 1.5.0
+
+  clickable-path@0.0.1: {}
 
   cliui@7.0.4:
     dependencies:

@@ -13,7 +13,7 @@ import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 import { getLoader } from '../core/utils/index.ts'
-import { logger, toArray } from '../utils.ts'
+import { linkToAlias, logger, offsetToPosition, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
 // ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   }
   const emitOptions: VueRouterEmitOptions = {
     onDuplicateRouteName: (_name, file, existingFile) => {
-      pageDiagnostics.NUXT_B4004({ file, existingFile })
+      pageDiagnostics.NUXT_B4004({ file: linkToAlias(file), existingFile: linkToAlias(existingFile) })
     },
     attrs: { mode: modes },
   }
@@ -194,14 +194,18 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   return ctx.augmentedPages
 }
 
-const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/gi
+const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/dgi
 function extractScriptContent (sfc: string) {
-  const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
+  const contents: Array<{ loader: 'tsx' | 'ts', code: string, offset: number }> = []
   for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
-    if (match?.groups?.content) {
+    const content = match?.groups?.content
+    if (content) {
+      const [contentStart] = match.indices!.groups!.content!
       contents.push({
-        loader: match.groups.attrs && /[tj]sx/.test(match.groups.attrs) ? 'tsx' : 'ts',
-        code: match.groups.content.trim(),
+        loader: match.groups!.attrs && /[tj]sx/.test(match.groups!.attrs) ? 'tsx' : 'ts',
+        code: content.trim(),
+        // offsets within the trimmed script block are reported against the whole SFC
+        offset: contentStart + content.length - content.trimStart().length,
       })
     }
   }
@@ -320,13 +324,14 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   }
 
   const loader = getLoader(absolutePath)
-  const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader }]
+  const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
   if (!scriptBlocks) {
     extractCache[absolutePath] = {}
     return {}
   }
 
   const extractedData: Partial<Record<keyof NuxtPage, any>> = {}
+  const fileAt = (offset: number) => linkToAlias(absolutePath, undefined, offsetToPosition(contents, offset))
 
   const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
   const dynamicProperties = new Set<keyof NuxtPage>()
@@ -358,7 +363,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // top-level statement (nested in a condition, or used as an expression) does not mean what
       // it looks like it means.
       if (!topLevelCalls.has(node)) {
-        pageDiagnostics.NUXT_B4007({ fnName, file: absolutePath })
+        pageDiagnostics.NUXT_B4007({ fnName, file: fileAt(script.offset + node.start) })
       }
 
       // The macro transform reads the first call per macro (and errors on a second
@@ -369,7 +374,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       const argument = unwrapStaticExpression(node.arguments[0])
 
       if (argument?.type !== 'ObjectExpression') {
-        pageDiagnostics.NUXT_B4005({ fnName, file: absolutePath, receivedType: String(argument?.type) })
+        pageDiagnostics.NUXT_B4005({ fnName, file: fileAt(script.offset + node.start), receivedType: String(argument?.type) })
         if (fnName === 'definePageMeta') {
           // The macro module resolves the object at runtime, so the route record cannot own it.
           dynamicProperties.add('meta')
@@ -380,7 +385,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       if (fnName === 'defineRouteRules') {
         const { value, serializable } = isSerializable(argument)
         if (!serializable) {
-          pageDiagnostics.NUXT_B4006({ fnName, file: absolutePath })
+          pageDiagnostics.NUXT_B4006({ fnName, file: fileAt(script.offset + node.start) })
           continue
         }
 
@@ -408,7 +413,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         if (!classification) { continue }
 
         if (classification.kind === 'dynamic') {
-          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${fileAt(script.offset + node.start)}\`).`)
           dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
           continue
         }
