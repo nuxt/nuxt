@@ -41,8 +41,9 @@ export function ResolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
           ],
         },
       },
-      async handler (id, importer) {
-        if (!importer || (!isAbsolute(importer) && !VIRTUAL_RE.test(importer))) {
+      async handler (id, importer, options) {
+        // let Vite resolve fallback entry probes (e.g. `index.html`) itself
+        if (options.isEntry || !importer || (!isAbsolute(importer) && !VIRTUAL_RE.test(importer))) {
           return
         }
 
