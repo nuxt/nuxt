@@ -21,13 +21,19 @@ function createMockNuxt (dev: boolean) {
   } as unknown as Nuxt
 }
 
-async function resolveClientPlugins (nuxt: Nuxt, plugins: VitePlugin[]) {
+async function resolveClientPlugins (nuxt: Nuxt, plugins: VitePlugin[], environment: Record<string, unknown> = {
+  name: 'client',
+  getTopLevelConfig: () => ({
+    command: nuxt.options.dev ? 'serve' : 'build',
+    mode: nuxt.options.dev ? 'development' : 'production',
+  }),
+}) {
   const config: ViteConfig = { plugins: [], environments: { client: {}, ssr: {} } }
   runWithNuxtContext(nuxt, () => addVitePlugin(plugins))
   await nuxt.callHook('vite:extend', { config } as any)
 
   const wrapper = config.plugins![0] as VitePlugin
-  const applied = await wrapper.applyToEnvironment!({ name: 'client' } as any)
+  const applied = await wrapper.applyToEnvironment!(environment as any)
   return (Array.isArray(applied) ? applied : []).map(p => (p as VitePlugin).name)
 }
 
@@ -61,5 +67,24 @@ describe('addVitePlugin', () => {
       { name: 'replaced', applyToEnvironment: () => [{ name: 'replacement' }] },
     ])
     expect(names).toEqual(['client-only', 'replacement'])
+  })
+
+  it('should infer the command when the environment predates `getTopLevelConfig`', async () => {
+    const nuxt = createMockNuxt(true)
+    const names = await resolveClientPlugins(nuxt, [
+      { name: 'always' },
+      { name: 'serve-only', apply: 'serve' },
+      { name: 'build-only', apply: 'build' },
+    ], { name: 'client' })
+    expect(names).toEqual(['always', 'serve-only'])
+  })
+
+  it('should resolve nested and async replacement plugins', async () => {
+    const nuxt = createMockNuxt(false)
+    const names = await resolveClientPlugins(nuxt, [
+      { name: 'deep', applyToEnvironment: () => [[{ name: 'nested' }], Promise.resolve({ name: 'async' })] as any },
+      { name: 'empty', applyToEnvironment: () => [null, undefined, false] as any },
+    ])
+    expect(names).toEqual(['nested', 'async'])
   })
 })

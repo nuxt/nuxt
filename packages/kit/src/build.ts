@@ -188,22 +188,13 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
 
     const environmentName = options.server === false ? 'client' : 'ssr'
     const pluginName = plugin.map(p => p.name).join('|')
-    // Vite only honours `apply` and nested `applyToEnvironment` for plugins it
-    // finds in the top-level array, so plugins we nest behind a wrapper have to
-    // be filtered here or dev-only plugins would leak into production builds.
-    const configEnv: ConfigEnv = {
-      command: nuxt.options.dev ? 'serve' : 'build',
-      mode: config.mode || nuxt.options.vite.mode || (nuxt.options.dev ? 'development' : 'production'),
-      isPreview: false,
-    }
-    const applicablePlugins = plugin.filter(p => p && (!p.apply || (typeof p.apply === 'function' ? p.apply(config, configEnv) : p.apply === configEnv.command))) as VitePlugin[]
     config.plugins.push({
       name: `${pluginName}:wrapper`,
       // isomorphic plugins are normally just added to plugins, so only force when `prepend` is set
       enforce: isIsomorphic ? (options?.prepend ? 'pre' : undefined) : (options?.prepend ? 'pre' : 'post'),
       applyToEnvironment (environment) {
         if (isIsomorphic ? environment.name === 'client' || environment.name === 'ssr' : environment.name === environmentName) {
-          return resolveNestedPlugins(applicablePlugins, environment)
+          return resolveNestedPlugins(plugin, config, environment, nuxt)
         }
       },
     })
@@ -226,24 +217,51 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
 
 type VitePluginEnvironment = Parameters<NonNullable<VitePlugin['applyToEnvironment']>>[0]
 
-async function resolveNestedPlugins (plugins: VitePlugin[], environment: VitePluginEnvironment): Promise<VitePlugin[]> {
+/**
+ * Vite only honours `apply` and `applyToEnvironment` for plugins it finds in the
+ * top-level plugin array, so plugins nested behind a wrapper have to be resolved
+ * by hand or (for example) dev-only plugins would leak into production builds.
+ */
+async function resolveNestedPlugins (plugins: VitePlugin[], config: ViteConfig, environment: VitePluginEnvironment, nuxt: Nuxt): Promise<VitePlugin[]> {
+  const configEnv = resolveConfigEnv(environment, config, nuxt)
+
   const resolved: VitePlugin[] = []
   for (const plugin of plugins) {
-    if (!plugin.applyToEnvironment) {
-      resolved.push(plugin)
+    const { apply, applyToEnvironment } = plugin
+    if (apply && (typeof apply === 'function' ? !apply(config, configEnv) : apply !== configEnv.command)) {
       continue
     }
-    const applied = await plugin.applyToEnvironment(environment)
-    if (!applied) {
-      continue
-    }
+    const applied = applyToEnvironment ? await applyToEnvironment(environment) : true
     if (applied === true) {
       resolved.push(plugin)
       continue
     }
-    resolved.push(...toArray(applied).flat().filter(Boolean) as VitePlugin[])
+    resolved.push(...await flattenPlugins(applied))
   }
   return resolved
+}
+
+/**
+ * `getTopLevelConfig` is only available from Vite 6, and kit is used with older
+ * versions of nuxt (and therefore vite), so fall back to what we can infer.
+ */
+function resolveConfigEnv (environment: VitePluginEnvironment, config: ViteConfig, nuxt: Nuxt): ConfigEnv {
+  const topLevelConfig = (environment as Partial<VitePluginEnvironment>).getTopLevelConfig?.() ?? environment.config as Partial<VitePluginEnvironment['config']> | undefined
+  return {
+    command: topLevelConfig?.command ?? (nuxt.options.dev ? 'serve' : 'build'),
+    mode: topLevelConfig?.mode ?? config.mode ?? nuxt.options.vite?.mode ?? (nuxt.options.dev ? 'development' : 'production'),
+  }
+}
+
+async function flattenPlugins (option: unknown): Promise<VitePlugin[]> {
+  const resolved = await option
+  if (!resolved) {
+    return []
+  }
+  if (Array.isArray(resolved)) {
+    return (await Promise.all(resolved.map(flattenPlugins))).flat()
+  }
+  return [resolved as VitePlugin]
 }
 
 interface AddBuildPluginFactory {
