@@ -37,6 +37,18 @@ async function resolveClientPlugins (nuxt: Nuxt, plugins: VitePlugin[], environm
   return (Array.isArray(applied) ? applied : []).map(p => (p as VitePlugin).name)
 }
 
+async function resolveWrappers (nuxt: Nuxt, plugins: VitePlugin[], options?: Parameters<typeof addVitePlugin>[1]) {
+  const config: ViteConfig = { plugins: [], environments: { client: {}, ssr: {} } }
+  runWithNuxtContext(nuxt, () => addVitePlugin(plugins, options))
+  await nuxt.callHook('vite:extend', { config } as any)
+
+  const environment = { name: 'client', getTopLevelConfig: () => ({ command: 'build', mode: 'production' }) }
+  return Promise.all((config.plugins as VitePlugin[]).map(async wrapper => ({
+    enforce: wrapper.enforce,
+    plugins: ((await wrapper.applyToEnvironment!(environment as any)) as VitePlugin[]).map(p => p.name),
+  })))
+}
+
 describe('addVitePlugin', () => {
   it('should filter nested dev-only plugins out of production builds', async () => {
     const nuxt = createMockNuxt(false)
@@ -77,6 +89,32 @@ describe('addVitePlugin', () => {
       { name: 'build-only', apply: 'build' },
     ], { name: 'client' })
     expect(names).toEqual(['always', 'serve-only'])
+  })
+
+  it('should honour the enforce of wrapped plugins', async () => {
+    const nuxt = createMockNuxt(false)
+    const wrappers = await resolveWrappers(nuxt, [
+      { name: 'normal' },
+      { name: 'first', enforce: 'pre' },
+      { name: 'last', enforce: 'post' },
+      { name: 'also-first', enforce: 'pre' },
+    ])
+    expect(wrappers).toEqual([
+      { enforce: undefined, plugins: ['normal'] },
+      { enforce: 'pre', plugins: ['first', 'also-first'] },
+      { enforce: 'post', plugins: ['last'] },
+    ])
+  })
+
+  it('should fall back to the default enforce for plugins that declare none', async () => {
+    expect(await resolveWrappers(createMockNuxt(false), [{ name: 'a' }, { name: 'b', enforce: 'post' }], { prepend: true })).toEqual([
+      { enforce: 'pre', plugins: ['a'] },
+      { enforce: 'post', plugins: ['b'] },
+    ])
+    expect(await resolveWrappers(createMockNuxt(false), [{ name: 'a' }, { name: 'b', enforce: 'pre' }], { server: false })).toEqual([
+      { enforce: 'post', plugins: ['a'] },
+      { enforce: 'pre', plugins: ['b'] },
+    ])
   })
 
   it('should resolve nested and async replacement plugins', async () => {

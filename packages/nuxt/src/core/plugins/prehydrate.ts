@@ -6,10 +6,9 @@ import { parseAndWalk } from 'oxc-walker'
 import { transformAndMinify } from '../../core/utils/parse.ts'
 import { isJS, isVue } from '../utils/index.ts'
 
-export function PrehydrateTransformPlugin ({ enforce }: { enforce?: 'pre' } = {}) {
+export function PrehydrateTransformPlugin () {
   return createUnplugin(() => ({
     name: 'nuxt:prehydrate-transform',
-    enforce,
     transformInclude (id) {
       return isJS(id) || isVue(id, { type: ['script'] })
     },
