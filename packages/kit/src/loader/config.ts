@@ -7,7 +7,7 @@ import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { defu } from 'defu'
-import { klona } from 'klona/full'
+import { klona } from 'klona'
 import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
@@ -48,6 +48,9 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     }),
   )
   const { configFile, layers = [], cwd, meta } = resolved
+  // Clone with `klona` rather than `klona/full`: jiti-imported JSON/CJS modules in user config
+  // carry a non-enumerable, self-referential `default` interop property, which `klona/full`
+  // would follow into infinite recursion.
   const nuxtConfig = klona(resolved.config)
 
   // Fill config
