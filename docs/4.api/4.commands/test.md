@@ -4,7 +4,7 @@ description: The test command runs tests using @nuxt/test-utils.
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/test.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxt-cli/src/commands/test.ts
     size: xs
 ---
 

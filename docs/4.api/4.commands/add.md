@@ -4,7 +4,7 @@ description: "Scaffold an entity into your Nuxt application."
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/add-template.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxt-cli/src/commands/add-template.ts
     size: xs
 ---
 
