@@ -1,5 +1,6 @@
 import { toRef, watch } from 'vue'
 
+import { useNuxtApp } from '../nuxt'
 import { useState } from './state'
 import { refreshNuxtData } from './asyncData'
 import { useRoute, useRouter } from './router'
@@ -59,11 +60,25 @@ export function usePreviewMode<S extends EnteredState> (options: PreviewModeOpti
     preview.value._initialized = true
   }
 
-  if (!preview.value.enabled) {
-    const shouldEnable = options.shouldEnable ?? defaultShouldEnable
+  const shouldEnable = options.shouldEnable ?? defaultShouldEnable
+
+  function checkEnabled () {
+    if (preview.value.enabled) { return }
+
     const result = shouldEnable(preview.value.state)
 
     if (typeof result === 'boolean') { preview.value.enabled = result }
+  }
+
+  checkEnabled()
+
+  if (import.meta.client && !preview.value.enabled) {
+    const nuxtApp = useNuxtApp()
+    // on a prerendered page the real route (and its query) is only restored after hydration,
+    // so the query has to be re-checked once it is available (#35885)
+    if (nuxtApp['~restoreDeferredRoute']) {
+      nuxtApp.hooks.hookOnce('app:suspense:resolve', () => nuxtApp.runWithContext(checkEnabled))
+    }
   }
 
   watch(() => preview.value.enabled, (value) => {
