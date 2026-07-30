@@ -5,7 +5,6 @@ import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
-import { createRoutesContext, resolveOptions } from 'vue-router/unplugin'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
 import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 
@@ -374,6 +373,7 @@ export default defineNuxtModule({
         references.push({ path: declarationFile })
       })
 
+      const { createRoutesContext, resolveOptions } = await import('vue-router/unplugin')
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
       await mkdir(dirname(declarationFile), { recursive: true })
 
