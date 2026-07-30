@@ -57,6 +57,13 @@ export interface NuxtPage {
   mode?: 'client' | 'server' | 'all'
   /** @internal */
   _sync?: boolean
+  /**
+   * The page is served by a `noScripts` route rule: its component is excluded
+   * from the client bundle and client-side navigation to it triggers a full
+   * document load.
+   * @internal
+   */
+  _noScripts?: boolean
 }
 
 export type NuxtMiddleware = {
