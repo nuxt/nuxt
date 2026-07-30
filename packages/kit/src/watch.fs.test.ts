@@ -8,22 +8,25 @@ import { recoverThrottledChanges } from './watch.ts'
 const temporaryDirectories: string[] = []
 const disposers: Array<() => unknown> = []
 
-async function createWatcher (recover: boolean) {
+async function createWatcher (recover: boolean, cwd?: boolean) {
   const dir = await realpath(await mkdtemp(join(tmpdir(), 'nuxt-watch-')))
   temporaryDirectories.push(dir)
 
   const file = join(dir, 'component.vue')
   await writeFile(file, '<template>0</template>')
 
-  const watcher = watch(dir, { ignoreInitial: true })
+  const watcher = cwd
+    ? watch('component.vue', { cwd: dir, ignoreInitial: true })
+    : watch(dir, { ignoreInitial: true })
   disposers.push(() => watcher.close())
   if (recover) {
     disposers.push(recoverThrottledChanges(watcher))
   }
 
+  const emitted = cwd ? 'component.vue' : file
   const seen: string[] = []
   watcher.on('change', (path) => {
-    if (path === file) { seen.push(path) }
+    if (path === emitted) { seen.push(path) }
   })
   await new Promise<void>(resolve => watcher.on('ready', () => resolve()))
 
@@ -44,6 +47,14 @@ describe('recoverThrottledChanges', () => {
 
   it('surfaces a second save that lands within the throttle window', async () => {
     const { file, seen } = await createWatcher(true)
+
+    await saveTwice(file)
+
+    await expect.poll(() => seen.length, { timeout: 5000 }).toBeGreaterThanOrEqual(2)
+  })
+
+  it('surfaces a throttled second save for a watcher with a `cwd`', async () => {
+    const { file, seen } = await createWatcher(true, true)
 
     await saveTwice(file)
 

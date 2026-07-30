@@ -1,5 +1,5 @@
 import { stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 const RECHECK_DELAY = 70
 
@@ -20,6 +20,13 @@ const RECOVERY_FLAG = Symbol.for('nuxt:watch-recovery')
 export interface RecoverableWatcher {
   on: (event: any, listener: (...args: any[]) => void) => any
   emit: (event: any, ...args: any[]) => any
+  options?: { cwd?: string | undefined } | undefined
+}
+
+interface TrackedFile {
+  mtimeMs: number
+  /** the path in the namespace chokidar emits, which is relative when `cwd` is set */
+  path: string
 }
 
 /**
@@ -41,9 +48,17 @@ export function recoverThrottledChanges (watcher: RecoverableWatcher): () => voi
   if (patched) { return () => {} }
   Object.defineProperty(watcher, RECOVERY_FLAG, { value: true, configurable: true })
 
-  const knownMtimes = new Map<string, number>()
+  const tracked = new Map<string, TrackedFile>()
   const pending = new Map<string, NodeJS.Timeout>()
   let disposed = false
+
+  /**
+   * With `cwd` set, chokidar emits high-level events relative to it while raw
+   * events carry an absolute `watchedPath`, so everything is keyed absolutely
+   * and the emitted path is kept alongside to re-emit in chokidar's namespace.
+   */
+  const cwd = watcher.options?.cwd
+  const toKey = (path: string) => cwd ? resolve(cwd, path) : path
 
   /**
    * `watchedPath` is the (possibly relative) path chokidar handed to `fs.watch`
@@ -59,32 +74,36 @@ export function recoverThrottledChanges (watcher: RecoverableWatcher): () => voi
       : undefined
 
     if (!watched) {
-      return knownMtimes.has(path) ? path : undefined
+      const key = toKey(path)
+      return tracked.has(key) ? key : undefined
     }
 
-    const child = join(watched, path)
-    if (knownMtimes.has(child)) { return child }
+    const child = toKey(join(watched, path))
+    if (tracked.has(child)) { return child }
 
-    return knownMtimes.has(watched) ? watched : undefined
+    const parent = toKey(watched)
+    return tracked.has(parent) ? parent : undefined
   }
 
   const track = (path: string, stats?: { mtimeMs: number }) => {
     if (disposed) { return }
+    const key = toKey(path)
     if (stats) {
-      knownMtimes.set(path, stats.mtimeMs)
+      tracked.set(key, { mtimeMs: stats.mtimeMs, path })
       return
     }
-    void stat(path).then((s) => {
-      if (!disposed) { knownMtimes.set(path, s.mtimeMs) }
+    void stat(key).then((s) => {
+      if (!disposed) { tracked.set(key, { mtimeMs: s.mtimeMs, path }) }
     }, () => {})
   }
 
   const forget = (path: string) => {
-    knownMtimes.delete(path)
-    const timeout = pending.get(path)
+    const key = toKey(path)
+    tracked.delete(key)
+    const timeout = pending.get(key)
     if (timeout) {
       clearTimeout(timeout)
-      pending.delete(path)
+      pending.delete(key)
     }
   }
 
@@ -95,6 +114,9 @@ export function recoverThrottledChanges (watcher: RecoverableWatcher): () => voi
   watcher.on('raw', (event: string, path: string, details: unknown) => {
     if (disposed) { return }
     if (event !== 'change' && event !== 'rename' && event !== 'modified') { return }
+
+    // `fs.watch` does not always report a filename
+    if (typeof path !== 'string' || !path) { return }
 
     // Only files chokidar has already reported are candidates: the throttle can
     // only drop an event that had a predecessor, and this keeps us from
@@ -107,12 +129,12 @@ export function recoverThrottledChanges (watcher: RecoverableWatcher): () => voi
       if (disposed) { return }
       void stat(file).then((stats) => {
         if (disposed) { return }
-        const previous = knownMtimes.get(file)
-        if (previous === undefined) { return }
-        knownMtimes.set(file, stats.mtimeMs)
-        if (stats.mtimeMs - previous <= MTIME_EPSILON) { return }
-        watcher.emit('change', file, stats)
-        watcher.emit('all', 'change', file, stats)
+        const previous = tracked.get(file)
+        if (!previous) { return }
+        tracked.set(file, { mtimeMs: stats.mtimeMs, path: previous.path })
+        if (stats.mtimeMs - previous.mtimeMs <= MTIME_EPSILON) { return }
+        watcher.emit('change', previous.path, stats)
+        watcher.emit('all', 'change', previous.path, stats)
       }, () => {})
     }, RECHECK_DELAY)
     timeout.unref()
@@ -125,6 +147,6 @@ export function recoverThrottledChanges (watcher: RecoverableWatcher): () => voi
       clearTimeout(timeout)
     }
     pending.clear()
-    knownMtimes.clear()
+    tracked.clear()
   }
 }

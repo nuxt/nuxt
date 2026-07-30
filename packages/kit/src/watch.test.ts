@@ -25,8 +25,8 @@ const RECHECK_DELAY = 70
 const dir = join('/project', 'app')
 const file = join(dir, 'index.vue')
 
-function createWatcher () {
-  const watcher = new EventEmitter() as unknown as RecoverableWatcher & EventEmitter
+function createWatcher (options?: { cwd?: string }) {
+  const watcher = Object.assign(new EventEmitter(), { options }) as unknown as RecoverableWatcher & EventEmitter
   const changes: Array<[string, unknown]> = []
   const dispose = recoverThrottledChanges(watcher)
   watcher.on('change', (path: string, stats: unknown) => changes.push([path, stats]))
@@ -97,6 +97,17 @@ describe('recoverThrottledChanges', () => {
 
     mtimes.set(file, 2000)
     watcher.emit('raw', 'change', 'index.vue', { watchedPath: dir })
+    await vi.advanceTimersByTimeAsync(RECHECK_DELAY)
+
+    expect(changes).toHaveLength(0)
+  })
+
+  it.each([undefined, null, ''])('ignores raw events reported without a filename (%s)', async (rawPath) => {
+    const { watcher, changes } = createWatcher()
+
+    watcher.emit('add', file, { mtimeMs: 1000 })
+    mtimes.set(file, 2000)
+    expect(() => watcher.emit('raw', 'change', rawPath, { watchedPath: dir })).not.toThrow()
     await vi.advanceTimersByTimeAsync(RECHECK_DELAY)
 
     expect(changes).toHaveLength(0)
@@ -247,6 +258,19 @@ describe('recoverThrottledChanges', () => {
       await vi.advanceTimersByTimeAsync(RECHECK_DELAY)
 
       expect(changes).toEqual([[nested, { mtimeMs: 2000 }]])
+    })
+
+    it('keys cwd-relative events against the watcher cwd', async () => {
+      const cwd = '/project'
+      const { watcher, changes } = createWatcher({ cwd })
+      const relative = join('app', 'index.vue')
+
+      watcher.emit('add', relative, { mtimeMs: 1000 })
+      mtimes.set(file, 2000)
+      watcher.emit('raw', 'change', 'index.vue', { watchedPath: dir })
+      await vi.advanceTimersByTimeAsync(RECHECK_DELAY)
+
+      expect(changes).toEqual([[relative, { mtimeMs: 2000 }]])
     })
 
     it('resolves absolute paths reported without a watched path', async () => {
