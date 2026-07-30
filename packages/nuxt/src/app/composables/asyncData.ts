@@ -945,6 +945,7 @@ function buildAsyncData<
       if (nuxtApp._asyncDataPromises[key]) {
         asyncData._abortController?.abort(new DOMException('AsyncData request cancelled by unmount', 'AbortError'))
         delete nuxtApp._asyncDataPromises[key]
+        asyncData.status.value = 'idle'
       }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
