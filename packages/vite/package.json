@@ -31,6 +31,7 @@
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@vitejs/plugin-vue": "catalog:vue",
+    "clickable-path": "catalog:build",
     "consola": "catalog:build",
     "defu": "catalog:build",
     "escape-string-regexp": "catalog:build",

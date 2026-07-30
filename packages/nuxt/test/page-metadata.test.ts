@@ -557,7 +557,7 @@ describe('page metadata macro position', () => {
     </script>
     `, '/app/pages/conditional.vue')
 
-    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: '/app/pages/conditional.vue' })
+    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: expect.stringMatching(/app\/pages\/conditional\.vue:4:7$/) })
   })
 
   it('should warn when a macro is used as an expression', () => {
@@ -567,7 +567,7 @@ describe('page metadata macro position', () => {
     </script>
     `, '/app/pages/expression.vue')
 
-    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: '/app/pages/expression.vue' })
+    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: expect.stringMatching(/app\/pages\/expression\.vue:3:10$/) })
   })
 
   it('should warn when a macro is called inside a function', () => {
@@ -579,7 +579,7 @@ describe('page metadata macro position', () => {
     </script>
     `, '/app/pages/nested.vue')
 
-    expect(warn).toHaveBeenCalledWith({ fnName: 'defineRouteRules', file: '/app/pages/nested.vue' })
+    expect(warn).toHaveBeenCalledWith({ fnName: 'defineRouteRules', file: expect.stringMatching(/app\/pages\/nested\.vue:4:7$/) })
   })
 })
 
@@ -770,7 +770,7 @@ describe('rewrite page meta', () => {
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[NUXT_B4003: \`definePageMeta()\` is called 2 times in \`component.vue?macro=true\`, but only one call is allowed.]`)
+    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[NUXT_B4003: \`definePageMeta()\` is called 2 times in \`component.vue\`, but only one call is allowed.]`)
   })
 
   it('should extract metadata from vue components', () => {
