@@ -1,22 +1,49 @@
 import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { FSWatcher } from 'vite'
+
+const RECHECK_DELAY = 70
 
 /**
- * chokidar v3 (the version vite bundles) suppresses a `change` event that lands
- * within 50ms of the previous `change` for the same path, and never replays it.
- * A save that follows a fast HMR round trip is therefore silently lost until
- * the file is touched again, which looks exactly like broken HMR.
+ * A single write moves the mtime more than once (truncate, then write) and
+ * chokidar may dispatch `change` off the first of those, so a mtime a hair
+ * newer than the one recorded is the tail of a write that *was* reported
+ * rather than one that was dropped.
+ */
+const MTIME_EPSILON = 10
+const RECOVERY_FLAG = Symbol.for('nuxt:watch-recovery')
+
+/**
+ * The subset of a chokidar `FSWatcher` this helper needs. Callers hold
+ * different chokidar majors (Nuxt core watches with v5, Vite bundles v3), so
+ * the parameter is structural rather than an import of either package.
+ */
+export interface RecoverableWatcher {
+  on: (event: any, listener: (...args: any[]) => void) => any
+  emit: (event: any, ...args: any[]) => any
+}
+
+/**
+ * chokidar suppresses a `change` event that lands within 50ms of the previous
+ * `change` for the same path, and never replays it. A save that follows a fast
+ * HMR round trip is therefore silently lost until the file is touched again,
+ * which looks exactly like broken HMR. This is true of every chokidar major
+ * Nuxt uses.
  *
  * Raw fs events are not throttled, so once chokidar has reported a file at
  * least once we can use them to notice a modification that never surfaced as a
  * `change` event, and re-emit it after the throttle window has passed.
+ *
+ * @param watcher the chokidar watcher to patch
+ * @returns a disposer releasing the recovery state; call it when the watcher closes
  */
-const RECHECK_DELAY = 70
+export function recoverThrottledChanges (watcher: RecoverableWatcher): () => void {
+  const patched = (watcher as unknown as Record<symbol, boolean>)[RECOVERY_FLAG]
+  if (patched) { return () => {} }
+  Object.defineProperty(watcher, RECOVERY_FLAG, { value: true, configurable: true })
 
-export function recoverThrottledChanges (watcher: FSWatcher): void {
   const knownMtimes = new Map<string, number>()
   const pending = new Map<string, NodeJS.Timeout>()
+  let disposed = false
 
   /**
    * `watchedPath` is the (possibly relative) path chokidar handed to `fs.watch`
@@ -42,25 +69,31 @@ export function recoverThrottledChanges (watcher: FSWatcher): void {
   }
 
   const track = (path: string, stats?: { mtimeMs: number }) => {
+    if (disposed) { return }
     if (stats) {
       knownMtimes.set(path, stats.mtimeMs)
       return
     }
-    void stat(path).then(s => knownMtimes.set(path, s.mtimeMs), () => {})
+    void stat(path).then((s) => {
+      if (!disposed) { knownMtimes.set(path, s.mtimeMs) }
+    }, () => {})
   }
 
-  watcher.on('add', track)
-  watcher.on('change', track)
-  watcher.on('unlink', (path) => {
+  const forget = (path: string) => {
     knownMtimes.delete(path)
     const timeout = pending.get(path)
     if (timeout) {
       clearTimeout(timeout)
       pending.delete(path)
     }
-  })
+  }
 
-  watcher.on('raw', (event, path, details) => {
+  watcher.on('add', track)
+  watcher.on('change', track)
+  watcher.on('unlink', forget)
+
+  watcher.on('raw', (event: string, path: string, details: unknown) => {
+    if (disposed) { return }
     if (event !== 'change' && event !== 'rename' && event !== 'modified') { return }
 
     // Only files chokidar has already reported are candidates: the throttle can
@@ -71,9 +104,13 @@ export function recoverThrottledChanges (watcher: FSWatcher): void {
 
     const timeout = setTimeout(() => {
       pending.delete(file)
+      if (disposed) { return }
       void stat(file).then((stats) => {
-        if (knownMtimes.get(file) === stats.mtimeMs) { return }
+        if (disposed) { return }
+        const previous = knownMtimes.get(file)
+        if (previous === undefined) { return }
         knownMtimes.set(file, stats.mtimeMs)
+        if (stats.mtimeMs - previous <= MTIME_EPSILON) { return }
         watcher.emit('change', file, stats)
         watcher.emit('all', 'change', file, stats)
       }, () => {})
@@ -81,4 +118,13 @@ export function recoverThrottledChanges (watcher: FSWatcher): void {
     timeout.unref()
     pending.set(file, timeout)
   })
+
+  return () => {
+    disposed = true
+    for (const timeout of pending.values()) {
+      clearTimeout(timeout)
+    }
+    pending.clear()
+    knownMtimes.clear()
+  }
 }

@@ -5,7 +5,7 @@ import { createBuilder, createServer, mergeConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
+import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, useNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
 import { sanitizeFilePath } from 'mlly'
 import vuePlugin from '@vitejs/plugin-vue'
@@ -17,7 +17,6 @@ import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
-import { recoverThrottledChanges } from './utils/watch-recovery.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
@@ -295,8 +294,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
-    recoverThrottledChanges(server.watcher)
-    nuxt.hook('close', () => server.close())
+    const disposeWatchRecovery = recoverThrottledChanges(server.watcher)
+    nuxt.hook('close', () => {
+      disposeWatchRecovery()
+      return server.close()
+    })
     await server.environments.ssr.pluginContainer.buildStart({})
     startClientWarmup(nuxt, server, entry)
   }, 'Vite dev server built')

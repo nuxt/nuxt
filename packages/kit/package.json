@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
+    "chokidar": "catalog:build",
     "hookable": "catalog:app-runtime",
     "nitro": "catalog:nitro-runtime",
     "nitropack": "catalog:dev",

@@ -854,6 +854,9 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      chokidar:
+        specifier: catalog:build
+        version: 5.0.0
       hookable:
         specifier: catalog:app-runtime
         version: 6.1.1
