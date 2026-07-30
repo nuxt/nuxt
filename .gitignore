@@ -91,3 +91,6 @@ playwright-report
 temp
 
 packages/ui-templates/node-compile-cache/
+
+# dev benchmark artifacts
+.bench
