@@ -2029,12 +2029,6 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
-  test/fixtures/route-rules-tree-shake:
-    dependencies:
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-
   test/fixtures/route-scroll:
     dependencies:
       nuxt:
@@ -2070,6 +2064,16 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+
+  test/fixtures/spa-only:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
 
   test/fixtures/ssr-streaming:
     dependencies:

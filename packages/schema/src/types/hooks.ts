@@ -64,6 +64,12 @@ export interface NuxtPage {
    * @internal
    */
   _noScripts?: boolean
+  /**
+   * The page is served by an `ssr: false` route rule, so its component is
+   * excluded from the server bundle.
+   * @internal
+   */
+  _spaOnly?: boolean
 }
 
 export type NuxtMiddleware = {

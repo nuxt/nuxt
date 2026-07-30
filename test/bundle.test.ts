@@ -10,14 +10,12 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
   const spaRootDir = fileURLToPath(new URL('./fixtures/spa', import.meta.url))
-  const routeRulesRootDir = fileURLToPath(new URL('./fixtures/route-rules-tree-shake', import.meta.url))
 
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxt', 'build', rootDir]),
       exec('pnpm', ['nuxt', 'build', pagesRootDir]),
       exec('pnpm', ['nuxt', 'build', spaRootDir]),
-      exec('pnpm', ['nuxt', 'build', routeRulesRootDir]),
     ])
   }, 120 * 1000)
 
@@ -52,28 +50,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
     expect(bundle).not.toContain('nuxt:revive-payload:client')
     expect(bundle).not.toContain('EmptyShallowRef')
-  })
-
-  it('does not ship SPA-only page code in the server bundle', async () => {
-    const serverContents = await Promise.all(
-      (await glob(['**/*.mjs'], { cwd: join(routeRulesRootDir, '.output/server') }))
-        .map(file => fsp.readFile(join(routeRulesRootDir, '.output/server', file), 'utf8')),
-    )
-    const serverBundle = serverContents.join('\n')
-
-    expect(serverBundle).not.toContain('NUXT_30786_SPA_ONLY_MARKER')
-    expect(serverBundle).not.toContain('NUXT_30786_INLINE_SPA_MARKER')
-    expect(serverBundle).toContain('NUXT_30786_PARENT_PAGE_MARKER')
-    expect(serverBundle).toContain('NUXT_30786_SSR_OVERRIDE_MARKER')
-
-    const clientContents = await Promise.all(
-      (await glob(['**/*.js'], { cwd: join(routeRulesRootDir, '.output/public') }))
-        .map(file => fsp.readFile(join(routeRulesRootDir, '.output/public', file), 'utf8')),
-    )
-    const clientBundle = clientContents.join('\n')
-
-    expect(clientBundle).toContain('NUXT_30786_SPA_ONLY_MARKER')
-    expect(clientBundle).toContain('NUXT_30786_INLINE_SPA_MARKER')
   })
 
   it('default client bundle size (pages)', async () => {
@@ -188,6 +164,55 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     // a page whose canonical path is `noScripts` but which has a scripted alias
     // keeps its component so the alias can still render client-side
     expect(bundle).toContain('aliased-page')
+  })
+})
+
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('ssr: false route rules', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/spa-only', import.meta.url))
+
+  beforeAll(async () => {
+    await exec('pnpm', ['nuxt', 'build', rootDir])
+  }, 120 * 1000)
+
+  it('drops components of client-only pages from the server bundle', async () => {
+    const dir = join(rootDir, '.output/server')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    // a flat page, a dynamic-param page, an inline `defineRouteRules` page and a
+    // nested child, all inside a client-only region
+    expect(bundle).not.toContain('admin-index-page')
+    expect(bundle).not.toContain('product-page')
+    expect(bundle).not.toContain('inline-page')
+    expect(bundle).not.toContain('parent-nested-page')
+
+    // the default and named views of a client-only route are both stubbed
+    expect(bundle).not.toContain('report-default')
+    expect(bundle).not.toContain('report-aux')
+
+    // a more specific `ssr: true` rule, and a child escaping its parent's region
+    // via an absolute path, each keep their own page and the parent shell
+    expect(bundle).toContain('admin-ssr-page')
+    expect(bundle).toContain('admin-shell')
+    expect(bundle).toContain('escaped-page')
+    expect(bundle).toContain('parent-shell')
+
+    // a client-only canonical path with a server-rendered alias
+    expect(bundle).toContain('aliased-page')
+
+    expect(bundle).toContain('index-page')
+  })
+
+  it('keeps client-only page code in the client bundle', async () => {
+    const dir = join(rootDir, '.output/public')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    expect(bundle).toContain('admin-index-page')
+    expect(bundle).toContain('product-page')
+    expect(bundle).toContain('inline-page')
   })
 })
 

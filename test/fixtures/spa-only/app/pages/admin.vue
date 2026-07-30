@@ -1,6 +1,5 @@
 <template>
-  <div>
-    NUXT_30786_PARENT_PAGE_MARKER
+  <div id="admin-shell">
     <NuxtPage />
   </div>
 </template>
