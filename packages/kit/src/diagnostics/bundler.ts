@@ -101,5 +101,15 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Externalize dependencies in the server build (`externals`) for better build performance.',
       docs: false,
     },
+    NUXT_B7020: {
+      why: 'The client build manifest is disabled, but Nuxt requires it to render the correct assets for each route.',
+      fix: 'Remove any `build.manifest: false` override from your `nuxt.config` `vite` options or from a Vite plugin `config`/`configEnvironment` hook.',
+      docs: false,
+    },
+    NUXT_B7021: {
+      why: (p: { manifestFile: string }) => `The client build manifest was expected at \`${p.manifestFile}\` but was not emitted by the client build.`,
+      fix: 'Check that no Vite plugin removes or renames the client build manifest in a `generateBundle`/`writeBundle` hook. If this happens with no such plugin, please report it at https://github.com/nuxt/nuxt/issues.',
+      docs: false,
+    },
   },
 })
