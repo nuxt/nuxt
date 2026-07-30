@@ -58,7 +58,12 @@ export const setupWatcher: NonNullable<NuxtBuilder['setupWatcher']> = (nuxt: Nux
       for (const delay of RECONCILE_DELAYS) {
         const timeout = setTimeout(() => {
           for (const path of missing) {
-            const stats = statSync(path, { throwIfNoEntry: false })
+            let stats
+            try {
+              stats = statSync(path, { throwIfNoEntry: false })
+            } catch {
+              // best-effort: an unreadable path is left for a later delay
+            }
             if (!stats) { continue }
             missing.delete(path)
             const event = stats.isDirectory() ? 'addDir' : 'add'
