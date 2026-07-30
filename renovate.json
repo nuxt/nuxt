@@ -60,16 +60,19 @@
       ]
     },
     {
-      "groupName": "rolldown",
+      "groupName": "vite and rolldown",
       "groupSlug": "rolldown",
       "matchPackageNames": [
+        "vite",
         "rolldown",
+        "rolldown-string",
         "obuild",
         "tsdown",
         "oxc-parser",
         "oxc-walker",
         "@oxc-project/types"
-      ]
+      ],
+      "description": "nuxt peers on rolldown loosely so package managers can reuse vite's copy, but this workspace pins it to vite's exact version via the catalog and an override. Bump them together or the workspace resolves a second rolldown and loads a second native binding."
     },
     {
       "groupName": "nitro",

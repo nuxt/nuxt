@@ -27,6 +27,8 @@ overrides:
   "@nuxt/schema": "workspace:*"
   nuxt: "workspace:*"
   oxc-parser: "0.141.0"
+  # TODO: nitro depends on `rolldown: ^1.1.0`, and pulls in a second copy
+  rolldown: "1.1.5"
   vite: "8.1.5"
   vue: "3.5.40"
 
@@ -103,7 +105,8 @@ catalogs:
   vite:
     magic-string: ^1.1.0
     oxc-walker: ^1.0.0
-    rolldown: ^1.2.0
+    # needs to match vite's own `~1.1.5` pin
+    rolldown: ~1.1.5
     rolldown-string: ^0.3.1
     # resolution is pinned via the vite override above
     vite: ^8.1.5

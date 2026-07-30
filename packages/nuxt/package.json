@@ -119,7 +119,6 @@
     "perfect-debounce": "catalog:app-runtime",
     "picomatch": "catalog:build",
     "pkg-types": "catalog:build",
-    "rolldown": "catalog:vite",
     "rolldown-string": "catalog:vite",
     "scule": "catalog:build",
     "std-env": "catalog:build",
@@ -147,6 +146,7 @@
     "@vitejs/plugin-vue": "catalog:vue",
     "@vitejs/plugin-vue-jsx": "catalog:dev",
     "@vue/compiler-sfc": "catalog:vue",
+    "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:vite",
@@ -156,7 +156,8 @@
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
-    "@types/node": ">=18.12.0"
+    "@types/node": ">=18.12.0",
+    "rolldown": "^1.1.0"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
