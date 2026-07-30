@@ -10,8 +10,8 @@ import type { SSRHeadPayload } from '@unhead/vue/server'
 import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '@unhead/vue/stream/server'
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
-import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
+import { SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from '../utils/error'
 import { relative } from 'pathe'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
@@ -68,16 +68,18 @@ export default {
     }
 
     // Whether we're rendering an error page
-    const ssrError = event.url.pathname.startsWith('/__nuxt_error')
-      ? getQuery<NuxtPayload['error'] & { url: string }>(event)
-      : undefined
+    const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
 
-    if (ssrError && !event.context.nuxt?.['~rendering-error'] /* allow internal fetch from the error handler */) {
+    if (isErrorRoute && !event.context.nuxt?.['~rendering-error'] /* allow internal fetch from the error handler */) {
       throw new HTTPError({
         status: 404,
         statusText: 'Page Not Found: /__nuxt_error',
       })
     }
+
+    const ssrError = isErrorRoute
+      ? decodeSSRError(getQuery<Record<string, string>>(event)[SSR_ERROR_PARAM])
+      : undefined
 
     // During prerender, refuse to recurse into a URL that is already rendering
     // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
@@ -107,15 +109,8 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   ssrContext.head.push(appHead)
 
   if (ssrError) {
-    // @ts-expect-error TODO: investigate creating new error
-    ssrError.status &&= Number.parseInt(ssrError.status.toString())
-    if (PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
-      try {
-        // @ts-expect-error TODO: investigate creating new error
-        ssrError.data = destr(ssrError.data)
-      } catch {
-        // ignore
-      }
+    if (!PARSE_ERROR_DATA) {
+      (ssrError as { data?: unknown }).data = stringifyErrorData(ssrError.data)
     }
     if (import.meta.dev && event.context.nuxt?.['~error-cause'] !== undefined) {
       (ssrError as { cause?: SerializedErrorCause }).cause = event.context.nuxt['~error-cause']

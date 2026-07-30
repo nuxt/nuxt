@@ -604,6 +604,15 @@ describe('hash binding', () => {
     expect(res.status).toBe(400)
   })
 
+  it('maps a nuxt error thrown inside an island to its HTTP status', async () => {
+    const res = await fetch(islandURL('ThrowingComponent'))
+    expect(res.status).toBe(404)
+    expect(await res.json()).toMatchObject({
+      status: 404,
+      statusText: 'Island not found',
+    })
+  })
+
   it('rejects a request with a fabricated hash', async () => {
     const res = await fetch(withQuery('/__nuxt_island/PureComponent_deadbeefcafef00d.json', {
       props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),

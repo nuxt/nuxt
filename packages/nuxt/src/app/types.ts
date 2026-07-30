@@ -102,6 +102,10 @@ export interface NuxtServerApp {
  * Type-only declaration of the `NuxtError` class in
  * `./composables/error.ts`, which remains the canonical exported value (and
  * the `NuxtError` type exported from `nuxt/app` / `#app`).
+ *
+ * It extends h3's `HTTPError` at the type level only: `NuxtError` is a
+ * standalone class, but errors thrown during SSR have to remain structurally
+ * compatible with what h3 and Nitro read off them.
  */
 export interface NuxtError<DataT = unknown> extends HTTPError<DataT> {
   readonly __nuxt_error: true
