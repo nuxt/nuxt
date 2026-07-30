@@ -47,7 +47,7 @@ export default defineNuxtConfig({
 
 Setting `debug: true` also enables hydration debugging along with other debug options.
 
-- Install the community [`nuxt-hydration`](https://github.com/huang-julien/nuxt-hydration) module, which surfaces hydration issues more prominently in development.
+- Install [`@nuxt/hints`](https://github.com/nuxt/hints), which surfaces hydration mismatches more prominently in development through Nuxt DevTools (side-by-side diffs and clearer console warnings).
 
 Production builds may not log the same warnings, but hydration mismatches can still break interactivity, cause layout shifts, and hurt SEO. Treat console warnings in development as signals to fix before shipping.
 
