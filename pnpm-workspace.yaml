@@ -53,6 +53,7 @@ minimumReleaseAgeExclude:
   - verkit@0.1.2
   # Renovate catalog bump to ^1.1.6; drop once 1.1.6 clears the release-age window
   - impound@1.1.6
+  - structured-clone-es@2.0.1
 
 catalogs:
   app-runtime:
@@ -122,7 +123,7 @@ catalogs:
   build:
     '@dxup/nuxt': ^0.5.4
     '@nuxt/cli': ^3.37.0
-    '@nuxt/devtools': ^3.3.1
+    '@nuxt/devtools': ^3.4.0
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.40
     autoprefixer: ^10.5.4
