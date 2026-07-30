@@ -728,6 +728,15 @@ describe('pages', () => {
 
     await page.close()
   })
+
+  it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
+    const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
+
+    await page.waitForFunction(() => document.querySelector('#preview-enabled')?.textContent === 'true')
+    expect(await page.innerText('#preview-token')).toBe('hehe')
+
+    await page.close()
+  })
 })
 
 describe('nuxt composables', () => {
