@@ -12,8 +12,9 @@ import type { Nitro, NitroRouteConfig, NitroRouteRules } from 'nitropack/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
-import { linkToAlias, logger } from '../utils.ts'
+import { linkToAlias, logger, toArray } from '../utils.ts'
 import picomatch from 'picomatch'
+import { rou3PatternToURLPattern, vueRouterToRou3 } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
@@ -31,6 +32,17 @@ const RELATIVE_WITH_DOT_RE = /^([^.])/
 
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
+
+// Unlikely to collide with a real exact route rule, so matching it surfaces only
+// the wildcard rules that apply across a glob region.
+const NO_SCRIPTS_PROBE_SEGMENT = '__nuxt_no_scripts_probe__'
+
+// Concretises a rou3 route pattern into a matchable path by replacing catch-alls
+// (`**`, `**:name`) and params (`*`, `:name`) with a literal segment.
+const ROUTE_WILDCARD_RE = /\*\*(?::\w+)?|\*|:\w+/g
+function globToProbePath (route: string): string {
+  return route.replace(ROUTE_WILDCARD_RE, NO_SCRIPTS_PROBE_SEGMENT)
 }
 
 export const pagesImportPresets: InlinePreset[] = [
@@ -574,6 +586,19 @@ export default defineNuxtModule({
 
     nuxt.hook('nitro:build:before', () => warnPublicAssetConflicts())
 
+    // Expose the URLPattern of every page route so pages served without scripts
+    // can scope their speculation rules to same-origin *page* navigations, which
+    // are safe to GET, instead of a blanket rule that could prefetch/prerender
+    // non-idempotent server routes (`~/server/routes/*`). A catch-all page
+    // (`[...slug]`) widens this back to a blanket `*`.
+    nuxt.hook('nitro:build:before', (nitro) => {
+      const patterns = new Set<string>()
+      for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
+        patterns.add(rou3PatternToURLPattern(route).pattern)
+      }
+      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...patterns]
+    })
+
     nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
 
@@ -703,6 +728,88 @@ export default defineNuxtModule({
     const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
+    // Routes served under a `noScripts` route rule need no client-side component
+    // chunk; client-side navigation to them loads the full document (see the
+    // guard in `runtime/plugins/router.ts`, which uses the compiled route-rules
+    // matcher shipped for the app manifest)
+    let nitroForNoScripts: Nitro | undefined
+    nuxt.hook('nitro:init', (nitro) => {
+      nitroForNoScripts = nitro
+    })
+    function markNoScriptsPages (pages: NuxtPage[]) {
+      const nitro = nitroForNoScripts
+      if (!nitro) { return }
+      // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs` matcher
+      const fold = !nuxt.options.router.options.sensitive
+      const routeRulesRouter = createRou3Router<NitroRouteRules>()
+      const routeRuleKeys: string[] = []
+      for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
+        const normalized = normalizeRouteRulePath(route, fold)
+        routeRuleKeys.push(normalized)
+        addRoute(routeRulesRouter, undefined, normalized, rules)
+      }
+      const effectiveNoScripts = (path: string) =>
+        !!defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, normalizeRouteRulePath(path, fold)).map(match => match.data).reverse()).noScripts
+      // Whether a rou3 pattern is *always* served without scripts. A fully
+      // static pattern is matched directly. A dynamic one serves a subset of
+      // the region below its first dynamic segment (`/products/*` and
+      // `/products/*/reviews` both live under `/products`), so it is only safe
+      // to drop when that whole region resolves to `noScripts` with no more
+      // specific rule carving out a scripted exception.
+      function patternIsNoScripts (pattern: string): boolean {
+        if (!pattern.includes(':') && !pattern.includes('*')) {
+          const normalized = pattern.length > 1 ? pattern.replace(/\/$/, '') : pattern
+          return effectiveNoScripts(normalized)
+        }
+        const segments = pattern.split('/')
+        const dynamicAt = segments.findIndex(segment => segment.includes(':') || segment.includes('*'))
+        const prefix = segments.slice(0, dynamicAt).join('/') || '/'
+        const probe = (prefix === '/' ? '' : prefix) + '/' + NO_SCRIPTS_PROBE_SEGMENT
+        if (!effectiveNoScripts(probe)) { return false }
+        const within = prefix === '/' ? '/' : prefix + '/'
+        for (const route of routeRuleKeys) {
+          if (route !== prefix && !route.startsWith(within)) { continue }
+          if (!effectiveNoScripts(globToProbePath(route))) { return false }
+        }
+        return true
+      }
+      // Whether a page reachable at `path` is *always* served without scripts.
+      // `unrouting` collapses the compiled Vue Router path into one or more rou3
+      // patterns (dynamic params become catch-alls, finite alternations expand
+      // into concrete paths); the page is safe to drop only when every one of
+      // them is. Returns `null` when it cannot be determined statically.
+      function isNoScriptsPath (path: string): boolean | null {
+        const { patterns } = vueRouterToRou3(path, { collapse: true })
+        if (!patterns.length) { return null }
+        return patterns.every(patternIsNoScripts)
+      }
+      // A page is only safe to drop from the client bundle when every path it
+      // can be reached by is served without scripts. If any alias resolves to a
+      // scripted route (or cannot be checked statically), keep the component so
+      // client-side navigation to that alias still renders it. A parent page
+      // renders for all of its descendants, so it additionally requires the
+      // whole subtree below it to be script-free. Returns whether that holds for
+      // every page passed in.
+      function markPages (pages: NuxtPage[], prefix: string): boolean {
+        let allNoScripts = true
+        for (const page of pages) {
+          // child paths are relative to the parent, so resolve them against the
+          // accumulated prefix before matching against route rules
+          const path = page.path.startsWith('/') ? page.path : joinURL(prefix, page.path)
+          const aliases = toArray(page.alias || []).map(alias => alias.startsWith('/') ? alias : joinURL(prefix, alias))
+          let noScripts = [path, ...aliases].every(path => isNoScriptsPath(path) === true)
+          if (page.children?.length) {
+            noScripts = markPages(page.children, path) && noScripts
+          }
+          page._noScripts = noScripts
+          allNoScripts &&= noScripts
+        }
+        return allNoScripts
+      }
+
+      markPages(pages, '/')
+    }
+
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
@@ -710,6 +817,7 @@ export default defineNuxtModule({
       dependsOn: nuxt.options.experimental.scanPageMeta ? ['pages'] : [],
       getContents ({ app }) {
         if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
+        markNoScriptsPages(app.pages)
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
           serverComponentRuntime,
           clientComponentRuntime,

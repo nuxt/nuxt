@@ -959,6 +959,9 @@ importers:
       unctx:
         specifier: catalog:app-runtime
         version: 3.0.0(magic-string@1.1.0)(oxc-parser@0.144.0)(rolldown@1.2.3)(unplugin@3.3.0(@rspack/core@2.1.7(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25)))
+      unrouting:
+        specifier: catalog:build
+        version: 0.2.2
       unstorage:
         specifier: catalog:nitro-runtime
         version: 1.17.5(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))
@@ -1968,6 +1971,16 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/nested-suspense:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+
+  test/fixtures/no-scripts:
     dependencies:
       nuxt:
         specifier: workspace:*
