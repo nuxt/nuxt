@@ -6,7 +6,7 @@ import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTyp
 import escapeRE from 'escape-string-regexp'
 import { resolveModulePath } from 'exsolve'
 
-import { isDirectory, logger, resolveToAlias } from '../utils.ts'
+import { isDirectory, linkToAlias, logger } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
 import { appCompatPresets, defaultPresets } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
@@ -83,7 +83,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         const path = resolve(nuxt.options.srcDir, relativePath)
         if (composablesDirs.includes(path)) {
-          logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+          logger.info(`Directory \`${linkToAlias(path, nuxt)}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
           return nuxt.callHook('restart')
         }
       })
@@ -168,7 +168,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           if (!nuxtImportSources.has(i.from)) {
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
-              const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
+              const relativePath = isAbsolute(i.from) ? linkToAlias(i.from, nuxt) : i.from
               headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
             }
           }

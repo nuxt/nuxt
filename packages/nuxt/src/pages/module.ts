@@ -11,7 +11,7 @@ import type { Nitro, NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
-import { logger, toArray } from '../utils.ts'
+import { linkToAlias, logger, toArray } from '../utils.ts'
 import picomatch from 'picomatch'
 import { rou3PatternToURLPattern, vueRouterToRou3 } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
@@ -575,9 +575,9 @@ export default defineNuxtModule({
             warnedConflicts.add(key)
 
             pageDiagnostics.NUXT_B4015({
-              asset: relative(nuxt.options.rootDir, file),
+              asset: linkToAlias(file, nuxt),
               route,
-              page: page && relative(nuxt.options.rootDir, page),
+              page: page && linkToAlias(page, nuxt),
             })
           }
         }

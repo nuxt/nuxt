@@ -1,5 +1,6 @@
 import type { Component } from '@nuxt/schema'
 import { componentDiagnostics } from '@nuxt/kit'
+import { linkToAlias } from '../../utils.ts'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ELEMENT_NODE, parse, walk, walkSync } from 'ultrahtml'
@@ -193,9 +194,9 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
 
         if (hasNuxtClient) {
           if (!options.selectiveClient) {
-            componentDiagnostics.NUXT_B3007({ file: id })
+            componentDiagnostics.NUXT_B3007({ file: linkToAlias(id) })
           } else if (!isVite) {
-            componentDiagnostics.NUXT_B3013({ file: id })
+            componentDiagnostics.NUXT_B3013({ file: linkToAlias(id) })
           }
         }
 

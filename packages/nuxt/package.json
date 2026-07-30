@@ -90,6 +90,7 @@
     "@unhead/vue": "catalog:app-runtime",
     "@vue/shared": "catalog:app-runtime",
     "chokidar": "catalog:build",
+    "clickable-path": "catalog:build",
     "compatx": "catalog:build",
     "consola": "catalog:app-runtime",
     "cookie-es": "catalog:app-runtime",

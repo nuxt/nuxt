@@ -7,7 +7,7 @@ import { relative } from 'pathe'
 import { componentDiagnostics, tryUseNuxt } from '@nuxt/kit'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils/index.ts'
 import { installNuxtModule } from '../../core/features.ts'
-import { resolveToAlias } from '../../utils.ts'
+import { linkToAlias } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -68,7 +68,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           const internalInstall = ((component as any)._internal_install) as string
           if (internalInstall && nuxt?.options.test === false) {
             if (!nuxt.options.dev) {
-              throw componentDiagnostics.NUXT_B3004({ file: resolveToAlias(id, nuxt), component: component.pascalName, requiredModule: internalInstall })
+              throw componentDiagnostics.NUXT_B3004({ file: linkToAlias(id, nuxt), component: component.pascalName, requiredModule: internalInstall })
             }
             installNuxtModule(internalInstall)
           }
