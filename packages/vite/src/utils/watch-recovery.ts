@@ -43,7 +43,7 @@ export function recoverThrottledChanges (watcher: FSWatcher): void {
     // `path` is relative to the watched directory when a directory is watched,
     // and equal to the watched path when the file itself is watched.
     const watched = typeof details?.watchedPath === 'string' ? details.watchedPath : undefined
-    const file = !watched || watched.endsWith(path) ? watched || path : join(watched, path)
+    const file = !watched || watched === path ? watched || path : join(watched, path)
 
     // Only files chokidar has already reported are candidates: the throttle can
     // only drop an event that had a predecessor, and this keeps us from
