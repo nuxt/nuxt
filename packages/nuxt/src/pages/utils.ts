@@ -586,11 +586,14 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
-      if (page._sync) {
+      // A statically imported page would be linked into the client bundle even
+      // when its component is never referenced there, so `noScripts` pages fall
+      // back to a dynamic import that can be dropped
+      if (page._sync && !page._noScripts) {
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const isSyncImport = page._sync && page.mode !== 'client'
+      const isSyncImport = page._sync && page.mode !== 'client' && !page._noScripts
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
       // Mirror whatever the route's own `name` resolves to below, so that a name extracted at
       // build time does not pull in the macro module purely to set `__name`. That import is the
@@ -605,9 +608,21 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? JSON.stringify(hash(relative(nuxt.options.rootDir, page.file)))
         : undefined
 
-      const component = nuxt.options.experimental.normalizePageNames
+      // A route served without scripts has no client-side component: navigating
+      // to it performs a document load (see the guard in
+      // `runtime/plugins/router.ts`), and the stub only recovers the correct
+      // document if the route is somehow reached anyway
+      const onlyOnServer = (loader: string) => page._noScripts
+        ? `import.meta.server ? ${loader} : () => Promise.resolve(_noScriptsPageStub)`
+        : loader
+
+      if (page._noScripts) {
+        metaImports.add('\nconst _noScriptsPageStub = { mounted: () => window.location.reload(), render: () => null };')
+      }
+
+      const component = onlyOnServer(nuxt.options.experimental.normalizePageNames
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
-        : normalizeComponent(page, pageImport, route.name, islandKey)
+        : normalizeComponent(page, pageImport, route.name, islandKey))
 
       // Named views from the `name@view.vue` filename convention. The scanner
       // emits `components: { default: <file>, <view>: <file> }`.
@@ -618,7 +633,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         for (const viewName in page.components) {
           if (viewName === 'default') { continue }
           const viewFile = normalize(page.components[viewName]!)
-          viewEntries.push(`${JSON.stringify(viewName)}: ${genDynamicImport(viewFile)}`)
+          viewEntries.push(`${JSON.stringify(viewName)}: ${onlyOnServer(genDynamicImport(viewFile))}`)
         }
         if (viewEntries.length > 0) {
           componentsObject = `{ default: ${component}, ${viewEntries.join(', ')} }`
