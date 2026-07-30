@@ -8,6 +8,7 @@ import { DECLARATION_EXTENSIONS, isDirectorySync, linkToAlias, logger } from '..
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
+import { getAppStructureVersion } from '../core/app.ts'
 
 import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
@@ -193,7 +194,17 @@ export default defineNuxtModule<ComponentsOptions>({
     const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
 
     // Scan components and add to plugin
+    let scannedStructureVersion: number | undefined
     nuxt.hook('app:templates', async (app) => {
+      // Component discovery depends only on which files exist, so it can be reused
+      // until a file is added or removed.
+      const structureVersion = getAppStructureVersion(nuxt)
+      if (nuxt.options.dev && context.components && scannedStructureVersion === structureVersion) {
+        app.components = context.components
+        return
+      }
+      scannedStructureVersion = structureVersion
+
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
       const modesByName = new Map<string, Set<string | undefined>>()
