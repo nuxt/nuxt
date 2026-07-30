@@ -1,5 +1,5 @@
 import { stat } from 'node:fs/promises'
-import { join } from 'pathe'
+import { join } from 'node:path'
 import type { FSWatcher } from 'vite'
 
 /**
@@ -17,6 +17,29 @@ const RECHECK_DELAY = 70
 export function recoverThrottledChanges (watcher: FSWatcher): void {
   const knownMtimes = new Map<string, number>()
   const pending = new Map<string, NodeJS.Timeout>()
+
+  /**
+   * `watchedPath` is the (possibly relative) path chokidar handed to `fs.watch`
+   * and `path` is the name `fs.watch` reported, which is a basename both when
+   * the file itself is watched and when its parent directory is. The two are
+   * indistinguishable for a directory containing a child of the same name, so
+   * pick whichever candidate chokidar has already reported a modification time
+   * for, and use native separators to match the paths chokidar emits.
+   */
+  const resolveTracked = (path: string, details: unknown): string | undefined => {
+    const watched = typeof (details as { watchedPath?: unknown } | undefined)?.watchedPath === 'string'
+      ? (details as { watchedPath: string }).watchedPath
+      : undefined
+
+    if (!watched) {
+      return knownMtimes.has(path) ? path : undefined
+    }
+
+    const child = join(watched, path)
+    if (knownMtimes.has(child)) { return child }
+
+    return knownMtimes.has(watched) ? watched : undefined
+  }
 
   const track = (path: string, stats?: { mtimeMs: number }) => {
     if (stats) {
@@ -40,15 +63,11 @@ export function recoverThrottledChanges (watcher: FSWatcher): void {
   watcher.on('raw', (event, path, details) => {
     if (event !== 'change' && event !== 'rename' && event !== 'modified') { return }
 
-    // `path` is relative to the watched directory when a directory is watched,
-    // and equal to the watched path when the file itself is watched.
-    const watched = typeof details?.watchedPath === 'string' ? details.watchedPath : undefined
-    const file = !watched || watched === path ? watched || path : join(watched, path)
-
     // Only files chokidar has already reported are candidates: the throttle can
     // only drop an event that had a predecessor, and this keeps us from
     // inventing events for ignored paths.
-    if (!knownMtimes.has(file) || pending.has(file)) { return }
+    const file = resolveTracked(path, details)
+    if (!file || pending.has(file)) { return }
 
     const timeout = setTimeout(() => {
       pending.delete(file)
