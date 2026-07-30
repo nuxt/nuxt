@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { rm } from 'node:fs/promises'
 
 import { relative, resolve } from 'pathe'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
@@ -140,13 +140,6 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     manifestCode = 'export default ' + serialize(manifest)
 
     if (!nuxt.options.dev) {
-      if (nuxt.options.experimental.buildCache) {
-        const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
-        await mkdir(serverDist, { recursive: true })
-        await writeFile(resolve(serverDist, 'client.manifest.mjs'), manifestCode, 'utf8')
-        await writeFile(resolve(serverDist, 'client.precomputed.mjs'), precomputedCode, 'utf8')
-      }
-
       // The legacy build reads `manifest.json` from disk, so we can remove it once consumed.
       if (!envApi) {
         await rm(manifestFile, { force: true })
