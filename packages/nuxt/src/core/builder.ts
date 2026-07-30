@@ -1,7 +1,7 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { buildDiagnostics, createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
+import { buildDiagnostics, createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -177,7 +177,12 @@ function createWatcher () {
     }
     nuxt.callHook('builder:watch', event, normalize(path))
   })
-  nuxt.hook('close', () => watcher?.close())
+
+  const disposeRecovery = recoverThrottledChanges(watcher)
+  nuxt.hook('close', () => {
+    disposeRecovery()
+    return watcher?.close()
+  })
 }
 
 function createGranularWatcher () {
@@ -197,6 +202,7 @@ function createGranularWatcher () {
     pending++
     const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, /[\\/]node_modules[\\/]/] })
     const watchers: Record<string, FSWatcher> = {}
+    const disposers = new Map<string, () => void>()
 
     watcher.on('all', (event, path) => {
       if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
@@ -208,6 +214,8 @@ function createGranularWatcher () {
       }
       if (event === 'unlinkDir' && path in watchers) {
         watchers[path]?.close()
+        disposers.get(path)?.()
+        disposers.delete(path)
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.has(path) && !(path in watchers) && !isIgnored(path)) {
@@ -218,9 +226,15 @@ function createGranularWatcher () {
           }
           nuxt.callHook('builder:watch', event, normalize(p))
         })
-        nuxt.hook('close', () => pathWatcher?.close())
+        const disposePathRecovery = recoverThrottledChanges(pathWatcher)
+        disposers.set(path, disposePathRecovery)
+        nuxt.hook('close', () => {
+          disposePathRecovery()
+          return pathWatcher?.close()
+        })
       }
     })
+    const disposeRecovery = recoverThrottledChanges(watcher)
     watcher.on('ready', () => {
       pending--
       if (nuxt.options.debug && nuxt.options.debug.watchers && !pending) {
@@ -228,7 +242,12 @@ function createGranularWatcher () {
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
     })
-    nuxt.hook('close', () => watcher?.close())
+    nuxt.hook('close', () => {
+      disposeRecovery()
+      for (const dispose of disposers.values()) { dispose() }
+      disposers.clear()
+      return watcher?.close()
+    })
   }
 }
 
