@@ -45,7 +45,7 @@
     "knitwork": "catalog:build",
     "mlly": "catalog:build",
     "mocked-exports": "catalog:build",
-    "nypm": "^0.6.8",
+    "nypm": "^0.6.9",
     "pathe": "catalog:build",
     "pkg-types": "catalog:build",
     "postcss": "catalog:build",

@@ -63,8 +63,8 @@ catalogs:
     cookie-es: ^3.1.1
     defu: ^6.1.7
     devalue: ^5.8.2
-    errx: ^0.1.0
-    fnv1a-64: ^0.1.1
+    errx: ^0.1.2
+    fnv1a-64: ^0.1.2
     hookable: ^6.1.1
     klona: ^2.0.6
     nostics: ^1.2.0
@@ -100,7 +100,7 @@ catalogs:
     vite-plugin-checker: ^0.14.5
   webpack:
     '@nuxt/friendly-errors-webpack-plugin': ^2.6.0
-    '@rsbuild/core': ~2.1.8
+    '@rsbuild/core': ~2.1.9
     css-loader: ^7.1.4
     css-minimizer-webpack-plugin: ^8.0.0
     esbuild-loader: ^4.5.0
@@ -113,15 +113,15 @@ catalogs:
     pug-plain-loader: ^1.1.0
     raw-loader: ^4.0.2
     time-fix-plugin: ^2.0.7
-    ts-checker-rspack-plugin: ^1.5.3
+    ts-checker-rspack-plugin: ^1.6.0
     url-loader: ^4.1.1
-    webpack: ^5.109.0
+    webpack: ^5.109.2
     webpack-bundle-analyzer: ^5.3.1
     webpack-dev-middleware: ^8.1.0
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
   build:
-    '@dxup/nuxt': ^0.5.4
+    '@dxup/nuxt': ^0.5.5
     '@nuxt/cli': ^3.37.0
     '@nuxt/devtools': ^3.4.0
     '@nuxt/telemetry': ^2.8.0
@@ -134,9 +134,9 @@ catalogs:
     cssnano: ^8.0.2
     defu: ^6.1.7
     destr: ^2.0.5
-    errx: ^0.1.0
+    errx: ^0.1.2
     escape-string-regexp: ^5.0.0
-    exsolve: ^1.1.0
+    exsolve: ^1.1.1
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
     ignore: ^7.0.6
@@ -154,7 +154,7 @@ catalogs:
     pathe: ^2.0.3
     picomatch: ^4.0.5
     pkg-types: ^2.3.1
-    postcss: ^8.5.23
+    postcss: ^8.5.24
     postcss-import: ^16.1.1
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^8.2.1
@@ -173,7 +173,7 @@ catalogs:
     unplugin: ^3.3.0
     unrouting: ^0.2.2
     untyped: ^2.0.0
-    verkit: ^0.3.0
+    verkit: ^0.3.1
     vue-bundle-renderer: ^2.3.1
   dev:
     '@arethetypeswrong/cli': 0.18.5
@@ -190,7 +190,7 @@ catalogs:
     '@parcel/watcher': 2.6.0
     '@playwright/test': 1.62.0
     '@rollup/plugin-babel': 7.1.0
-    '@rspack/core': 2.1.5
+    '@rspack/core': 2.1.7
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5
     '@types/estree': 1.0.9
@@ -208,7 +208,7 @@ catalogs:
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.8
     '@vue/test-utils': 2.4.11
-    acorn: 8.17.0
+    acorn: 8.18.0
     beasties: 0.4.3
     case-police: 2.2.1
     changelogen: 0.6.2
@@ -220,7 +220,7 @@ catalogs:
     eslint-typegen: 2.3.1
     h3: 1.15.11
     happy-dom: 20.11.1
-    html-validate: 11.5.6
+    html-validate: 11.6.0
     htmlnano: 3.4.0
     installed-check: 10.0.1
     knip: 6.29.0
@@ -228,8 +228,8 @@ catalogs:
     markdownlint-cli: 0.49.1
     nitropack: 2.13.4
     nuxt-content-twoslash: 0.4.0
-    oxc-transform: 0.141.0
-    pkg-pr-new: 0.0.80
+    oxc-transform: 0.142.0
+    pkg-pr-new: 0.0.82
     playwright-core: 1.62.0
     prettier: 3.9.6
     rollup: 4.62.3
@@ -242,5 +242,5 @@ catalogs:
     unocss: 66.7.5
     vitest: 4.1.10
     vitest-environment-nuxt: 2.0.0
-    vue-sfc-transformer: 0.2.3
+    vue-sfc-transformer: 0.2.5
     vue-tsc: 3.3.8
