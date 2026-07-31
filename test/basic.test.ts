@@ -1194,6 +1194,20 @@ describe('errors', () => {
     expect(data[error.__nuxt_error]).toBe(true)
   })
 
+  it('should expose a recognisable NuxtError on the client error page', async () => {
+    const { page } = await renderPage('/error/not-found')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    // #29182: the error survived SSR -> query -> payload -> revival with its
+    // signature and structured `data` intact
+    expect(await page.evaluate(() => {
+      const error = window.useNuxtApp!().payload.error as any
+      return { recognised: '__nuxt_error' in error, status: error.status, data: error.data }
+    })).toEqual({ recognised: true, status: 404, data: { reason: 'missing' } })
+
+    await page.close()
+  })
+
   it('should keep error data structured on the error page', async () => {
     const html = await fetch('/error/not-found', { headers: { accept: 'text/html' } }).then(r => r.text())
     const payload = html.match(/__NUXT_DATA__[^>]*>(.*?)<\/script>/s)![1]!
