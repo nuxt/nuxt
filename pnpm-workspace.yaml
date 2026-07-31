@@ -28,7 +28,7 @@ overrides:
   vite: '^7.3.6'
   vue: 3.5.40
   typescript: 5.9.3
-  webpack: ^5.109.0
+  webpack: ^5.109.2
 
 patchedDependencies:
   changelogen: patches/changelogen.patch

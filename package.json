@@ -66,7 +66,7 @@
     "@unhead/vue": "2.1.16",
     "@vitest/coverage-v8": "4.1.10",
     "@vue/test-utils": "2.4.11",
-    "acorn": "8.17.0",
+    "acorn": "8.18.0",
     "autoprefixer": "10.5.4",
     "case-police": "2.2.1",
     "changelogen": "0.6.2",
@@ -95,7 +95,7 @@
     "nuxt-content-twoslash": "0.4.0",
     "ofetch": "1.5.1",
     "pathe": "2.0.3",
-    "pkg-pr-new": "0.0.80",
+    "pkg-pr-new": "0.0.82",
     "playwright-core": "1.62.0",
     "rollup": "4.62.3",
     "semver": "7.8.5",
@@ -112,8 +112,8 @@
     "vitest-environment-nuxt": "2.0.0",
     "vue": "3.5.40",
     "vue-tsc": "3.3.8",
-    "webpack": "5.109.0"
+    "webpack": "5.109.2"
   },
-  "packageManager": "pnpm@11.17.0",
+  "packageManager": "pnpm@11.18.0",
   "version": ""
 }
