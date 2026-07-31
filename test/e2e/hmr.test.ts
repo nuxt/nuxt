@@ -192,6 +192,8 @@ test.describe('vite-only HMR tests', () => {
     await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'final stuff' }, null, 2))
 
     write(`some: 'stuff'`)
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
+
     expect(page).toHaveNoErrorsOrWarnings()
   })
 

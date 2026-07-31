@@ -368,6 +368,8 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   const fileAt = (offset: number) => linkToAlias(absolutePath, undefined, offsetToPosition(contents, offset))
 
   const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
+  // Widened for lookups by a property name that may not be a route field at all.
+  const routeFieldKeys: ReadonlySet<string> = extractionKeys
   const dynamicProperties = new Set<keyof NuxtPage>()
 
   for (const script of scriptBlocks) {
@@ -470,7 +472,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
           }
           continue
         }
-        if (extractionKeys.has(key) || classification.kind !== 'extract') { continue }
+        if (routeFieldKeys.has(key) || classification.kind !== 'extract') { continue }
         extractedData.meta ??= {}
         extractedData.meta[key] = classification.value
       }

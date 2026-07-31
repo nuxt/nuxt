@@ -1309,7 +1309,8 @@ export interface ConfigSchema {
      * the dev module graph. Properties whose values cannot be serialized are unaffected and are
      * still resolved by the macro module at runtime.
      *
-     * @default true
+     * @default false
+     * @default true with compatibilityVersion >= 5
      */
     extractSerializablePageMeta: boolean
 
