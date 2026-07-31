@@ -54,6 +54,7 @@ minimumReleaseAgeExclude:
   # Renovate catalog bump to ^1.1.6; drop once 1.1.6 clears the release-age window
   - impound@1.1.6
   - structured-clone-es@2.0.1
+  - oxc-walker@1.1.1
 
 catalogs:
   app-runtime:
@@ -93,7 +94,7 @@ catalogs:
     vue-loader: ^17.4.2
   vite:
     magic-string: ^1.1.0
-    oxc-walker: ^1.0.0
+    oxc-walker: ^1.1.1
     rolldown: ^1.2.1
     rolldown-string: ^0.3.1
     vite: ^8.2.0

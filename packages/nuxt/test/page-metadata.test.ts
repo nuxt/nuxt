@@ -1164,6 +1164,140 @@ const hoisted = ref('hoisted')
     `)
   })
 
+  it('should not hoist declarations shadowed by destructured bindings inside `definePageMeta`', () => {
+    const sfc = `
+<script setup lang="ts">
+const params = useShadowedParams()
+const query = useShadowedQuery()
+
+definePageMeta({
+  validate: ({ params }) => {
+    return params.id === 'test'
+  },
+  middleware: [
+    (to) => {
+      const { query } = to
+      return query.foo === 'bar'
+    },
+  ],
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        validate: ({ params }) => {
+          return params.id === 'test'
+        },
+        middleware: [
+          (to) => {
+            const { query } = to
+            return query.foo === 'bar'
+          },
+        ],
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should not hoist declarations shadowed by params and locals of functions in hoisted initializers', () => {
+    const sfc = `
+<script setup lang="ts">
+import { sep } from './utils'
+
+const spacer = useShadowedSpacer()
+const t = useShadowedT()
+
+const helper = ({ sep }, spacer) => sep + spacer
+const title = (() => { const t = 'hello'; return t })()
+
+definePageMeta({
+  validate: () => helper({ sep: 'x' }, '-') === title,
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const helper = ({ sep }, spacer) => sep + spacer
+      const title = (() => { const t = 'hello'; return t })()
+      const __nuxt_page_meta = {
+        validate: () => helper({ sep: 'x' }, '-') === title,
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should hoist identifiers referenced as computed members and computed keys', () => {
+    const sfc = `
+<script setup lang="ts">
+const idx = 2
+const arr = [1, 2, 3]
+const key = 'foo'
+
+definePageMeta({
+  middleware: () => ({ [key]: arr[idx] }),
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const idx = 2
+      const key = 'foo'
+      const arr = [1, 2, 3]
+      const __nuxt_page_meta = {
+        middleware: () => ({ [key]: arr[idx] }),
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should not treat statement labels as references', () => {
+    const sfc = `
+<script setup lang="ts">
+const outer = useShadowedOuter()
+
+definePageMeta({
+  middleware: () => {
+    outer: for (const x of [1]) { break outer }
+  },
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        middleware: () => {
+          outer: for (const x of [1]) { break outer }
+        },
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should not add imports or declarations for type-only references', () => {
+    const sfc = `
+<script setup lang="ts">
+import { validators } from './utils'
+import type { RouteThing } from './types'
+
+const helper = (route: RouteThing) => validators.isNumber(route.params.id)
+
+definePageMeta({
+  validate: (route: RouteThing) => helper(route),
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "import { validators } from './utils'
+      const helper = (route: RouteThing) => validators.isNumber(route.params.id)
+      const __nuxt_page_meta = {
+        validate: (route: RouteThing) => helper(route),
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
   it('should transform layout written in object syntax', () => {
     const sfc = `
 <script setup lang="ts">
