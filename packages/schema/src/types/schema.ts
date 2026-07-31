@@ -1588,8 +1588,14 @@ export interface ConfigSchema {
     /**
      * Whether to parse `error.data` when rendering a server error page.
      *
+     * @deprecated The error sent to the error page is JSON-encoded, so
+     * `error.data` keeps its original shape and is never stringified. With
+     * `compatibilityVersion: 5` this is forced on and setting it is ignored;
+     * before that, `false` stringifies `error.data` again for backwards
+     * compatibility.
      * @default true
      */
+    // TODO: remove this option before Nuxt 5 is released
     parseErrorData: boolean
 
     /**

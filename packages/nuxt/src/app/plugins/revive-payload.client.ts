@@ -16,7 +16,11 @@ function parseRevivedData (data: string) {
 }
 
 const revivers: [string, (data: any) => any][] = [
-  ['NuxtError', data => createError(data)],
+  ['NuxtError', (data) => {
+    const error = createError(data)
+    if (import.meta.dev && data?.stack) { error.stack = data.stack }
+    return error
+  }],
   ['EmptyShallowRef', data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : parseRevivedData(data))],
   ['EmptyRef', data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : parseRevivedData(data))],
   ['ShallowRef', data => shallowRef(data)],

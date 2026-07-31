@@ -234,6 +234,13 @@ describe('import meta', () => {
   })
 })
 
+describe('errors', () => {
+  it('is throwable, so `only-throw-error` is satisfied', () => {
+    const error: Error = createError({ status: 404 })
+    expectTypeOf(error).toExtend<Error>()
+  })
+})
+
 describe('middleware', () => {
   it('recognizes named middleware', () => {
     definePageMeta({ middleware: 'named' })

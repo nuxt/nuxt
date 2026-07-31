@@ -1,3 +1,4 @@
+import { schemaDiagnostics } from '../diagnostics.ts'
 import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
@@ -249,8 +250,15 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+    // TODO: remove this option, including from the schema types, before Nuxt 5 is released
     parseErrorData: {
-      $resolve: (val) => {
+      $resolve: async (val, get) => {
+        if ((await get('future.compatibilityVersion')) >= 5) {
+          if (val === false) {
+            schemaDiagnostics.NUXT_B5016()
+          }
+          return true
+        }
         return typeof val === 'boolean' ? val : true
       },
     },
