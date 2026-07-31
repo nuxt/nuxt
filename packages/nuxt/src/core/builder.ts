@@ -92,7 +92,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
       await nuxt.callHook('close', nuxt)
       return
     }
-    nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
+    nuxt.hooks.hookOnce('build:done', () => collectCache())
     nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
   }
 

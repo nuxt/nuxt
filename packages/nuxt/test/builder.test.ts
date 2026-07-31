@@ -10,12 +10,14 @@ import { build, loadNuxt } from 'nuxt'
 
 describe('builder:watch', { sequential: true }, async () => {
   const tmpDir = join(await findWorkspaceDir(), '.test/builder-watch')
+  const cacheDir = join(await findWorkspaceDir(), '.test/builder-watch-vite-cache')
   beforeEach(async () => {
     await rm(tmpDir, { recursive: true, force: true })
     await mkdir(join(tmpDir, 'project/node_modules'), { recursive: true })
   })
   afterAll(async () => {
-    await rm(tmpDir, { recursive: true, force: true })
+    await rm(tmpDir, { recursive: true, force: true, maxRetries: 3 })
+    await rm(cacheDir, { recursive: true, force: true, maxRetries: 3 })
   })
   const watcherStrategies = ['chokidar', 'chokidar-granular', 'parcel'] as const
   it.each(watcherStrategies)('should restart Nuxt when a file is added with %s strategy', async (watcher) => {
@@ -26,6 +28,7 @@ describe('builder:watch', { sequential: true }, async () => {
       overrides: {
         experimental: { watcher },
         dev: true,
+        vite: { cacheDir },
         watch: ['test', join(rootDir, 'other'), resolve(rootDir, '../higher')],
       },
     })
@@ -179,6 +182,7 @@ describe('builder:watch', { sequential: true }, async () => {
       overrides: {
         experimental: { watcher: 'builder' },
         dev: true,
+        vite: { cacheDir },
         watch: ['test', join(rootDir, 'other'), resolve(rootDir, '../higher')],
       },
     })
