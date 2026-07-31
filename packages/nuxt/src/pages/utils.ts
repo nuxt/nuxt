@@ -118,6 +118,17 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
 // augmentAndResolve — downstream pipeline (augmentation + hooks)
 // ---------------------------------------------------------------------------
 
+/**
+ * Whether serializable page meta is written into the route record.
+ *
+ * The macro transform and route augmentation both have to agree on this, and neither can
+ * extract when page meta is not scanned at all: the route record does not override the macro
+ * module in that case, so extracting would duplicate the values rather than replace them.
+ */
+export function shouldExtractSerializablePageMeta (nuxt = useNuxt()): boolean {
+  return !!nuxt.options.experimental.scanPageMeta && !!nuxt.options.experimental.extractSerializablePageMeta
+}
+
 export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt(), originalPagePaths?: WeakMap<NuxtPage, string>): Promise<NuxtPage[]> {
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
@@ -133,7 +144,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
       'middleware',
       ...extraPageMetaExtractionKeys,
     ]),
-    extractSerializable: !!nuxt.options.experimental.extractSerializablePageMeta,
+    extractSerializable: shouldExtractSerializablePageMeta(nuxt),
     fullyResolvedPaths: trackedFiles,
     originalPagePaths,
   }

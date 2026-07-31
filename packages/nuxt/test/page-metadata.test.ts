@@ -6,7 +6,7 @@ import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
-import { augmentPages, defaultExtractionKeys, getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
+import { augmentPages, defaultExtractionKeys, getRouteMeta, normalizeRoutes, shouldExtractSerializablePageMeta } from '../src/pages/utils.ts'
 import type { NuxtPage } from '../schema.ts'
 
 const filePath = '/app/pages/index.vue'
@@ -580,6 +580,23 @@ describe('page metadata macro position', () => {
     `, '/app/pages/nested.vue')
 
     expect(warn).toHaveBeenCalledWith({ fnName: 'defineRouteRules', file: expect.stringMatching(/app\/pages\/nested\.vue:4:7$/) })
+  })
+})
+
+describe('shouldExtractSerializablePageMeta', () => {
+  const nuxt = (experimental: Record<string, unknown>) => ({ options: { experimental } }) as any
+
+  it.each([
+    { scanPageMeta: 'after-resolve', extractSerializablePageMeta: true, expected: true },
+    { scanPageMeta: true, extractSerializablePageMeta: true, expected: true },
+    { scanPageMeta: 'after-resolve', extractSerializablePageMeta: false, expected: false },
+    // `typedPages` still augments pages when meta is not scanned, but the route record does not
+    // override the macro module then, so extracting would duplicate values rather than replace
+    // them, and would leak extra keys into the generated route types.
+    { scanPageMeta: false, extractSerializablePageMeta: true, expected: false },
+    { scanPageMeta: false, extractSerializablePageMeta: false, expected: false },
+  ])('$scanPageMeta + $extractSerializablePageMeta -> $expected', ({ expected, ...experimental }) => {
+    expect(shouldExtractSerializablePageMeta(nuxt(experimental))).toBe(expected)
   })
 })
 
