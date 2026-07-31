@@ -13,7 +13,7 @@ import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
@@ -678,6 +678,7 @@ export default defineNuxtModule({
         isPage,
         routesId: toVirtualId(resolve(nuxt.options.buildDir, 'routes.mjs'), nuxt),
         extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],
+        extractSerializable: shouldExtractSerializablePageMeta(nuxt),
       }))
     })
 
