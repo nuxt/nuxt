@@ -157,7 +157,7 @@
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
     "@types/node": ">=18.12.0",
-    "rolldown": "^1.1.0"
+    "rolldown": "^1.1.5"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
