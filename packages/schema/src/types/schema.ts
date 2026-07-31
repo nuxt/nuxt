@@ -1309,6 +1309,9 @@ export interface ConfigSchema {
      * the dev module graph. Properties whose values cannot be serialized are unaffected and are
      * still resolved by the macro module at runtime.
      *
+     * This has no effect when `experimental.scanPageMeta` is `false`, as the route record does
+     * not override the macro module in that case.
+     *
      * @default false
      * @default true with compatibilityVersion >= 5
      */
