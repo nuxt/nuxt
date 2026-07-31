@@ -17,6 +17,7 @@ interface PageMetaPluginOptions {
   isPage?: (file: string) => boolean
   routesId?: string
   extractedKeys?: string[]
+  extractSerializable?: boolean
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
@@ -47,6 +48,7 @@ if (import.meta.webpackHot) {
 
 export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
   const extractedKeys = new Set(options.extractedKeys)
+  const classifyOptions = { extractSerializable: options.extractSerializable }
 
   return {
     name: 'nuxt:pages-macros-transform',
@@ -265,10 +267,10 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                const classification = classifyPageMetaProperty(prop, extractedKeys)
+                const classification = classifyPageMetaProperty(prop, extractedKeys, classifyOptions)
 
                 // The route record now carries the value, so drop it here to keep the two in step.
-                if (classification.kind === 'extract') {
+                if (classification.kind === 'extract' || (classification.kind === 'reshape' && classification.value)) {
                   omitProp(prop, i)
                   continue
                 }
