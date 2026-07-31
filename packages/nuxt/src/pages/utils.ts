@@ -515,14 +515,39 @@ interface NormalizeRoutesOptions {
   clientComponentRuntime: string
 }
 
+// A page that can only render in one environment is imported there and stubbed
+// in the other, dropping its component from the bundle it can never be used in.
+const PAGE_STUBS = {
+  // Navigation to a `noScripts` route is a document load (see the guard in
+  // `runtime/plugins/router.ts`); the stub only recovers the right document if
+  // the route is somehow reached anyway.
+  noScripts: {
+    env: 'server',
+    name: '_noScriptsPageStub',
+    declaration: '\nconst _noScriptsPageStub = { mounted: () => window.location.reload(), render: () => null };',
+  },
+  // The server only ever emits the SPA shell for an `ssr: false` route.
+  spaOnly: {
+    env: 'client',
+    name: '_spaOnlyPageStub',
+    declaration: '\nconst _spaOnlyPageStub = { render: () => null };',
+  },
+} as const
+
 function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined, islandKey: string | undefined): string {
   if (page.mode === 'server') {
     return `() => createIslandPage(${routeName}, import.meta.server ? ${islandKey} : undefined)`
   }
   if (page.mode === 'client') {
-    return `() => createClientPage(${pageImport})`
+    return `() => createClientPage(${onlyOnClient(pageImport)})`
   }
   return pageImport
+}
+
+// Dropping the loader on the server keeps the page chunk out of that bundle;
+// `createClientPage` falls back to a placeholder without it.
+function onlyOnClient (pageImport: string) {
+  return `import.meta.client ? ${pageImport} : undefined`
 }
 
 function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | undefined, pageImportName: string, pageImport: string, routeName: string | undefined, metaRouteName: string, islandKey: string | undefined): string {
@@ -535,7 +560,7 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
   }
   // Client components return a processed component (not a module with .default)
   if (page.mode === 'client') {
-    return `() => createClientPage(${pageImport}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
+    return `() => createClientPage(${onlyOnClient(pageImport)}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
   }
   return `${pageImport}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
 }
@@ -586,14 +611,22 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
-      // A statically imported page would be linked into the client bundle even
-      // when its component is never referenced there, so `noScripts` pages fall
-      // back to a dynamic import that can be dropped
-      if (page._sync && !page._noScripts) {
+      const stub = page._noScripts ? PAGE_STUBS.noScripts : page._spaOnly ? PAGE_STUBS.spaOnly : undefined
+      if (stub) {
+        metaImports.add(stub.declaration)
+      }
+      const restrictToEnvironment = (loader: string) => stub
+        ? `import.meta.${stub.env} ? ${loader} : () => Promise.resolve(${stub.name})`
+        : loader
+
+      // A statically imported page would be linked into the bundle it is being
+      // dropped from even when its component is never referenced there, so
+      // environment-restricted pages fall back to a droppable dynamic import
+      if (page._sync && !stub) {
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const isSyncImport = page._sync && page.mode !== 'client' && !page._noScripts
+      const isSyncImport = page._sync && page.mode !== 'client' && !stub
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
       // Mirror whatever the route's own `name` resolves to below, so that a name extracted at
       // build time does not pull in the macro module purely to set `__name`. That import is the
@@ -608,19 +641,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? JSON.stringify(hash(relative(nuxt.options.rootDir, page.file)))
         : undefined
 
-      // A route served without scripts has no client-side component: navigating
-      // to it performs a document load (see the guard in
-      // `runtime/plugins/router.ts`), and the stub only recovers the correct
-      // document if the route is somehow reached anyway
-      const onlyOnServer = (loader: string) => page._noScripts
-        ? `import.meta.server ? ${loader} : () => Promise.resolve(_noScriptsPageStub)`
-        : loader
-
-      if (page._noScripts) {
-        metaImports.add('\nconst _noScriptsPageStub = { mounted: () => window.location.reload(), render: () => null };')
-      }
-
-      const component = onlyOnServer(nuxt.options.experimental.normalizePageNames
+      const component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
         : normalizeComponent(page, pageImport, route.name, islandKey))
 
@@ -633,7 +654,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         for (const viewName in page.components) {
           if (viewName === 'default') { continue }
           const viewFile = normalize(page.components[viewName]!)
-          viewEntries.push(`${JSON.stringify(viewName)}: ${onlyOnServer(genDynamicImport(viewFile))}`)
+          viewEntries.push(`${JSON.stringify(viewName)}: ${restrictToEnvironment(genDynamicImport(viewFile))}`)
         }
         if (viewEntries.length > 0) {
           componentsObject = `{ default: ${component}, ${viewEntries.join(', ')} }`
