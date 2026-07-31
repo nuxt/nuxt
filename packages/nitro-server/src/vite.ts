@@ -1,6 +1,6 @@
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { EnvironmentModuleGraph, Plugin as VitePlugin } from 'vite'
+import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
@@ -149,8 +149,20 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }))
 
   if (nuxt.options.dev) {
+    let devServer: ViteDevServer | undefined
+
+    // TODO: fix upstream in nitro
+    nitro.hooks.hook('rollup:reload', () => {
+      const env = devServer?.environments.nitro
+      if (!env) { return }
+      env.moduleGraph.invalidateAll()
+      env.hot.send({ type: 'full-reload' })
+    })
+
     nuxt.hook('vite:serverCreated', (viteServer, { isServer }) => {
       if (!isServer) { return }
+
+      devServer = viteServer
 
       // Vite's internal handlers for `@vite/client`, `@vite/env` and
       // `@react-refresh` live at the root of the dev server, but Nuxt serves
