@@ -209,9 +209,6 @@ export async function importFn(src, exportName = 'default') {
 `
   }
 
-  // `enforce: 'pre'` + `resolveId.order: 'pre'` beats the default
-  // `onigiriManifestPlugin` (registered as part of `onigiriPlugins` below),
-  // which also claims `virtual:onigiri/manifest` with `order: 'pre'`.
   const onigiriClientManifestOverride: Plugin = {
     name: 'nuxt:onigiri-client-manifest',
     enforce: 'pre',
@@ -429,48 +426,8 @@ export async function importFn(src, exportName = 'default') {
     },
   )
 
-  // Same shape as the SSR-environment Vite override above, but registered
-  // with Nitro's rollup config — Nitro doesn't go through Vite plugins.
-  const onigiriNitroManifestOverride: RollupPlugin = {
-    name: 'nuxt:onigiri-nitro-manifest',
-    enforce: 'pre',
-    resolveId: {
-      order: 'pre',
-      handler (id) {
-        if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
-      },
-    },
-    load (id) {
-      if (id !== '\0virtual:onigiri/manifest') { return }
-      return buildServerImportFnSource()
-    },
-  }
-
-  const onigiriNitroPlugins = (): RollupPlugin[] => [
-    {
-      name: 'nuxt:virtual-vsc',
-      resolveId: {
-        order: 'pre',
-        handler (id) {
-          if (id.startsWith('virtual:vsc:')) {
-            return id.slice('virtual:vsc:'.length)
-          }
-        },
-      },
-    },
-    onigiriNitroManifestOverride,
-    onigiriCompilerPlugin(onigiriCompilerOptions) as RollupPlugin,
-    onigiriManifestPlugin({ stub: true }) as RollupPlugin,
-  ]
-  useNitro().hooks.hook('rollup:before', (_, rollupConfig) => {
-    (rollupConfig.plugins! as RollupPlugin[]).unshift(...onigiriNitroPlugins())
-  })
-  useNitro().hooks.hook('prerender:config', (preConfig: any) => {
-    preConfig.rollupConfig ||= {}
-    preConfig.rollupConfig.plugins ||= []
-    preConfig.rollupConfig.plugins.unshift(...onigiriNitroPlugins())
-  })
-
+ 
+ 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
   if (!nuxt.options.dev) {

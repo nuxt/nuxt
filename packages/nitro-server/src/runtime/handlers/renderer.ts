@@ -307,7 +307,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   }
 
   const link: Link[] = []
-  for (const resource of Object.values(styles).filter(r => !r.file.includes('virtual:vsc:'))) {
+  for (const resource of Object.values(styles)) {
     // Do not add links to resources that are inlined (vite v5+)
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
       continue
@@ -339,12 +339,12 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     }
     const hints: Link[] = []
     for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
-      if (!excludeHrefs.has(l.href) && !l.href.includes('virtual:vsc:')) {
+      if (!excludeHrefs.has(l.href)) {
         hints.push(l)
       }
     }
     for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
-      if (!excludeHrefs.has(l.href) && !l.href.includes('virtual:vsc:')) {
+      if (!excludeHrefs.has(l.href)) {
         hints.push(l)
       }
     }
