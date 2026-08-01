@@ -11,7 +11,7 @@ import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { bundlerDiagnostics, setBuildOutput } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
-import { collectGlobalCss } from '../utils/css.ts'
+import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
 
 export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let clientEntry: string
@@ -48,7 +48,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   // from the ssr graph is pushed to the ssr runner over the env hot channel and
   // patched into the renderer manifest at render time (see `patchDevClientCss`).
   const buildDevClientManifest = (): RendererManifest => {
-    const entryFile = envApi ? `/@fs${clientEntry}` : clientEntry
+    const entryFile = envApi ? toFsUrl(clientEntry) : clientEntry
     return {
       '@vite/client': {
         isEntry: true,
