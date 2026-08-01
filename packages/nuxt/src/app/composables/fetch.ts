@@ -6,7 +6,7 @@ import { isPlainObject } from '@vue/shared'
 import { hashKey } from '../utils/hash'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
-import { dataDiagnostics } from '../diagnostics/data.ts'
+import { dataDiagnostics } from '../diagnostics/data'
 import type { NuxtError } from './error'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 
@@ -309,6 +309,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        serialize,
         ...fetchOptions
       } = {
         ...(typeof options === 'function' ? {} : factoryOptions),
@@ -342,6 +343,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        serialize,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
       }
 
@@ -391,3 +393,5 @@ export const useLazyFetch: UseFetch = (createUseFetch as unknown as { __nuxt_fac
   // @ts-expect-error private property
   _functionName: 'useLazyFetch',
 }) as ReturnType<typeof createUseFetch>
+
+export type { $Fetch }

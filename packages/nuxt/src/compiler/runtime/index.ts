@@ -1,4 +1,4 @@
-import { appDiagnostics } from '../../app/diagnostics/core.ts'
+import { appDiagnostics } from '../../app/diagnostics/core'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export interface ObjectFactory<T extends Function> {

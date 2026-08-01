@@ -1,17 +1,17 @@
 import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
 import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
+import { sanitizeStatusCode } from '../utils/http-status'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
-import { navigationDiagnostics } from '../diagnostics/navigation.ts'
+import { navigationDiagnostics } from '../diagnostics/navigation'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */

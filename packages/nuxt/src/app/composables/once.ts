@@ -1,6 +1,6 @@
 import { useRouter } from './router'
 import { useNuxtApp } from '../nuxt'
-import { stateDiagnostics } from '../diagnostics/state.ts'
+import { stateDiagnostics } from '../diagnostics/state'
 
 type CallOnceOptions = {
   mode?: 'navigation' | 'render'

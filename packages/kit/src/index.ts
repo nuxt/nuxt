@@ -5,8 +5,8 @@ export { getDirectory, installModule, installModules, loadNuxtModuleInstance, no
 export { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './module/compatibility.ts'
 
 // Loader
-export { loadNuxtConfig } from './loader/config.ts'
-export type { LoadNuxtConfigOptions } from './loader/config.ts'
+export { diffNuxtConfig, loadNuxtConfig } from './loader/config.ts'
+export type { LoadNuxtConfigOptions, NuxtConfigDiffEntry, ResolvedNuxtConfigContext } from './loader/config.ts'
 export { extendNuxtSchema } from './loader/schema.ts'
 export { buildNuxt, loadNuxt } from './loader/nuxt.ts'
 export type { LoadNuxtOptions } from './loader/nuxt.ts'
@@ -14,6 +14,9 @@ export type { LoadNuxtOptions } from './loader/nuxt.ts'
 // Layers
 export { getLayerDirectories } from './layers.ts'
 export type { LayerDirectories } from './layers.ts'
+
+// Constants
+export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from './constants.ts'
 
 // Utils
 export { setGlobalHead } from './head.ts'
@@ -40,6 +43,8 @@ export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
+export { recoverThrottledChanges } from './watch.ts'
+export type { RecoverableWatcher } from './watch.ts'
 export { logger, useLogger } from './logger.ts'
 
 // Build-time diagnostics catalogs (split by domain; imported directly, no barrel).
@@ -56,7 +61,7 @@ export { headDiagnostics } from './diagnostics/head.ts'
 export { bundlerDiagnostics } from './diagnostics/bundler.ts'
 
 // Dependencies
-export { ensureDependencyInstalled } from './dependency.ts'
+export { ensureDependencyInstalled, getAddDependencyCommand } from './dependency.ts'
 export type { EnsureDependencyInstalledOptions } from './dependency.ts'
 
 // Internal Utils

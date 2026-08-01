@@ -1,6 +1,6 @@
 import { isScriptProtocol } from 'ufo'
 import { useNuxtApp } from '../nuxt'
-import { navigationDiagnostics } from '../diagnostics/navigation.ts'
+import { navigationDiagnostics } from '../diagnostics/navigation'
 
 export interface ReloadNuxtAppOptions {
   /**

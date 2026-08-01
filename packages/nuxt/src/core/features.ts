@@ -1,5 +1,5 @@
 import { resolvePackageJSON } from 'pkg-types'
-import { buildDiagnostics, configDiagnostics, useNuxt } from '@nuxt/kit'
+import { buildDiagnostics, configDiagnostics, getAddDependencyCommand, useNuxt } from '@nuxt/kit'
 import { isCI, provider } from 'std-env'
 import { logger } from '../utils.ts'
 
@@ -44,7 +44,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     logger.success(`Installed ${name}`)
     return true
   } catch (err) {
-    buildDiagnostics.NUXT_B1004({ packages: name, cause: err })
+    buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(name, rootDir), cause: err })
     return false
   }
 }

@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "name": "fixture-dynamic-paths",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "@nuxt/rspack-builder": "workspace:*",
+    "@nuxt/webpack-builder": "workspace:*",
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  }
+}

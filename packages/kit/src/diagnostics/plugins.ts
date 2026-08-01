@@ -68,5 +68,14 @@ export const pluginDiagnostics = /* #__PURE__ */ defineDiagnostics({
       // opt out of the auto-generated docs URL rather than ship a 404.
       docs: false,
     },
+    NUXT_B2012: {
+      why: (p: { name: string, dependencies: string[], mode: 'client' | 'server' }) => {
+        const dependencies = p.dependencies.map(name => `\`${name}\``).join(', ')
+        const plural = p.dependencies.length > 1
+        return `Plugin \`${p.name}\` depends on ${dependencies}, but ${plural ? 'these dependencies are' : 'this dependency is'} unavailable in the ${p.mode} build and will be ignored.`
+      },
+      fix: 'Do not depend on plugins that are unavailable in the same build environment; remove them from the `dependsOn` array.',
+      docs: false,
+    },
   },
 })

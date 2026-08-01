@@ -3,19 +3,20 @@ import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineCom
 import { debounce } from 'perfect-debounce'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
-import { joinURL, withQuery } from 'ufo'
+import { joinURL } from 'ufo'
 
-import type { NuxtIslandResponse } from '../types'
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
+import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
-import { renderDiagnostics } from '../diagnostics/render.ts'
+import { renderDiagnostics } from '../diagnostics/render'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
+import { $fetch } from '#build/fetch'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
@@ -48,7 +49,7 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
 }
 
 interface NuxtIslandProps {
-  name: string
+  name: NuxtAppLiterals['islandName']
   lazy?: boolean
   props?: Record<string, any>
   context?: Record<string, any>
@@ -103,7 +104,6 @@ const NuxtIsland = defineComponent({
     const key = shallowRef(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
-    const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
     const serializedProps = computed(() => serializeIslandProps(props.props))
     const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
@@ -218,15 +218,22 @@ const NuxtIsland = defineComponent({
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
-      const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
-        ...props.context,
-        props: props.props ? serializedProps.value : undefined,
-      }))
+      // $fetch handles `app.baseURL` for relative URLs
+      const r = await $fetch.raw<NuxtIslandResponse>(url, {
+        // custom island sources should not be resolved against `app.baseURL` (#23093)
+        ...(props.source ? { baseURL: '' } : {}),
+        query: {
+          ...props.context,
+          props: props.props ? serializedProps.value : undefined,
+        },
+        responseType: 'json',
+        ignoreResponseError: true,
+      })
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
-        const result = await r.json()
+        const result = r._data!
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')

@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitro/types'
 import type { NuxtError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
-import { appDiagnostics } from '../../app/diagnostics/core.ts'
+import { appDiagnostics } from '../../app/diagnostics/core'
 import type { SerializableValue } from './utils'
 
 // Generated at runtime to be extended

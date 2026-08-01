@@ -6,7 +6,7 @@ import { $fetch } from '#build/fetch'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
-import { appDiagnostics } from '../diagnostics/core.ts'
+import { appDiagnostics } from '../diagnostics/core'
 import { useHead } from './head'
 
 /** @since 3.0.0 */
