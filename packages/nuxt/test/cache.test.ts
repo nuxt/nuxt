@@ -21,6 +21,7 @@ describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
 
   beforeEach(async () => {
     await rm(tmpDir, { recursive: true, force: true })
+    await mkdir(join(tmpDir, 'node_modules'), { recursive: true })
     await mkdir(join(tmpDir, 'project/node_modules'), { recursive: true })
     // Create a minimal app.vue so the build has something to compile
     await writeFile(join(tmpDir, 'project/app.vue'), '<template><div>hello</div></template>')
