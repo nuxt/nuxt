@@ -20,7 +20,7 @@ export interface LoadJitiOptions {
   install?: boolean
 }
 
-let cached: JitiModule | undefined
+let cached: Promise<JitiModule | undefined> | undefined
 
 /**
  * Load the `jiti` module, or return `undefined` when it is unavailable.
@@ -37,16 +37,25 @@ let cached: JitiModule | undefined
  * 3. Installed on request, if `install` is not disabled.
  *
  * A successful load is cached for the lifetime of the process; a failure is not, so a later call
- * with different search paths can still succeed.
+ * with different search paths can still succeed. The in-flight promise is shared so that
+ * concurrent callers cannot each trigger an install prompt.
  */
-export async function loadJiti (options: LoadJitiOptions): Promise<JitiModule | undefined> {
-  if (cached) {
-    return cached
-  }
+export function loadJiti (options: LoadJitiOptions): Promise<JitiModule | undefined> {
+  return cached ??= resolveJiti(options).then((mod) => {
+    if (!mod) {
+      cached = undefined
+    }
+    return mod
+  }, (error) => {
+    cached = undefined
+    throw error
+  })
+}
 
+async function resolveJiti (options: LoadJitiOptions): Promise<JitiModule | undefined> {
   const resolved = await importFromKit() ?? await importFromProject(options)
   if (resolved) {
-    return cached = resolved
+    return resolved
   }
 
   if (options.install === false) {
@@ -62,8 +71,7 @@ export async function loadJiti (options: LoadJitiOptions): Promise<JitiModule | 
     return undefined
   }
 
-  const afterInstall = await importFromKit() ?? await importFromProject(options)
-  return afterInstall ? (cached = afterInstall) : undefined
+  return await importFromKit() ?? await importFromProject(options)
 }
 
 function importFromKit (): Promise<JitiModule | undefined> {
