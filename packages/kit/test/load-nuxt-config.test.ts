@@ -1,7 +1,7 @@
 import { mkdir, rm, symlink, writeFile } from 'node:fs/promises'
 import process from 'node:process'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { join } from 'pathe'
+import { basename, join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 
 import type { NuxtConfig } from '@nuxt/schema'
@@ -39,6 +39,58 @@ describe('loadNuxtConfig layer deduplication', () => {
     await writeFile(join(tempDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({})')
     const config = await loadNuxtConfig({ cwd: tempDir })
     expect(config.css).toEqual(['dedup-marker.css'])
+  })
+})
+
+describe('loadNuxtConfig local layer ordering via extends', () => {
+  const tempDir = join(repoRoot, 'temp', 'layer-order')
+
+  beforeAll(async () => {
+    for (const [name, winner] of [['auth', 'auth'], ['common', 'common'], ['extra', 'extra']]) {
+      await mkdir(join(tempDir, 'layers', name), { recursive: true })
+      await writeFile(
+        join(tempDir, 'layers', name, 'nuxt.config.ts'),
+        `export default defineNuxtConfig({ runtimeConfig: { public: { winner: '${winner}' } } })`,
+      )
+    }
+  })
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  async function loadWith (nuxtConfig: string) {
+    await writeFile(join(tempDir, 'nuxt.config.ts'), nuxtConfig)
+    const config = await loadNuxtConfig({ cwd: tempDir })
+    return {
+      winner: config.runtimeConfig.public.winner,
+      layers: config._layers.map(layer => basename(layer.cwd!)),
+    }
+  }
+
+  it('merges runtimeConfig with the first-listed layer taking priority', async () => {
+    expect(await loadWith('export default defineNuxtConfig({ extends: [\'~~/layers/auth\', \'~~/layers/common\'] })'))
+      .toEqual({ winner: 'auth', layers: ['layer-order', 'auth', 'common', 'extra'] })
+  })
+
+  it('reflects a reversed extends order in the merge', async () => {
+    expect(await loadWith('export default defineNuxtConfig({ extends: [\'~~/layers/common\', \'~~/layers/auth\'] })'))
+      .toEqual({ winner: 'common', layers: ['layer-order', 'common', 'auth', 'extra'] })
+  })
+
+  it('keeps alphabetical order (last wins) without an explicit extends', async () => {
+    expect(await loadWith('export default defineNuxtConfig({})'))
+      .toEqual({ winner: 'extra', layers: ['layer-order', 'extra', 'common', 'auth'] })
+  })
+
+  it('ranks unlisted local layers below listed ones', async () => {
+    expect(await loadWith('export default defineNuxtConfig({ extends: [\'~~/layers/auth\'] })'))
+      .toEqual({ winner: 'auth', layers: ['layer-order', 'auth', 'extra', 'common'] })
+  })
+
+  it('resolves relative and `~` alias extends sources', async () => {
+    expect((await loadWith('export default defineNuxtConfig({ extends: [\'./layers/common\'] })')).winner).toBe('common')
+    expect((await loadWith('export default defineNuxtConfig({ extends: [\'~/layers/auth\'] })')).winner).toBe('auth')
   })
 })
 
