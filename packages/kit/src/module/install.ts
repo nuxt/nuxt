@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptions } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
-import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
+import { interopDefault, lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
@@ -14,6 +14,8 @@ import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
+import { loadJiti } from '../internal/jiti.ts'
+import type { Jiti } from '../internal/jiti.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
@@ -284,18 +286,47 @@ export function resolveModuleWithOptions (
   }
 }
 
-type Jiti = ReturnType<typeof import('jiti')['createJiti']>
+let _jitiCache: WeakMap<Nuxt, Promise<Jiti | undefined>> | undefined
 
-let _jitiCache: WeakMap<Nuxt, Promise<Jiti>> | undefined
-
-function getSharedJiti (nuxt: Nuxt): Promise<Jiti> {
+/**
+ * Resolve a jiti instance scoped to the project, or `undefined` if jiti is unavailable and the
+ * user declined to install it.
+ *
+ * Needed only for module sources the runtime cannot import itself (TypeScript that cannot be
+ * type-stripped, CJS interop, alias-prefixed imports). Cached per Nuxt instance so at most one
+ * install prompt is shown per build.
+ */
+function getSharedJiti (nuxt: Nuxt): Promise<Jiti | undefined> {
   _jitiCache ||= new WeakMap()
   let jiti = _jitiCache.get(nuxt)
   if (!jiti) {
-    jiti = import('jiti').then(({ createJiti }) => createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias }))
+    jiti = loadJiti({ rootDir: nuxt.options.rootDir, searchPaths: nuxt.options.modulesDir })
+      .then(mod => mod?.createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias }))
     _jitiCache.set(nuxt, jiti)
   }
   return jiti
+}
+
+/**
+ * Explain a failed native import in terms of what the author can change. The runtime supports
+ * TypeScript, so the fix is never "stop using TypeScript": it is the specific thing the runtime
+ * will not do.
+ */
+function describeNativeImportFailure (error: unknown): string {
+  switch ((error as { code?: string } | undefined)?.code) {
+    case 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING': {
+      return 'Published packages cannot ship TypeScript entrypoints, because the runtime does not strip types under `node_modules`. Ask the author to publish compiled JavaScript.'
+    }
+    case 'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX': {
+      return 'The runtime erases type annotations but cannot compile TypeScript syntax that emits code, such as `enum`, `namespace`, decorators or constructor parameter properties. Replace it with erasable syntax.'
+    }
+    case 'ERR_MODULE_NOT_FOUND': {
+      return 'A specifier could not be resolved. Relative imports need an explicit file extension (`./foo.ts`, not `./foo`), and aliases such as `~/` are not resolved outside the bundler.'
+    }
+    default: {
+      return 'Check that the module and everything it imports can be loaded by the runtime directly.'
+    }
+  }
 }
 
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()): Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }> {
@@ -311,8 +342,6 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   if (typeof nuxtModule !== 'string') {
     throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
   }
-
-  const jiti = await getSharedJiti(nuxt)
 
   // Import if input is string
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
@@ -341,9 +370,26 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   const resolvedModulePath = fileURLToPath(src)
   let resolvedNuxtModule: NuxtModule<any>
   try {
-    resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
-  } catch (error: unknown) {
-    throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(error), cause: error })
+    resolvedNuxtModule = await import(src).then(r => interopDefault(r))
+  } catch (nativeError: unknown) {
+    // The runtime loads TypeScript directly, so reaching here means something it cannot handle:
+    // syntax that is not erasable, a file under `node_modules`, or an unresolved specifier.
+    // Retry through jiti if it is available.
+    const jiti = await getSharedJiti(nuxt)
+    if (!jiti) {
+      throw kitDiagnostics.NUXT_B8020({
+        module: nuxtModule,
+        error: nativeError instanceof Error ? nativeError.message : String(nativeError),
+        hint: describeNativeImportFailure(nativeError),
+        installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
+        cause: nativeError,
+      })
+    }
+    try {
+      resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
+    } catch (error: unknown) {
+      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(error), cause: error })
+    }
   }
 
   if (typeof resolvedNuxtModule !== 'function') {

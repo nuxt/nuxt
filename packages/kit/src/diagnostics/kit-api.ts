@@ -104,5 +104,10 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check the module\'s install/upgrade hook implementation, or report this issue to the module author.',
       docs: false,
     },
+    NUXT_B8020: {
+      why: (p: { module: string, error: string }) => `The module \`${p.module}\` could not be loaded: ${p.error}`,
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      docs: false,
+    },
   },
 })

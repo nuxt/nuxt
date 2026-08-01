@@ -508,6 +508,24 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     await writeFile(join(nonFunctionModule, 'package.json'), JSON.stringify({ name: 'non-function-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(nonFunctionModule, 'index.js'), `export default {}\n`)
 
+    // plain ESM JavaScript, loadable by the runtime without any transpiler
+    const esmModule = join(tempDir, 'node_modules/esm-module')
+    await mkdir(esmModule, { recursive: true })
+    await writeFile(join(esmModule, 'package.json'), JSON.stringify({ name: 'esm-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(esmModule, 'index.js'), `export default () => {}\n`)
+
+    // CommonJS marked as transpiled ESM, so the default export is nested behind `__esModule`
+    const cjsInteropModule = join(tempDir, 'node_modules/cjs-interop-module')
+    await mkdir(cjsInteropModule, { recursive: true })
+    await writeFile(join(cjsInteropModule, 'package.json'), JSON.stringify({ name: 'cjs-interop-module', version: '1.0.0', type: 'commonjs', exports: './index.cjs' }))
+    await writeFile(join(cjsInteropModule, 'index.cjs'), `exports.__esModule = true\nexports.default = () => {}\n`)
+
+    // TypeScript source, which the runtime may or may not be able to import on its own
+    const tsModule = join(tempDir, 'node_modules/ts-module')
+    await mkdir(tsModule, { recursive: true })
+    await writeFile(join(tsModule, 'package.json'), JSON.stringify({ name: 'ts-module', version: '1.0.0', type: 'module', exports: './index.ts' }))
+    await writeFile(join(tsModule, 'index.ts'), `const mod = (): void => {}\nexport default mod\n`)
+
     // entrypoint imports a non-exported subpath, throwing ERR_PACKAGE_PATH_NOT_EXPORTED at import time
     const subpathModule = join(tempDir, 'node_modules/subpath-module')
     await mkdir(subpathModule, { recursive: true })
@@ -560,6 +578,21 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     const error = await loadError('./modules/does-not-exist')
     expect(error.message).toMatch(/may not be installed/)
     expect((error as Error & { fix?: string }).fix).toBe('Check that the module path exists and points to a valid Nuxt module.')
+  })
+
+  it('loads a plain ESM module', async () => {
+    const { nuxtModule } = await loadNuxtModuleInstance('esm-module', nuxt)
+    expect(nuxtModule).toBeTypeOf('function')
+  })
+
+  it('unwraps the default export of a CommonJS module marked as transpiled ESM', async () => {
+    const { nuxtModule } = await loadNuxtModuleInstance('cjs-interop-module', nuxt)
+    expect(nuxtModule).toBeTypeOf('function')
+  })
+
+  it('loads a TypeScript module', async () => {
+    const { nuxtModule } = await loadNuxtModuleInstance('ts-module', nuxt)
+    expect(nuxtModule).toBeTypeOf('function')
   })
 })
 
