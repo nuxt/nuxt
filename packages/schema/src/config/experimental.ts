@@ -306,15 +306,17 @@ export default defineResolvers({
      */
     nitroViteEnvironment: {
       $resolve: async (val, get) => {
-        if (val !== true) {
+        if (val === false) {
           return false
         }
         const builder = await get('builder')
         if (builder !== 'vite' && (builder as string) !== '@nuxt/vite-builder') {
-          console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+          if (val === true) {
+            console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+          }
           return false
         }
-        return val
+        return true
       },
     },
     asyncCallHook: {

@@ -76,26 +76,25 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"273k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"265k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@unhead/vue+[...]",
+        "_vue/server-renderer+[...]",
         "defu",
         "devalue",
         "h3+rou3+srvx",
-        "nostics",
+        "hookable",
         "ocache+ohash",
         "ofetch",
-        "pathe",
         "scule",
         "ufo",
-        "unhead",
         "unstorage",
         "vue",
-        "vue-bundle-renderer",
-        "vue__server-renderer",
+        "vue__reactivity+vue__shared",
+        "vue__runtime-core",
+        "vue__runtime-dom",
       ]
     `)
   })
@@ -104,30 +103,26 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"348k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"311k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@unhead/vue+[...]",
+        "_vue/server-renderer+[...]",
         "defu",
-        "destr",
         "devalue",
         "h3+rou3+srvx",
-        "nostics",
+        "hookable",
         "ocache+ohash",
         "ofetch",
-        "pathe",
         "scule",
         "ufo",
-        "uncrypto",
-        "unhead",
         "unstorage",
         "vue",
-        "vue-bundle-renderer",
-        "vue-devtools-stub",
         "vue-router",
-        "vue__server-renderer",
+        "vue__reactivity+vue__shared",
+        "vue__runtime-core",
+        "vue__runtime-dom",
       ]
     `)
   })

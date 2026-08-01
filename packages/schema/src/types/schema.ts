@@ -1702,7 +1702,7 @@ export interface ConfigSchema {
      * Nitro's own Rolldown pipeline.
      *
      * Only effective when using `@nuxt/vite-builder`.
-     * @default false
+     * @default true
      */
     nitroViteEnvironment: boolean
 
