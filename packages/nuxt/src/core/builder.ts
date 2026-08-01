@@ -86,14 +86,29 @@ export async function build (nuxt: Nuxt): Promise<void> {
   }
 
   if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
-    const { restoreCache, collectCache } = await getVueHash(nuxt)
-    if (await restoreCache()) {
+    const { restoreCache, collectCache, clientCachePlugin } = await getVueHash(nuxt)
+    const hit = await restoreCache()
+
+    if (hit && !nuxt.options.experimental.nitroViteEnvironment) {
+      // `@nuxt/nitro-server` builds nitro from `build:done` in the legacy path
       await nuxt.callHook('build:done')
       await nuxt.callHook('close', nuxt)
       return
     }
-    nuxt.hooks.hookOnce('build:done', () => collectCache())
-    nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
+
+    if (nuxt.options.experimental.nitroViteEnvironment) {
+      // nitro only builds as part of the vite build, so a cache hit still has
+      // to run it. The plugin is registered at the root rather than with
+      // `addVitePlugin`, which in this path scopes plugins to the client and
+      // ssr environments, where its app-level `buildApp` hook is never called.
+      nuxt.options.vite.plugins ||= []
+      nuxt.options.vite.plugins.push(clientCachePlugin({ restore: hit }))
+    }
+
+    if (!hit) {
+      nuxt.hooks.hookOnce('build:done', () => collectCache())
+      nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
+    }
   }
 
   await nuxt.callHook('build:before')
