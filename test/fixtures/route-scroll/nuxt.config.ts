@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 
-import { withMatrix } from '../../matrix'
+import { withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   app: {
