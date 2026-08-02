@@ -107,9 +107,11 @@ describe('addVitePlugin', () => {
   })
 
   it('should fall back to the default enforce for plugins that declare none', async () => {
+    // With prepend: true, wrappers are unshifted so they appear in reverse order
+    // (last enforce group first). Vite sorts by enforce at the top level anyway.
     expect(await resolveWrappers(createMockNuxt(false), [{ name: 'a' }, { name: 'b', enforce: 'post' }], { prepend: true })).toEqual([
-      { enforce: 'pre', plugins: ['a'] },
       { enforce: 'post', plugins: ['b'] },
+      { enforce: 'pre', plugins: ['a'] },
     ])
     expect(await resolveWrappers(createMockNuxt(false), [{ name: 'a' }, { name: 'b', enforce: 'pre' }], { server: false })).toEqual([
       { enforce: 'post', plugins: ['a'] },
@@ -124,5 +126,43 @@ describe('addVitePlugin', () => {
       { name: 'empty', applyToEnvironment: () => [null, undefined, false] as any },
     ])
     expect(names).toEqual(['nested', 'async'])
+  })
+
+  it('should prepend wrapper plugins when prepend: true', async () => {
+    const nuxt = createMockNuxt(false)
+    const config: ViteConfig = { plugins: [], environments: { client: {}, ssr: {} } }
+
+    runWithNuxtContext(nuxt, () => {
+      addVitePlugin([{ name: 'first' }], { prepend: true })
+      addVitePlugin([{ name: 'second' }], { client: false, prepend: true })
+    })
+    await nuxt.callHook('vite:extend', { config } as any)
+
+    const wrapperNames = (config.plugins as VitePlugin[]).map(p => p.name)
+    const firstIndex = wrapperNames.findIndex(n => n === 'first:wrapper')
+    const secondIndex = wrapperNames.findIndex(n => n === 'second:wrapper')
+
+    expect(firstIndex).toBeGreaterThan(-1)
+    expect(secondIndex).toBeGreaterThan(-1)
+    expect(secondIndex).toBeLessThan(firstIndex)
+  })
+
+  it('should append wrapper plugins when prepend is not set', async () => {
+    const nuxt = createMockNuxt(false)
+    const config: ViteConfig = { plugins: [], environments: { client: {}, ssr: {} } }
+
+    runWithNuxtContext(nuxt, () => {
+      addVitePlugin([{ name: 'first' }])
+      addVitePlugin([{ name: 'second' }], { client: false })
+    })
+    await nuxt.callHook('vite:extend', { config } as any)
+
+    const wrapperNames = (config.plugins as VitePlugin[]).map(p => p.name)
+    const firstIndex = wrapperNames.findIndex(n => n === 'first:wrapper')
+    const secondIndex = wrapperNames.findIndex(n => n === 'second:wrapper')
+
+    expect(firstIndex).toBeGreaterThan(-1)
+    expect(secondIndex).toBeGreaterThan(-1)
+    expect(secondIndex).toBeGreaterThan(firstIndex)
   })
 })
