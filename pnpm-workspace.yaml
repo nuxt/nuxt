@@ -11,6 +11,8 @@ packages:
 patchedDependencies:
   changelogen: patches/changelogen.patch
   nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
+  # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
+  nitropack@2.13.4: patches/nitropack@2.13.4.patch
 
 publicHoistPattern:
   - '*-loader'

@@ -41,7 +41,6 @@
     "file-loader": "catalog:webpack",
     "fork-ts-checker-webpack-plugin": "catalog:webpack",
     "hash-sum": "catalog:webpack",
-    "jiti": "catalog:build",
     "knitwork": "catalog:build",
     "memfs": "catalog:webpack",
     "mini-css-extract-plugin": "catalog:webpack",

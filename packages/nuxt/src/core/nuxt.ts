@@ -6,7 +6,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
-import type { LoadNuxtOptions } from '@nuxt/kit'
+import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -301,6 +301,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
+  let nodePaths: Record<string, [string]> | undefined
   const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
     paths ||= await resolveTypescriptPaths(nuxt)
     nitroConfig.typescript = defu(nitroConfig.typescript, {
@@ -363,8 +364,11 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     paths ||= await resolveTypescriptPaths(nuxt)
+    // The `node` environment resolves as `nodenext`, which will not follow a substitution that
+    // names a directory, so its packages are resolved to the entry file itself.
+    nodePaths ||= await resolveTypescriptPaths(nuxt, { entry: true })
     opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
-    opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...paths } })
+    opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...nodePaths } })
     // required for the server builder's augmentations (referenced above)
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
@@ -1177,7 +1181,7 @@ async function resolveModules (nuxt: Nuxt) {
 }
 
 const NESTED_PKG_RE = /^[^@]+\//
-async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [string]>> {
+async function resolveTypescriptPaths (nuxt: Nuxt, options?: ResolveTypePathsOptions): Promise<Record<string, [string]>> {
   nuxt.options.typescript.hoist ||= []
 
   const packagesToResolve: string[] = []
@@ -1200,7 +1204,7 @@ async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [stri
     packagesToResolve.push(pkg)
   }
 
-  const resolved = await resolveTypePaths(packagesToResolve, nuxt.options.modulesDir)
+  const resolved = await resolveTypePaths(packagesToResolve, nuxt.options.modulesDir, options)
 
   const paths: Record<string, [string]> = {}
   const nightlyResolved = new Set<string>() // track which originals were resolved via nightly

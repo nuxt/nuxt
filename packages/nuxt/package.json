@@ -16,7 +16,10 @@
     "nuxt": "bin/nuxt.mjs"
   },
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "types": "./types.dev.d.ts",
+      "default": "./src/index.ts"
+    },
     "./config": {
       "types": "./config.d.ts",
       "import": "./config.js",
@@ -103,7 +106,6 @@
     "hookable": "catalog:app-runtime",
     "ignore": "catalog:build",
     "impound": "catalog:build",
-    "jiti": "catalog:build",
     "klona": "catalog:app-runtime",
     "knitwork": "catalog:build",
     "magic-string": "catalog:vite",
@@ -146,6 +148,7 @@
     "@vitejs/plugin-vue": "catalog:vue",
     "@vitejs/plugin-vue-jsx": "catalog:dev",
     "@vue/compiler-sfc": "catalog:vue",
+    "jiti": "catalog:build",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
@@ -157,6 +160,7 @@
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
     "@types/node": ">=18.12.0",
+    "jiti": "catalog:build",
     "rolldown": "^1.1.5"
   },
   "peerDependenciesMeta": {
@@ -164,6 +168,9 @@
       "optional": true
     },
     "@types/node": {
+      "optional": true
+    },
+    "jiti": {
       "optional": true
     }
   },

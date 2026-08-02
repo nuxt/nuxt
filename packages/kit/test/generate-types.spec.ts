@@ -125,6 +125,37 @@ describe('tsConfig generation', () => {
     }
   })
 
+  it('should resolve the node tsconfig as nodenext so unloadable syntax is reported', async () => {
+    const { tsConfig, nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      future: { compatibilityVersion: 5 },
+    }))
+    expect(nodeTsConfig.compilerOptions?.module).toBe('nodenext')
+    expect(nodeTsConfig.compilerOptions?.moduleResolution).toBe('nodenext')
+    expect(nodeTsConfig.compilerOptions?.allowImportingTsExtensions).toBe(true)
+    expect(nodeTsConfig.compilerOptions?.erasableSyntaxOnly).toBe(true)
+    for (const config of [tsConfig, sharedTsConfig]) {
+      expect(config.compilerOptions?.moduleResolution).not.toBe('nodenext')
+      expect(config.compilerOptions?.erasableSyntaxOnly).toBeUndefined()
+    }
+  })
+
+  it('should keep the previous node tsconfig module resolution before v5', async () => {
+    const { nodeTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      future: { compatibilityVersion: 4 },
+    }))
+    expect(nodeTsConfig.compilerOptions?.moduleResolution).not.toBe('nodenext')
+    expect(nodeTsConfig.compilerOptions?.erasableSyntaxOnly).toBeUndefined()
+  })
+
+  it('should let a user override the node tsconfig module resolution', async () => {
+    const { nodeTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      future: { compatibilityVersion: 5 },
+      typescript: { nodeTsConfig: { compilerOptions: { module: 'preserve', moduleResolution: 'bundler' } } },
+    }))
+    expect(nodeTsConfig.compilerOptions?.module).toBe('preserve')
+    expect(nodeTsConfig.compilerOptions?.moduleResolution).toBe('bundler')
+  })
+
   it('should let per-context options override the global tsConfig', async () => {
     const { nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
       typescript: {

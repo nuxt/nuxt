@@ -5,7 +5,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
-import type { NuxtAppLiterals, PluginMeta } from '../../app/types'
+import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'

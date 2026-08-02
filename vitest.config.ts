@@ -148,6 +148,16 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          name: 'no-jiti',
+          include: ['test/no-jiti/*.test.ts'],
+          globalSetup: ['./test/setup-prepare.ts'],
+          setupFiles: ['./test/setup-env.ts'],
+          testTimeout: 300_000,
+          benchmark: { include: [] },
+        },
+      },
+      {
         define: {
           'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
