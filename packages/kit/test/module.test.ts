@@ -501,6 +501,18 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
       ``,
     ].join('\n'))
 
+    // the runtime raises a bare `SyntaxError` for a file it cannot parse and for one that misuses
+    // `JSON.parse`, so this records its evaluation to prove the two are not conflated
+    const runtimeSyntaxModule = join(tempDir, 'node_modules/runtime-syntax-module')
+    await mkdir(runtimeSyntaxModule, { recursive: true })
+    await writeFile(join(runtimeSyntaxModule, 'package.json'), JSON.stringify({ name: 'runtime-syntax-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(runtimeSyntaxModule, 'index.js'), [
+      `import { appendFileSync } from 'node:fs'`,
+      `appendFileSync(${JSON.stringify(join(tempDir, 'syntax-evaluations'))}, 'evaluated\\n')`,
+      `JSON.parse('{')`,
+      ``,
+    ].join('\n'))
+
     // entrypoint imports a dependency that does not exist
     const brokenDepModule = join(tempDir, 'node_modules/broken-dep-module')
     await mkdir(brokenDepModule, { recursive: true })
@@ -564,6 +576,14 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect(error.message).not.toMatch(/jiti/)
 
     const evaluations = await readFile(join(tempDir, 'evaluations'), 'utf8')
+    expect(evaluations.trim().split('\n')).toHaveLength(1)
+  })
+
+  it('evaluates a module that raises a runtime SyntaxError only once', async () => {
+    const error = await loadError('runtime-syntax-module')
+    expect((error.cause as Error)).toBeInstanceOf(SyntaxError)
+
+    const evaluations = await readFile(join(tempDir, 'syntax-evaluations'), 'utf8')
     expect(evaluations.trim().split('\n')).toHaveLength(1)
   })
 

@@ -23,10 +23,6 @@ const LOADER_ERROR_CODES = new Set([
  * because the file threw once it was running.
  */
 export function isLoaderError (error: unknown): boolean {
-  // a file that fails to parse never ran, so it is always safe to hand to jiti
-  if (error instanceof SyntaxError) {
-    return true
-  }
   const code = (error as { code?: unknown } | undefined)?.code
   return typeof code === 'string' && LOADER_ERROR_CODES.has(code)
 }
