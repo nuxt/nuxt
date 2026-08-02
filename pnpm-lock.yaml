@@ -576,6 +576,7 @@ overrides:
 
 patchedDependencies:
   changelogen: 8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b
+  nitropack@2.13.4: 14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8
 
 importers:
 
@@ -706,7 +707,7 @@ importers:
         version: 0.49.1(supports-color@10.2.2)
       nitropack:
         specifier: 2.13.4
-        version: 2.13.4(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
+        version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -868,7 +869,7 @@ importers:
         version: 2.7.0
       nitropack:
         specifier: catalog:dev
-        version: 2.13.4(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
+        version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
       tsdown:
         specifier: catalog:dev
         version: 0.22.14(@arethetypeswrong/core@0.18.5)(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(typescript@6.0.3)(vue-tsc@3.3.9(typescript@6.0.3))
@@ -937,7 +938,7 @@ importers:
         version: 0.1.1
       nitropack:
         specifier: ^2.13.4
-        version: 2.13.4(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
+        version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
       nostics:
         specifier: catalog:app-runtime
         version: 1.2.0
@@ -1264,9 +1265,6 @@ importers:
       file-loader:
         specifier: catalog:webpack
         version: 6.2.0(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
-      jiti:
-        specifier: catalog:build
-        version: 2.7.0
       knitwork:
         specifier: catalog:build
         version: 1.3.0
@@ -1581,9 +1579,6 @@ importers:
       get-port-please:
         specifier: catalog:build
         version: 3.2.0
-      jiti:
-        specifier: catalog:build
-        version: 2.7.0
       js-tokens:
         specifier: catalog:build
         version: 10.0.0
@@ -1653,7 +1648,7 @@ importers:
         version: h3@2.0.1-rc.26(crossws@0.4.10(srvx@0.12.5))
       nitropack:
         specifier: catalog:dev
-        version: 2.13.4(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
+        version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
       rolldown:
         specifier: catalog:vite
         version: 1.2.3
@@ -1714,9 +1709,6 @@ importers:
       hash-sum:
         specifier: catalog:webpack
         version: 2.0.0
-      jiti:
-        specifier: catalog:build
-        version: 2.7.0
       knitwork:
         specifier: catalog:build
         version: 1.3.0
@@ -15984,7 +15976,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitropack@2.13.4(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25)):
+  nitropack@2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25)):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@rollup/plugin-alias': 6.0.0(rollup@4.62.4)

@@ -283,7 +283,7 @@ jobs:
           cache: true
 
       - name: Prepare
-        run: vp run dev:prepare && vp run test:prepare
+        run: vp run dev:prepare && vp run test:prepare && vp run build:kit
 
       - parallel:
           - name: Lint
@@ -294,6 +294,9 @@ jobs:
 
           - name: Test (unit)
             run: vp run test:unit
+
+          - name: Test (no jiti)
+            run: vp run test:no-jiti
 
       - name: Check built types
         run: vp run test:attw

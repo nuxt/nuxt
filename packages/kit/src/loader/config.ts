@@ -21,9 +21,7 @@ import { getAddDependencyCommand } from '../dependency.ts'
 
 /**
  * A layer as it comes back from the underlying config loader, before its directory options have
- * been normalised into a {@link NuxtConfigLayer}. Shaped like a layer from a custom resolver,
- * except that the loader can report one whose config could not be read. Declared here rather than
- * imported so no type from the loader reaches this package's public surface.
+ * been normalised into a {@link NuxtConfigLayer}.
  */
 interface LoadedConfigLayer extends Omit<ResolvedNuxtLayer, 'config'> {
   config: NuxtConfig | null

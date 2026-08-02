@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { resolveModulePath } from 'exsolve'
@@ -23,11 +23,8 @@ const BLOCK_BARE = `export function resolve (specifier, context, next) {
   return next(specifier, context)
 }`
 
-/** Hook that makes `jiti` unreachable entirely. */
-const BLOCK_ALL = `export function resolve (specifier, context, next) {
-  if (specifier === 'jiti' || /[/\\\\]jiti[/\\\\]/.test(specifier)) { throw new Error('jiti blocked') }
-  return next(specifier, context)
-}`
+/** Hook that makes `jiti` unreachable entirely, shared with the `no-jiti` test project. */
+const BLOCK_ALL = pathToFileURL(join(repoRoot, 'test/no-jiti/block-jiti-loader.mjs')).href
 
 const RUNNER = `import { register } from 'node:module'
 register(new URL(process.argv[2], import.meta.url))
@@ -51,7 +48,7 @@ describe('jiti resolution', { sequential: true }, () => {
   let projectDir: string
   let projectJiti: string
 
-  async function run (hook: 'block-bare.mjs' | 'block-all.mjs') {
+  async function run (hook: string) {
     const { stdout } = await exec(process.execPath, [join(tempDir, 'run.mjs'), hook, kitEntry, projectDir], {
       nodeOptions: { cwd: repoRoot },
     })
@@ -65,7 +62,6 @@ describe('jiti resolution', { sequential: true }, () => {
     projectJiti = join(projectDir, 'node_modules/jiti')
 
     await writeFile(join(tempDir, 'block-bare.mjs'), BLOCK_BARE)
-    await writeFile(join(tempDir, 'block-all.mjs'), BLOCK_ALL)
     await writeFile(join(tempDir, 'run.mjs'), RUNNER)
 
     await mkdir(join(projectDir, 'node_modules/enum-module'), { recursive: true })
@@ -117,7 +113,7 @@ describe('jiti resolution', { sequential: true }, () => {
   }, 60_000)
 
   it('reports how to install jiti when it cannot be found anywhere', async () => {
-    const result = await run('block-all.mjs')
+    const result = await run(BLOCK_ALL)
     expect(result.ok).toBe(false)
     expect(result.code).toBe('NUXT_B5017')
     expect(result.message).toMatch(/could not be loaded/)

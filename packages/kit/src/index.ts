@@ -43,6 +43,7 @@ export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
+export type { ResolveTypePathsOptions } from './types.ts'
 export { recoverThrottledChanges } from './watch.ts'
 export type { RecoverableWatcher } from './watch.ts'
 export { logger, useLogger } from './logger.ts'
@@ -68,3 +69,6 @@ export type { EnsureDependencyInstalledOptions } from './dependency.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { directoryToURL, resolveModule, tryResolveModule, importModule, tryImportModule, requireModule, tryRequireModule } from './internal/esm.ts'
 export type { ImportModuleOptions, ResolveModuleOptions } from './internal/esm.ts'
+
+/** @internal */
+export { loadJiti } from './internal/jiti.ts'
