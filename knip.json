@@ -66,6 +66,9 @@
     "packages/kit": {
       "entry": [
         "test/**/*-fixture/**/*.{js,ts,mjs,cjs,cts,mts,vue}"
+      ],
+      "ignoreDependencies": [
+        "confbox"
       ]
     },
     "packages/nuxt": {

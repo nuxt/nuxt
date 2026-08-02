@@ -92,8 +92,8 @@ catalogs:
       specifier: ^10.5.4
       version: 10.5.4
     c12:
-      specifier: ^3.3.4
-      version: 3.3.4
+      specifier: 4.0.0-beta.5
+      version: 4.0.0-beta.5
     chokidar:
       specifier: ^5.0.0
       version: 5.0.0
@@ -103,6 +103,9 @@ catalogs:
     compatx:
       specifier: ^0.2.0
       version: 0.2.0
+    confbox:
+      specifier: ^0.2.4
+      version: 0.2.4
     consola:
       specifier: ^3.4.2
       version: 3.4.2
@@ -115,6 +118,9 @@ catalogs:
     destr:
       specifier: ^2.0.5
       version: 2.0.5
+    dotenv:
+      specifier: ^17.4.2
+      version: 17.4.2
     errx:
       specifier: ^0.1.2
       version: 0.1.2
@@ -130,6 +136,9 @@ catalogs:
     get-port-please:
       specifier: ^3.2.0
       version: 3.2.0
+    giget:
+      specifier: ^3.3.0
+      version: 3.3.0
     ignore:
       specifier: ^7.0.6
       version: 7.0.6
@@ -772,9 +781,9 @@ importers:
 
   packages/kit:
     dependencies:
-      c12:
+      confbox:
         specifier: catalog:build
-        version: 3.3.4(magicast@0.5.4)
+        version: 0.2.4
       consola:
         specifier: catalog:build
         version: 3.4.2
@@ -793,9 +802,6 @@ importers:
       ignore:
         specifier: catalog:build
         version: 7.0.6
-      jiti:
-        specifier: catalog:build
-        version: 2.7.0
       klona:
         specifier: catalog:build
         version: 2.0.6
@@ -835,9 +841,6 @@ importers:
       unctx:
         specifier: catalog:build
         version: 3.0.0(magic-string@1.1.0)(oxc-parser@0.144.0)(rolldown@1.2.3)(unplugin@3.3.0(@rspack/core@2.1.7(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25)))
-      untyped:
-        specifier: catalog:build
-        version: 2.0.0
       verkit:
         specifier: catalog:build
         version: 0.3.1
@@ -845,12 +848,24 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      c12:
+        specifier: catalog:build
+        version: 4.0.0-beta.5(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(jiti@2.7.0)(magicast@0.5.4)
       chokidar:
         specifier: catalog:build
         version: 5.0.0
+      dotenv:
+        specifier: catalog:build
+        version: 17.4.2
+      giget:
+        specifier: catalog:build
+        version: 3.3.0
       hookable:
         specifier: catalog:app-runtime
         version: 6.1.1
+      jiti:
+        specifier: catalog:build
+        version: 2.7.0
       nitropack:
         specifier: catalog:dev
         version: 2.13.4(@rspack/core@2.1.7(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.3)(srvx@0.12.5)(supports-color@10.2.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
@@ -860,6 +875,9 @@ importers:
       unimport:
         specifier: catalog:build
         version: 6.4.0(@rspack/core@2.1.7(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.144.0)(rolldown@1.2.3)(rollup@4.62.4)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
+      untyped:
+        specifier: catalog:build
+        version: 2.0.0
       vite:
         specifier: 8.2.1
         version: 8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
@@ -1401,9 +1419,6 @@ importers:
       '@vue/language-core':
         specifier: catalog:dev
         version: 3.3.9
-      c12:
-        specifier: catalog:build
-        version: 3.3.4(magicast@0.5.4)
       chokidar:
         specifier: catalog:build
         version: 5.0.0
@@ -5162,6 +5177,26 @@ packages:
     peerDependencies:
       magicast: '*'
     peerDependenciesMeta:
+      magicast:
+        optional: true
+
+  c12@4.0.0-beta.5:
+    resolution: {integrity: sha512-yWGCPCQGJeFq4R0mFg5HOhC3Rg+B0PCdM+ldXWUhughoGgeeq8/tjRmXh4/lmhKWyhf+KOFxB/JMXf0Yv1Fd5A==}
+    peerDependencies:
+      chokidar: ^5
+      dotenv: '*'
+      giget: '*'
+      jiti: '*'
+      magicast: '*'
+    peerDependenciesMeta:
+      chokidar:
+        optional: true
+      dotenv:
+        optional: true
+      giget:
+        optional: true
+      jiti:
+        optional: true
       magicast:
         optional: true
 
@@ -13196,6 +13231,21 @@ snapshots:
       pkg-types: 2.3.1
       rc9: 3.0.1
     optionalDependencies:
+      magicast: 0.5.4
+
+  c12@4.0.0-beta.5(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(jiti@2.7.0)(magicast@0.5.4):
+    dependencies:
+      confbox: 0.2.4
+      defu: 6.1.7
+      exsolve: 1.1.1
+      pathe: 2.0.3
+      pkg-types: 2.3.1
+      rc9: 3.0.1
+    optionalDependencies:
+      chokidar: 5.0.0
+      dotenv: 17.4.2
+      giget: 3.3.0
+      jiti: 2.7.0
       magicast: 0.5.4
 
   cac@7.0.0: {}
