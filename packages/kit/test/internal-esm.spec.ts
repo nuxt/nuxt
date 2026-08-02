@@ -5,7 +5,9 @@ import { resolve } from 'pathe'
 
 import { interopDefault } from '../src/internal/interop.ts'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from '../src/internal/node-module.ts'
+import { resolveModuleExportNames } from '../src/internal/exports.ts'
 
+const fixtureDir = fileURLToPath(new URL('./exports-fixture', import.meta.url))
 const repoRoot = resolve(fileURLToPath(new URL('../../..', import.meta.url)))
 
 describe('parseNodeModulePath', () => {
@@ -61,5 +63,30 @@ describe('interopDefault', () => {
   it('should preserve a function default export', () => {
     const fn = () => 'hi'
     expect(interopDefault({ default: fn, extra: 1 })).toBe(fn)
+  })
+})
+
+describe('resolveModuleExportNames', () => {
+  it('should collect exports, following star re-exports', async () => {
+    const names = await resolveModuleExportNames(resolve(fixtureDir, 'index.ts'))
+    expect(names).toMatchInlineSnapshot(`
+      [
+        "named",
+        "renamed",
+        "fn",
+        "Klass",
+        "default",
+        "ns",
+        "fromStar",
+      ]
+    `)
+  })
+
+  it('should return an empty array for a module without exports', async () => {
+    await expect(resolveModuleExportNames(resolve(fixtureDir, 'empty.ts'))).resolves.toStrictEqual([])
+  })
+
+  it('should return an empty array for an unresolvable module', async () => {
+    await expect(resolveModuleExportNames('./does-not-exist', { url: new URL('index.ts', `${new URL('./exports-fixture/', import.meta.url)}`) })).resolves.toStrictEqual([])
   })
 })

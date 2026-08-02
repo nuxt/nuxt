@@ -73,6 +73,9 @@ export type { ImportModuleOptions, ResolveModuleOptions } from './internal/esm.t
 /** @internal */
 export { parseNodeModulePath } from './internal/node-module.ts'
 export type { ParsedNodeModulePath } from './internal/node-module.ts'
+/** @internal */
+export { resolveModuleExportNames } from './internal/exports.ts'
+export type { ResolveModuleExportNamesOptions } from './internal/exports.ts'
 
 /** @internal */
 export { loadJiti } from './internal/jiti.ts'
