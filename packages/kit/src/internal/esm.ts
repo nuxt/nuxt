@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
-import { interopDefault } from 'mlly'
 import { resolveModulePath } from 'exsolve'
+import { interopDefault } from './interop.ts'
 import { getUserCaller, warn } from './trace.ts'
 import { resolveAlias } from '../resolve.ts'
 import { tryUseNuxt } from '../context.ts'
