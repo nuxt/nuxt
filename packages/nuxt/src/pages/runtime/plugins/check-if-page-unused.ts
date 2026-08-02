@@ -6,13 +6,17 @@ import { onNuxtReady } from '#app/composables/ready'
 import { useError } from '#app/composables/error'
 import { useRouter } from '#app/composables/router'
 import { renderDiagnostics } from '../../../app/diagnostics/render'
+import { isRecordRendered } from '../../../app/diagnostics/rendered-records'
 
 export function findUnrenderedNestedPage (route: RouteLocationNormalizedLoaded): { parent: RouteRecordNormalized, child: RouteRecordNormalized } | undefined {
   let parent: RouteRecordNormalized | undefined
   for (const record of route.matched) {
     // vue-router renders the child directly at the parent's depth for records without a component
     if (!record.components?.default) { continue }
-    if (!Object.values(record.instances ?? {}).some(Boolean)) {
+    // vue-router clears `instances` when a keyed page vnode unmounts, even if a new instance for
+    // the same record has already mounted (sibling navigation like `/parent/1` -> `/parent/2`),
+    // so fall back to the records Nuxt itself has mounted
+    if (!Object.values(record.instances ?? {}).some(Boolean) && !isRecordRendered(record)) {
       // an unrendered record without a rendered parent is covered by the E4011 check
       return parent ? { parent, child: record } : undefined
     }
