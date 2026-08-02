@@ -669,20 +669,34 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
   const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
   const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
-  nitroConfig.rollupConfig!.plugins!.push(
-    ImpoundPlugin.rollup({
+  const serverProtectionConfigs = [
+    {
       cwd: nuxt.options.rootDir,
       trace: true,
       include: sharedPatterns,
-      patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
-    }),
-    ImpoundPlugin.rollup({
+      patterns: createImportProtectionPatterns(nuxt, { context: 'shared' as const }),
+    },
+    {
       cwd: nuxt.options.rootDir,
       trace: true,
-      patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
+      patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' as const }),
       exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
-    }),
-  )
+    },
+  ]
+  nitroConfig.rollupConfig!.plugins!.push(...serverProtectionConfigs.map(config => ImpoundPlugin.rollup(config)))
+
+  // register same protection when building
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    nuxt.options.vite.plugins ||= []
+    for (const config of serverProtectionConfigs) {
+      for (const plugin of [ImpoundPlugin.vite(config)].flat()) {
+        nuxt.options.vite.plugins.push(Object.assign(plugin, {
+          name: `nuxt:server-import-protection:${plugin.name}`,
+          applyToEnvironment: (env: { name: string }) => env.name === 'nitro',
+        }))
+      }
+    }
+  }
 
   // Apply Nuxt's ignore configuration to the root and src unstorage mounts
   // created by Nitro. This ensures that the unstorage watcher will use the
