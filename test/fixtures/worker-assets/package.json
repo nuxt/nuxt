@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-worker-assets",
   "scripts": {
     "build": "nuxt build"

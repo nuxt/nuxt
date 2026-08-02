@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-chunk-error",
   "scripts": {
     "build": "nuxt build"
