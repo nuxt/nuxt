@@ -132,19 +132,22 @@ catalogs:
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.40
     autoprefixer: ^10.5.4
-    c12: ^3.3.4
+    c12: 4.0.0-beta.5
     chokidar: ^5.0.0
     clickable-path: ^0.0.1
     compatx: ^0.2.0
+    confbox: ^0.2.4
     consola: ^3.4.2
     cssnano: ^8.0.2
     defu: ^6.1.7
     destr: ^2.0.5
+    dotenv: ^17.4.2
     errx: ^0.1.2
     escape-string-regexp: ^5.0.0
     exsolve: ^1.1.1
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
+    giget: ^3.3.0
     ignore: ^7.0.6
     impound: ^1.1.6
     jiti: ^2.7.0
