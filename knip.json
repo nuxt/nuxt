@@ -26,6 +26,7 @@
         "scripts/*",
         "test/*.ts",
         "test/e2e/*.ts",
+        "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
         "test/mocks/app-config.ts"
       ]
