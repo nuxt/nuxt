@@ -38,7 +38,6 @@
     "exsolve": "catalog:build",
     "generic-names": "catalog:build",
     "get-port-please": "catalog:build",
-    "jiti": "catalog:build",
     "js-tokens": "catalog:build",
     "knitwork": "catalog:build",
     "mlly": "catalog:build",

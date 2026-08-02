@@ -130,7 +130,6 @@
         "file-loader",
         "h3",
         "h3-next",
-        "jiti",
         "knitwork",
         "memfs",
         "mini-css-extract-plugin",

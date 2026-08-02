@@ -230,6 +230,28 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
 async function getPathSubstitution (absolutePath: string, buildDir: string): Promise<string> {
   return relativeWithDot(buildDir, await resolveDeclarationPath(absolutePath))
 }
+
+// Ordered by how specific the declaration is, so a hand-written `.d.ts` wins over the source it
+// describes, and TypeScript sources win over emitted JavaScript.
+const TS_PATH_TARGET_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']
+
+/**
+ * Resolve an extensionless `paths` target to the file TypeScript should load for it.
+ *
+ * `bundler` resolution retries a fixed set of extensions when a substitution is extensionless,
+ * but the `node` environment is resolved as `nodenext`, which does not: the target has to name a
+ * real file. Returns `undefined` when nothing matches, leaving the target untouched.
+ */
+async function resolveExtensionlessTarget (absolutePath: string): Promise<string | undefined> {
+  for (const extension of TS_PATH_TARGET_EXTENSIONS) {
+    const candidate = absolutePath + extension
+    if (await fsp.stat(candidate).then(s => s.isFile(), () => false)) {
+      return candidate
+    }
+  }
+  return undefined
+}
+
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
@@ -446,9 +468,18 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     return { ...compilerOptions, noEmit: true, types: [], paths: {} }
   }
 
-  // This describes the environment where we load `nuxt.config.ts` (and modules)
+  // This describes the environment where we load `nuxt.config.ts` (and modules).
   const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
-    compilerOptions: nonAppCompilerOptions(),
+    compilerOptions: {
+      ...nonAppCompilerOptions(),
+      ...isV5OrHigher
+        ? {
+            module: 'nodenext',
+            moduleResolution: 'nodenext',
+            erasableSyntaxOnly: true,
+          }
+        : {},
+    },
     include: [...nodeInclude],
     exclude: [...nodeExclude],
   } satisfies TSConfig)
@@ -552,9 +583,16 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
         if (!isAbsolute(path)) { return path }
         const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-        return stats?.isFile()
-          ? getPathSubstitution(path, nuxt.options.buildDir)
-          : relativeWithDot(nuxt.options.buildDir, path)
+        if (stats?.isFile()) {
+          return getPathSubstitution(path, nuxt.options.buildDir)
+        }
+        // A declaration file next to the target wins over a directory of the same name, which is
+        // how `#app/types` resolves to `types.ts` rather than the `types/` directory beside it.
+        const resolved = await resolveExtensionlessTarget(path)
+        if (resolved) {
+          return relativeWithDot(nuxt.options.buildDir, resolved)
+        }
+        return relativeWithDot(nuxt.options.buildDir, path)
       })))]
     }
 

@@ -31,6 +31,7 @@
     "test:runtime": "vitest run --project nuxt --project nuxt-universal --project nuxt-legacy --project nuxt-dev --project nuxt-insensitive --project nuxt-sensitive",
     "test:types": "node ./test/ensure-prepared.ts && pnpm --filter './test/fixtures/**' test:types",
     "test:bundle": "pnpm build && vitest run bundle",
+    "test:no-jiti": "vitest run --project no-jiti",
     "test:unit": "vitest run --project unit",
     "test:attw": "pnpm --filter './packages/**' test:attw",
     "test:e2e": "playwright test",
