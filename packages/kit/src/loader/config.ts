@@ -230,7 +230,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     } catch (error) {
       // A config file that threw while it was running has already had whatever effect it had, and
       // jiti would only run it a second time and report its own error in place of the author's
-      if (!isLoaderError(error)) {
+      if (!isLoaderError(error, url.href)) {
         throw error
       }
       jitiPromise ??= loadJiti({ rootDir: rootCwd }).then(mod => mod?.createJiti(join(rootCwd, 'nuxt.config'), {

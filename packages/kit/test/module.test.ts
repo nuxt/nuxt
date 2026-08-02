@@ -519,6 +519,17 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     await writeFile(join(brokenDepModule, 'package.json'), JSON.stringify({ name: 'broken-dep-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(brokenDepModule, 'index.js'), `import 'this-dependency-does-not-exist'\nexport default () => {}\n`)
 
+    // records its evaluation, then fails to resolve a specifier of its own at the top level
+    const dynamicImportModule = join(tempDir, 'node_modules/dynamic-import-module')
+    await mkdir(dynamicImportModule, { recursive: true })
+    await writeFile(join(dynamicImportModule, 'package.json'), JSON.stringify({ name: 'dynamic-import-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(dynamicImportModule, 'index.js'), [
+      `import { appendFileSync } from 'node:fs'`,
+      `appendFileSync(${JSON.stringify(join(tempDir, 'dynamic-evaluations'))}, 'evaluated\\n')`,
+      `await import('this-dependency-does-not-exist')`,
+      ``,
+    ].join('\n'))
+
     // installed dependency that only exports its main entry
     const depWithExports = join(tempDir, 'node_modules/dep-with-exports')
     await mkdir(depWithExports, { recursive: true })
@@ -584,6 +595,15 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect((error.cause as Error)).toBeInstanceOf(SyntaxError)
 
     const evaluations = await readFile(join(tempDir, 'syntax-evaluations'), 'utf8')
+    expect(evaluations.trim().split('\n')).toHaveLength(1)
+  })
+
+  it('evaluates a module whose top-level dynamic import fails only once', async () => {
+    const error = await loadError('dynamic-import-module')
+    expect(error.message).toMatch(/this-dependency-does-not-exist/)
+    expect(error.message).not.toMatch(/may not be installed/)
+
+    const evaluations = await readFile(join(tempDir, 'dynamic-evaluations'), 'utf8')
     expect(evaluations.trim().split('\n')).toHaveLength(1)
   })
 

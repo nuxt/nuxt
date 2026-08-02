@@ -21,10 +21,22 @@ const LOADER_ERROR_CODES = new Set([
 /**
  * Whether a failed `import()` failed because the runtime would not load the file, rather than
  * because the file threw once it was running.
+ *
+ * @param error the error the failed `import()` rejected with
+ * @param target the URL that was imported, used to tell an unresolved import of `target` itself
+ * apart from one the file made after it had started running
  */
-export function isLoaderError (error: unknown): boolean {
-  const code = (error as { code?: unknown } | undefined)?.code
-  return typeof code === 'string' && LOADER_ERROR_CODES.has(code)
+export function isLoaderError (error: unknown, target?: string): boolean {
+  const { code, url } = (error ?? {}) as { code?: unknown, url?: unknown }
+  if (typeof code !== 'string' || !LOADER_ERROR_CODES.has(code)) {
+    return false
+  }
+  // node sets `url` only when `target` itself could not be found; when a specifier inside the file
+  // could not be resolved it is left unset, and the file has already run
+  if (code === 'ERR_MODULE_NOT_FOUND' && target) {
+    return url === target
+  }
+  return true
 }
 
 export interface LoadJitiOptions {
