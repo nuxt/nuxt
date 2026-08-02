@@ -84,6 +84,7 @@
     "mlly": "catalog:build",
     "nitro": "catalog:nitro-runtime",
     "nitropack": "catalog:dev",
+    "oxc-parser": "catalog:build",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "unimport": "catalog:build",

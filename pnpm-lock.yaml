@@ -825,9 +825,6 @@ importers:
       ohash:
         specifier: catalog:build
         version: 2.0.11
-      oxc-parser:
-        specifier: 0.141.0
-        version: 0.141.0
       pathe:
         specifier: catalog:build
         version: 2.0.3
@@ -886,6 +883,9 @@ importers:
       nitropack:
         specifier: catalog:dev
         version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@rspack/core@2.1.5(@swc/helpers@0.5.23))(oxc-parser@0.141.0)(rolldown@1.1.5)(srvx@0.12.4)(supports-color@10.2.2)(vite@8.1.5)(webpack@5.109.0(cssnano@8.0.2(postcss@8.5.23))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23))
+      oxc-parser:
+        specifier: 0.141.0
+        version: 0.141.0
       rolldown:
         specifier: 1.1.5
         version: 1.1.5
