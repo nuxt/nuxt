@@ -268,7 +268,7 @@ jobs:
           cache: true
 
       - name: Prepare
-        run: vp run dev:prepare && vp run test:prepare
+        run: vp run dev:prepare && vp run test:prepare && vp run build:kit
 
       - parallel:
           - name: Lint
