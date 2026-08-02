@@ -43,7 +43,6 @@
     "get-port-please": "catalog:build",
     "js-tokens": "catalog:build",
     "knitwork": "catalog:build",
-    "mlly": "catalog:build",
     "mocked-exports": "catalog:build",
     "pathe": "catalog:build",
     "pkg-types": "catalog:build",

@@ -43,7 +43,6 @@
     "knitwork": "catalog:build",
     "memfs": "catalog:webpack",
     "mini-css-extract-plugin": "catalog:webpack",
-    "mlly": "catalog:build",
     "ohash": "catalog:build",
     "pathe": "catalog:build",
     "pify": "catalog:webpack",

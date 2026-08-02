@@ -1,13 +1,14 @@
 import { createUnplugin } from 'unplugin'
-import type { StaticImport } from 'mlly'
-import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { ScopeTracker, getUndeclaredIdentifiersInFunction, isReferenceIdentifier, parseAndWalk, walk } from 'oxc-walker'
+import { ScopeTracker, getUndeclaredIdentifiersInFunction, isReferenceIdentifier, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { pageDiagnostics } from '@nuxt/kit'
 import { parseModuleId } from '../../core/utils/plugins.ts'
+import { parseModule } from '../../core/utils/parse.ts'
+import { getStaticImports } from '../../core/utils/static-imports.ts'
+import type { ParsedStaticImport } from '../../core/utils/static-imports.ts'
 import { classifyPageMetaProperty } from '../utils.ts'
 import { linkToAlias } from '../../utils.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
@@ -79,7 +80,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
         const hasMacro = HAS_MACRO_RE.test(code)
 
-        const imports = findStaticImports(code)
+        const parsed = parseModule(code, id, { lang: query.lang ?? 'ts' })
+        const imports = getStaticImports(code, parsed.module.staticImports)
 
         // [vite] Re-export any script imports
         const scriptImport = imports.find(i => parseMacroQuery(i.specifier).type === 'script')
@@ -92,15 +94,17 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
 
         // [webpack] Re-export any exports from script blocks in the components
-        const currentExports = findExports(code)
-        for (const match of currentExports) {
-          if (match.type !== 'default' || !match.specifier) {
+        for (const statement of parsed.module.staticExports) {
+          const defaultEntry = statement.entries.find(entry => !entry.isType && entry.exportName.name === 'default')
+          const specifier = defaultEntry?.moduleRequest?.value
+          if (!specifier) {
             continue
           }
 
-          const reorderedQuery = rewriteQuery(match.specifier)
+          const reorderedQuery = rewriteQuery(specifier)
           // Avoid using JSON.stringify which can add extra escapes to paths with non-ASCII characters
-          const quotedSpecifier = getQuotedSpecifier(match.code)?.replace(match.specifier, reorderedQuery) ?? JSON.stringify(reorderedQuery)
+          const statementCode = code.slice(statement.start, statement.end)
+          const quotedSpecifier = getQuotedSpecifier(statementCode)?.replace(specifier, reorderedQuery) ?? JSON.stringify(reorderedQuery)
           s.overwrite(0, code.length, `export { default } from ${quotedSpecifier}`)
           return result()
         }
@@ -117,14 +121,13 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           return result()
         }
 
-        const importMap = new Map<string, StaticImport>()
+        const importMap = new Map<string, ParsedStaticImport>()
         const addedImports = new Set()
         for (const i of imports) {
-          const parsed = parseStaticImport(i)
           for (const name of [
-            parsed.defaultImport,
-            ...Object.values(parsed.namedImports || {}),
-            parsed.namespacedImport,
+            i.defaultImport,
+            ...Object.values(i.namedImports),
+            i.namespacedImport,
           ].filter(Boolean) as string[]) {
             importMap.set(name, i)
           }
@@ -229,12 +232,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           }
         }
 
-        const { program: ast } = parseAndWalk(code, id, {
-          scopeTracker,
-          parseOptions: {
-            lang: query.lang ?? 'ts',
-          },
-        })
+        const { program: ast } = parsed
+        walk(ast, { scopeTracker })
 
         scopeTracker.freeze()
 
