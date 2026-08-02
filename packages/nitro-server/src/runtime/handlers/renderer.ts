@@ -14,6 +14,8 @@ import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from '../utils/error'
 import { relative } from 'pathe'
 
+import '../context'
+
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 
@@ -34,7 +36,6 @@ import entryIds from 'nuxt/entry-ids'
 import { entryFileName } from 'nuxt/entry-chunk'
 import { iifeChunkFileName } from '#internal/streaming-iife-chunk.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../utils/paths'
-import type { AppConfig } from '@nuxt/schema'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -113,7 +114,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
       (ssrError as { data?: unknown }).data = stringifyErrorData(ssrError.data)
     }
     if (import.meta.dev && event.context.nuxt?.['~error-cause'] !== undefined) {
-      (ssrError as { cause?: SerializedErrorCause }).cause = event.context.nuxt['~error-cause']
+      (ssrError as { cause?: SerializedErrorCause }).cause = event.context.nuxt['~error-cause'] as SerializedErrorCause
     }
     setSSRError(ssrContext, ssrError)
   }
@@ -952,35 +953,6 @@ function applyRenderOptions (payload: SSRHeadPayload, options: { omitLineBreaks?
     bodyTagsOpen: payload.bodyTagsOpen.replaceAll('\n', ''),
     htmlAttrs: payload.htmlAttrs,
     bodyAttrs: payload.bodyAttrs,
-  }
-}
-
-interface NuxtRequestContext {
-  'appConfig'?: AppConfig
-  'noSSR'?: boolean
-  /** @internal */
-  '~internal'?: boolean
-  /** @internal */
-  '~rendering-error'?: boolean
-  /**
-   * Dev-only: CSS module URLs the builder has loaded for this request, provided
-   * by a dev integration so the SSR renderer can emit the right stylesheet
-   * links / inline styles. @internal
-   */
-  '~devClientCss'?: string[]
-  /** @internal */
-  '~error-cause'?: SerializedErrorCause
-}
-
-declare module 'srvx' {
-  interface ServerRequestContext {
-    nuxt?: NuxtRequestContext
-  }
-}
-
-declare module 'h3' {
-  interface H3EventContext {
-    nuxt?: NuxtRequestContext
   }
 }
 
