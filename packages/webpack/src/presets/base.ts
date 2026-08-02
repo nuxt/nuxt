@@ -1,12 +1,11 @@
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, normalize, resolve } from 'pathe'
-import { parseNodeModulePath } from 'mlly'
 import { resolveModulePath } from 'exsolve'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
-import { DEFAULT_JS_FILE_EXTENSIONS, directoryToURL, logger } from '@nuxt/kit'
+import { DEFAULT_JS_FILE_EXTENSIONS, directoryToURL, logger, parseNodeModulePath } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'

@@ -163,6 +163,7 @@ catalogs:
     nypm: ^0.6.9
     ohash: ^2.0.11
     on-change: ^6.0.2
+    oxc-parser: ^0.141.0
     pathe: ^2.0.3
     picomatch: ^4.0.5
     pkg-types: ^2.3.1

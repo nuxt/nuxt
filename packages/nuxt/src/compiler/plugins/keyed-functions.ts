@@ -5,13 +5,13 @@ import { hash } from 'ohash'
 import { isAbsolute, join, parse } from 'pathe'
 import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
-import { findStaticImports, parseStaticImport } from 'mlly'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { buildDiagnostics, resolveAlias } from '@nuxt/kit'
 import type { KeyedFunction } from '@nuxt/schema'
 import type { ESTree } from 'rolldown/utils'
 import type { Import } from 'unimport'
 
+import { parseStaticImports } from '../../core/utils/static-imports.ts'
 import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, isWhitespace, stripExtension } from '../../utils.ts'
 import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
@@ -144,7 +144,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { 0: code, index: 0 }
         const id = stripExtension(_id)
 
-        const { directImports, namespaces } = processImports(findStaticImports(script).map(i => parseStaticImport(i)), options.alias)
+        const { directImports, namespaces } = processImports(parseStaticImports(script, _id), options.alias)
 
         // consider exports when processing a file that exports a keyed function
         const shouldConsiderExports = sources.has(id)
