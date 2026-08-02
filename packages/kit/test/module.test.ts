@@ -549,10 +549,17 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect(error.message).not.toMatch(/may not be installed/)
   })
 
-  it('reports a genuinely missing module as not installed', async () => {
+  it('reports a genuinely missing module as not installed, using the project package manager', async () => {
     const error = await loadError('this-module-is-not-installed')
     expect(error.message).toMatch(/may not be installed/)
+    expect((error as Error & { fix?: string }).fix).toBe('Run `pnpm add this-module-is-not-installed` to install it.')
     expect(error.cause).toBeInstanceOf(Error)
+  })
+
+  it('does not suggest an install command for a missing local module path', async () => {
+    const error = await loadError('./modules/does-not-exist')
+    expect(error.message).toMatch(/may not be installed/)
+    expect((error as Error & { fix?: string }).fix).toBe('Check that the module path exists and points to a valid Nuxt module.')
   })
 })
 

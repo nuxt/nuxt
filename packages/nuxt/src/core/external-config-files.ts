@@ -1,5 +1,6 @@
 import { configDiagnostics, findPath } from '@nuxt/kit'
 import { basename } from 'pathe'
+import { link } from 'clickable-path'
 
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
@@ -38,5 +39,5 @@ function checkPostCSSConfig () {
 
 async function checkConfigFileExistence (fileName: string, extensions: string[]) {
   const configFile = await findPath(fileName, { extensions }).catch(() => null)
-  return configFile ? basename(configFile) : undefined
+  return configFile ? link(configFile, { formatter: absolute => basename(absolute) }) : undefined
 }

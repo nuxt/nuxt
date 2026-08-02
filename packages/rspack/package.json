@@ -12,7 +12,6 @@
   "type": "module",
   "types": "./src/index.ts",
   "imports": {
-    "#builder": "./builder.mjs",
     "#vue-module-identifier": "./src/loaders/vue-module-identifier.ts"
   },
   "exports": {
@@ -20,8 +19,7 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist",
-    "builder.mjs"
+    "dist"
   ],
   "scripts": {
     "prepack": "tsdown",
@@ -95,7 +93,6 @@
     },
     "types": "./dist/index.d.mts",
     "imports": {
-      "#builder": "./builder.mjs",
       "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
     }
   }

@@ -13,7 +13,6 @@
     "build": "vite build",
     "dev": "vite",
     "optimize-assets": "npx svgo public/assets/**/*.svg",
-    "postinstall": "pnpm build",
     "prerender": "pnpm build && node ./lib/prerender.ts"
   },
   "devDependencies": {

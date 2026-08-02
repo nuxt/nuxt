@@ -109,8 +109,27 @@ export interface ConfigSchema {
 
     /**
      * Include Vue compiler in runtime bundle.
+     *
+     * Enabling this allows components to compile templates at runtime (for example,
+     * string `template` options or templates supplied via data).
+     *
+     * Runtime-compiled templates can execute arbitrary JavaScript. Never pass
+     * user-provided or otherwise untrusted content to a runtime-compiled template;
+     * treat any string that reaches the compiler as executable code.
+     *
+     * @see [Vue security guide](https://vuejs.org/guide/best-practices/security.html)
      */
     runtimeCompiler: boolean
+
+    /**
+     * Include support for the Vue Options API in the client bundle.
+     *
+     * Disabling this compiles out Vue's Options API runtime (via the `__VUE_OPTIONS_API__` feature
+     * flag), shrinking the client bundle for apps that only use the Composition API / `<script setup>`.
+     *
+     * Defaults to `false` when `future.compatibilityVersion` is `5` or higher, otherwise `true`.
+     */
+    optionsApi: boolean
 
     /**
      * Enable reactive destructure for `defineProps`
@@ -1194,6 +1213,8 @@ export interface ConfigSchema {
     /**
      * Enable the new experimental typed router using vue-router.
      *
+     * This is enabled by default with compatibility version 5.
+     *
      * @default false
      */
     typedPages: boolean
@@ -1278,6 +1299,23 @@ export interface ConfigSchema {
      * @default []
      */
     extraPageMetaExtractionKeys: string[]
+
+    /**
+     * Extract every JSON-serializable `definePageMeta` property into the generated route record,
+     * rather than only the keys Nuxt reads at build time.
+     *
+     * When every property of a page's `definePageMeta` can be resolved statically, the generated
+     * route no longer imports the page's macro module at all, removing one module per page from
+     * the dev module graph. Properties whose values cannot be serialized are unaffected and are
+     * still resolved by the macro module at runtime.
+     *
+     * This has no effect when `experimental.scanPageMeta` is `false`, as the route record does
+     * not override the macro module in that case.
+     *
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    extractSerializablePageMeta: boolean
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same data in different pages.
@@ -1548,6 +1586,14 @@ export interface ConfigSchema {
     granularCachedData: boolean
 
     /**
+     * Apply `serialize: false` by default to `useAsyncData` and `useFetch` calls made within components lazily hydrated with `hydrate-never`, keeping their data out of the `__NUXT_DATA__` payload.
+     *
+     * An explicit `serialize` option always takes precedence. Note that data shared with other components via a common key follows the options of whichever call creates the shared entry first.
+     * @default false
+     */
+    stripNeverHydratedData: boolean
+
+    /**
      * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
      *
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
@@ -1559,8 +1605,14 @@ export interface ConfigSchema {
     /**
      * Whether to parse `error.data` when rendering a server error page.
      *
+     * @deprecated The error sent to the error page is JSON-encoded, so
+     * `error.data` keeps its original shape and is never stringified. With
+     * `compatibilityVersion: 5` this is forced on and setting it is ignored;
+     * before that, `false` stringifies `error.data` again for backwards
+     * compatibility.
      * @default true
      */
+    // TODO: remove this option before Nuxt 5 is released
     parseErrorData: boolean
 
     /**
@@ -1644,6 +1696,15 @@ export interface ConfigSchema {
        */
       botRegex?: RegExp
     }
+
+    /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Only effective when using `@nuxt/vite-builder`.
+     * @default true
+     */
+    nitroViteEnvironment: boolean
 
     /**
      * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.

@@ -12,7 +12,6 @@
   "type": "module",
   "types": "./src/index.ts",
   "imports": {
-    "#builder": "./builder.mjs",
     "#vue-module-identifier": "./src/loaders/vue-module-identifier.ts"
   },
   "exports": {
@@ -20,8 +19,7 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist",
-    "builder.mjs"
+    "dist"
   ],
   "scripts": {
     "prepack": "tsdown",
@@ -76,6 +74,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "@rspack/core": "catalog:dev",
+    "@types/hash-sum": "catalog:dev",
     "@types/webpack-bundle-analyzer": "catalog:dev",
     "@types/webpack-hot-middleware": "catalog:dev",
     "h3": "1.15.11",
@@ -99,7 +98,6 @@
     },
     "types": "./dist/index.d.mts",
     "imports": {
-      "#builder": "./builder.mjs",
       "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
     }
   }

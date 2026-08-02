@@ -7,15 +7,64 @@ import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
+import { klona } from 'klona'
+import { diff } from 'ohash/utils'
 import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { directoryToURL } from '../internal/esm.ts'
 
+/**
+ * Context handed to `onConfigResolved` after configuration has loaded successfully.
+ */
+export interface ResolvedNuxtConfigContext {
+  /**
+   * User configuration merged across all layers, with no schema defaults applied and with
+   * `overrides`, `defaults` and `defaultConfig` from the load options excluded, so repeated
+   * loads of an unchanged project produce an unchanged snapshot. Two snapshots from separate
+   * `loadNuxtConfig` calls can be compared with `diffNuxtConfig`.
+   */
+  rawConfig: NuxtConfig
+  /** Resolved config layers, highest priority first. */
+  layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[]
+  /** Absolute path of the root `nuxt.config` file, if one was found. */
+  configFile?: string
+  /** Directory the configuration was loaded from. */
+  cwd: string
+}
+
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   overrides?: Exclude<LoadConfigOptions<NuxtConfig>['overrides'], Promise<any> | Function>
+  /**
+   * Called once, awaited, after configuration has loaded successfully. Callers watching config
+   * files themselves can keep the previous `rawConfig` and pass both snapshots to
+   * `diffNuxtConfig` to find out which keys changed. Not called if loading throws.
+   */
+  onConfigResolved?: (context: ResolvedNuxtConfigContext) => void | Promise<void>
+}
+
+/** A single difference between two resolved Nuxt configurations. */
+export interface NuxtConfigDiffEntry {
+  /** Dot-separated path of the changed value, such as `modules` or `runtimeConfig.public.foo`. */
+  key: string
+  type: 'added' | 'changed' | 'removed'
+  newValue?: unknown
+  oldValue?: unknown
+}
+
+/**
+ * Compare two `rawConfig` snapshots (as provided to `onConfigResolved`) and return the
+ * differences between them.
+ */
+export function diffNuxtConfig (oldConfig: NuxtConfig, newConfig: NuxtConfig): NuxtConfigDiffEntry[] {
+  return diff(oldConfig, newConfig).map(entry => ({
+    key: entry.key,
+    type: entry.type,
+    newValue: entry.newValue?.value,
+    oldValue: entry.oldValue?.value,
+  }))
 }
 
 const merger = createDefu((obj, key, value) => {
@@ -61,7 +110,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // `layers/` and also listed in `extends`) to avoid merging them twice (#34667)
   const seenLayerDirs = new Set<string>()
 
-  const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await withDefineNuxtConfig(
+  const resolved = await withDefineNuxtConfig(
     () => loadConfig<NuxtConfig>({
       name: 'nuxt',
       configFile: 'nuxt.config',
@@ -117,6 +166,20 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       },
     }),
   )
+  const { configFile, layers = [], cwd, meta } = resolved
+  // Clone with `klona` rather than `klona/full`: jiti-imported JSON/CJS modules in user config
+  // carry a non-enumerable, self-referential `default` interop property, which `klona/full`
+  // would follow into infinite recursion.
+  const nuxtConfig = klona(resolved.config)
+
+  // Merge of the layers c12 produced, minus the synthetic layer it creates for `overrides`, so
+  // caller-supplied `overrides`/`defaults` never appear as user configuration. Taken before the
+  // layer directories below are normalised, so schema defaults stay out of the snapshot.
+  const rawConfig = opts.onConfigResolved
+    ? merger({}, ...layers
+      .filter(layer => layer.config && layer.config !== opts.overrides)
+      .map(layer => layer.config!)) as NuxtConfig
+    : undefined
 
   // Fill config
   nuxtConfig.rootDir ||= cwd
@@ -207,7 +270,18 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   // Resolve and apply defaults
-  return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+  const options = await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+
+  if (opts.onConfigResolved) {
+    await opts.onConfigResolved({
+      rawConfig: rawConfig!,
+      layers: _layers,
+      configFile,
+      cwd: cwd!,
+    })
+  }
+
+  return options
 }
 
 /**

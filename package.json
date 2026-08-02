@@ -28,8 +28,8 @@
     "test:fixtures": "pnpm test:prepare && vitest run --project 'fixtures:*'",
     "test:fixtures:dev": "vitest run --project 'fixtures:vite-dev-*'",
     "test:fixtures:webpack": "vitest run --project 'fixtures:webpack-*'",
-    "test:runtime": "vitest run --project nuxt --project nuxt-universal --project nuxt-legacy --project nuxt-dev",
-    "test:types": "pnpm --filter './test/fixtures/**' test:types",
+    "test:runtime": "vitest run --project nuxt --project nuxt-universal --project nuxt-legacy --project nuxt-dev --project nuxt-insensitive --project nuxt-sensitive",
+    "test:types": "node ./test/ensure-prepared.ts && pnpm --filter './test/fixtures/**' test:types",
     "test:bundle": "pnpm build && vitest run bundle",
     "test:unit": "vitest run --project unit",
     "test:attw": "pnpm --filter './packages/**' test:attw",
@@ -104,10 +104,11 @@
     "vitest": "catalog:dev",
     "vitest-environment-nuxt": "catalog:dev",
     "vue": "catalog:app-runtime",
+    "vue-component-type-helpers": "catalog:vue",
     "vue-router": "catalog:app-runtime",
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.15.0",
+  "packageManager": "pnpm@11.17.0",
   "version": ""
 }

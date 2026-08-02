@@ -1,18 +1,17 @@
 import type {
-  AllowedComponentProps,
   AnchorHTMLAttributes,
   ComputedRef,
   DefineSetupFnComponent,
   InjectionKey,
   MaybeRef,
   PropType,
+  PublicProps,
   SlotsType,
-  UnwrapRef,
   VNode,
-  VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
+import type { ComponentSlots } from 'vue-component-type-helpers'
+import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -23,7 +22,7 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 import { renderDiagnostics } from '../diagnostics/render'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 
-import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
+import { componentIslands, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
 import type { NuxtLinkOptions } from '../types'
@@ -113,37 +112,35 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
   trailingSlash?: 'append' | 'remove'
 }
 
-type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
-  ? {
-      href: string | null
-      navigate: (e?: MouseEvent) => Promise<void>
-      prefetch: (nuxtApp?: NuxtApp) => Promise<void>
-      prefetched: boolean
-      shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
-      route: (RouteLocation & { href: string }) | undefined
-      rel: string | null
-      target: '_blank' | '_parent' | '_self' | '_top' | (string & {}) | null
-      isExternal: boolean
-      isActive: boolean
-      isExactActive: boolean
-    }
-  : UnwrapRef<UseLinkReturn>
+type RouterLinkSlot = NonNullable<ComponentSlots<typeof RouterLink>['default']>
+type RouterLinkSlotProps = Parameters<RouterLinkSlot>[0]
 
-type RouterLinkSlotProps = Partial<Pick<NuxtLinkDefaultSlotProps<true>, 'href' | 'navigate' | 'route' | 'isActive' | 'isExactActive'>>
-
-type NuxtLinkSlots<CustomProp extends boolean = false> = {
-  default?: (props: NuxtLinkDefaultSlotProps<CustomProp>) => VNode[]
-}
+type NuxtLinkSlotProps<CustomProp extends boolean = false> = CustomProp extends true
+  ? Omit<RouterLinkSlotProps, 'href' | 'route'> & {
+    href: RouterLinkSlotProps['href'] | null
+    route: RouterLinkSlotProps['route'] | undefined
+    prefetch: (nuxtApp?: NuxtApp) => Promise<void>
+    prefetched: boolean
+    shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
+    rel: string | null
+    target: '_blank' | '_parent' | '_self' | '_top' | (string & {}) | null
+    isExternal: boolean
+  }
+  : RouterLinkSlotProps
 
 type NuxtLinkComponentProps<CustomProp extends boolean = false> =
-  NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>
+  NuxtLinkProps<CustomProp> & PublicProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>
 
 type NuxtLinkComponentInstance<CustomProp extends boolean = false> = InstanceType<DefineSetupFnComponent<
   NuxtLinkComponentProps<CustomProp>,
   [],
-  SlotsType<NuxtLinkSlots<CustomProp>>
+  SlotsType<{
+    default?: (props: NuxtLinkSlotProps<CustomProp>) => VNode[]
+  }>
 >>
 
+// the non-generic signatures are required for `ComponentProps`/`ComponentSlots` and Vue Language
+// Tools to resolve the component: inference against a solely generic construct signature yields `{}`
 export type NuxtLinkComponent = {
   new (
     props: NuxtLinkComponentProps<true> & { custom: true }
@@ -473,7 +470,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
         ) || null
 
-        const getCustomSlotProps = (routerLinkSlotProps?: RouterLinkSlotProps): NuxtLinkDefaultSlotProps<true> => ({
+        const getCustomSlotProps = (routerLinkSlotProps?: RouterLinkSlotProps): NuxtLinkSlotProps<true> => ({
           href: href.value,
           navigate,
           get route () {
@@ -505,7 +502,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         })
 
         if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
-          const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
+          const routerLinkProps: RouterLinkProps & PublicProps & AnchorHTMLAttributes & { 'data-internal'?: string } = {
             ref: elRef,
             to: to.value,
             activeClass: props.activeClass || options.activeClass,
@@ -528,6 +525,15 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
               }
             }
             routerLinkProps.rel = props.rel || undefined
+
+            if (import.meta.server && componentIslands && useNuxtApp().ssrContext?.islandContext) {
+              // marks internal links within island HTML for client-side navigation
+              const flags: string[] = []
+              if (props.replace) { flags.push('replace') }
+              const prefetchOnVisibility = typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : (props.prefetchOn?.visibility ?? options.prefetchOn?.visibility)
+              if (prefetchOnVisibility && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true) { flags.push('prefetch') }
+              routerLinkProps['data-internal'] = flags.join(' ')
+            }
           }
 
           // Internal link
@@ -608,7 +614,8 @@ function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions[
 type CallbackFn = () => void
 type ObserveFn = (element: Element, callback: CallbackFn) => () => void
 
-function useObserver (): { observe: ObserveFn } | undefined {
+/** @internal */
+export function useObserver (): { observe: ObserveFn } | undefined {
   if (import.meta.server) { return }
 
   const nuxtApp = useNuxtApp()
@@ -648,7 +655,8 @@ function useObserver (): { observe: ObserveFn } | undefined {
 }
 
 const IS_2G_RE = /2g/
-function isSlowConnection () {
+/** @internal */
+export function isSlowConnection () {
   if (import.meta.server) { return }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection

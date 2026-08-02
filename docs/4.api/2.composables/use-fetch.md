@@ -170,6 +170,7 @@ type UseFetchOptions<ResT, DataT = ResT> = {
   dedupe?: 'cancel' | 'defer'
   timeout?: number
   enabled?: MaybeRefOrGetter<boolean>
+  serialize?: boolean
   default?: () => DataT | Ref<DataT>
   transform?: (input: ResT) => DataT | Promise<DataT>
   pick?: string[]
@@ -229,6 +230,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `deep` :badge[v3.8]{color="info" size="xs" class="align-middle"}          | `boolean`                                                               | `false`    | Return data in a deep ref object. Defaults to `false` for improved performance (shallow ref object).                                                                                                                                                                               |
 | `dedupe` :badge[v3.9]{color="info" size="xs" class="align-middle"}        | `'cancel' \| 'defer'`                                                   | `'cancel'` | Avoid fetching same key more than once at a time.                                                                                                                                                                                                                                  |
 | `enabled` :badge[v4.5]{color="info" size="xs" class="align-middle"}       | `boolean`                                                               | `true`     | Barrier that gates whether the request may run. While `false`, every execution is blocked (initial fetch, `execute`/`refresh`, and watch triggers), and switching `true` → `false` cancels any in-flight request without clearing `data`. Re-enabling does not refetch on its own. |
+| `serialize` :badge[v4.6]{color="info" size="xs" class="align-middle"}     | `boolean`                                                               | `true`     | Whether to store resolved data in the Nuxt payload (`__NUXT_DATA__`). When `false`, server-fetched data is kept out of the payload and the client will refetch after hydration if a component renders it. Pair with [lazy hydration](/docs/4.x/guide/best-practices/performance#lazy-hydration) to avoid hydration mismatches and unnecessary client fetches. |
 | `$fetch` :badge[v3.2]{color="info" size="xs" class="align-middle"}        | `typeof globalThis.$fetch`                                              | -          | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/4.x/guide/recipes/custom-usefetch)                                                                                                                                                                               |
 
 ::note

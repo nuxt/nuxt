@@ -37,7 +37,6 @@
     "std-env": "catalog:build"
   },
   "devDependencies": {
-    "@nuxt/ui-templates": "workspace:*",
     "@types/pug": "catalog:dev",
     "@types/webpack-bundle-analyzer": "catalog:dev",
     "@types/webpack-hot-middleware": "catalog:dev",
