@@ -412,6 +412,15 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                 }
                 throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
               }) as Exclude<FetchResult, { cache: true }>
+            // Attach the sourcemap from the module graph so vite-node can use it.
+            if (response && !response.map) {
+              const graph = ssrServer.environments.ssr.moduleGraph
+              const mod = graph.getModuleById(request.payload.moduleId)
+                       || graph.fileToModulesMap.get(request.payload.moduleId)?.values().next().value
+              if (mod?.transformResult?.map) {
+                response.map = mod.transformResult.map as FetchResult['map']
+              }
+            }
             sendResponse<typeof request.type>(socket, request.id, response)
             return
           }
