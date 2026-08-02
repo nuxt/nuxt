@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
@@ -262,7 +262,7 @@ export const schemaNodeTemplate: NuxtTemplate = {
       if (!keepExtension) {
         return specifier.replace(IMPORT_NAME_RE, '')
       }
-      if (IMPORT_NAME_RE.test(specifier) || (name[0] !== '.' && name[0] !== '/')) {
+      if (IMPORT_NAME_RE.test(specifier) || (name[0] !== '.' && !isAbsolute(name))) {
         return specifier
       }
       // A module registered by an aliased or extensionless path is recorded without one
