@@ -683,6 +683,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const hasParallelPlugins = ${pluginsRunInParallel}`,
       `export const hasPluginHooks = ${pluginsHaveHooks}`,
       `export const hasIslandOptOutPlugins = ${pluginsHaveIslandOptOut}`,
+      `export const onigiriEnabled = ${ctx.nuxt.options.experimental.componentIslands === 'vue-onigiri'}`,
     ].join('\n\n')
   },
 }

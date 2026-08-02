@@ -3,7 +3,7 @@ import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMount
 import { debounce } from 'perfect-debounce'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
-import { joinURL, withQuery } from 'ufo'
+import { joinURL } from 'ufo'
 import { renderOnigiri } from 'vue-onigiri/runtime/deserialize'
 import type { ImportFn } from 'vue-onigiri/runtime/utils'
 // @ts-expect-error virtual file
@@ -16,6 +16,7 @@ import { injectHead } from '../composables/head'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
 
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
+import { $fetch } from '#build/fetch'
 
 const pKey = '_islandPromises'
 let id = 1
@@ -152,7 +153,7 @@ const NuxtIsland = defineComponent({
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
 
-      if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
+      if (!force && nuxtApp.payload.data[key]?.ast) { return nuxtApp.payload.data[key] }
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
@@ -160,15 +161,22 @@ const NuxtIsland = defineComponent({
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
-      const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
-        ...props.context,
-        props: props.props ? serializedProps.value : undefined,
-      }))
+      // $fetch handles `app.baseURL` for relative URLs
+      const r = await $fetch.raw<NuxtIslandResponse>(url, {
+        // custom island sources should not be resolved against `app.baseURL` (#23093)
+        ...(props.source ? { baseURL: '' } : {}),
+        query: {
+          ...props.context,
+          props: props.props ? serializedProps.value : undefined,
+        },
+        responseType: 'json',
+        ignoreResponseError: true,
+      })
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
-        const result = await r.json()
+        const result = r._data!
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')

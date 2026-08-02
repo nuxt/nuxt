@@ -1,6 +1,7 @@
 import { defineComponent, getCurrentInstance, h, ref } from 'vue'
 import type { DefineSetupFnComponent } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
+import NuxtIslandOnigiri from '#app/components/nuxt-island-onigiri'
 import { useRoute } from '#app/composables/router'
 import { isPrerendered, shouldLoadPayload } from '#app/composables/payload'
 import { createError, showError } from '#app/composables/error'
@@ -10,7 +11,7 @@ import { getIslandHash } from '#app/island-hash'
 import type { NuxtIslandResponse } from '#app/types'
 import { $fetch } from '#build/fetch'
 import { payloadExtraction } from '#build/nuxt.config.mjs'
-
+import { onigiriEnabled } from '#build/nuxt.config.mjs'
 interface ServerComponentProps {
   lazy?: boolean
 }
@@ -38,7 +39,7 @@ export const createServerComponent = (name: string): ServerComponentType => {
       })
 
       return () => {
-        return h(NuxtIsland, {
+        return h(onigiriEnabled ? NuxtIslandOnigiri : NuxtIsland, {
           name,
           lazy: props.lazy,
           props: attrs,
@@ -70,7 +71,7 @@ export const createIslandPage = (name: string, islandKey?: string): IslandPageTy
       const path = import.meta.client && await isPrerendered(route.path) ? route.path : route.fullPath.replace(/#.*$/, '')
       return () => {
         return h('div', [
-          h(NuxtIsland, {
+          h(onigiriEnabled ? NuxtIslandOnigiri : NuxtIsland, {
             name: `page_${name}`,
             lazy: props.lazy,
             ref: islandRef,
