@@ -189,9 +189,10 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     // `applyToEnvironment` at the wrapper's own position, so plugins declaring different
     // `enforce` values need a wrapper each to keep their requested ordering.
     const defaultEnforce = options?.prepend ? 'pre' : 'post'
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     for (const [enforce, plugins] of groupByEnforce(plugin, defaultEnforce)) {
       const pluginName = plugins.map(p => p.name).join('|')
-      config.plugins.push({
+      config.plugins[method]({
         name: `${pluginName}:wrapper`,
         enforce,
         applyToEnvironment (environment) {
