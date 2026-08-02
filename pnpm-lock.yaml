@@ -1106,9 +1106,6 @@ importers:
       magic-string:
         specifier: catalog:vite
         version: 1.1.0
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       nanotar:
         specifier: catalog:build
         version: 0.3.0
