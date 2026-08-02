@@ -16,7 +16,10 @@
     "nuxt": "bin/nuxt.mjs"
   },
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "types": "./types.dev.d.ts",
+      "default": "./src/index.ts"
+    },
     "./config": {
       "types": "./config.d.ts",
       "import": "./config.js",
