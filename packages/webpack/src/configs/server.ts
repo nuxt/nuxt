@@ -1,6 +1,5 @@
 import { isAbsolute, normalize, resolve } from 'pathe'
-import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
-import { parseNodeModulePath } from 'mlly'
+import { directoryToURL, logger, parseNodeModulePath, resolveAlias } from '@nuxt/kit'
 import { resolveModulePath } from 'exsolve'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'

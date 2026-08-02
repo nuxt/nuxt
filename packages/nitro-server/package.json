@@ -51,7 +51,6 @@
     "klona": "catalog:app-runtime",
     "lru-cache": "catalog:nitro-runtime",
     "magic-string": "catalog:vite",
-    "mlly": "catalog:build",
     "mocked-exports": "catalog:build",
     "nitro": "catalog:nitro-runtime",
     "nostics": "catalog:app-runtime",

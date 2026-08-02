@@ -816,9 +816,6 @@ importers:
       klona:
         specifier: catalog:build
         version: 2.0.6
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       nostics:
         specifier: catalog:build
         version: 1.2.0
@@ -877,12 +874,21 @@ importers:
       jiti:
         specifier: catalog:build
         version: 2.7.0
+      mlly:
+        specifier: catalog:build
+        version: 1.8.2
       nitro:
         specifier: catalog:nitro-runtime
         version: 3.0.260610-beta(patch_hash=9273407579edf95350876c36b226440ebe6482463a007ad87c2f535365e21162)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.3)(vite@8.1.5)
       nitropack:
         specifier: catalog:dev
         version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@rspack/core@2.1.5(@swc/helpers@0.5.23))(oxc-parser@0.141.0)(rolldown@1.1.5)(srvx@0.12.4)(supports-color@10.2.2)(vite@8.1.5)(webpack@5.109.0(cssnano@8.0.2(postcss@8.5.23))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23))
+      oxc-parser:
+        specifier: 0.141.0
+        version: 0.141.0
+      rolldown:
+        specifier: 1.1.5
+        version: 1.1.5
       tsdown:
         specifier: catalog:dev
         version: 0.22.14(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.3.1)(@volar/typescript@2.4.28)(oxc-resolver@11.24.2)(publint@0.3.21)(typescript@7.0.2)(vue-tsc@3.3.8(typescript@7.0.2))
@@ -949,9 +955,6 @@ importers:
       magic-string:
         specifier: catalog:vite
         version: 1.1.0
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
@@ -1106,9 +1109,6 @@ importers:
       magic-string:
         specifier: catalog:vite
         version: 1.1.0
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       nanotar:
         specifier: catalog:build
         version: 0.3.0
@@ -1293,9 +1293,6 @@ importers:
       mini-css-extract-plugin:
         specifier: catalog:webpack
         version: 2.10.2(webpack@5.109.0(cssnano@8.0.2(postcss@8.5.23))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23))
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -1601,9 +1598,6 @@ importers:
       knitwork:
         specifier: catalog:build
         version: 1.3.0
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
@@ -1743,9 +1737,6 @@ importers:
       mini-css-extract-plugin:
         specifier: catalog:webpack
         version: 2.10.2(webpack@5.109.0(cssnano@8.0.2(postcss@8.5.23))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23))
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       nuxt:
         specifier: workspace:*
         version: link:../nuxt

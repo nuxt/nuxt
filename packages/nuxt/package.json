@@ -109,7 +109,6 @@
     "klona": "catalog:app-runtime",
     "knitwork": "catalog:build",
     "magic-string": "catalog:vite",
-    "mlly": "catalog:build",
     "nanotar": "catalog:build",
     "nostics": "catalog:app-runtime",
     "object-identity": "catalog:app-runtime",
