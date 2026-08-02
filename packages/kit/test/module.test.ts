@@ -490,6 +490,17 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     await writeFile(join(throwingModule, 'package.json'), JSON.stringify({ name: 'throwing-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(throwingModule, 'index.js'), `throw new Error('boom from inside the module')\n`)
 
+    // records each evaluation before throwing, so a retry through another loader is observable
+    const sideEffectModule = join(tempDir, 'node_modules/side-effect-module')
+    await mkdir(sideEffectModule, { recursive: true })
+    await writeFile(join(sideEffectModule, 'package.json'), JSON.stringify({ name: 'side-effect-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(sideEffectModule, 'index.js'), [
+      `import { appendFileSync } from 'node:fs'`,
+      `appendFileSync(${JSON.stringify(join(tempDir, 'evaluations'))}, 'evaluated\\n')`,
+      `throw new Error('boom after a side effect')`,
+      ``,
+    ].join('\n'))
+
     // entrypoint imports a dependency that does not exist
     const brokenDepModule = join(tempDir, 'node_modules/broken-dep-module')
     await mkdir(brokenDepModule, { recursive: true })
@@ -545,6 +556,15 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect(error.message).toMatch(/An error occurred while importing the module/)
     expect(error.message).not.toMatch(/may not be installed/)
     expect((error.cause as Error)?.message).toMatch(/boom from inside the module/)
+  })
+
+  it('evaluates a module that throws at its top level only once', async () => {
+    const error = await loadError('side-effect-module')
+    expect(error.message).toMatch(/boom after a side effect/)
+    expect(error.message).not.toMatch(/jiti/)
+
+    const evaluations = await readFile(join(tempDir, 'evaluations'), 'utf8')
+    expect(evaluations.trim().split('\n')).toHaveLength(1)
   })
 
   it('surfaces a missing sub-dependency rather than reporting the module as missing', async () => {

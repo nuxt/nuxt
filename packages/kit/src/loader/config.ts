@@ -14,7 +14,7 @@ import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { directoryToURL } from '../internal/esm.ts'
-import { loadJiti } from '../internal/jiti.ts'
+import { isLoaderError, loadJiti } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
@@ -155,8 +155,6 @@ const REMOTE_SOURCE_RE = /^(?:gh|github|gitlab|bitbucket):|^https?:\/\//
  * `package.json` with a git URL, which pins it and records it in the lockfile.
  */
 async function assertRemoteLayerSupport (source: string, rootDir: string) {
-  // Resolved exactly as the config loader will resolve it, so this never reports a problem the
-  // loader would not have hit
   if (!await import('giget').then(() => true, () => false)) {
     throw configDiagnostics.NUXT_B5018({
       source,
@@ -214,7 +212,15 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // with an install command. Resolved once per load, so a project without `jiti` is asked at most
   // once however many layers it has.
   let jitiPromise: Promise<Jiti | undefined> | undefined
+  // Set once the runtime has turned a config file down. Every later layer in the same load is
+  // likely to be written the same way, so go straight to jiti rather than paying a failed import
+  // for each one
+  let jitiImporter: ((id: string) => Promise<unknown>) | undefined
+
   const importConfigFile = async (id: string) => {
+    if (jitiImporter) {
+      return jitiImporter(id)
+    }
     // `c12` appends a counter to defeat the module cache, so that repeated loads in dev pick up
     // edits to a config file; this has to do the same
     const url = pathToFileURL(id)
@@ -222,6 +228,11 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     try {
       return await import(url.href)
     } catch (error) {
+      // A config file that threw while it was running has already had whatever effect it had, and
+      // jiti would only run it a second time and report its own error in place of the author's
+      if (!isLoaderError(error)) {
+        throw error
+      }
       jitiPromise ??= loadJiti({ rootDir: rootCwd }).then(mod => mod?.createJiti(join(rootCwd, 'nuxt.config'), {
         interopDefault: true,
         moduleCache: false,
@@ -236,7 +247,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
           cause: error,
         })
       }
-      return jiti.import(id)
+      jitiImporter = id => jiti.import(id)
+      return jitiImporter(id)
     }
   }
 

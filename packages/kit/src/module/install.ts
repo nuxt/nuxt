@@ -14,7 +14,7 @@ import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
-import { loadJiti } from '../internal/jiti.ts'
+import { isLoaderError, loadJiti } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
@@ -320,7 +320,8 @@ function describeNativeImportFailure (error: unknown): string {
     case 'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX': {
       return 'The runtime erases type annotations but cannot compile TypeScript syntax that emits code, such as `enum`, `namespace`, decorators or constructor parameter properties. Replace it with erasable syntax.'
     }
-    case 'ERR_MODULE_NOT_FOUND': {
+    case 'ERR_MODULE_NOT_FOUND':
+    case 'ERR_UNSUPPORTED_DIR_IMPORT': {
       return 'A specifier could not be resolved. Relative imports need an explicit file extension (`./foo.ts`, not `./foo`), and aliases such as `~/` are not resolved outside the bundler.'
     }
     default: {
@@ -372,9 +373,13 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   try {
     resolvedNuxtModule = await import(src).then(r => interopDefault(r))
   } catch (nativeError: unknown) {
-    // The runtime loads TypeScript directly, so reaching here means something it cannot handle:
-    // syntax that is not erasable, a file under `node_modules`, or an unresolved specifier.
-    // Retry through jiti if it is available.
+    // A module that threw while it was running has already had whatever effect it had, and jiti
+    // would only run it a second time and report its own error in place of the author's
+    if (!isLoaderError(nativeError)) {
+      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError })
+    }
+    // Otherwise the runtime declined to load the file: syntax that is not erasable, a file under
+    // `node_modules`, or an unresolved specifier. Retry through jiti if it is available.
     const jiti = await getSharedJiti(nuxt)
     if (!jiti) {
       throw kitDiagnostics.NUXT_B8020({

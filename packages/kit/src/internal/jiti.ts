@@ -7,6 +7,30 @@ import { ensureDependencyInstalled } from '../dependency.ts'
 export type Jiti = ReturnType<typeof import('jiti')['createJiti']>
 type JitiModule = typeof import('jiti')
 
+// Errors the runtime raises when it declines to load a file, as opposed to errors the file itself
+// raises once it is running. Only the former are worth retrying through jiti.
+const LOADER_ERROR_CODES = new Set([
+  'ERR_MODULE_NOT_FOUND',
+  'ERR_UNKNOWN_FILE_EXTENSION',
+  'ERR_UNSUPPORTED_DIR_IMPORT',
+  'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING',
+  'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX',
+  'ERR_REQUIRE_ESM',
+])
+
+/**
+ * Whether a failed `import()` failed because the runtime would not load the file, rather than
+ * because the file threw once it was running.
+ */
+export function isLoaderError (error: unknown): boolean {
+  // a file that fails to parse never ran, so it is always safe to hand to jiti
+  if (error instanceof SyntaxError) {
+    return true
+  }
+  const code = (error as { code?: unknown } | undefined)?.code
+  return typeof code === 'string' && LOADER_ERROR_CODES.has(code)
+}
+
 export interface LoadJitiOptions {
   /** Project root, used to look for a project-level `jiti` and to run the install in. */
   rootDir: string
@@ -102,5 +126,11 @@ function resolveFromProject (options: LoadJitiOptions): string | undefined {
   }
   // `resolveModulePath` follows the specifier as written, so a `nuxt` reached through a symlinked
   // `node_modules` entry has to be realpath'd before its own dependencies are visible
-  return resolveModulePath('jiti', { from: pathToFileURL(realpathSync(nuxt)), try: true })
+  let realNuxt: string
+  try {
+    realNuxt = realpathSync(nuxt)
+  } catch {
+    return undefined
+  }
+  return resolveModulePath('jiti', { from: pathToFileURL(realNuxt), try: true })
 }

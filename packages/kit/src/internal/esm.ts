@@ -5,6 +5,7 @@ import { resolveModulePath } from 'exsolve'
 import { getUserCaller, warn } from './trace.ts'
 import { resolveAlias } from '../resolve.ts'
 import { tryUseNuxt } from '../context.ts'
+import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export interface ResolveModuleOptions {
@@ -94,7 +95,7 @@ function requireJiti (): typeof import('jiti') {
     const rootDir = tryUseNuxt()?.options.rootDir
     const path = rootDir && resolveModulePath('jiti', { from: directoryToURL(rootDir), try: true })
     if (!path) {
-      throw error
+      throw kitDiagnostics.NUXT_B8021({ cause: error })
     }
     return require(path) as typeof import('jiti')
   }
