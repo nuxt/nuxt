@@ -1,5 +1,7 @@
 import { HTTPError, defineEventHandler } from 'nitro/h3'
 import { useRuntimeConfig } from 'nitro/runtime-config'
+
+import '../context'
 import { serverFetch } from 'nitro'
 
 const config = useRuntimeConfig()

@@ -162,38 +162,36 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       name: 'nuxt',
       version: nuxtPkg.version || nitroBuilder.version,
     },
-    imports: nuxt.options.experimental.nitroAutoImports === false
-      ? false
-      : {
-          autoImport: nuxt.options.imports.autoImport as boolean,
-          dirs: [...importDirs],
-          presets: nuxt.options.experimental.nitroAutoImports
-            ? [
-                ...v2ImportsPreset,
-                await getH3ImportsPreset(),
-              ]
-            : [],
-          imports: [
-            {
-              as: '__buildAssetsURL',
-              name: 'buildAssetsURL',
-              from: resolve(distDir, 'runtime/utils/paths'),
-            },
-            {
-              as: '__publicAssetsURL',
-              name: 'publicAssetsURL',
-              from: resolve(distDir, 'runtime/utils/paths'),
-            },
-            {
-              // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
-              as: 'defineAppConfig',
-              name: 'defineAppConfig',
-              from: resolve(distDir, 'runtime/utils/config'),
-              priority: -1,
-            },
-          ],
-          exclude: [...excludePattern, /[\\/]\.git[\\/]/],
+    imports: {
+      autoImport: nuxt.options.imports.autoImport as boolean,
+      dirs: [...importDirs],
+      presets: nuxt.options.experimental.nitroAutoImports
+        ? [
+            ...v2ImportsPreset,
+            await getH3ImportsPreset(),
+          ]
+        : [],
+      imports: [
+        {
+          as: '__buildAssetsURL',
+          name: 'buildAssetsURL',
+          from: resolve(distDir, 'runtime/utils/paths'),
         },
+        {
+          as: '__publicAssetsURL',
+          name: 'publicAssetsURL',
+          from: resolve(distDir, 'runtime/utils/paths'),
+        },
+        {
+          // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
+          as: 'defineAppConfig',
+          name: 'defineAppConfig',
+          from: resolve(distDir, 'runtime/utils/config'),
+          priority: -1,
+        },
+      ],
+      exclude: [...excludePattern, /[\\/]\.git[\\/]/],
+    },
     // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
     scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: {

@@ -2,6 +2,7 @@ import type { H3Event } from 'nitro/h3'
 import { klona } from 'klona'
 import type { AppConfig } from '@nuxt/schema'
 
+import '../context'
 import _inlineAppConfig from '#internal/nuxt/app-config'
 
 // App config
