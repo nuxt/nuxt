@@ -17,6 +17,7 @@ import { traceAsync } from './internal/tracing'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
+import type { PendingViewTransition } from './view-transitions'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 import { appDiagnostics } from './diagnostics/core'
@@ -164,6 +165,9 @@ interface _NuxtApp {
   '~transitionPromise'?: Promise<void>
   /** @internal */
   '~transitionFinish'?: () => void
+
+  /** @internal */
+  '_pendingViewTransition'?: PendingViewTransition
 
   /** @internal */
   '_announcer'?: NuxtAnnouncer
