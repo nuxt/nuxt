@@ -30,7 +30,7 @@
     "consola": "^3.4.2",
     "defu": "^6.1.7",
     "destr": "^2.0.5",
-    "devalue": "^5.8.2",
+    "devalue": "^5.9.0",
     "errx": "^0.1.2",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.1.1",
