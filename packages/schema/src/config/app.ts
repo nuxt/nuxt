@@ -21,6 +21,13 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+    optionsApi: {
+      async $resolve (val, get) {
+        if (typeof val === 'boolean') { return val }
+        // Options API support is compiled out of the client bundle from v5 onwards.
+        return (await get('future.compatibilityVersion')) < 5
+      },
+    },
     propsDestructure: true,
 
     config: {},
@@ -36,10 +43,9 @@ export default defineResolvers({
     },
     buildAssetsDir: {
       $resolve: (val) => {
-        if (typeof val === 'string') {
-          return val
-        }
-        return process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+        const dir = typeof val === 'string' ? val : (process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/')
+        // normalised so consumers can compare it directly against request paths
+        return dir.replace(/^\/?/, '/').replace(/\/?$/, '/')
       },
     },
 

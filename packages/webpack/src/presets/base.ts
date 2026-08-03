@@ -1,12 +1,11 @@
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, normalize, resolve } from 'pathe'
-import { parseNodeModulePath } from 'mlly'
 import { resolveModulePath } from 'exsolve'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
-import { directoryToURL, logger } from '@nuxt/kit'
+import { DEFAULT_JS_FILE_EXTENSIONS, directoryToURL, logger, parseNodeModulePath } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
@@ -20,7 +19,7 @@ import { applyPresets, fileName } from '../utils/config.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
 import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
-import { WebpackBarPlugin, builder, webpack } from '#builder'
+import { WebpackBarPlugin, builder, webpack } from '../builder.ts'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
@@ -223,7 +222,7 @@ function baseResolve (ctx: WebpackConfigContext) {
   }
 
   ctx.config.resolve = {
-    extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
+    extensions: ['.wasm', ...DEFAULT_JS_FILE_EXTENSIONS, '.json', '.vue'],
     alias: ctx.alias,
     modules: resolveModules,
     fullySpecified: false,

@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { RouteLocationRaw } from 'vue-router'
 
@@ -150,6 +150,52 @@ describe('page loading indicator', () => {
     customProp.value = true
     await nextTick(() => new Promise(r => setTimeout(r, 0))) // wait for page rerender
     await expectNavigatesWithLoading('/page-load-hook/other-slug')
+
+    el.unmount()
+  })
+
+  it('should trigger page:loading:end only once', async () => {
+    const el = await mountSuspended({ setup: () => () => h('div', [h(NuxtLoadingIndicator), h(NuxtPage)]) })
+    await flushPromises()
+
+    let stoppedLoading = 0
+    nuxtApp.hook('page:loading:end', () => { stoppedLoading++ })
+
+    await navigateTo('/page-load-hook')
+    await vi.waitFor(() => { if (!resolve) { throw new Error('page not loading yet') } })
+    resolve!()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:loading:end', () => { resolve() }))
+      .then(() => new Promise(r => setTimeout(r, 10)))
+
+    expect(stoppedLoading).toBe(1)
+
+    el.unmount()
+  })
+
+  it('should hide nuxt page load indicator after navigate back from nested page', async () => {
+    const router = useRouter()
+    const el = await mountSuspended({ setup: () => () => h('div', [h(NuxtLoadingIndicator), h(NuxtPage)]) })
+    await flushPromises()
+
+    const getLoadingIndicator = () => el.getComponent('.nuxt-loading-indicator')
+
+    async function expectLoadingCycle (navigate: () => unknown) {
+      resolve = undefined
+      navigate()
+      await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:loading:start', () => { resolve() }))
+      await nextTick()
+      expect(getLoadingIndicator().attributes().style).toContain('opacity: 1;')
+
+      await vi.waitFor(() => { if (!resolve) { throw new Error('page not loading yet') } })
+      resolve!()
+      await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:loading:end', () => { resolve() }))
+        .then(() => new Promise(r => setTimeout(r, 0)))
+      expect(getLoadingIndicator().attributes().style).toContain('opacity: 0;')
+    }
+
+    await expectLoadingCycle(() => navigateTo('/page-load-hook'))
+    await expectLoadingCycle(() => navigateTo('/page-load-hook/subpage'))
+    await expectLoadingCycle(() => router.back())
 
     el.unmount()
   })

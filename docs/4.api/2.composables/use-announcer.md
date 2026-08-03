@@ -1,7 +1,7 @@
 ---
 title: 'useAnnouncer'
 description: A composable for announcing messages to screen readers.
-minimalVersion: "3.17"
+minimalVersion: "4.4"
 links:
   - label: Source
     icon: i-simple-icons-github

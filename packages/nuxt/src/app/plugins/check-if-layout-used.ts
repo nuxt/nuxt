@@ -3,7 +3,7 @@ import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
 import { useError } from '../composables/error'
-import { renderDiagnostics } from '../diagnostics/render.ts'
+import { renderDiagnostics } from '../diagnostics/render'
 
 import layouts from '#build/layouts'
 

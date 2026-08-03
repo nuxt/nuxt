@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { join } from 'pathe'
-import { projectSuffix, runsOnceInMatrix } from './matrix'
+import { isBuilt, projectSuffix, runsOnceInMatrix } from './matrix'
 
 describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/inline-styles', import.meta.url))
@@ -29,6 +29,15 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
 
     const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
     expect(cssLinks, page).toEqual([])
+  })
+
+  // https://github.com/nuxt/nuxt/issues/35715
+  it.runIf(isBuilt)('inline entry component CSS including not rendered in SSR', async () => {
+    const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
+    expect(html).toContain('--inline-some-component-token:some-component')
+
+    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    expect(cssLinks).toEqual([])
   })
 
   // https://github.com/nuxt/nuxt/issues/35255
@@ -81,5 +90,26 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     expect(html).toContain(token)
     const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
     expect(cssLinks).toEqual([])
+  })
+  // https://github.com/nuxt/nuxt/issues/35591
+  it('inlined SSR CSS class names match rendered markup when generateScopedName is a string pattern', async () => {
+    const html = await readFile(join(outputDir, 'public', 'css-modules-scoped/index.html'), 'utf-8')
+
+    const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
+    const rule = inlinedStyles.match(/\.([\w-]+)\s*\{[^}]*--inline-css-modules-scoped-token:\s*css-modules-scoped[^}]*\}/)
+    expect(rule, 'CSS module rule was not inlined into the SSR response').toBeTruthy()
+
+    const scopedClass = rule![1]!
+    const markupClasses = new Set([...html.matchAll(/\bclass="([^"]+)"/g)].flatMap(m => m[1]!.split(/\s+/)))
+    expect(markupClasses).toContain(scopedClass)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/29232
+  it('SSR inline styles are transformed by Vite plugins for custom style attributes', async () => {
+    const html = await readFile(join(outputDir, 'public', 'custom-layout/index.html'), 'utf-8')
+
+    const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
+    expect(inlinedStyles).toContain('--inline-custom-layout-token:custom-layout')
+    expect(inlinedStyles).toMatch(/\.xs\s*(?:\{\s*)?\.layout-container/)
   })
 })

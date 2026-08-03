@@ -159,7 +159,7 @@ interface PageMeta {
 
     Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/4.x/directory-structure/app/pages/#typing-custom-metadata).
 
-## Examples
+## Example
 
 ### Basic Usage
 

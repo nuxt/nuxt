@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { relative, resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
 import { schemaDiagnostics } from '../diagnostics.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export default defineResolvers({
   vite: {
@@ -14,7 +15,9 @@ export default defineResolvers({
     define: {
       $resolve: async (_val, get) => {
         const [isDev, isTest, isDebug] = await Promise.all([get('dev'), get('test'), get('debug')])
+        const optionsApi = (await get('vue')).optionsApi
         return {
+          '__VUE_OPTIONS_API__': Boolean(optionsApi),
           '__VUE_PROD_DEVTOOLS__': false,
           '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(isDebug && (isDebug === true || isDebug.hydration)),
           'process.dev': isDev,
@@ -26,7 +29,7 @@ export default defineResolvers({
       },
     },
     resolve: {
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
+      extensions: [...DEFAULT_JS_FILE_EXTENSIONS, '.vue', '.json'],
     },
     publicDir: {
       $resolve: (val) => {

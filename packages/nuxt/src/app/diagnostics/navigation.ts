@@ -1,5 +1,5 @@
 import { defineDiagnostics, defineProdDiagnostics } from 'nostics'
-import { docsBase, prodReporters, reporters } from './_shared.ts'
+import { docsBase, prodReporters, reporters } from './_shared'
 
 /**
  * E2xxx

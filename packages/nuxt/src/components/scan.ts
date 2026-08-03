@@ -6,7 +6,7 @@ import { componentDiagnostics, isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 
 import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
-import { resolveToAlias } from '../utils.ts'
+import { linkToAlias, resolveToAlias } from '../utils.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
@@ -102,7 +102,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const pascalName = pascalCase(componentNameSegments)
 
       if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
-        componentDiagnostics.NUXT_B3009({ component: pascalName, filePath })
+        componentDiagnostics.NUXT_B3009({ component: pascalName, filePath: linkToAlias(filePath) })
       }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
@@ -142,7 +142,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        componentDiagnostics.NUXT_B3010({ filePath: resolveToAlias(filePath) })
+        componentDiagnostics.NUXT_B3010({ filePath: linkToAlias(filePath) })
         continue
       }
 
@@ -182,7 +182,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  componentDiagnostics.NUXT_B3011({ component: componentName, filePath, duplicatePath })
+  componentDiagnostics.NUXT_B3011({ component: componentName, filePath: linkToAlias(filePath), duplicatePath: linkToAlias(duplicatePath) })
 }
 
 const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/
