@@ -564,7 +564,7 @@ importers:
         specifier: ^0.142.0
         version: 0.142.0
       oxc-walker:
-        specifier: 1.0.0
+        specifier: ^1.0.0
         version: 1.0.0(@rspack/core@1.7.12)(esbuild@0.28.1)(oxc-parser@0.142.0)(rolldown@1.2.1)(rollup@4.62.4)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
       pathe:
         specifier: ^2.0.3
