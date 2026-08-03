@@ -104,5 +104,20 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check the module\'s install/upgrade hook implementation, or report this issue to the module author.',
       docs: false,
     },
+    NUXT_B8020: {
+      why: (p: { module: string, error: string }) => `The module \`${p.module}\` could not be loaded: ${p.error}`,
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      docs: false,
+    },
+    NUXT_B8022: {
+      why: (p: { specifiers: string }) => `Scanning a module for its export names needs a parser (\`${p.specifiers}\`), and neither could be loaded.`,
+      fix: 'Add `oxc-parser` to your project; every supported version of Nuxt already ships a package that can be used here.',
+      docs: false,
+    },
+    NUXT_B8021: {
+      why: 'The deprecated `requireModule` helper needs `jiti`, which is an optional peer dependency and is not installed.',
+      fix: 'Use `importModule` instead, which loads the file with the runtime\'s own loader. If the calling code cannot be made async, add `jiti` to your project.',
+      docs: false,
+    },
   },
 })

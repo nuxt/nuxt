@@ -43,6 +43,9 @@ export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
+export type { ResolveTypePathsOptions } from './types.ts'
+export { recoverThrottledChanges } from './watch.ts'
+export type { RecoverableWatcher } from './watch.ts'
 export { logger, useLogger } from './logger.ts'
 
 // Build-time diagnostics catalogs (split by domain; imported directly, no barrel).
@@ -66,3 +69,13 @@ export type { EnsureDependencyInstalledOptions } from './dependency.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { directoryToURL, resolveModule, tryResolveModule, importModule, tryImportModule, requireModule, tryRequireModule } from './internal/esm.ts'
 export type { ImportModuleOptions, ResolveModuleOptions } from './internal/esm.ts'
+
+/** @internal */
+export { parseNodeModulePath } from './internal/node-module.ts'
+export type { ParsedNodeModulePath } from './internal/node-module.ts'
+/** @internal */
+export { resolveModuleExportNames } from './internal/exports.ts'
+export type { ResolveModuleExportNamesOptions } from './internal/exports.ts'
+
+/** @internal */
+export { loadJiti } from './internal/jiti.ts'

@@ -47,7 +47,6 @@
     "@vue/compiler-sfc": "catalog:vue",
     "@vue/language-core": "catalog:dev",
     "autoprefixer": "catalog:build",
-    "c12": "catalog:build",
     "chokidar": "catalog:build",
     "compatx": "catalog:build",
     "css-minimizer-webpack-plugin": "catalog:webpack",

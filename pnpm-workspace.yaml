@@ -11,6 +11,8 @@ packages:
 patchedDependencies:
   changelogen: patches/changelogen.patch
   nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
+  # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
+  nitropack@2.13.4: patches/nitropack@2.13.4.patch
 
 publicHoistPattern:
   - '*-loader'
@@ -27,6 +29,8 @@ overrides:
   "@nuxt/schema": "workspace:*"
   nuxt: "workspace:*"
   oxc-parser: "0.141.0"
+  # TODO: nitro depends on `rolldown: ^1.1.0`, and pulls in a second copy
+  rolldown: "1.1.5"
   vite: "8.1.5"
   vue: "3.5.40"
 
@@ -53,6 +57,7 @@ minimumReleaseAgeExclude:
   - '@unhead/vue@3.2.1'
   - unhead@3.2.1
   - impound@1.1.6
+  - oxc-walker@1.1.1
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
@@ -102,8 +107,9 @@ catalogs:
   # vite/rolldown/oxc toolchain
   vite:
     magic-string: ^1.1.0
-    oxc-walker: ^1.0.0
-    rolldown: ^1.2.0
+    oxc-walker: ^1.1.1
+    # needs to match vite's own `~1.1.5` pin
+    rolldown: ~1.1.5
     rolldown-string: ^0.3.1
     # resolution is pinned via the vite override above
     vite: ^8.1.5
@@ -143,18 +149,22 @@ catalogs:
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.40
     autoprefixer: ^10.5.4
-    c12: ^3.3.4
+    c12: 4.0.0-beta.5
     chokidar: ^5.0.0
+    clickable-path: ^0.0.1
     compatx: ^0.2.0
+    confbox: ^0.2.4
     consola: ^3.4.2
     cssnano: ^8.0.2
     defu: ^6.1.7
     destr: ^2.0.5
+    dotenv: ^17.4.2
     errx: ^0.1.2
     escape-string-regexp: ^5.0.0
     exsolve: ^1.1.1
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
+    giget: ^3.3.0
     ignore: ^7.0.6
     impound: ^1.1.6
     jiti: ^2.7.0
@@ -168,6 +178,7 @@ catalogs:
     nypm: ^0.6.8
     ohash: ^2.0.11
     on-change: ^6.0.2
+    oxc-parser: ^0.141.0
     pathe: ^2.0.3
     picomatch: ^4.0.5
     pkg-types: ^2.3.1

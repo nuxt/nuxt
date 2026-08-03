@@ -1,4 +1,4 @@
-import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
+import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 
 // Regression for https://github.com/nuxt/nuxt/issues/30435: when every CSS
 // module bundled into a chunk's CSS asset has also been inlined as a `<style>`

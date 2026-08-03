@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
@@ -253,7 +253,30 @@ export const schemaNodeTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
-    const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
+    // The `node` environment resolves as `nodenext` from v5, which will not retry extensions for
+    // a path that does not name a file, so a module's own entry has to be named in full.
+    const keepExtension = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
+    const moduleExtensions = [...nuxt.options.extensions, '.mjs', '.cjs']
+    const getImportName = (name: string) => {
+      const specifier = name[0] === '.' ? './' + join(relativeRoot, name) : name
+      if (!keepExtension) {
+        return specifier.replace(IMPORT_NAME_RE, '')
+      }
+      if (IMPORT_NAME_RE.test(specifier) || (name[0] !== '.' && !isAbsolute(name))) {
+        return specifier
+      }
+      // A module registered by an aliased or extensionless path is recorded without one
+      const absolutePath = resolve(nuxt.options.rootDir, name)
+      for (const extension of moduleExtensions) {
+        if (existsSync(absolutePath + extension)) {
+          return specifier + extension
+        }
+        if (existsSync(join(absolutePath, 'index' + extension))) {
+          return specifier + '/index' + extension
+        }
+      }
+      return specifier
+    }
 
     const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
     for (const m of nuxt.options._installedModules) {

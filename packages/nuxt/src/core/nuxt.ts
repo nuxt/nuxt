@@ -6,7 +6,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
-import type { LoadNuxtOptions } from '@nuxt/kit'
+import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -22,6 +22,7 @@ import { coerce, satisfies } from 'verkit'
 import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
+import { link } from 'clickable-path'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 
 import { installNuxtModule } from '../core/features.ts'
@@ -37,7 +38,7 @@ import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
-import { logger } from '../utils.ts'
+import { linkToAlias, logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
@@ -300,6 +301,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
+  let nodePaths: Record<string, [string]> | undefined
   const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
     paths ||= await resolveTypescriptPaths(nuxt)
     nitroConfig.typescript = defu(nitroConfig.typescript, {
@@ -362,8 +364,11 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     paths ||= await resolveTypescriptPaths(nuxt)
+    // The `node` environment resolves as `nodenext`, which will not follow a substitution that
+    // names a directory, so its packages are resolved to the entry file itself.
+    nodePaths ||= await resolveTypescriptPaths(nuxt, { entry: true })
     opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
-    opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...paths } })
+    opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...nodePaths } })
     // required for the server builder's augmentations (referenced above)
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
@@ -413,7 +418,7 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt, 'client'), { server: false })
 
   // Add transform for `onPrehydrate` lifecycle hook
-  addBuildPlugin(PrehydrateTransformPlugin({ enforce: nuxt.options.experimental.nitroViteEnvironment ? 'pre' : undefined }))
+  addBuildPlugin(PrehydrateTransformPlugin())
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
@@ -843,14 +848,14 @@ export default defineNuxtPlugin({
 
     // Restart Nuxt when new `app/` dir is added
     if (event === 'addDir' && path === resolve(nuxt.options.srcDir, 'app')) {
-      logger.info(`\`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+      logger.info(`\`${linkToAlias(path, nuxt)}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart', { hard: true })
     }
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
     if (isFileChange && RESTART_RE.test(path)) {
-      logger.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
+      logger.info(`\`${linkToAlias(path, nuxt)}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
     }
   })
@@ -1176,7 +1181,7 @@ async function resolveModules (nuxt: Nuxt) {
 }
 
 const NESTED_PKG_RE = /^[^@]+\//
-async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [string]>> {
+async function resolveTypescriptPaths (nuxt: Nuxt, options?: ResolveTypePathsOptions): Promise<Record<string, [string]>> {
   nuxt.options.typescript.hoist ||= []
 
   const packagesToResolve: string[] = []
@@ -1199,7 +1204,7 @@ async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [stri
     packagesToResolve.push(pkg)
   }
 
-  const resolved = await resolveTypePaths(packagesToResolve, nuxt.options.modulesDir)
+  const resolved = await resolveTypePaths(packagesToResolve, nuxt.options.modulesDir, options)
 
   const paths: Record<string, [string]> = {}
   const nightlyResolved = new Set<string>() // track which originals were resolved via nightly
@@ -1235,8 +1240,9 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     if (typeof entry !== 'string') { continue }
 
     if (RELATIVE_CSS_ENTRY_RE.test(entry)) {
-      const asAlias = '~/' + relative(nuxt.options.srcDir, resolve(nuxt.options.rootDir, entry))
-      logger.warn(`\`css\` entries are resolved as module ids, not relative to \`nuxt.config\`. Replace \`${entry}\` with ${existsSync(resolve(nuxt.options.rootDir, entry)) ? `\`${asAlias}\`` : 'an aliased or absolute path'}.`)
+      const absolute = resolve(nuxt.options.rootDir, entry)
+      const asAlias = '~/' + relative(nuxt.options.srcDir, absolute)
+      logger.warn(`\`css\` entries are resolved as module ids, not relative to \`nuxt.config\`. Replace \`${entry}\` with ${existsSync(absolute) ? `\`${link(absolute, { formatter: () => asAlias })}\`` : 'an aliased or absolute path'}.`)
       continue
     }
 
@@ -1244,7 +1250,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     // be resolved by builder-specific aliases, so neither can be checked here
     const resolved = resolveAlias(entry, nuxt.options.alias)
     if (isAbsolute(resolved) && !resolved.startsWith(nuxt.options.buildDir) && !existsSync(resolved)) {
-      logger.warn(`\`css\` entry \`${entry}\` could not be found${resolved === entry ? '' : ` (resolved to \`${resolved}\`)`}.`)
+      logger.warn(`\`css\` entry \`${entry}\` could not be found${resolved === entry ? '' : ` (resolved to \`${linkToAlias(resolved, nuxt)}\`)`}.`)
     }
   }
 }

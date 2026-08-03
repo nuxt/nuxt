@@ -9,8 +9,11 @@ import { isCSS } from './index.ts'
 
 /**
  * Convert an absolute file path to the dev-server URL Vite serves it from.
+ *
+ * Windows paths start with a drive letter rather than a slash, so the separator
+ * has to be added rather than assumed.
  */
-function toFsUrl (path: string): string {
+export function toFsUrl (path: string): string {
   return '/@fs' + path.replace(/^(?!\/)/, '/')
 }
 

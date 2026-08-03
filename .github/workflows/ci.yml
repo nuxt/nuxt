@@ -268,7 +268,7 @@ jobs:
           cache: true
 
       - name: Prepare
-        run: vp run dev:prepare && vp run test:prepare
+        run: vp run dev:prepare && vp run test:prepare && vp run build:kit
 
       - parallel:
           - name: Lint
@@ -279,6 +279,9 @@ jobs:
 
           - name: Test (unit)
             run: vp run test:unit
+
+          - name: Test (no jiti)
+            run: vp run test:no-jiti
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -391,7 +394,7 @@ jobs:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:webpack-dev-*"'
+            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-dev-*"'
           - os: windows-latest

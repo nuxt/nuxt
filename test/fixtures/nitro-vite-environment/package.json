@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-nitro-vite-environment",
   "scripts": {
     "build": "nuxt build"

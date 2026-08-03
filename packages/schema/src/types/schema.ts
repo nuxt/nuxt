@@ -6,7 +6,7 @@ import type { UnheadVueViteOptions } from '@unhead/vue/vite'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
-import type { DotenvOptions, SourceOptions } from 'c12'
+import type { NuxtDotenvOptions, NuxtLayerSourceOptions } from './layers.ts'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
@@ -570,11 +570,9 @@ export interface ConfigSchema {
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`
    *
-   * @see [`c12` docs on extending config layers](https://github.com/unjs/c12#extending-config-layer-from-remote-sources)
-   *
    * @see [`giget` documentation](https://github.com/unjs/giget)
    */
-  extends: string | [string, SourceOptions?] | (string | [string, SourceOptions?])[]
+  extends: string | [string, NuxtLayerSourceOptions?] | (string | [string, NuxtLayerSourceOptions?])[]
 
   /**
    * Specify a compatibility date for your app.
@@ -719,7 +717,7 @@ export interface ConfigSchema {
   test: boolean
 
   /**
-   * The active Nuxt environment name, used by `c12` to select configuration
+   * The active Nuxt environment name, used to select configuration
    * overrides (e.g. `$env.staging`). Defaults to the explicit `envName` passed to
    * `loadNuxtConfig` (e.g. via `nuxt --envName`), falling back to `'development'`
    * in dev mode and `'production'` otherwise.
@@ -1301,6 +1299,23 @@ export interface ConfigSchema {
     extraPageMetaExtractionKeys: string[]
 
     /**
+     * Extract every JSON-serializable `definePageMeta` property into the generated route record,
+     * rather than only the keys Nuxt reads at build time.
+     *
+     * When every property of a page's `definePageMeta` can be resolved statically, the generated
+     * route no longer imports the page's macro module at all, removing one module per page from
+     * the dev module graph. Properties whose values cannot be serialized are unaffected and are
+     * still resolved by the macro module at runtime.
+     *
+     * This has no effect when `experimental.scanPageMeta` is `false`, as the route record does
+     * not override the macro module in that case.
+     *
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    extractSerializablePageMeta: boolean
+
+    /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same data in different pages.
      *
      * It is particularly important when enabling this feature to make sure that any unique key of your data is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch` should do this automatically for you.)
@@ -1588,8 +1603,14 @@ export interface ConfigSchema {
     /**
      * Whether to parse `error.data` when rendering a server error page.
      *
+     * @deprecated The error sent to the error page is JSON-encoded, so
+     * `error.data` keeps its original shape and is never stringified. With
+     * `compatibilityVersion: 5` this is forced on and setting it is ignored;
+     * before that, `false` stringifies `error.data` again for backwards
+     * compatibility.
      * @default true
      */
+    // TODO: remove this option before Nuxt 5 is released
     parseErrorData: boolean
 
     /**
@@ -1679,7 +1700,7 @@ export interface ConfigSchema {
      * Nitro's own Rolldown pipeline.
      *
      * Only effective when using `@nuxt/vite-builder`.
-     * @default false
+     * @default true
      */
     nitroViteEnvironment: boolean
 
@@ -1743,7 +1764,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | DotenvOptions, envName?: string | false }
+  _loadOptions: { dotenv?: boolean | NuxtDotenvOptions, envName?: string | false }
 
   /**
    *

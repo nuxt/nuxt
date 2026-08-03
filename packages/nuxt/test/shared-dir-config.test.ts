@@ -40,11 +40,10 @@ describe('loadNuxt', () => {
     expect(normalized).not.toContain('<rootDir>/server/types')
   })
 
-  it('does not register server type directories when nitro auto-imports are opted out', async () => {
-    const importDirs = await getNitroImportDirs({ experimental: { nitroAutoImports: false } })
-    // `nitro.imports` is disabled entirely, so no directories (incl. `server/types`) are scanned
-    expect(normalizePaths(importDirs)).not.toContain('<rootDir>/server/types')
-    expect(importDirs).toHaveLength(0)
+  it('still registers server type directories when nitro compat auto-imports are opted out', async () => {
+    const { dirs, presets } = await getNitroImports({ experimental: { nitroAutoImports: false } })
+    expect(normalizePaths(dirs)).toContain('<rootDir>/server/types')
+    expect(presets).toHaveLength(0)
   })
 })
 
@@ -57,7 +56,13 @@ function normalizePaths (arr: unknown[]) {
 }
 
 async function getNitroImportDirs (overrides?: NuxtConfig) {
-  const importDirs: unknown[] = []
+  const { dirs } = await getNitroImports(overrides)
+  return dirs
+}
+
+async function getNitroImports (overrides?: NuxtConfig) {
+  const dirs: unknown[] = []
+  const presets: unknown[] = []
   const nuxt = await loadNuxt({
     cwd: fixtureDir,
     ready: true,
@@ -66,14 +71,15 @@ async function getNitroImportDirs (overrides?: NuxtConfig) {
       hooks: {
         'nitro:config' (config) {
           if (config.imports) {
-            importDirs.push(...config.imports.dirs || [])
+            dirs.push(...config.imports.dirs || [])
+            presets.push(...config.imports.presets || [])
           }
         },
       },
     },
   })
   await nuxt.close()
-  return importDirs
+  return { dirs, presets }
 }
 
 async function getAppImportDirs (overrides?: NuxtConfig) {

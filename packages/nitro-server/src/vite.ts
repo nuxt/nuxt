@@ -1,6 +1,6 @@
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { EnvironmentModuleGraph, Plugin as VitePlugin } from 'vite'
+import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
@@ -85,11 +85,16 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   addVitePlugin(NuxtBuildOutputsPlugin(nuxt))
   addVitePlugin(NitroVirtualBridge(nitro))
 
+  // `nitro/vite` calls `build:before` before it derives its bundler config,
+  // which is where the legacy path calls `nitro:build:before`: consumers use it
+  // to adjust nitro options and to collect the build cache.
+  nitro.hooks.hook('build:before', () => nuxt.callHook('nitro:build:before', nitro))
+
   // In dev, feed the CSS the ssr graph has loaded to `@nuxt/nitro-server`'s
   // `dev-client-css` middleware. `devClientCssPlugin` (registered at the root,
   // not via `addVitePlugin`, so its `configureServer` hook runs in the main
-  // process) pushes the derived set to the ssr module-runner worker over the
-  // env hot channel whenever the graph gains a CSS module. The worker caches
+  // process) pushes the derived set to the module-runner workers over their
+  // env hot channels whenever the graph gains a CSS module. The worker caches
   // the latest set and serves it, unioned with the globally-registered CSS.
   if (nuxt.options.dev) {
     nuxt.options.vite.plugins ||= []
@@ -144,8 +149,20 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }))
 
   if (nuxt.options.dev) {
+    let devServer: ViteDevServer | undefined
+
+    // TODO: fix upstream in nitro
+    nitro.hooks.hook('rollup:reload', () => {
+      const env = devServer?.environments.nitro
+      if (!env) { return }
+      env.moduleGraph.invalidateAll()
+      env.hot.send({ type: 'full-reload' })
+    })
+
     nuxt.hook('vite:serverCreated', (viteServer, { isServer }) => {
       if (!isServer) { return }
+
+      devServer = viteServer
 
       // Vite's internal handlers for `@vite/client`, `@vite/env` and
       // `@react-refresh` live at the root of the dev server, but Nuxt serves
@@ -234,10 +251,6 @@ async function getDeferredExpression (nuxt: Nuxt, key: keyof NuxtBuildOutputs): 
 function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
   return {
     name: 'nuxt:build-outputs',
-    // `post` so the deferred substitution in `generateBundle` runs after
-    // `SSRStylesPlugin` (`enforce: 'pre'`) has emitted its styles and populated
-    // the data that `build:manifest` listeners consume.
-    enforce: 'post',
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
@@ -308,18 +321,27 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
 }
 
 /**
- * Dev-only: push the CSS the ssr module graph has loaded to the ssr
- * module-runner worker over the env hot channel.
+ * Dev-only: push the CSS the ssr module graph has loaded to the module-runner
+ * workers over their env hot channels.
  */
 function DevClientCssPlugin (nuxt: Nuxt): VitePlugin {
   let push: (() => void) | undefined
   return {
     name: 'nuxt:dev-client-css',
     configureServer (server) {
-      const env = server.environments.ssr
-      if (!env) { return }
-      push = () => env.hot.send(DEV_CLIENT_CSS_EVENT, collectDevCss(nuxt, env.moduleGraph))
-      env.hot.on(DEV_CLIENT_CSS_SEED, push)
+      const ssr = server.environments.ssr
+      if (!ssr) { return }
+      // The CSS always comes from the ssr graph, but the virtual that consumes
+      // it is evaluated in whichever runner imports it: the `dev-client-css`
+      // middleware runs in the `nitro` environment while the renderer entry
+      // runs in `ssr`. Each environment has its own hot channel, so both have
+      // to be fed or the middleware never receives a set.
+      const targets = [ssr, server.environments.nitro].filter(env => !!env)
+      push = () => {
+        const css = collectDevCss(nuxt, ssr.moduleGraph)
+        for (const env of targets) { env.hot.send(DEV_CLIENT_CSS_EVENT, css) }
+      }
+      for (const env of targets) { env.hot.on(DEV_CLIENT_CSS_SEED, push) }
     },
     transform: {
       handler (_code, id) {
