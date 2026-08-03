@@ -171,7 +171,7 @@ importers:
         version: 4.64.0(tslib@2.8.1)
       nitropack:
         specifier: 2.13.4
-        version: 2.13.4(@rspack/core@1.7.12)(oxc-parser@0.142.0)(rolldown@1.2.0)(srvx@0.12.4)(supports-color@10.2.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
+        version: 2.13.4(@rspack/core@1.7.12)(oxc-parser@0.142.0)(rolldown@1.2.0)(srvx@0.12.5)(supports-color@10.2.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -200,8 +200,8 @@ importers:
         specifier: 1.13.0
         version: 1.13.0
       srvx:
-        specifier: 0.12.4
-        version: 0.12.4
+        specifier: 0.12.5
+        version: 0.12.5
       std-env:
         specifier: 4.2.0
         version: 4.2.0
@@ -396,7 +396,7 @@ importers:
         version: 0.1.1
       nitropack:
         specifier: ^2.13.4
-        version: 2.13.4(@rspack/core@1.7.12)(oxc-parser@0.142.0)(rolldown@1.2.0)(srvx@0.12.4)(supports-color@10.2.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
+        version: 2.13.4(@rspack/core@1.7.12)(oxc-parser@0.142.0)(rolldown@1.2.0)(srvx@0.12.5)(supports-color@10.2.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -797,8 +797,8 @@ importers:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.25
-        version: h3@2.0.1-rc.25(crossws@0.4.5(srvx@0.10.1))
+        specifier: npm:h3@2.0.1-rc.26
+        version: h3@2.0.1-rc.26(crossws@0.4.5(srvx@0.10.1))
       obuild:
         specifier: 0.4.38
         version: 0.4.38(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.9(typescript@5.9.3))
@@ -1099,11 +1099,11 @@ importers:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.25
-        version: h3@2.0.1-rc.25(crossws@0.4.5(srvx@0.10.1))
+        specifier: npm:h3@2.0.1-rc.26
+        version: h3@2.0.1-rc.26(crossws@0.4.5(srvx@0.10.1))
       nitropack:
         specifier: 2.13.4
-        version: 2.13.4(@rspack/core@1.7.12)(oxc-parser@0.142.0)(rolldown@1.2.0)(srvx@0.12.4)(supports-color@10.2.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
+        version: 2.13.4(@rspack/core@1.7.12)(oxc-parser@0.142.0)(rolldown@1.2.0)(srvx@0.12.5)(supports-color@10.2.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
       obuild:
         specifier: 0.4.38
         version: 0.4.38(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.9(typescript@5.9.3))
@@ -1268,8 +1268,8 @@ importers:
         specifier: 1.15.11
         version: 1.15.11
       h3-next:
-        specifier: npm:h3@2.0.1-rc.25
-        version: h3@2.0.1-rc.25(crossws@0.4.5(srvx@0.10.1))
+        specifier: npm:h3@2.0.1-rc.26
+        version: h3@2.0.1-rc.26(crossws@0.4.5(srvx@0.10.1))
       obuild:
         specifier: 0.4.38
         version: 0.4.38(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(jiti@2.7.0)(magicast@0.5.3)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.9(typescript@5.9.3))
@@ -6570,8 +6570,8 @@ packages:
   h3@1.15.11:
     resolution: {integrity: sha512-L3THSe2MPeBwgIZVSH5zLdBBU90TOxarvhK9d04IDY2AmVS8j2Jz2LIWtwsGOU3lu2I5jCN7FNvVfY2+XyF+mg==}
 
-  h3@2.0.1-rc.25:
-    resolution: {integrity: sha512-uIK++Up28xDt4n0+bSWfVssRivNXpUmMmA6CCiK6j9+utLcBMcFK97Gn9PlSZwAPW9oLy3CjGJ4ag40CY9YYtQ==}
+  h3@2.0.1-rc.26:
+    resolution: {integrity: sha512-GDxlvDsKxgjRvG5UBRJYyGJTMWLV30CJ4cV+e7QCTgftDHihrvio1fVPbNembhEr6J4WNm8IWy3fookgyTweLw==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -8896,8 +8896,8 @@ packages:
     engines: {node: '>=20.16.0'}
     hasBin: true
 
-  srvx@0.12.4:
-    resolution: {integrity: sha512-RixzFlMn3dvzDTpKIAXhXrqL4cy6vScNCP0VVwgVbUBU94o+DiXLsFnAZetbyKAEnK6Ox3hzHXWGsyv/Iibv7g==}
+  srvx@0.12.5:
+    resolution: {integrity: sha512-IuvtDNQg5EIwv3c6dleyau7u8hCyGQ7D6+V/QM799Aud07z0wCUcurKLTRfyG33C8oUY+UWcVBFkfHMcbtmRLA==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -13923,9 +13923,9 @@ snapshots:
     optionalDependencies:
       srvx: 0.11.22
 
-  crossws@0.4.5(srvx@0.12.4):
+  crossws@0.4.5(srvx@0.12.5):
     optionalDependencies:
-      srvx: 0.12.4
+      srvx: 0.12.5
 
   css-declaration-sorter@7.4.0(postcss@8.5.25):
     dependencies:
@@ -14894,10 +14894,10 @@ snapshots:
       ufo: 1.6.4
       uncrypto: 0.1.3
 
-  h3@2.0.1-rc.25(crossws@0.4.5(srvx@0.10.1)):
+  h3@2.0.1-rc.26(crossws@0.4.5(srvx@0.10.1)):
     dependencies:
       rou3: 0.9.1
-      srvx: 0.11.22
+      srvx: 0.12.5
     optionalDependencies:
       crossws: 0.4.5(srvx@0.10.1)
 
@@ -15629,13 +15629,13 @@ snapshots:
     transitivePeerDependencies:
       - srvx
 
-  listhen@1.10.0(srvx@0.12.4):
+  listhen@1.10.0(srvx@0.12.5):
     dependencies:
       '@parcel/watcher': 2.6.0
       '@parcel/watcher-wasm': 2.5.6
       citty: 0.2.2
       consola: 3.4.2
-      crossws: 0.4.5(srvx@0.12.4)
+      crossws: 0.4.5(srvx@0.12.5)
       defu: 6.1.7
       get-port-please: 3.2.0
       h3: 1.15.11
@@ -16330,7 +16330,7 @@ snapshots:
       consola: 3.4.2
       crossws: 0.4.5(srvx@0.10.1)
       db0: 0.3.4
-      h3: 2.0.1-rc.25(crossws@0.4.5(srvx@0.10.1))
+      h3: 2.0.1-rc.26(crossws@0.4.5(srvx@0.10.1))
       jiti: 2.7.0
       nf3: 0.3.17
       ofetch: 2.0.0-alpha.3
@@ -16487,7 +16487,7 @@ snapshots:
       - vite
       - webpack
 
-  nitropack@2.13.4(@rspack/core@1.7.12)(oxc-parser@0.142.0)(rolldown@1.2.0)(srvx@0.12.4)(supports-color@10.2.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25)):
+  nitropack@2.13.4(@rspack/core@1.7.12)(oxc-parser@0.142.0)(rolldown@1.2.0)(srvx@0.12.5)(supports-color@10.2.2)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25)):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@rollup/plugin-alias': 6.0.0(rollup@4.62.4)
@@ -16525,7 +16525,7 @@ snapshots:
       jiti: 2.7.0
       klona: 2.0.6
       knitwork: 1.3.0
-      listhen: 1.10.0(srvx@0.12.4)
+      listhen: 1.10.0(srvx@0.12.5)
       magic-string: 0.30.21
       magicast: 0.5.3
       mime: 4.1.0
@@ -18140,7 +18140,7 @@ snapshots:
 
   srvx@0.11.22: {}
 
-  srvx@0.12.4: {}
+  srvx@0.12.5: {}
 
   stable-hash-x@0.2.0: {}
 
