@@ -576,11 +576,23 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
         "matcher": {
           "dynamic": {},
           "static": {
+            "/cafÉ": {
+              "redirect": "/accented-target",
+            },
+            "/pre-encoded/%E6%B5%8B%E8%AF%95": {
+              "redirect": "/pre-encoded-target",
+            },
             "/pre/test": {
               "redirect": "/",
             },
             "/specific-prerendered": {
               "prerender": true,
+            },
+            "/unicode/测试": {
+              "ssr": false,
+            },
+            "/测试": {
+              "redirect": "/unicode-target",
             },
           },
           "wildcard": {
@@ -593,6 +605,9 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             "/pre/spa": {
               "prerender": true,
               "ssr": false,
+            },
+            "/unicode": {
+              "ssr": true,
             },
           },
         },
@@ -636,6 +651,32 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     } else {
       expect(spaRules).not.toHaveProperty('prerender')
       expect(redirectRules).not.toHaveProperty('redirect')
+    }
+  })
+})
+
+describe('unicode route rules', () => {
+  it('applies a decoded rule key to the encoded request path', () => {
+    for (const path of ['/测试', `/${encodeURIComponent('测试')}`, `/${encodeURIComponent('测试').toLowerCase()}`]) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/unicode-target' })
+    }
+  })
+
+  it('prefers a specific unicode rule over a catch-all covering the same key', () => {
+    for (const path of ['/unicode/测试', `/unicode/${encodeURIComponent('测试')}`]) {
+      expect(getRouteRules({ path }), path).toMatchObject({ ssr: false })
+    }
+  })
+
+  it('applies a rule key authored in encoded form', () => {
+    for (const path of [`/pre-encoded/${encodeURIComponent('测试')}`, '/pre-encoded/测试']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/pre-encoded-target' })
+    }
+  })
+
+  it('applies a rule key whose casing matches the request exactly', () => {
+    for (const path of ['/cafÉ', `/caf${encodeURIComponent('É')}`]) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/accented-target' })
     }
   })
 })

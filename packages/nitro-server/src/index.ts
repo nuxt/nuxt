@@ -28,7 +28,8 @@ import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { createFoldedRouteRulesRouter } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { decodeRoutePath } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -393,6 +394,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr', 'ssr', 'noScripts']
 
+  // Both matchers are compiled on every build, so collisions are reported once rather
+  // than once per compilation pass.
+  const warnedKeyCollisions = new Set<string>()
+
   addTemplate({
     filename: 'route-rules.mjs',
     // `defineRouteRules` is extracted from page sources, so without it route rules come only
@@ -405,12 +410,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
       // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
       // folded lookup and silently lose its protections. `sensitive` can also come from
-      // `app/router.options.ts` (runtime-only), so emit both a verbatim and a folded matcher
-      // and pick at runtime.
+      // `app/router.options.ts` (runtime-only), so emit both a decoded and a decoded+folded
+      // matcher and pick at runtime.
+      const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
       const sourceRouter = nuxt._nitro.routing.routeRules
-      const foldedRouter = createFoldedRouteRulesRouter(sourceRouter, nuxt._nitro.options.baseURL, (existing, route) => {
-        if (nuxt.options.router.options.sensitive) { return }
-        logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path when matched case-insensitively; \`${route}\` takes precedence. Disambiguate the keys or set \`router.options.sensitive: true\`.`)
+      const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(sourceRouter, nuxt._nitro!.options.baseURL, fold, (existing, route, key) => {
+        // Only the matcher that will actually be used at runtime should report collisions.
+        if (fold === caseSensitiveRouteRules || warnedKeyCollisions.has(key)) { return }
+        warnedKeyCollisions.add(key)
+        logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path; \`${route}\` takes precedence. Disambiguate the keys${fold ? ' or set `router.options.sensitive: true`' : ''}.`)
       })
       const compileOptions: NonNullable<Parameters<typeof sourceRouter.compileToString>[0]> = {
         matchAll: true,
@@ -443,16 +451,26 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           }}`
         },
       }
-      const sensitiveMatcher = sourceRouter.compileToString(compileOptions)
-      const foldedMatcher = foldedRouter.compileToString(compileOptions)
+      const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
+      const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
       return [
         `import { defu } from 'defu'`,
         `import routerOptions from '#build/router.options.mjs'`,
         `const sensitiveMatcher = ${sensitiveMatcher}`,
         foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`,
+        // `decodeRoutePath` has no free variables, so it can be inlined by source to keep
+        // the runtime lookup and the build-time key normalisation from drifting apart.
+        `const decodeRoutePath = ${decodeRoutePath.toString()}`,
+        // Decoding must precede case folding, or a percent-encoded non-ASCII character
+        // would never fold.
+        `const normalizePath = (path, fold) => {`,
+        `  if (typeof path !== 'string') { return path }`,
+        `  const decoded = decodeRoutePath(path)`,
+        `  return fold ? decoded.toLowerCase() : decoded`,
+        `}`,
         `export default (path) => routerOptions.sensitive`,
-        `  ? defu({}, ...sensitiveMatcher('', path).map(r => r.data).reverse())`,
-        `  : defu({}, ...foldedMatcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())`,
+        `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
+        `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
       ].join('\n')
     },
   })
@@ -546,10 +564,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         const prerenderedRoutes = new Set<string>()
         if (nitro._prerenderedRoutes?.length) {
           const payloadSuffix = '/_payload.json'
+          const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
+          const routeRulesMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules, nitro.options.baseURL, !caseSensitiveRouteRules)
           for (const route of nitro._prerenderedRoutes) {
             if (!route.error && route.route.endsWith(payloadSuffix)) {
               const url = route.route.slice(0, -payloadSuffix.length) || '/'
-              const rules = defu({}, ...nitro.routing.routeRules.matchAll('', url).reverse()) as Record<string, any>
+              const rules = defu({}, ...routeRulesMatcher.matchAll('', normalizeRouteRulePath(url, !caseSensitiveRouteRules)).reverse()) as Record<string, any>
               if (!rules.prerender) {
                 prerenderedRoutes.add(url)
               }
