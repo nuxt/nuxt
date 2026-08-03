@@ -62,7 +62,7 @@ catalogs:
     consola: ^3.4.2
     cookie-es: ^3.1.1
     defu: ^6.1.7
-    devalue: ^5.8.2
+    devalue: ^5.9.0
     errx: ^0.1.2
     fnv1a-64: ^0.1.2
     hookable: ^6.1.1
@@ -88,7 +88,7 @@ catalogs:
     '@vitejs/plugin-vue': ^6.0.8
     '@vue/compiler-sfc': 3.5.40
     rspack-vue-loader: ^17.6.1
-    vue-component-type-helpers: ^3.3.8
+    vue-component-type-helpers: ^3.3.9
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
   vite:
@@ -118,7 +118,7 @@ catalogs:
     url-loader: ^4.1.1
     webpack: ^5.109.2
     webpack-bundle-analyzer: ^5.3.1
-    webpack-dev-middleware: ^8.1.0
+    webpack-dev-middleware: ^8.1.1
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
   build:
@@ -155,14 +155,14 @@ catalogs:
     pathe: ^2.0.3
     picomatch: ^4.0.5
     pkg-types: ^2.3.1
-    postcss: ^8.5.24
+    postcss: ^8.5.25
     postcss-import: ^16.1.1
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^8.2.1
     postcss-url: ^10.1.4
     rc9: ^3.0.1
     scule: ^1.3.0
-    seroval: ^1.5.6
+    seroval: ^1.6.0
     std-env: ^4.2.0
     tinyglobby: ^0.2.17
     ufo: ^1.6.4
@@ -170,7 +170,7 @@ catalogs:
     unctx: ^3.0.0
     undici: ^8.9.0
     unenv: ^2.0.0-rc.24
-    unimport: ^6.3.1
+    unimport: ^6.4.0
     unplugin: ^3.3.0
     unrouting: ^0.2.2
     untyped: ^2.0.0
@@ -189,7 +189,7 @@ catalogs:
     '@nuxt/scripts': 1.3.2
     '@nuxt/test-utils': 4.1.0
     '@parcel/watcher': 2.6.0
-    '@playwright/test': 1.62.0
+    '@playwright/test': 1.62.1
     '@rollup/plugin-babel': 7.1.0
     '@rspack/core': 2.1.7
     '@testing-library/vue': 8.1.0
@@ -207,7 +207,7 @@ catalogs:
     '@vitest/coverage-v8': 4.1.10
     '@vue/compiler-core': 3.5.40
     '@vue/devtools-api': 8.2.1
-    '@vue/language-core': 3.3.8
+    '@vue/language-core': 3.3.9
     '@vue/test-utils': 2.4.11
     acorn: 8.18.0
     beasties: 0.4.3
@@ -224,24 +224,24 @@ catalogs:
     html-validate: 11.6.0
     htmlnano: 3.4.0
     installed-check: 10.0.1
-    knip: 6.29.0
+    knip: 6.31.0
     magic-regexp: 0.11.0
     markdownlint-cli: 0.49.1
     nitropack: 2.13.4
     nuxt-content-twoslash: 0.4.0
     oxc-transform: 0.142.0
-    pkg-pr-new: 0.0.82
-    playwright-core: 1.62.0
+    pkg-pr-new: 0.0.86
+    playwright-core: 1.62.1
     prettier: 3.9.6
-    rollup: 4.62.3
+    rollup: 4.62.4
     rollup-plugin-visualizer: 7.0.1
     sherif: 1.13.0
     svgo: 4.0.2
-    tinyexec: 1.2.4
+    tinyexec: 1.3.0
     tsdown: 0.22.14
     typescript: 6.0.3
     unocss: 66.7.5
     vitest: 4.1.10
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.2.5
-    vue-tsc: 3.3.8
+    vue-tsc: 3.3.9
