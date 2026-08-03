@@ -401,7 +401,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@f22792bfac16f3e14eb9fbea76f4a48e9cc22b93 # v4.19.1
+        uses: CodSpeedHQ/action@88472375d0a4572cf70a9f1fe3a4e0ab8da1b924 # v5.0.1
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
