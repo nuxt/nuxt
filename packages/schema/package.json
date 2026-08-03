@@ -45,7 +45,7 @@
     "@vitejs/plugin-vue-jsx": "5.1.6",
     "@vue/compiler-core": "3.5.40",
     "@vue/compiler-sfc": "3.5.40",
-    "@vue/language-core": "3.3.8",
+    "@vue/language-core": "3.3.9",
     "c12": "3.3.4",
     "chokidar": "5.0.0",
     "compatx": "0.2.0",
@@ -73,7 +73,7 @@
     "vue-loader": "17.4.2",
     "vue-router": "4.6.4",
     "webpack": "5.109.2",
-    "webpack-dev-middleware": "8.1.0"
+    "webpack-dev-middleware": "8.1.1"
   },
   "dependencies": {
     "@vue/shared": "^3.5.40",

@@ -67,7 +67,7 @@
     "vue-loader": "^17.4.2",
     "webpack": "^5.109.2",
     "webpack-bundle-analyzer": "^5.3.1",
-    "webpack-dev-middleware": "^8.1.0",
+    "webpack-dev-middleware": "^8.1.1",
     "webpack-hot-middleware": "^2.26.1",
     "webpackbar": "^7.0.0"
   },
@@ -80,7 +80,7 @@
     "h3": "1.15.11",
     "h3-next": "npm:h3@2.0.1-rc.25",
     "obuild": "0.4.38",
-    "rollup": "4.62.3",
+    "rollup": "4.62.4",
     "vue": "3.5.40"
   },
   "peerDependencies": {
