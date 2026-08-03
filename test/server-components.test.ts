@@ -9,7 +9,7 @@ import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/is
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { builder, isDev, isWebpack } from './matrix'
+import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
@@ -44,7 +44,7 @@ await setup({
 })
 
 describe('server components/islands', () => {
-  itFailsIf(builder === 'webpack' && isDev)('/islands', async () => {
+  it('/islands', async () => {
     const { page } = await renderPage('/islands')
     const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
@@ -134,7 +134,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('non-lazy server components', async () => {
+  it('non-lazy server components', async () => {
     const { page } = await renderPage('/server-components/lazy/start')
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
@@ -284,7 +284,7 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('render async component', async () => {
+  it('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
@@ -342,7 +342,7 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('render .server async component', async () => {
+  it('render .server async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
@@ -480,7 +480,7 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('test client-side navigation', async () => {
+  it('test client-side navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('#islands')
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/islands')
@@ -712,16 +712,14 @@ describe('denial-of-service protections', () => {
   // Bounds both the plain-element path (`ssrRenderList`, rendered inline into `html`) and the
   // slot path (`vforToArray`, whose `:props` array and fallback content are teleported into
   // the slot response rather than the island body).
-  // The webpack dev build does not apply the islands transform to the compiled template (see the
-  // `it.fails` island tests above), so neither the bound nor the slot teleport is present there.
-  it.skipIf(builder === 'webpack' && isDev)('bounds plain and slot v-for over a large-integer prop', async () => {
+  it('bounds plain and slot v-for over a large-integer prop', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 10_000_000 } }))
     expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(result.slots?.loop?.props?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
   })
 
-  it.skipIf(builder === 'webpack' && isDev)('renders a small v-for prop unchanged', async () => {
+  it('renders a small v-for prop unchanged', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 3 } }))
     expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
     expect(result.slots?.loop?.props?.length ?? 0).toBe(3)
