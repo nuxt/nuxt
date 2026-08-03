@@ -564,8 +564,8 @@ importers:
         specifier: ^0.142.0
         version: 0.142.0
       oxc-walker:
-        specifier: ^1.1.1
-        version: 1.1.1(@oxc-project/types@0.142.0)(oxc-parser@0.142.0)(rolldown@1.2.1)
+        specifier: 1.0.0
+        version: 1.0.0(@rspack/core@1.7.12)(esbuild@0.28.1)(oxc-parser@0.142.0)(rolldown@1.2.1)(rollup@4.62.4)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -7756,6 +7756,17 @@ packages:
     resolution: {integrity: sha512-54B4KUhrzbzc4sKvKwVYm7E2PgeROpGba0/2nlNZMqfDyca+yOor5IMb4WLGBatGDT0nkzYdYuzylg7n3YfB7A==}
     peerDependencies:
       oxc-parser: '>=0.98.0'
+
+  oxc-walker@1.0.0:
+    resolution: {integrity: sha512-eMsHflAGfOskpWxtp9xP/f5b96XLEU8ifTd2gOOCkdux9HMxKGy5S1ru0Gh1B3aPu+YbfmWUUVkcb7MrZz3XyQ==}
+    peerDependencies:
+      oxc-parser: '>=0.98.0'
+      rolldown: '>=1.0.0'
+    peerDependenciesMeta:
+      oxc-parser:
+        optional: true
+      rolldown:
+        optional: true
 
   oxc-walker@1.1.1:
     resolution: {integrity: sha512-Hwd7dq28zu/Er99+bpWp16CGwFrhyalJh0W3JOB7XpPvgWo3MqMi2ksWGKuzzA9zt50mJ2pIUwR5lpAdZ9ACNQ==}
@@ -16818,16 +16829,26 @@ snapshots:
       magic-regexp: 0.10.0
       oxc-parser: 0.131.0
 
+  oxc-walker@1.0.0(@rspack/core@1.7.12)(esbuild@0.28.1)(oxc-parser@0.142.0)(rolldown@1.2.1)(rollup@4.62.4)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25)):
+    dependencies:
+      magic-regexp: 0.11.0(@rspack/core@1.7.12)(esbuild@0.28.1)(rolldown@1.2.1)(rollup@4.62.4)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(postcss@8.5.25))
+    optionalDependencies:
+      oxc-parser: 0.142.0
+      rolldown: 1.2.1
+    transitivePeerDependencies:
+      - '@farmfe/core'
+      - '@rspack/core'
+      - bun-types-no-globals
+      - esbuild
+      - rollup
+      - unloader
+      - vite
+      - webpack
+
   oxc-walker@1.1.1(@oxc-project/types@0.142.0)(oxc-parser@0.140.0)(rolldown@1.2.1):
     optionalDependencies:
       '@oxc-project/types': 0.142.0
       oxc-parser: 0.140.0
-      rolldown: 1.2.1
-
-  oxc-walker@1.1.1(@oxc-project/types@0.142.0)(oxc-parser@0.142.0)(rolldown@1.2.1):
-    optionalDependencies:
-      '@oxc-project/types': 0.142.0
-      oxc-parser: 0.142.0
       rolldown: 1.2.1
 
   p-limit@3.1.0:
