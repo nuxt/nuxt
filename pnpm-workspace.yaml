@@ -221,7 +221,7 @@ catalogs:
     eslint-typegen: 2.3.1
     h3: 1.15.11
     happy-dom: 20.11.1
-    html-validate: 11.6.0
+    html-validate: 11.6.1
     htmlnano: 3.4.0
     installed-check: 10.0.1
     knip: 6.31.0

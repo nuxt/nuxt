@@ -366,8 +366,8 @@ catalogs:
       specifier: 20.11.1
       version: 20.11.1
     html-validate:
-      specifier: 11.6.0
-      version: 11.6.0
+      specifier: 11.6.1
+      version: 11.6.1
     htmlnano:
       specifier: 3.4.0
       version: 3.4.0
@@ -1481,7 +1481,7 @@ importers:
         version: 0.4.3
       html-validate:
         specifier: catalog:dev
-        version: 11.6.0(@vitest/expect@4.1.10)(vitest@4.1.10)
+        version: 11.6.1(@vitest/expect@4.1.10)(vitest@4.1.10)
       htmlnano:
         specifier: catalog:dev
         version: 3.4.0(cssnano@8.0.2(postcss@8.5.25))(postcss@8.5.25)(svgo@4.0.2)(terser@5.48.0)(typescript@6.0.3)
@@ -6593,8 +6593,8 @@ packages:
   html-escaper@3.0.3:
     resolution: {integrity: sha512-RuMffC89BOWQoY0WKGpIhn5gX3iI54O6nRA0yC124NYVtzjmFWBIiFd8M0x+ZdX0P9R4lADg1mgP8C7PxGOWuQ==}
 
-  html-validate@11.6.0:
-    resolution: {integrity: sha512-VKoRiWBqV9g5M1sb3H0WimxAM6UCNTv6JbovEmNEtBWKVK/W5fKCY++EM4shkS92FypBwnGMlBymeo9Tlyiqxw==}
+  html-validate@11.6.1:
+    resolution: {integrity: sha512-WKDTjw74Uo1eOLThlZUdov4VyobMNgEMuyhR76VyWk7jfmwxOXbid+vZqYuIFXwQXyXsXT50KfLBIPX5rGnxPQ==}
     engines: {node: ^22.22.0 || >= 24.8.0}
     hasBin: true
     peerDependencies:
@@ -14899,7 +14899,7 @@ snapshots:
 
   html-escaper@3.0.3: {}
 
-  html-validate@11.6.0(@vitest/expect@4.1.10)(vitest@4.1.10):
+  html-validate@11.6.1(@vitest/expect@4.1.10)(vitest@4.1.10):
     dependencies:
       '@html-validate/stylish': 6.0.0
       '@sidvind/better-ajv-errors': 7.0.0(ajv@8.20.0)
