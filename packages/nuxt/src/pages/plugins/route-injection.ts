@@ -1,12 +1,12 @@
 import { createUnplugin } from 'unplugin'
-import MagicString from 'magic-string'
+import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Nuxt } from '@nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils/index.ts'
 
 const INJECTION_SINGLE_RE = /\bthis\.\$route\b|\b_ctx\.\$route\b/
 
-export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
+export const RouteInjectionPlugin = (_nuxt: Nuxt) => createUnplugin(() => {
   return {
     name: 'nuxt:route-injection-plugin',
     enforce: 'post',
@@ -23,8 +23,8 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           ],
         },
       },
-      handler (code, id) {
-        const s = new MagicString(code)
+      handler (code, id, meta?: unknown) {
+        const s = rolldownString(code, id, meta)
 
         parseAndWalk(code, id, (node) => {
           if (node.type !== 'MemberExpression') { return }
@@ -43,14 +43,8 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
 
         if (s.hasChanged()) {
           s.prepend('import { PageRouteSymbol as __nuxt_route_symbol } from \'#app/components/injections\';\n')
-
-          return {
-            code: s.toString(),
-            map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server
-              ? s.generateMap({ hires: true })
-              : undefined,
-          }
         }
+        return generateTransform(s, id)
       },
     },
 

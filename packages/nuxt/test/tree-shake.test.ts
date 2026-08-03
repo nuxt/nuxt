@@ -5,7 +5,6 @@ import { clean } from './utils.ts'
 
 describe('tree-shake', () => {
   const transformPlugin: any = TreeShakeComposablesPlugin({
-    sourcemap: false,
     composables: { 'vue': ['onMounted'] },
   }).raw({}, {} as any)
 

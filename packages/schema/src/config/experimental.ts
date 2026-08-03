@@ -1,10 +1,10 @@
+import { schemaDiagnostics } from '../diagnostics.ts'
 import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   future: {
     compatibilityVersion: {
-      // force resolution to `4` no matter what users pass
-      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 4,
+      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 5,
     },
     multiApp: false,
     typescriptBundlerResolution: {
@@ -68,9 +68,6 @@ export default defineResolvers({
       $resolve: val => typeof val === 'boolean' ? val : false,
     },
 
-    // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/nitrojs/nitro/issues/1118
-    externalVue: true,
     serverAppConfig: true,
     emitRouteChunkError: {
       $resolve: (val) => {
@@ -95,11 +92,32 @@ export default defineResolvers({
     },
     templateRouteInjection: true,
     restoreState: false,
-    renderJsonPayloads: true,
     noVueServer: false,
-    payloadExtraction: true,
+    /**
+     * Extract the data payloads of prerendered and ISR/SWR pages into `_payload.json` files that are reused during client-side navigation.
+     *
+     * - `'client'`: inline the payload in the HTML for the initial render and extract it to a `_payload.json` file for client-side navigation.
+     * - `true`: extract the payload to a `_payload.json` file for both the initial render and client-side navigation.
+     * - `false`: disable payload extraction entirely; the payload is always inlined in the HTML.
+     *
+     * Defaults to `true`, or `'client'` when `future.compatibilityVersion` is `5` or higher. It is forced to `false` when `ssr` is disabled.
+     * @see [Payload Extraction documentation](https://nuxt.com/docs/getting-started/prerendering#payload-extraction)
+     */
+    payloadExtraction: {
+      $resolve: async (val, get) => {
+        if ((await get('ssr')) === false) { return false }
+        if (val === 'client' || typeof val === 'boolean') { return val }
+        return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
+      },
+    },
     clientFallback: false,
     crossOriginPrefetch: false,
+
+    /**
+     * Enable View Transition API integration with client-side router.
+     * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
+     * @type {ViewTransitionOptions['enabled'] | ViewTransitionOptions}
+     */
     viewTransition: false,
     writeEarlyHints: false,
     componentIslands: {
@@ -114,15 +132,25 @@ export default defineResolvers({
       },
     },
     localLayerAliases: true,
-    typedPages: false,
+    typedPages: {
+      $resolve: async (val, get) => {
+        if (typeof val === 'boolean') {
+          return val
+        }
+        return (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
       $resolve: async (val, get) => {
-        const validOptions = new Set(['chokidar', 'parcel', 'chokidar-granular'] as const)
+        const validOptions = new Set(['chokidar', 'parcel', 'chokidar-granular', 'builder'] as const)
         type WatcherOption = typeof validOptions extends Set<infer Option> ? Option : never
         if (typeof val === 'string' && validOptions.has(val as WatcherOption)) {
           return val as WatcherOption
+        }
+        if ((await get('future.compatibilityVersion')) >= 5) {
+          return 'builder' as const
         }
         const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
         if (srcDir === rootDir) {
@@ -140,6 +168,11 @@ export default defineResolvers({
       },
     },
     extraPageMetaExtractionKeys: [],
+    extractSerializablePageMeta: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     sharedPrerenderData: {
       $resolve (val) {
         return typeof val === 'boolean' ? val : true
@@ -157,6 +190,13 @@ export default defineResolvers({
       useAsyncData: {
         deep: false,
       },
+      useState: {
+        resetOnClear: {
+          $resolve: async (val, get) => {
+            return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+          },
+        },
+      },
       useFetch: {},
     },
     clientNodeCompat: false,
@@ -167,6 +207,11 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    normalizePageNames: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     spaLoadingTemplateLocation: {
       $resolve: (val) => {
         const validOptions = new Set(['body', 'within'] as const)
@@ -175,7 +220,7 @@ export default defineResolvers({
       },
     },
     browserDevtoolsTiming: {
-      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
+      $resolve: (val, get) => typeof val === 'boolean' ? val : get('dev'),
     },
     chromeDevtoolsProjectSettings: true,
     debugModuleMutation: {
@@ -194,18 +239,31 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    prefetchPreloadTags: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
     granularCachedData: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
       },
     },
+    stripNeverHydratedData: false,
     alwaysRunFetchOnKeyChange: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false
       },
     },
+    // TODO: remove this option, including from the schema types, before Nuxt 5 is released
     parseErrorData: {
-      $resolve: (val) => {
+      $resolve: async (val, get) => {
+        if ((await get('future.compatibilityVersion')) >= 5) {
+          if (val === false) {
+            schemaDiagnostics.NUXT_B5016()
+          }
+          return true
+        }
         return typeof val === 'boolean' ? val : true
       },
     },
@@ -221,15 +279,56 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
-    viteEnvironmentApi: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
-      },
-    },
     nitroAutoImports: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
+    ssrStreaming: {
+      $resolve (val) {
+        // Indexing crawlers only; `chrome-lighthouse` is intentionally absent
+        // so audit tools measure the same streamed response real users get.
+        const defaultBotRegex = /bot\b|crawl|spider|slurp|facebookexternalhit|google\b|bing\b|yandex\b|baidu\b|duckduck/i
+        const obj = (val !== null && typeof val === 'object') ? val as { enabled?: boolean, botRegex?: RegExp } : null
+        const isEnabled = val === true || (obj !== null && obj.enabled !== false)
+        if (!isEnabled) {
+          return { enabled: false as const, botRegex: defaultBotRegex }
+        }
+        const botRegex = obj?.botRegex instanceof RegExp ? obj.botRegex : defaultBotRegex
+        return { enabled: true as const, botRegex }
+      },
+    },
+    /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Only effective when using `@nuxt/vite-builder`.
+     */
+    nitroViteEnvironment: {
+      $resolve: async (val, get) => {
+        if (val === false) {
+          return false
+        }
+        const builder = await get('builder')
+        if (builder !== 'vite' && (builder as string) !== '@nuxt/vite-builder') {
+          if (val === true) {
+            console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+          }
+          return false
+        }
+        return true
+      },
+    },
+    asyncCallHook: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
+      },
+    },
+    clientNodePlaceholder: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
+    clearBuildHooks: true,
   },
 })

@@ -1,6 +1,7 @@
 ---
 title: "useResponseHeader"
 description: "Use useResponseHeader to set a server response header."
+minimalVersion: "3.14"
 links:
   - label: Source
     icon: i-simple-icons-github

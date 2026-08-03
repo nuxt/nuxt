@@ -1,12 +1,11 @@
 import { isAbsolute, normalize, resolve } from 'pathe'
-import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
-import { parseNodeModulePath } from 'mlly'
+import { directoryToURL, logger, parseNodeModulePath, resolveAlias } from '@nuxt/kit'
 import { resolveModulePath } from 'exsolve'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
 import { nuxt } from '../presets/nuxt.ts'
 import { node } from '../presets/node.ts'
-import { TsCheckerPlugin, webpack } from '#builder'
+import { TsCheckerPlugin, webpack } from '../builder.ts'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
@@ -59,8 +58,9 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
+
   const external = new Set([
-    'nitro/runtime',
+    'nitro/runtime-config',
     // TODO: remove in v5
     '#internal/nitro',
     'nitropack/runtime',

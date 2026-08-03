@@ -1,17 +1,29 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
-import destr from 'destr'
-import { definePayloadReviver, getNuxtClientPayload, shouldLoadPayload } from '../composables/payload'
+import { joinURL, withQuery } from 'ufo'
+import { definePayloadReviver, getNuxtClientPayload, isCachedPayloadRoute, shouldLoadPayload } from '../composables/payload'
 import { createError } from '../composables/error'
 import { useRoute } from '../composables/router'
-import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
+import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { ObjectPlugin, Plugin } from '../nuxt'
 
-// @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
 
+function parseRevivedData (data: string) {
+  try {
+    return JSON.parse(data)
+  } catch {
+    return data
+  }
+}
+
 const revivers: [string, (data: any) => any][] = [
-  ['NuxtError', data => createError(data)],
-  ['EmptyShallowRef', data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data))],
-  ['EmptyRef', data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data))],
+  ['NuxtError', (data) => {
+    const error = createError(data)
+    if (import.meta.dev && data?.stack) { error.stack = data.stack }
+    return error
+  }],
+  ['EmptyShallowRef', data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : parseRevivedData(data))],
+  ['EmptyRef', data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : parseRevivedData(data))],
   ['ShallowRef', data => shallowRef(data)],
   ['ShallowReactive', data => shallowReactive(data)],
   ['Ref', data => ref(data)],
@@ -24,38 +36,31 @@ if (componentIslands) {
     const routePath = path || useRoute().path
     if (!nuxtApp.isHydrating) {
       const fetchIsland = (shouldCache: boolean) => {
-        const fetchOptions = {
-          responseType: 'json' as const,
-          ...params ? { params } : {},
-          ...(shouldCache ? { cache: 'force-cache' as RequestCache } : {}),
-        }
-        if (shouldCache) {
-          nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
-            ...fetchOptions,
-          }).then((r) => {
-            nuxtApp.payload.data[key] = { __cached: true, ...r as Record<string, unknown> }
-            return nuxtApp.payload.data[key]
-          })
-        } else {
-          void $fetch(`/__nuxt_island/${key}.json`, fetchOptions).catch(() => {})
-        }
+        const url = withQuery(joinURL(useRuntimeConfig().app.baseURL ?? '', `/__nuxt_island/${key}.json`), params ?? {})
+        const cache = shouldCache
+          ? isCachedPayloadRoute(routePath) ? 'default' : 'force-cache'
+          : undefined
+        void fetch(url, cache ? { cache } : {}).then((r) => {
+          if (!r.ok) {
+            throw createError({ status: r.status, statusText: r.statusText })
+          }
+          return r.json()
+        }).catch(() => {})
       }
       void shouldLoadPayload(routePath).then(fetchIsland).catch(() => fetchIsland(false))
     }
     const cached = nuxtApp.payload.data[key]
     if (cached?.html) {
-      cached.__cached = true
       return cached
     }
     return {
       html: '',
-      __cached: true,
       ...result,
     }
   }])
 }
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:revive-payload:client',
   order: -30,
   async setup (nuxtApp) {
@@ -66,3 +71,5 @@ export default defineNuxtPlugin({
     delete window.__NUXT__
   },
 })
+
+export default plugin

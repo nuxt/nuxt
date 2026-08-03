@@ -8,20 +8,26 @@ links:
     size: xs
 ---
 
-Just like [`useSeoMeta`](/docs/4.x/api/composables/use-seo-meta), `useServerSeoMeta` composable lets you define your site's SEO meta tags as a flat object with full TypeScript support.
+::warning
+`useServerSeoMeta` is deprecated. Wrap [`useSeoMeta`](/docs/4.x/api/composables/use-seo-meta) in an `if (import.meta.server)` block instead. The auto-import is removed under `future.compatibilityVersion: 5`.
+::
+
+`useServerSeoMeta` lets you define your site's SEO meta tags as a flat object with full TypeScript support, exactly like [`useSeoMeta`](/docs/4.x/api/composables/use-seo-meta), but it only runs server-side and is tree-shaken from the client bundle.
 
 :read-more{to="/docs/4.x/api/composables/use-seo-meta"}
 
-In most instances, the meta doesn't need to be reactive as robots will only scan the initial load. So we recommend using [`useServerSeoMeta`](/docs/4.x/api/composables/use-server-seo-meta) as a performance-focused utility that will not do anything (or return a `head` object) on the client.
+For new code, use the server-only pattern directly:
 
 ```vue [app/app.vue]
 <script setup lang="ts">
-useServerSeoMeta({
-  robots: 'index, follow',
-})
+if (import.meta.server) {
+  useSeoMeta({
+    robots: 'index, follow',
+  })
+}
 </script>
 ```
 
-Parameters are exactly the same as with [`useSeoMeta`](/docs/4.x/api/composables/use-seo-meta)
+Parameters are exactly the same as with [`useSeoMeta`](/docs/4.x/api/composables/use-seo-meta).
 
 :read-more{to="/docs/4.x/getting-started/seo-meta"}

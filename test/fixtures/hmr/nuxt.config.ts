@@ -1,7 +1,16 @@
-import { withMatrix } from '../../matrix'
+import { isWebpack, withMatrix } from '../../matrix.ts'
+import { virtualCounterPlugin } from './vite/virtual-counter-plugin.ts'
 
 export default withMatrix({
+  extends: ['../hmr-sibling-layer'],
   experimental: {
+    nitroAutoImports: true,
     inlineRouteRules: true,
   },
+  // `virtual:hmr-counter` is a Vite plugin module and the regression it guards
+  // (#30169) is Vite-only. webpack/Rspack don't resolve the `virtual:` scheme,
+  // so exclude the page there rather than ship a bespoke scheme handler.
+  ...isWebpack
+    ? { ignore: ['**/virtual-module.vue', '**/jsx.vue'] }
+    : { vite: { plugins: [virtualCounterPlugin()] } },
 })

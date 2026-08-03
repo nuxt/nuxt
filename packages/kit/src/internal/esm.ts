@@ -1,15 +1,18 @@
+import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
-import { interopDefault } from 'mlly'
 import { resolveModulePath } from 'exsolve'
-import { createJiti } from 'jiti'
+import { interopDefault } from './interop.ts'
 import { getUserCaller, warn } from './trace.ts'
 import { resolveAlias } from '../resolve.ts'
+import { tryUseNuxt } from '../context.ts'
+import { kitDiagnostics } from '../diagnostics/kit-api.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export interface ResolveModuleOptions {
   /** @deprecated use `url` with URLs pointing at a file - never a directory */
   paths?: string | string[]
   url?: URL | URL[]
-  /** @default ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'] */
+  /** @default ['.mjs', '.js', '.cjs', '.mts', '.ts', '.cts', '.tsx', '.jsx'] */
   extensions?: string[]
 }
 
@@ -38,7 +41,7 @@ export function resolveModule (id: string, options?: ResolveModuleOptions): stri
   return resolveModulePath(id, {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     from: options?.url ?? options?.paths ?? [import.meta.url],
-    extensions: options?.extensions ?? ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+    extensions: options?.extensions ?? DEFAULT_JS_FILE_EXTENSIONS,
   })
 }
 
@@ -69,11 +72,33 @@ export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptio
   const warning = `[@nuxt/kit] \`requireModule\` is deprecated${explanation}. Please use \`importModule\` instead.`
   warn(warning)
   const resolvedPath = resolveModule(id, opts)
+  const { createJiti } = requireJiti()
   const jiti = createJiti(import.meta.url, {
     interopDefault: opts?.interopDefault !== false,
   })
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   return jiti(pathToFileURL(resolvedPath).href) as T
+}
+
+/**
+ * Load `jiti` synchronously, looking in the same places as {@link loadJiti} minus the install
+ * prompt, which cannot be awaited from here.
+ *
+ * `jiti` is an optional peer dependency, and this entry point is synchronous, so it has to be
+ * loaded through `require` rather than a dynamic import.
+ */
+function requireJiti (): typeof import('jiti') {
+  const require = createRequire(import.meta.url)
+  try {
+    return require('jiti') as typeof import('jiti')
+  } catch (error) {
+    const rootDir = tryUseNuxt()?.options.rootDir
+    const path = rootDir && resolveModulePath('jiti', { from: directoryToURL(rootDir), try: true })
+    if (!path) {
+      throw kitDiagnostics.NUXT_B8021({ cause: error })
+    }
+    return require(path) as typeof import('jiti')
+  }
 }
 
 /**

@@ -19,6 +19,8 @@ describe('build', () => {
         buildDir: join(basicTestFixtureDir, 'node_modules/build-plugins/.nuxt'),
         ssr: false,
         sourcemap: false,
+        typescript: { typeCheck: false },
+        experimental: { clearBuildHooks: false },
         hooks: {
           'build:done': () => {
             throw new Error('bypass nitro build')

@@ -11,7 +11,7 @@ definePageMeta({
   middleware: ['override', (to) => {
     if (to.path === '/catchall/forbidden') {
       throw createError({
-        statusCode: 500,
+        status: 500,
         message: 'This middleware should not be run',
       })
     }

@@ -1,6 +1,7 @@
-import type { AsyncComponentLoader, Component, ComponentPublicInstance, DefineComponent } from 'vue'
+import type { AsyncComponentLoader, Component, ComponentPublicInstance, DefineComponent, InjectionKey } from 'vue'
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export const neverHydratedSymbol: InjectionKey<boolean> = Symbol.for('nuxt:never-hydrated')
+
 type LazyHydrationComponent<T extends Component, Props> = T & DefineComponent<Props, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>
 
 export function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }> (strategy: 'visible', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnVisible?: IntersectionObserverInit | true }>

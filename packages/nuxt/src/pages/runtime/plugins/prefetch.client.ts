@@ -1,14 +1,14 @@
 import { hasProtocol } from 'ufo'
 import { toArray } from '../utils'
 import { defineNuxtPlugin } from '#app/nuxt'
+import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-// @ts-expect-error virtual file
 import layouts from '#build/layouts'
-// @ts-expect-error virtual file
 import { namedMiddleware } from '#build/middleware'
 import { _loadAsyncComponent } from '#app/composables/preload'
+import { componentIslands } from '#build/nuxt.config.mjs'
 
-export default defineNuxtPlugin({
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:prefetch',
   setup (nuxtApp) {
     const router = useRouter()
@@ -16,30 +16,44 @@ export default defineNuxtPlugin({
     // Force layout prefetch on route changes
     nuxtApp.hooks.hook('app:mounted', () => {
       router.beforeEach(async (to) => {
-        const layout = to?.meta?.layout
+        const layout = to?.meta?.layout as keyof typeof layouts | undefined
         if (layout && typeof layouts[layout] === 'function') {
           await layouts[layout]()
         }
       })
     })
     // Prefetch layouts & middleware
-    nuxtApp.hooks.hook('link:prefetch', (url) => {
+    nuxtApp.hooks.hook('link:prefetch', async (url) => {
       if (hasProtocol(url)) { return }
       const route = router.resolve(url)
       if (!route) { return }
       const layout = route.meta.layout
-      let middleware = toArray(route.meta.middleware)
-      middleware = middleware.filter(m => typeof m === 'string')
+      // `meta.middleware` can be a string key, a `NavigationGuard` callable,
+      // or an array of either. we only prefetch named middleware (= strings).
+      const middleware = toArray<unknown>(route.meta.middleware).filter((m): m is string => typeof m === 'string')
 
       for (const name of middleware) {
-        if (typeof namedMiddleware[name] === 'function') {
-          namedMiddleware[name]()
+        const handler = namedMiddleware[name as keyof typeof namedMiddleware]
+        if (typeof handler === 'function') {
+          handler()
         }
       }
 
       if (typeof layout === 'string' && layout in layouts) {
         _loadAsyncComponent(layouts[layout])
       }
+
+      if (componentIslands) {
+        await Promise.all(route.matched.map((record) => {
+          const component = record.components?.default
+          if (typeof component !== 'function') { return }
+          return Promise.resolve((component as () => unknown)())
+            .then((c: any) => (c?.default || c)?.__nuxt_prefetch?.(nuxtApp, route))
+            .catch(() => {})
+        }))
+      }
     })
   },
 })
+
+export default plugin

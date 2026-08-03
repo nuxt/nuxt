@@ -1,24 +1,18 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
 import type { App } from 'vue'
 
-// This file must be imported first as we set globalThis.$fetch via this import
-// @ts-expect-error virtual file
-import '#build/fetch.mjs'
-// @ts-expect-error virtual file
+import '#build/fetch-setup'
 import '#build/global-polyfills.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError } from './composables/error'
+import { appDiagnostics } from './diagnostics/core'
 
-// @ts-expect-error virtual file
 import '#build/css'
-// @ts-expect-error virtual file
 import plugins from '#build/plugins'
-// @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
-// @ts-expect-error virtual file
 import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
@@ -38,8 +32,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
-    // TODO: remove _renderResponse in nuxt v5
-    if (ssrContext && (ssrContext['~renderResponse'] || ssrContext._renderResponse)) { throw new Error('skipping render') }
+    if (ssrContext?.['~renderResponse']) { throw new Error('skipping render') }
 
     return vueApp
   }
@@ -70,6 +63,9 @@ if (import.meta.client) {
       await nuxt.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
+    // marker so nuxt-root.vue can skip re-invoking the default handler from
+    // its onErrorCaptured (which already calls `app:error` via showError)
+    ;(handleVueError as any).__nuxt_default = true
 
     vueApp.config.errorHandler = handleVueError
     // If the errorHandler is not overridden by the user, we unset it after the app is hydrated
@@ -104,7 +100,7 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    console.error('Error while mounting app:', error)
+    appDiagnostics.NUXT_E1009({ cause: error })
     throw error
   })
 }

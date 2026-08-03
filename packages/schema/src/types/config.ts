@@ -4,7 +4,8 @@ import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
 import type { SnakeCase } from 'scule'
-import type { ResolvedConfig } from 'c12'
+import type { RouteLocationNormalizedGeneric } from 'vue-router'
+import type { NuxtConfigLayer, NuxtConfigLayerMeta } from './layers.ts'
 import type { ConfigSchema } from './schema.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { AppHeadMetaObject } from './head.ts'
@@ -65,16 +66,34 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' 
   $schema?: SchemaDefinition
 }
 
-export type NuxtConfigLayer = ResolvedConfig<NuxtConfig & {
-  srcDir: ConfigSchema['srcDir']
-  rootDir: ConfigSchema['rootDir']
-}> & {
-  cwd: string
-  configFile: string
+/**
+ * Environment- and metadata-aware wrapper around a user configuration object, allowing
+ * `$production`/`$development`/`$test`/`$env` overrides and a `$meta` layer descriptor
+ * alongside the configuration itself.
+ */
+export type NuxtConfigInput<Config extends Record<string, any> = NuxtConfig> = Config & {
+  $test?: Config
+  $development?: Config
+  $production?: Config
+  $env?: Record<string, Config>
+  $meta?: NuxtConfigLayerMeta
+}
+
+export interface DefineNuxtConfig<Config extends Record<string, any> = NuxtConfig> {
+  (input: NuxtConfigInput<Config>): NuxtConfigInput<Config>
 }
 
 export interface NuxtBuilder {
   bundle: (nuxt: Nuxt) => Promise<void>
+  /**
+   * Optional. If provided and the user opts in via `experimental.watcher: 'builder'`,
+   * Nuxt will call this instead of starting its own file watcher in dev mode,
+   * allowing the builder to reuse its own watcher.
+   *
+   * The builder is expected to register its own `nuxt.hook('close', ...)` to
+   * clean up any resources it allocates.
+   */
+  setupWatcher?: (nuxt: Nuxt) => Promise<void> | void
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`
@@ -109,6 +128,11 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
 
   /**
    * Warmup vite entrypoint caches on dev startup.
+   *
+   * In dev mode Nuxt crawls the client entry's import graph once Nitro has built, transforming
+   * modules the browser is about to request. Set to `false` to skip this speculative work, which
+   * also disables Vite's own entry warmup.
+   * @default true
    */
   warmupEntry?: boolean
 
@@ -154,10 +178,24 @@ export interface NuxtAppConfig {
   head: Serializable<AppHeadMetaObject>
   layoutTransition: boolean | Serializable<TransitionProps>
   pageTransition: boolean | Serializable<TransitionProps>
-  viewTransition?: boolean | 'always'
+  viewTransition?: ViewTransitionOptions['enabled'] | ViewTransitionOptions
   keepalive: boolean | Serializable<KeepAliveProps>
 }
 
 export interface AppConfig {
   [key: string]: unknown
+}
+
+export interface ViewTransitionOptions {
+  enabled: boolean | 'always'
+  types?: string[]
+}
+
+type ViewTransitionTypesFn = (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => string[]
+
+export interface ViewTransitionPageOptions {
+  enabled?: boolean | 'always'
+  types?: string[] | ViewTransitionTypesFn
+  toTypes?: string[] | ViewTransitionTypesFn
+  fromTypes?: string[] | ViewTransitionTypesFn
 }

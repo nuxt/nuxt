@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { execSync } from 'node:child_process'
-import { inc } from 'semver'
+import { execFileSync } from 'node:child_process'
+import { increment } from 'verkit'
 import { determineBumpType, getLatestTag, loadWorkspace } from './_utils.ts'
 
 const nightlyPackages = {
@@ -13,19 +13,19 @@ const nightlyPackages = {
 export async function bumpNightly () {
   const workspace = await loadWorkspace(process.cwd())
 
-  const commit = execSync('git rev-parse --short HEAD').toString('utf-8').trim().slice(0, 8)
+  const commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf-8' }).trim().slice(0, 8)
   const date = Math.round(Date.now() / (1000 * 60))
 
   // TODO: revert after release of v4.2.0
   // Get the date of the latest tag to filter out merged history commits
   const latestTagName = await getLatestTag()
-  const tagDate = execSync(`git log -1 --format=%ai ${latestTagName}`, { encoding: 'utf-8' })
+  const tagDate = execFileSync('git', ['log', '-1', '--format=%ai', latestTagName], { encoding: 'utf-8' })
   const sinceDate = tagDate.trim()
 
   const bumpType = await determineBumpType(sinceDate)
 
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
-    const newVersion = inc(pkg.data.version, bumpType || 'patch')
+    const newVersion = increment(pkg.data.version, bumpType || 'patch')
     if (!newVersion) {
       throw new Error(`Failed to increment version for package ${pkg.data.name} with version ${pkg.data.version}`)
     }

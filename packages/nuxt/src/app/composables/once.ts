@@ -1,5 +1,6 @@
 import { useRouter } from './router'
 import { useNuxtApp } from '../nuxt'
+import { stateDiagnostics } from '../diagnostics/state'
 
 type CallOnceOptions = {
   mode?: 'navigation' | 'render'
@@ -22,22 +23,18 @@ export async function callOnce (...args: any[]): Promise<void> {
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, fn, options] = args as [string, (() => any | Promise<any>), CallOnceOptions | undefined]
   if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [callOnce] key must be a string: ' + _key)
+    throw stateDiagnostics.NUXT_E7010({ key: _key })
   }
   if (fn !== undefined && typeof fn !== 'function') {
-    throw new Error('[nuxt] [callOnce] fn must be a function: ' + fn)
+    throw stateDiagnostics.NUXT_E7008({ type: typeof fn })
   }
   const nuxtApp = useNuxtApp()
 
   if (options?.mode === 'navigation') {
-    const cleanups: Array<() => void> = []
-    function callback () {
+    const removeGuard = useRouter().beforeResolve(() => {
       nuxtApp.payload.once.delete(_key)
-      for (const cleanup of cleanups) {
-        cleanup()
-      }
-    }
-    cleanups.push(nuxtApp.hooks.hook('page:start', callback), useRouter().beforeResolve(callback))
+      removeGuard()
+    })
   }
 
   // If key already ran
@@ -50,7 +47,12 @@ export async function callOnce (...args: any[]): Promise<void> {
 
   nuxtApp._once ||= {}
   nuxtApp._once[_key] ||= fn() || true
-  await nuxtApp._once[_key]
+  try {
+    await nuxtApp._once[_key]
+  } catch (e) {
+    delete nuxtApp._once[_key]
+    throw e
+  }
   nuxtApp.payload.once.add(_key)
   delete nuxtApp._once[_key]
 }

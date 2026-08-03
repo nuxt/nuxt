@@ -1,18 +1,26 @@
-import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
-import { resolveModulePath } from 'exsolve'
 import VueSSRClientPlugin from '../plugins/vue/client.ts'
 import VueSSRServerPlugin from '../plugins/vue/server.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 
-import { webpack } from '#builder'
+import { VueLoaderPlugin, builder, vueLoader, vueModuleIdentifierLoader, webpack } from '../builder.ts'
 
 export function vue (ctx: WebpackConfigContext) {
-  // @ts-expect-error de-default vue-loader
-  ctx.config.plugins!.push(new (VueLoaderPlugin.default || VueLoaderPlugin)())
+  // ensure the Vue loader is always the first plugin, regardless of plugin ordering.
+  ctx.nuxt.hooks.hookOnce(`${builder}:config`, () => {
+    ctx.nuxt.hook(`${builder}:configResolved`, (configs) => {
+      for (const config of configs) {
+        config.plugins!.unshift(
+          // @ts-expect-error de-default vue-loader
+          new (VueLoaderPlugin.default
+            || VueLoaderPlugin)(),
+        )
+      }
+    })
+  })
 
   ctx.config.module!.rules!.push({
     test: /\.vue$/i,
-    loader: 'vue-loader',
+    loader: vueLoader,
     options: { ...ctx.userConfig.loaders.vue, isServerBuild: ctx.isServer },
   })
 
@@ -23,12 +31,11 @@ export function vue (ctx: WebpackConfigContext) {
       filename: `${ctx.name}.manifest.json`,
     }))
 
-    const loaderPath = resolveModulePath('#vue-module-identifier', { from: import.meta.url })
     ctx.config.module!.rules!.push({
       test: /\.vue$/i,
       enforce: 'post',
       use: [{
-        loader: loaderPath,
+        loader: vueModuleIdentifierLoader,
         options: { srcDir: ctx.nuxt.options.srcDir },
       }],
     })
@@ -36,9 +43,8 @@ export function vue (ctx: WebpackConfigContext) {
 
   // Feature flags
   // https://github.com/vuejs/core/tree/main/packages/vue#bundler-build-feature-flags
-  // TODO: Provide options to toggle
   ctx.config.plugins!.push(new webpack.DefinePlugin({
-    '__VUE_OPTIONS_API__': 'true',
+    '__VUE_OPTIONS_API__': String(ctx.nuxt.options.vue.optionsApi),
     '__VUE_PROD_DEVTOOLS__': 'false',
     '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': ctx.nuxt.options.debug && ctx.nuxt.options.debug.hydration,
   }))

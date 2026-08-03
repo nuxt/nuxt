@@ -1,7 +1,8 @@
 import { createError } from '#app/composables/error'
 import { defineNuxtRouteMiddleware } from '#app/composables/router'
+import type { RouteMiddleware } from '#app/composables/router'
 
-export default defineNuxtRouteMiddleware(async (to, from) => {
+const middleware: RouteMiddleware = defineNuxtRouteMiddleware(async (to) => {
   if (!to.meta?.validate) { return }
 
   const result = await Promise.resolve(to.meta.validate(to))
@@ -11,21 +12,14 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   const error = createError({
     fatal: import.meta.client,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    status: (result && (result.status || result.statusCode)) || 404,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    statusText: (result && (result.statusText || result.statusMessage)) || `Page Not Found: ${to.fullPath}`,
+    status: (result && result.status) || 404,
+    statusText: (result && result.statusText) || `Page Not Found: ${to.fullPath}`,
     data: {
       path: to.fullPath,
     },
   })
 
-  // We pretend to have navigated to the invalid route so
-  // that the user can return to the previous page with
-  // the back button.
-  if (typeof window !== 'undefined') {
-    window.history.pushState({}, '', from.fullPath)
-  }
-
   return error
 })
+
+export default middleware

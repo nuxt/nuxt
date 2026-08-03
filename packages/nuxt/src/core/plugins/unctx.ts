@@ -1,5 +1,5 @@
-import type { TransformerOptions } from 'unctx/transform'
-import { createTransformer } from 'unctx/transform'
+import type { Transformer, TransformerOptions } from 'unctx/transform'
+import { createTransformer, getTransformFilter } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
 import { isJS, isVue } from '../utils/index.ts'
@@ -13,7 +13,8 @@ interface UnctxTransformPluginOptions {
 }
 
 export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
-  const transformer = createTransformer(options.transformerOptions)
+  let transformer: Promise<Transformer> | undefined
+  const filter = getTransformFilter(options.transformerOptions)
 
   return {
     name: 'unctx:transform',
@@ -23,19 +24,21 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
     },
     transform: {
       filter: {
-        ...transformer.filter,
+        ...filter,
         code: {
-          ...transformer.filter.code,
+          include: filter.code,
           exclude: TRANSFORM_MARKER_RE,
         },
       },
-      handler (code) {
+      async handler (code) {
+        const { shouldTransform, transform } = await (transformer ??= createTransformer(options.transformerOptions))
         // TODO: needed for webpack - update transform in unctx/unplugin?
-        if (!transformer.shouldTransform(code)) { return }
-        const result = transformer.transform(code)
+        if (!shouldTransform(code)) { return }
+        const result = transform(code)
         if (result) {
+          result.magicString.prepend(TRANSFORM_MARKER)
           return {
-            code: TRANSFORM_MARKER + result.code,
+            code: result.magicString.toString(),
             map: options.sourcemap
               ? result.magicString.generateMap({ hires: true })
               : undefined,

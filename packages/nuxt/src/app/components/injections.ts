@@ -1,4 +1,4 @@
-import type { InjectionKey } from 'vue'
+import type { ComputedRef, InjectionKey } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 export interface LayoutMeta {
@@ -6,5 +6,7 @@ export interface LayoutMeta {
 }
 
 export const LayoutMetaSymbol: InjectionKey<LayoutMeta> = Symbol('layout-meta')
+
+export const LayoutSymbol: InjectionKey<Readonly<ComputedRef<string | false>>> = Symbol('layout')
 
 export const PageRouteSymbol: InjectionKey<RouteLocationNormalizedLoaded> = Symbol('route')

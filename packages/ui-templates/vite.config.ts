@@ -16,7 +16,7 @@ const r = (...path: string[]) => resolve(rootDir, ...path)
 export default defineConfig({
   build: {
     outDir: process.env.OUTPUT_DIR || 'dist',
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         ...Object.fromEntries(
           readdirSync(r('templates')).filter(dir => dir !== 'messages.json').map(dir => [
@@ -29,7 +29,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    UnoCSS(),
+    UnoCSS(r('uno.config.ts')),
     DevRenderingPlugin(),
     RenderPlugin(),
   ],

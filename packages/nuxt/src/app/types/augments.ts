@@ -1,27 +1,14 @@
+/// <reference path="./build-only.d.ts" />
+
 import type { UseHeadInput } from '@unhead/vue/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace NodeJS {
-    interface Process {
-      /** @deprecated Use `import.meta.browser` instead. This may be removed in Nuxt v5 or a future major version. */
-      browser: boolean
-      /** @deprecated Use `import.meta.client` instead. This may be removed in Nuxt v5 or a future major version. */
-      client: boolean
-      /** @deprecated Use `import.meta.dev` instead. This may be removed in Nuxt v5 or a future major version. */
-      dev: boolean
-      /** @deprecated Use `import.meta.server` instead. This may be removed in Nuxt v5 or a future major version. */
-      server: boolean
-      /** @deprecated Use `import.meta.test` instead. This may be removed in Nuxt v5 or a future major version. */
-      test: boolean
-    }
-  }
-
   interface ImportMeta {
     browser: boolean
     client: boolean
     dev: boolean
+    envName: string
     server: boolean
     test: boolean
   }
@@ -53,3 +40,5 @@ declare module 'vue' {
     head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
+
+export type _NuxtAugmentsAnchor = NuxtApp
