@@ -1,5 +1,5 @@
 import type { Plugin, ResolvedConfig } from 'vite'
-import { bundlerDiagnostics, ensureDependencyInstalled } from '@nuxt/kit'
+import { bundlerDiagnostics, ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { Options } from '@vitejs/plugin-vue-jsx'
 
@@ -41,7 +41,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
 
     if (!result) {
       installFailed = true
-      bundlerDiagnostics.NUXT_B7008()
+      bundlerDiagnostics.NUXT_B7008({ installCommand: await getAddDependencyCommand('@vitejs/plugin-vue-jsx', nuxt.options.rootDir, { dev: true }) })
       return undefined
     }
 

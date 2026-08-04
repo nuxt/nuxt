@@ -1,12 +1,25 @@
 import process from 'node:process'
 import { resolve } from 'pathe'
-import { defineVitestProject } from '@nuxt/test-utils/config'
+import { defineVitestProject as _defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
 import { isCI, isWindows } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 import type { NuxtConfig } from 'nuxt/schema'
 import { defu } from 'defu'
+
+// TODO: fix upstream in nuxt/test-utils
+function defineVitestProject (config: Parameters<typeof _defineVitestProject>[0]) {
+  return _defineVitestProject(defu({
+    test: {
+      environmentOptions: {
+        nuxt: {
+          overrides: { experimental: { nitroViteEnvironment: false } } satisfies NuxtConfig,
+        },
+      },
+    },
+  }, config))
+}
 
 const commonSettings: NuxtConfig = {
   pages: true,
@@ -121,10 +134,6 @@ export default defineConfig({
           retry: isCI ? 2 : 0,
           benchmark: { include: [] },
           env: fixtureProjectEnv(entry),
-          // TODO: fix upstream in nitro
-          // `nitro/vite` keeps `RunnerManager` in process-global state, so all but
-          // one concurrent worker gets a 503: 'Vite environment "nitro" is unavailable'
-          ...(entry.builder === 'nitro-vite' ? { fileParallelism: false } : {}),
         },
       })),
       {
@@ -139,6 +148,16 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          name: 'no-jiti',
+          include: ['test/no-jiti/*.test.ts'],
+          globalSetup: ['./test/setup-prepare.ts'],
+          setupFiles: ['./test/setup-env.ts'],
+          testTimeout: 300_000,
+          benchmark: { include: [] },
+        },
+      },
+      {
         define: {
           'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
         },
@@ -147,6 +166,7 @@ export default defineConfig({
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
+            '#internal/nuxt/nitro-config.mjs': resolve('./test/mocks/nitro-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),

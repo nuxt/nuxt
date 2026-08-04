@@ -1,4 +1,4 @@
-import { resolveModuleExportNames } from 'mlly'
+import { resolveModuleExportNames } from '@nuxt/kit'
 
 // TODO: defineRenderHandler and useEvent
 export const v2ImportsPreset = [

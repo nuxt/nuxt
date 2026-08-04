@@ -9,7 +9,7 @@ import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/is
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { builder, isDev, isWebpack } from './matrix'
+import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
@@ -44,7 +44,7 @@ await setup({
 })
 
 describe('server components/islands', () => {
-  itFailsIf(builder === 'webpack' && isDev)('/islands', async () => {
+  it('/islands', async () => {
     const { page } = await renderPage('/islands')
     const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
@@ -95,7 +95,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('lazy server components', async () => {
+  it('lazy server components', async () => {
     const { page, consoleLogs } = await renderPage('/server-components/lazy/start')
 
     await page.getByText('Go to page with lazy server component').click()
@@ -134,7 +134,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('non-lazy server components', async () => {
+  it('non-lazy server components', async () => {
     const { page } = await renderPage('/server-components/lazy/start')
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
@@ -164,21 +164,84 @@ describe('server components/islands', () => {
     expect(html).toContain('plugin-style')
     // #34482 - title should be composed with titleTemplate
     expect(html).toContain('<title>Server Page - Fixture</title>')
+    expect(html).toContain('data-internal')
+
+    const clientPageHtml = await $fetch<string>('/')
+    expect(clientPageHtml).not.toContain('data-internal')
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('/server-page - should preserve title after hydration', async () => {
+  it('/server-page - should preserve title after hydration', async () => {
     const { page } = await renderPage('/server-page')
     await page.waitForLoadState('networkidle')
     expect(await page.title()).toBe('Server Page - Fixture')
     await page.close()
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('/server-page - client side navigation', async () => {
+  it('/server-page - client side navigation', async () => {
     const { page } = await renderPage('/')
     await page.getByText('to server page').click()
     await page.waitForLoadState('networkidle')
 
     expect(await page.innerHTML('head')).toContain('<meta name="author" content="Nuxt">')
+    await page.close()
+  })
+
+  it('/server-page - links inside islands use client-side navigation', async () => {
+    const { page } = await renderPage('/server-page')
+    await page.evaluate(() => { (window as any).__islandNavMarker = true })
+
+    await page.click('#island-link-server-page')
+    await page.locator('#server-page-with-nuxtpage').waitFor()
+    expect(page.url()).toContain('/server-page-with-nuxtpage')
+    expect(await page.evaluate(() => (window as any).__islandNavMarker)).toBe(true)
+
+    await page.goBack()
+    await page.locator('#island-link-home').waitFor()
+    await page.click('#island-link-home')
+    await page.locator('#islands').waitFor()
+    expect(await page.evaluate(() => (window as any).__islandNavMarker)).toBe(true)
+
+    await page.close()
+  })
+
+  it('/server-page - island links are prefetched when visible', async () => {
+    const { page } = await renderPage('/server-page')
+    await page.waitForFunction(() => (window as any).__prefetchedLinks?.includes('/server-page-with-nuxtpage'))
+    await page.close()
+  })
+
+  it('/server-page - island links with `replace` do not add a history entry', async () => {
+    const { page } = await renderPage('/')
+    await page.getByText('to server page').click()
+    await page.locator('#island-link-replace').waitFor()
+    await page.click('#island-link-replace')
+    await page.locator('#server-page-with-nuxtpage').waitFor()
+
+    await page.goBack()
+    await page.locator('#islands').waitFor()
+    expect(page.url().endsWith('/')).toBe(true)
+
+    await page.close()
+  })
+
+  it('/server-page - should ship island html only once in the initial response', async () => {
+    const html = await $fetch<string>('/server-page')
+    expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
+  })
+
+  it('/server-page - island response is prefetched by NuxtLink', async () => {
+    const { page, requests } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+
+    const isServerPageIsland = (req: string) => /^\/__nuxt_island\/page_server-page_/.test(req)
+
+    expect(requests.some(isServerPageIsland)).toBe(true)
+    requests.length = 0
+
+    await page.getByText('to server page').click()
+    await page.waitForFunction(() => !!document.head.querySelector('meta[name="author"][content="Nuxt"]'))
+
+    expect(requests.some(isServerPageIsland)).toBe(false)
     await page.close()
   })
 
@@ -221,7 +284,7 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('render async component', async () => {
+  it('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
@@ -279,7 +342,7 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('render .server async component', async () => {
+  it('render .server async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
@@ -417,7 +480,7 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('test client-side navigation', async () => {
+  it('test client-side navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('#islands')
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/islands')
@@ -477,6 +540,17 @@ describe('component islands', () => {
     await page.locator('#server-page').waitFor()
   })
 
+  it.skipIf(isDev)('should render an island shared by prerendered pages only once', async () => {
+    const [a, b] = await Promise.all([
+      $fetch<string>('/prerender/island-a'),
+      $fetch<string>('/prerender/island-b'),
+    ])
+    const renderId = (html: string) => html.match(/id="prerender-dedupe"[^>]*>([^<]*)</)?.[1]?.trim()
+
+    expect(renderId(a)).toBeTruthy()
+    expect(renderId(a)).toBe(renderId(b))
+  })
+
   it('should show error on 404 error for server pages during client navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('[href="/server-components/lost-page"]')
@@ -530,6 +604,15 @@ describe('hash binding', () => {
     expect(res.status).toBe(400)
   })
 
+  it('maps a nuxt error thrown inside an island to its HTTP status', async () => {
+    const res = await fetch(islandURL('ThrowingComponent'))
+    expect(res.status).toBe(404)
+    expect(await res.json()).toMatchObject({
+      status: 404,
+      statusText: 'Island not found',
+    })
+  })
+
   it('rejects a request with a fabricated hash', async () => {
     const res = await fetch(withQuery('/__nuxt_island/PureComponent_deadbeefcafef00d.json', {
       props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
@@ -540,6 +623,33 @@ describe('hash binding', () => {
   it('rejects a request with no hash segment in the URL', async () => {
     const res = await fetch(withQuery('/__nuxt_island/PureComponent.json', {
       props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects array props even when the hash matches their indexed form', async () => {
+    const name = 'PureComponent'
+    const hashId = getIslandHash({ name, props: { 0: 3, 1: 0, 2: 3 } })
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: JSON.stringify([3, 0, 3]),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects primitive props', async () => {
+    const name = 'PureComponent'
+    const hashId = getIslandHash({ name, props: {} })
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: 'false',
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects null props', async () => {
+    const name = 'PureComponent'
+    const hashId = getIslandHash({ name, props: {} })
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: 'null',
     }))
     expect(res.status).toBe(400)
   })
@@ -602,16 +712,14 @@ describe('denial-of-service protections', () => {
   // Bounds both the plain-element path (`ssrRenderList`, rendered inline into `html`) and the
   // slot path (`vforToArray`, whose `:props` array and fallback content are teleported into
   // the slot response rather than the island body).
-  // The webpack dev build does not apply the islands transform to the compiled template (see the
-  // `it.fails` island tests above), so neither the bound nor the slot teleport is present there.
-  it.skipIf(builder === 'webpack' && isDev)('bounds plain and slot v-for over a large-integer prop', async () => {
+  it('bounds plain and slot v-for over a large-integer prop', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 10_000_000 } }))
     expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(result.slots?.loop?.props?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
   })
 
-  it.skipIf(builder === 'webpack' && isDev)('renders a small v-for prop unchanged', async () => {
+  it('renders a small v-for prop unchanged', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 3 } }))
     expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
     expect(result.slots?.loop?.props?.length ?? 0).toBe(3)

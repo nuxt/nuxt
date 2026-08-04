@@ -17,7 +17,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5002: {
       why: (p: { rootDir: string }) => `\`@nuxt/webpack-builder\` could not be installed in \`${p.rootDir}\`.`,
-      fix: 'Install it manually with `npm install -D @nuxt/webpack-builder`, or change the `builder` option to `vite` in `nuxt.config`.',
+      fix: (p: { installCommand: string }) => `Install it manually with \`${p.installCommand}\`, or change the \`builder\` option to \`vite\` in \`nuxt.config\`.`,
       docs: false,
     },
     NUXT_B5003: {
@@ -45,17 +45,32 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5009: {
       why: '`@parcel/watcher` cannot be resolved in your project, so `chokidar` is being used instead.',
-      fix: 'Install `@parcel/watcher` for better file watching: `npm install -D @parcel/watcher`.',
+      fix: (p: { installCommand: string }) => `Install \`@parcel/watcher\` for better file watching: \`${p.installCommand}\`.`,
       docs: false,
     },
     NUXT_B5010: {
       why: (p: { names: string }) => `Required packages are not installed: ${p.names}.`,
-      fix: (p: { install: string }) => `Run \`npm install ${p.install}\` to install them.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install them.`,
       docs: false,
     },
     NUXT_B5011: {
       why: (p: { name: string }) => `Package \`${p.name}\` is missing.`,
       fix: (p: { name: string }) => `Run \`npx nuxt add ${p.name}\` to install it.`,
+      docs: false,
+    },
+    NUXT_B5018: {
+      why: (p: { source: string }) => `Extending from \`${p.source}\` downloads the layer at build time, which needs the \`giget\` package.`,
+      fix: (p: { source: string, installCommand: string }) => `Add the layer to \`package.json\` instead, so it is pinned and in your lockfile (for example \`"my-layer": "${p.source.replace(/^gh:/, 'github:')}#<commit>"\`), then extend from its package name. Otherwise run \`${p.installCommand}\` to keep downloading it.`,
+      docs: false,
+    },
+    NUXT_B5019: {
+      why: (p: { filePath: string }) => `The Nuxt schema in \`${p.filePath}\` was skipped because \`jiti\` is not installed. A schema file's JSDoc annotations are read by an import-time transform, which is the one part of loading it the runtime cannot do on its own.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to load it, or remove the \`nuxt.schema\` file.`,
+      docs: false,
+    },
+    NUXT_B5017: {
+      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` could not be loaded: ${p.error}`,
+      fix: (p: { installCommand: string }) => `Relative imports need an explicit file extension (\`./foo.ts\`, not \`./foo\`), and TypeScript syntax that emits code (such as \`enum\`) cannot be stripped. Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
       docs: false,
     },
   },

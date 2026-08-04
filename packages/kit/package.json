@@ -24,16 +24,14 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "c12": "catalog:build",
+    "confbox": "catalog:build",
     "consola": "catalog:build",
     "defu": "catalog:build",
     "destr": "catalog:build",
     "errx": "catalog:build",
     "exsolve": "catalog:build",
     "ignore": "catalog:build",
-    "jiti": "catalog:build",
     "klona": "catalog:build",
-    "mlly": "catalog:build",
     "nostics": "catalog:build",
     "nypm": "catalog:build",
     "ohash": "catalog:build",
@@ -45,22 +43,58 @@
     "tinyglobby": "catalog:build",
     "ufo": "catalog:build",
     "unctx": "catalog:build",
-    "untyped": "catalog:build",
     "verkit": "catalog:build"
+  },
+  "peerDependencies": {
+    "dotenv": "catalog:build",
+    "giget": "catalog:build",
+    "jiti": "catalog:build",
+    "mlly": "catalog:build",
+    "oxc-parser": ">=0.56.0",
+    "rolldown": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "dotenv": {
+      "optional": true
+    },
+    "giget": {
+      "optional": true
+    },
+    "jiti": {
+      "optional": true
+    },
+    "mlly": {
+      "optional": true
+    },
+    "oxc-parser": {
+      "optional": true
+    },
+    "rolldown": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
+    "c12": "catalog:build",
+    "chokidar": "catalog:build",
+    "dotenv": "catalog:build",
+    "giget": "catalog:build",
     "hookable": "catalog:app-runtime",
+    "jiti": "catalog:build",
+    "mlly": "catalog:build",
     "nitro": "catalog:nitro-runtime",
     "nitropack": "catalog:dev",
+    "oxc-parser": "catalog:build",
+    "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "unimport": "catalog:build",
+    "untyped": "catalog:build",
     "vite": "catalog:vite",
     "vitest": "catalog:dev",
     "webpack": "catalog:webpack"
   },
   "engines": {
-    "node": ">=18.12.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "publishConfig": {
     "exports": {
@@ -68,5 +102,9 @@
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"
+  },
+  "inlinedDependencies": {
+    "c12": "4.0.0-beta.5",
+    "untyped": "2.0.0"
   }
 }

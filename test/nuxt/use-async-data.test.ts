@@ -437,6 +437,25 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
+  it('does not write resolved data to the payload with `serialize: false`', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('test'), { serialize: false })
+
+    expect(data.value).toBe('test')
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+  })
+
+  it('does not write cached data to the payload with `serialize: false`', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('fetched'), {
+      serialize: false,
+      getCachedData: () => 'cached',
+    })
+
+    expect(data.value).toBe('cached')
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+  })
+
   it('removes the key from payload.data and _asyncDataPromises on clear', async () => {
     const nuxtApp = useNuxtApp()
     await useAsyncData(uniqueKey, () => Promise.resolve('test'))
@@ -957,6 +976,23 @@ describe('useAsyncData', () => {
 
     expect(capturedSignal!.aborted).toBe(true)
     expect(nuxtApp._asyncDataPromises[key]).toBeUndefined()
+  })
+
+  it('should settle status when unmounting mid-fetch with custom getCachedData', async () => {
+    const key = `settle-on-unmount-${++counter}`
+    const nuxtApp = useNuxtApp()
+    const scope = effectScope()
+    let res!: ReturnType<typeof useAsyncData>
+    scope.run(() => {
+      res = useAsyncData(key, () => new Promise<string>(() => {}), { getCachedData: () => undefined })
+    })
+    expect(res.status.value).toBe('pending')
+    scope.stop()
+    await nextTick()
+    await nextTick()
+    expect(res.status.value).toBe('idle')
+    expect(res.pending.value).toBe(false)
+    expect(nuxtApp._asyncData[key]?.status.value).toBe('idle')
   })
 
   it('should be synced with useNuxtData', async () => {

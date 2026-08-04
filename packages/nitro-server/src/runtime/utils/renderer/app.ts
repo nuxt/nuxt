@@ -1,6 +1,8 @@
 import type { H3Event } from 'nitro/h3'
 import { FastResponse } from 'srvx'
 import { useRuntimeConfig } from 'nitro/runtime-config'
+
+import '../../context'
 import { createHead } from '@unhead/vue/server'
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
 import { sharedPrerenderCache } from '../cache'

@@ -8,7 +8,7 @@ import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/tes
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const itFailsIf = (condition: boolean) => condition ? it.fails : it
@@ -97,10 +97,14 @@ describe('route rules', () => {
 
   it('test noScript routeRules', async () => {
     const html = await $fetch<string>('/no-scripts')
-    expect(html).not.toContain('<script')
+    // no executable scripts are shipped; the only `<script>` permitted is the
+    // declarative speculation-rules JSON, which runs no JavaScript
+    const scripts = html.match(/<script[^>]*>/g) ?? []
+    expect(scripts.some(tag => tag.includes('type="speculationrules"'))).toBe(true)
+    expect(scripts.every(tag => tag.includes('type="speculationrules"'))).toBe(true)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('client-side navigation should redirect if hash included', async () => {
+  it('client-side navigation should redirect if hash included', async () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')
     await page.getByTestId('route-rules-redirect').click()
@@ -714,6 +718,15 @@ describe('pages', () => {
 
     await page.close()
   })
+
+  it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
+    const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
+
+    await page.waitForFunction(() => document.querySelector('#preview-enabled')?.textContent === 'true')
+    expect(await page.innerText('#preview-token')).toBe('hehe')
+
+    await page.close()
+  })
 })
 
 describe('nuxt composables', () => {
@@ -1146,6 +1159,62 @@ describe('errors', () => {
       statusText: 'This is a custom error',
     })
     expect(error).not.toHaveProperty('url')
+  })
+
+  it('should map a createError status thrown in a page to the HTTP status', async () => {
+    const res = await fetch('/error/not-found', {
+      headers: {
+        accept: 'application/json',
+      },
+    })
+    expect(res.status).toBe(404)
+    expect(res.statusText).toBe('This page does not exist')
+    const error = await res.json()
+    expect(error).toMatchObject({
+      status: 404,
+      statusText: 'This page does not exist',
+      data: { reason: 'missing' },
+    })
+
+    const html = await fetch('/error/not-found').then(r => r.text())
+    expect(html).toContain('This page does not exist')
+  })
+
+  it('should send the error page typed values, not stringified query params', async () => {
+    const html = await fetch('/error', { headers: { accept: 'text/html' } }).then(r => r.text())
+    const payload = html.match(/__NUXT_DATA__[^>]*>(.*?)<\/script>/s)![1]!
+    const data = JSON.parse(payload)
+    const error = data[data[1]!.error]
+
+    expect(data[error.status]).toBe(422)
+    expect(data[error.statusText]).toBe('This is a custom error')
+    // booleans stay booleans, where a query string would make them `'true'`
+    expect(data[error.fatal]).toBe(true)
+    // the signature is what `isNuxtError` checks on the error page (#29182)
+    expect(data[error.__nuxt_error]).toBe(true)
+  })
+
+  it('should expose a recognisable NuxtError on the client error page', async () => {
+    const { page } = await renderPage('/error/not-found')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    // #29182: the error survived SSR -> query -> payload -> revival with its
+    // signature and structured `data` intact
+    expect(await page.evaluate(() => {
+      const error = window.useNuxtApp!().payload.error as any
+      return { recognised: '__nuxt_error' in error, status: error.status, data: error.data }
+    })).toEqual({ recognised: true, status: 404, data: { reason: 'missing' } })
+
+    await page.close()
+  })
+
+  it('should keep error data structured on the error page', async () => {
+    const html = await fetch('/error/not-found', { headers: { accept: 'text/html' } }).then(r => r.text())
+    const payload = html.match(/__NUXT_DATA__[^>]*>(.*?)<\/script>/s)![1]!
+    const data = JSON.parse(payload)
+
+    const errorData = data[data[data[1]!.error].data]
+    expect(data[errorData.reason]).toBe('missing')
   })
 
   it('should render a HTML error page', async () => {
@@ -1865,7 +1934,7 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   // TODO: looks like this test is flaky
-  const prefetchedPayloadIt = !isTestingAppManifest ? it.skip : itFailsIf(builder === 'webpack' && isDev)
+  const prefetchedPayloadIt = !isTestingAppManifest ? it.skip : it
   prefetchedPayloadIt('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 

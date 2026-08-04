@@ -184,7 +184,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        uses: github/codeql-action/init@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
         with:
           config: |
             paths:
@@ -201,7 +201,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        uses: github/codeql-action/analyze@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -268,7 +268,7 @@ jobs:
           cache: true
 
       - name: Prepare
-        run: vp run dev:prepare && vp run test:prepare
+        run: vp run dev:prepare && vp run test:prepare && vp run build:kit
 
       - parallel:
           - name: Lint
@@ -279,6 +279,9 @@ jobs:
 
           - name: Test (unit)
             run: vp run test:unit
+
+          - name: Test (no jiti)
+            run: vp run test:no-jiti
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -367,7 +370,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@f99becdce5e5d51fd556489ebef684f4ecfd6286 # v4.18.5
+        uses: CodSpeedHQ/action@88472375d0a4572cf70a9f1fe3a4e0ab8da1b924 # v5.0.1
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -391,7 +394,7 @@ jobs:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:webpack-dev-*"'
+            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-dev-*"'
           - os: windows-latest
