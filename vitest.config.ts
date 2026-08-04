@@ -19,6 +19,14 @@ const commonSettings: NuxtConfig = {
     // Mixed-case keys must still match case-insensitively (vue-router's default).
     '/Secret/Docs/**': { ssr: false },
     '/Legacy/Home': { redirect: '/target' },
+    // Decoded keys must match the percent-encoded path generated for a unicode page,
+    // including when a catch-all rule sets the same key, and when folding an
+    // encoded non-ASCII character is required to match.
+    '/测试': { redirect: '/unicode-target' },
+    '/unicode/**': { ssr: true },
+    '/unicode/测试': { ssr: false },
+    '/cafÉ': { redirect: '/accented-target' },
+    [`/pre-encoded/${encodeURIComponent('测试')}`]: { redirect: '/pre-encoded-target' },
   },
   experimental: {
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
