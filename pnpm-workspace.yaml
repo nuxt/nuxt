@@ -144,7 +144,7 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.5
-    '@nuxt/cli': ^3.37.0
+    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260803-092449-e80f9d0
     '@nuxt/devtools': ^4.0.0-alpha.9
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.40
