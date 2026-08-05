@@ -298,6 +298,23 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return result
             }
             if (result) {
+              let redirectPath: string | undefined
+              if (typeof result === 'string') {
+                redirectPath = router.resolve(result).fullPath
+              } else if (typeof result === 'object' && !isNuxtError(result) && ('path' in result || 'name' in result)) {
+                redirectPath = router.resolve(result as any).fullPath
+              }
+              if (redirectPath && redirectPath === to.fullPath) {
+                const error = createError({
+                  statusCode: 500,
+                  fatal: true,
+                  statusMessage: 'Infinite redirect in navigation guard',
+                })
+                await nuxtApp.runWithContext(() => showError(error))
+                pushErroredRoute(to)
+                return error
+              }
+
               if (isNuxtError(result) && result.fatal) {
                 await nuxtApp.runWithContext(() => showError(result))
                 pushErroredRoute(to)
