@@ -139,7 +139,17 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
           // Cancel navigation
           if (result === false || result instanceof Error) { return }
           // Redirect
-          if (typeof result === 'string' && result.length) { return await handleNavigation(result, true) }
+          if (typeof result === 'string' && result.length) {
+            const redirectPath = getRouteFromPath(result).fullPath
+            if (redirectPath === to.fullPath) {
+              throw createError({
+                statusCode: 500,
+                fatal: true,
+                statusMessage: 'Infinite redirect in navigation guard'
+              })
+            }
+            return await handleNavigation(result, true)
+          }
         }
 
         for (const handler of hooks['resolve:before']) {
