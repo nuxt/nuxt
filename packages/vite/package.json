@@ -52,7 +52,7 @@
     "perfect-debounce": "^2.1.0",
     "pkg-types": "^2.3.1",
     "postcss": "^8.5.25",
-    "seroval": "^1.6.0",
+    "seroval": "^1.6.2",
     "std-env": "^4.2.0",
     "ufo": "^1.6.4",
     "unenv": "^2.0.0-rc.24",

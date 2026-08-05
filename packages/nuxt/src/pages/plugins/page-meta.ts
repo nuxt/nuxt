@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
-import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
+import { ScopeTracker, getUndeclaredIdentifiersInFunction, isReferenceIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { logger } from '../../utils.ts'
@@ -196,7 +196,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                     throw new Error('await in definePageMeta')
                   }
                   if (
-                    isBindingIdentifier(node, parent)
+                    !isReferenceIdentifier(node, parent)
                   || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
                   ) { return }
 
@@ -268,7 +268,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
               scopeTracker,
               enter (node, parent) {
                 if (
-                  isBindingIdentifier(node, parent)
+                  !isReferenceIdentifier(node, parent)
                 || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
                 ) { return }
 
