@@ -9,7 +9,7 @@ import { computeIslandHash, serializeIslandProps } from '../packages/nuxt/src/ap
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { isDev, isWebpack } from './matrix'
+import { isDev, isRenderingJson, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
@@ -178,6 +178,13 @@ describe('server components/islands', () => {
 
     expect(await page.innerHTML('head')).toContain('<meta name="author" content="Nuxt">')
     await page.close()
+  })
+
+  // JS payloads are serialised with `devalue` on the nitro side, which does not run the app's
+  // payload reducers, so the island stub that keeps the html out of the payload never applies.
+  it.skipIf(!isRenderingJson)('/server-page - should ship island html only once in the initial response', async () => {
+    const html = await $fetch<string>('/server-page')
+    expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
   })
 })
 
@@ -464,6 +471,17 @@ describe('component islands', () => {
     await page.locator('#server-page').waitFor()
   })
 
+  it.skipIf(isDev)('should render an island shared by prerendered pages only once', async () => {
+    const [a, b] = await Promise.all([
+      $fetch<string>('/prerender/island-a'),
+      $fetch<string>('/prerender/island-b'),
+    ])
+    const renderId = (html: string) => html.match(/id="prerender-dedupe"[^>]*>([^<]*)</)?.[1]?.trim()
+
+    expect(renderId(a)).toBeTruthy()
+    expect(renderId(a)).toBe(renderId(b))
+  })
+
   it('should show error on 404 error for server pages during client navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('[href="/server-components/lost-page"]')
@@ -527,6 +545,33 @@ describe('hash binding', () => {
   it('rejects a request with no hash segment in the URL', async () => {
     const res = await fetch(withQuery('/__nuxt_island/PureComponent.json', {
       props: JSON.stringify({ bool: false, number: 1, str: 's', obj: {} }),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects array props even when the hash matches their indexed form', async () => {
+    const name = 'PureComponent'
+    const hashId = computeIslandHash(name, serializeIslandProps({ 0: 3, 1: 0, 2: 3 }), {}, undefined)
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: JSON.stringify([3, 0, 3]),
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects primitive props', async () => {
+    const name = 'PureComponent'
+    const hashId = computeIslandHash(name, serializeIslandProps({}), {}, undefined)
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: 'false',
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects null props', async () => {
+    const name = 'PureComponent'
+    const hashId = computeIslandHash(name, serializeIslandProps({}), {}, undefined)
+    const res = await fetch(withQuery(`/__nuxt_island/${name}_${hashId}.json`, {
+      props: 'null',
     }))
     expect(res.status).toBe(400)
   })

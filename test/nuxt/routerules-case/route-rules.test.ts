@@ -16,4 +16,10 @@ describe('case-insensitive route rules fold mixed-case keys', () => {
       expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/target' })
     }
   })
+
+  it('folds a non-ASCII character that arrives percent-encoded', () => {
+    for (const path of ['/cafÉ', '/café', `/caf${encodeURIComponent('É')}`, `/caf${encodeURIComponent('é')}`]) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/accented-target' })
+    }
+  })
 })

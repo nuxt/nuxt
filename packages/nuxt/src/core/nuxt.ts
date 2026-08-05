@@ -694,6 +694,12 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
   }
 
+  const pagesEnabled = nuxt.options.pages !== false && (nuxt.options.pages as { enabled?: boolean } | undefined)?.enabled !== false
+  // Handle client-side navigation for links rendered inside server component islands
+  if (pagesEnabled && nuxt.options.experimental.componentIslands) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/island-link-navigation.client'))
+  }
+
   // Add experimental page reload support
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))

@@ -105,6 +105,11 @@ describe('route rules', () => {
     expect(html).toContain('Hello from routeRules!')
   })
 
+  it('should run appMiddleware from a decoded route rule key on a unicode page', async () => {
+    const html = await $fetch<string>(`/route-rules/${encodeURIComponent('测试')}`)
+    expect(html).toContain('Hello from routeRules!')
+  })
+
   it('should set layout defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
@@ -797,6 +802,15 @@ describe('pages', () => {
     await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
     isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
     expect(isVisible).toBe(false)
+
+    await page.close()
+  })
+
+  it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
+    const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
+
+    await page.waitForFunction(() => document.querySelector('#preview-enabled')?.textContent === 'true')
+    expect(await page.innerText('#preview-token')).toBe('hehe')
 
     await page.close()
   })

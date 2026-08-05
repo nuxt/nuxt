@@ -19,6 +19,7 @@ import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, norma
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
+import { normalizeRouteRulePath } from '../core/utils/route-rules.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
@@ -440,16 +441,16 @@ export default defineNuxtModule({
 
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static) {
-        // Fold keys (unless `sensitive`) to mirror the compiled `#build/route-rules.mjs`
-        // matcher, so a `prerender: true` rule keyed `/Admin` is honoured at `/Admin`.
+        // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs`
+        // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
+        // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules ? route : route.toLowerCase()
         const routeRulesRouter = createRou3Router<NitroRouteRules>()
         for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
-          addRoute(routeRulesRouter, undefined, foldRouteRuleKey(route), rules)
+          addRoute(routeRulesRouter, undefined, normalizeRouteRulePath(route, !caseSensitiveRouteRules), rules)
         }
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, foldRouteRuleKey(route)).reverse())
+          const rules = defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
