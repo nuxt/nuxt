@@ -21,6 +21,13 @@ export interface NuxtTracingChannelOptions {
   unstorage?: boolean
 }
 
+declare global {
+  interface ImportMeta {
+    dev: boolean
+    test: boolean
+  }
+}
+
 declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string

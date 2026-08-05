@@ -352,6 +352,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     replace: {
       '__VUE_PROD_DEVTOOLS__': String(false),
+      'import.meta.test': String(!!nuxt.options.test),
     },
     rollupConfig: {
       output: {

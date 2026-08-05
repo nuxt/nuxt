@@ -29,4 +29,9 @@ describe('shared folder', () => {
     expectTypeOf(config.userConfig).toEqualTypeOf<123 | 456 | undefined>()
     expectTypeOf(config.fromLayer).toEqualTypeOf<unknown>()
   })
+
+  it('types build flags', () => {
+    expectTypeOf(import.meta.dev).toEqualTypeOf<boolean>()
+    expectTypeOf(import.meta.test).toEqualTypeOf<boolean>()
+  })
 })
