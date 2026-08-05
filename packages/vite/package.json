@@ -67,7 +67,7 @@
     "h3-next": "npm:h3@2.0.1-rc.26",
     "nitropack": "2.13.4",
     "obuild": "0.4.38",
-    "rolldown": "1.2.1",
+    "rolldown": "1.2.2",
     "rollup": "4.62.4",
     "rollup-plugin-visualizer": "7.0.1",
     "vue": "3.5.40"
