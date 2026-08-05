@@ -33,6 +33,10 @@ jobs:
       - name: Prepare
         run: vp run dev:prepare
 
+      - name: Regenerate ui-templates output
+        working-directory: packages/ui-templates
+        run: vp run build
+
       - parallel:
           - name: Test (nuxt runtime)
             run: vp run test:runtime -u
