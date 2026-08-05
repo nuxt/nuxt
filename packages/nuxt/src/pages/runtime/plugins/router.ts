@@ -308,7 +308,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
                 const error = createError({
                   statusCode: 500,
                   fatal: true,
-                  statusMessage: 'Infinite redirect in navigation guard'
+                  statusMessage: 'Infinite redirect in navigation guard',
                 })
                 await nuxtApp.runWithContext(() => showError(error))
                 pushErroredRoute(to)

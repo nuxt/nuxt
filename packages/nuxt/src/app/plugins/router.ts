@@ -145,7 +145,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
               throw createError({
                 statusCode: 500,
                 fatal: true,
-                statusMessage: 'Infinite redirect in navigation guard'
+                statusMessage: 'Infinite redirect in navigation guard',
               })
             }
             return await handleNavigation(result, true)
