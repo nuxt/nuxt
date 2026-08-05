@@ -77,6 +77,7 @@
     {
       "groupName": "nitro",
       "groupSlug": "nitro",
+      "dependencyDashboardApproval": true,
       "matchPackageNames": [
         "nitro",
         "h3",
