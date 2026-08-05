@@ -1,8 +1,14 @@
 import type { Import } from 'unimport'
+import defu from 'defu'
 import { normalize } from 'pathe'
 
 import { useNuxt } from './context.ts'
-import type { Nitro, NitroDevEventHandler, NitroEventHandler } from './nitro-types.ts'
+import type {
+  Nitro,
+  NitroDevEventHandler,
+  NitroEventHandler,
+  NitroRouteConfig,
+} from './nitro-types.ts'
 import { toArray } from './utils.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
@@ -124,5 +130,20 @@ export function addServerScanDir (dirs: string | string[], opts: { prepend?: boo
     for (const dir of toArray(dirs)) {
       config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
     }
+  })
+}
+
+/**
+ * Add route rules to the nitro router.
+ */
+export function updateRouteRules (routeRules: Record<string, NitroRouteConfig> = {}, opts: { merge?: boolean } = {}): void {
+  const nitro = useNitro()
+  nitro.updateConfig({
+    routeRules: opts.merge
+      ? defu(nitro.options.routeRules, routeRules)
+      : {
+          ...nitro.options.routeRules,
+          ...routeRules,
+        } as any,
   })
 }
