@@ -1,6 +1,6 @@
 import type { AsyncLocalStorage } from 'node:async_hooks'
-import type { Hookable } from 'hookable'
-import type { Ignore } from 'ignore'
+import type { NuxtHookRegistry } from './hookable.ts'
+import type { NuxtIgnoreMatcher } from './ignore.ts'
 import type { NuxtModule } from './module.ts'
 import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, WatchEvent } from './hooks.ts'
 import type { Component } from './components.ts'
@@ -144,7 +144,7 @@ export interface Nuxt {
   // Private fields.
   '__name': string
   '_version': string
-  '_ignore'?: Ignore
+  '_ignore'?: NuxtIgnoreMatcher
   '_dependencies'?: Set<string>
   '~runtimeDependencies'?: string[]
   '_debug'?: NuxtDebugContext
@@ -179,7 +179,7 @@ export interface Nuxt {
 
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions
-  'hooks': Hookable<NuxtHooks>
+  'hooks': NuxtHookRegistry<NuxtHooks>
   'hook': Nuxt['hooks']['hook']
   'callHook': Nuxt['hooks']['callHook']
   'addHooks': Nuxt['hooks']['addHooks']

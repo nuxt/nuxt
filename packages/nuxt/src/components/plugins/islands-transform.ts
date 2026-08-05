@@ -1,5 +1,5 @@
 import type { Component } from '@nuxt/schema'
-import { componentDiagnostics } from '@nuxt/kit'
+import { componentDiagnostics } from '@nuxt/kit/internal'
 import { linkToAlias } from '../../utils.ts'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'

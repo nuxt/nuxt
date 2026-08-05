@@ -1,5 +1,6 @@
 import { resolvePackageJSON } from 'pkg-types'
-import { buildDiagnostics, configDiagnostics, getAddDependencyCommand, useNuxt } from '@nuxt/kit'
+import { getAddDependencyCommand, useNuxt } from '@nuxt/kit'
+import { buildDiagnostics, configDiagnostics } from '@nuxt/kit/internal'
 import { isCI, provider } from 'std-env'
 import { logger } from '../utils.ts'
 

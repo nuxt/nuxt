@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
-import { pageDiagnostics } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 

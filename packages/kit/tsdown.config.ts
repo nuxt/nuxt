@@ -1,6 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
+  entry: ['src/index.ts', 'src/internal/index.ts'],
   // No `oxc: true`: it can't infer `defineDiagnostics()`'s return type, which the
   // diagnostics catalogs rely on. tsc handles it.
   dts: {},
@@ -20,9 +21,6 @@ export default defineConfig({
       '@nuxt/schema',
       'nitro/types',
       'nitropack/types',
-      'webpack',
-      'vite',
-      'unimport',
       /^rolldown(\/|$)/,
       'oxc-parser',
       'mlly',

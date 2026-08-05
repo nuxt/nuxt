@@ -100,6 +100,9 @@ jobs:
       - name: Build and check built types
         run: vp run test:attw
 
+      - name: Check public API type surface
+        run: vp run test:public-api
+
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
         run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
