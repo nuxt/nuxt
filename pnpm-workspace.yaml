@@ -83,7 +83,7 @@ catalogs:
     vue-router: ^5.2.0
   nitro-runtime:
     destr: ^2.0.5
-    srvx: 0.12.4
+    srvx: 0.12.5
     unstorage: ^1.17.5
   vue:
     '@vitejs/plugin-vue': ^6.0.8
