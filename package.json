@@ -62,8 +62,8 @@
     "@types/babel__helper-plugin-utils": "7.10.3",
     "@types/node": "24.13.3",
     "@types/semver": "7.8.0",
-    "@typescript-eslint/parser": "8.65.0",
-    "@unhead/vue": "2.1.16",
+    "@typescript-eslint/parser": "8.66.0",
+    "@unhead/vue": "2.1.17",
     "@vitest/coverage-v8": "4.1.10",
     "@vue/test-utils": "2.4.11",
     "acorn": "8.18.0",
@@ -78,7 +78,7 @@
     "eslint": "10.8.0",
     "eslint-plugin-import-x": "4.17.1",
     "eslint-plugin-no-only-tests": "3.4.0",
-    "eslint-plugin-perfectionist": "5.10.0",
+    "eslint-plugin-perfectionist": "5.10.1",
     "eslint-typegen": "2.3.1",
     "estree-walker": "3.0.3",
     "get-port-please": "3.2.0",
@@ -89,7 +89,7 @@
     "magic-regexp": "0.11.0",
     "magic-string": "0.30.21",
     "markdownlint-cli": "0.49.1",
-    "memfs": "4.64.0",
+    "memfs": "4.67.0",
     "nitropack": "2.13.4",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.4.0",
@@ -114,6 +114,6 @@
     "vue-tsc": "3.3.9",
     "webpack": "5.109.2"
   },
-  "packageManager": "pnpm@11.18.0",
+  "packageManager": "pnpm@11.20.0",
   "version": ""
 }
