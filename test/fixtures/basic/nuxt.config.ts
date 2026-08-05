@@ -184,6 +184,8 @@ export default withMatrix({
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       // Uppercase-keyed rule must still apply to the case-insensitively served page.
       '/Route-Rules/Case-Insensitive': { appMiddleware: 'route-rules-middleware' },
+      // Decoded key must still apply to the percent-encoded path generated for the page.
+      '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
       '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },

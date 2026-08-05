@@ -18,3 +18,21 @@ export function uniqueBy<T, K extends keyof T> (arr: T[], key: K) {
 export const QUOTE_RE = /["']/g
 export const EXTENSION_RE = /\b\.\w+$/g
 export const SX_RE = /\.[tj]sx$/
+
+/**
+ * Decode a route path for route-rule matching, returning it unchanged if it is not
+ * percent-encoded or cannot be decoded. Reserved characters (`%2F`, `%3F`, …) are
+ * left encoded, so decoding cannot introduce additional path segments. Only the path
+ * portion is decoded; a query string, if present, is left untouched to avoid
+ * double-decoding it.
+ */
+export function decodeRoutePath (path: string) {
+  if (!path.includes('%')) { return path }
+  const queryIndex = path.indexOf('?')
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex)
+  try {
+    return queryIndex === -1 ? decodeURI(pathname) : decodeURI(pathname) + path.slice(queryIndex)
+  } catch {
+    return path
+  }
+}

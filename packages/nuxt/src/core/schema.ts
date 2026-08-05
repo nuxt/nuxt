@@ -8,8 +8,8 @@ import { debounce } from 'perfect-debounce'
 import { configDiagnostics, createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getLayerDirectories, importModule } from '@nuxt/kit'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
-import untypedPlugin from 'untyped/babel-plugin'
 import { createJiti } from 'jiti'
+import type { Jiti } from 'jiti'
 
 export default defineNuxtModule({
   meta: {
@@ -18,15 +18,20 @@ export default defineNuxtModule({
   async setup (_, nuxt) {
     const resolver = createResolver(import.meta.url)
 
-    // Initialize untyped/jiti loader
-    const _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
-      fsCache: false,
-      transformOptions: {
-        babel: {
-          plugins: [untypedPlugin],
+    // `untyped/babel-plugin` pulls in the whole of `@babel/core`, so the loader is
+    // only created if a layer actually ships a `nuxt.schema.*` file.
+    let _resolveSchema: Promise<Jiti> | undefined
+    function getSchemaLoader () {
+      _resolveSchema ||= import('untyped/babel-plugin').then(({ default: untypedPlugin }) => createJiti(fileURLToPath(import.meta.url), {
+        fsCache: false,
+        transformOptions: {
+          babel: {
+            plugins: [untypedPlugin],
+          },
         },
-      },
-    })
+      }))
+      return _resolveSchema
+    }
 
     // Register module types
     nuxt.hook('prepare:types', async (ctx) => {
@@ -116,7 +121,7 @@ export default defineNuxtModule({
           let loadedConfig: SchemaDefinition
           try {
             // TODO: fix type for second argument of `import`
-            loadedConfig = await _resolveSchema.import(filePath, { default: true }) as SchemaDefinition
+            loadedConfig = await (await getSchemaLoader()).import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
             configDiagnostics.NUXT_B5005({ filePath, cause: err })
             continue

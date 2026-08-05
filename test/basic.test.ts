@@ -107,6 +107,11 @@ describe('route rules', () => {
     expect(html).toContain('Hello from routeRules!')
   })
 
+  it('should run appMiddleware from a decoded route rule key on a unicode page', async () => {
+    const html = await $fetch<string>(`/route-rules/${encodeURIComponent('测试')}`)
+    expect(html).toContain('Hello from routeRules!')
+  })
+
   it('should run appMiddleware from an uppercase-keyed route rule regardless of request casing', async () => {
     for (const path of ['/route-rules/case-insensitive', '/Route-Rules/Case-Insensitive', '/ROUTE-RULES/CASE-INSENSITIVE']) {
       const html = await $fetch<string>(path)

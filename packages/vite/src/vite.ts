@@ -4,7 +4,7 @@ import { createBuilder, createServer, mergeConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
+import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, useNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
 import { sanitizeFilePath } from 'mlly'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
@@ -314,7 +314,11 @@ async function handleEnvironments (nuxt: Nuxt, config: vite.InlineConfig) {
   nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
-    nuxt.hook('close', () => server.close())
+    const disposeWatchRecovery = recoverThrottledChanges(server.watcher)
+    nuxt.hook('close', () => {
+      disposeWatchRecovery()
+      return server.close()
+    })
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
   nuxt._perf?.endPhase('vite:dev-server')

@@ -185,16 +185,23 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     }
 
     const environmentName = options.server === false ? 'client' : 'ssr'
-    const pluginName = plugin.map(p => p.name).join('|')
-    config.plugins.push({
-      name: `${pluginName}:wrapper`,
-      enforce: options?.prepend ? 'pre' : 'post',
-      applyToEnvironment (environment) {
-        if (environment.name === environmentName) {
-          return resolveNestedPlugins(plugin, config, environment, nuxt)
-        }
-      },
-    })
+    // Vite only sorts by `enforce` at the top level, and inserts the plugins returned from
+    // `applyToEnvironment` at the wrapper's own position, so plugins declaring different
+    // `enforce` values need a wrapper each to keep their requested ordering.
+    const defaultEnforce = options?.prepend ? 'pre' : 'post'
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    for (const [enforce, plugins] of groupByEnforce(plugin, defaultEnforce)) {
+      const pluginName = plugins.map(p => p.name).join('|')
+      config.plugins[method]({
+        name: `${pluginName}:wrapper`,
+        enforce,
+        applyToEnvironment (environment) {
+          if (environment.name === environmentName) {
+            return resolveNestedPlugins(plugins, config, environment, nuxt)
+          }
+        },
+      })
+    }
   })
 
   nuxt.hook('vite:extendConfig', async (config, env) => {
@@ -213,6 +220,20 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
 }
 
 type VitePluginEnvironment = Parameters<NonNullable<VitePlugin['applyToEnvironment']>>[0]
+
+function groupByEnforce (plugins: VitePlugin[], defaultEnforce: VitePlugin['enforce']) {
+  const groups = new Map<VitePlugin['enforce'], VitePlugin[]>()
+  for (const plugin of plugins) {
+    const enforce = plugin.enforce ?? defaultEnforce
+    const group = groups.get(enforce)
+    if (group) {
+      group.push(plugin)
+    } else {
+      groups.set(enforce, [plugin])
+    }
+  }
+  return groups
+}
 
 /**
  * Vite only honours `apply` and `applyToEnvironment` for plugins it finds in the

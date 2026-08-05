@@ -43,6 +43,8 @@ export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
+export { recoverThrottledChanges } from './watch.ts'
+export type { RecoverableWatcher } from './watch.ts'
 export { logger, useLogger } from './logger.ts'
 
 // Build-time diagnostics catalogs (split by domain; imported directly, no barrel).

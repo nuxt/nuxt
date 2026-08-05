@@ -8,6 +8,7 @@ import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
+import { getAppStructureVersion } from '../core/app.ts'
 
 import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
@@ -16,7 +17,7 @@ import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
-import type { Component, ComponentsDir, ComponentsOptions, NuxtPage } from 'nuxt/schema'
+import type { Component, ComponentsDir, ComponentsOptions, Nuxt, NuxtPage } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const SLASH_SEPARATOR_RE = /[\\/]/
@@ -193,7 +194,16 @@ export default defineNuxtModule<ComponentsOptions>({
     const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
 
     // Scan components and add to plugin
+    const scannedStructureVersions = new WeakMap<Nuxt, number>()
     nuxt.hook('app:templates', async (app) => {
+      // Component discovery depends only on which files exist, so it can be reused
+      // until a file is added or removed.
+      const structureVersion = getAppStructureVersion(nuxt)
+      if (nuxt.options.dev && context.components && scannedStructureVersions.get(nuxt) === structureVersion) {
+        app.components = context.components
+        return
+      }
+
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
       const modesByName = new Map<string, Set<string | undefined>>()
@@ -227,6 +237,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       context.components = newComponents
       app.components = newComponents
+      scannedStructureVersions.set(nuxt, structureVersion)
     })
 
     nuxt.hook('prepare:types', ({ tsConfig }) => {

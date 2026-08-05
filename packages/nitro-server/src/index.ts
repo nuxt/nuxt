@@ -30,6 +30,8 @@ import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { decodeRoutePath } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
@@ -352,6 +354,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     replace: {
       '__VUE_PROD_DEVTOOLS__': String(false),
+      'import.meta.test': String(!!nuxt.options.test),
     },
     rollupConfig: {
       output: {
@@ -395,26 +398,29 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
   // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
   // folded lookup and silently lose its protections. `sensitive` can also come from
-  // `app/router.options.ts` (runtime-only), so emit both a verbatim and a folded matcher
-  // and pick at runtime.
+  // `app/router.options.ts` (runtime-only), so emit both a decoded and a decoded+folded
+  // matcher and pick at runtime.
   const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-  const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules || typeof route !== 'string' ? route : route.toLowerCase()
+
+  // Both matchers are compiled on every build, so collisions are reported once rather
+  // than once per compilation pass.
+  const warnedKeyCollisions = new Set<string>()
 
   function getRouteRulesRouter (fold: boolean) {
     const routeRulesRouter = createRou3Router<NitroRouteRules>()
     if (nuxt._nitro) {
-      const foldedKeys = new Map<string, string>()
+      const normalizedKeys = new Map<string, string>()
       for (const [route, rules] of Object.entries(nuxt._nitro.options.routeRules)) {
         if (route === '/__nuxt_error') { continue }
         if (validManifestKeys.every(key => !(key in rules))) { continue }
-        const key = fold && typeof route === 'string' ? route.toLowerCase() : route
-        if (fold) {
-          const existing = foldedKeys.get(key)
-          if (existing !== undefined && existing !== route && !caseSensitiveRouteRules) {
-            logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path when matched case-insensitively; \`${route}\` takes precedence. Disambiguate the keys or set \`router.options.sensitive: true\`.`)
-          }
-          foldedKeys.set(key, route)
+        const key = normalizeRouteRulePath(route, fold)
+        const existing = normalizedKeys.get(key)
+        // Only the matcher that will actually be used at runtime should report collisions.
+        if (existing !== undefined && existing !== route && fold !== caseSensitiveRouteRules && !warnedKeyCollisions.has(key)) {
+          warnedKeyCollisions.add(key)
+          logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path; \`${route}\` takes precedence. Disambiguate the keys${fold ? ' or set `router.options.sensitive: true`' : ''}.`)
         }
+        normalizedKeys.set(key, route)
         addRoute(routeRulesRouter, undefined, key, rules)
       }
     }
@@ -467,9 +473,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         `import routerOptions from '#build/router.options.mjs'`,
         `const sensitiveMatcher = ${sensitiveMatcher}`,
         foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`,
+        // `decodeRoutePath` has no free variables, so it can be inlined by source to keep
+        // the runtime lookup and the build-time key normalisation from drifting apart.
+        `const decodeRoutePath = ${decodeRoutePath.toString()}`,
+        // Decoding must precede case folding, or a percent-encoded non-ASCII character
+        // would never fold.
+        `const normalizePath = (path, fold) => {`,
+        `  if (typeof path !== 'string') { return path }`,
+        `  const decoded = decodeRoutePath(path)`,
+        `  return fold ? decoded.toLowerCase() : decoded`,
+        `}`,
         `export default (path) => routerOptions.sensitive`,
-        `  ? defu({}, ...sensitiveMatcher('', path).map(r => r.data).reverse())`,
-        `  : defu({}, ...foldedMatcher('', typeof path === 'string' ? path.toLowerCase() : path).map(r => r.data).reverse())`,
+        `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
+        `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
       ].join('\n')
     },
   })
@@ -559,7 +575,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           for (const route of nitro._prerenderedRoutes) {
             if (!route.error && route.route.endsWith(payloadSuffix)) {
               const url = route.route.slice(0, -payloadSuffix.length) || '/'
-              const rules = defu({}, ...findAllRoutes(routeRulesMatcher, undefined, foldRouteRuleKey(url)).reverse()) as Record<string, any>
+              const rules = defu({}, ...findAllRoutes(routeRulesMatcher, undefined, normalizeRouteRulePath(url, !caseSensitiveRouteRules)).reverse()) as Record<string, any>
               if (!rules.prerender) {
                 prerenderedRoutes.add(url)
               }

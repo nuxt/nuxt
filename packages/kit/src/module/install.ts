@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptions } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
-import { createJiti } from 'jiti'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
@@ -284,13 +283,15 @@ export function resolveModuleWithOptions (
   }
 }
 
-let _jitiCache: WeakMap<Nuxt, ReturnType<typeof createJiti>> | undefined
+type Jiti = ReturnType<typeof import('jiti')['createJiti']>
 
-function getSharedJiti (nuxt: Nuxt): ReturnType<typeof createJiti> {
+let _jitiCache: WeakMap<Nuxt, Promise<Jiti>> | undefined
+
+function getSharedJiti (nuxt: Nuxt): Promise<Jiti> {
   _jitiCache ||= new WeakMap()
   let jiti = _jitiCache.get(nuxt)
   if (!jiti) {
-    jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+    jiti = import('jiti').then(({ createJiti }) => createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias }))
     _jitiCache.set(nuxt, jiti)
   }
   return jiti
@@ -310,7 +311,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
   }
 
-  const jiti = getSharedJiti(nuxt)
+  const jiti = await getSharedJiti(nuxt)
 
   // Import if input is string
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)

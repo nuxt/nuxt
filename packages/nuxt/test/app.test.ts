@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { afterAll, describe, expect, it, vi } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
-import { createApp, generateApp, resolveApp } from '../src/core/app.ts'
+import { createApp, generateApp, invalidateAppStructure, resolveApp } from '../src/core/app.ts'
 import { loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
@@ -332,6 +332,64 @@ describe('resolveApp', () => {
 
     await nuxt.close()
     await rm(rootDir, { recursive: true, force: true })
+  })
+
+  it('reuses the previous resolution in dev until the app structure is invalidated', async () => {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(join(rootDir, 'app/layouts'), { recursive: true })
+    await writeFile(join(rootDir, 'nuxt.config.ts'), 'export default {}')
+    await writeFile(join(rootDir, 'app/layouts/default.vue'), '<template><div /></template>')
+
+    const nuxt = await loadNuxt({ cwd: rootDir, overrides: { dev: true } })
+    const app = createApp(nuxt)
+
+    let resolutions = 0
+    nuxt.hook('app:resolve', () => { resolutions++ })
+
+    try {
+      await resolveApp(nuxt, app)
+      expect(resolutions).toBe(1)
+
+      await resolveApp(nuxt, app)
+      expect(resolutions).toBe(1)
+
+      await writeFile(join(rootDir, 'app/layouts/other.vue'), '<template><div /></template>')
+      invalidateAppStructure(nuxt)
+
+      await resolveApp(nuxt, app)
+      expect(resolutions).toBe(2)
+      expect(Object.keys(app.layouts).sort()).toEqual(['default', 'other'])
+    } finally {
+      await nuxt.close()
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  })
+
+  it('does not cache the resolution when it fails', async () => {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(rootDir, { recursive: true })
+    await writeFile(join(rootDir, 'nuxt.config.ts'), 'export default {}')
+
+    const nuxt = await loadNuxt({ cwd: rootDir, overrides: { dev: true } })
+    const app = createApp(nuxt)
+
+    let shouldThrow = true
+    let resolutions = 0
+    nuxt.hook('app:resolve', () => {
+      resolutions++
+      if (shouldThrow) { throw new Error('boom') }
+    })
+
+    try {
+      await expect(resolveApp(nuxt, app)).rejects.toThrow('boom')
+
+      shouldThrow = false
+      await resolveApp(nuxt, app)
+      expect(resolutions).toBe(2)
+    } finally {
+      await nuxt.close()
+      await rm(rootDir, { recursive: true, force: true })
+    }
   })
 })
 
