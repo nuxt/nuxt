@@ -75,6 +75,18 @@
       "description": "nuxt peers on rolldown loosely so package managers can reuse vite's copy, but this workspace pins it to vite's exact version via the catalog and an override. Bump them together or the workspace resolves a second rolldown and loads a second native binding."
     },
     {
+      "groupName": "nitro",
+      "groupSlug": "nitro",
+      "dependencyDashboardApproval": true,
+      "matchPackageNames": [
+        "nitropack",
+        "h3",
+        "ofetch",
+        "unenv",
+        "unstorage"
+      ]
+    },
+    {
       "matchPackageNames": [
         "@nuxt/**"
       ],
