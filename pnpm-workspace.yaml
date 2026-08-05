@@ -91,7 +91,7 @@ catalogs:
     destr: ^2.0.5
     lru-cache: ^11.5.2
     nitro: ^3.0.260610-beta
-    srvx: 0.11.22 # intentionally pinned to match nitro's dependency
+    srvx: 0.12.5 # intentionally pinned to match nitro's dependency
     unstorage: 2.0.0-alpha.7 # intentionally pinned to match nitro's dependency
 
   # vue compiler/tooling
@@ -248,8 +248,8 @@ catalogs:
     eslint-plugin-no-only-tests: 3.4.0
     eslint-plugin-perfectionist: 5.10.1
     eslint-typegen: 2.3.1
-    h3: 2.0.1-rc.22 # intentionally pinned to match nitro's dependency
-    h3-next: 'npm:h3@2.0.1-rc.22' # intentionally pinned to match nitro's dependency
+    h3: 2.0.1-rc.26 # intentionally pinned to match nitro's dependency
+    h3-next: 'npm:h3@2.0.1-rc.26' # intentionally pinned to match nitro's dependency
     happy-dom: 20.11.1
     html-validate: 11.6.2
     htmlnano: 3.4.0
