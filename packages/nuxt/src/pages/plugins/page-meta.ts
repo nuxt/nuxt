@@ -3,12 +3,12 @@ import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
+import { ScopeTracker, getUndeclaredIdentifiersInFunction, isReferenceIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { pageDiagnostics } from '@nuxt/kit'
 import { parseModuleId } from '../../core/utils/plugins.ts'
-import { isSerializable } from '../utils.ts'
+import { classifyPageMetaProperty } from '../utils.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
 
 interface PageMetaPluginOptions {
@@ -45,6 +45,8 @@ if (import.meta.webpackHot) {
 }`
 
 export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
+  const extractedKeys = new Set(options.extractedKeys)
+
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
@@ -182,15 +184,28 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
             for (const decl of scopeTrackerNode.variableNode.declarations) {
               if (!decl.init) { continue }
+
+              // `isReferenceIdentifier` cannot distinguish identifiers in destructured binding
+              // patterns (`({ foo }) => foo`) from references, and references to locals of
+              // functions within the initializer must not resolve to same-named declarations
+              // in the outer scope, so track the initializer's own scopes to filter them out
+              const initScopeTracker = new ScopeTracker({
+                preserveExitedScopes: true,
+              })
+              walk(decl.init, { scopeTracker: initScopeTracker })
+              initScopeTracker.freeze()
+
               walk(decl.init, {
+                scopeTracker: initScopeTracker,
                 enter: (node, parent) => {
                   if (node.type === 'AwaitExpression') {
                     const codeSnippet = code.slice(node.start, Math.min(node.end, node.start + 80))
                     throw pageDiagnostics.NUXT_B4002({ codeSnippet, offset: node.start })
                   }
                   if (
-                    isBindingIdentifier(node, parent)
+                    !isReferenceIdentifier(node, parent)
                   || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
+                  || initScopeTracker.isDeclared(node.name)
                   ) { return }
 
                   addImportOrDeclaration(node.name, scopeTrackerNode)
@@ -249,34 +264,35 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                if (prop.type !== 'Property' || prop.key.type !== 'Identifier') {
+                const classification = classifyPageMetaProperty(prop, extractedKeys)
+
+                // The route record now carries the value, so drop it here to keep the two in step.
+                if (classification.kind === 'extract') {
+                  omitProp(prop, i)
                   continue
                 }
 
-                if (options.extractedKeys?.includes(prop.key.name)) {
-                  const { serializable } = isSerializable(metaCode, prop.value)
-                  if (serializable) {
-                    omitProp(prop, i)
-                  }
-                } else if (prop.key.name === 'layout' && prop.value.type === 'ObjectExpression') {
-                  for (const layoutProp of prop.value.properties) {
-                    if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
-                      continue
-                    }
-                    if (layoutProp.key.name === 'name') {
-                      m.appendLeft(
-                        prop.start - meta.start,
-                        `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
-                      )
-                    } else if (layoutProp.key.name === 'props') {
-                      m.appendLeft(
-                        prop.start - meta.start,
-                        `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
-                      )
-                    }
-                  }
-                  omitProp(prop, i)
+                if (classification.kind !== 'reshape') {
+                  continue
                 }
+
+                for (const layoutProp of classification.node.properties) {
+                  if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
+                    continue
+                  }
+                  if (layoutProp.key.name === 'name') {
+                    m.appendLeft(
+                      prop.start - meta.start,
+                      `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                    )
+                  } else if (layoutProp.key.name === 'props') {
+                    m.appendLeft(
+                      prop.start - meta.start,
+                      `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                    )
+                  }
+                }
+                omitProp(prop, i)
               }
             }
 
@@ -286,7 +302,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
               scopeTracker,
               enter (node, parent) {
                 if (
-                  isBindingIdentifier(node, parent)
+                  !isReferenceIdentifier(node, parent)
                 || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
                 ) { return }
 

@@ -1,6 +1,5 @@
 import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
-import { applyDefaults } from 'untyped'
 import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions } from '@nuxt/schema'
 import { logger } from '../logger.ts'
 import { tryUseNuxt, useNuxt } from '../context.ts'
@@ -69,6 +68,7 @@ function _defineNuxtModule<
     let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
 
     if (module.schema) {
+      const { applyDefaults } = await import('untyped')
       options = await applyDefaults(module.schema, options) as any
     }
 

@@ -107,6 +107,11 @@ describe('route rules', () => {
     expect(html).toContain('Hello from routeRules!')
   })
 
+  it('should run appMiddleware from a decoded route rule key on a unicode page', async () => {
+    const html = await $fetch<string>(`/route-rules/${encodeURIComponent('测试')}`)
+    expect(html).toContain('Hello from routeRules!')
+  })
+
   it('should run appMiddleware from an uppercase-keyed route rule regardless of request casing', async () => {
     for (const path of ['/route-rules/case-insensitive', '/Route-Rules/Case-Insensitive', '/ROUTE-RULES/CASE-INSENSITIVE']) {
       const html = await $fetch<string>(path)
@@ -725,6 +730,15 @@ describe('pages', () => {
     // the query should already be restored by the time the page is mounted, so
     // `onMounted` reads the real query rather than the prerendered empty one
     expect(await page.innerText('#mounted-query')).toBe('true')
+
+    await page.close()
+  })
+
+  it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
+    const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
+
+    await page.waitForFunction(() => document.querySelector('#preview-enabled')?.textContent === 'true')
+    expect(await page.innerText('#preview-token')).toBe('hehe')
 
     await page.close()
   })

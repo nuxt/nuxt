@@ -2,7 +2,7 @@ import type { Component } from '@nuxt/schema'
 import { componentDiagnostics } from '@nuxt/kit'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
+import { ELEMENT_NODE, parse, walk, walkSync } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
 import { normalize } from 'pathe'
@@ -23,8 +23,6 @@ interface ServerOnlyComponentTransformPluginOptions {
   selectiveClient?: boolean | 'deep'
 }
 
-const SCRIPT_RE = /<script[^>]*>/i
-const SCRIPT_RE_GLOBAL = /<script[^>]*>/gi
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const HAS_VFOR_RE = /\sv-for=/
 const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
@@ -52,6 +50,22 @@ function boundVForInTag (tag: string): string {
 function wrapWithVForDiv (code: string, vfor: string): string {
   // `vfor` is already passed through `boundVForExpression` by the caller.
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
+}
+
+interface ScriptBlock {
+  attributes: Record<string, string>
+  /** Offset just past the end of the opening `<script ...>` tag. */
+  contentStart: number
+}
+
+function findScriptBlocks (code: string): ScriptBlock[] {
+  const blocks: ScriptBlock[] = []
+  walkSync(parse(code), (node) => {
+    if (node.type === ELEMENT_NODE && node.name === 'script') {
+      blocks.push({ attributes: node.attributes, contentStart: node.loc[0].end })
+    }
+  })
+  return blocks
 }
 
 export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
@@ -87,12 +101,17 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           return
         }
 
-        if (!SCRIPT_RE.test(code)) {
-          s.prepend('<script setup>' + IMPORT_CODE + '</script>')
+        // The injected helpers are referenced from the template, so they must be setup bindings:
+        // adding them to a plain `<script>` leaves them in module scope only and the template
+        // compiler resolves them off `_ctx` instead, which is `undefined` at render time.
+        const scriptBlocks = findScriptBlocks(code)
+        const setupBlock = scriptBlocks.find(({ attributes }) => 'setup' in attributes)
+        if (setupBlock) {
+          s.appendRight(setupBlock.contentStart, IMPORT_CODE)
         } else {
-          for (const match of code.matchAll(SCRIPT_RE_GLOBAL)) {
-            s.appendRight(match.index + match[0].length, IMPORT_CODE)
-          }
+          // `<script>` and `<script setup>` in one SFC must agree on `lang`.
+          const lang = scriptBlocks[0]?.attributes.lang
+          s.prepend(`<script setup${lang ? ` lang="${lang}"` : ''}>` + IMPORT_CODE + '</script>')
         }
 
         let hasNuxtClient = false

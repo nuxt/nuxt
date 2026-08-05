@@ -44,6 +44,7 @@ jobs:
       pull-requests: read
     outputs:
       src: ${{ (github.event_name == 'push' && (github.ref_name == '4.x' || github.ref_name == '3.x')) && 'true' || steps.filter.outputs.src }}
+      playwright: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -68,6 +69,15 @@ jobs:
               - 'eslint.config.mjs'
               - '.github/workflows/ci.yml'
 
+      # Keyed on the browser version rather than the lockfile, which changes
+      # weekly for unrelated reasons and would evict the cache each time.
+      - name: Resolve Playwright version
+        id: playwright
+        run: |
+          version="$(grep -oE '^[[:space:]]+playwright-core: [0-9.]+' pnpm-workspace.yaml | tr -d ' ' | cut -d: -f2)"
+          test -n "$version" || { echo "::error::could not resolve playwright-core version from pnpm-workspace.yaml"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
   build:
     needs: changes
     if: needs.changes.outputs.src == 'true'
@@ -81,7 +91,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: lts
           cache: true
@@ -122,7 +132,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: 22
           cache: true
@@ -141,7 +151,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: 22
           cache: true
@@ -184,7 +194,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        uses: github/codeql-action/init@d1ba80a13dd99fba24a470575428917156a28b43 # v4.37.5
         with:
           config: |
             paths:
@@ -201,7 +211,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        uses: github/codeql-action/analyze@d1ba80a13dd99fba24a470575428917156a28b43 # v4.37.5
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -229,7 +239,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: lts
           cache: true
@@ -269,7 +279,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: lts
           cache: true
@@ -311,7 +321,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: lts
           cache: true
@@ -346,7 +356,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: lts
           cache: true
@@ -376,7 +386,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: lts
           cache: true
@@ -391,7 +401,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@f99becdce5e5d51fd556489ebef684f4ecfd6286 # v4.18.5
+        uses: CodSpeedHQ/action@0ca9cbbf4623b599a6c3ed4fc8a922942705d9f1 # v5.0.2
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -414,7 +424,9 @@ jobs:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-*" --project "fixtures:vite-env-api-*"'
+            projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*" --project "fixtures:vite-env-api-*"'
+          - os: ubuntu-24.04-arm
+            projects: '--project "fixtures:webpack-dev-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-dev-*"'
           - os: windows-latest
@@ -422,14 +434,24 @@ jobs:
 
     timeout-minutes: 45
 
+    env:
+      # `runner` is not available in job-level `env`, so anchor on `github`
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: 22
           cache: true
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.pw-browsers
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ needs.changes.outputs.playwright }}
 
       - name: Install Playwright
         run: vp exec playwright-core install chromium
@@ -480,14 +502,24 @@ jobs:
 
     timeout-minutes: 25
 
+    env:
+      # `runner` is not available in job-level `env`, so anchor on `github`
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: 22
           cache: true
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.pw-browsers
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ needs.changes.outputs.playwright }}
 
       - name: Install Playwright
         run: vp exec playwright-core install chromium
@@ -570,7 +602,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: latest
           cache: true
@@ -598,7 +630,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: lts
           cache: true

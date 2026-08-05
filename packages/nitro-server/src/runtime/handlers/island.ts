@@ -14,7 +14,7 @@ import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
-import { islandCache, islandPropCache } from '../utils/cache'
+import { islandCache, islandPropCache, prerenderRenderingURLs } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
@@ -22,17 +22,94 @@ import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse 
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
-const handler: EventHandler = defineEventHandler(async (event) => {
-  const nitroApp = useNitroApp()
+/** A response produced by the render itself (redirect, abort, ...), bound to the request that made it. */
+interface RawIslandResponse { raw: Partial<RenderResponse> }
 
+type IslandRenderResult = NuxtIslandResponse | RawIslandResponse
+
+/**
+ * Renders in flight, keyed by island path, so that pages prerendered in parallel share a
+ * single render of an island they both embed instead of racing to write its cache entry
+ * (which fails the build with `EPERM` on Windows).
+ */
+const inFlightIslands: Map<string, Promise<IslandRenderResult>> | null = import.meta.prerender ? new Map() : null
+
+const handler: EventHandler = defineEventHandler(async (event) => {
   setResponseHeaders(event, {
     'content-type': 'application/json;charset=utf-8',
     'x-powered-by': 'Nuxt',
   })
 
-  if (import.meta.prerender && event.path && await islandCache!.hasItem(event.path)) {
-    return islandCache!.getItem(event.path) as Promise<Partial<RenderResponse>>
+  if (!import.meta.prerender) {
+    return toResponse(event, await renderIsland(event))
   }
+
+  const islandPath = (event.path || '').replace(/\?.*$/, '')
+  const stack = prerenderRenderingURLs!.getStore()
+  if (stack?.includes(islandPath)) {
+    const chain = [...stack, islandPath].map(url => `"${url}"`).join(' -> ')
+    throw createError({
+      statusCode: 508,
+      statusMessage: `Loop detected while prerendering island "${islandPath}" (${chain}).`,
+    })
+  }
+
+  // Only a render holding no claim of its own may wait on another, or two nested island
+  // renders could await each other's claim and hang the build. The lookup and the claim
+  // must stay in the same tick, or two renders started together both see an empty map.
+  const inFlight = !stack?.some(url => url.startsWith(ISLAND_PATH_PREFIX)) && inFlightIslands!.get(islandPath)
+  if (!inFlight) {
+    return toResponse(event, await prerenderIsland(event, islandPath))
+  }
+
+  const shared = await inFlight.catch((error: any) => {
+    // the error is mutated as it propagates, so rethrow a copy
+    throw createError({ statusCode: error?.statusCode, statusMessage: error?.statusMessage, message: error?.message, cause: error })
+  })
+  // a raw response cannot be shared, so fall through and render our own
+  if (shared && !('raw' in shared)) {
+    return toResponse(event, shared)
+  }
+
+  return toResponse(event, await prerenderIsland(event, islandPath))
+})
+
+export default handler
+
+function toResponse (event: H3Event, result: IslandRenderResult) {
+  return 'raw' in result ? returnIslandResponse(event, result.raw) : result
+}
+
+function prerenderIsland (event: H3Event, islandPath: string): Promise<IslandRenderResult> {
+  const stack = prerenderRenderingURLs!.getStore()
+  const promise: Promise<IslandRenderResult> = prerenderRenderingURLs!.run([...(stack || []), islandPath], async () => {
+    const cached = await islandCache!.getItem(islandPath) as NuxtIslandResponse | null
+    if (cached) {
+      return cached
+    }
+
+    const result = await renderIsland(event)
+    if (!('raw' in result)) {
+      await islandCache!.setItem(islandPath, result as any)
+      // without the props entry, a later request for the bare path hashes empty props and is rejected
+      await islandPropCache!.setItem(islandPath, event.path)
+    }
+    return result
+  }).finally(() => {
+    // a waiter that received a raw response can claim the path while we are still
+    // registered, so only retire our own entry
+    if (inFlightIslands!.get(islandPath) === promise) {
+      inFlightIslands!.delete(islandPath)
+    }
+  })
+
+  inFlightIslands!.set(islandPath, promise)
+
+  return promise
+}
+
+async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
+  const nitroApp = useNitroApp()
 
   const islandContext = await getIslandContext(event)
 
@@ -69,7 +146,7 @@ const handler: EventHandler = defineEventHandler(async (event) => {
         statusMessage: response.statusMessage,
       })
     }
-    return returnIslandResponse(event, response)
+    return { raw: response }
   }
 
   // Handle errors
@@ -125,14 +202,8 @@ const handler: EventHandler = defineEventHandler(async (event) => {
 
   await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
 
-  if (import.meta.prerender) {
-    await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, islandResponse)
-    await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
-  }
   return islandResponse
-})
-
-export default handler
+}
 
 function returnIslandResponse (event: H3Event, response: Partial<RenderResponse>) {
   for (const header in response.headers || {}) {
@@ -243,7 +314,11 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   }
 
   // Strip `data-v-*` scoped-style markers so the hashed and rendered prop sets match.
-  const parsedProps = filterIslandProps(destr<Record<string, any> | null | undefined>(serializedProps) || {})
+  const parsed = destr(serializedProps)
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid island request props' })
+  }
+  const parsedProps = filterIslandProps(parsed)
 
   // Bind the response to the URL: a request whose URL-resident `hashId` does not match
   // the actual (name, props, context) is rejected.

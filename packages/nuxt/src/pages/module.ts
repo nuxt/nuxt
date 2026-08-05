@@ -2,9 +2,9 @@ import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, pageDiagnostics, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
+import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
-import { createRoutesContext, resolveOptions } from 'vue-router/unplugin'
+import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
 import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 
@@ -14,16 +14,22 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { logger } from '../utils.ts'
 import picomatch from 'picomatch'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, relativizeToParent, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
+import { normalizeRouteRulePath } from '../core/utils/route-rules.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+const RELATIVE_WITH_DOT_RE = /^([^.])/
+
+function relativeWithDot (from: string, to: string) {
+  return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
 
 export const pagesImportPresets: InlinePreset[] = [
   { imports: ['definePageMeta'], from: '#app/composables/pages' },
@@ -100,10 +106,10 @@ export default defineNuxtModule({
 
     /*
      * Page paths as derived by unrouting, captured (keyed by the live page object) before a
-     * `definePageMeta` path override replaces them. Typed-pages DTS generation nests an
-     * absolute-path page under its file parent by inserting this original (always relative)
-     * path, then re-applies the absolute path as an override. Every rebuild emits fresh page
-     * objects, so stale entries are garbage-collected with the objects keying them.
+     * `definePageMeta` path override replaces them. Typed-pages DTS generation falls back to
+     * this path to nest a page whose override is detached from its file parent. Every rebuild
+     * emits fresh page objects, so stale entries are garbage-collected with the objects keying
+     * them.
      */
     const originalPagePaths = new WeakMap<NuxtPage, string>()
 
@@ -203,16 +209,20 @@ export default defineNuxtModule({
       }
     })
 
+    const componentTypeHelpersPath = resolveModulePath('vue-component-type-helpers', { from: import.meta.url, try: true })
+
     // layouts can be used without pages (e.g. `<NuxtLayout>`), so always generate their types
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ app }) => {
+      getContents: ({ app, nuxt }) => {
+        // a path relative to the generated declaration keeps `buildDir` portable between machines
+        const componentTypeHelpers = componentTypeHelpersPath
+          ? relativeWithDot(join(nuxt.options.buildDir, 'types'), componentTypeHelpersPath)
+          : 'vue-component-type-helpers'
+
         return [
-          'import type { ComputedRef, MaybeRef } from \'vue\'',
-          '',
-          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
-          '  : T extends (props: infer P, ...args: any) => any ? P',
-          '  : {}',
+          genTypeImport('vue', ['ComputedRef', 'MaybeRef']),
+          genTypeImport(componentTypeHelpers, ['ComponentProps']),
           '',
           'declare module \'nuxt/app\' {',
           '  interface NuxtLayouts {',
@@ -301,12 +311,15 @@ export default defineNuxtModule({
             let route: EditableTreeNode
             if (page.path[0] === '/') {
               // Nest a page with an absolute path (a top-level page, or a child whose path
-              // was overridden) under its file parent, inserting its original path as
-              // derived by unrouting so the parent's params are not duplicated.
+              // was overridden) under its file parent. Inserting the path relative to the
+              // parent keeps params added by the override without duplicating the parent's
+              // own params; a path detached from the parent has no such remainder, so fall
+              // back to the path derived by unrouting.
+              const insertedPath = relativizeToParent(parent.fullPath, page.path) ?? originalPagePaths.get(page) ?? page.path
               // TODO: waiting on vuejs/router#2748 to allow adding a route without a
               // file, or we need to find another way if it is not merged
               // @ts-expect-error `page.file` is possibly undefined
-              route = parent.insert(originalPagePaths.get(page) ?? relativizeToParent(parent.fullPath, page.path), page.file)
+              route = parent.insert(insertedPath, page.file)
               if (route.path !== page.path) {
                 // The path setter records the absolute path as an override on the node.
                 // Since the override is absolute, `fullPath` returns it as-is instead of
@@ -361,6 +374,7 @@ export default defineNuxtModule({
         references.push({ path: declarationFile })
       })
 
+      const { createRoutesContext, resolveOptions } = await import('vue-router/unplugin')
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
       await mkdir(dirname(declarationFile), { recursive: true })
 
@@ -524,17 +538,16 @@ export default defineNuxtModule({
 
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static) {
-        // Match route rules case-insensitively (unless routing is `sensitive`) to
-        // mirror the compiled `#build/route-rules.mjs` matcher, so a `prerender: true`
-        // rule keyed `/Admin` is honoured for the page derived at `/Admin`.
+        // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs`
+        // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
+        // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules ? route : route.toLowerCase()
         const routeRulesRouter = createRou3Router<NitroRouteRules>()
         for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
-          addRoute(routeRulesRouter, undefined, foldRouteRuleKey(route), rules)
+          addRoute(routeRulesRouter, undefined, normalizeRouteRulePath(route, !caseSensitiveRouteRules), rules)
         }
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, foldRouteRuleKey(route)).reverse())
+          const rules = defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
@@ -595,11 +608,7 @@ export default defineNuxtModule({
     })
 
     // Extract macros from pages
-    const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
-    const extractedKeys = [
-      ...defaultExtractionKeys,
-      ...extraPageMetaExtractionKeys,
-    ]
+    const extractedKeys = [...resolvePageMetaExtractionKeys(nuxt.options.experimental.extraPageMetaExtractionKeys)]
 
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({

@@ -73,7 +73,7 @@
     "@nuxt/schema": "workspace:*",
     "@types/webpack-bundle-analyzer": "catalog:dev",
     "h3": "1.15.11",
-    "h3-next": "npm:h3@2.0.1-rc.25",
+    "h3-next": "npm:h3@2.0.1-rc.26",
     "rollup": "catalog:dev",
     "tsdown": "catalog:dev",
     "vue": "catalog:app-runtime"

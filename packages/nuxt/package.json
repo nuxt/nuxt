@@ -109,7 +109,7 @@
     "mlly": "catalog:build",
     "nanotar": "catalog:build",
     "nostics": "catalog:app-runtime",
-    "nypm": "^0.6.8",
+    "nypm": "^0.6.9",
     "object-identity": "catalog:app-runtime",
     "ofetch": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
@@ -119,7 +119,6 @@
     "perfect-debounce": "catalog:app-runtime",
     "picomatch": "catalog:build",
     "pkg-types": "catalog:build",
-    "rolldown": "catalog:vite",
     "rolldown-string": "catalog:vite",
     "rou3": "^0.9.1",
     "scule": "catalog:build",
@@ -137,6 +136,7 @@
     "untyped": "catalog:build",
     "verkit": "catalog:build",
     "vue": "catalog:app-runtime",
+    "vue-component-type-helpers": "catalog:vue",
     "vue-router": "catalog:app-runtime"
   },
   "devDependencies": {
@@ -147,6 +147,7 @@
     "@vitejs/plugin-vue": "catalog:vue",
     "@vitejs/plugin-vue-jsx": "catalog:dev",
     "@vue/compiler-sfc": "catalog:vue",
+    "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:vite",
@@ -156,7 +157,8 @@
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
-    "@types/node": ">=18.12.0"
+    "@types/node": ">=18.12.0",
+    "rolldown": "~1.2.1"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {

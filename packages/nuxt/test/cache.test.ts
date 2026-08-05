@@ -5,6 +5,15 @@ import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { build, loadNuxt } from 'nuxt'
+import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
+
+async function resolveBuildOutputs (nuxt: Nuxt) {
+  const resolved: Partial<Record<keyof NuxtBuildOutputs, string>> = {}
+  for (const key of Object.keys(nuxt.buildOutputs) as Array<keyof NuxtBuildOutputs>) {
+    resolved[key] = String(await nuxt.buildOutputs[key]())
+  }
+  return resolved
+}
 
 describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
   const workspaceDir = await findWorkspaceDir()
@@ -12,6 +21,7 @@ describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
 
   beforeEach(async () => {
     await rm(tmpDir, { recursive: true, force: true })
+    await mkdir(join(tmpDir, 'node_modules'), { recursive: true })
     await mkdir(join(tmpDir, 'project/node_modules'), { recursive: true })
     // Create a minimal app.vue so the build has something to compile
     await writeFile(join(tmpDir, 'project/app.vue'), '<template><div>hello</div></template>')
@@ -103,6 +113,38 @@ describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
     await build(nuxt2)
 
     expect(buildDoneFired).toBe(true)
+  })
+
+  it('should restore build outputs on cache hit', async () => {
+    const rootDir = join(tmpDir, 'project')
+    await writeFile(join(rootDir, 'app.vue'), '<template><div class="box">hello</div></template><style scoped>.box { color: red }</style>')
+
+    const nuxt1 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'outputs-1',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt1)
+    const expected = await resolveBuildOutputs(nuxt1)
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'outputs-2',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt2)
+
+    expect(await resolveBuildOutputs(nuxt2)).toStrictEqual(expected)
+    expect(expected.clientManifest).not.toBe('export default {}')
+    expect(expected.ssrStyles).not.toBe('export default {}')
   })
 
   it('should generate a new buildId when sources change', async () => {

@@ -41,6 +41,11 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Use only JSON-serializable values (strings, numbers, booleans, arrays, plain objects) in `defineRouteRules()`.',
       docs: false,
     },
+    NUXT_B4007: {
+      why: (p: { fnName: string, file: string }) => `\`${p.fnName}\` is called conditionally or used as an expression in \`${p.file}\`, but it is a compiler macro that is extracted at build time and always applies.`,
+      fix: (p: { fnName: string }) => `Call \`${p.fnName}({ ... })\` once, as a statement at the top level of the \`<script setup>\` block.`,
+      docs: false,
+    },
     NUXT_B4008: {
       why: 'Server pages with `ssr: false` are not supported while component islands are auto-detected.',
       fix: 'Set `experimental.componentIslands` to `true`.',
