@@ -9,3 +9,6 @@ const appConfig = useAppConfig()
 expectTypeOf(appConfig.fromNuxtConfig).toEqualTypeOf<boolean>()
 expectTypeOf(appConfig.userConfig).toEqualTypeOf<123 | 456 | undefined>()
 expectTypeOf(appConfig.fromLayer).toEqualTypeOf<unknown>()
+
+expectTypeOf(import.meta.dev).toEqualTypeOf<boolean>()
+expectTypeOf(import.meta.test).toEqualTypeOf<boolean>()
