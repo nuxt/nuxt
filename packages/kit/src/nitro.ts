@@ -136,9 +136,9 @@ export function addServerScanDir (dirs: string | string[], opts: { prepend?: boo
 /**
  * Add route rules to the nitro router.
  */
-export function updateRouteRules (routeRules: Record<string, NitroRouteConfig> = {}, opts: { merge?: boolean } = {}): void {
+export async function updateRouteRules (routeRules: Record<string, NitroRouteConfig> = {}, opts: { merge?: boolean } = {}): Promise<void> {
   const nitro = useNitro()
-  nitro.updateConfig({
+  await nitro.updateConfig({
     routeRules: opts.merge
       ? defu(nitro.options.routeRules, routeRules)
       : {
