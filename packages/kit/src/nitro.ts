@@ -140,7 +140,7 @@ export async function updateRouteRules (routeRules: Record<string, NitroRouteCon
   const nitro = useNitro()
   await nitro.updateConfig({
     routeRules: opts.merge
-      ? defu(nitro.options.routeRules, routeRules)
+      ? defu(routeRules, nitro.options.routeRules)
       : {
           ...nitro.options.routeRules,
           ...routeRules,
