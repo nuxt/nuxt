@@ -198,7 +198,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (opts.watch) {
       watch(cookie, () => {
         if (watchPaused) { return }
-        callback(opts.refresh)
+        // `readonly` must always win: `refresh` only bypasses the no-op check, never the readonly guard
+        callback(!opts.readonly && opts.refresh)
       },
       { deep: opts.watch !== 'shallow' })
     }
