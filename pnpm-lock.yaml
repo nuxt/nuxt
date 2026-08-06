@@ -978,6 +978,9 @@ importers:
       '@nuxt/devtools':
         specifier: catalog:build
         version: 3.4.1(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))(supports-color@10.2.2)(vite@8.2.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
+      '@nuxt/docs':
+        specifier: workspace:*
+        version: link:../../docs
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit

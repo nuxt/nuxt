@@ -48,6 +48,7 @@ import { addModuleTranspiles } from './modules.ts'
 import { bundleServer } from './server.ts'
 import { NuxtPerfProfiler } from './perf.ts'
 import schemaModule from './schema.ts'
+import agentsModule from './agents.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
@@ -960,6 +961,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     },
   }])
   options._modules.push(schemaModule)
+  if (options.experimental.agentsDocs) {
+    options._modules.push(agentsModule)
+  }
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push(
