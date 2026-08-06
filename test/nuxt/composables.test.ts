@@ -1316,12 +1316,12 @@ describe('useCookie', () => {
     document.cookie = 'readonly-refresh-test=; Max-Age=0'
     expect(document.cookie).not.toContain('readonly-refresh-test=original')
 
-    // Whatever triggers the ref to change (e.g. cross-tab sync), `readonly` must
-    // still prevent this composable instance from ever writing the cookie back.
-    ;(cookie as any).value = 'mutated'
+    // A stray write to `.value` (e.g. slipping past the `Readonly<>` type) must
+    // still never reach the browser cookie: `readonly` always wins over `refresh`.
+    ;(cookie as any).value = 'stray-write'
     await nextTick()
 
-    expect(document.cookie).not.toContain('readonly-refresh-test=mutated')
+    expect(document.cookie).not.toContain('readonly-refresh-test=stray-write')
   })
 
   it('should re-evaluate expires getter on each cookie write', async () => {
