@@ -58,8 +58,6 @@ minimumReleaseAgeExclude:
   - unhead@3.2.1
   - impound@1.1.6
   - oxc-walker@1.1.1
-  - nuxt
-  - nuxt-nightly
   - vue
   - '@vue/*'
 
