@@ -55,6 +55,8 @@ minimumReleaseAgeExclude:
   - impound@1.1.6
   - structured-clone-es@2.0.1
   - oxc-walker@1.1.1
+  - vue
+  - '@vue/*'
 
 catalogs:
   app-runtime:
