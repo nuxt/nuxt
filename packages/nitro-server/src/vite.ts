@@ -1,10 +1,14 @@
-import { isAbsolute, resolve } from 'pathe'
+import { createReadStream } from 'node:fs'
+import { stat } from 'node:fs/promises'
+import { Readable } from 'node:stream'
+import { extname, isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
 import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
-import { toFetchHandler } from 'srvx/node'
+import { NodeRequest, sendNodeResponse, toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
-import { getQuery } from 'ufo'
+import { getQuery, joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { nitro as nitroPlugin } from 'nitro/vite'
+import { mockEvent, serveStatic, toResponse } from 'nitro/h3'
 import escapeRE from 'escape-string-regexp'
 import MagicString from 'magic-string'
 import remapping from '@ampproject/remapping'
@@ -79,6 +83,57 @@ function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string
 }
 
 /**
+ * `nitro/vite`'s own dev middleware only falls back to Nitro's dev app for
+ * paths it heuristically recognises as non-assets, so a public file whose
+ * extension it doesn't know about (e.g. `.txt`) never reaches Nitro's
+ * `publicAssets` handling and 404s, since Vite's own `publicDir` serving is
+ * disabled for `dir.public` (see `schema/src/config/vite.ts`). Registering
+ * this `enforce: 'pre'` plugin ahead of `nitroPlugin` below guarantees its
+ * `configureServer` middleware is installed before that heuristic runs, so
+ * public assets are served here directly and never depend on it.
+ */
+function PublicAssetsDevMiddleware (nitro: Nitro): VitePlugin {
+  return {
+    name: 'nuxt:public-assets-dev-middleware',
+    enforce: 'pre',
+    configureServer (server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') { return next() }
+        try {
+          const event = mockEvent(new NodeRequest({ req, res }))
+          if (!extname(event.url.pathname)) { return next() }
+          for (const asset of nitro.options.publicAssets) {
+            const base = withTrailingSlash(joinURL(nitro.options.baseURL, asset.baseURL || '/'))
+            if (!withTrailingSlash(event.url.pathname).startsWith(base)) { continue }
+            const dir = resolve(asset.dir)
+            const response = await serveStatic(event, {
+              fallthrough: true,
+              getMeta: async (id) => {
+                const path = resolve(dir, withoutLeadingSlash(id.slice(base.length - 1)))
+                if (path !== dir && !path.startsWith(dir + '/')) { return }
+                const stats = await stat(path).catch(() => null)
+                if (!stats?.isFile()) { return }
+                return { size: stats.size, mtime: stats.mtime }
+              },
+              getContents: (id) => {
+                const path = resolve(dir, withoutLeadingSlash(id.slice(base.length - 1)))
+                return Readable.toWeb(createReadStream(path)) as ReadableStream
+              },
+            })
+            if (response) {
+              return await sendNodeResponse(res, await toResponse(response, event))
+            }
+          }
+          next()
+        } catch (err) {
+          next(err as Error)
+        }
+      })
+    },
+  }
+}
+
+/**
  * Set up Nitro as a Vite environment using the `nitro/vite` plugin.
  */
 export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro): void {
@@ -132,6 +187,11 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }
 
   nuxt.options.vite.plugins ||= []
+
+  if (nuxt.options.dev) {
+    nuxt.options.vite.plugins.push(PublicAssetsDevMiddleware(nitro))
+  }
+
   nuxt.options.vite.plugins.push(nitroPlugin({
     // reuse the Nitro instance we have created
     _nitro: nitro,
