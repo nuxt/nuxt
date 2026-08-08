@@ -1316,8 +1316,6 @@ describe('useCookie', () => {
     document.cookie = 'readonly-refresh-test=; Max-Age=0'
     expect(document.cookie).not.toContain('readonly-refresh-test=original')
 
-    // A stray write to `.value` (e.g. slipping past the `Readonly<>` type) must
-    // still never reach the browser cookie: `readonly` always wins over `refresh`.
     ;(cookie as any).value = 'stray-write'
     expect(cookie.value).toBe('stray-write')
     await nextTick()
