@@ -74,6 +74,7 @@ export default defineConfig<E2eConfigOptions>({
       return {
         name,
         testIgnore: testIgnoreForProject(entry),
+        fullyParallel: !entry.isDev && !isCI,
         use: {
           ...devices['Desktop Chrome'],
           isDev: entry.isDev,
