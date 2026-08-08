@@ -10,7 +10,10 @@ import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { crawlLinks } from '#build/nuxt.config.mjs'
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
-const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
+// hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
+function routeRulesMatcher (path: string): NitroRouteRules {
+  return (_routeRulesMatcher as (path: string) => NitroRouteRules)(path)
+}
 
 let routes: string[]
 

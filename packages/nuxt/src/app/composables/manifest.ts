@@ -9,7 +9,10 @@ import _routeRulesMatcher from '#build/route-rules.mjs'
 
 const $fetch = _$fetch as $Fetch
 
-const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
+// hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
+function routeRulesMatcher (path: string): NitroRouteRules {
+  return (_routeRulesMatcher as (path: string) => NitroRouteRules)(path)
+}
 
 export interface NuxtAppManifestMeta {
   id: string
