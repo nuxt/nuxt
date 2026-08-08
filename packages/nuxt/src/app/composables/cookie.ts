@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { Ref, WatchHandle } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
@@ -153,21 +153,21 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       channel?.postMessage({ value: opts.encode(cookie.value as T) })
     }
 
+    let cookieWatcher: WatchHandle | undefined
+
     const handleChange = (data: { value?: string | null, refresh?: boolean }) => {
       const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
-      watchPaused = true
+      cookieWatcher?.pause()
       cookie.value = value
       cookies[name] = klona(value)
-      nextTick(() => { watchPaused = false })
+      nextTick(() => cookieWatcher?.resume())
     }
-
-    let watchPaused = false
 
     const hasScope = !!getCurrentScope()
 
     if (hasScope) {
       onScopeDispose(() => {
-        watchPaused = true
+        cookieWatcher?.pause()
         callback()
         channel?.close()
       })
@@ -196,12 +196,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
 
     if (opts.watch) {
-      watch(cookie, () => {
-        if (watchPaused) { return }
-        // `readonly` must always win: `refresh` only bypasses the no-op check, never the readonly guard
-        callback(!opts.readonly && opts.refresh)
-      },
-      { deep: opts.watch !== 'shallow' })
+      // `readonly` must always win: `refresh` only bypasses the no-op check, never the readonly guard
+      cookieWatcher = watch(cookie, () => callback(!opts.readonly && opts.refresh), { deep: opts.watch !== 'shallow' })
     }
 
     if (shouldSetInitialClientCookie) {
