@@ -190,7 +190,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     return resolvedPath
   }
 
-  function useNuxtLink (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }) {
+  function useNuxtLink (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }, resolveRouterLink = true) {
     const router = useRouter()
     const config = useRuntimeConfig()
 
@@ -202,7 +202,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       return typeof path === 'string' && hasProtocol(path, { acceptRelative: true })
     })
 
-    const builtinRouterLink = resolveComponent('RouterLink') as string | typeof RouterLink
+    const builtinRouterLink = resolveRouterLink ? resolveComponent('RouterLink') as string | typeof RouterLink : undefined
     const useBuiltinLink = builtinRouterLink && typeof builtinRouterLink !== 'string' ? builtinRouterLink.useLink : undefined
 
     // Resolving link type
@@ -289,24 +289,20 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       // Routing
       to: {
         type: [String, Object] as PropType<RouteLocationRaw>,
-        default: undefined,
         required: false,
       },
       href: {
         type: [String, Object] as PropType<RouteLocationRaw>,
-        default: undefined,
         required: false,
       },
 
       // Attributes
       target: {
         type: String as PropType<NuxtLinkProps['target']>,
-        default: undefined,
         required: false,
       },
       rel: {
         type: String as PropType<NuxtLinkProps['rel']>,
-        default: undefined,
         required: false,
       },
       noRel: {
@@ -323,7 +319,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       },
       prefetchOn: {
         type: [String, Object] as PropType<NuxtLinkProps['prefetchOn']>,
-        default: undefined,
         required: false,
       },
       noPrefetch: {
@@ -335,17 +330,14 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       // Styling
       activeClass: {
         type: String as PropType<NuxtLinkProps['activeClass']>,
-        default: undefined,
         required: false,
       },
       exactActiveClass: {
         type: String as PropType<NuxtLinkProps['exactActiveClass']>,
-        default: undefined,
         required: false,
       },
       prefetchedClass: {
         type: String as PropType<NuxtLinkProps['prefetchedClass']>,
-        default: undefined,
         required: false,
       },
 
@@ -357,7 +349,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       },
       ariaCurrentValue: {
         type: String as PropType<NuxtLinkProps['ariaCurrentValue']>,
-        default: undefined,
         required: false,
       },
 
@@ -377,7 +368,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       // Behavior
       trailingSlash: {
         type: String as PropType<NuxtLinkProps['trailingSlash']>,
-        default: undefined,
         required: false,
       },
     },
@@ -385,7 +375,15 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     setup (props, { slots }) {
       const router = useRouter()
 
-      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
+      const routerLinkComponent = resolveComponent('RouterLink')
+
+      // vue-router's `useLink` only backs the `route`/`isActive`/`isExactActive` properties of
+      // the public `useLink` API, which this component never reads, so skip resolving it here.
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props, false)
+
+      const serverLink = import.meta.server && !props.custom && !isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value) && typeof routerLinkComponent !== 'string'
+        ? (routerLinkComponent as unknown as typeof RouterLink).useLink({ to: to as any, replace: props.replace })
+        : undefined
 
       // Prefetching
       const prefetched = shallowRef(false)
@@ -536,9 +534,33 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             }
           }
 
+          if (import.meta.server && serverLink) {
+            const routerOptions = (router as Router).options
+            const isActive = serverLink.isActive.value
+            const isExactActive = serverLink.isExactActive.value
+            const href = serverLink.href.value
+            return h('a', {
+              'aria-current': isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
+              href,
+              'class': {
+                [getLinkClass(routerLinkProps.activeClass, routerOptions.linkActiveClass, 'router-link-active')]: isActive,
+                [getLinkClass(routerLinkProps.exactActiveClass, routerOptions.linkExactActiveClass, 'router-link-exact-active')]: isExactActive,
+              },
+              'rel': routerLinkProps.rel,
+              'data-internal': routerLinkProps['data-internal'],
+            }, slots.default?.({
+              // `route` is already resolved as a side effect of reading `href` above
+              route: serverLink.route.value,
+              href,
+              isActive,
+              isExactActive,
+              navigate: serverLink.navigate,
+            }))
+          }
+
           // Internal link
           return h(
-            resolveComponent('RouterLink'),
+            routerLinkComponent,
             routerLinkProps,
             props.custom && slots.default
               ? { default: (slotProps: RouterLinkSlotProps) => slots.default!(getCustomSlotProps(slotProps)) }
@@ -596,6 +618,10 @@ const NuxtLink: NuxtLinkComponent & Record<string, any> = defineNuxtLink(nuxtLin
 export default NuxtLink
 
 // -- NuxtLink utils --
+function getLinkClass (propClass: string | undefined, globalClass: string | undefined, defaultClass: string): string {
+  return propClass ?? globalClass ?? defaultClass
+}
+
 function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {
   // When `trailingSlash` is unset (or not a valid value) the URL is returned untouched
   if (trailingSlash !== 'append' && trailingSlash !== 'remove') {
