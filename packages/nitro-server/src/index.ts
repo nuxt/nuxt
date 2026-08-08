@@ -792,6 +792,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
+  const importPaths = nuxt.options.modulesDir.map(d => pathToFileURL(withTrailingSlash(d)))
   const tsConfig = nitroConfig.typescript!.tsConfig!
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
@@ -804,8 +805,21 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       continue
     }
 
-    const absolutePath = resolve(basePath, aliases[alias]!)
-    const isDirectory = aliases[alias]!.endsWith('/') || await fsp.stat(absolutePath).then(r => r.isDirectory()).catch(() => null /* file does not exist */)
+    let absolutePath = resolve(basePath, aliases[alias]!)
+    let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    if (!stats) {
+      const resolvedModule = resolveModulePath(aliases[alias]!, {
+        try: true,
+        from: importPaths,
+        extensions: [...nuxt.options.extensions, '.d.ts', '.d.mts', '.d.cts'],
+      })
+      if (resolvedModule) {
+        absolutePath = resolvedModule
+        stats = await fsp.stat(resolvedModule).catch(() => null)
+      }
+    }
+
+    const isDirectory = aliases[alias]!.endsWith('/') || stats?.isDirectory()
     // note - nitro will check + remove the file extension as required
     tsConfig.compilerOptions.paths[alias] = [absolutePath]
     if (isDirectory) {
