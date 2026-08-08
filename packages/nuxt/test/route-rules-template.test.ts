@@ -12,12 +12,12 @@ async function getRouteRulesTemplate (sensitive: boolean) {
     ready: true,
     overrides: {
       router: { options: { sensitive } },
-      routeRules: { '/admin/**': { appMiddleware: 'auth' } },
+      routeRules: { '/admin/**': { prerender: true } },
     },
   })
   try {
     const template = nuxt.options.build.templates.find(t => t.filename === 'route-rules.mjs')!
-    return await template.getContents!({ nuxt, app: undefined!, options: template.options, utils: undefined! })
+    return await template.getContents!({ nuxt, app: undefined!, options: template.options })
   } finally {
     await nuxt.close()
   }
