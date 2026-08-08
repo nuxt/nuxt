@@ -294,6 +294,7 @@ export default defineResolvers({
       const [app, buildId] = await Promise.all([get('app'), get('buildId')])
       provideFallbackValues(val)
       return defu(val, {
+        secretKey: '',
         public: {},
         app: {
           buildId,
