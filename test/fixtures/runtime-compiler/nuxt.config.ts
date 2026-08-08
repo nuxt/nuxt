@@ -1,4 +1,4 @@
-import { withMatrix } from '../../matrix'
+import { withMatrix } from '../../matrix.ts'
 
 // https://nuxt.com/docs/4.x/api/nuxt-config
 export default withMatrix({
@@ -12,6 +12,7 @@ export default withMatrix({
   },
   vue: {
     runtimeCompiler: true,
+    optionsApi: true,
   },
   experimental: {
     nitroAutoImports: true,

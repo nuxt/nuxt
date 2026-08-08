@@ -116,7 +116,7 @@ async function main () {
 
       // The committed ui-templates output bakes in the nuxt package version,
       // so it must be regenerated after the nightly bump.
-      execFile('vp', ['exec', 'pnpm', '--filter', '@nuxt/ui-templates', 'build'])
+      execFile('vp', ['exec', 'pnpm', '--config.verify-deps-before-run=false', '--filter', '@nuxt/ui-templates', 'build'])
     }
 
     // Use absolute URLs for better rendering on npm

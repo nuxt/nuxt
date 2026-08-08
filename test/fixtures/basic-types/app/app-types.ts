@@ -10,9 +10,9 @@ import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
+import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
-import { useRouter } from '#imports'
+import { prefetchComponents, preloadComponents, useRouter } from '#imports'
 
 type DefaultAsyncDataErrorValue = undefined
 type DefaultAsyncDataValue = undefined
@@ -234,6 +234,13 @@ describe('import meta', () => {
   })
 })
 
+describe('errors', () => {
+  it('is throwable, so `only-throw-error` is satisfied', () => {
+    const error: Error = createError({ status: 404 })
+    expectTypeOf(error).toExtend<Error>()
+  })
+})
+
 describe('middleware', () => {
   it('recognizes named middleware', () => {
     definePageMeta({ middleware: 'named' })
@@ -366,6 +373,30 @@ describe('typed router integration', () => {
 
     // doesn't throw an error when accessing properties of component
     const _props = NuxtLink.props
+  })
+
+  it('types NuxtLink slot props', () => {
+    type DefaultSlotProps = Parameters<NonNullable<InstanceType<typeof NuxtLink<false>>['$slots']['default']>>[0]
+    expectTypeOf<DefaultSlotProps['href']>().toEqualTypeOf<string>()
+    expectTypeOf<DefaultSlotProps['isActive']>().toEqualTypeOf<boolean>()
+    // @ts-expect-error prefetch state is only exposed to `custom` links
+    expectTypeOf<DefaultSlotProps['prefetched']>().toEqualTypeOf<boolean>()
+
+    type CustomSlotProps = Parameters<NonNullable<InstanceType<typeof NuxtLink<true>>['$slots']['default']>>[0]
+    expectTypeOf<CustomSlotProps['href']>().toEqualTypeOf<string | null>()
+    expectTypeOf<CustomSlotProps['isActive']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['isExternal']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['prefetched']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['route']>().toExtend<{ href: string } | undefined>()
+  })
+
+  // `vue-component-type-helpers` and Vue Language Tools both infer against a construct signature,
+  // and inference against a solely generic construct signature resolves to the empty fallback
+  it('exposes props and slots to structural component type inference', () => {
+    type Props<T> = T extends new (...args: any) => { $props: infer P } ? NonNullable<P> : Record<never, never>
+    type Slots<T> = T extends new (...args: any) => { $slots: infer S } ? NonNullable<S> : Record<never, never>
+    expectTypeOf<'to' | 'href' | 'custom'>().toExtend<keyof Props<typeof NuxtLink>>()
+    expectTypeOf<'default'>().toExtend<keyof Slots<typeof NuxtLink>>()
   })
 })
 
@@ -544,6 +575,19 @@ describe('components', () => {
 
   it('include fallback slot in server components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
+  })
+
+  it('types preloadComponents/prefetchComponents against global component names', () => {
+    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
+    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
+    // @ts-expect-error not a global component
+    void preloadComponents('WithTypes')
+  })
+
+  it('types NuxtIsland name against island component names', () => {
+    h(NuxtIsland, { name: 'ServerComponent' })
+    // @ts-expect-error not an island component
+    h(NuxtIsland, { name: 'WithTypes' })
   })
 })
 

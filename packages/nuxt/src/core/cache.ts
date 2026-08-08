@@ -1,14 +1,15 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { buildDiagnostics, createIsIgnored } from '@nuxt/kit'
-import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
+import { buildDiagnostics, createIsIgnored, setBuildOutput, useNitro } from '@nuxt/kit'
+import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
 import { dirname, join, relative, resolve } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
+import type { Plugin as VitePlugin } from 'vite'
 
 export async function getVueHash (nuxt: Nuxt) {
   const id = 'vue'
@@ -40,12 +41,23 @@ export async function getVueHash (nuxt: Nuxt) {
 
   const cacheFile = join(getCacheDir(nuxt), id, hash + '.tar')
   const buildIdCacheFile = cacheFile.replace('.tar', '.buildid')
+  const clientCacheFile = cacheFile.replace('.tar', '.client.tar')
+
+  // When Nitro builds as a Vite environment the client bundle is written to
+  // `output.publicDir`, outside `buildDir`, so it needs its own cache entry.
+  const cachesClientAssets = nuxt.options.experimental.nitroViteEnvironment
+  let clientFiles: string[] = []
 
   return {
     hash,
     async collectCache () {
       const start = Date.now()
+      await persistBuildOutputs(nuxt)
       await writeCache(nuxt.options.buildDir, nuxt.options.buildDir, cacheFile)
+      if (cachesClientAssets && clientFiles.length) {
+        const publicDir = useNitro().options.output.publicDir
+        await writeCache(publicDir, publicDir, clientCacheFile, clientFiles)
+      }
 
       // Cache buildId so it can be restored before modules are initialised on the next build
       await mkdir(dirname(buildIdCacheFile), { recursive: true })
@@ -56,15 +68,88 @@ export async function getVueHash (nuxt: Nuxt) {
     },
     async restoreCache () {
       const start = Date.now()
+      if (cachesClientAssets && !existsSync(clientCacheFile)) {
+        return false
+      }
       const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
       if (res) {
+        await restoreBuildOutputs(nuxt)
         consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
       }
       return res
     },
+    clientCachePlugin (options: { restore: boolean }): VitePlugin {
+      return {
+        name: 'nuxt:build-cache:client',
+        sharedDuringBuild: true,
+        // On a cache miss, record exactly what the client build emitted so the
+        // same set can be replayed on a hit: the bundle is written to
+        // `output.publicDir`, which by then also holds copied public assets and
+        // prerendered pages that must not be cached.
+        writeBundle (_options, bundle) {
+          if (this.environment?.name === 'client') {
+            clientFiles = Object.keys(bundle)
+          }
+        },
+        // Nitro still needs to build on a cache hit, to prerender and to emit
+        // `.output/server`. Its orchestrator skips any environment reporting
+        // `isBuilt`, so flagging the client environment leaves the ssr and
+        // nitro environments to build as usual.
+        //
+        // Restoring here rather than before the build starts is deliberate:
+        // nitro empties `output.publicDir` from its own `buildApp` hook, which
+        // is ordered `pre` and so runs first.
+        ...options.restore
+          ? {
+              async buildApp (builder) {
+                await restoreCacheFromFile(useNitro().options.output.publicDir, clientCacheFile)
+                await restoreBuildOutputs(nuxt, CLIENT_BUILD_OUTPUT_KEYS)
+                const client = builder.environments.client
+                if (client) {
+                  client.isBuilt = true
+                }
+              },
+            }
+          : {},
+      }
+    },
   }
 }
+
+const BUILD_OUTPUTS_FILE = 'build-outputs.json'
+
+/**
+ * The bundler is skipped entirely on a cache hit, so the `nuxt/*` build outputs
+ * it would normally provide are snapshotted into the cached build directory and
+ * replayed on restore.
+ */
+async function persistBuildOutputs (nuxt: Nuxt) {
+  const outputs: Partial<Record<keyof NuxtBuildOutputs, string>> = {}
+  for (const key of Object.keys(nuxt.buildOutputs) as Array<keyof NuxtBuildOutputs>) {
+    outputs[key] = String(await nuxt.buildOutputs[key]())
+  }
+  await writeFile(resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE), JSON.stringify(outputs), 'utf8')
+}
+
+async function restoreBuildOutputs (nuxt: Nuxt, keys?: ReadonlyArray<keyof NuxtBuildOutputs>) {
+  const file = resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE)
+  if (!existsSync(file)) { return }
+  const outputs = JSON.parse(await readFile(file, 'utf8')) as Record<keyof NuxtBuildOutputs, string>
+  for (const key of Object.keys(outputs) as Array<keyof NuxtBuildOutputs>) {
+    if (keys && !keys.includes(key)) { continue }
+    const code = outputs[key]
+    setBuildOutput(key, () => code, nuxt)
+  }
+}
+
+/**
+ * Outputs the client build is the sole source of. Their providers are
+ * registered when the client environment's plugins are created, which happens
+ * after the cache is restored, so they have to be replayed once the build has
+ * started or the stub values would win.
+ */
+const CLIENT_BUILD_OUTPUT_KEYS = ['clientManifest', 'clientPrecomputed', 'entryChunkName'] as const
 
 /**
  * Restore cached buildId before modules are initialised.
@@ -313,9 +398,9 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
   return true
 }
 
-async function writeCache (cwd: string, sources: string | string[], cacheFile: string) {
+async function writeCache (cwd: string, sources: string | string[], cacheFile: string, patterns = ['**/*', '!analyze/**']) {
   const fileEntries = await readFilesRecursive(sources, {
-    patterns: ['**/*', '!analyze/**'],
+    patterns,
     cwd,
   })
   const tarData = createTar(fileEntries)

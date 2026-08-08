@@ -1,14 +1,16 @@
 import { createUnplugin } from 'unplugin'
-import type { StaticImport } from 'mlly'
-import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
+import { ScopeTracker, getUndeclaredIdentifiersInFunction, isReferenceIdentifier, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { pageDiagnostics } from '@nuxt/kit'
 import { parseModuleId } from '../../core/utils/plugins.ts'
-import { isSerializable } from '../utils.ts'
+import { parseModule } from '../../core/utils/parse.ts'
+import { getStaticImports } from '../../core/utils/static-imports.ts'
+import type { ParsedStaticImport } from '../../core/utils/static-imports.ts'
+import { classifyPageMetaProperty } from '../utils.ts'
+import { linkToAlias } from '../../utils.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
 
 interface PageMetaPluginOptions {
@@ -16,6 +18,7 @@ interface PageMetaPluginOptions {
   isPage?: (file: string) => boolean
   routesId?: string
   extractedKeys?: string[]
+  extractSerializable?: boolean
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
@@ -45,6 +48,9 @@ if (import.meta.webpackHot) {
 }`
 
 export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
+  const extractedKeys = new Set(options.extractedKeys)
+  const classifyOptions = { extractSerializable: options.extractSerializable }
+
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
@@ -74,7 +80,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
         const hasMacro = HAS_MACRO_RE.test(code)
 
-        const imports = findStaticImports(code)
+        const parsed = parseModule(code, id, { lang: query.lang ?? 'ts' })
+        const imports = getStaticImports(code, parsed.module.staticImports)
 
         // [vite] Re-export any script imports
         const scriptImport = imports.find(i => parseMacroQuery(i.specifier).type === 'script')
@@ -87,15 +94,17 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
 
         // [webpack] Re-export any exports from script blocks in the components
-        const currentExports = findExports(code)
-        for (const match of currentExports) {
-          if (match.type !== 'default' || !match.specifier) {
+        for (const statement of parsed.module.staticExports) {
+          const defaultEntry = statement.entries.find(entry => !entry.isType && entry.exportName.name === 'default')
+          const specifier = defaultEntry?.moduleRequest?.value
+          if (!specifier) {
             continue
           }
 
-          const reorderedQuery = rewriteQuery(match.specifier)
+          const reorderedQuery = rewriteQuery(specifier)
           // Avoid using JSON.stringify which can add extra escapes to paths with non-ASCII characters
-          const quotedSpecifier = getQuotedSpecifier(match.code)?.replace(match.specifier, reorderedQuery) ?? JSON.stringify(reorderedQuery)
+          const statementCode = code.slice(statement.start, statement.end)
+          const quotedSpecifier = getQuotedSpecifier(statementCode)?.replace(specifier, reorderedQuery) ?? JSON.stringify(reorderedQuery)
           s.overwrite(0, code.length, `export { default } from ${quotedSpecifier}`)
           return result()
         }
@@ -104,7 +113,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!code) {
             s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
             const { pathname } = parseModuleId(id)
-            pageDiagnostics.NUXT_B4001({ pathname })
+            pageDiagnostics.NUXT_B4001({ pathname: linkToAlias(pathname) })
           } else {
             s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           }
@@ -112,14 +121,13 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           return result()
         }
 
-        const importMap = new Map<string, StaticImport>()
+        const importMap = new Map<string, ParsedStaticImport>()
         const addedImports = new Set()
         for (const i of imports) {
-          const parsed = parseStaticImport(i)
           for (const name of [
-            parsed.defaultImport,
-            ...Object.values(parsed.namedImports || {}),
-            parsed.namespacedImport,
+            i.defaultImport,
+            ...Object.values(i.namedImports),
+            i.namespacedImport,
           ].filter(Boolean) as string[]) {
             importMap.set(name, i)
           }
@@ -182,15 +190,28 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
             for (const decl of scopeTrackerNode.variableNode.declarations) {
               if (!decl.init) { continue }
+
+              // `isReferenceIdentifier` cannot distinguish identifiers in destructured binding
+              // patterns (`({ foo }) => foo`) from references, and references to locals of
+              // functions within the initializer must not resolve to same-named declarations
+              // in the outer scope, so track the initializer's own scopes to filter them out
+              const initScopeTracker = new ScopeTracker({
+                preserveExitedScopes: true,
+              })
+              walk(decl.init, { scopeTracker: initScopeTracker })
+              initScopeTracker.freeze()
+
               walk(decl.init, {
+                scopeTracker: initScopeTracker,
                 enter: (node, parent) => {
                   if (node.type === 'AwaitExpression') {
                     const codeSnippet = code.slice(node.start, Math.min(node.end, node.start + 80))
                     throw pageDiagnostics.NUXT_B4002({ codeSnippet, offset: node.start })
                   }
                   if (
-                    isBindingIdentifier(node, parent)
+                    !isReferenceIdentifier(node, parent)
                   || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
+                  || initScopeTracker.isDeclared(node.name)
                   ) { return }
 
                   addImportOrDeclaration(node.name, scopeTrackerNode)
@@ -211,12 +232,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           }
         }
 
-        const { program: ast } = parseAndWalk(code, id, {
-          scopeTracker,
-          parseOptions: {
-            lang: query.lang ?? 'ts',
-          },
-        })
+        const { program: ast } = parsed
+        walk(ast, { scopeTracker })
 
         scopeTracker.freeze()
 
@@ -249,34 +266,35 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                if (prop.type !== 'Property' || prop.key.type !== 'Identifier') {
+                const classification = classifyPageMetaProperty(prop, extractedKeys, classifyOptions)
+
+                // The route record now carries the value, so drop it here to keep the two in step.
+                if (classification.kind === 'extract' || (classification.kind === 'reshape' && classification.value)) {
+                  omitProp(prop, i)
                   continue
                 }
 
-                if (options.extractedKeys?.includes(prop.key.name)) {
-                  const { serializable } = isSerializable(metaCode, prop.value)
-                  if (serializable) {
-                    omitProp(prop, i)
-                  }
-                } else if (prop.key.name === 'layout' && prop.value.type === 'ObjectExpression') {
-                  for (const layoutProp of prop.value.properties) {
-                    if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
-                      continue
-                    }
-                    if (layoutProp.key.name === 'name') {
-                      m.appendLeft(
-                        prop.start - meta.start,
-                        `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
-                      )
-                    } else if (layoutProp.key.name === 'props') {
-                      m.appendLeft(
-                        prop.start - meta.start,
-                        `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
-                      )
-                    }
-                  }
-                  omitProp(prop, i)
+                if (classification.kind !== 'reshape') {
+                  continue
                 }
+
+                for (const layoutProp of classification.node.properties) {
+                  if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
+                    continue
+                  }
+                  if (layoutProp.key.name === 'name') {
+                    m.appendLeft(
+                      prop.start - meta.start,
+                      `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                    )
+                  } else if (layoutProp.key.name === 'props') {
+                    m.appendLeft(
+                      prop.start - meta.start,
+                      `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                    )
+                  }
+                }
+                omitProp(prop, i)
               }
             }
 
@@ -286,7 +304,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
               scopeTracker,
               enter (node, parent) {
                 if (
-                  isBindingIdentifier(node, parent)
+                  !isReferenceIdentifier(node, parent)
                 || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
                 ) { return }
 
@@ -330,7 +348,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          throw pageDiagnostics.NUXT_B4003({ callCount: instances, file: id })
+          throw pageDiagnostics.NUXT_B4003({ callCount: instances, file: linkToAlias(id) })
         }
 
         if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {

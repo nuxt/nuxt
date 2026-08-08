@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite'
 import type { SourceMapInput } from 'rollup'
-import { bundlerDiagnostics, ensureDependencyInstalled } from '@nuxt/kit'
+import { bundlerDiagnostics, ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import jsTokens from 'js-tokens'
 
@@ -52,7 +52,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
       })
 
       if (result !== true) {
-        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), install: result.join(' ') })
+        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), installCommand: await getAddDependencyCommand(result, nuxt.options.rootDir, { dev: true }) })
         return false
       }
 

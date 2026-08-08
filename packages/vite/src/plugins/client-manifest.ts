@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { rm } from 'node:fs/promises'
 
 import { relative, resolve } from 'pathe'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
@@ -8,15 +8,17 @@ import { normalizeViteManifest, precomputeDependencies } from 'vue-bundle-render
 import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
-import { setBuildOutput } from '@nuxt/kit'
+import { bundlerDiagnostics, setBuildOutput } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import { resolveClientEntry } from '../utils/config.ts'
-import { collectGlobalCss } from '../utils/css.ts'
+import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
+import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
 
 export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let clientEntry: string
   let key: string
   let disableCssCodeSplit: boolean
+  let manifestFileName: string
+  let manifestFile: string
 
   let precomputedCode = 'export default undefined'
   // Default empty manifest so the build output is loadable before the real one is populated.
@@ -46,7 +48,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   // from the ssr graph is pushed to the ssr runner over the env hot channel and
   // patched into the renderer manifest at render time (see `patchDevClientCss`).
   const buildDevClientManifest = (): RendererManifest => {
-    const entryFile = envApi ? `/@fs${clientEntry}` : clientEntry
+    const entryFile = envApi ? toFsUrl(clientEntry) : clientEntry
     return {
       '@vite/client': {
         isEntry: true,
@@ -78,7 +80,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       order: 'post',
       handler (_options, bundle) {
         if (!envApi || nuxt.options.dev || this.environment?.name !== 'client') { return }
-        const asset = bundle['manifest.json']
+        const asset = bundle[manifestFileName]
         if (asset?.type === 'asset') {
           rawClientManifest = JSON.parse(asset.source.toString()) as ViteClientManifest
         }
@@ -88,6 +90,11 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       clientEntry = resolveClientEntry(config)
       key = relative(config.root, clientEntry)
       disableCssCodeSplit = config.build?.cssCodeSplit === false
+      if (!nuxt.options.dev) {
+        const clientBuild = config.environments.client?.build ?? config.build
+        manifestFileName = resolveClientManifestFile(clientBuild.manifest)
+        manifestFile = resolve(clientBuild.outDir, manifestFileName)
+      }
     },
     async closeBundle () {
       // In env-API mode finalisation is triggered lazily by the provider
@@ -102,15 +109,14 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
     const devClientManifest = buildDevClientManifest()
 
-    // Legacy reads the client `manifest.json` from disk, written by the time
-    // the ssr env's `closeBundle` runs. Env-API uses the in-memory capture
+    // Legacy reads the client manifest from disk, written by the time the ssr
+    // env's `closeBundle` runs. Env-API uses the in-memory capture
     // (`rawClientManifest`).
-    const manifestFile = resolve(nuxt.options.buildDir, 'dist/client', 'manifest.json')
     const clientManifest = nuxt.options.dev
       ? devClientManifest
       : envApi
-        ? (rawClientManifest ?? {})
-        : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
+        ? (rawClientManifest ?? raiseMissingManifest())
+        : JSON.parse(readManifestFromDisk()) as ViteClientManifest
     const manifestEntries = Object.values(clientManifest)
 
     const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
@@ -140,17 +146,25 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     manifestCode = 'export default ' + serialize(manifest)
 
     if (!nuxt.options.dev) {
-      if (nuxt.options.experimental.buildCache) {
-        const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
-        await mkdir(serverDist, { recursive: true })
-        await writeFile(resolve(serverDist, 'client.manifest.mjs'), manifestCode, 'utf8')
-        await writeFile(resolve(serverDist, 'client.precomputed.mjs'), precomputedCode, 'utf8')
-      }
-
-      // The legacy build reads `manifest.json` from disk, so we can remove it once consumed.
+      // The legacy build reads the manifest from disk, so we can remove it once consumed.
       if (!envApi) {
         await rm(manifestFile, { force: true })
       }
     }
+  }
+
+  function readManifestFromDisk (): string {
+    try {
+      return readFileSync(manifestFile, 'utf-8')
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        raiseMissingManifest()
+      }
+      throw error
+    }
+  }
+
+  function raiseMissingManifest (): never {
+    throw bundlerDiagnostics.NUXT_B7021({ manifestFile })
   }
 }

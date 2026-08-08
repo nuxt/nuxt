@@ -41,6 +41,11 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Use only JSON-serializable values (strings, numbers, booleans, arrays, plain objects) in `defineRouteRules()`.',
       docs: false,
     },
+    NUXT_B4007: {
+      why: (p: { fnName: string, file: string }) => `\`${p.fnName}\` is called conditionally or used as an expression in \`${p.file}\`, but it is a compiler macro that is extracted at build time and always applies.`,
+      fix: (p: { fnName: string }) => `Call \`${p.fnName}({ ... })\` once, as a statement at the top level of the \`<script setup>\` block.`,
+      docs: false,
+    },
     NUXT_B4008: {
       why: 'Server pages with `ssr: false` are not supported while component islands are auto-detected.',
       fix: 'Set `experimental.componentIslands` to `true`.',
@@ -79,6 +84,16 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B4015: {
       why: (p: { asset: string, route: string, page?: string }) => `The public asset \`${p.asset}\` is served at \`${p.route}\` and overrides the page route${p.page ? ` defined in \`${p.page}\`` : ''}.`,
       fix: 'Rename or move the public asset, change its public asset base URL, or remove the conflicting page.',
+      docs: false,
+    },
+    NUXT_B4016: {
+      why: (p: { path: string, detail: string }) => `Inline route rules for \`${p.path}\` cannot be represented exactly by Nitro route rules, so they were not applied: ${p.detail}.`,
+      fix: 'Define the affected route rules explicitly in `nitro.routeRules`.',
+      docs: false,
+    },
+    NUXT_B4017: {
+      why: (p: { path: string, pattern: string }) => `Inline route rules for \`${p.path}\` generated \`${p.pattern}\`, which is already used by another page.`,
+      fix: 'The later inline route rules override the earlier ones. Use distinct routes, or define the rules explicitly in `nitro.routeRules`.',
       docs: false,
     },
   },

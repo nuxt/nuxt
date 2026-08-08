@@ -43,9 +43,8 @@ export function vue (ctx: WebpackConfigContext) {
 
   // Feature flags
   // https://github.com/vuejs/core/tree/main/packages/vue#bundler-build-feature-flags
-  // TODO: Provide options to toggle
   ctx.config.plugins!.push(new webpack.DefinePlugin({
-    '__VUE_OPTIONS_API__': 'true',
+    '__VUE_OPTIONS_API__': String(ctx.nuxt.options.vue.optionsApi),
     '__VUE_PROD_DEVTOOLS__': 'false',
     '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': ctx.nuxt.options.debug && ctx.nuxt.options.debug.hydration,
   }))

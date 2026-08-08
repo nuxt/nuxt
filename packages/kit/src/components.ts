@@ -1,10 +1,10 @@
 import { kebabCase, pascalCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
-import { resolveModuleExportNames } from 'mlly'
 
 import { useNuxt } from './context.ts'
 import { componentDiagnostics } from './diagnostics/components.ts'
 import { resolvePath } from './resolve.ts'
+import { resolveModuleExportNames } from './internal/exports.ts'
 import { MODE_RE } from './utils.ts'
 
 /**

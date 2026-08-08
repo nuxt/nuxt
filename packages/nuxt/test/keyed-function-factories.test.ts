@@ -512,7 +512,15 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch = createUseFetch()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
+    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+      [
+        {
+          "argumentLength": 3,
+          "name": "useFetch",
+          "source": "fetch.ts",
+        },
+      ]
+    `)
   })
 
   it('should ignore type-modified specifier', async () => {
@@ -522,7 +530,15 @@ describe('keyed function factories scan plugin', () => {
     export const useFetch = createUseFetch()
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
+    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+      [
+        {
+          "argumentLength": 3,
+          "name": "useFetch",
+          "source": "fetch.ts",
+        },
+      ]
+    `)
   })
 
   it('should ignore type-only namespace import', async () => {

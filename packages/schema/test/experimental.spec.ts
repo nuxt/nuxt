@@ -29,3 +29,32 @@ describe('experimental.watcher default', () => {
     expect((result as unknown as NuxtOptions).experimental.watcher).toBe('parcel')
   })
 })
+
+describe('experimental.parseErrorData', () => {
+  it('is forced on with compatibilityVersion 5, and says so', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 5 }, experimental: { parseErrorData: false } })
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect((result as unknown as NuxtOptions).experimental.parseErrorData).toBe(true)
+    expect(warn.mock.calls.map(call => String(call[0])).join('\n')).toContain('NUXT_B5016')
+    warn.mockRestore()
+  })
+
+  it('is still configurable with compatibilityVersion 4, without complaining', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 }, experimental: { parseErrorData: false } })
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect((result as unknown as NuxtOptions).experimental.parseErrorData).toBe(false)
+    expect(warn.mock.calls.map(call => String(call[0])).join('\n')).not.toContain('NUXT_B5016')
+    warn.mockRestore()
+  })
+
+  it('defaults to true', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 } })
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect((result as unknown as NuxtOptions).experimental.parseErrorData).toBe(true)
+  })
+})
