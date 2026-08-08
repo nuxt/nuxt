@@ -1,10 +1,10 @@
 import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
-import { getCurrentInstance, hasInjectionContext } from 'vue'
+import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitro/types'
 import type { NuxtError } from '#app/composables/error'
-import { useNuxtApp } from '#app/nuxt'
+import { isInComponentSetup, useNuxtApp } from '#app/nuxt'
 import { appDiagnostics } from '../../app/diagnostics/core'
 import type { SerializableValue } from './utils'
 
@@ -74,11 +74,12 @@ const warnRuntimeUsage = (method: string) => {
 export const definePageMeta = (meta: PageMeta): void => {
   if (import.meta.dev) {
     const component = getCurrentInstance()?.type
-    // vapor components have no vdom instance, so we cannot tell whether this is a route component
-    if (!component && hasInjectionContext()) {
-      return
-    }
     try {
+      // vapor components have no vdom instance, so we cannot tell whether this is a route
+      // component; their setup does run in its own effect scope, which rules out plugins
+      if (!component && isInComponentSetup(useNuxtApp())) {
+        return
+      }
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
       if (isRouteComponent || isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {

@@ -66,8 +66,12 @@ const NuxtClientFallbackServer = defineComponent({
     })
 
     try {
-      if (import.meta.dev && isVaporSlot(ctx.slots.default)) {
-        renderDiagnostics.NUXT_E4019()
+      if (isVaporSlot(ctx.slots.default)) {
+        if (import.meta.dev) {
+          renderDiagnostics.NUXT_E4019()
+        }
+        error.value = true
+        return { ssrFailed: true, ssrVNodes: [] }
       }
       const defaultSlot = ctx.slots.default?.()
       const ssrVNodes = createBuffer()

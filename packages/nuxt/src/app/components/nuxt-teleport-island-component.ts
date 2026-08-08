@@ -45,8 +45,11 @@ const NuxtTeleportIslandComponent = /* @__PURE__ */ defineComponent({
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
-      if (import.meta.dev && isVaporSlot(slots.default)) {
-        renderDiagnostics.NUXT_E4021()
+      if (isVaporSlot(slots.default)) {
+        if (import.meta.dev) {
+          renderDiagnostics.NUXT_E4021()
+        }
+        return slots.default?.()
       }
       const slot = slots.default!()[0]!
       const slotType = slot.type as ExtendedComponent

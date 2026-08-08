@@ -242,10 +242,10 @@ function baseResolve (ctx: WebpackConfigContext) {
 
   ctx.config.resolve = {
     extensions: ['.wasm', ...DEFAULT_JS_FILE_EXTENSIONS, '.json', '.vue'],
-    alias: ctx.alias,
     modules: resolveModules,
     fullySpecified: false,
     ...ctx.config.resolve,
+    alias: { ...ctx.alias, ...ctx.config.resolve?.alias },
   }
 
   ctx.config.resolveLoader = {
