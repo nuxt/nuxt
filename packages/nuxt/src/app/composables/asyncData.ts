@@ -393,6 +393,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         }
       }
 
+      if (import.meta.server && stripNeverHydratedData && opts.serialize === undefined && getCurrentInstance() && inject(neverHydratedSymbol, false)) {
+        opts = { ...opts, serialize: false }
+      }
+
       opts.server ??= true
       opts.default ??= getDefault as () => DefaultT
       opts.getCachedData ??= getDefaultCachedData
@@ -402,10 +406,6 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       opts.deep ??= asyncDataDefaults.deep
       opts.dedupe ??= 'cancel'
       opts.enabled ??= true
-
-      if (import.meta.server && stripNeverHydratedData && opts.serialize === undefined && getCurrentInstance() && inject(neverHydratedSymbol, false)) {
-        opts.serialize = false
-      }
 
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
