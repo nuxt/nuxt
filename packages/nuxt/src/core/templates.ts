@@ -8,11 +8,14 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { useNitro } from '@nuxt/kit'
+import { resolveModulePath } from 'exsolve'
 
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
+
+const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -510,7 +513,7 @@ export const publicPathTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents ({ nuxt }) {
     return [
-      'import { joinRelativeURL } from \'ufo\'',
+      `import { joinRelativeURL } from ${JSON.stringify(ufoPath)}`,
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
