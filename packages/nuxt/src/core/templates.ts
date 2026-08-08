@@ -473,7 +473,9 @@ import { _replaceAppConfig } from '#app/config'
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    _replaceAppConfig(newModule.default)
+    if (newModule) {
+      _replaceAppConfig(newModule.default)
+    }
   })
 }
 /** client-end **/
