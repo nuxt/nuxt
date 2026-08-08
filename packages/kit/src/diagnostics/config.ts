@@ -58,5 +58,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { name: string }) => `Run \`npx nuxt add ${p.name}\` to install it.`,
       docs: false,
     },
+    NUXT_B5020: {
+      why: '`@nuxt/docs` could not be resolved, so the `AGENTS.md` block for AI agents could not be generated.',
+      fix: 'Ensure dependencies are installed with dev dependencies included, then restart the dev server.',
+      docs: false,
+    },
   },
 })
