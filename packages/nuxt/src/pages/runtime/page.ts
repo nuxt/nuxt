@@ -10,6 +10,7 @@ import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 import { _mergeTransitionProps, _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
+import { claimPendingViewTransition, commitPendingViewTransition } from '#app/view-transitions'
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 export interface NuxtPageProps extends RouterViewProps {
@@ -59,6 +60,7 @@ export default defineComponent({
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
     const keepAliveInclude = new Set<string>()
+    const viewTransitionOwner = {}
 
     let previousPageKey: string | undefined | false
 
@@ -158,15 +160,22 @@ export default defineComponent({
                 })
               }
 
+              const stagedSession = import.meta.client && !nuxtApp.isHydrating
+                ? claimPendingViewTransition(nuxtApp, routeProps.route, viewTransitionOwner)
+                : undefined
+
               // remount suspense on rapid navigation, but not before the first resolve:
               // tearing down a never-resolved suspensible Suspense strands its parent. See #28425, #34683.
-              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce) {
+              // staged transitions instead replace the existing pending branch so
+              // the currently visible page remains mounted.
+              if (isSuspensePending && previousPageKey !== key && hasResolvedOnce && !stagedSession) {
                 suspenseKey++
               }
 
               previousPageKey = key
 
-              const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
+              // the native transition owns this navigations visual commit.
+              const hasTransition = !stagedSession && !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
               const transitionProps = hasTransition && _mergeTransitionProps([
                 props.transition,
                 routeProps.route.meta.pageTransition,
@@ -249,6 +258,9 @@ export default defineComponent({
                         await nuxtApp.callHook('page:loading:end')
                       }
                     } finally {
+                      if (stagedSession) {
+                        commitPendingViewTransition(stagedSession)
+                      }
                       done()
                     }
                   },
@@ -262,6 +274,7 @@ export default defineComponent({
                       trackRootNodes: hasTransition,
                       vnodeRef: pageRef,
                       routeRecord: import.meta.dev ? routeProps.route.matched.find(m => m.components?.default === routeProps.Component.type) : undefined,
+                      stage: stagedSession,
                     }
 
                     if (!keepaliveConfig) {
