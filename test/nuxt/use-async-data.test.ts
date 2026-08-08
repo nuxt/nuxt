@@ -270,6 +270,28 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('idle')
   })
 
+  it('should reset mounted asyncData when clearNuxtData is called', async () => {
+    const handler = vi.fn(() => Promise.resolve('test'))
+    const res = await mountWithAsyncData(uniqueKey, handler)
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(res.data.value).toBe('test')
+    expect(res.status.value).toBe('success')
+
+    clearNuxtData(uniqueKey)
+
+    expect(res.data.value).toBe(undefined)
+    expect(res.error.value).toBe(undefined)
+    expect(res.pending.value).toBe(false)
+    expect(res.status.value).toBe('idle')
+
+    await res.execute()
+    expect(handler).toHaveBeenCalledTimes(2)
+    expect(res.data.value).toBe('test')
+    expect(res.status.value).toBe('success')
+    res.unmount()
+  })
+
   it('should not overwrite cleared data when in-flight request completes', async () => {
     vi.useFakeTimers()
 
@@ -353,7 +375,9 @@ describe('useAsyncData', () => {
 
     await flushPromises()
 
-    expect(res.data.value).toBe(undefined)
+    // Silent dispose clear can leave held computed wrappers transiently stale until invalidation.
+    // Assert via a fresh access path instead.
+    expect(useNuxtData(route.fullPath).data.value).toBe(undefined)
     expect(res.status.value).toBe('idle')
     expect(res.pending.value).toBe(false)
 
@@ -764,6 +788,32 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
     expect(promiseFn).toHaveBeenLastCalledWith('second')
     expect(comp2.html()).toMatchInlineSnapshot(`"<div>second</div>"`)
+  })
+
+  it('should keep ref internals consistent after silent dispose clear', async () => {
+    const res = await mountWithAsyncData(uniqueKey, () => Promise.resolve('test'))
+    const dataRef = useNuxtApp()._asyncData[uniqueKey]!.data as { value: string | undefined }
+
+    expect(dataRef.value).toBe('test')
+
+    res.unmount()
+    await nextTick()
+
+    expect(dataRef.value).toBe(undefined)
+    dataRef.value = 'test'
+    expect(dataRef.value).toBe('test')
+  })
+
+  it('exposes dep.subs on a subscribed asyncData ref (pins the vue internal used for v-once teardown)', async () => {
+    const res = await mountWithAsyncData(uniqueKey, () => Promise.resolve('test'))
+    const dataRef = useNuxtApp()._asyncData[uniqueKey]!.data as { dep?: { subs?: unknown } }
+
+    expect(dataRef.dep?.subs).toBeTruthy()
+
+    res.unmount()
+    await nextTick()
+
+    expect(dataRef.dep?.subs).toBeFalsy()
   })
 
   // https://github.com/nuxt/nuxt/issues/35322
@@ -1507,7 +1557,7 @@ describe('useAsyncData', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/32154
-  it.fails('should not cause error with v-once after navigation', async () => {
+  it('should not cause error with v-once after navigation', async () => {
     const router = useRouter()
 
     const WrapperComponent = defineComponent({
