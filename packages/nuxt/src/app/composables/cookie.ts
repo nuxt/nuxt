@@ -51,6 +51,8 @@ export interface CookieOptions<T = any> extends _CookieOptions {
    * Note: the expiration is not refreshed automatically — you must
    * assign to `cookie.value` to trigger the refresh.
    *
+   * Ignored when `readonly` is set.
+   *
    * @default false
    */
   refresh?: boolean
@@ -195,7 +197,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       channel.onmessage = ({ data }) => handleChange(data)
     }
 
-    if (opts.watch) {
+    if (opts.watch && !opts.readonly) {
       cookieWatcher = watch(cookie, () => callback(opts.refresh), { deep: opts.watch !== 'shallow' })
     }
 

@@ -1322,6 +1322,28 @@ describe('useCookie', () => {
     expect(document.cookie).not.toContain('no-refresh-test=original')
   })
 
+  it('should never write a readonly cookie, even when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+
+    document.cookie = 'readonly-refresh-test=original'
+    const cookie = useCookie('readonly-refresh-test', {
+      maxAge: 3600,
+      readonly: true,
+      refresh: true,
+    })
+    expect(cookie.value).toBe('original')
+
+    // Clear document.cookie to detect if a write happens
+    document.cookie = 'readonly-refresh-test=; Max-Age=0'
+    expect(document.cookie).not.toContain('readonly-refresh-test=original')
+
+    ;(cookie as any).value = 'stray-write'
+    expect(cookie.value).toBe('stray-write')
+    await nextTick()
+
+    expect(document.cookie).not.toContain('readonly-refresh-test=stray-write')
+  })
+
   it('should re-evaluate expires getter on each cookie write', async () => {
     const { nextTick } = await import('vue')
     let callCount = 0
