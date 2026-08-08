@@ -77,7 +77,7 @@ interface PageMeta {
 
     Aliases for the record. Allows defining extra paths that will behave like a copy of the record. Allows having paths shorthands like `/users/:id` and `/u/:id`. All `alias` and `path` values must share the same params.
 
-  **`groups`** :badge[v4.3]{color="info" size="xs" class="align-middle"}
+  **`groups`** :versionBadge{version="4.3"}
 
   - **Type**: `string[]`
 

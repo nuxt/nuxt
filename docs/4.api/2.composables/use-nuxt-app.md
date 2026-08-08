@@ -136,7 +136,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   It is also possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
 
-#### Custom Reducer/Reviver :badge[v3.4]{color="info" size="xs" class="align-middle"}
+#### Custom Reducer/Reviver :versionBadge{version="3.4"}
 
   Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own reducer/reviver for types that are not supported by Nuxt.
 
@@ -272,7 +272,7 @@ Native async context support works currently in Bun and Node.
 
 :read-more{to="/docs/4.x/guide/going-further/experimental-features#asynccontext"}
 
-## tryUseNuxtApp :badge[v3.10]{color="info" size="xs" class="align-middle"}
+## tryUseNuxtApp :versionBadge{version="3.10"}
 
 This function works exactly the same as `useNuxtApp`, but returns `null` if context is unavailable instead of throwing an exception.
 
