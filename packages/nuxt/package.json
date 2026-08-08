@@ -20,7 +20,7 @@
     "./config": {
       "types": "./config.d.ts",
       "import": "./config.js",
-      "require": "./config.cjs"
+      "require": "./config.js"
     },
     "./schema": "./schema.js",
     "./kit": "./kit.js",
