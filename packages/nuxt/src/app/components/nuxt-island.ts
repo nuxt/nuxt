@@ -8,6 +8,8 @@ import { joinURL } from 'ufo'
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
+import { isCachedPayloadRoute, shouldLoadPayload } from '../composables/payload'
+import { useRoute } from '../composables/router'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
@@ -104,6 +106,7 @@ const NuxtIsland = defineComponent({
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
     const nuxtApp = useNuxtApp()
+    const route = useRoute()
     const serializedProps = computed(() => serializeIslandProps(props.props))
     const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
@@ -123,6 +126,7 @@ const NuxtIsland = defineComponent({
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
+          path: route.path,
           ...(import.meta.server && import.meta.prerender)
             ? {}
             : { params: { ...props.context, props: props.props ? serializedProps.value : undefined } },
@@ -169,9 +173,12 @@ const NuxtIsland = defineComponent({
       }
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
-      nuxtApp.payload.data[key] ||= {}
-      // clear all data-island-uid to avoid conflicts when saving into payloads
-      nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
+      // Keep SSR html; hydrated DOM html includes teleports (#33809).
+      const payloadEntry = nuxtApp.payload.data[key] ||= {}
+      if (!payloadEntry.html && !payloadEntry.components) {
+        // Normalise UID so cached SSR markup can be safely rebound per island instance.
+        payloadEntry.html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), 'data-island-uid=""')
+      }
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
@@ -209,7 +216,10 @@ const NuxtIsland = defineComponent({
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
 
-      if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
+      const cached = nuxtApp.payload.data[key]?.html
+        ? nuxtApp.payload.data[key]
+        : nuxtApp.static.data[key]
+      if (!force && cached?.html) { return cached }
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
@@ -217,6 +227,14 @@ const NuxtIsland = defineComponent({
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
+      const shouldCache = import.meta.client && !force
+        ? await shouldLoadPayload(route.path).catch(() => false)
+        : false
+      const requestCache = import.meta.client && force
+        ? 'reload'
+        : shouldCache
+          ? isCachedPayloadRoute(route.path) ? 'default' : 'force-cache'
+          : undefined
       // $fetch handles `app.baseURL` for relative URLs
       const r = await $fetch.raw<NuxtIslandResponse>(url, {
         // custom island sources should not be resolved against `app.baseURL` (#23093)
@@ -227,6 +245,7 @@ const NuxtIsland = defineComponent({
         },
         responseType: 'json',
         ignoreResponseError: true,
+        ...(requestCache ? { cache: requestCache as RequestCache } : {}),
       })
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })

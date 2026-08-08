@@ -195,6 +195,7 @@ describe('runtime server component', () => {
 
     await component.vm.$.exposed!.refresh()
     expect(fetchRaw).toHaveBeenCalledTimes(2)
+    expect(fetchRaw).toHaveBeenLastCalledWith(expect.any(String), expect.objectContaining({ cache: 'reload' }))
     await nextTick()
     expect(component.html()).toBe('<div>2</div>')
     fetchRaw.mockReset()

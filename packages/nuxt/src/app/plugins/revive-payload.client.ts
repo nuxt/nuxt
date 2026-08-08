@@ -1,7 +1,8 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { joinURL, withQuery } from 'ufo'
-import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
+import { definePayloadReviver, getNuxtClientPayload, isCachedPayloadRoute, shouldLoadPayload } from '../composables/payload'
 import { createError } from '../composables/error'
+import { useRoute } from '../composables/router'
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
@@ -30,19 +31,27 @@ const revivers: [string, (data: any) => any][] = [
 ]
 
 if (componentIslands) {
-  revivers.push(['Island', ({ key, params, result }: any) => {
+  revivers.push(['Island', ({ key, path, params, result }: any) => {
     const nuxtApp = useNuxtApp()
+    const routePath = path || useRoute().path
     if (!nuxtApp.isHydrating) {
-      const url = withQuery(joinURL(useRuntimeConfig().app.baseURL ?? '', `/__nuxt_island/${key}.json`), params ?? {})
-      nuxtApp.payload.data[key] ||= fetch(url).then((r) => {
-        if (!r.ok) {
-          throw createError({ status: r.status, statusText: r.statusText })
-        }
-        return r.json()
-      }).then((r) => {
-        nuxtApp.payload.data[key] = r
-        return r
-      })
+      const fetchIsland = (shouldCache: boolean) => {
+        const url = withQuery(joinURL(useRuntimeConfig().app.baseURL ?? '', `/__nuxt_island/${key}.json`), params ?? {})
+        const cache = shouldCache
+          ? isCachedPayloadRoute(routePath) ? 'default' : 'force-cache'
+          : undefined
+        void fetch(url, cache ? { cache } : {}).then((r) => {
+          if (!r.ok) {
+            throw createError({ status: r.status, statusText: r.statusText })
+          }
+          return r.json()
+        }).catch(() => {})
+      }
+      void shouldLoadPayload(routePath).then(fetchIsland).catch(() => fetchIsland(false))
+    }
+    const cached = nuxtApp.payload.data[key]
+    if (cached?.html) {
+      return cached
     }
     return {
       html: '',
