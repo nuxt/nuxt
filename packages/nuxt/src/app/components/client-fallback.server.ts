@@ -6,6 +6,7 @@ import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
 import { createBuffer, isVaporSlot, sanitizeTag } from './utils'
 import { renderDiagnostics } from '../diagnostics/render'
+import { vapor } from '#build/nuxt.config.mjs'
 
 interface NuxtClientFallbackProps {
   fallbackTag?: string
@@ -66,7 +67,7 @@ const NuxtClientFallbackServer = defineComponent({
     })
 
     try {
-      if (isVaporSlot(ctx.slots.default)) {
+      if (vapor && isVaporSlot(ctx.slots.default)) {
         if (import.meta.dev) {
           renderDiagnostics.NUXT_E4019()
         }

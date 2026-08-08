@@ -20,6 +20,7 @@ import type {
 import { useHead } from '#app/composables/head'
 import { isVaporSlot } from '#app/components/utils'
 import { unheadDiagnostics } from '../../app/diagnostics/head'
+import { vapor } from '#build/nuxt.config.mjs'
 
 interface HeadComponents {
   base?: UnheadBase | null
@@ -203,7 +204,7 @@ export const NoScript: DefineSetupFnComponent<GlobalProps & TagPositionPropsType
     const key = useVNodeStringKey()
     return () => {
       const noscript = normalizeProps(props, key) as Noscript
-      if (import.meta.dev && isVaporSlot(slots.default)) {
+      if (import.meta.dev && vapor && isVaporSlot(slots.default)) {
         unheadDiagnostics.NUXT_E6004({ component: 'Noscript' })
       }
       const slotVnodes = slots.default?.()
@@ -338,7 +339,7 @@ export const Title: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComp
       update()
     })
     return () => {
-      if (import.meta.dev && isVaporSlot(slots.default)) {
+      if (import.meta.dev && vapor && isVaporSlot(slots.default)) {
         unheadDiagnostics.NUXT_E6004({ component: 'Title' })
       }
       const defaultSlot = slots.default?.()
@@ -433,7 +434,7 @@ export const Style: DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefa
     })
     return () => {
       const style = normalizeProps(props, key) as UnheadStyle
-      if (import.meta.dev && isVaporSlot(slots.default)) {
+      if (import.meta.dev && vapor && isVaporSlot(slots.default)) {
         unheadDiagnostics.NUXT_E6004({ component: 'Style' })
       }
       const textContent = slots.default?.()?.[0]?.children

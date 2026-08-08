@@ -4,6 +4,7 @@ import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
 import { isVaporSlot } from './utils'
 import paths from '#build/component-chunk'
+import { vapor } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 
 type ExtendedComponent = Component & {
@@ -45,7 +46,7 @@ const NuxtTeleportIslandComponent = /* @__PURE__ */ defineComponent({
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
-      if (isVaporSlot(slots.default)) {
+      if (vapor && isVaporSlot(slots.default)) {
         if (import.meta.dev) {
           renderDiagnostics.NUXT_E4021()
         }

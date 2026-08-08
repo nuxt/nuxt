@@ -6,7 +6,7 @@ import { renderDiagnostics } from '../diagnostics/render'
 import ServerPlaceholder from './server-placeholder'
 import { elToStaticVNode, isVaporSlot, sanitizeTag } from './utils'
 
-import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
+import { clientNodePlaceholder, vapor } from '#build/nuxt.config.mjs'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
 
@@ -63,10 +63,10 @@ const ClientOnly = defineComponent({
     return () => {
       if (mounted.value) {
         const vnodes = slots.default?.()
-        if (vnodes && vnodes.length === 1 && !isVaporSlot(slots.default)) {
+        if (vnodes && vnodes.length === 1 && !(vapor && isVaporSlot(slots.default))) {
           return [cloneVNode(vnodes[0]!, attrs)]
         }
-        if (import.meta.dev && isVaporSlot(slots.default) && attrs && Object.keys(attrs).length > 0) {
+        if (import.meta.dev && vapor && isVaporSlot(slots.default) && attrs && Object.keys(attrs).length > 0) {
           renderDiagnostics.NUXT_E4020()
         }
         return vnodes

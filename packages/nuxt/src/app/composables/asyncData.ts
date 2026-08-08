@@ -15,7 +15,7 @@ import { dataDiagnostics } from '../diagnostics/data'
 
 import { neverHydratedSymbol } from './lazy-hydration'
 
-import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -468,7 +468,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       // dedicated effect scope (distinct from the nuxt app's own scope, which plugins
       // run in) where vue lifecycle hooks can register
       const isWithinVaporComponent = () => {
-        if (getCurrentInstance()) { return false }
+        if (!vapor || getCurrentInstance()) { return false }
         const scope = getCurrentScope()
         return !!scope && scope !== nuxtApp._scope
       }
