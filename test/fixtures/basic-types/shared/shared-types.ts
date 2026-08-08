@@ -12,6 +12,10 @@ describe('shared folder', () => {
     expectTypeOf(useSharedUtil()).toEqualTypeOf<string>()
   })
 
+  it('can reference imports added via `addSharedImports`', () => {
+    expectTypeOf(sharedKitUtil()).toEqualTypeOf<string>()
+  })
+
   it('can reference useRuntimeConfig', () => {
     const config = useRuntimeConfig()
     expectTypeOf(config).not.toBeAny()
