@@ -489,11 +489,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       })
       const sensitiveMatcher = compile(false)
       const foldedMatcher = compile(true)
+      const needsRouterOptions = foldedMatcher !== sensitiveMatcher || caseSensitiveRouteRules
       return cachedMatchers[key] = [
         `import { defu } from 'defu'`,
-        `import routerOptions from '#build/router.options.mjs'`,
-        `const sensitiveMatcher = ${sensitiveMatcher}`,
-        foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`,
+        needsRouterOptions ? `import routerOptions from '#build/router.options.mjs'` : ``,
+        needsRouterOptions ? `const sensitiveMatcher = ${sensitiveMatcher}` : ``,
+        needsRouterOptions
+          ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)
+          : `const foldedMatcher = ${foldedMatcher}`,
         // `decodeRoutePath` has no free variables, so it can be inlined by source to keep
         // the runtime lookup and the build-time key normalisation from drifting apart.
         `const decodeRoutePath = ${decodeRoutePath.toString()}`,
@@ -504,10 +507,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         `  const decoded = decodeRoutePath(path)`,
         `  return fold ? decoded.toLowerCase() : decoded`,
         `}`,
-        `export default (path) => routerOptions.sensitive`,
-        `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
-        `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
-      ].join('\n')
+        needsRouterOptions
+          ? [
+              `export default (path) => routerOptions.sensitive`,
+              `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
+              `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
+            ].join('\n')
+          : `export default path => defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
+      ].filter(Boolean).join('\n')
     },
   })
 

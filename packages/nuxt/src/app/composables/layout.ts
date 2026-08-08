@@ -9,10 +9,13 @@ import { useRoute } from './router'
 
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
-// nitropack v2's `NitroRouteRules` has no index signature, and the generated
-// `nitro-layouts.d.ts` template already declares `appLayout` with a narrowed
-// `LayoutKey` type, so we widen locally rather than augmenting globally
-const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules & { appLayout?: string | false }
+// `NitroRouteRules` has no index signature, and the generated `nitro-layouts.d.ts`
+// template already declares `appLayout` with a narrowed `LayoutKey` type, so we widen
+// locally rather than augmenting globally. Hoisted as a function declaration so a
+// circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export.
+function routeRulesMatcher (path: string): NitroRouteRules & { appLayout?: string | false } {
+  return (_routeRulesMatcher as (path: string) => NitroRouteRules & { appLayout?: string | false })(path)
+}
 
 export type LayoutName = keyof NuxtLayouts | 'default' | false
 
