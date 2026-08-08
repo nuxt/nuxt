@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - 4.x
-      - 3.x
 
 permissions: {}
 
@@ -23,11 +22,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # zizmor: ignore[artipacked] scripts/update-changelog.ts runs `git push` and requires the persisted token
         with:
           fetch-depth: 0
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
         with:
           node-version: latest
           cache: true

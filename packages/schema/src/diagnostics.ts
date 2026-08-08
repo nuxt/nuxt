@@ -34,5 +34,10 @@ export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Use a known preset name, or pass a function to `postcss.order`.',
       docs: false,
     },
+    NUXT_B5016: {
+      why: '`experimental.parseErrorData` is ignored when `future.compatibilityVersion` >= 5. `error.data` is no longer stringified on its way to the error page, so there is nothing to opt out of.',
+      fix: 'Remove the option, and drop any `JSON.parse(error.data)` from your error page.',
+      docs: false,
+    },
   },
 })

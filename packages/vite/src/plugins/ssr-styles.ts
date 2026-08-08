@@ -1,13 +1,12 @@
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
-import type { Plugin } from 'vite'
+import type { Plugin, Rollup } from 'vite'
 import { basename, dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
 import { setBuildOutput } from '@nuxt/kit'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { findStaticImports } from 'mlly'
 import genericNames from 'generic-names'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
@@ -464,19 +463,20 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               idMap.files.push(ref)
             }
 
-            if (!SUPPORTED_FILES_RE.test(pathname)) { return }
+            // a `.vue` id can still carry CSS as its module contents (`?type=style&lang.css`)
+            if (!SUPPORTED_FILES_RE.test(pathname) || STYLE_QUERY_RE.test(search) || isCSS(search)) { return }
 
-            for (const i of findStaticImports(code)) {
-              if (!IS_CSS_RE.test(i.specifier) && !STYLE_QUERY_RE.test(i.specifier)) { continue }
+            for (const specifier of getStaticImportSpecifiers(this.parse(code))) {
+              if (!IS_CSS_RE.test(specifier) && !STYLE_QUERY_RE.test(specifier)) { continue }
 
-              const resolved = await this.resolve(i.specifier, id)
+              const resolved = await this.resolve(specifier, id)
               if (!resolved) { continue }
               const resolvedIdInline = withInlineQuery(resolved.id)
               const res = await this.resolve(resolvedIdInline)
               if (!res) {
                 if (!warnCache.has(resolved.id)) {
                   warnCache.add(resolved.id)
-                  this.warn(`[nuxt] Cannot extract styles for \`${i.specifier}\`. Its styles will not be inlined when server-rendering.`)
+                  this.warn(`[nuxt] Cannot extract styles for \`${specifier}\`. Its styles will not be inlined when server-rendering.`)
                 }
                 continue
               }
@@ -507,4 +507,14 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
 function filename (name: string) {
   return _filename(name.replace(QUERY_RE, ''))
+}
+
+function getStaticImportSpecifiers (program: ReturnType<Rollup.PluginContext['parse']>) {
+  const specifiers: string[] = []
+  for (const node of program.body) {
+    if (node.type === 'ImportDeclaration') {
+      specifiers.push(node.source.value)
+    }
+  }
+  return specifiers
 }

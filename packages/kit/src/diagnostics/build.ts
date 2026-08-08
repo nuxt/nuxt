@@ -28,7 +28,7 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1004: {
       why: 'Failed to install dependencies.',
-      fix: (p: { packages: string }) => `Try installing manually with \`npm install ${p.packages}\`.`,
+      fix: (p: { installCommand: string }) => `Try installing manually with \`${p.installCommand}\`.`,
       docs: false,
     },
     NUXT_B1005: {
@@ -83,7 +83,7 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1015: {
       why: 'Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.',
-      fix: 'Install `@parcel/watcher` for better performance: `npm install -D @parcel/watcher`.',
+      fix: (p: { installCommand: string }) => `Install \`@parcel/watcher\` for better performance: \`${p.installCommand}\`.`,
       docs: false,
     },
     NUXT_B1016: {
@@ -93,12 +93,12 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1017: {
       why: (p: { builder: string }) => `Loading \`${p.builder}\` builder failed.`,
-      fix: (p: { builder: string }) => `Run \`npm install ${p.builder}\` to install it.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
       docs: false,
     },
     NUXT_B1018: {
       why: (p: { builder: string }) => `Loading \`${p.builder}\` server builder failed.`,
-      fix: (p: { builder: string }) => `Run \`npm install ${p.builder}\` to install it.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
       docs: false,
     },
     NUXT_B1019: {

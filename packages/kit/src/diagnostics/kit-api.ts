@@ -36,7 +36,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B8006: {
       why: (p: { cwd: string }) => `No Nuxt version could be found from \`${p.cwd}\`.`,
-      fix: 'Run `npm install nuxt` in your project directory to install Nuxt.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` in your project directory to install Nuxt.`,
       docs: false,
     },
     NUXT_B8007: {
@@ -91,7 +91,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B8017: {
       why: (p: { module: string }) => `The module \`${p.module}\` could not be loaded. It may not be installed.`,
-      fix: (p: { module: string }) => `Run \`npm install ${p.module}\` to install it.`,
+      fix: (p: { installCommand?: string }) => p.installCommand ? `Run \`${p.installCommand}\` to install it.` : 'Check that the module path exists and points to a valid Nuxt module.',
       docs: false,
     },
     NUXT_B8018: {
@@ -102,6 +102,21 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B8019: {
       why: (p: { phase: string, name: string, error: string }) => `An error occurred while executing the ${p.phase} hook for module \`${p.name}\`: ${p.error}.`,
       fix: 'Check the module\'s install/upgrade hook implementation, or report this issue to the module author.',
+      docs: false,
+    },
+    NUXT_B8020: {
+      why: (p: { module: string, error: string }) => `The module \`${p.module}\` could not be loaded: ${p.error}`,
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      docs: false,
+    },
+    NUXT_B8022: {
+      why: (p: { specifiers: string }) => `Scanning a module for its export names needs a parser (\`${p.specifiers}\`), and neither could be loaded.`,
+      fix: 'Add `oxc-parser` to your project; every supported version of Nuxt already ships a package that can be used here.',
+      docs: false,
+    },
+    NUXT_B8021: {
+      why: 'The deprecated `requireModule` helper needs `jiti`, which is an optional peer dependency and is not installed.',
+      fix: 'Use `importModule` instead, which loads the file with the runtime\'s own loader. If the calling code cannot be made async, add `jiti` to your project.',
       docs: false,
     },
   },

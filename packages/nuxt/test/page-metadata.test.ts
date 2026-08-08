@@ -1,11 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
+import { pageDiagnostics } from '@nuxt/kit'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
-import { getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
+import { augmentPages, defaultExtractionKeys, getRouteMeta, normalizeRoutes, shouldExtractSerializablePageMeta } from '../src/pages/utils.ts'
 import type { NuxtPage } from '../schema.ts'
 
 const filePath = '/app/pages/index.vue'
@@ -427,6 +428,176 @@ definePageMeta({ name: 'bar' })
       }
     `)
   })
+
+  it('should mark metadata as dynamic when properties are spread', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      ...common,
+    })
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+      }
+    `)
+  })
+
+  it('should mark metadata as dynamic when keys are computed', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      [name]: 'some-custom-name',
+    })
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+      }
+    `)
+  })
+
+  it('should mark metadata as dynamic when the macro is not passed an object literal', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    const meta = { name: 'some-custom-name' }
+    definePageMeta(meta)
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+      }
+    `)
+  })
+
+  it('should extract metadata from a macro call that is not a statement', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    if (condition) { void definePageMeta({ name: 'some-custom-name' }) }
+    </script>
+    `, filePath)
+
+    expect(meta).toEqual({ name: 'some-custom-name' })
+  })
+
+  it('should not treat a mention of a macro name as a call', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    // definePageMeta({ name: 'commented-out' })
+    const doc = 'call definePageMeta to set page metadata'
+    </script>
+    `, filePath)
+
+    expect(meta).toEqual({})
+  })
+})
+
+describe('page metadata macro position', () => {
+  let warn: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    warn = vi.spyOn(pageDiagnostics, 'NUXT_B4007').mockReturnValue(undefined as never)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should not warn when the macros are called at the top level', () => {
+    getRouteMeta(`
+    <script setup>
+    definePageMeta({ name: 'some-custom-name' })
+    defineRouteRules({ prerender: true })
+    </script>
+    `, '/app/pages/top-level.vue')
+
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('should not warn when a macro call is wrapped in parentheses or type assertions', () => {
+    getRouteMeta(`
+    <script setup lang="ts">
+    ;(definePageMeta({ name: 'some-custom-name' }))
+    </script>
+    `, '/app/pages/wrapped.vue')
+
+    getRouteMeta(`
+    <script setup lang="ts">
+    definePageMeta({ name: 'some-custom-name' }) as void
+    </script>
+    `, '/app/pages/asserted.vue')
+
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('should warn when a macro is called conditionally', () => {
+    getRouteMeta(`
+    <script setup>
+    if (condition) {
+      definePageMeta({ name: 'some-custom-name' })
+    }
+    </script>
+    `, '/app/pages/conditional.vue')
+
+    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: expect.stringMatching(/app\/pages\/conditional\.vue:4:7$/) })
+  })
+
+  it('should warn when a macro is used as an expression', () => {
+    getRouteMeta(`
+    <script setup>
+    void definePageMeta({ name: 'some-custom-name' })
+    </script>
+    `, '/app/pages/expression.vue')
+
+    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: expect.stringMatching(/app\/pages\/expression\.vue:3:10$/) })
+  })
+
+  it('should warn when a macro is called inside a function', () => {
+    getRouteMeta(`
+    <script setup>
+    function setup () {
+      defineRouteRules({ prerender: true })
+    }
+    </script>
+    `, '/app/pages/nested.vue')
+
+    expect(warn).toHaveBeenCalledWith({ fnName: 'defineRouteRules', file: expect.stringMatching(/app\/pages\/nested\.vue:4:7$/) })
+  })
+})
+
+describe('shouldExtractSerializablePageMeta', () => {
+  const nuxt = (experimental: Record<string, unknown>) => ({ options: { experimental } }) as any
+
+  it.each([
+    { scanPageMeta: 'after-resolve', extractSerializablePageMeta: true, expected: true },
+    { scanPageMeta: true, extractSerializablePageMeta: true, expected: true },
+    { scanPageMeta: 'after-resolve', extractSerializablePageMeta: false, expected: false },
+    // `typedPages` still augments pages when meta is not scanned, but the route record does not
+    // override the macro module then, so extracting would duplicate values rather than replace
+    // them, and would leak extra keys into the generated route types.
+    { scanPageMeta: false, extractSerializablePageMeta: true, expected: false },
+    { scanPageMeta: false, extractSerializablePageMeta: false, expected: false },
+  ])('$scanPageMeta + $extractSerializablePageMeta -> $expected', ({ expected, ...experimental }) => {
+    expect(shouldExtractSerializablePageMeta(nuxt(experimental))).toBe(expected)
+  })
 })
 
 describe('normalizeRoutes', () => {
@@ -474,6 +645,98 @@ describe('normalizeRoutes', () => {
       ]",
       }
     `)
+  })
+
+  it('should not import the macro module when all metadata was extracted', () => {
+    const page: NuxtPage = { path: '/', file: filePath }
+    Object.assign(page, getRouteMeta(`
+      <script setup>
+      definePageMeta({
+        name: 'some-custom-name',
+        alias: ['/some-alias'],
+      })
+      </script>
+      `, filePath))
+
+    const { routes, imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports).toEqual(new Set())
+    expect(routes).toMatchInlineSnapshot(`
+      "[
+        {
+          name: "some-custom-name",
+          path: "/",
+          alias: ["/some-alias"],
+          component: () => import("/app/pages/index.vue")
+        }
+      ]"
+    `)
+  })
+
+  it('should not import the macro module for pages without page metadata', () => {
+    const page: NuxtPage = { path: '/', name: 'index', file: filePath }
+
+    const { imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports).toEqual(new Set())
+  })
+
+  it('should import the macro module for a route whose name was stripped as a duplicate', async () => {
+    const vfs = { [filePath]: `<script setup>definePageMeta({ name: 'from-macro', alias: ['/some-alias'] })</script>` }
+    const pages: NuxtPage[] = [
+      { path: '/', file: filePath },
+      { path: '/duplicate', file: filePath },
+    ]
+    await augmentPages(pages, vfs, { fullyResolvedPaths: new Set([filePath]) })
+
+    const { routes, imports } = normalizeRoutes(pages, new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports.size).toBe(1)
+    expect(routes).toMatchInlineSnapshot(`
+      "[
+        {
+          name: "from-macro",
+          path: "/",
+          alias: ["/some-alias"],
+          component: () => import("/app/pages/index.vue")
+        },
+        {
+          name: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.name,
+          path: "/duplicate",
+          alias: ["/some-alias"],
+          component: () => import("/app/pages/index.vue")
+        }
+      ]"
+    `)
+  })
+
+  it('should import the macro module when metadata is not statically analysable', () => {
+    const page: NuxtPage = { path: '/', name: 'index', file: filePath }
+    Object.assign(page, getRouteMeta(`
+      <script setup>
+      definePageMeta({
+        layout: 'custom',
+      })
+      </script>
+      `, filePath))
+
+    const { imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports).toEqual(new Set([
+      'import { default as indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta } from "/app/pages/index.vue?macro=true";',
+    ]))
   })
 
   it('should produce valid route objects when used without extracted meta', () => {
@@ -524,7 +787,7 @@ describe('rewrite page meta', () => {
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[NUXT_B4003: \`definePageMeta()\` is called 2 times in \`component.vue?macro=true\`, but only one call is allowed.]`)
+    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[NUXT_B4003: \`definePageMeta()\` is called 2 times in \`component.vue\`, but only one call is allowed.]`)
   })
 
   it('should extract metadata from vue components', () => {
@@ -918,6 +1181,140 @@ const hoisted = ref('hoisted')
     `)
   })
 
+  it('should not hoist declarations shadowed by destructured bindings inside `definePageMeta`', () => {
+    const sfc = `
+<script setup lang="ts">
+const params = useShadowedParams()
+const query = useShadowedQuery()
+
+definePageMeta({
+  validate: ({ params }) => {
+    return params.id === 'test'
+  },
+  middleware: [
+    (to) => {
+      const { query } = to
+      return query.foo === 'bar'
+    },
+  ],
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        validate: ({ params }) => {
+          return params.id === 'test'
+        },
+        middleware: [
+          (to) => {
+            const { query } = to
+            return query.foo === 'bar'
+          },
+        ],
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should not hoist declarations shadowed by params and locals of functions in hoisted initializers', () => {
+    const sfc = `
+<script setup lang="ts">
+import { sep } from './utils'
+
+const spacer = useShadowedSpacer()
+const t = useShadowedT()
+
+const helper = ({ sep }, spacer) => sep + spacer
+const title = (() => { const t = 'hello'; return t })()
+
+definePageMeta({
+  validate: () => helper({ sep: 'x' }, '-') === title,
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const helper = ({ sep }, spacer) => sep + spacer
+      const title = (() => { const t = 'hello'; return t })()
+      const __nuxt_page_meta = {
+        validate: () => helper({ sep: 'x' }, '-') === title,
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should hoist identifiers referenced as computed members and computed keys', () => {
+    const sfc = `
+<script setup lang="ts">
+const idx = 2
+const arr = [1, 2, 3]
+const key = 'foo'
+
+definePageMeta({
+  middleware: () => ({ [key]: arr[idx] }),
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const idx = 2
+      const key = 'foo'
+      const arr = [1, 2, 3]
+      const __nuxt_page_meta = {
+        middleware: () => ({ [key]: arr[idx] }),
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should not treat statement labels as references', () => {
+    const sfc = `
+<script setup lang="ts">
+const outer = useShadowedOuter()
+
+definePageMeta({
+  middleware: () => {
+    outer: for (const x of [1]) { break outer }
+  },
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        middleware: () => {
+          outer: for (const x of [1]) { break outer }
+        },
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should not add imports or declarations for type-only references', () => {
+    const sfc = `
+<script setup lang="ts">
+import { validators } from './utils'
+import type { RouteThing } from './types'
+
+const helper = (route: RouteThing) => validators.isNumber(route.params.id)
+
+definePageMeta({
+  validate: (route: RouteThing) => helper(route),
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "import { validators } from './utils'
+      const helper = (route: RouteThing) => validators.isNumber(route.params.id)
+      const __nuxt_page_meta = {
+        validate: (route: RouteThing) => helper(route),
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
   it('should transform layout written in object syntax', () => {
     const sfc = `
 <script setup lang="ts">
@@ -990,6 +1387,376 @@ definePageMeta({
       }
       // verify for valid JS
       expect(() => toAst(result!, { ecmaVersion: 'latest', sourceType: 'module' })).not.toThrow()
+    })
+  })
+
+  describe('agreement with extracted route meta', () => {
+    const extractionKeys = [...defaultExtractionKeys]
+
+    function macroModule (sfc: string, extractedKeys: string[]) {
+      const plugin = PageMetaPlugin({ extractedKeys }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+      const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+      return plugin.transform.handler(res.content, 'component.vue?macro=true')?.code
+    }
+
+    it('should keep a computed key whose name collides with an extracted key', () => {
+      const sfc = `
+<script setup lang="ts">
+const name = 'title'
+definePageMeta({ [name]: 'some-title' })
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).toContain('[name]: \'some-title\'')
+      expect(getRouteMeta(sfc, '/app/pages/computed.vue')).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    it('should reshape an object layout even when `layout` is an extraction key', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
+</script>
+      `
+      const macro = macroModule(sfc, [...extractionKeys, 'layout'])
+      expect(macro).toContain('layout: \'admin\'')
+      expect(macro).toContain('layoutProps: { collapsed: true }')
+      expect(getRouteMeta(sfc, '/app/pages/layout.vue', new Set(['layout']))).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    it('should strip a quoted key that is extracted into the route record', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ 'name': 'quoted-name' })
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).not.toContain('quoted-name')
+      expect(getRouteMeta(sfc, '/app/pages/quoted.vue')).toEqual({ name: 'quoted-name' })
+    })
+
+    it('should extract from a call the transform also strips, whatever its position', () => {
+      const sfc = `
+<script setup lang="ts">
+void definePageMeta({ name: 'voided-name' })
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).not.toContain('voided-name')
+      expect(getRouteMeta(sfc, '/app/pages/voided.vue')).toEqual({ name: 'voided-name' })
+    })
+
+    it('should keep the macro module when the argument is not an object literal', () => {
+      const sfc = `
+<script setup lang="ts">
+const meta = { name: 'from-variable', title: 'hello' }
+definePageMeta(meta)
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).toContain('const __nuxt_page_meta = meta')
+      expect(getRouteMeta(sfc, '/app/pages/variable.vue')).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    it('should keep an object layout with sub-properties that cannot be reshaped', () => {
+      const sfc = `
+<script setup lang="ts">
+const shared = { name: 'admin' }
+definePageMeta({ layout: { ...shared, props: { collapsed: true } } })
+</script>
+      `
+      const macro = macroModule(sfc, extractionKeys)
+      expect(macro).toContain('...shared')
+      expect(macro).not.toContain('layoutProps')
+      expect(getRouteMeta(sfc, '/app/pages/layout-spread.vue')).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    it('should extract the last occurrence of a duplicate key', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ name: 'first', name: 'last' })
+</script>
+      `
+      const macro = macroModule(sfc, extractionKeys)
+      expect(macro).not.toContain('first')
+      expect(macro).not.toContain('last')
+      expect(getRouteMeta(sfc, '/app/pages/duplicate.vue')).toEqual({ name: 'last' })
+    })
+
+    it('should keep a getter whose name collides with an extracted key', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ get name () { return 'from-getter' } })
+</script>
+      `
+      expect(macroModule(sfc, extractionKeys)).toContain('from-getter')
+      expect(getRouteMeta(sfc, '/app/pages/getter.vue')).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+  })
+
+  describe('extractSerializablePageMeta', () => {
+    const options = { extractSerializable: true }
+    let fileCounter = 0
+
+    function extract (sfc: string, extraExtractionKeys = new Set<string>()) {
+      return getRouteMeta(sfc, `/app/pages/serializable-${fileCounter++}.vue`, extraExtractionKeys, options)
+    }
+
+    function macroModule (sfc: string, extractedKeys: string[] = [...defaultExtractionKeys]) {
+      const plugin = PageMetaPlugin({ extractedKeys, extractSerializable: true }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+      const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+      return plugin.transform.handler(res.content, 'component.vue?macro=true')?.code
+    }
+
+    it('should extract an unlisted serializable key into route meta', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ title: 'hello', order: -2, tags: ['a', 'b'], nested: { deep: true } })
+</script>
+      `
+      expect(extract(sfc)).toEqual({
+        meta: { title: 'hello', order: -2, tags: ['a', 'b'], nested: { deep: true } },
+      })
+      const macro = macroModule(sfc)
+      expect(macro).not.toContain('hello')
+      expect(macro).toContain('const __nuxt_page_meta = {')
+    })
+
+    it('should fall back to the macro module for an unlisted key that is not serializable', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ title: 'hello', validate: () => true })
+</script>
+      `
+      expect(extract(sfc)).toEqual({
+        meta: { title: 'hello', __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+      expect(macroModule(sfc)).toContain('validate')
+    })
+
+    it('should still mark a listed key as dynamic rather than runtime', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ path: ref('/dynamic') })
+</script>
+      `
+      expect(extract(sfc)).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['path']) },
+      })
+      expect(macroModule(sfc)).toContain('ref(\'/dynamic\')')
+    })
+
+    it('should keep the last occurrence of a duplicate unlisted key', () => {
+      const sfc = `
+<script setup lang="ts">
+definePageMeta({ title: 'first', title: 'last' })
+</script>
+      `
+      expect(extract(sfc)).toEqual({ meta: { title: 'last' } })
+      const macro = macroModule(sfc)
+      expect(macro).not.toContain('first')
+      expect(macro).not.toContain('last')
+    })
+
+    it('should key the extraction cache on the flag', () => {
+      const sfc = `<script setup lang="ts">definePageMeta({ title: 'hello' })</script>`
+      const path = '/app/pages/cache-key.vue'
+      expect(getRouteMeta(sfc, path, new Set(), options)).toEqual({ meta: { title: 'hello' } })
+      expect(getRouteMeta(sfc, path)).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    it('should invalidate both extraction modes when contents change', () => {
+      const path = '/app/pages/cache-invalidation.vue'
+      getRouteMeta(`<script setup lang="ts">definePageMeta({ title: 'hello' })</script>`, path, new Set(), options)
+      getRouteMeta(`<script setup lang="ts">definePageMeta({ title: 'hello' })</script>`, path)
+
+      const updated = `<script setup lang="ts">definePageMeta({ title: 'goodbye' })</script>`
+      expect(getRouteMeta(updated, path, new Set(), options)).toEqual({ meta: { title: 'goodbye' } })
+      expect(getRouteMeta(updated, path)).toEqual({
+        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+      })
+    })
+
+    describe('layout reshapes', () => {
+      it('should extract a string layout', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: 'dark' })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'dark' } })
+        expect(macroModule(sfc)).not.toContain('dark')
+      })
+
+      it('should extract `layout: false`', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: false })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: false } })
+        expect(macroModule(sfc)).not.toContain('layout')
+      })
+
+      it('should split `{ name }` into `layout`', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin' } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'admin' } })
+        const macro = macroModule(sfc)
+        expect(macro).not.toContain('admin')
+        expect(macro).not.toContain('layoutProps')
+      })
+
+      it('should split `{ name, props }` into `layout` and `layoutProps`', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'admin', layoutProps: { collapsed: true } } })
+        const macro = macroModule(sfc)
+        expect(macro).not.toContain('admin')
+        expect(macro).not.toContain('collapsed')
+      })
+
+      it('should unwrap a statically wrapped layout object', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } as const })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'admin', layoutProps: { collapsed: true } } })
+        expect(macroModule(sfc)).not.toContain('admin')
+      })
+
+      it('should leave `{ props }` without a name to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { props: { collapsed: true } } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        const macro = macroModule(sfc)
+        expect(macro).toContain('layoutProps: { collapsed: true }')
+        expect(macro).not.toContain('layout:')
+      })
+
+      it('should leave an empty layout object to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: {} })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+      })
+
+      it('should leave a non-serializable layout name to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+const layoutName = 'admin'
+definePageMeta({ layout: { name: layoutName } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(macroModule(sfc)).toContain('layout: layoutName')
+      })
+
+      it('should leave non-serializable layout props to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { onClick: () => {} } } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        const macro = macroModule(sfc)
+        expect(macro).toContain('layout: \'admin\'')
+        expect(macro).toContain('layoutProps: { onClick: () => {} }')
+      })
+
+      it('should leave a spread layout object to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+const shared = { name: 'admin' }
+definePageMeta({ layout: { ...shared } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(macroModule(sfc)).toContain('...shared')
+      })
+
+      it('should leave a layout object with unknown keys to the macro module', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', other: 1 } })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(macroModule(sfc)).toContain('other: 1')
+      })
+
+      it('should keep the last occurrence when a string layout follows an object layout', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } }, layout: 'dark' })
+</script>
+        `
+        expect(extract(sfc)).toEqual({ meta: { layout: 'dark' } })
+        const macro = macroModule(sfc)
+        expect(macro).not.toContain('admin')
+        expect(macro).not.toContain('dark')
+      })
+
+      it('should reshape into meta when `layout` is also an extraction key', () => {
+        const sfc = `
+<script setup lang="ts">
+definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
+</script>
+        `
+        expect(extract(sfc, new Set(['layout']))).toEqual({
+          meta: { layout: 'admin', layoutProps: { collapsed: true } },
+        })
+        expect(macroModule(sfc, [...defaultExtractionKeys, 'layout'])).not.toContain('admin')
+      })
+    })
+
+    it('should not import the macro module when every key is serializable', () => {
+      const page: NuxtPage = { path: '/', file: filePath }
+      Object.assign(page, getRouteMeta(`
+      <script setup>
+      definePageMeta({
+        name: 'some-custom-name',
+        layout: { name: 'admin', props: { collapsed: true } },
+        title: 'hello',
+      })
+      </script>
+      `, filePath, new Set(), options))
+
+      const { routes, imports } = normalizeRoutes([page], new Set(), {
+        clientComponentRuntime: '<client-component-runtime>',
+        serverComponentRuntime: '<server-component-runtime>',
+        overrideMeta: true,
+      })
+      expect(imports).toEqual(new Set())
+      expect(routes).toMatchInlineSnapshot(`
+        "[
+          {
+            name: "some-custom-name",
+            path: "/",
+            meta: {"layout":"admin","layoutProps":{"collapsed":true},"title":"hello"},
+            component: () => import("/app/pages/index.vue")
+          }
+        ]"
+      `)
     })
   })
 })

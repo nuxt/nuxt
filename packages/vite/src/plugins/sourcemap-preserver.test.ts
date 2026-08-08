@@ -24,6 +24,7 @@ describe('SourcemapPreserverPlugin', () => {
       options: {
         dev: false,
         sourcemap: { server: true },
+        experimental: { nitroViteEnvironment: false },
       },
       hook (name: string, handler: (nitro: NitroMock) => void) {
         if (name === 'nitro:build:before') {

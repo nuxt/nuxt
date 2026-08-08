@@ -1,15 +1,18 @@
-import { parseNodeModulePath } from 'mlly'
 import { resolveModulePath } from 'exsolve'
-import { isAbsolute, normalize, resolve } from 'pathe'
+import { normalize, resolve } from 'pathe'
 import type { Environment, Plugin } from 'vite'
-import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
+import { directoryToURL, logger, parseNodeModulePath, resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
 
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
+const ABSOLUTE_RE = /^(?:[/\\](?![/\\])|[/\\]{2}(?!\.)|[A-Z]:[/\\])/i
+const ABSOLUTE_OR_VIRTUAL_RE = /^(?:[/\\](?![/\\])|[/\\]{2}(?!\.)|[A-Za-z]:[/\\]|\0?virtual:)/
+const HTML_RE = /\.html(?:$|\?)/
 
 export function ResolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
   const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite', '@vitest/']
+  const EXCLUDE_RE = new RegExp('^(?:' + exclude.map(e => escapeRE(e)).join('|') + ')')
 
   const conditions: Record<string, undefined | string[]> = {}
 
@@ -34,15 +37,16 @@ export function ResolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
     resolveId: {
       filter: {
         id: {
-          exclude: [
-            // absolute path
-            /^[/\\](?![/\\])|^[/\\]{2}(?!\.)|^[A-Z]:[/\\]/i,
-            ...exclude.map(e => new RegExp('^' + escapeRE(e))),
-          ],
+          exclude: [ABSOLUTE_RE, EXCLUDE_RE],
         },
       },
-      async handler (id, importer) {
-        if (!importer || (!isAbsolute(importer) && !VIRTUAL_RE.test(importer))) {
+      async handler (id, importer, options) {
+        // Vite probes `index.html` as a fallback entry when no input is configured; it is not a bare import
+        if (options.isEntry && HTML_RE.test(id)) {
+          return
+        }
+
+        if (!importer || !ABSOLUTE_OR_VIRTUAL_RE.test(importer)) {
           return
         }
 

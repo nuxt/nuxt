@@ -6,7 +6,7 @@ import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTyp
 import escapeRE from 'escape-string-regexp'
 import { resolveModulePath } from 'exsolve'
 
-import { isDirectory, logger, resolveToAlias } from '../utils.ts'
+import { isDirectory, linkToAlias, logger } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
 import { appCompatPresets, defaultPresets } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
@@ -60,6 +60,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         composablesDirs.push(
           resolve(layer.config.srcDir, 'composables'),
           resolve(layer.config.srcDir, 'utils'),
+          resolve(layer.config.srcDir, 'types'),
           resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'),
           resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'),
         )
@@ -82,7 +83,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         const path = resolve(nuxt.options.srcDir, relativePath)
         if (composablesDirs.includes(path)) {
-          logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+          logger.info(`Directory \`${linkToAlias(path, nuxt)}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
           return nuxt.callHook('restart')
         }
       })
@@ -118,6 +119,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
+      dependsOn: [],
       getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }',
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
@@ -133,7 +135,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
 
-    const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
+    // matches `imports.mjs`, `imports.d.ts`, `types/imports.d.ts` and `types/shared-imports.d.ts`;
+    // these templates render unimport state that this module refreshes itself, so they must all be
+    // caught by `regenerateImports` rather than relying on a full template regeneration
+    const IMPORTS_TEMPLATE_RE = /(?:^|\/)(?:shared-)?imports\.(?:d\.ts|mjs)$/
     function isImportsTemplate (template: ResolvedNuxtTemplate) {
       return IMPORTS_TEMPLATE_RE.test(template.filename)
     }
@@ -163,7 +168,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           if (!nuxtImportSources.has(i.from)) {
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
-              const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
+              const relativePath = isAbsolute(i.from) ? linkToAlias(i.from, nuxt) : i.from
               headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
             }
           }
@@ -261,6 +266,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
   addTypeTemplate({
     filename: 'imports.d.ts',
+    dependsOn: [],
     getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true, { declaration: true }),
   })
 
@@ -269,6 +275,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
   addTypeTemplate({
     filename: 'types/imports.d.ts',
+    dependsOn: [],
     getContents: async () => {
       const imports = await ctx.getImports()
       await cacheImportPaths(imports)
@@ -282,6 +289,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
   addTemplate({
     filename: 'types/shared-imports.d.ts',
+    dependsOn: [],
     getContents: async () => {
       if (!options.autoImport) {
         return GENERATED_BY_COMMENT + AUTO_IMPORTS_DISABLED_COMMENT

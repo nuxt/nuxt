@@ -2,6 +2,8 @@ import type { H3Event } from 'nitro/h3'
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 
+import '../../context'
+
 /**
  * Patch the dev SSR manifest with the CSS modules a dev integration recorded
  * for this request (`event.context.nuxt['~devClientCss']`), so

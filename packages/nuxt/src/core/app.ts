@@ -1,12 +1,12 @@
-import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
+import { promises as fsp, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { performance } from 'node:perf_hooks'
-import { dirname, join, relative, resolve } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { Diagnostic } from 'nostics'
 import { buildDiagnostics, findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, pageDiagnostics, pluginDiagnostics, resolveFiles, resolvePath } from '@nuxt/kit'
 
-import { logger, resolveToAlias } from '../utils.ts'
+import { linkToAlias, logger } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
 import type { ExtractedPluginMeta, PluginBuildMode } from './plugins/plugin-metadata.ts'
@@ -23,6 +23,26 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
   } as unknown as NuxtApp) as NuxtApp
 }
 
+const structureVersions = new WeakMap<Nuxt, number>()
+const resolvedStructureVersions = new WeakMap<NuxtApp, number>()
+
+/**
+ * Version of the app's file structure, bumped whenever a file is added to or removed
+ * from a watched directory. Scans whose result depends only on which files exist
+ * (layouts, middleware, plugins, components) can be reused while it is unchanged.
+ *
+ * While it is unchanged, `app:resolve` and `components:extend` are not re-run in dev.
+ * Modules whose contributions depend on state other than the file tree should call
+ * `updateTemplates()` with no filter to force a full re-resolution.
+ */
+export function getAppStructureVersion (nuxt: Nuxt): number {
+  return structureVersions.get(nuxt) ?? 0
+}
+
+export function invalidateAppStructure (nuxt: Nuxt): void {
+  structureVersions.set(nuxt, getAppStructureVersion(nuxt) + 1)
+}
+
 const postTemplates = new Set([
   defaultTemplates.clientPluginTemplate.filename,
   defaultTemplates.serverPluginTemplate.filename,
@@ -30,14 +50,17 @@ const postTemplates = new Set([
 ])
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
+  const generateStart = performance.now()
   // Resolve app
   await resolveApp(nuxt, app)
+  const resolvedAt = performance.now()
 
   // User templates from options.build.templates
   app.templates = Object.values(defaultTemplates).concat(nuxt.options.build.templates) as NuxtTemplate[]
 
   // Extend templates with hook
   await nuxt.callHook('app:templates', app)
+  const scannedAt = performance.now()
 
   // Normalize templates
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl, nuxt.options.buildDir))
@@ -93,14 +116,14 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const compileTime = Math.round((perf * 100)) / 100
 
     if ((nuxt.options.debug && nuxt.options.debug.templates) || compileTime > 500) {
-      logger.info(`Compiled \`${template.filename}\` in ${compileTime}ms`)
+      logger.info(`Compiled \`${linkToAlias(fullPath, nuxt)}\` in ${compileTime}ms`)
     }
 
-    if (template.modified && template.write) {
+    if (template.modified && template.write && !matchesDisk(fullPath, contents)) {
       dirs.add(dirname(fullPath))
       writes.push(() => writeFileSync(fullPath, contents, 'utf8'))
       if (nuxt.options.debug && nuxt.options.debug.templates) {
-        logger.info(`Writing \`${template.filename}\` to \`${fullPath}\``)
+        logger.info(`Writing \`${template.filename}\` to \`${linkToAlias(fullPath, nuxt)}\``)
       }
     }
   }
@@ -117,8 +140,26 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     write()
   }
 
+  if (nuxt.options.debug && nuxt.options.debug.templates) {
+    logger.info(`Generated app in ${Math.round(performance.now() - generateStart)}ms (resolve ${Math.round(resolvedAt - generateStart)}ms, scan ${Math.round(scannedAt - resolvedAt)}ms, compile ${Math.round(performance.now() - scannedAt)}ms), ${changedTemplates.length} template(s) changed`)
+  }
+
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
+  }
+}
+
+/**
+ * On a fresh start the in-memory comparison always reports a template as
+ * modified, so check the file we are about to overwrite: an unchanged
+ * `buildDir` keeps its mtimes stable for anything downstream that caches
+ * against them.
+ */
+function matchesDisk (path: string, contents: string) {
+  try {
+    return readFileSync(path, 'utf8') === contents
+  } catch {
+    return false
   }
 }
 
@@ -141,6 +182,11 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+  // In dev, re-globbing every layer on each save is pure overhead unless a file has
+  // been added or removed since the last resolution.
+  const version = getAppStructureVersion(nuxt)
+  if (nuxt.options.dev && resolvedStructureVersions.get(app) === version) { return }
+
   // resolve layer
   const layerDirs = getLayerDirectories(nuxt)
   const reversedLayerDirs = layerDirs.toReversed()
@@ -165,7 +211,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file, dirs.appLayouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
-        pageDiagnostics.NUXT_B4009({ file: resolveToAlias(file, nuxt) })
+        pageDiagnostics.NUXT_B4009({ file: linkToAlias(file, nuxt) })
         continue
       }
       layouts[name] ||= { name, file }
@@ -183,7 +229,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
-        pageDiagnostics.NUXT_B4010({ file: resolveToAlias(file, nuxt) })
+        pageDiagnostics.NUXT_B4010({ file: linkToAlias(file, nuxt) })
         continue
       }
       middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
@@ -235,6 +281,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
   app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
   app.configs = [...new Set(app.configs)]
+
+  // committed only once resolution has fully succeeded, so a throwing `app:resolve`
+  // hook doesn't leave a partially resolved app cached for subsequent rebuilds
+  resolvedStructureVersions.set(app, version)
 }
 
 function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
@@ -266,7 +316,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promi
         ...plugin,
       })
     } catch (e) {
-      const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
+      const relativePluginSrc = linkToAlias(plugin.src, nuxt)
       const code = e instanceof Error ? e.name : ''
       if (code === 'NUXT_B2001' || code === 'NUXT_B2002') {
         pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc })

@@ -576,11 +576,23 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
         "matcher": {
           "dynamic": {},
           "static": {
+            "/cafÉ": {
+              "redirect": "/accented-target",
+            },
+            "/pre-encoded/%E6%B5%8B%E8%AF%95": {
+              "redirect": "/pre-encoded-target",
+            },
             "/pre/test": {
               "redirect": "/",
             },
             "/specific-prerendered": {
               "prerender": true,
+            },
+            "/unicode/测试": {
+              "ssr": false,
+            },
+            "/测试": {
+              "redirect": "/unicode-target",
             },
           },
           "wildcard": {
@@ -593,6 +605,9 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             "/pre/spa": {
               "prerender": true,
               "ssr": false,
+            },
+            "/unicode": {
+              "ssr": true,
             },
           },
         },
@@ -636,6 +651,32 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     } else {
       expect(spaRules).not.toHaveProperty('prerender')
       expect(redirectRules).not.toHaveProperty('redirect')
+    }
+  })
+})
+
+describe('unicode route rules', () => {
+  it('applies a decoded rule key to the encoded request path', () => {
+    for (const path of ['/测试', `/${encodeURIComponent('测试')}`, `/${encodeURIComponent('测试').toLowerCase()}`]) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/unicode-target' })
+    }
+  })
+
+  it('prefers a specific unicode rule over a catch-all covering the same key', () => {
+    for (const path of ['/unicode/测试', `/unicode/${encodeURIComponent('测试')}`]) {
+      expect(getRouteRules({ path }), path).toMatchObject({ ssr: false })
+    }
+  })
+
+  it('applies a rule key authored in encoded form', () => {
+    for (const path of [`/pre-encoded/${encodeURIComponent('测试')}`, '/pre-encoded/测试']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/pre-encoded-target' })
+    }
+  })
+
+  it('applies a rule key whose casing matches the request exactly', () => {
+    for (const path of ['/cafÉ', `/caf${encodeURIComponent('É')}`]) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/accented-target' })
     }
   })
 })
@@ -1217,9 +1258,12 @@ describe('useCookie', () => {
 
     useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
     expect(document.cookie).toContain('cookie-watch-true=foo')
+  })
 
-    useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
-    expect(document.cookie).toContain('cookie-readonly=foo')
+  it('should not write a readonly cookie with a default value on client', () => {
+    const cookie = useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
+    expect(cookie.value).toBe('foo')
+    expect(document.cookie).not.toContain('cookie-readonly')
   })
 
   it('should re-write cookie on same-value assignment when refresh is true', async () => {
@@ -1258,6 +1302,28 @@ describe('useCookie', () => {
     await nextTick()
 
     expect(document.cookie).not.toContain('no-refresh-test=original')
+  })
+
+  it('should never write a readonly cookie, even when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+
+    document.cookie = 'readonly-refresh-test=original'
+    const cookie = useCookie('readonly-refresh-test', {
+      maxAge: 3600,
+      readonly: true,
+      refresh: true,
+    })
+    expect(cookie.value).toBe('original')
+
+    // Clear document.cookie to detect if a write happens
+    document.cookie = 'readonly-refresh-test=; Max-Age=0'
+    expect(document.cookie).not.toContain('readonly-refresh-test=original')
+
+    ;(cookie as any).value = 'stray-write'
+    expect(cookie.value).toBe('stray-write')
+    await nextTick()
+
+    expect(document.cookie).not.toContain('readonly-refresh-test=stray-write')
   })
 
   it('should re-evaluate expires getter on each cookie write', async () => {

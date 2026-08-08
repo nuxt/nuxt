@@ -1,4 +1,4 @@
-import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
+import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
@@ -12,6 +12,8 @@ export default withMatrix({
     prerender: {
       routes: [
         '/prefetch/server-components',
+        '/prerender/island-a',
+        '/prerender/island-b',
       ],
     },
   },

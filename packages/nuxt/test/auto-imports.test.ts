@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { findExports } from 'mlly'
+import { parseSync } from 'rolldown/utils'
 import * as VueFunctions from 'vue'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
@@ -69,9 +69,9 @@ describe('imports:nuxt', () => {
     const entrypointPath = fileURLToPath(new URL('../src/app/composables/index.ts', import.meta.url))
     const entrypointContents = readFileSync(entrypointPath, 'utf8')
 
-    const names = findExports(entrypointContents).flatMap(i => i.names || i.name)
-    for (let name of names) {
-      name = name.replace(/\/\*.*\*\//, '').trim()
+    const { module } = parseSync(entrypointPath, entrypointContents)
+    const names = module.staticExports.flatMap(statement => statement.entries.filter(entry => !entry.isType).map(entry => entry.exportName.name).filter((name): name is string => !!name))
+    for (const name of names) {
       if (excludedNuxtHelpers.includes(name)) {
         continue
       }
