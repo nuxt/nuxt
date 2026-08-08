@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const locale = ref()
+const locale = ref('en-GB')
 const switchLocale = () => {
   locale.value = locale.value !== 'fr' ? 'fr' : 'en-GB'
 }
