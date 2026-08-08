@@ -1258,9 +1258,12 @@ describe('useCookie', () => {
 
     useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
     expect(document.cookie).toContain('cookie-watch-true=foo')
+  })
 
-    useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
-    expect(document.cookie).toContain('cookie-readonly=foo')
+  it('should not write a readonly cookie with a default value on client', () => {
+    const cookie = useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
+    expect(cookie.value).toBe('foo')
+    expect(document.cookie).not.toContain('cookie-readonly')
   })
 
   it('should re-write cookie on same-value assignment when refresh is true', async () => {
