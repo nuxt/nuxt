@@ -1,3 +1,5 @@
+// @ts-expect-error `vaporInteropPlugin` is only typed in vue 3.6+; this plugin is
+// registered only when the installed vue supports vapor mode
 import { vaporInteropPlugin } from 'vue'
 import { defineNuxtPlugin } from '#app/nuxt'
 

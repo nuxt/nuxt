@@ -1,11 +1,16 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
+import { version as vueVersion } from 'vue'
 import { expect, test } from './test-utils'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/vapor', import.meta.url))
 
+const [major = 0, minor = 0] = vueVersion.split('.').map(Number)
+const supportsVapor = major > 3 || (major === 3 && minor >= 6)
+
 test.describe.configure({ mode: 'serial' })
+test.skip(!supportsVapor, `vapor mode requires vue 3.6+ (found ${vueVersion})`)
 
 test.use({
   nuxt: {
