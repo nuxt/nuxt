@@ -55,4 +55,27 @@ test.describe('Suspense navigation with layout change', () => {
 
     expect(page).toHaveNoErrorsOrWarnings()
   })
+
+  test('rapid cross-navigation while suspense is pending settles on final route (#35236)', async ({ page, goto }) => {
+    await goto('/cross/a')
+
+    await expect(page.getByTestId('cross-a')).toBeVisible({
+      timeout: 10_000,
+    })
+
+    await page.getByTestId('link-cross-b').dispatchEvent('click')
+    await page.getByTestId('link-cross-c').dispatchEvent('click')
+
+    await page.waitForFunction(
+      () => window.useNuxtApp?.()._route.path === '/cross/c',
+    )
+
+    await expect(page.getByTestId('cross-c')).toBeVisible({
+      timeout: 10_000,
+    })
+
+    await expect(page.getByTestId('cross-b')).toHaveCount(0)
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
 })
