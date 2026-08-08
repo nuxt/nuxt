@@ -30,6 +30,15 @@ export function installClientHead (nuxtApp: NuxtApp, head: ClientHead): void {
   // unpause the DOM once the mount suspense is resolved
   nuxtApp.hooks.hook('app:suspense:resolve', syncHead)
 
+  // when hydrating a server-rendered error page, the initial document title belongs
+  // to the error, so unhead must not restore it once the error is cleared
+  const removeTitleResetHook = head.hooks?.hook('dom:rendered', () => {
+    removeTitleResetHook?.()
+    if (nuxtApp.payload.error && head._dom) {
+      head._dom._t = ''
+    }
+  })
+
   // Defer head-entry disposal during a page transition.
   const originalPush = head.push.bind(head)
   head.push = ((input: Parameters<typeof head.push>[0], options?: Parameters<typeof head.push>[1]) => {
