@@ -118,7 +118,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   const hasExpired = delay !== undefined && delay <= 0
-  const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
+  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (hasExpired || cookies[name] === undefined || cookies[name] === null)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
