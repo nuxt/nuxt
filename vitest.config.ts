@@ -168,6 +168,7 @@ export default defineConfig({
       {
         define: {
           'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+          'import.meta.server': '(globalThis.__TEST_SERVER__ ?? false)',
         },
         resolve: {
           alias: {

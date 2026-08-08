@@ -11,7 +11,7 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { ComponentSlots } from 'vue-component-type-helpers'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -283,6 +283,58 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     }
   }
 
+  function checkNuxtLinkNesting () {
+    if (inject(NuxtLinkDevKeySymbol, false)) {
+      renderDiagnostics.NUXT_E4009()
+    } else {
+      provide(NuxtLinkDevKeySymbol, true)
+    }
+  }
+
+  /**
+   * Render an internal link as a plain anchor, matching the markup `<RouterLink>` produces
+   * for the same location.
+   */
+  function renderStaticInternalLink (props: NuxtLinkProps, slots: { default?: (props?: any) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
+    if (import.meta.dev) {
+      checkPropConflicts(props, 'to', 'href')
+      checkPropConflicts(props, 'noRel', 'rel')
+    }
+
+    const route = router.resolve(resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash))
+    const currentRoute = router.currentRoute.value
+    const index = activeRecordIndex(route, currentRoute)
+    const isActive = index > -1 && includesParams(currentRoute.params, route.params)
+    const isExactActive = index > -1 && index === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.params)
+
+    let dataInternal: string | undefined
+    if (componentIslands && useNuxtApp().ssrContext?.islandContext) {
+      const flags: string[] = []
+      if (props.replace) { flags.push('replace') }
+      const prefetchOnVisibility = typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : (props.prefetchOn?.visibility ?? options.prefetchOn?.visibility)
+      if (prefetchOnVisibility && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true) { flags.push('prefetch') }
+      dataInternal = flags.join(' ')
+    }
+
+    const routerOptions = router.options
+    return h('a', {
+      'aria-current': isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
+      'href': route.href,
+      'class': {
+        [getLinkClass(props.activeClass || options.activeClass, routerOptions.linkActiveClass, 'router-link-active')]: isActive,
+        [getLinkClass(props.exactActiveClass || options.exactActiveClass, routerOptions.linkExactActiveClass, 'router-link-exact-active')]: isExactActive,
+      },
+      'rel': props.rel || undefined,
+      'data-internal': dataInternal,
+    }, slots.default?.({
+      route,
+      href: route.href,
+      isActive,
+      isExactActive,
+      navigate: () => navigateTo(route.href, { replace: props.replace }),
+    }))
+  }
+
   return defineComponent({
     name: componentName,
     props: {
@@ -375,15 +427,25 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     setup (props, { slots }) {
       const router = useRouter()
 
+      // On the server an internal link resolves to a static anchor, so it is rendered directly:
+      // no `<RouterLink>` instance, no reactive link state and none of the client-only
+      // prefetching setup below.
+      if (import.meta.server && !props.custom) {
+        const rawTo = props.to || props.href || ''
+        const isExternalLink = props.external || (typeof rawTo === 'string' && (rawTo === '' || hasProtocol(rawTo, { acceptRelative: true })))
+        if (!isExternalLink && !isHashLinkWithoutHashMode(rawTo) && (!props.target || props.target === '_self')) {
+          if (import.meta.dev) {
+            checkNuxtLinkNesting()
+          }
+          return () => renderStaticInternalLink(props, slots, router, rawTo)
+        }
+      }
+
       const routerLinkComponent = resolveComponent('RouterLink')
 
       // vue-router's `useLink` only backs the `route`/`isActive`/`isExactActive` properties of
       // the public `useLink` API, which this component never reads, so skip resolving it here.
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props, false)
-
-      const serverLink = import.meta.server && !props.custom && !isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value) && typeof routerLinkComponent !== 'string'
-        ? (routerLinkComponent as unknown as typeof RouterLink).useLink({ to: to as any, replace: props.replace })
-        : undefined
 
       // Prefetching
       const prefetched = shallowRef(false)
@@ -443,12 +505,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       }
 
       if (import.meta.dev && import.meta.server && !props.custom) {
-        const isNuxtLinkChild = inject(NuxtLinkDevKeySymbol, false)
-        if (isNuxtLinkChild) {
-          renderDiagnostics.NUXT_E4009()
-        } else {
-          provide(NuxtLinkDevKeySymbol, true)
-        }
+        checkNuxtLinkNesting()
       }
 
       return () => {
@@ -534,30 +591,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             }
           }
 
-          if (import.meta.server && serverLink) {
-            const routerOptions = (router as Router).options
-            const isActive = serverLink.isActive.value
-            const isExactActive = serverLink.isExactActive.value
-            const href = serverLink.href.value
-            return h('a', {
-              'aria-current': isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
-              href,
-              'class': {
-                [getLinkClass(routerLinkProps.activeClass, routerOptions.linkActiveClass, 'router-link-active')]: isActive,
-                [getLinkClass(routerLinkProps.exactActiveClass, routerOptions.linkExactActiveClass, 'router-link-exact-active')]: isExactActive,
-              },
-              'rel': routerLinkProps.rel,
-              'data-internal': routerLinkProps['data-internal'],
-            }, slots.default?.({
-              // `route` is already resolved as a side effect of reading `href` above
-              route: serverLink.route.value,
-              href,
-              isActive,
-              isExactActive,
-              navigate: serverLink.navigate,
-            }))
-          }
-
           // Internal link
           return h(
             routerLinkComponent,
@@ -618,6 +651,67 @@ const NuxtLink: NuxtLinkComponent & Record<string, any> = defineNuxtLink(nuxtLin
 export default NuxtLink
 
 // -- NuxtLink utils --
+
+/*
+ * Active-link resolution, kept in step with the semantics `<RouterLink>` applies so a
+ * server-rendered anchor hydrates against an identical client-rendered one. Route records are
+ * compared through their alias origin, and a link is active when the current location matches
+ * its deepest record and carries at least its params.
+ */
+function isSameRouteRecord (a: RouteRecordNormalized, b: RouteRecordNormalized): boolean {
+  return (a.aliasOf || a) === (b.aliasOf || b)
+}
+
+function getOriginalPath (record: RouteRecordNormalized | undefined): string {
+  return record ? (record.aliasOf ? record.aliasOf.path : record.path) : ''
+}
+
+function isEquivalentArray (a: readonly unknown[], b: unknown): boolean {
+  return Array.isArray(b) ? a.length === b.length && a.every((value, i) => value === b[i]) : a.length === 1 && a[0] === b
+}
+
+function isSameParamValue (a: unknown, b: unknown): boolean {
+  return Array.isArray(a)
+    ? isEquivalentArray(a, b)
+    : Array.isArray(b) ? isEquivalentArray(b, a) : (a && a.valueOf()) === (b && b.valueOf())
+}
+
+function isSameRouteLocationParams (a: RouteLocation['params'], b: RouteLocation['params']): boolean {
+  if (Object.keys(a).length !== Object.keys(b).length) { return false }
+  for (const key in a) {
+    if (!isSameParamValue(a[key], b[key])) { return false }
+  }
+  return true
+}
+
+function includesParams (outer: RouteLocation['params'], inner: RouteLocation['params']): boolean {
+  for (const key in inner) {
+    const innerValue = inner[key]
+    const outerValue = outer[key]
+    if (typeof innerValue === 'string') {
+      if (innerValue !== outerValue) { return false }
+    } else if (!Array.isArray(outerValue) || outerValue.length !== innerValue!.length || innerValue!.some((value, i) => value.valueOf() !== outerValue[i]!.valueOf())) {
+      return false
+    }
+  }
+  return true
+}
+
+function activeRecordIndex (route: RouteLocation, currentRoute: RouteLocation): number {
+  const { matched } = route
+  const { length } = matched
+  const routeMatched = matched[length - 1]
+  const currentMatched = currentRoute.matched
+  if (!routeMatched || !currentMatched.length) { return -1 }
+  const index = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched))
+  if (index > -1) { return index }
+  const parentRecordPath = getOriginalPath(matched[length - 2])
+  return length > 1 && getOriginalPath(routeMatched) === parentRecordPath && currentMatched[currentMatched.length - 1]!.path !== parentRecordPath
+    ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2]!))
+    : index
+}
+
+/** Resolve an active-link class, falling back from the per-link value to the router-wide one. */
 function getLinkClass (propClass: string | undefined, globalClass: string | undefined, defaultClass: string): string {
   return propClass ?? globalClass ?? defaultClass
 }
