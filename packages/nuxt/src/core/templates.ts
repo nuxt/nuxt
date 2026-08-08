@@ -17,6 +17,7 @@ import type { NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
+const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -535,7 +536,7 @@ export const publicPathTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents ({ nuxt }) {
     return [
-      'import { joinRelativeURL } from \'ufo\'',
+      `import { joinRelativeURL } from ${JSON.stringify(ufoPath)}`,
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime-config\'',
 
       nuxt.options.dev
