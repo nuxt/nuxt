@@ -190,7 +190,12 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     return resolvedPath
   }
 
-  function useNuxtLink (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }, resolveRouterLink = true) {
+  /**
+   * The link state `<NuxtLink>` renders with. Kept separate from `useNuxtLink` so the component
+   * does not resolve the `<RouterLink>` link state backing `route`/`isActive`/`isExactActive`,
+   * which it never reads.
+   */
+  function useLinkTarget (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }) {
     const router = useRouter()
     const config = useRuntimeConfig()
 
@@ -201,9 +206,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       const path = unref(props.to) || unref(props.href) || ''
       return typeof path === 'string' && hasProtocol(path, { acceptRelative: true })
     })
-
-    const builtinRouterLink = resolveRouterLink ? resolveComponent('RouterLink') as string | typeof RouterLink : undefined
-    const useBuiltinLink = builtinRouterLink && typeof builtinRouterLink !== 'string' ? builtinRouterLink.useLink : undefined
 
     // Resolving link type
     const isExternal = computed<boolean>(() => {
@@ -229,8 +231,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       if (isExternal.value) { return path }
       return resolveTrailingSlashBehavior(path, router.resolve, unref(props.trailingSlash))
     })
-
-    const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to, viewTransition: unref(props.viewTransition) })
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
@@ -262,9 +262,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       isExternal,
       //
       href,
-      isActive: link?.isActive ?? computed(() => to.value === router.currentRoute.value.path),
-      isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
-      route: link?.route ?? computed(() => router.resolve(to.value)),
       async navigate (_e?: MouseEvent) {
         if (href.value === null) {
           if (import.meta.dev) {
@@ -274,6 +271,22 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         }
         await navigateTo(href.value, { replace: unref(props.replace), external: isExternal.value || hasTarget.value })
       },
+    }
+  }
+
+  function useNuxtLink (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }) {
+    const router = useRouter()
+    const target = useLinkTarget(props)
+
+    const builtinRouterLink = resolveComponent('RouterLink') as string | typeof RouterLink
+    const useBuiltinLink = builtinRouterLink && typeof builtinRouterLink !== 'string' ? builtinRouterLink.useLink : undefined
+    const link = target.isExternal.value ? undefined : useBuiltinLink?.({ ...props, to: target.to, viewTransition: unref(props.viewTransition) })
+
+    return {
+      ...target,
+      isActive: link?.isActive ?? computed(() => target.to.value === router.currentRoute.value.path),
+      isExactActive: link?.isExactActive ?? computed(() => target.to.value === router.currentRoute.value.path),
+      route: link?.route ?? computed(() => router.resolve(target.to.value)),
     } satisfies Omit<ReturnType<typeof useLink>, 'href'> & {
       to: ComputedRef<RouteLocationRaw>
       href: ComputedRef<string | null>
@@ -443,9 +456,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
       const routerLinkComponent = resolveComponent('RouterLink')
 
-      // vue-router's `useLink` only backs the `route`/`isActive`/`isExactActive` properties of
-      // the public `useLink` API, which this component never reads, so skip resolving it here.
-      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props, false)
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useLinkTarget(props)
 
       // Prefetching
       const prefetched = shallowRef(false)
