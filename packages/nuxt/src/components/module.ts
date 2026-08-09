@@ -14,6 +14,7 @@ import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
 import { TransformPlugin } from './plugins/transform.ts'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
+import { ClientComponentStubPlugin } from './plugins/client-component-stub.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
@@ -245,6 +246,13 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     addBuildPlugin(TreeShakeTemplatePlugin({ getComponents }), { client: false })
+
+    addBuildPlugin(ClientComponentStubPlugin({
+      getComponents,
+      serverPlaceholderPath,
+      alias: nuxt.options.alias,
+      dev: nuxt.options.dev,
+    }), { client: false })
 
     const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
 
