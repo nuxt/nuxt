@@ -11,8 +11,6 @@ import { createRegExp, exactly } from 'magic-regexp'
 import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
-const itFailsIf = (condition: boolean) => condition ? it.fails : it
-
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
@@ -39,6 +37,13 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     expect(await $fetch('/api/hey')).toEqual({
       foo: 'bar',
       baz: 'qux',
+    })
+  })
+
+  it('should preserve native global fetch and route internal `$fetch` through nitro', async () => {
+    expect(await $fetch('/api/native-fetch')).toEqual({
+      globalFetchPatched: false,
+      internal: 'Hello API',
     })
   })
 
@@ -90,10 +95,14 @@ describe('route rules', () => {
 
   it('test noScript routeRules', async () => {
     const html = await $fetch<string>('/no-scripts')
-    expect(html).not.toContain('<script')
+    // no executable scripts are shipped; the only `<script>` permitted is the
+    // declarative speculation-rules JSON, which runs no JavaScript
+    const scripts = html.match(/<script[^>]*>/g) ?? []
+    expect(scripts.some(tag => tag.includes('type="speculationrules"'))).toBe(true)
+    expect(scripts.every(tag => tag.includes('type="speculationrules"'))).toBe(true)
   })
 
-  itFailsIf(isWebpack && isDev)('client-side navigation should redirect if hash included', async () => {
+  it('client-side navigation should redirect if hash included', async () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')
     await page.getByTestId('route-rules-redirect').click()
@@ -102,6 +111,11 @@ describe('route rules', () => {
 
   it('should run middleware defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/middleware')
+    expect(html).toContain('Hello from routeRules!')
+  })
+
+  it('should run appMiddleware from a decoded route rule key on a unicode page', async () => {
+    const html = await $fetch<string>(`/route-rules/${encodeURIComponent('测试')}`)
     expect(html).toContain('Hello from routeRules!')
   })
 
@@ -412,7 +426,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  itFailsIf(isWebpack && isDev)('/client-only-components', async () => {
+  it('/client-only-components', async () => {
     const html = await $fetch<string>('/client-only-components')
     expect(html).toContain('<div>Fallback</div>')
     // ensure components are not rendered server-side
@@ -707,6 +721,15 @@ describe('pages', () => {
 
     await page.close()
   })
+
+  it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
+    const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
+
+    await page.waitForFunction(() => document.querySelector('#preview-enabled')?.textContent === 'true')
+    expect(await page.innerText('#preview-token')).toBe('hehe')
+
+    await page.close()
+  })
 })
 
 describe('nuxt composables', () => {
@@ -729,6 +752,15 @@ describe('nuxt composables', () => {
     const cookies = res.headers.get('set-cookie')
     expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
+  it('does not write a readonly cookie with a default value, on server or client', async () => {
+    const res = await fetch('/cookies')
+    expect(res.headers.get('set-cookie')).not.toContain('readonly-with-default')
+
+    const { page } = await renderPage('/cookies')
+    expect(await page.evaluate(() => document.cookie)).not.toContain('readonly-with-default')
+    await page.close()
+  })
+
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
     async function extractCookie () {
@@ -1141,6 +1173,62 @@ describe('errors', () => {
     expect(error).not.toHaveProperty('url')
   })
 
+  it('should map a createError status thrown in a page to the HTTP status', async () => {
+    const res = await fetch('/error/not-found', {
+      headers: {
+        accept: 'application/json',
+      },
+    })
+    expect(res.status).toBe(404)
+    expect(res.statusText).toBe('This page does not exist')
+    const error = await res.json()
+    expect(error).toMatchObject({
+      status: 404,
+      statusText: 'This page does not exist',
+      data: { reason: 'missing' },
+    })
+
+    const html = await fetch('/error/not-found').then(r => r.text())
+    expect(html).toContain('This page does not exist')
+  })
+
+  it('should send the error page typed values, not stringified query params', async () => {
+    const html = await fetch('/error', { headers: { accept: 'text/html' } }).then(r => r.text())
+    const payload = html.match(/__NUXT_DATA__[^>]*>(.*?)<\/script>/s)![1]!
+    const data = JSON.parse(payload)
+    const error = data[data[1]!.error]
+
+    expect(data[error.status]).toBe(422)
+    expect(data[error.statusText]).toBe('This is a custom error')
+    // booleans stay booleans, where a query string would make them `'true'`
+    expect(data[error.fatal]).toBe(true)
+    // the signature is what `isNuxtError` checks on the error page (#29182)
+    expect(data[error.__nuxt_error]).toBe(true)
+  })
+
+  it('should expose a recognisable NuxtError on the client error page', async () => {
+    const { page } = await renderPage('/error/not-found')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    // #29182: the error survived SSR -> query -> payload -> revival with its
+    // signature and structured `data` intact
+    expect(await page.evaluate(() => {
+      const error = window.useNuxtApp!().payload.error as any
+      return { recognised: '__nuxt_error' in error, status: error.status, data: error.data }
+    })).toEqual({ recognised: true, status: 404, data: { reason: 'missing' } })
+
+    await page.close()
+  })
+
+  it('should keep error data structured on the error page', async () => {
+    const html = await fetch('/error/not-found', { headers: { accept: 'text/html' } }).then(r => r.text())
+    const payload = html.match(/__NUXT_DATA__[^>]*>(.*?)<\/script>/s)![1]!
+    const data = JSON.parse(payload)
+
+    const errorData = data[data[data[1]!.error].data]
+    expect(data[errorData.reason]).toBe('missing')
+  })
+
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
     expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=%22true%22; Path=/, some-error=was%20set; Path=/')
@@ -1539,6 +1627,12 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
     expect(html).not.toContain('inline-only.css')
     expect(html).toContain('assets/plugin.css')
   })
+
+  it('should emit a single link for globally-registered css', async () => {
+    const html = await $fetch<string>('/')
+    const links = html.match(/<link[^>]+global\.css[^>]*>/g) || []
+    expect(links).toHaveLength(1)
+  })
 })
 
 describe.skipIf(isDev)('module identifiers', () => {
@@ -1852,7 +1946,7 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   // TODO: looks like this test is flaky
-  const prefetchedPayloadIt = !isTestingAppManifest ? it.skip : itFailsIf(isWebpack && isDev)
+  const prefetchedPayloadIt = !isTestingAppManifest ? it.skip : it
   prefetchedPayloadIt('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
@@ -1921,6 +2015,43 @@ describe.skipIf(isWindows)('payload rendering', () => {
     expect(data.data).toBeDefined()
     expect(data.data['swr-data']).toBeDefined()
     expect(Array.isArray(data.data['swr-data'])).toBe(true)
+  })
+
+  it('preserves query parameters in extracted payloads for cached routes', async () => {
+    const { page, requests } = await renderPage('/payload-query?page=1')
+
+    requests.length = 0
+    const payloadRequestPromise = page.waitForRequest(request => request.url().includes('/payload-query/_payload.json'))
+    await page.getByTestId('payload-query-next').click()
+    await page.waitForURL(url('/payload-query?page=2'))
+
+    const payloadRequest = await payloadRequestPromise
+    const payloadURL = new URL(payloadRequest.url())
+    expect.soft(payloadURL.searchParams.get('page')).toBe('2')
+    expect(await page.locator('#payload-query').textContent()).toContain('2')
+
+    requests.length = 0
+    await page.getByTestId('payload-query-hash').click()
+    await page.waitForURL(url('/payload-query?page=2#section'))
+    expect(requests.filter(request => request.includes('/payload-query/_payload.json'))).toHaveLength(0)
+
+    await page.close()
+
+    const payload = await $fetch<string>('/payload-query/_payload.json?page=2', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data['payload-query-2']).toEqual({ page: 2 })
+    expect(data.data['payload-query-1']).toBeUndefined()
+  })
+
+  it('does not refetch payloads on query-only navigation for prerendered routes', async () => {
+    const { page, requests } = await renderPage('/random/a')
+
+    requests.length = 0
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/random/a?foo=bar'))
+    await page.waitForURL(url('/random/a?foo=bar'))
+    expect(requests.filter(request => request.includes('_payload.json'))).toHaveLength(0)
+
+    await page.close()
   })
 
   // https://github.com/nuxt/nuxt/issues/34856
@@ -2006,12 +2137,10 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 })
 
 describe.runIf(isDev)('component testing', () => {
-  itFailsIf(isWebpack && isDev)('should work', async () => {
-    // TODO: fix in nuxt/test-utils
+  it('should work', async () => {
     const comp1 = await $fetchComponent('app/components/Counter.vue', { multiplier: 2 })
     expect(comp1).toContain('12 x 2 = 24')
 
-    // TODO: fix in nuxt/test-utils
     const comp2 = await $fetchComponent('app/components/Counter.vue', { multiplier: 4 })
     expect(comp2).toContain('12 x 4 = 48')
   })

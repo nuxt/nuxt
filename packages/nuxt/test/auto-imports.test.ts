@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { findExports } from 'mlly'
+import { parseSync } from 'rolldown/utils'
 import * as VueFunctions from 'vue'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
@@ -19,6 +19,7 @@ describe('imports:transform', () => {
 
   const ctx = createUnimport({
     injectAtEnd: true,
+    parser: 'oxc',
     imports,
   })
 
@@ -43,6 +44,10 @@ describe('imports:transform', () => {
     expect(await transform('let [\ncomputed,\nref\n] = Vue; const a = ref(0); const b = ref(0)')).to.equal(undefined)
   })
 
+  it('should inject when a local variable of the same name is declared in a nested scope', async () => {
+    expect(await transform('const a = ref(0); function foo () { const ref = 1; return ref }')).toMatchInlineSnapshot('"import { ref } from \'vue\';\nconst a = ref(0); function foo () { const ref = 1; return ref }"')
+  })
+
   it('should ignore comments', async () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
     expect(result).toMatchInlineSnapshot(`
@@ -64,9 +69,9 @@ describe('imports:nuxt', () => {
     const entrypointPath = fileURLToPath(new URL('../src/app/composables/index.ts', import.meta.url))
     const entrypointContents = readFileSync(entrypointPath, 'utf8')
 
-    const names = findExports(entrypointContents).flatMap(i => i.names || i.name)
-    for (let name of names) {
-      name = name.replace(/\/\*.*\*\//, '').trim()
+    const { module } = parseSync(entrypointPath, entrypointContents)
+    const names = module.staticExports.flatMap(statement => statement.entries.filter(entry => !entry.isType).map(entry => entry.exportName.name).filter((name): name is string => !!name))
+    for (const name of names) {
       if (excludedNuxtHelpers.includes(name)) {
         continue
       }

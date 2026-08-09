@@ -3,7 +3,7 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
-import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
+import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
@@ -113,6 +113,7 @@ export default withMatrix({
   },
   css: ['~/assets/global.css'],
   vue: {
+    optionsApi: true,
     compilerOptions: {
       isCustomElement: (tag) => {
         return tag === 'custom-component'
@@ -177,6 +178,8 @@ export default withMatrix({
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
+      // Decoded key must still apply to the percent-encoded path generated for the page.
+      '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
       '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },
@@ -186,6 +189,7 @@ export default withMatrix({
       '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
+      '/payload-query': { cache: { swr: true, maxAge: 60 } },
       '/swr': { swr: 60 },
     },
     prerender: {

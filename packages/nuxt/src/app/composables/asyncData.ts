@@ -13,7 +13,9 @@ import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 import { dataDiagnostics } from '../diagnostics/data'
 
-import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { neverHydratedSymbol } from './lazy-hydration'
+
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -114,6 +116,14 @@ interface BaseAsyncDataOptions<
    * @default 'cache-first'
    */
   fetchPolicy?: AsyncDataFetchPolicy
+  /**
+   * Whether to store resolved data in the Nuxt payload (and therefore serialize it into `__NUXT_DATA__` when server-rendered).
+   * When `false`, data fetched on the server is kept out of the payload entirely and the client will refetch
+   * after hydration if a component renders it. Pair with lazy hydration (e.g. `hydrate-never`) to avoid
+   * hydration mismatches and unnecessary client fetches.
+   * @default true
+   */
+  serialize?: boolean
 }
 
 export interface AsyncDataOptions<
@@ -409,6 +419,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       opts.enabled ??= true
       opts.fetchPolicy ??= 'cache-first'
 
+      if (import.meta.server && stripNeverHydratedData && opts.serialize === undefined && getCurrentInstance() && inject(neverHydratedSymbol, false)) {
+        opts.serialize = false
+      }
+
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
         for (const key in factoryOptions) {
@@ -425,7 +439,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         if (values.handler !== currentData._hash?.handler) {
           warnings.push(`different handler`)
         }
-        for (const opt of ['transform', 'pick', 'getCachedData', 'fetchPolicy'] as const) {
+        for (const opt of ['transform', 'pick', 'getCachedData', 'fetchPolicy', 'serialize'] as const) {
           if (values[opt] !== currentData._hash![opt]) {
             warnings.push(`different \`${opt}\` option`)
           }
@@ -830,6 +844,9 @@ function buildAsyncData<
 
   const fetchPolicy = options.fetchPolicy ?? 'cache-first'
   const policyReadsCache = fetchPolicy === 'cache-first' || fetchPolicy === 'cache-and-network' || fetchPolicy === 'cache-only'
+  // `serialize: false` keeps data out of the payload everywhere; `no-cache` keeps it out on the
+  // client only, so the server can still transfer server-rendered data for hydration
+  const writesPayload = options.serialize !== false && (import.meta.server || fetchPolicy !== 'no-cache')
 
   // When prerendering, share payload data automatically between requests
   const baseHandler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?.['~sharedPrerenderCache']
@@ -891,7 +908,7 @@ function buildAsyncData<
             ? options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
             : nuxtApp.payload.data[key] as DataT | undefined
         if (cachedData !== undefined) {
-          if (import.meta.server || fetchPolicy !== 'no-cache') {
+          if (writesPayload) {
             nuxtApp.payload.data[key] = cachedData as DataT
           }
           asyncData.data.value = cachedData as DataT
@@ -975,9 +992,7 @@ function buildAsyncData<
             dataDiagnostics.NUXT_E3006({ fn: options._functionName || 'useAsyncData', sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
           }
 
-          // `no-cache` skips the client-side write-back; the server always writes so the
-          // payload can be transferred for hydration
-          if (import.meta.server || fetchPolicy !== 'no-cache') {
+          if (writesPayload) {
             nuxtApp.payload.data[key] = result
           }
 
@@ -1040,6 +1055,13 @@ function buildAsyncData<
       if (nuxtApp._asyncDataPromises[key]) {
         asyncData._abortController?.abort(new DOMException('AsyncData request cancelled by unmount', 'AbortError'))
         delete nuxtApp._asyncDataPromises[key]
+        // the rejection handler bails out once the promise is detached, so settle the state here
+        if (asyncData.status.value === 'pending') {
+          asyncData.status.value = 'idle'
+        }
+        if (pendingWhenIdle) {
+          asyncData.pending.value = false
+        }
       }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
@@ -1075,6 +1097,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     pick: options.pick ? hashKey(options.pick) : undefined,
     getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
     fetchPolicy: options.fetchPolicy as string | undefined,
+    serialize: String(options.serialize ?? true),
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {

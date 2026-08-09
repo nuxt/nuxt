@@ -111,6 +111,10 @@ To optimize your app, you may want to delay the hydration of some components unt
 
 :read-more{title="Lazy hydration" to="/docs/4.x/directory-structure/app/components#delayed-or-lazy-hydration"}
 
+For content and marketing sites that need little or no client-side interactivity, you can go further and combine prerendering, the `noScripts` route rule, [server components](/docs/4.x/guide/concepts/server-components) and lazy hydration to ship near-zero JavaScript.
+
+:read-more{title="Mostly-static sites" to="/docs/4.x/guide/recipes/mostly-static-sites"}
+
 ### Fetching data
 
 To avoid fetching same data twice (once on the server and once on client) Nuxt provides [`useFetch`](/docs/4.x/api/composables/use-fetch) and [`useAsyncData`](/docs/4.x/api/composables/use-async-data). They ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
@@ -218,7 +222,7 @@ To improve performance, we need to first know how to measure it, starting with m
 
 ### Nuxi Analyze
 
-[This](/docs/4.x/api/commands/analyze) command of `nuxi` allows you to analyze the production bundle of your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
+[This](/docs/4.x/api/commands/analyze) command of `nuxt` allows you to analyze the production bundle of your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
 
 When you see a large block in the visualization, it often signals an opportunity for optimization—whether by splitting it into smaller parts, implementing lazy loading, or replacing it with a more efficient alternative, especially for third-party libraries.
 

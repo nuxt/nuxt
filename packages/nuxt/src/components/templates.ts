@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { genDynamicImport, genDynamicTypeImport, genObjectKey } from 'knitwork'
+import { genDynamicImport, genDynamicTypeImport, genObjectKey, genString } from 'knitwork'
 import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
 import type { ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
@@ -34,6 +34,7 @@ export default defineNuxtPlugin({
 
 export const componentsPluginTemplate: NuxtPluginTemplate = {
   filename: 'components.plugin.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const lazyGlobalComponents = new Set<string>()
     const syncGlobalComponents = new Set<string>()
@@ -71,6 +72,7 @@ export default defineNuxtPlugin({
 
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const componentNames = new Set<string>()
     for (const c of app.components) {
@@ -84,9 +86,10 @@ export const componentNamesTemplate: NuxtTemplate = {
 
 export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
+  dependsOn: [],
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
-      return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)'
+      return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)\nexport const providePageIslandDepth = () => {}'
     }
 
     const components = app.components
@@ -120,6 +123,20 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       'export const pageIslandRoutes = import.meta.client ? Object.create(null) : Object.assign(Object.create(null), {',
       pageIslandRoutes.join(',\n'),
       '})',
+      // Only pull `vue-router` (and its devtools chain) into the server bundle
+      // when the app actually has server page islands to render.
+      serverPages.length
+        ? [
+            'import { computed, provide } from \'vue\'',
+            'import { viewDepthKey } from \'vue-router\'',
+            'export const providePageIslandDepth = import.meta.client ? () => {} : (route, expectedIslandKey) => {',
+            '  provide(viewDepthKey, computed(() => {',
+            '    const depth = route.matched.findIndex(m => m.components?.default?.__nuxt_island === expectedIslandKey)',
+            '    return depth === -1 ? 0 : depth + 1',
+            '  }))',
+            '}',
+          ].join('\n')
+        : 'export const providePageIslandDepth = () => {}',
     ].join('\n')
   },
 }
@@ -203,6 +220,7 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 `
 export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
+  dependsOn: [],
   write: true,
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir, nuxt.options.experimental.typescriptPlugin)
@@ -221,8 +239,24 @@ export const componentNames: string[]
 
 export const componentsTypeTemplate = {
   filename: 'types/components.d.ts' as const,
+  dependsOn: [],
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, join(nuxt.options.buildDir, 'types'), nuxt.options.experimental.typescriptPlugin)
+    const globalComponentNames = new Set<string>()
+    const islandComponentNames = new Set<string>()
+    for (const component of app.components) {
+      if (component.global) {
+        globalComponentNames.add(component.pascalName)
+        globalComponentNames.add(`Lazy${component.pascalName}`)
+      }
+      if (nuxt.options.experimental.componentIslands && (component.island || (component.mode === 'server' && !app.components.some(c => c.pascalName === component.pascalName && c.mode === 'client')))) {
+        islandComponentNames.add(component.pascalName)
+      }
+    }
+    const literals = [
+      globalComponentNames.size ? `    componentName: ${[...globalComponentNames].map(name => genString(name)).join(' | ')}` : '',
+      islandComponentNames.size ? `    islandName: ${[...islandComponentNames].map(name => genString(name)).join(' | ')}` : '',
+    ].filter(Boolean)
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
@@ -235,7 +269,15 @@ ${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(met
 declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
-
+${literals.length
+      ? `
+declare module '#app' {
+  interface NuxtAppLiterals {
+${literals.join('\n')}
+  }
+}
+`
+      : ''}
 export {}
 `
   },
@@ -243,6 +285,7 @@ export {}
 
 export const componentsMetadataTemplate: NuxtTemplate = {
   filename: 'components.json',
+  dependsOn: [],
   write: true,
   getContents: ({ app }) => JSON.stringify(app.components, null, 2),
 }
