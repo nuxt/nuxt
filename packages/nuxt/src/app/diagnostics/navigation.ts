@@ -60,5 +60,9 @@ export const navigationDiagnostics = !import.meta.dev
           fix: 'Script protocols (e.g. `javascript:`) are blocked for security. Use a valid `http:` or `https:` URL.',
           docs: false,
         },
+        NUXT_E2012: {
+          why: (p: { chain: string }) => `Detected an infinite redirect loop in route middleware: ${p.chain}.`,
+          fix: 'Ensure your middleware has an exit condition so it does not redirect on every navigation (e.g. only redirect when `to.path` matches a specific value).',
+        },
       },
     })

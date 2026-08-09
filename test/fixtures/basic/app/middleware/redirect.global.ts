@@ -10,8 +10,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo(to.path.slice('/redirect/'.length - 1))
   }
   if (to.path === '/catchall/redirect-infinite') {
-    // the path will be the same in this new route and vue-router should send a 500 response
+    // the path will be the same in this new route, so middleware will redirect in a
+    // loop and Nuxt should respond with a 500 error
     return navigateTo('/catchall/redirect-infinite?test=true')
+  }
+  if (to.path === '/catchall/redirect-cycle-a') {
+    return navigateTo('/catchall/redirect-cycle-b')
+  }
+  if (to.path === '/catchall/redirect-cycle-b') {
+    return navigateTo('/catchall/redirect-cycle-a')
+  }
+  if (to.path === '/catchall/redirect-chain') {
+    // two consecutive redirects (here and the `/redirect/` rule above), below the loop threshold
+    return navigateTo('/redirect/catchall/not-found')
   }
   if (to.path === '/navigate-to-external') {
     return navigateTo('/', { external: true })

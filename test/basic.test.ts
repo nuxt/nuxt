@@ -310,9 +310,44 @@ describe('pages', () => {
     await serverPage.close()
   })
 
-  it.runIf(isDev)('returns 500 when there is an infinite redirect', async () => {
+  it('returns 500 when there is an infinite redirect', async () => {
     const { status } = await fetch('/catchall/redirect-infinite', { redirect: 'manual' })
     expect(status).toEqual(500)
+  })
+
+  it('returns 500 when middleware redirects in a cycle', async () => {
+    const { status } = await fetch('/catchall/redirect-cycle-a', { redirect: 'manual' })
+    expect(status).toEqual(500)
+  })
+
+  it('allows redirect chains below the loop threshold', async () => {
+    const html = await $fetch<string>('/catchall/redirect-chain')
+    expect(html).toContain('catchall at not-found')
+  })
+
+  it('warns and aborts navigation when middleware redirects in a cycle on client', async () => {
+    const { page, consoleLogs } = await renderPage('/')
+    await page.evaluate(() => {
+      void (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => Promise<unknown> } }).$router.push('/catchall/redirect-cycle-a').catch(() => {})
+    })
+    await vi.waitFor(() => {
+      expect(consoleLogs.some(log => log.text.includes('NUXT_E2012'))).toBe(true)
+    }, { timeout: 10_000 })
+    if (isDev) {
+      const warning = consoleLogs.find(log => log.text.includes('NUXT_E2012'))
+      expect(warning!.text).toContain('/catchall/redirect-cycle-a')
+      expect(warning!.text).toContain('/catchall/redirect-cycle-b')
+    }
+    expect(new URL(page.url()).pathname).toBe('/')
+
+    // the redirect count resets afterwards, so a subsequent chain below the threshold still completes
+    await page.evaluate(() => {
+      void (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => Promise<unknown> } }).$router.push('/catchall/redirect-chain').catch(() => {})
+    })
+    await vi.waitFor(() => {
+      expect(new URL(page.url()).pathname).toBe('/catchall/not-found')
+    }, { timeout: 10_000 })
+    await page.close()
   })
 
   it('render catchall page', async () => {

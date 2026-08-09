@@ -44,6 +44,9 @@ function createCurrentLocation (
   return path + (path.includes('?') ? '' : search) + hash
 }
 
+// Maximum consecutive middleware redirects before considering it an infinite loop (#13565)
+const MAX_MIDDLEWARE_REDIRECTS = 30
+
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
@@ -149,11 +152,24 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     const error = useError()
+
+    // Middleware returning a new location (e.g. via `navigateTo`) starts a new navigation, which
+    // re-runs middleware. A middleware that redirects on every navigation would loop forever —
+    // freezing the tab on the client or hanging the request on the server (#13565). vue-router
+    // only detects redirects to the _same_ location, and only in dev, so we track the chain here.
+    let middlewareRedirects = 0
+    const redirectChain: string[] = []
+    const resetRedirectChain = () => {
+      middlewareRedirects = 0
+      redirectChain.length = 0
+    }
+
     // we only skip redirect handlers for component islands, not page islands
     const isServerPage = import.meta.server && nuxtApp.ssrContext?.islandContext?.name?.startsWith('page_')
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
       router.afterEach(async (to, _from, failure) => {
         delete nuxtApp._processingMiddleware
+        resetRedirectChain()
         if (import.meta.server) {
           delete nuxtApp._middlewareTo
         }
@@ -301,6 +317,29 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               if (isNuxtError(result) && result.fatal) {
                 await nuxtApp.runWithContext(() => showError(result))
                 pushErroredRoute(to)
+              } else if (!(result instanceof Error)) {
+                // the middleware is redirecting to a new location, which re-runs middleware
+                if (middlewareRedirects === 0) {
+                  if (from !== START_LOCATION) {
+                    redirectChain.push(from.fullPath)
+                  }
+                  redirectChain.push(to.fullPath)
+                }
+                middlewareRedirects++
+                try {
+                  redirectChain.push(router.resolve(result).fullPath)
+                } catch {
+                  redirectChain.push(String(result))
+                }
+                if (middlewareRedirects > MAX_MIDDLEWARE_REDIRECTS) {
+                  const chain = redirectChain.length > 12 ? `${redirectChain.slice(0, 12).join(' → ')} → …` : redirectChain.join(' → ')
+                  resetRedirectChain()
+                  navigationDiagnostics.NUXT_E2012({ chain })
+                  if (import.meta.server) {
+                    return createError({ status: 500, statusText: 'Too Many Redirects', message: `Detected an infinite redirect loop in route middleware: ${chain}` })
+                  }
+                  return false
+                }
               }
               return result
             }
@@ -334,6 +373,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     router.onError(async () => {
       delete nuxtApp._processingMiddleware
+      resetRedirectChain()
       if (import.meta.server) {
         delete nuxtApp._middlewareTo
       }
