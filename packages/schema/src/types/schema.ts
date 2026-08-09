@@ -1862,11 +1862,11 @@ export interface ConfigSchema {
     /**
      * Enable build-time type checking.
      *
-     * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
+     * If set to true, this will type check in development and when building. You can restrict this to build-time type checking by setting it to `build`, or to dev-time type checking by setting it to `dev`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
      *
      * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
      */
-    typeCheck: boolean | 'build'
+    typeCheck: boolean | 'build' | 'dev'
 
     /**
      * Extend the generated tsconfig files with shared options.
