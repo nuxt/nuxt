@@ -11,7 +11,7 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { ComponentSlots } from 'vue-component-type-helpers'
-import type { RouteLocation, RouteLocationRaw, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
+import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -676,7 +676,7 @@ function isSameParamValue (a: unknown, b: unknown): boolean {
     : Array.isArray(b) ? isEquivalentArray(b, a) : (a && a.valueOf()) === (b && b.valueOf())
 }
 
-function isSameRouteLocationParams (a: RouteLocation['params'], b: RouteLocation['params']): boolean {
+function isSameRouteLocationParams (a: RouteParamsGeneric, b: RouteParamsGeneric): boolean {
   if (Object.keys(a).length !== Object.keys(b).length) { return false }
   for (const key in a) {
     if (!isSameParamValue(a[key], b[key])) { return false }
@@ -684,7 +684,7 @@ function isSameRouteLocationParams (a: RouteLocation['params'], b: RouteLocation
   return true
 }
 
-function includesParams (outer: RouteLocation['params'], inner: RouteLocation['params']): boolean {
+function includesParams (outer: RouteParamsGeneric, inner: RouteParamsGeneric): boolean {
   for (const key in inner) {
     const innerValue = inner[key]
     const outerValue = outer[key]
@@ -697,7 +697,7 @@ function includesParams (outer: RouteLocation['params'], inner: RouteLocation['p
   return true
 }
 
-function activeRecordIndex (route: RouteLocation, currentRoute: RouteLocation): number {
+function activeRecordIndex (route: RouteLocationGeneric, currentRoute: RouteLocationGeneric): number {
   const { matched } = route
   const { length } = matched
   const routeMatched = matched[length - 1]
