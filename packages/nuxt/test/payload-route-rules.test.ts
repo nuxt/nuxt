@@ -7,7 +7,7 @@ import { loadNuxt } from '../src/index.ts'
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 
 describe('payload route rules', () => {
-  it('generates payload route rules only for routes that can be server-rendered', async () => {
+  it('generates canonical payload route rules for server-rendered routes', async () => {
     const nuxt = await loadNuxt({
       cwd: pagesFixtureDir,
       ready: true,
@@ -16,6 +16,12 @@ describe('payload route rules', () => {
           '/route-rules/isr-spa': { isr: 60, ssr: false },
           '/route-rules/swr-in-spa/**': { ssr: false },
           '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
+          // https://github.com/nuxt/nuxt/issues/34715
+          '/swr-dynamic/:slug/about': { swr: 60 },
+          '/swr-dynamic/:slug/about/_payload.json': { cache: false },
+          '/swr-dynamic/:locale/:slug/about': { swr: 60 },
+          '/swr-optional/:slug?/about': { swr: 60 },
+          '/swr-constrained/:id(\\d+)/about': { swr: 60 },
         },
       },
     })
@@ -32,6 +38,27 @@ describe('payload route rules', () => {
 
     // https://github.com/nuxt/nuxt/issues/34856
     expect(nitro.options.routeRules['/route-rules/swr-in-spa/_payload.json']).toMatchObject({
+      ssr: true,
+      cache: { swr: true },
+    })
+
+    expect(nitro.options.routeRules['/swr-dynamic/:_/about/_payload.json']).toMatchObject({
+      ssr: true,
+      cache: false,
+    })
+    expect(nitro.options.routeRules['/swr-dynamic/:slug/about/_payload.json']).toBeUndefined()
+    expect(nitro.options.routeRules['/swr-dynamic/:_/:_/about/_payload.json']).toMatchObject({
+      ssr: true,
+      cache: { swr: true },
+    })
+
+    expect(nitro.options.routeRules['/swr-optional/:slug?/about']).toMatchObject({ swr: 60 })
+    expect(nitro.options.routeRules['/swr-optional/:_?/about/_payload.json']).toMatchObject({
+      ssr: true,
+      cache: { swr: true },
+    })
+    expect(nitro.options.routeRules['/swr-constrained/:id(\\d+)/about']).toMatchObject({ swr: 60 })
+    expect(nitro.options.routeRules['/swr-constrained/:_(\\d+)/about/_payload.json']).toMatchObject({
       ssr: true,
       cache: { swr: true },
     })

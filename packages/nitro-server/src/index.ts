@@ -508,14 +508,24 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
             if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
-              const payloadKey = (route === '/' ? '' : route) + '/_payload.json'
+              const sourcePayloadKey = (route === '/' ? '' : route) + '/_payload.json'
+              // Work around https://github.com/h3js/rou3/pull/196 in Nitro 2.
+              const payloadKey = sourcePayloadKey
+                .replace(/\/\*\*:[$\w]+/g, '/**:_')
+                .replace(/\/:[$\w]+(?=[?+*(/]|$)/g, '/:_')
               const defaults = { ssr: true } as Record<string, any>
               for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
                 if (key in value) {
                   defaults[key] = value[key as keyof typeof value]
                 }
               }
-              nitro.options.routeRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
+              if (sourcePayloadKey === payloadKey) {
+                nitro.options.routeRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
+              } else {
+                const payloadRule = nitro.options.routeRules[sourcePayloadKey]
+                delete nitro.options.routeRules[sourcePayloadKey]
+                nitro.options.routeRules[payloadKey] = defu(payloadRule, nitro.options.routeRules[payloadKey], defaults)
+              }
             }
           }
         }
