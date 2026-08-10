@@ -73,5 +73,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { installCommand: string }) => `Relative imports need an explicit file extension (\`./foo.ts\`, not \`./foo\`), and TypeScript syntax that emits code (such as \`enum\`) cannot be stripped. Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
       docs: false,
     },
+    NUXT_B5020: {
+      why: '`@nuxt/docs` could not be resolved, so the `AGENTS.md` block for AI agents could not be generated.',
+      fix: 'Ensure dependencies are installed with dev dependencies included, then restart the dev server.',
+      docs: false,
+    },
   },
 })

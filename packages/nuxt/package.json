@@ -85,6 +85,7 @@
     "@dxup/nuxt": "catalog:build",
     "@nuxt/cli": "catalog:build",
     "@nuxt/devtools": "catalog:build",
+    "@nuxt/docs": "workspace:*",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/schema": "workspace:*",

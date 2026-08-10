@@ -279,6 +279,11 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+    agentsDocs: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
     nitroAutoImports: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5

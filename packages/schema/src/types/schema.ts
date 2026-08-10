@@ -1652,6 +1652,15 @@ export interface ConfigSchema {
      * @see https://github.com/KazariEX/dxup
      */
     typescriptPlugin: boolean
+
+    /**
+     * Maintain a version-matched `AGENTS.md` block in dev mode that points AI coding
+     * agents at the bundled `@nuxt/docs` package for the exact installed Nuxt version.
+     *
+     * @default false
+     * @experimental This is an experimental feature and API may change in the future.
+     */
+    agentsDocs: boolean
     /**
      * Whether to add a middleware to handle changes of base URL at runtime (has a performance overhead)
      *
