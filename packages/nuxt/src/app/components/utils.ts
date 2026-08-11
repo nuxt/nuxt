@@ -145,18 +145,16 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
 }
 
 function getFragmentChildren (element: RendererNode | null, blocks: string[] = [], withoutSlots = false) {
-  if (element && element.nodeName) {
-    if (isEndFragment(element)) {
-      return blocks
-    } else if (!isStartFragment(element)) {
-      const clone = element.cloneNode(true) as Element
+  let current = element
+  while (current?.nodeName && !isEndFragment(current)) {
+    if (!isStartFragment(current)) {
+      const clone = current.cloneNode(true) as Element
       if (withoutSlots) {
         clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }
-
-    getFragmentChildren(element.nextSibling, blocks, withoutSlots)
+    current = current.nextSibling
   }
   return blocks
 }
