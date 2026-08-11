@@ -11,7 +11,7 @@ export function isBotUserAgent (userAgent: string): boolean {
   return BOT_RE.test(userAgent)
 }
 
-const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
+const distURL = import.meta.dev ? import.meta.url.replace(/\/app\/.*$/, '/') : ''
 type Trace = { source: string, line?: number, column?: number }
 
 export function getUserTrace (): Trace[] {
