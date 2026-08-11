@@ -23,10 +23,15 @@ describe('shared folder', () => {
     expectTypeOf(config).not.toBeAny()
   })
 
-  it('types inline and schema app config but not app-context `app.config` files', () => {
+  // `AppConfig` is intentionally untyped in shared programs: user `app.config` files are not
+  // importable there (#34140), and the shared declaration must not restate `AppConfig` with a
+  // narrower type — a second declaration of the same interface in the same module is a TS2717
+  // conflict that `skipLibCheck` hides and resolves by load order, silently dropping user-declared
+  // app-config keys (#35996). The framework-default shape remains available as `SharedAppConfig`.
+  it('does not type app-context `app.config` files in shared programs', () => {
     const config = useAppConfig()
-    expectTypeOf(config.fromNuxtConfig).toEqualTypeOf<boolean>()
-    expectTypeOf(config.userConfig).toEqualTypeOf<123 | 456 | undefined>()
+    expectTypeOf(config.fromNuxtConfig).toEqualTypeOf<unknown>()
+    expectTypeOf(config.userConfig).toEqualTypeOf<unknown>()
     expectTypeOf(config.fromLayer).toEqualTypeOf<unknown>()
   })
 })

@@ -7,7 +7,7 @@ import { resolve } from 'pathe'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigTemplate, publicPathTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -51,5 +51,22 @@ describe('publicPathTemplate', () => {
 
     expect(contents).not.toMatch(/runtime-config/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
+  })
+})
+
+describe('app config declarations', () => {
+  it('declares `AppConfig` exactly once per module across the app and shared declaration templates', async () => {
+    const nuxt = makeNuxt({ buildDir: '.nuxt' })
+    const appConfig = await appConfigDeclarationTemplate.getContents!({ nuxt, app: makeApp(['./app.config']), options: {} })
+    const sharedAppConfig = await sharedAppConfigDeclarationTemplate.getContents!({ nuxt, app: makeApp(), options: {} })
+
+    // The full app-config declaration augments `AppConfig` in both `nuxt/schema` and `@nuxt/schema`.
+    expect(appConfig.match(/interface AppConfig/g)).toHaveLength(2)
+
+    // The shared declaration must not restate `AppConfig`: a second declaration of the same
+    // interface in the same module is a TS2717 conflict that `skipLibCheck` hides, so TypeScript
+    // resolves the properties by load order and user-declared app-config keys (e.g. component
+    // variants) silently disappear from `AppConfig`. See https://github.com/nuxt/nuxt/issues/35996.
+    expect(sharedAppConfig.match(/interface AppConfig/g)).toBeNull()
   })
 })
