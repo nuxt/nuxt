@@ -177,15 +177,8 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
 
-    // Isomorphic plugins apply to every environment Nuxt builds, so they only need
-    // scoping once Nitro contributes environments of its own.
-    if (isIsomorphic && !nuxt.options.experimental.nitroViteEnvironment) {
-      config.plugins[method](...plugin)
-      return
-    }
-
-    // Without the environment API `applyToEnvironment` is ignored, so a plugin that
-    // is not isomorphic has to be added to each environment's config separately.
+    // Without the environment API `applyToEnvironment` is ignored, so an isomorphic
+    // plugin can be added as-is and anything else has to be injected per environment.
     if (!config.environments?.ssr || !config.environments.client) {
       if (isIsomorphic) {
         config.plugins[method](...plugin)
@@ -221,9 +214,11 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
 }
 
 /**
- * `addVitePlugin` has always scoped plugins to the app builds. Nitro contributes
- * further environments (`nitro`, and one per service), so a plugin registered here
- * has to opt out of any environment it wasn't registered for.
+ * `addVitePlugin` has always scoped plugins to the app builds. Builders can contribute
+ * further environments (Nitro adds `nitro`, and one per service), so a plugin registered
+ * here has to opt out of any environment it wasn't registered for. The check runs per
+ * environment as Vite resolves them, so environments added after the plugin was
+ * registered are still excluded.
  *
  * The plugin is returned as a top-level plugin rather than nested behind a wrapper
  * so that Vite still applies `apply`, sorts by `enforce`, calls server-level hooks

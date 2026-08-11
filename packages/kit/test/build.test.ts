@@ -1,5 +1,5 @@
 import { createHooks } from 'hookable'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt, ViteConfig as NuxtViteConfig } from 'nuxt/schema'
 import { createServer } from 'vite'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { describe, expect, it, vi } from 'vitest'
@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { addVitePlugin } from '../src/build.ts'
 import { runWithNuxtContext } from '../src/context.ts'
 
-function createMockNuxt (dev: boolean, nitroViteEnvironment = true) {
+function createMockNuxt (dev: boolean) {
   const hooks = createHooks()
   return {
     hooks,
@@ -16,7 +16,6 @@ function createMockNuxt (dev: boolean, nitroViteEnvironment = true) {
     options: {
       dev,
       build: false,
-      experimental: { nitroViteEnvironment },
       vite: { mode: dev ? 'development' : 'production' },
     },
   } as unknown as Nuxt
@@ -134,17 +133,7 @@ describe('addVitePlugin', () => {
   })
 
   describe('without the environment API', () => {
-    it('should add isomorphic plugins directly', async () => {
-      const nuxt = createMockNuxt(true, false)
-      const plugin: VitePlugin = { name: 'a' }
-      const plugins = await addPlugins(nuxt, [plugin])
-
-      expect(plugins).toHaveLength(1)
-      expect(plugins[0]).toBe(plugin)
-      expect(plugins[0]!.applyToEnvironment).toBeUndefined()
-    })
-
-    it('should add isomorphic plugins directly when vite has no environments', async () => {
+    it('should add isomorphic plugins as-is', async () => {
       const nuxt = createMockNuxt(true)
       const config: ViteConfig = { plugins: [] }
       const plugin: VitePlugin = { name: 'a' }
@@ -152,7 +141,8 @@ describe('addVitePlugin', () => {
       runWithNuxtContext(nuxt, () => addVitePlugin([plugin]))
       await nuxt.callHook('vite:extend', { config } as any)
 
-      expect(config.plugins).toEqual([plugin])
+      expect(config.plugins).toHaveLength(1)
+      expect(config.plugins![0]).toBe(plugin)
     })
 
     it('should inject single-environment plugins per environment', async () => {
@@ -164,12 +154,12 @@ describe('addVitePlugin', () => {
       await nuxt.callHook('vite:extend', { config } as any)
       expect(config.plugins).toEqual([])
 
-      const ssrConfig: ViteConfig = { plugins: [] }
-      await nuxt.callHook('vite:extendConfig', ssrConfig, { isServer: true, isClient: false } as any)
+      const ssrConfig: NuxtViteConfig = { plugins: [] }
+      await nuxt.callHook('vite:extendConfig', ssrConfig, { isServer: true, isClient: false })
       expect(ssrConfig.plugins).toEqual([])
 
-      const clientConfig: ViteConfig = { plugins: [] }
-      await nuxt.callHook('vite:extendConfig', clientConfig, { isServer: false, isClient: true } as any)
+      const clientConfig: NuxtViteConfig = { plugins: [] }
+      await nuxt.callHook('vite:extendConfig', clientConfig, { isServer: false, isClient: true })
       expect(clientConfig.plugins).toEqual([clientOnly])
     })
   })
