@@ -1,3 +1,6 @@
+import { defu } from 'defu'
+import { findAllRoutes } from 'rou3'
+import type { RouterContext } from 'rou3'
 import { decodeRoutePath } from './index.ts'
 
 /**
@@ -12,4 +15,17 @@ import { decodeRoutePath } from './index.ts'
 export function normalizeRouteRulePath (path: string, fold: boolean): string {
   const decoded = decodeRoutePath(path)
   return fold ? decoded.toLowerCase() : decoded
+}
+
+/**
+ * Resolve the route rules that apply to `path`, merged most-specific-last.
+ *
+ * The router is expected to have been populated with keys normalised by
+ * {@link normalizeRouteRulePath} under the same `fold`, so that lookups match them.
+ *
+ * @internal
+ */
+export function resolveRouteRules<T extends Record<string, any>> (router: RouterContext<T>, path: string, fold: boolean): T {
+  const matches = findAllRoutes(router, undefined, normalizeRouteRulePath(path, fold))
+  return defu({} as T, ...matches.map(match => match.data).reverse())
 }

@@ -6,7 +6,7 @@ import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, 
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
-import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
+import { addRoute, createRouter as createRou3Router } from 'rou3'
 
 import type { Nitro, NitroRouteConfig, NitroRouteRules } from 'nitropack/types'
 import { defu } from 'defu'
@@ -22,7 +22,7 @@ import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
-import { normalizeRouteRulePath } from '../core/utils/route-rules.ts'
+import { normalizeRouteRulePath, resolveRouteRules } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -608,7 +608,7 @@ export default defineNuxtModule({
           addRoute(routeRulesRouter, undefined, normalizeRouteRulePath(route, !caseSensitiveRouteRules), rules)
         }
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
+          const rules = resolveRouteRules(routeRulesRouter, route, !caseSensitiveRouteRules)
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
