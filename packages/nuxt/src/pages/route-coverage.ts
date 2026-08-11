@@ -1,11 +1,10 @@
 import type { Nitro, NitroRouteConfig } from 'nitropack/types'
 import type { NuxtPage } from 'nuxt/schema'
-import { defu } from 'defu'
 import { joinURL } from 'ufo'
-import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
+import { addRoute, createRouter as createRou3Router } from 'rou3'
 import { vueRouterToRou3 } from 'unrouting'
 import { toArray } from '../utils.ts'
-import { normalizeRouteRulePath } from '../core/utils/route-rules.ts'
+import { normalizeRouteRulePath, resolveRouteRules } from '../core/utils/route-rules.ts'
 
 const UNESCAPE_RE = /\\(.)/g
 
@@ -114,8 +113,7 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: Nitro, op
   }
 
   const PROBE_SEGMENT = createProbeSegment(routes)
-  const isPathCovered = (path: string) =>
-    options.isCovered(defu({} as NitroRouteConfig, ...findAllRoutes(matcher, undefined, normalizeRouteRulePath(path, fold)).map(match => match.data).reverse()))
+  const isPathCovered = (path: string) => options.isCovered(resolveRouteRules(matcher, path, fold))
 
   // A dynamic pattern serves a subset of the region below its first dynamic
   // segment (`/products/*` and `/products/*/reviews` both live under
