@@ -14,6 +14,9 @@ export interface NuxtLayouts {
 
 }
 
+/** Return type of page `meta.validate` and route-data `validate` options. */
+export type PageValidateResult = boolean | Partial<NuxtError>
+
 export interface PageMeta {
   [key: string]: unknown
   /**
@@ -24,7 +27,7 @@ export interface PageMeta {
    * status/statusText to respond immediately with an error (other matches
    * will not be checked).
    */
-  validate?: (route: RouteLocationNormalized) => boolean | Partial<NuxtError> | Promise<boolean | Partial<NuxtError>>
+  validate?: (route: RouteLocationNormalized) => PageValidateResult | Promise<PageValidateResult>
   /**
    * Where to redirect if the route is directly matched. The redirection happens
    * before any navigation guard and triggers a new navigation with the new
