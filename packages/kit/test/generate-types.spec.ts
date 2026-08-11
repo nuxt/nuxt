@@ -192,6 +192,33 @@ describe('tsConfig generation', () => {
     expect(legacyTsConfig.exclude).toContain('my-app-exclude')
   })
 
+  it('should propagate paths added in the `prepare:types` hook to the legacy tsconfig', async () => {
+    // the legacy config shares the app config's `compilerOptions`, which is how modules
+    // (nitro, for one) can add a single paths entry and have both contexts resolve it
+    const nuxt = mockNuxtWithOptions({})
+    nuxt.callHook = ((name: string, ctx: unknown) => {
+      if (name === 'prepare:types') {
+        const { tsConfig } = ctx as { tsConfig: { compilerOptions: { paths: Record<string, string[]> } } }
+        tsConfig.compilerOptions.paths['#hooked-alias'] = ['/my-app/.nuxt/types/hooked']
+      }
+      return Promise.resolve()
+    }) as Nuxt['callHook']
+
+    const { tsConfig, legacyTsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.compilerOptions?.paths).toHaveProperty('#hooked-alias')
+    expect(legacyTsConfig.compilerOptions?.paths).toHaveProperty('#hooked-alias')
+  })
+
+  it('should not emit a wildcard for an alias pointing at a single declaration file', async () => {
+    // `#imports` resolves to an extensionless file rather than a directory, so no `#imports/*`
+    // entry is emitted and more specific specifiers under it stay resolvable
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      alias: { '#imports': `${typesFixtureDir}/util.ts` },
+    }))
+    expect(tsConfig.compilerOptions?.paths).toHaveProperty('#imports')
+    expect(tsConfig.compilerOptions?.paths).not.toHaveProperty('#imports/*')
+  })
+
   it('should rewrite `paths` substitutions so TS resolves them to declarations', async () => {
     const fixtureAliases = {
       'nitro/h3': `${typesFixtureDir}/h3.d.mts`,

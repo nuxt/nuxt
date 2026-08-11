@@ -190,6 +190,21 @@ describe('loadNuxt', () => {
     await nuxt.close()
   })
 
+  it('exposes server auto-imports as #imports/server', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+
+    const nitroOptions = (nuxt as any)._nitro?.options
+    const tsConfigPaths = nitroOptions?.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+
+    expect(tsConfigPaths['#imports/server']?.[0]).toMatch(/types[/\\]nitro[/\\]nitro-imports$/)
+    // resolved at runtime through a virtual module rather than an alias, so that importing
+    // it from app code stays a build error instead of bundling server code into the client
+    expect(nitroOptions?.virtual?.['#imports/server']).toBe('export * from "#imports"')
+    expect(nuxt.options.alias).not.toHaveProperty('#imports/server')
+
+    await nuxt.close()
+  })
+
   it('resolves nitro aliases pointing at bare module specifiers', async () => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
