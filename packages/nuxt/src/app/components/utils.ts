@@ -148,12 +148,7 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)
     }
-    if (withoutSlots) {
-      const clone = element.cloneNode(true)
-      clone.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
-      return [clone.outerHTML]
-    }
-    return [element.outerHTML]
+    return [getElementHTML(element, withoutSlots)]
   }
 }
 
@@ -161,15 +156,21 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
   let current = element
   while (current?.nodeName && !isEndFragment(current)) {
     if (!isStartFragment(current)) {
-      const clone = current.cloneNode(true) as Element
-      if (withoutSlots) {
-        clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
-      }
-      blocks.push(clone.outerHTML)
+      blocks.push(getElementHTML(current, withoutSlots))
     }
     current = current.nextSibling
   }
   return blocks
+}
+
+function getElementHTML (element: RendererNode, withoutSlots: boolean) {
+  if (!withoutSlots || !element.querySelector?.('[data-island-slot]')) {
+    return element.outerHTML
+  }
+  const template = element.ownerDocument.createElement('template')
+  template.innerHTML = element.outerHTML
+  template.content.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
+  return template.innerHTML
 }
 
 /**
