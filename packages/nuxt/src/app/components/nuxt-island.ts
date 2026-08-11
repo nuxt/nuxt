@@ -350,11 +350,20 @@ const NuxtIsland = defineComponent({
           if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : (mounted.value || instance.vnode?.el))) {
             for (const slot in slots) {
               if (availableSlots.value.has(slot)) {
+                const slotPayload = payloads.slots?.[slot]
+                const slotScopeId = slotPayload?.scopeId ? `${slotPayload.scopeId}-s` : undefined
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloads.slots?.[slot]?.props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
-                )
+                  { default: () => (slotPayload?.props?.length ? slotPayload.props : [{}]).map((data) => {
+                    const content: VNode & { slotScopeIds?: string[] } = createVNode(Fragment, null, slots[slot]?.(data))
+                    if (slotScopeId) {
+                      // Vue normally adds this in renderSlot, which runs inside the scoped component.
+                      content.slotScopeIds = [slotScopeId]
+                    }
+                    return content
+                  }) },
+                ))
               }
             }
             if (selectiveClient) {
