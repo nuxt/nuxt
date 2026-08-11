@@ -45,7 +45,6 @@
     "mini-css-extract-plugin": "catalog:webpack",
     "ohash": "catalog:build",
     "pathe": "catalog:build",
-    "pify": "catalog:webpack",
     "postcss": "catalog:build",
     "postcss-import": "catalog:build",
     "postcss-import-resolver": "catalog:build",

@@ -116,7 +116,6 @@ catalogs:
     hash-sum: ^2.0.0
     memfs: ^4.67.0
     mini-css-extract-plugin: ^2.10.2
-    pify: ^6.1.0
     pug-plain-loader: ^1.1.0
     raw-loader: ^4.0.2
     time-fix-plugin: ^2.0.7

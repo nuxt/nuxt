@@ -133,7 +133,6 @@
         "mini-css-extract-plugin",
         "ohash",
         "pathe",
-        "pify",
         "postcss",
         "postcss-import",
         "postcss-import-resolver",
