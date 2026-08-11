@@ -543,9 +543,6 @@ catalogs:
     mini-css-extract-plugin:
       specifier: ^2.10.2
       version: 2.10.2
-    pify:
-      specifier: ^6.1.0
-      version: 6.1.0
     pug-plain-loader:
       specifier: ^1.1.0
       version: 1.1.0
@@ -1302,9 +1299,6 @@ importers:
       pathe:
         specifier: catalog:build
         version: 2.0.3
-      pify:
-        specifier: catalog:webpack
-        version: 6.1.0
       postcss:
         specifier: catalog:build
         version: 8.5.25
@@ -1746,9 +1740,6 @@ importers:
       pathe:
         specifier: catalog:build
         version: 2.0.3
-      pify:
-        specifier: catalog:webpack
-        version: 6.1.0
       postcss:
         specifier: catalog:build
         version: 8.5.25
@@ -8100,10 +8091,6 @@ packages:
   pify@2.3.0:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
-
-  pify@6.1.0:
-    resolution: {integrity: sha512-KocF8ve28eFjjuBKKGvzOBGzG8ew2OqOOSxTTZhirkzH7h3BI1vyzqlR0qbfcDBve1Yzo3FVlWUAtCRrbVN8Fw==}
-    engines: {node: '>=14.16'}
 
   pkg-pr-new@0.0.86:
     resolution: {integrity: sha512-BwPsw/e1Be7F0SfpxhNc2VSxX7uHgCy46Ck+2Z/vqCwXoePhUBrX/VbcawpAlZgMvQe2iwGbZIQ6HSj9bmCk8A==}
@@ -16933,8 +16920,6 @@ snapshots:
   picomatch@4.0.5: {}
 
   pify@2.3.0: {}
-
-  pify@6.1.0: {}
 
   pkg-pr-new@0.0.86: {}
 
