@@ -10,6 +10,7 @@ const showIslandSlot = ref(false)
 const routeIslandVisible = ref(false)
 const testCount = ref(0)
 const count = ref(0)
+const serverComponentRef = ref<InstanceType<typeof AsyncServerComponent>>()
 </script>
 
 <template>
@@ -55,11 +56,15 @@ const count = ref(0)
     </button>
 
     <p>async .server component</p>
-    <AsyncServerComponent :count="count">
+    <AsyncServerComponent
+      ref="serverComponentRef"
+      :count="count"
+    >
       <div id="slot-in-server">
         Slot with in .server component
       </div>
     </AsyncServerComponent>
+    <output id="server-component-ref">{{ serverComponentRef?.$el.nodeName }}</output>
     <div>
       Async component (1000ms):
       <div>
