@@ -60,6 +60,10 @@ export { configDiagnostics } from './diagnostics/config.ts'
 export { headDiagnostics } from './diagnostics/head.ts'
 export { bundlerDiagnostics } from './diagnostics/bundler.ts'
 
+// Dependencies
+export { ensureDependencyInstalled } from './dependency.ts'
+export type { EnsureDependencyInstalledOptions } from './dependency.ts'
+
 // Internal Utils
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { directoryToURL, resolveModule, tryResolveModule, importModule, tryImportModule, requireModule, tryRequireModule } from './internal/esm.ts'

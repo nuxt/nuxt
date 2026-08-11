@@ -53,7 +53,6 @@
     "mocked-exports": "catalog:build",
     "nitropack": "^2.13.4",
     "nostics": "catalog:app-runtime",
-    "nypm": "^0.6.9",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
     "rou3": "^0.9.1",
