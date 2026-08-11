@@ -110,7 +110,6 @@
     "mlly": "catalog:build",
     "nanotar": "catalog:build",
     "nostics": "catalog:app-runtime",
-    "nypm": "^0.6.9",
     "object-identity": "catalog:app-runtime",
     "ofetch": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",

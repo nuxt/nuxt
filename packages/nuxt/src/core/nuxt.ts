@@ -7,7 +7,7 @@ import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -956,10 +956,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
-    if (!await import('./features.ts').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
+    if (!await ensureDependencyInstalled('@nuxt/webpack-builder', {
       rootDir: options.rootDir,
       searchPaths: options.modulesDir,
-    }))) {
+    })) {
       configDiagnostics.NUXT_B5002({ rootDir: options.rootDir })
     }
   }

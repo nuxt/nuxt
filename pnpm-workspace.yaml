@@ -155,6 +155,7 @@ catalogs:
     mocked-exports: ^0.1.1
     nanotar: ^0.3.0
     nostics: ^1.2.0
+    nypm: ^0.6.9
     ohash: ^2.0.11
     on-change: ^6.0.2
     pathe: ^2.0.3
