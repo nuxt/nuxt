@@ -1,5 +1,5 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
-import type { ConfigEnv, UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
+import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
@@ -169,39 +169,33 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
   }
 
   let needsEnvInjection = false
+  const isIsomorphic = options.server !== false && options.client !== false
+
   nuxt.hook('vite:extend', async ({ config }) => {
     config.plugins ||= []
 
     const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
-    if (options.server !== false && options.client !== false) {
-      const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-      config.plugins[method](...plugin)
-      return
-    }
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
 
+    // Without the environment API `applyToEnvironment` is ignored, so an isomorphic
+    // plugin can be added as-is and anything else has to be injected per environment.
     if (!config.environments?.ssr || !config.environments.client) {
-      needsEnvInjection = true
+      if (isIsomorphic) {
+        config.plugins[method](...plugin)
+      } else {
+        needsEnvInjection = true
+      }
       return
     }
 
     const environmentName = options.server === false ? 'client' : 'ssr'
-    // Vite only sorts by `enforce` at the top level, and inserts the plugins returned from
-    // `applyToEnvironment` at the wrapper's own position, so plugins declaring different
-    // `enforce` values need a wrapper each to keep their requested ordering.
-    const defaultEnforce = options?.prepend ? 'pre' : 'post'
-    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    for (const [enforce, plugins] of groupByEnforce(plugin, defaultEnforce)) {
-      const pluginName = plugins.map(p => p.name).join('|')
-      config.plugins[method]({
-        name: `${pluginName}:wrapper`,
-        enforce,
-        applyToEnvironment (environment) {
-          if (environment.name === environmentName) {
-            return resolveNestedPlugins(plugins, config, environment, nuxt)
-          }
-        },
-      })
-    }
+    const isAllowed = isIsomorphic
+      ? (name: string) => name === 'client' || name === 'ssr'
+      : (name: string) => name === environmentName
+    // isomorphic plugins are normally just added to plugins, so only force when `prepend` is set
+    const defaultEnforce = isIsomorphic ? (options?.prepend ? 'pre' : undefined) : (options?.prepend ? 'pre' : 'post')
+
+    config.plugins[method](...plugin.map(p => scopeToEnvironments(p, defaultEnforce, isAllowed)))
   })
 
   nuxt.hook('vite:extendConfig', async (config, env) => {
@@ -219,67 +213,30 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
   })
 }
 
-type VitePluginEnvironment = Parameters<NonNullable<VitePlugin['applyToEnvironment']>>[0]
-
-function groupByEnforce (plugins: VitePlugin[], defaultEnforce: VitePlugin['enforce']) {
-  const groups = new Map<VitePlugin['enforce'], VitePlugin[]>()
-  for (const plugin of plugins) {
-    const enforce = plugin.enforce ?? defaultEnforce
-    const group = groups.get(enforce)
-    if (group) {
-      group.push(plugin)
-    } else {
-      groups.set(enforce, [plugin])
-    }
-  }
-  return groups
-}
-
 /**
- * Vite only honours `apply` and `applyToEnvironment` for plugins it finds in the
- * top-level plugin array, so plugins nested behind a wrapper have to be resolved
- * by hand or (for example) dev-only plugins would leak into production builds.
+ * `addVitePlugin` has always scoped plugins to the app builds. Builders can contribute
+ * further environments (Nitro adds `nitro`, and one per service), so a plugin registered
+ * here has to opt out of any environment it wasn't registered for. The check runs per
+ * environment as Vite resolves them, so environments added after the plugin was
+ * registered are still excluded.
+ *
+ * The plugin is returned as a top-level plugin rather than nested behind a wrapper
+ * so that Vite still applies `apply`, sorts by `enforce`, calls server-level hooks
+ * like `configureServer`, and exposes any extra properties the plugin declares
+ * (`api`, and whatever tooling scanning `config.plugins` looks for) as usual.
  */
-async function resolveNestedPlugins (plugins: VitePlugin[], config: ViteConfig, environment: VitePluginEnvironment, nuxt: Nuxt): Promise<VitePlugin[]> {
-  const configEnv = resolveConfigEnv(environment, config, nuxt)
-
-  const resolved: VitePlugin[] = []
-  for (const plugin of plugins) {
-    const { apply, applyToEnvironment } = plugin
-    if (apply && (typeof apply === 'function' ? !apply(config, configEnv) : apply !== configEnv.command)) {
-      continue
-    }
-    const applied = applyToEnvironment ? await applyToEnvironment(environment) : true
-    if (applied === true) {
-      resolved.push(plugin)
-      continue
-    }
-    resolved.push(...await flattenPlugins(applied))
-  }
-  return resolved
-}
-
-/**
- * `getTopLevelConfig` is only available from Vite 6, and kit is used with older
- * versions of nuxt (and therefore vite), so fall back to what we can infer.
- */
-function resolveConfigEnv (environment: VitePluginEnvironment, config: ViteConfig, nuxt: Nuxt): ConfigEnv {
-  const topLevelConfig = (environment as Partial<VitePluginEnvironment>).getTopLevelConfig?.() ?? environment.config as Partial<VitePluginEnvironment['config']> | undefined
+function scopeToEnvironments (plugin: VitePlugin, defaultEnforce: VitePlugin['enforce'], isAllowed: (name: string) => boolean): VitePlugin {
+  const { applyToEnvironment } = plugin
   return {
-    command: topLevelConfig?.command ?? (nuxt.options.dev ? 'serve' : 'build'),
-    mode: topLevelConfig?.mode ?? config.mode ?? nuxt.options.vite?.mode ?? (nuxt.options.dev ? 'development' : 'production'),
+    ...plugin,
+    enforce: plugin.enforce ?? defaultEnforce,
+    applyToEnvironment (environment) {
+      if (!isAllowed(environment.name)) {
+        return false
+      }
+      return applyToEnvironment ? applyToEnvironment(environment) : true
+    },
   }
-}
-
-async function flattenPlugins (option: unknown): Promise<VitePlugin[]> {
-  const resolved = await option
-  if (!resolved) {
-    return []
-  }
-  if (Array.isArray(resolved)) {
-    return (await Promise.all(resolved.map(flattenPlugins))).flat()
-  }
-  return [resolved as VitePlugin]
 }
 
 interface AddBuildPluginFactory {
