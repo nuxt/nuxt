@@ -3,6 +3,7 @@ import type { $Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterM
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { isPlainObject } from '@vue/shared'
+import { hasProtocol } from 'ufo'
 import { hashKey } from '../utils/hash'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
@@ -14,6 +15,20 @@ import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs
 import { $fetch as _$fetch } from '#build/fetch'
 
 const $fetch = _$fetch as $Fetch
+
+// Resolve the request against a safe `.invalid` host and check that the host
+// does not change. This catches cases like `//evil.com`, `/\\evil.com`, and
+// URLs with leading whitespace that browsers may resolve to another host.
+const FETCH_REQUEST_SENTINEL_HOST = 'nuxt-request.invalid'
+
+function isAuthorityRelativeRequest (request: unknown): request is string {
+  if (typeof request !== 'string' || hasProtocol(request)) { return false }
+  try {
+    return new URL(request, `https://${FETCH_REQUEST_SENTINEL_HOST}`).host !== FETCH_REQUEST_SENTINEL_HOST
+  } catch {
+    return false
+  }
+}
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -321,7 +336,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
 
       const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
 
-      if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
+      if (!fetchOptions.baseURL && isAuthorityRelativeRequest(_request.value)) {
         throw dataDiagnostics.NUXT_E3001({ url: _request.value })
       }
 

@@ -12,8 +12,8 @@ export const dataDiagnostics = !import.meta.dev
       reporters,
       codes: {
         NUXT_E3001: {
-          why: (p: { url: string }) => `The \`useFetch\` request URL must not start with "//" (received \`${p.url}\`).`,
-          fix: 'Use an absolute URL with a protocol or a relative path instead.',
+          why: (p: { url: string }) => `The \`useFetch\` request URL must not resolve to a different host (received \`${p.url}\`).`,
+          fix: 'Use an absolute URL with a protocol, or a same-origin relative path instead.',
         },
         NUXT_E3002: {
           why: '`useFetch` failed to hash the request body for the cache key.',

@@ -456,6 +456,61 @@ describe('useFetch', () => {
   })
 })
 
+describe('useFetch authority-relative URL guard', () => {
+  function expectAuthorityGuardError (fn: () => unknown) {
+    let error: unknown
+    try {
+      fn()
+    } catch (err) {
+      error = err
+    }
+    expect(error).toBeInstanceOf(Error)
+    expect((error as { code?: string }).code).toBe('NUXT_E3001')
+  }
+
+  // A browser (or `new URL()`) resolves every one of these to a different
+  // host than the page it came from. That happens because browsers read a
+  // leading backslash the same way they read a slash for schemes like http,
+  // and they strip tabs, newlines, and carriage returns before parsing even
+  // starts.
+  const bypassPayloads = [
+    '//evil.com/x',
+    '/\\evil.com/x',
+    '\\\\evil.com/x',
+    '\\/evil.com/x',
+    '///evil.com/x',
+    '/\t/evil.com/x',
+    '\t//evil.com/x',
+    '\n//evil.com/x',
+    '//user:pw@evil.com/x',
+  ]
+
+  it.each(bypassPayloads)('rejects authority-relative request %j', (url) => {
+    const mockFetch = vi.fn().mockResolvedValue({})
+    expectAuthorityGuardError(() => useFetch(url, { $fetch: mockFetch as unknown as typeof $fetch } as any))
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  const allowedPayloads = [
+    '/api/users',
+    'api/users',
+    '/api?x=1',
+    '/api#frag',
+    'https://api.example.com/v1',
+    'http://api.example.com/v1',
+    '/api//users',
+    '/api/%2F/users',
+    '/api/a:b',
+    '/api/../users',
+  ]
+
+  it.each(allowedPayloads)('allows legitimate request %j', async (url) => {
+    const mockFetch = vi.fn().mockResolvedValue({})
+    await useFetch(url, { $fetch: mockFetch as unknown as typeof $fetch } as any)
+    expect(mockFetch).toHaveBeenCalledOnce()
+  })
+})
+
 describe('createUseFetch', () => {
   let scope: EffectScope
   beforeEach(() => {
