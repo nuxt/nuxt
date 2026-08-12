@@ -362,6 +362,21 @@ describe('clearNuxtState', () => {
     expect(state2.value).toBe('test')
   })
 
+  it('expect ref-initialised state to reset', () => {
+    const key = 'clearNuxtState-ref'
+    const state = useState(key, () => ref('test'))
+    state.value = 'test-2'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('test')
+  })
+
+  it('expect ref-initialised state to clear', () => {
+    const key = 'clearNuxtState-ref-2'
+    const state = useState(key, () => ref('test'))
+    clearNuxtState(key, { reset: false })
+    expect(state.value).toBeUndefined()
+  })
+
   it('expect state in payload for function to reset', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
