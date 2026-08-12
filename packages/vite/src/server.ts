@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath } from '@nuxt/kit'
+import { logger, recoverThrottledChanges, resolvePath } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
@@ -110,8 +110,13 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const ssrServer = await vite.createServer(serverConfig)
   ctx.ssrServer = ssrServer
 
+  const disposeWatchRecovery = recoverThrottledChanges(ssrServer.watcher)
+
   // Close server on exit
-  nuxt.hook('close', () => ssrServer.close())
+  nuxt.hook('close', () => {
+    disposeWatchRecovery()
+    return ssrServer.close()
+  })
 
   await nuxt.callHook('vite:serverCreated', ssrServer, { isClient: false, isServer: true })
 
