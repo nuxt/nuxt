@@ -2,7 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { isSamePath, withoutBase } from 'ufo'
+import { isSamePath, withoutBase, withoutTrailingSlash } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
@@ -201,7 +201,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       && nuxtApp.isHydrating
       && nuxtApp.payload.prerenderedAt
       && nuxtApp.payload.path
-      && initialURL !== nuxtApp.payload.path
+      && withoutTrailingSlash(initialURL, true) !== withoutTrailingSlash(nuxtApp.payload.path, true)
       && isSamePath(router.currentRoute.value.path, nuxtApp.payload.path)
 
     syncCurrentRoute()

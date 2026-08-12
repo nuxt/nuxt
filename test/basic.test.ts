@@ -722,6 +722,29 @@ describe('pages', () => {
     await page.close()
   })
 
+  it.skipIf(isDev)('does not rewrite the URL when hydrating a prerendered page requested with a trailing slash', async () => {
+    const page = await createPage()
+    await page.addInitScript(() => {
+      const paths: string[] = []
+      Object.assign(window, { __historyPaths: paths })
+      const replaceState = history.replaceState.bind(history)
+      history.replaceState = (...args: Parameters<History['replaceState']>) => {
+        const result = replaceState(...args)
+        paths.push(window.location.pathname)
+        return result
+      }
+    })
+
+    await page.goto(url('/prerender/query-reactivity/'))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const paths = await page.evaluate(() => (window as unknown as { __historyPaths: string[] }).__historyPaths)
+    expect(paths).not.toContain('/prerender/query-reactivity')
+    expect(new URL(page.url()).pathname).toBe('/prerender/query-reactivity/')
+
+    await page.close()
+  })
+
   it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
     const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
 
