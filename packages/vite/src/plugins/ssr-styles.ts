@@ -58,6 +58,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   // Same, but keyed by output file name, so shared chunks (which have no
   // `src` in the manifest because they have no facade module) can be resolved.
   const cssSourcesByChunkFile = new Map<string, Set<string>>()
+  // For each CSS source module id (no query), the source paths (relative to
+  // `srcDir`) of the modules importing it in the client graph.
+  const cssImporters = new Map<string, Set<string>>()
   const clientCSSMap: Record<string, Set<string>> = {}
 
   const stripQuery = (id: string) => id.replace(QUERY_RE, '')
@@ -82,6 +85,20 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   // during `transform` because at that point we don't yet know which
   // components will actually have inline styles emitted.
   const inlinedCSSModuleIds = new Set<string>()
+  // For each inlined CSS source module id, the `cssMap` keys of the modules it
+  // was inlined for. A CSS source can only be dropped from a chunk if every
+  // module importing it inlines it; with a function-valued `inlineStyles` one
+  // importer may inline a shared CSS source while another relies on the link.
+  const inlinedCSSConsumers = new Map<string, Set<string>>()
+
+  const isInlinedForEveryImporter = (cssId: string) => {
+    const consumers = inlinedCSSConsumers.get(cssId)
+    if (!consumers) { return false }
+    for (const importer of cssImporters.get(cssId) ?? []) {
+      if (!consumers.has(importer)) { return false }
+    }
+    return true
+  }
 
   // Remove CSS entries for files that will have inlined styles
   nuxt.hook('build:manifest', (manifest) => {
@@ -97,6 +114,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       if (!cssIds) { continue }
       for (const cssId of cssIds) {
         inlinedCSSModuleIds.add(cssId)
+        const consumers = inlinedCSSConsumers.get(cssId) ?? new Set()
+        inlinedCSSConsumers.set(cssId, consumers)
+        consumers.add(id)
       }
     }
 
@@ -138,7 +158,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       if (!cssSources?.size) { continue }
       let allInlined = true
       for (const cssId of cssSources) {
-        if (!inlinedCSSModuleIds.has(cssId)) {
+        if (!inlinedCSSModuleIds.has(cssId) || !isInlinedForEveryImporter(cssId)) {
           allInlined = false
           break
         }
@@ -246,8 +266,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               let cssSources: Set<string> | undefined
               for (const moduleId of chunk.moduleIds) {
                 if (!isCSS(moduleId)) { continue }
+                const cssId = stripQuery(moduleId)
                 cssSources ||= cssSourcesByChunkFile.get(basename(chunk.fileName)) ?? new Set()
-                cssSources.add(stripQuery(moduleId))
+                cssSources.add(cssId)
+                const importers = cssImporters.get(cssId) ?? new Set()
+                cssImporters.set(cssId, importers)
+                for (const importer of this.getModuleInfo(moduleId)?.importers ?? []) {
+                  if (isCSS(importer)) { continue }
+                  importers.add(relativeToSrcDir(stripQuery(importer)))
+                }
               }
               if (cssSources) {
                 cssSourcesByChunkFile.set(basename(chunk.fileName), cssSources)
