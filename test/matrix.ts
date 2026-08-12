@@ -24,6 +24,7 @@ export const projectSuffix = [
   process.env.TEST_ENV,
   process.env.TEST_CONTEXT,
   process.env.TEST_MANIFEST,
+  process.env.TEST_PAYLOAD,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER
