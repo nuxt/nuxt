@@ -134,7 +134,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // prevents duplicate styles when `inlineStyles` is enabled. (#30435)
     for (const chunk of Object.values(manifest)) {
       if (!chunk.css?.length) { continue }
-      const cssSources = (chunk.src && cssSourcesByChunkSrc.get(chunk.src)) || (chunk.file && cssSourcesByChunkFile.get(basename(chunk.file)))
+      const cssSources = (chunk.src ? cssSourcesByChunkSrc.get(chunk.src) : undefined) ?? (chunk.file ? cssSourcesByChunkFile.get(basename(chunk.file)) : undefined)
       if (!cssSources?.size) { continue }
       let allInlined = true
       for (const cssId of cssSources) {
