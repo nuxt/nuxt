@@ -244,7 +244,7 @@ describe('runtime server component', () => {
     { name: 'valid', scopeId: 'data-v-deadbeef', expectedScopeId: 'data-v-deadbeef-s' },
     { name: 'invalid', scopeId: 'x onmouseover=alert(1)', expectedScopeId: undefined },
     { name: 'trailing-newline', scopeId: 'data-v-deadbeef\n', expectedScopeId: undefined },
-  ])('validates remote island scope ID $name', async ({ name, scopeId, expectedScopeId }) => {
+  ])('should validate the scope ID of a remote island slot ($name)', async ({ name, scopeId, expectedScopeId }) => {
     stubFetchRaw(() => Promise.resolve(islandResponse({
       id: '123',
       html: '<div data-island-uid><div data-island-uid data-island-slot="default"></div></div>',
@@ -270,8 +270,9 @@ describe('runtime server component', () => {
 
     try {
       const attributes = wrapper.find(`#remote-slot-${name}`).attributes()
-      expect(Object.keys(attributes).find(name => name.endsWith('-s'))).toBe(expectedScopeId)
+      expect(Object.keys(attributes).find(attribute => attribute.endsWith('-s'))).toBe(expectedScopeId)
       expect(wrapper.html()).not.toContain('onmouseover')
+      expect(wrapper.html()).not.toContain('alert(1)')
     } finally {
       wrapper.unmount()
     }

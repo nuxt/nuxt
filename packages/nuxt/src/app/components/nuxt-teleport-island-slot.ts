@@ -45,7 +45,7 @@ const NuxtTeleportIslandSlot = /* @__PURE__ */ defineComponent({
     const componentName = inject(NuxtTeleportIslandSymbol, false)
     islandContext.slots[props.name] = {
       props: (props.props || []) as unknown[],
-      ...(scopeId ? { scopeId } : {}),
+      scopeId: scopeId ?? undefined,
     }
 
     return () => {
