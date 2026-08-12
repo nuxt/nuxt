@@ -55,6 +55,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   // source module ids (no query) vite/rolldown bundled into that chunk's CSS
   // asset. Keyed by the manifest source path (`chunk.src`).
   const cssSourcesByChunkSrc = new Map<string, Set<string>>()
+  // Same, but keyed by output file name, so shared chunks (which have no
+  // `src` in the manifest because they have no facade module) can be resolved.
+  const cssSourcesByChunkFile = new Map<string, Set<string>>()
   const clientCSSMap: Record<string, Set<string>> = {}
 
   const stripQuery = (id: string) => id.replace(QUERY_RE, '')
@@ -130,8 +133,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // that chunk has already been inlined as a `<style>` tag during SSR. This
     // prevents duplicate styles when `inlineStyles` is enabled. (#30435)
     for (const chunk of Object.values(manifest)) {
-      if (!chunk.css?.length || !chunk.src) { continue }
-      const cssSources = cssSourcesByChunkSrc.get(chunk.src)
+      if (!chunk.css?.length) { continue }
+      const cssSources = (chunk.src && cssSourcesByChunkSrc.get(chunk.src)) || (chunk.file && cssSourcesByChunkFile.get(basename(chunk.file)))
       if (!cssSources?.size) { continue }
       let allInlined = true
       for (const cssId of cssSources) {
@@ -236,8 +239,22 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             }
           },
         },
-        generateBundle (outputOptions) {
-          if (environment.name === 'client') { return }
+        generateBundle (outputOptions, bundle) {
+          if (environment.name === 'client') {
+            for (const chunk of Object.values(bundle)) {
+              if (chunk.type !== 'chunk') { continue }
+              let cssSources: Set<string> | undefined
+              for (const moduleId of chunk.moduleIds) {
+                if (!isCSS(moduleId)) { continue }
+                cssSources ||= cssSourcesByChunkFile.get(basename(chunk.fileName)) ?? new Set()
+                cssSources.add(stripQuery(moduleId))
+              }
+              if (cssSources) {
+                cssSourcesByChunkFile.set(basename(chunk.fileName), cssSources)
+              }
+            }
+            return
+          }
 
           const emitted: Record<string, string> = {}
           const usedNames = new Set<string>()

@@ -41,7 +41,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/35255
-  it.fails('drops duplicate stylesheet links for fully inlined CSS in a shared chunk', async () => {
+  it('drops duplicate stylesheet links for fully inlined CSS in a shared chunk', async () => {
     for (const page of ['shared-a', 'shared-b']) {
       const html = await readFile(join(outputDir, 'public', page, 'index.html'), 'utf-8')
       expect(html, page).toContain('--inline-shared-box-token:shared-box')
