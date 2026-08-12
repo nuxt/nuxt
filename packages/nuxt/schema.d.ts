@@ -8,6 +8,7 @@ import type {
   NuxtHooks as _NuxtHooks,
   NuxtOptions as _NuxtOptions,
   NuxtPage as _NuxtPage,
+  SharedAppConfig as _SharedAppConfig,
   ViteOptions as _ViteOptions,
 } from '@nuxt/schema'
 
@@ -25,6 +26,8 @@ declare module 'nuxt/schema' {
   interface AppConfig extends _AppConfig {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface CustomAppConfig extends _CustomAppConfig {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface SharedAppConfig extends _SharedAppConfig {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ModuleDependencies extends _ModuleDependencies {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type

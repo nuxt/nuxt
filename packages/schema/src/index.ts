@@ -2,7 +2,7 @@
 export type { NuxtCompatibility, NuxtCompatibilityIssue, NuxtCompatibilityIssues } from './types/compatibility.ts'
 export type { Component, ComponentMeta, ComponentsDir, ComponentsOptions, ScanDir } from './types/components.ts'
 export type { NuxtCompilerOptions, KeyedFunction, KeyedFunctionFactory, CompilerScanDir } from './types/compiler.ts'
-export type { AppConfig, AppConfigInput, CustomAppConfig, DefineNuxtConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigInput, NuxtOptions, PublicRuntimeConfig, RuntimeConfig, RuntimeValue, SchemaDefinition, UpperSnakeCase, ViteConfig, ViteOptions, ViewTransitionOptions, ViewTransitionPageOptions } from './types/config.ts'
+export type { AppConfig, AppConfigInput, CustomAppConfig, DefineNuxtConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigInput, NuxtOptions, PublicRuntimeConfig, RuntimeConfig, RuntimeValue, SchemaDefinition, SharedAppConfig, UpperSnakeCase, ViteConfig, ViteOptions, ViewTransitionOptions, ViewTransitionPageOptions } from './types/config.ts'
 export type { NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtLayerSourceOptions } from './types/layers.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export type { ImportPresetWithDeprecation } from './types/hooks.ts'
