@@ -870,7 +870,7 @@ export const pageTests: Array<{
       { path: `${pagesDir}/a\\b.vue` },
     ],
     output: [
-      { name: 'a&b', path: `/a${encodeURIComponent('&')}b`, file: `${pagesDir}/a&b.vue`, children: [] },
+      { name: 'a&b', path: '/a&b', file: `${pagesDir}/a&b.vue`, children: [] },
       { name: 'a\\b', path: `/a${encodeURIComponent('\\')}b`, file: `${pagesDir}/a\\b.vue`, children: [] },
     ],
   },
