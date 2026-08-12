@@ -948,9 +948,15 @@ describe('routing utilities: `encodeRoutePath`', () => {
     expect(encodeRoutePath('/café?q=foo#bar')).toBe(`/${encodeURIComponent('café')}?q=foo#bar`)
   })
 
-  it('should encode special characters in path segments', () => {
-    expect(encodeRoutePath('/a&b')).toBe(`/a${encodeURIComponent('&')}b`)
+  it('should leave sub-delimiters literal, as vue-router does', () => {
+    expect(encodeRoutePath('/a&b')).toBe('/a&b')
+    expect(encodeRoutePath('/a+b')).toBe('/a+b')
+    expect(encodeRoutePath('/a[b]')).toBe('/a[b]')
     expect(encodeRoutePath('/normal')).toBe('/normal')
+  })
+
+  it('should preserve encoded slashes', () => {
+    expect(encodeRoutePath('/a%2Fb')).toBe('/a%2Fb')
   })
 })
 
