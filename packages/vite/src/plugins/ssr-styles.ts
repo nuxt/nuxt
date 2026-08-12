@@ -106,7 +106,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
   const isDroppableCSSFile = (file: string) => {
     const sources = cssSourcesByCSSFile.get(basename(file))
-    if (!sources) { return true }
+    if (!sources?.size) { return false }
     for (const cssId of sources) {
       if (!isInlinedForEveryImporter(cssId)) { return false }
     }
@@ -286,7 +286,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               }
               if (cssSources.size) {
                 for (const file of chunk.viteMetadata?.importedCss ?? []) {
-                  cssSourcesByCSSFile.set(basename(file), cssSources)
+                  const cssFile = basename(file)
+                  const sources = cssSourcesByCSSFile.get(cssFile) ?? new Set<string>()
+                  cssSourcesByCSSFile.set(cssFile, sources)
+                  for (const cssId of cssSources) {
+                    sources.add(cssId)
+                  }
                 }
               }
             }

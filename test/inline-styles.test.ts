@@ -56,8 +56,10 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     expect(html).toContain('--inline-shared-css-via-js-token:shared-css-via-js')
 
     const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    expect(cssLinks.length).toBeGreaterThan(0)
+
     const linked = await Promise.all(cssLinks.map(href => readFile(join(outputDir, 'public', href.replace(/^\//, '')), 'utf-8')))
-    expect([html, ...linked].join('\n')).toContain('--inline-shared-with-js-module-token:shared-with-js-module')
+    expect(linked.join('\n')).toContain('--inline-shared-with-js-module-token:shared-with-js-module')
   })
 
   // https://github.com/nuxt/nuxt/issues/31558
