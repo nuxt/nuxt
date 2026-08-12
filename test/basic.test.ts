@@ -689,9 +689,59 @@ describe('pages', () => {
     expect(html).toContain('Extended layout from foo')
   })
 
+  it('renders pages with sub-delimiters in route', async () => {
+    expect(await $fetch<string>('/non-ascii/a&b')).toContain('sub-delimiter page: a&amp;b')
+    expect(await $fetch<string>('/non-ascii/a+b')).toContain('sub-delimiter page: a+b')
+  })
+
+  it('navigates to pages with sub-delimiters in route', async () => {
+    const { page } = await renderPage('/non-ascii/navigate')
+
+    for (const [id, path, content] of [
+      ['#navigate-ampersand', '/non-ascii/a&b', 'sub-delimiter page: a&b'],
+      ['#navigate-plus', '/non-ascii/a+b', 'sub-delimiter page: a+b'],
+    ] as const) {
+      await page.locator(id).click()
+      await page.waitForFunction(p => window.useNuxtApp?.()._route.path === p, path)
+      expect(await page.evaluate(() => window.useNuxtApp?.()._route.matched.length)).toBe(1)
+      expect(await page.evaluate(() => window.location.pathname)).toBe(path)
+      expect(await page.innerText('body')).toContain(content)
+      await page.goBack()
+      await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/non-ascii/navigate')
+    }
+
+    await page.close()
+  })
+
   it.skipIf(isDev)('prerenders pages with special characters', async () => {
     const html = await $fetch('/prerender/ç')
     expect(html).toContain('should be prerendered: true')
+  })
+
+  it.skipIf(isDev)('prerenders pages with sub-delimiters in route', async () => {
+    const html = await $fetch('/prerender/c++')
+    expect(html).toContain('should be prerendered: true')
+  })
+
+  it.skipIf(isDev)('does not rewrite the URL when hydrating a prerendered page with sub-delimiters', async () => {
+    const page = await createPage()
+    await page.addInitScript(() => {
+      const w = window as unknown as { __rewrites: string[] }
+      w.__rewrites = []
+      const replaceState = history.replaceState.bind(history)
+      history.replaceState = (data, unused, url) => {
+        w.__rewrites.push(new URL(url!.toString(), location.href).pathname)
+        return replaceState(data, unused, url)
+      }
+    })
+    await page.goto(url('/prerender/c++'))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    expect(await page.evaluate(() => (window as unknown as { __rewrites: string[] }).__rewrites.filter(p => p !== '/prerender/c++'))).toEqual([])
+    expect(await page.evaluate(() => window.useNuxtApp!().payload.path)).toBe('/prerender/c++')
+    expect(await page.evaluate(() => window.useNuxtApp!()._route.matched.length)).toBe(1)
+
+    await page.close()
   })
 
   // https://github.com/nuxt/nuxt/issues/33871
