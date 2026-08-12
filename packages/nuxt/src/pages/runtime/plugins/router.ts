@@ -2,7 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { isSamePath, withoutBase, withoutTrailingSlash } from 'ufo'
+import { isSamePath, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
@@ -20,6 +20,9 @@ import _routeRulesMatcher from '#build/route-rules.mjs'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
+
+// matches a trailing slash on the path only, leaving query and hash significant
+const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -201,7 +204,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       && nuxtApp.isHydrating
       && nuxtApp.payload.prerenderedAt
       && nuxtApp.payload.path
-      && withoutTrailingSlash(initialURL, true) !== withoutTrailingSlash(nuxtApp.payload.path, true)
+      && initialURL.replace(PATH_TRAILING_SLASH_RE, '') !== nuxtApp.payload.path.replace(PATH_TRAILING_SLASH_RE, '')
       && isSamePath(router.currentRoute.value.path, nuxtApp.payload.path)
 
     syncCurrentRoute()

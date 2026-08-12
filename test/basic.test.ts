@@ -722,7 +722,10 @@ describe('pages', () => {
     await page.close()
   })
 
-  it.skipIf(isDev)('does not rewrite the URL when hydrating a prerendered page requested with a trailing slash', async () => {
+  it.skipIf(isDev).each([
+    ['/prerender/query-reactivity'],
+    ['/prerender/%C3%A7'],
+  ])('does not rewrite the URL when hydrating prerendered %s requested with a trailing slash', async (path) => {
     const page = await createPage()
     await page.addInitScript(() => {
       const paths: string[] = []
@@ -735,12 +738,12 @@ describe('pages', () => {
       }
     })
 
-    await page.goto(url('/prerender/query-reactivity/'))
+    await page.goto(url(path + '/'))
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
 
     const paths = await page.evaluate(() => (window as unknown as { __historyPaths: string[] }).__historyPaths)
-    expect(paths).not.toContain('/prerender/query-reactivity')
-    expect(new URL(page.url()).pathname).toBe('/prerender/query-reactivity/')
+    expect(paths).not.toContain(path)
+    expect(new URL(page.url()).pathname).toBe(path + '/')
 
     await page.close()
   })
