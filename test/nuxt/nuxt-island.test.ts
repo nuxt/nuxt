@@ -239,6 +239,43 @@ describe('runtime server component', () => {
 
     expect(wrapper.find('*').attributes()).toHaveProperty('data-v-654e2b21')
   })
+
+  it.each([
+    { name: 'valid', scopeId: 'data-v-deadbeef', expectedScopeId: 'data-v-deadbeef-s' },
+    { name: 'invalid', scopeId: 'x onmouseover=alert(1)', expectedScopeId: undefined },
+    { name: 'trailing-newline', scopeId: 'data-v-deadbeef\n', expectedScopeId: undefined },
+  ])('validates remote island scope ID $name', async ({ name, scopeId, expectedScopeId }) => {
+    stubFetchRaw(() => Promise.resolve(islandResponse({
+      id: '123',
+      html: '<div data-island-uid><div data-island-uid data-island-slot="default"></div></div>',
+      state: {},
+      head: { link: [], style: [] },
+      slots: {
+        default: {
+          props: [],
+          scopeId,
+        },
+      },
+    })))
+
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: `RemoteSlot${name}`,
+      },
+      slots: {
+        default: () => h('span', { id: `remote-slot-${name}` }, 'slot'),
+      },
+      attachTo: 'body',
+    })
+
+    try {
+      const attributes = wrapper.find(`#remote-slot-${name}`).attributes()
+      expect(Object.keys(attributes).find(name => name.endsWith('-s'))).toBe(expectedScopeId)
+      expect(wrapper.html()).not.toContain('onmouseover')
+    } finally {
+      wrapper.unmount()
+    }
+  })
 })
 
 describe('client components', () => {

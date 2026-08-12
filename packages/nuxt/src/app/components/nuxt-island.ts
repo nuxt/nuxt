@@ -23,6 +23,7 @@ const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
 const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
+const VUE_SCOPE_ID_RE = /^data-v-[\w-]+$/
 
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
@@ -351,7 +352,8 @@ const NuxtIsland = defineComponent({
             for (const slot in slots) {
               if (availableSlots.value.has(slot)) {
                 const slotPayload = payloads.slots?.[slot]
-                const slotScopeId = slotPayload?.scopeId ? `${slotPayload.scopeId}-s` : undefined
+                const scopeId = slotPayload?.scopeId
+                const slotScopeId = scopeId && scopeId.trim() === scopeId && VUE_SCOPE_ID_RE.test(scopeId) ? `${scopeId}-s` : undefined
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
