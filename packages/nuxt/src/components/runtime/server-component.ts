@@ -1,5 +1,5 @@
-import { defineComponent, getCurrentInstance, h, ref } from 'vue'
-import type { DefineSetupFnComponent } from 'vue'
+import { Fragment, defineComponent, getCurrentInstance, h, isVNode, ref } from 'vue'
+import type { DefineSetupFnComponent, RendererNode, VNode } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
 import { useRoute } from '#app/composables/router'
 import { isPrerendered, shouldLoadPayload } from '#app/composables/payload'
@@ -34,6 +34,9 @@ export const createServerComponent = (name: string): ServerComponentType => {
       const islandRef = ref<{ refresh: () => Promise<void> } | null>(null)
 
       expose({
+        get $el () {
+          return vm ? getVNodeRootNode(vm.subTree) : undefined
+        },
         refresh: () => islandRef.value?.refresh(),
       })
 
@@ -98,6 +101,29 @@ export const createIslandPage = (name: string, islandKey?: string): IslandPageTy
     (component as any).__nuxt_prefetch = (nuxtApp: NuxtApp, route: { path: string, fullPath: string }) => prefetchIslandPage(nuxtApp, name, route)
   }
   return component as unknown as IslandPageType
+}
+
+function getVNodeRootNode (vnode: VNode | null): RendererNode | null {
+  if (!vnode) {
+    return null
+  }
+  if (vnode.component) {
+    return getVNodeRootNode(vnode.component.subTree)
+  }
+  if (vnode.type !== Fragment) {
+    return vnode.el
+  }
+  if (Array.isArray(vnode.children)) {
+    for (const child of vnode.children) {
+      if (isVNode(child)) {
+        const node = getVNodeRootNode(child)
+        if (node) {
+          return node
+        }
+      }
+    }
+  }
+  return null
 }
 
 const inflightIslandPrefetches = import.meta.client ? new Set<string>() : undefined
