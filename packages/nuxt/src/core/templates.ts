@@ -78,7 +78,8 @@ export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
   dependsOn: [],
   getContents: (ctx) => {
-    if (!ctx.nuxt.options.test || !ctx.nuxt.options.dev) {
+    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder'
+    if (!ctx.nuxt.options.test || !ctx.nuxt.options.dev || !needsComponentMap) {
       return genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
     }
 
@@ -90,8 +91,6 @@ export const testComponentWrapperTemplate: NuxtTemplate = {
     }
     return [
       genImport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), 'testComponentWrapper'),
-      // bundlers that cannot resolve a fully dynamic import (webpack, rspack) need a static map of
-      // the files that may be requested
       `const componentLoaders = {`,
       ...[...paths].map(path => `  ${JSON.stringify(path)}: () => ${genDynamicImport(path, { wrapper: false })},`),
       `}`,
