@@ -11,29 +11,6 @@ import type { NuxtIslandResponse } from '#app/types'
 import { $fetch } from '#build/fetch'
 import { payloadExtraction } from '#build/nuxt.config.mjs'
 
-function getVNodeRootNode (vnode: VNode | null): RendererNode | null {
-  if (!vnode) {
-    return null
-  }
-  if (vnode.component) {
-    return getVNodeRootNode(vnode.component.subTree)
-  }
-  if (vnode.type !== Fragment) {
-    return vnode.el
-  }
-  if (Array.isArray(vnode.children)) {
-    for (const child of vnode.children) {
-      if (isVNode(child)) {
-        const node = getVNodeRootNode(child)
-        if (node) {
-          return node
-        }
-      }
-    }
-  }
-  return null
-}
-
 interface ServerComponentProps {
   lazy?: boolean
 }
@@ -124,6 +101,29 @@ export const createIslandPage = (name: string, islandKey?: string): IslandPageTy
     (component as any).__nuxt_prefetch = (nuxtApp: NuxtApp, route: { path: string, fullPath: string }) => prefetchIslandPage(nuxtApp, name, route)
   }
   return component as unknown as IslandPageType
+}
+
+function getVNodeRootNode (vnode: VNode | null): RendererNode | null {
+  if (!vnode) {
+    return null
+  }
+  if (vnode.component) {
+    return getVNodeRootNode(vnode.component.subTree)
+  }
+  if (vnode.type !== Fragment) {
+    return vnode.el
+  }
+  if (Array.isArray(vnode.children)) {
+    for (const child of vnode.children) {
+      if (isVNode(child)) {
+        const node = getVNodeRootNode(child)
+        if (node) {
+          return node
+        }
+      }
+    }
+  }
+  return null
 }
 
 const inflightIslandPrefetches = import.meta.client ? new Set<string>() : undefined
