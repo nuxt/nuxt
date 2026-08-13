@@ -493,14 +493,6 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const aliases: Record<string, string> = nuxt.options.alias
 
-  // TODO: remove support for baseUrl in nuxt v5
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const basePath = tsConfig.compilerOptions!.baseUrl
-    // TODO: remove support for baseUrl in nuxt v5
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
-    : nuxt.options.buildDir
-
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
@@ -512,7 +504,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    let absolutePath = resolve(basePath, aliases[alias]!)
+    let absolutePath = resolve(nuxt.options.buildDir, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
       const resolvedModule = resolveModulePath(aliases[alias]!, {
@@ -578,6 +570,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     .filter(root => !rootDirWithSlash.startsWith(root))
 
   async function resolveConfig (tsConfig: TSConfig) {
+    Reflect.deleteProperty(tsConfig.compilerOptions!, 'baseUrl')
     for (const alias in tsConfig.compilerOptions!.paths) {
       const paths = tsConfig.compilerOptions!.paths[alias]
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {

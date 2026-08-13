@@ -52,6 +52,24 @@ describe('tsConfig generation', () => {
     `)
   })
 
+  it('should ignore baseUrl when resolving aliases', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      alias: {
+        '#probe/base-url': './probe-target/',
+      },
+      typescript: {
+        tsConfig: {
+          compilerOptions: {
+            baseUrl: 'legacy-base',
+          },
+        },
+      },
+    }))
+
+    expect(tsConfig.compilerOptions?.paths?.['#probe/base-url']).toEqual(['./probe-target'])
+    expect(Reflect.get(tsConfig.compilerOptions ?? {}, 'baseUrl')).toBeUndefined()
+  })
+
   it('should add exclude for module paths', async () => {
     const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
       modulesDir: ['/my-app/modules/test/node_modules', '/my-app/modules/node_modules', '/my-app/node_modules/@some/module/node_modules'],

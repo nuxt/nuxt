@@ -788,13 +788,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // TODO: extract to shared utility?
   const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
-  // TODO: remove support for baseUrl in nuxt v5
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
   const importPaths = nuxt.options.modulesDir.map(d => pathToFileURL(withTrailingSlash(d)))
   const tsConfig = nitroConfig.typescript!.tsConfig!
   tsConfig.compilerOptions ||= {}
+  Reflect.deleteProperty(tsConfig.compilerOptions, 'baseUrl')
   tsConfig.compilerOptions.paths ||= {}
   for (const _alias in aliases) {
     const alias = _alias as keyof typeof aliases
@@ -805,7 +803,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       continue
     }
 
-    let absolutePath = resolve(basePath, aliases[alias]!)
+    let absolutePath = resolve(nuxt.options.buildDir, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
       const resolvedModule = resolveModulePath(aliases[alias]!, {
