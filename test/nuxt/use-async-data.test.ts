@@ -1879,8 +1879,10 @@ describe('clearNuxtData', () => {
   })
 
   it('should clear the error and reset status for a rejected handler with a no-arg clear', async () => {
+    const nuxtApp = useNuxtApp()
     const { error, status } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('boom')))
 
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
     expect(error.value).toBeTruthy()
     expect(status.value).toBe('error')
 
@@ -1891,8 +1893,10 @@ describe('clearNuxtData', () => {
   })
 
   it('should restore the default for a never-run (`immediate: false`) entry with a no-arg clear', () => {
+    const nuxtApp = useNuxtApp()
     const { data } = useAsyncData(uniqueKey, () => Promise.resolve('later'), { immediate: false, default: () => 'DFLT' })
 
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
     expect(data.value).toBe('DFLT')
     data.value = 'mutated'
 
@@ -1903,9 +1907,12 @@ describe('clearNuxtData', () => {
 
   it('should offer the predicate keys that never reached payload.data', async () => {
     const nuxtApp = useNuxtApp()
+    const payloadKey = `${uniqueKey}-payload`
     await useAsyncData(uniqueKey, () => Promise.resolve('secret'), { serialize: false })
+    await useAsyncData(payloadKey, () => Promise.resolve('public'))
 
     expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+    expect(payloadKey in nuxtApp.payload.data).toBe(true)
 
     const seen: string[] = []
     clearNuxtData((key) => {
@@ -1914,6 +1921,8 @@ describe('clearNuxtData', () => {
     })
 
     expect(seen).toContain(uniqueKey)
+    expect(seen.filter(key => key === payloadKey)).toHaveLength(1)
     expect(nuxtApp._asyncData[uniqueKey]?.data.value).toBeUndefined()
+    expect(nuxtApp._asyncData[payloadKey]?.data.value).toBeUndefined()
   })
 })
