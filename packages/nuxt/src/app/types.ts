@@ -182,6 +182,7 @@ export interface NuxtSSRContext extends SSRContext {
 
 export interface NuxtIslandSlotResponse {
   props: Array<unknown>
+  scopeId?: string
   fallback?: string
 }
 

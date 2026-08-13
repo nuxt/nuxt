@@ -257,6 +257,34 @@ describe('server components/islands', () => {
     expect(html).toContain('id="server-page-with-nuxtpage"')
     expect(html).toContain('Parent body')
   })
+
+  // https://github.com/nuxt/nuxt/issues/31510
+  it.skipIf(isWebpack)('applies scoped styles to server component slots', async () => {
+    const { page } = await renderPage('/slotted-styles')
+
+    try {
+      const slotted = page.locator('#slotted-style-in-server')
+      expect(await slotted.count()).toBe(1)
+
+      const slottedStyles = await slotted.evaluate((element) => {
+        const scopeIds = element.getAttributeNames().filter(attribute => attribute.startsWith('data-v-'))
+        return {
+          backgroundColor: getComputedStyle(element).backgroundColor,
+          color: getComputedStyle(element).color,
+          hasParentScopeId: scopeIds.some(attribute => !attribute.endsWith('-s')),
+          hasSlottedScopeId: scopeIds.some(attribute => attribute.endsWith('-s')),
+        }
+      })
+      expect(slottedStyles).toEqual({
+        backgroundColor: 'rgb(4, 5, 6)',
+        color: 'rgb(1, 2, 3)',
+        hasParentScopeId: true,
+        hasSlottedScopeId: true,
+      })
+    } finally {
+      await page.close()
+    }
+  })
 })
 
 describe('component islands', () => {
