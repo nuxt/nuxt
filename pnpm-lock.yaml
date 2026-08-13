@@ -1923,12 +1923,6 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
-  test/fixtures/inline-styles-predicate:
-    dependencies:
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-
   test/fixtures/lazy-hydration:
     dependencies:
       nuxt:

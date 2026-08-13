@@ -21,6 +21,7 @@ import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
+import { createInlinedCSSFilter } from '../utils/renderer/inlined-css'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
@@ -354,9 +355,15 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
   }
 
   const link: Link[] = []
+  const inlinedHrefs: string[] = []
+  const isCSSInlined = NUXT_INLINE_STYLES ? await createInlinedCSSFilter(ssrContext.modules) : undefined
   for (const resource of Object.values(styles)) {
     // Do not add links to resources that are inlined (vite v5+)
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
+      continue
+    }
+    if (isCSSInlined?.(resource.file)) {
+      inlinedHrefs.push(renderer.rendererContext.buildAssetsURL(resource.file))
       continue
     }
     // Add CSS links in <head> for CSS files
@@ -376,8 +383,12 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
     const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
       ? { exclude: ssrContext['~lazyHydratedModules'] }
       : undefined
-    // exclude hrefs already linked as stylesheets, plus never-hydrated chunks which the client can never fetch
+    // exclude hrefs already linked as stylesheets (or delivered as inline styles),
+    // plus never-hydrated chunks which the client can never fetch
     const excludeHrefs = new Set(link.map(l => l.href))
+    for (const href of inlinedHrefs) {
+      excludeHrefs.add(href)
+    }
     for (const id of ssrContext['~neverHydratedModules'] ?? []) {
       const file = renderer.rendererContext.manifest?.[id]?.file
       if (file) {

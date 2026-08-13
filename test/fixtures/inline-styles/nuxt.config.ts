@@ -10,6 +10,9 @@ import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 // the SSR inlined `<style>` tags must match those in the server-rendered markup.
 // Regression for https://github.com/nuxt/nuxt/issues/29232: custom style attributes
 // like `layout="xs"` should be transformed by Vite plugins for SSR inline styles.
+// The `inlineStyles` predicate matches the default (inline styles for `.vue`
+// files) but opts one page out, so a shared CSS source is inlined for one
+// importer while the other still relies on its stylesheet link.
 const layoutStylePlugin = () => {
   return {
     name: 'layout-style-plugin',
@@ -25,6 +28,9 @@ const layoutStylePlugin = () => {
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   sourcemap: false,
+  features: {
+    inlineStyles: (id?: string) => !!id && id.includes('.vue') && !id.includes('predicate-not-inlined'),
+  },
   nitro: {
     output: {
       dir: `.output-${projectSuffix}`,
