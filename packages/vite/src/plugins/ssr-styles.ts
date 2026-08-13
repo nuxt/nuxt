@@ -51,10 +51,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const envApi = nuxt.options.experimental.nitroViteEnvironment
 
   const chunksWithInlinedCSS = new Set<string>()
-  // For each output chunk that originates from a source file, the set of CSS
-  // source module ids (no query) vite/rolldown bundled into that chunk's CSS
-  // asset. Keyed by the manifest source path (`chunk.src`).
-  const cssSourcesByChunkSrc = new Map<string, Set<string>>()
+  // Client module graph (ids and importers with any query stripped), used to
+  // check which components a CSS source can be reached from.
+  const clientImporters = new Map<string, Set<string>>()
+  // For each emitted CSS asset (base file name), the CSS source module ids
+  // bundled into it.
+  const cssSourcesByCSSFile = new Map<string, Set<string>>()
   const clientCSSMap: Record<string, Set<string>> = {}
 
   const stripQuery = (id: string) => id.replace(QUERY_RE, '')
@@ -72,13 +74,96 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     return id + (id.includes('?') ? '&' : '?') + 'inline&used'
   }
 
-  // CSS source module ids (with `?...` query stripped) whose styles will be
-  // inlined into the SSR response. Built up in `build:manifest` from the
-  // components whose styles are actually emitted as inline `<style>` tags
-  // (i.e. those with `inBundle && files.length`). We can't populate this set
-  // during `transform` because at that point we don't yet know which
-  // components will actually have inline styles emitted.
-  const inlinedCSSModuleIds = new Set<string>()
+  // For each CSS source module id (with `?...` query stripped) whose styles are
+  // inlined into the SSR response, the `cssMap` keys of the components it is
+  // inlined for. Built up in `build:manifest` from the components whose styles
+  // are actually emitted as inline `<style>` tags (i.e. those with
+  // `inBundle && files.length`). We can't populate this during `transform`
+  // because at that point we don't yet know which components will actually have
+  // inline styles emitted.
+  const inlinedCSSConsumers = new Map<string, Set<string>>()
+
+  // A CSS source is only safe to drop when every path from it up through the
+  // client module graph reaches a component that inlines it. With a
+  // function-valued `inlineStyles` (the default is one) a shared CSS source can
+  // be inlined for one importer while another still relies on the link.
+  const isInlinedForEveryImporter = (cssId: string) => {
+    const consumers = inlinedCSSConsumers.get(cssId)
+    if (!consumers) { return false }
+    const seen = new Set<string>()
+    const queue = [cssId]
+    while (queue.length) {
+      const importer = queue.shift()!
+      if (seen.has(importer)) { continue }
+      seen.add(importer)
+      if (consumers.has(relativeToSrcDir(importer))) { continue }
+      const parents = clientImporters.get(importer)
+      if (!parents?.size) { return false }
+      queue.push(...parents)
+    }
+    return true
+  }
+
+  const isDroppableCSSFile = (file: string) => {
+    const sources = cssSourcesByCSSFile.get(basename(file))
+    if (!sources?.size) { return false }
+    for (const cssId of sources) {
+      if (!isInlinedForEveryImporter(cssId)) { return false }
+    }
+    return true
+  }
+
+  // For each emitted CSS file (base name) whose link is only safe to drop on
+  // requests that actually rendered the components inlining it, the groups of
+  // component ids that inline each of its CSS sources. A request may drop the
+  // link when every group has at least one module in `ssrContext.modules`.
+  const inlinedCSSConditions = new Map<string, string[][]>()
+
+  const serializeInlinedCSSConditions = () => JSON.stringify(Object.fromEntries(inlinedCSSConditions))
+
+  /**
+   * Decide how a droppable CSS file should be handled, recording a render-time
+   * condition when some of its sources are only inlined for components that may
+   * not be server-rendered on a given request (for example a component used
+   * inside `<ClientOnly>` on one route and server-rendered on another).
+   *
+   * Returns `true` when the link can be removed from the manifest outright,
+   * i.e. every CSS source is inlined for an entry module, which is always in
+   * `ssrContext.modules`.
+   */
+  const dropCSSFile = (file: string, entryIds: Set<string>) => {
+    const cssFile = basename(file)
+    const sources = cssSourcesByCSSFile.get(cssFile)!
+    const conditions: string[][] = []
+    for (const cssId of sources) {
+      const consumers = inlinedCSSConsumers.get(cssId)
+      if (!consumers?.size) { continue }
+      let alwaysRendered = false
+      for (const consumer of consumers) {
+        if (entryIds.has(consumer)) {
+          alwaysRendered = true
+          break
+        }
+      }
+      if (!alwaysRendered) {
+        conditions.push(Array.from(consumers))
+      }
+    }
+    if (!conditions.length) { return true }
+    inlinedCSSConditions.set(cssFile, conditions)
+    return false
+  }
+
+  /**
+   * Record a render-time condition for CSS files attributed to a single
+   * component, used for rolldown-generated chunks whose CSS is matched to the
+   * component by filename rather than through the module graph.
+   */
+  const dropComponentCSSFile = (file: string, componentId: string, entryIds: Set<string>) => {
+    if (entryIds.has(componentId)) { return true }
+    inlinedCSSConditions.set(basename(file), [[componentId]])
+    return false
+  }
 
   // Remove CSS entries for files that will have inlined styles
   nuxt.hook('build:manifest', (manifest) => {
@@ -93,7 +178,16 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       chunksWithInlinedCSS.add(id)
       if (!cssIds) { continue }
       for (const cssId of cssIds) {
-        inlinedCSSModuleIds.add(cssId)
+        const consumers = inlinedCSSConsumers.get(cssId) ?? new Set()
+        inlinedCSSConsumers.set(cssId, consumers)
+        consumers.add(id)
+      }
+    }
+
+    for (const id of chunksWithInlinedCSS) {
+      const chunk = manifest[id]
+      if (chunk?.isEntry && chunk.src) {
+        entryIds.add(chunk.src)
       }
     }
 
@@ -101,11 +195,6 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       const chunk = manifest[id]
       if (!chunk) {
         continue
-      }
-      if (chunk.isEntry && chunk.src) {
-        entryIds.add(chunk.src)
-      } else {
-        chunk.css &&= []
       }
       // Rolldown may split a component into a facade chunk (with no CSS) and
       // a shared code chunk (with CSS). Also clear CSS from directly imported
@@ -119,30 +208,25 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             // Only clear if ALL CSS files in the chunk match this component
             const allMatch = imported.css.every((css: string) => css.startsWith(componentBaseName + '.'))
             if (allMatch) {
-              imported.css = []
+              imported.css = imported.css.filter(file => !dropComponentCSSFile(file, id, entryIds))
             }
           }
         }
       }
     }
 
-    // Drop a chunk's bundled CSS link when every CSS source module bundled into
-    // that chunk has already been inlined as a `<style>` tag during SSR. This
-    // prevents duplicate styles when `inlineStyles` is enabled. (#30435)
+    // Drop a CSS link when every CSS source module bundled into that asset has
+    // already been inlined as a `<style>` tag during SSR. This prevents
+    // duplicate styles when `inlineStyles` is enabled. (#30435)
+    //
+    // Whether the styles are inlined is only fully known per request: the
+    // `<style>` tags are emitted for the components in `ssrContext.modules`. A
+    // link is therefore only removed here when every source is inlined for an
+    // entry module; otherwise it is kept and the renderer drops it for the
+    // requests that did inline it. (#36058)
     for (const chunk of Object.values(manifest)) {
-      if (!chunk.css?.length || !chunk.src) { continue }
-      const cssSources = cssSourcesByChunkSrc.get(chunk.src)
-      if (!cssSources?.size) { continue }
-      let allInlined = true
-      for (const cssId of cssSources) {
-        if (!inlinedCSSModuleIds.has(cssId)) {
-          allInlined = false
-          break
-        }
-      }
-      if (allInlined) {
-        chunk.css = []
-      }
+      if (!chunk.css?.length) { continue }
+      chunk.css = chunk.css.filter(file => !(isDroppableCSSFile(file) && dropCSSFile(file, entryIds)))
     }
 
     setBuildOutput('entryIds', () => `export default ${JSON.stringify(Array.from(entryIds))}`, nuxt)
@@ -210,7 +294,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         buildStart () {
           if (!envApi && this.environment.name === 'ssr') {
             const stylesPath = resolve(this.environment.config.build.outDir, 'styles.mjs')
-            setBuildOutput('ssrStyles', () => `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`, nuxt)
+            setBuildOutput('ssrStyles', () => [
+              `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`,
+              `export const inlinedCSS = ${serializeInlinedCSSConditions()}`,
+            ].join('\n'), nuxt)
           }
         },
         resolveId: {
@@ -236,8 +323,40 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             }
           },
         },
-        generateBundle (outputOptions) {
-          if (environment.name === 'client') { return }
+        generateBundle (outputOptions, bundle) {
+          if (environment.name === 'client') {
+            for (const chunk of Object.values(bundle)) {
+              if (chunk.type !== 'chunk') { continue }
+              for (const moduleId of chunk.moduleIds) {
+                const id = stripQuery(moduleId)
+                const importers = clientImporters.get(id) ?? new Set()
+                clientImporters.set(id, importers)
+                for (const importer of this.getModuleInfo(moduleId)?.importers ?? []) {
+                  const importerId = stripQuery(importer)
+                  if (importerId !== id) {
+                    importers.add(importerId)
+                  }
+                }
+              }
+              const cssSources = new Set<string>()
+              for (const moduleId of chunk.moduleIds) {
+                if (isCSS(moduleId)) {
+                  cssSources.add(stripQuery(moduleId))
+                }
+              }
+              if (cssSources.size) {
+                for (const file of chunk.viteMetadata?.importedCss ?? []) {
+                  const cssFile = basename(file)
+                  const sources = cssSourcesByCSSFile.get(cssFile) ?? new Set<string>()
+                  cssSourcesByCSSFile.set(cssFile, sources)
+                  for (const cssId of cssSources) {
+                    sources.add(cssId)
+                  }
+                }
+              }
+            }
+            return
+          }
 
           const emitted: Record<string, string> = {}
           const usedNames = new Set<string>()
@@ -308,7 +427,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           if (envApi) {
             const envEntries = Object.entries(emitted).map(([key, value]) =>
               [key, `() => import('./${basename(this.getFileName(value))}').then(r => r.default || r || [])`]) as [string, string][]
-            setBuildOutput('ssrStyles', () => `export default ${genObjectFromRawEntries(envEntries)}`, nuxt)
+            setBuildOutput('ssrStyles', () => [
+              `export default ${genObjectFromRawEntries(envEntries)}`,
+              `export const inlinedCSS = ${serializeInlinedCSSConditions()}`,
+            ].join('\n'), nuxt)
           }
         },
         renderChunk (_code, chunk) {
@@ -316,24 +438,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           if (isEntry) {
             clientCSSMap[chunk.facadeModuleId!] ||= new Set()
           }
-          let chunkCSSSources: Set<string> | undefined
-          if (environment.name === 'client' && chunk.facadeModuleId) {
-            const chunkSrc = relativeToSrcDir(chunk.facadeModuleId)
-            if (chunkSrc) {
-              chunkCSSSources = cssSourcesByChunkSrc.get(chunkSrc)
-              if (!chunkCSSSources) {
-                chunkCSSSources = new Set()
-                cssSourcesByChunkSrc.set(chunkSrc, chunkCSSSources)
-              }
-            }
-          }
           for (const moduleId of [chunk.facadeModuleId, ...chunk.moduleIds].filter(Boolean) as string[]) {
             // 'Teleport' CSS chunks that made it into the bundle on the client side
             // to be inlined on server rendering
             if (environment.name === 'client') {
               const moduleMap = clientCSSMap[moduleId] ||= new Set()
               if (isCSS(moduleId)) {
-                chunkCSSSources?.add(stripQuery(moduleId))
                 // Vue files can (also) be their own entrypoints as they are tracked separately
                 if (isVue(moduleId)) {
                   moduleMap.add(moduleId)
