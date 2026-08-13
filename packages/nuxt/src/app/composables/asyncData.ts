@@ -746,7 +746,10 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
 /** @since 3.0.0 */
 export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
   const nuxtApp = useNuxtApp()
-  const _allKeys = Object.keys(nuxtApp.payload.data)
+  // `useAsyncData` entries with `serialize: false`, a rejected handler, or that haven't
+  // run yet (`immediate: false`) are registered in `_asyncData` but never make it into
+  // `payload.data`. We union both sources so a no-argument/predicate clear reaches them too.
+  const _allKeys = [...new Set([...Object.keys(nuxtApp.payload.data), ...Object.keys(nuxtApp._asyncData)])]
   const _keys: string[] = !keys
     ? _allKeys
     : typeof keys === 'function'
