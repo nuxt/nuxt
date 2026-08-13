@@ -31,6 +31,8 @@ overrides:
   rolldown: "1.1.5"
   vite: "8.1.5"
   vue: "3.5.40"
+  # TODO: temporary — local build with the manifest template-scan feature; drop once released
+  vue-onigiri: "link:D:/repo/vue-onigiri/packages/core"
 
 allowBuilds:
   '@parcel/watcher': true
@@ -56,6 +58,7 @@ minimumReleaseAgeExclude:
   - unhead@3.2.1
   - impound@1.1.6
   - oxc-walker@1.1.1
+  - vue-onigiri@0.4.1
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)

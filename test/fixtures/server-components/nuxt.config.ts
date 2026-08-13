@@ -3,9 +3,7 @@ import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   experimental: {
-    componentIslands: {
-      selectiveClient: 'deep',
-    },
+    componentIslands: 'vue-onigiri',
     runtimeBaseURL: true,
   },
   nitro: {

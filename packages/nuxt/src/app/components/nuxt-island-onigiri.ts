@@ -5,11 +5,8 @@ import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL } from 'ufo'
 import { renderOnigiri } from 'vue-onigiri/runtime/deserialize'
-import type { ImportFn } from 'vue-onigiri/runtime/utils'
-// @ts-expect-error virtual file
-import { importFn as defaultOnigiriImportFn } from 'virtual:onigiri/manifest'
 import type { NuxtIslandResponse } from '../types'
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
@@ -19,49 +16,10 @@ import { remoteComponentIslands } from '#build/nuxt.config.mjs'
 import { $fetch } from '#build/fetch'
 
 const pKey = '_islandPromises'
+
+
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
-
-/**
- * Translate the chunk URL the onigiri compiler baked into an island
- * AST back to a module the SSR bundle can `import()`.
- *
- * - **Build mode** — the AST carries public chunk URLs (e.g.
- *   `/_nuxt/Counter-XXX.js`). Flip them through the reverse map
- *   populated by `nitro-server/runtime/utils/renderer/build-files.ts`
- *   into the source-path keys the SSR `import.meta.glob` uses.
- * - **Dev mode** — the AST carries Vite dev URLs
- *   (`<baseURL><buildAssetsDir>/components/Counter.vue`). Strip the
- *   prefix to recover the source path.
- * - Bare source paths fall straight through to the manifest's glob.
- *
- * Client-side hydration never needs this — the browser resolves chunk
- * URLs directly via the manifest's dynamic-import fallback — so this is
- * constructed only when `import.meta.server` and threaded into
- * `renderOnigiri` as an option, replacing the older per-app Vue plugin.
- */
-function makeServerOnigiriImportFn (config: ReturnType<typeof useRuntimeConfig>): ImportFn {
-  const buildAssetsDir = (config.app?.buildAssetsDir || '/_nuxt/').replace(/\/$/, '') + '/'
-  const baseURL = (config.app?.baseURL || '/').replace(/\/$/, '')
-  const devPrefix = baseURL + buildAssetsDir
-  return async (src, exportName) => {
-    const reverseMap = (globalThis as { __NUXT_ONIGIRI_REVERSE_MAP__?: Record<string, string> }).__NUXT_ONIGIRI_REVERSE_MAP__
-    const reversed = reverseMap?.[src]
-    if (reversed) {
-      return defaultOnigiriImportFn(reversed, exportName)
-    }
-    if (devPrefix && src.startsWith(devPrefix)) {
-      return defaultOnigiriImportFn('/' + src.slice(devPrefix.length), exportName)
-    }
-    if (src.startsWith('/') && src.endsWith('.vue')) {
-      return defaultOnigiriImportFn(src, exportName)
-    }
-    throw new Error(
-      `[nuxt] vue-onigiri server importFn: cannot resolve "${src}". ` +
-      `Expected a public chunk URL, a Vite dev URL, or a root-relative \`.vue\` source path.`,
-    )
-  }
-}
 
 interface NuxtIslandProps {
   name: string
@@ -116,16 +74,12 @@ const NuxtIsland = defineComponent({
   async setup (props, { expose, emit }) {
     const teleportKey = ref(0)
     const error = ref<unknown>(null)
-    const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
     const serializedProps = computed(() => serializeIslandProps(props.props))
     const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     const ast = ref(nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.ast)
-    // Constructed once per island instance, server-only. Tree-shaken
-    // out of the client bundle via the `import.meta.server` guard.
-    const onigiriImportFn = import.meta.server ? makeServerOnigiriImportFn(config) : undefined
     let activeHead: ActiveHeadEntry<SerializableHead>
 
     const mounted = shallowRef(false)
@@ -248,7 +202,10 @@ const NuxtIsland = defineComponent({
       await fetchComponent()
     }
 
-    return () => renderOnigiri(ast.value, onigiriImportFn ? { importFn: onigiriImportFn } : undefined)
+    // No custom `importFn`: AST chunk references are source paths (and bare package
+    // specifiers), which the `virtual:onigiri/manifest` module resolves in both
+    // environments via its globs and `extraEntries`.
+    return () => renderOnigiri(ast.value)
   },
 }) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits, NuxtIslandSlots>
 

@@ -124,121 +124,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     onigiriComponentImports.clear()
     ingestComponents(components)
   })
-
-  const onigiriChunkMap = new Map<string, string>()
-  const onigiriBuildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
-  const onigiriAssetsBase = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
+  // module on demand, and in a build the manifest loaders point at the emitted chunks.
   const onigiriCompilerOptions = {
     additionalImports: () => onigiriComponentImports,
-    resolveChunkUrl: (sourcePath: string): string | undefined => {
-      if (nuxt.options.dev) {
-        return joinURL(onigiriAssetsBase, sourcePath)
-      }
-      if (!sourcePath.startsWith('/') && !sourcePath.startsWith('.') && !/^[a-z]:[\\/]/i.test(sourcePath)) {
-        return joinURL(onigiriAssetsBase, sourcePath)
-      }
-      if (onigiriChunkMap.size === 0) { return undefined }
-      const key = sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
-      return onigiriChunkMap.get(key) ?? onigiriChunkMap.get(sourcePath)
-    },
-  }
-
-  const onigiriChunkCollectorPlugin: Plugin = {
-    name: 'nuxt:vue-onigiri-chunk-collector',
-    applyToEnvironment: environment => environment.name === 'client',
-    generateBundle (_outputOptions, bundle) {
-      const root = nuxt.options.srcDir.replaceAll('\\', '/').replace(/\/$/, '')
-      for (const file in bundle) {
-        const chunk = bundle[file]
-        if (!chunk || chunk.type !== 'chunk' || !chunk.facadeModuleId) { continue }
-        if (!chunk.facadeModuleId.endsWith('.vue')) { continue }
-        const normalised = chunk.facadeModuleId.replaceAll('\\', '/')
-        const key = normalised.startsWith(root + '/') ? normalised.slice(root.length + 1) : normalised
-        const filePath = chunk.fileName.startsWith(onigiriBuildAssetsDir) ? chunk.fileName : onigiriBuildAssetsDir + chunk.fileName
-        onigiriChunkMap.set(key, '/' + filePath)
-      }
-    },
-  }
-
-  const buildClientImportFnSource = () => {
-    const prefix = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
-    const entries: string[] = []
-    const seen = new Set<string>()
-    for (const [, entry] of onigiriComponentImports) {
-      if (!entry?.path) { continue }
-      if (entry.path.startsWith('/') || entry.path.startsWith('.') || /^[a-z]:[\\/]/i.test(entry.path)) { continue }
-      if (seen.has(entry.path)) { continue }
-      seen.add(entry.path)
-      const url = joinURL(prefix, entry.path)
-      entries.push(`  ${JSON.stringify(url)}: () => import(${JSON.stringify(entry.path)})`)
-    }
-    return `
-const __chunkMap = {
-${entries.join(',\n')}
-}
-export const manifest = {}
-export async function importFn(src, exportName = 'default') {
-  const loader = __chunkMap[src]
-  if (loader) {
-    const mod = await loader()
-    return mod[exportName] ?? mod.default ?? mod
-  }
-  if (src.startsWith('/')) {
-    const mod = await import(/* @vite-ignore */ src)
-    return mod[exportName] ?? mod.default ?? mod
-  }
-  throw new Error('[vue-onigiri] No loader registered for chunk "' + src + '"')
-}
-`
-  }
-
-  const buildServerImportFnSource = () => {
-    const prefix = joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
-    const reverseMap: Record<string, string> = {}
-    for (const [src, url] of onigiriChunkMap) { reverseMap[url] = src }
-    return `
-export const manifest = {}
-const PREFIX = ${JSON.stringify(prefix)}
-const REVERSE = ${JSON.stringify(reverseMap)}
-export async function importFn(src, exportName = 'default') {
-  let spec = REVERSE[src] || (src.startsWith(PREFIX) ? src.slice(PREFIX.length) : src)
-  if (spec.startsWith('/')) spec = spec.slice(1)
-  const mod = await import(/* @vite-ignore */ spec)
-  return mod[exportName] ?? mod.default ?? mod
-}
-`
-  }
-
-  const onigiriClientManifestOverride: Plugin = {
-    name: 'nuxt:onigiri-client-manifest',
-    enforce: 'pre',
-    applyToEnvironment: env => env.name === 'client',
-    resolveId: {
-      order: 'pre',
-      handler (id) {
-        if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
-      },
-    },
-    load (id) {
-      if (id !== '\0virtual:onigiri/manifest') { return }
-      return buildClientImportFnSource()
-    },
-  }
-
-  const onigiriServerManifestOverride: Plugin = {
-    name: 'nuxt:onigiri-server-manifest',
-    enforce: 'pre',
-    applyToEnvironment: env => env.name !== 'client',
-    resolveId: {
-      order: 'pre',
-      handler (id) {
-        if (id === 'virtual:onigiri/manifest') { return '\0virtual:onigiri/manifest' }
-      },
-    },
-    load (id) {
-      if (id !== '\0virtual:onigiri/manifest') { return }
-      return buildServerImportFnSource()
-    },
+  } 
+  const onigiriExtraEntries: Record<string, string> = {}
+  for (const [, entry] of onigiriComponentImports) {
+    const path = entry?.path
+    if (!path || path.startsWith('/') || path.startsWith('.') || /^[a-z]:[\\/]/i.test(path)) { continue }
+    onigiriExtraEntries[path] = path
   }
 
   const onigiriPlugins: Plugin[] = nuxt.options.experimental.componentIslands !== 'vue-onigiri'
@@ -246,10 +140,11 @@ export async function importFn(src, exportName = 'default') {
     : [
         vscPlugin,
         onigiriCompilerPlugin(onigiriCompilerOptions),
-        onigiriManifestPlugin(),
-        onigiriChunkCollectorPlugin,
-        onigiriClientManifestOverride,
-        onigiriServerManifestOverride,
+        onigiriManifestPlugin({
+          clientInclude: 'auto',
+          serverInclude: ['auto', '/pages/**/*.vue'],
+          extraEntries: onigiriExtraEntries,
+        }),
       ]
 
   // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/build.ts#L464-L478
