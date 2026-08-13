@@ -262,10 +262,6 @@ describe('component islands', () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     delete result.id
@@ -284,10 +280,6 @@ describe('component islands', () => {
 
   it('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
@@ -342,10 +334,6 @@ describe('component islands', () => {
 
   it('render .server async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     result.props = {}
@@ -371,13 +359,6 @@ describe('component islands', () => {
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient'))
-      if (isDev) {
-        result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-
-        if (!result.head.link) {
-          delete result.head.link
-        }
-      }
       const { components } = result
       result.components = {}
       result.slots = {}
@@ -449,9 +430,6 @@ describe('component islands', () => {
       expect(result.head.link).toBeUndefined()
       expect(result.head.style).toBeUndefined()
     } else {
-      // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
-      // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
       if (result.head.link?.[0]?.href) {
         result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
       }
