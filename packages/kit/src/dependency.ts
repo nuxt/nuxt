@@ -1,9 +1,11 @@
 import process from 'node:process'
-import { addDependency } from 'nypm'
+import { addDependency, addDependencyCommand, detectPackageManager } from 'nypm'
 import { resolveModulePath } from 'exsolve'
 import { hasTTY, isCI, provider } from 'std-env'
 import { logger } from './logger.ts'
 import { tryUseNuxt } from './context.ts'
+import { buildDiagnostics } from './diagnostics/build.ts'
+import { configDiagnostics } from './diagnostics/config.ts'
 
 const isStackblitz = provider === 'stackblitz'
 
@@ -51,7 +53,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 
   const formattedNames = missing.map(n => `\`${n}\``).join(', ')
-  logger.info(`Missing ${missing.length === 1 ? 'package' : 'packages'}: ${formattedNames}`)
+  configDiagnostics.NUXT_B5010({ names: formattedNames, installCommand: await getAddDependencyCommand(missing, rootDir, { dev: true }) })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
@@ -85,7 +87,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
     logger.success(`Installed ${formattedNames}`)
     return true
   } catch (err) {
-    logger.error(err)
+    buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(missing, rootDir, { dev: true }), cause: err })
     return Array.isArray(names) ? missing : false
   }
 }
@@ -108,4 +110,18 @@ function isResolvable (name: string, searchPaths: string[]): boolean {
     }
   }
   return false
+}
+
+/**
+ * Get the command a user should run to add dependencies to their project, using the
+ * package manager detected from `cwd` (falling back to `npm`).
+ *
+ * @param names - One or more package names to install
+ * @param cwd - Directory to detect the package manager from
+ * @param options - Options for the install command
+ * @param options.dev - Whether the command should install as a dev dependency
+ */
+export async function getAddDependencyCommand (names: string | string[], cwd: string, options: { dev?: boolean } = {}): Promise<string> {
+  const packageManager = await detectPackageManager(cwd, { includeParentDirs: true }).catch(() => undefined)
+  return addDependencyCommand(packageManager?.name || 'npm', names, { ...options, short: true })
 }

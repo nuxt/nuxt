@@ -4,7 +4,6 @@ import { installClientHead } from '../install-client-head'
 import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
 
-// @ts-expect-error virtual file
 import unheadOptions from '#build/unhead-options.mjs'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({

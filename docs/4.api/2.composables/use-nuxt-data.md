@@ -1,6 +1,7 @@
 ---
 title: 'useNuxtData'
 description: 'Access the current cached value of data fetching composables.'
+minimalVersion: "3.1"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -22,7 +23,13 @@ To use `useNuxtData`, ensure that the data-fetching composable (`useFetch`, `use
 
 :video-accordion{title="Watch a video from LearnVue about useNuxtData" videoId="e-_u6swXRWk"}
 
-## Params
+## Type
+
+```ts [Signature]
+export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
+```
+
+## Parameters
 
 - `key`: The unique key that identifies the cached data. This key should match the one used during the original data fetch.
 
@@ -103,10 +110,4 @@ async function addTodo () {
   })
 }
 </script>
-```
-
-## Type
-
-```ts [Signature]
-export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
 ```

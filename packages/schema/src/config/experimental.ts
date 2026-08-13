@@ -1,3 +1,4 @@
+import { schemaDiagnostics } from '../diagnostics.ts'
 import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
@@ -92,6 +93,16 @@ export default defineResolvers({
     templateRouteInjection: true,
     restoreState: false,
     noVueServer: false,
+    /**
+     * Extract the data payloads of prerendered and ISR/SWR pages into `_payload.json` files that are reused during client-side navigation.
+     *
+     * - `'client'`: inline the payload in the HTML for the initial render and extract it to a `_payload.json` file for client-side navigation.
+     * - `true`: extract the payload to a `_payload.json` file for both the initial render and client-side navigation.
+     * - `false`: disable payload extraction entirely; the payload is always inlined in the HTML.
+     *
+     * Defaults to `true`, or `'client'` when `future.compatibilityVersion` is `5` or higher. It is forced to `false` when `ssr` is disabled.
+     * @see [Payload Extraction documentation](https://nuxt.com/docs/getting-started/prerendering#payload-extraction)
+     */
     payloadExtraction: {
       $resolve: async (val, get) => {
         if ((await get('ssr')) === false) { return false }
@@ -121,7 +132,14 @@ export default defineResolvers({
       },
     },
     localLayerAliases: true,
-    typedPages: false,
+    typedPages: {
+      $resolve: async (val, get) => {
+        if (typeof val === 'boolean') {
+          return val
+        }
+        return (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
@@ -150,6 +168,11 @@ export default defineResolvers({
       },
     },
     extraPageMetaExtractionKeys: [],
+    extractSerializablePageMeta: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     sharedPrerenderData: {
       $resolve (val) {
         return typeof val === 'boolean' ? val : true
@@ -226,13 +249,21 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    stripNeverHydratedData: false,
     alwaysRunFetchOnKeyChange: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false
       },
     },
+    // TODO: remove this option, including from the schema types, before Nuxt 5 is released
     parseErrorData: {
-      $resolve: (val) => {
+      $resolve: async (val, get) => {
+        if ((await get('future.compatibilityVersion')) >= 5) {
+          if (val === false) {
+            schemaDiagnostics.NUXT_B5016()
+          }
+          return true
+        }
         return typeof val === 'boolean' ? val : true
       },
     },
@@ -265,6 +296,27 @@ export default defineResolvers({
         }
         const botRegex = obj?.botRegex instanceof RegExp ? obj.botRegex : defaultBotRegex
         return { enabled: true as const, botRegex }
+      },
+    },
+    /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Only effective when using `@nuxt/vite-builder`.
+     */
+    nitroViteEnvironment: {
+      $resolve: async (val, get) => {
+        if (val === false) {
+          return false
+        }
+        const builder = await get('builder')
+        if (builder !== 'vite' && (builder as string) !== '@nuxt/vite-builder') {
+          if (val === true) {
+            console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+          }
+          return false
+        }
+        return true
       },
     },
     asyncCallHook: {

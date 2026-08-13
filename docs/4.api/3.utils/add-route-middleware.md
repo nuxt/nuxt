@@ -14,7 +14,7 @@ Route middleware are navigation guards stored in the [`app/middleware/`](/docs/4
 
 ## Type
 
-```ts
+```ts [Signature]
 function addRouteMiddleware (name: string, middleware: RouteMiddleware, options?: AddRouteMiddlewareOptions): void
 function addRouteMiddleware (middleware: RouteMiddleware): void
 
@@ -45,7 +45,7 @@ The second argument is a function of type `RouteMiddleware`. Same as above, it p
 
 An optional `options` argument lets you set the value of `global` to `true` to indicate whether the router middleware is global or not (set to `false` by default).
 
-## Examples
+## Example
 
 ### Named Route Middleware
 

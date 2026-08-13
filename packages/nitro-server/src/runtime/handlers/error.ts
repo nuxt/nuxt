@@ -1,10 +1,11 @@
 import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
-import type { NuxtPayload } from 'nuxt/app'
+import type { SerializedErrorCause } from '#app/types'
 import type { H3Event } from 'nitro/h3'
 import { serverFetch } from 'nitro'
 
-import { isJsonRequest } from '../utils/error'
+import type { SSRErrorInput } from '../utils/error'
+import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -36,10 +37,13 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     defaultRes.body.stack = defaultRes.body.stack.join('\n')
   }
 
-  const errorObject = (defaultRes.body || {}) as Pick<NonNullable<NuxtPayload['error']>, 'status' | 'statusText' | 'message' | 'stack'> & { url?: string, data: any }
+  const errorObject = (defaultRes.body || {}) as SSRErrorInput
   // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ??= error.data
   errorObject.url = event.req.url
+  // `fatal` is Nuxt-only, so Nitro's error body does not carry it
+  errorObject.fatal = (error as { fatal?: boolean }).fatal ?? false
+  const errorCause = import.meta.dev ? serializeErrorCause(error.cause) : undefined
 
   // Merge defaultRes headers, skipping content-type (would be application/json)
   // and content-security-policy (would disable JS execution in the error page)
@@ -56,7 +60,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // HTML response (via SSR)
   const res = !isRenderingError && await serverFetch(
-    withQuery('/__nuxt_error', errorObject),
+    withQuery('/__nuxt_error', { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
     {
       headers: event.req.headers,
       redirect: 'manual',
@@ -65,6 +69,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       nuxt: {
         '~internal': true,
         '~rendering-error': true,
+        ...(errorCause !== undefined && { '~error-cause': errorCause }),
       },
     },
   ).catch(() => null)
@@ -122,4 +127,21 @@ function mergeHeaders (target: Headers, overrides: Headers | [string, string][] 
     }
   }
   return target
+}
+
+function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {
+  if (depth >= 10 || (cause instanceof Error && seen.has(cause))) { return }
+  if (cause instanceof Error) {
+    seen.add(cause)
+    const nestedCause = serializeErrorCause(cause.cause, depth + 1, seen)
+    return {
+      name: cause.name,
+      message: cause.message,
+      ...(cause.stack && { stack: cause.stack }),
+      ...(nestedCause !== undefined && { cause: nestedCause }),
+    }
+  }
+  if (cause === null || typeof cause === 'string' || typeof cause === 'number' || typeof cause === 'boolean') {
+    return cause
+  }
 }

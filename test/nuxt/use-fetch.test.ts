@@ -64,6 +64,14 @@ describe('useFetch', () => {
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
 
+  it('does not write resolved data to the payload with `serialize: false`', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data } = await useFetch('/api/test', { key: 'serialize-false', serialize: false })
+
+    expect(data.value).toBeDefined()
+    expect('serialize-false' in nuxtApp.payload.data).toBe(false)
+  })
+
   it('should work with reactive keys', async () => {
     registerEndpoint('/api/initial', defineEventHandler(() => ({ url: '/api/initial' })))
     registerEndpoint('/api/updated', defineEventHandler(() => ({ url: '/api/updated' })))
@@ -100,6 +108,37 @@ describe('useFetch', () => {
     await nextTick()
     await flushPromises()
 
+    expect(data.value).toStrictEqual({ count: 0 })
+  })
+
+  it('should not fetch when `enabled` is false', async () => {
+    let count = 0
+    registerEndpoint('/api/enabled-false', defineEventHandler(() => ({ count: count++ })))
+
+    const { data, status } = await useFetch('/api/enabled-false', { enabled: false })
+
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+    expect(count).toBe(0)
+  })
+
+  it('should work with reactive `enabled`', async () => {
+    let count = 0
+    registerEndpoint('/api/enabled-reactive', defineEventHandler(() => ({ count: count++ })))
+
+    const enabled = ref(false)
+    const { data, status, execute } = await useFetch('/api/enabled-reactive', { enabled, immediate: false })
+
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+
+    // execute is blocked while `enabled` is false
+    await execute()
+    expect(data.value).toBe(undefined)
+    expect(count).toBe(0)
+
+    enabled.value = true
+    await execute()
     expect(data.value).toStrictEqual({ count: 0 })
   })
 

@@ -6,13 +6,13 @@ import type { UnheadVueViteOptions } from '@unhead/vue/vite'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
-import type { DotenvOptions, SourceOptions } from 'c12'
+import type { NuxtDotenvOptions, NuxtLayerSourceOptions } from './layers.ts'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
-import type { NuxtLinkOptions } from 'nuxt/app'
+import type { NuxtLinkOptions } from '#app/types'
 import type { FetchOptions } from 'ofetch'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
@@ -109,8 +109,27 @@ export interface ConfigSchema {
 
     /**
      * Include Vue compiler in runtime bundle.
+     *
+     * Enabling this allows components to compile templates at runtime (for example,
+     * string `template` options or templates supplied via data).
+     *
+     * Runtime-compiled templates can execute arbitrary JavaScript. Never pass
+     * user-provided or otherwise untrusted content to a runtime-compiled template;
+     * treat any string that reaches the compiler as executable code.
+     *
+     * @see [Vue security guide](https://vuejs.org/guide/best-practices/security.html)
      */
     runtimeCompiler: boolean
+
+    /**
+     * Include support for the Vue Options API in the client bundle.
+     *
+     * Disabling this compiles out Vue's Options API runtime (via the `__VUE_OPTIONS_API__` feature
+     * flag), shrinking the client bundle for apps that only use the Composition API / `<script setup>`.
+     *
+     * Defaults to `false` when `future.compatibilityVersion` is `5` or higher, otherwise `true`.
+     */
+    optionsApi: boolean
 
     /**
      * Enable reactive destructure for `defineProps`
@@ -551,11 +570,9 @@ export interface ConfigSchema {
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`
    *
-   * @see [`c12` docs on extending config layers](https://github.com/unjs/c12#extending-config-layer-from-remote-sources)
-   *
    * @see [`giget` documentation](https://github.com/unjs/giget)
    */
-  extends: string | [string, SourceOptions?] | (string | [string, SourceOptions?])[]
+  extends: string | [string, NuxtLayerSourceOptions?] | (string | [string, NuxtLayerSourceOptions?])[]
 
   /**
    * Specify a compatibility date for your app.
@@ -700,7 +717,7 @@ export interface ConfigSchema {
   test: boolean
 
   /**
-   * The active Nuxt environment name, used by `c12` to select configuration
+   * The active Nuxt environment name, used to select configuration
    * overrides (e.g. `$env.staging`). Defaults to the explicit `envName` passed to
    * `loadNuxtConfig` (e.g. via `nuxt --envName`), falling back to `'development'`
    * in dev mode and `'production'` otherwise.
@@ -1194,6 +1211,8 @@ export interface ConfigSchema {
     /**
      * Enable the new experimental typed router using vue-router.
      *
+     * This is enabled by default with compatibility version 5.
+     *
      * @default false
      */
     typedPages: boolean
@@ -1278,6 +1297,23 @@ export interface ConfigSchema {
      * @default []
      */
     extraPageMetaExtractionKeys: string[]
+
+    /**
+     * Extract every JSON-serializable `definePageMeta` property into the generated route record,
+     * rather than only the keys Nuxt reads at build time.
+     *
+     * When every property of a page's `definePageMeta` can be resolved statically, the generated
+     * route no longer imports the page's macro module at all, removing one module per page from
+     * the dev module graph. Properties whose values cannot be serialized are unaffected and are
+     * still resolved by the macro module at runtime.
+     *
+     * This has no effect when `experimental.scanPageMeta` is `false`, as the route record does
+     * not override the macro module in that case.
+     *
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    extractSerializablePageMeta: boolean
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same data in different pages.
@@ -1548,6 +1584,14 @@ export interface ConfigSchema {
     granularCachedData: boolean
 
     /**
+     * Apply `serialize: false` by default to `useAsyncData` and `useFetch` calls made within components lazily hydrated with `hydrate-never`, keeping their data out of the `__NUXT_DATA__` payload.
+     *
+     * An explicit `serialize` option always takes precedence. Note that data shared with other components via a common key follows the options of whichever call creates the shared entry first.
+     * @default false
+     */
+    stripNeverHydratedData: boolean
+
+    /**
      * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
      *
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
@@ -1559,8 +1603,14 @@ export interface ConfigSchema {
     /**
      * Whether to parse `error.data` when rendering a server error page.
      *
+     * @deprecated The error sent to the error page is JSON-encoded, so
+     * `error.data` keeps its original shape and is never stringified. With
+     * `compatibilityVersion: 5` this is forced on and setting it is ignored;
+     * before that, `false` stringifies `error.data` again for backwards
+     * compatibility.
      * @default true
      */
+    // TODO: remove this option before Nuxt 5 is released
     parseErrorData: boolean
 
     /**
@@ -1646,6 +1696,15 @@ export interface ConfigSchema {
     }
 
     /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Only effective when using `@nuxt/vite-builder`.
+     * @default true
+     */
+    nitroViteEnvironment: boolean
+
+    /**
      * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.
      *
      * Hookable v6 may return `void` instead of `Promise<void>` when there are no registered
@@ -1705,7 +1764,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | DotenvOptions, envName?: string | false }
+  _loadOptions: { dotenv?: boolean | NuxtDotenvOptions, envName?: string | false }
 
   /**
    *
@@ -1765,6 +1824,8 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
+   * @note `sensitive` defaults to `true` with `future.compatibilityVersion >= 5`.
+   *
    * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */
     options: RouterConfigSerializable
@@ -1808,14 +1869,30 @@ export interface ConfigSchema {
     typeCheck: boolean | 'build'
 
     /**
-     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
+     * Extend the generated tsconfig files with shared options.
+     *
+     * `compilerOptions` set here apply to all generated tsconfigs (`.nuxt/tsconfig.app.json`, `.nuxt/tsconfig.server.json`, `.nuxt/tsconfig.node.json` and `.nuxt/tsconfig.shared.json`), while `include`, `exclude` and `vueCompilerOptions` apply only to `.nuxt/tsconfig.app.json` (and the legacy `.nuxt/tsconfig.json`).
+     *
+     * Two groups of `compilerOptions` are exceptions: DOM- and Vue-specific options (such as `lib`, `jsx` and `jsxImportSource`) apply only to `.nuxt/tsconfig.app.json`, and `types`, `paths` and `noEmit` are managed by Nuxt per context, so they cannot be set globally for the `node`, `shared` and `server` tsconfigs.
+     *
+     * Use `appTsConfig`, `serverTsConfig`, `nodeTsConfig` or `sharedTsConfig` for context-specific overrides; they take precedence over this option.
      */
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option. Options set here take precedence over `tsConfig`.
+     */
+    appTsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
     /**
      * You can extend the generated `.nuxt/tsconfig.node.json` using this option.
      */
     nodeTsConfig: TSConfig
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.server.json` using this option. Options set here take precedence over `tsConfig`.
+     */
+    serverTsConfig: TSConfig
 
     /**
      * You can extend the generated `.nuxt/tsconfig.shared.json` using this option.

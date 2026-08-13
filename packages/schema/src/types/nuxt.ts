@@ -2,7 +2,7 @@ import type { AsyncLocalStorage } from 'node:async_hooks'
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
 import type { NuxtModule } from './module.ts'
-import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks.ts'
+import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, WatchEvent } from './hooks.ts'
 import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
@@ -29,6 +29,21 @@ export interface NuxtPlugin {
 
 type TemplateDefaultOptions = Record<string, any>
 
+/**
+ * A well-known input a template can declare it depends on:
+ *
+ * - `'pages'`: the contents of the files backing `app.pages`
+ * - `'plugins'`: the contents of the files listed in `app.plugins`
+ */
+export type NuxtTemplateDependency = 'pages' | 'plugins'
+
+/** A watched file event that may require regenerating templates. */
+export interface NuxtTemplateChange {
+  event: WatchEvent
+  /** absolute path of the file the event was emitted for */
+  path: string
+}
+
 export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   /** resolved output file path (generated) */
   dst?: string
@@ -43,6 +58,19 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   getContents?: (data: { nuxt: Nuxt, app: NuxtApp, options: Options }) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean
+  /**
+   * The watched inputs the output of this template can depend on, beyond `nuxt.options` and the
+   * resolved structure of the app (which files exist, and where).
+   *
+   * Set this to `[]` if the template never reads the contents of a watched file. In dev mode
+   * Nuxt then skips recompiling it when a file changes without any file being added or removed.
+   * List well-known keys (such as `'pages'` or `'plugins'`) if the template reads those sources,
+   * or pass a function to decide per change.
+   *
+   * A template that declares nothing is regenerated on every change, unless it has a `src`, in
+   * which case it is regenerated only when that source file changes.
+   */
+  dependsOn?: NuxtTemplateDependency[] | ((change: NuxtTemplateChange, ctx: { nuxt: Nuxt, app: NuxtApp, options: Options }) => boolean)
   /**
    * The source path of the template (to try resolving dependencies from).
    * @internal
@@ -86,6 +114,30 @@ export interface NuxtApp {
   pages?: NuxtPage[]
 }
 
+/**
+ * Build artifacts consumed by the Nitro server runtime via `nuxt/*` subpath imports.
+ *
+ * Builders populate this with the `setBuildOutput()` kit helper. Each key is a
+ * (possibly async) function returning the module body as a string.
+ */
+export interface NuxtBuildOutputs {
+  /** Module body re-exporting the SSR app entry. */
+  serverEntry: () => string | Promise<string>
+  /**
+   * Module body for the per-component SSR styles map. Defaults to
+   * `export default {}` when the build produces no inline styles.
+   */
+  ssrStyles: () => string | Promise<string>
+  /** Serialized client manifest for `vue-bundle-renderer`. */
+  clientManifest: () => string | Promise<string>
+  /** Serialized precomputed client dependency data for `vue-bundle-renderer`. */
+  clientPrecomputed: () => string | Promise<string>
+  /** Module body exporting the hashed entry chunk filename for import maps. */
+  entryChunkName: () => string | Promise<string>
+  /** Module body exporting the entry module IDs used for inline style extraction. */
+  entryIds: () => string | Promise<string>
+}
+
 export interface Nuxt {
   // Private fields.
   '__name': string
@@ -109,6 +161,14 @@ export interface Nuxt {
   }
   /** Async local storage for current running Nuxt module instance. */
   '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
+
+  /**
+   * The Node HTTP(S) server the dev server is listening on, captured from the
+   * `listen` hook. Builders use it to attach their HMR websocket to the same
+   * server (and therefore the same port and certificate) as the app.
+   * @internal
+   */
+  '_devServerListener'?: import('node:http').Server | import('node:https').Server
   /**
    * Module options functions collected from moduleDependencies.
    * @internal
@@ -132,4 +192,6 @@ export interface Nuxt {
   'vfs': Record<string, string>
 
   'apps': Record<string, NuxtApp>
+
+  'buildOutputs': NuxtBuildOutputs
 }

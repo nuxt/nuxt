@@ -1,8 +1,9 @@
 import { relative } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { logger } from '@nuxt/kit'
+import { bundlerDiagnostics, logger } from '@nuxt/kit'
 import { colorize } from 'consola/utils'
+import { link } from 'clickable-path'
 
 export function formatIncludeSnippet (deps: string[], cjsDeps?: Set<string>): string {
   if (!deps.length) { return '[]' }
@@ -97,7 +98,7 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         const relativeImporters = new Map<string, string>()
         for (const dep of newDeps) {
           const imp = importerOf.get(dep)
-          if (imp) { relativeImporters.set(dep, './' + relative(rootDir, imp)) }
+          if (imp) { relativeImporters.set(dep, link(imp, { cwd: rootDir, formatter: absolute => './' + relative(rootDir, absolute) })) }
           importerOf.delete(dep)
         }
 
@@ -125,13 +126,11 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         }
       } else if (hasStale) {
         hasShownStaleHint = true
-        const parts: string[] = []
-        parts.push(formatStaleDepsHint([...userStale], [...moduleStale]))
-        parts.push(
-          `Update your \`nuxt.config.ts\`:\n\n` +
-          configBlock(getSnippetDeps()),
-        )
-        logger.warn(parts.join('\n\n'))
+        const deps = [
+          ...[...userStale].map(d => `\`${d}\``),
+          ...[...moduleStale].map(d => `\`${d}\` (from a Nuxt module)`),
+        ].join(', ')
+        bundlerDiagnostics.NUXT_B7002({ deps })
       }
     }, 3000)
   }

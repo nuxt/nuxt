@@ -3,6 +3,8 @@ import { fileURLToPath } from 'node:url'
 import { cp, rm } from 'node:fs/promises'
 import { test as setup } from '@playwright/test'
 
+import { ensureFixturesPrepared } from '../fixture-prepare'
+
 const fixtures = [
   {
     sourceDir: fileURLToPath(new URL('../fixtures/hmr', import.meta.url)),
@@ -15,6 +17,7 @@ const fixtures = [
 ]
 
 setup('create temporary hmr fixture directory', async () => {
+  await ensureFixturesPrepared()
   for (const { sourceDir, fixtureDir } of fixtures) {
     if (existsSync(fixtureDir)) {
       await rm(fixtureDir, { force: true, recursive: true })

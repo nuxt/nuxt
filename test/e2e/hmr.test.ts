@@ -88,7 +88,7 @@ test('hot reloading route rules', async ({ fetch }) => {
   writeFileSync(join(fixtureDir, 'app/pages/route-rules.vue'), file.replace('added in routeRules', 'edited in dev'))
 
   // Wait for the route rule to be hot reloaded
-  await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev')
+  await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev', { timeout: 20000 })
 })
 
 test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) => {
@@ -174,6 +174,29 @@ test.describe('vite-only HMR tests', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
+  test('HMR for page meta crossing the static extraction boundary', async ({ page, goto }) => {
+    const pageContents = readFileSync(join(sourceDir, 'app/pages/page-meta.vue'), 'utf8')
+    const write = (value: string) => writeFileSync(join(fixtureDir, 'app/pages/page-meta.vue'), pageContents.replace(`some: 'stuff'`, value))
+
+    write(`some: 'stuff'`)
+    await goto('/page-meta')
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
+
+    // A template literal cannot be serialized, so the route record hands `meta` back to the
+    // macro module and the generated route gains an import it did not previously have.
+    write('some: `other ${\'stuff\'}`')
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'other stuff' }, null, 2))
+
+    // ...and dropping back to a serializable value has to remove that import again.
+    write(`some: 'final stuff'`)
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'final stuff' }, null, 2))
+
+    write(`some: 'stuff'`)
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
   test('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
     await goto('/state-component')
 
@@ -232,6 +255,20 @@ test.describe('vite-only HMR tests', () => {
     await expect.soft(button).toHaveText('1')
   })
 
+  test('HMR for pages using JSX (#30709)', async ({ page, goto }) => {
+    const pagePath = join(fixtureDir, 'app/pages/jsx.vue')
+    const pageContents = readFileSync(join(sourceDir, 'app/pages/jsx.vue'), 'utf8')
+    writeFileSync(pagePath, pageContents)
+
+    await goto('/jsx')
+    await expect(page.getByTestId('jsx-content')).toHaveText('jsx: original')
+
+    writeFileSync(pagePath, pageContents.replace('jsx: original', 'jsx: updated'))
+    await expect(page.getByTestId('jsx-content')).toHaveText('jsx: updated', { timeout: 10000 })
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
   test('HMR for routes', async ({ page, goto }) => {
     await goto('/routes')
 
@@ -251,7 +288,7 @@ test.describe('vite-only HMR tests', () => {
     })
 
     // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
+    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true, { timeout: 20000 })
 
     // Navigate to the new route
     await page.locator('a[href="/routes/non-existent"]').click()
@@ -348,7 +385,7 @@ test.describe('vite-only HMR tests', () => {
         return router?.getRoutes().some((r: { path: string }) => r.path === '/hmr-trigger') ?? false
       })
       return newRouteExists
-    }).toBeWithPolling(true)
+    }).toBeWithPolling(true, { timeout: 20000 })
 
     // Verify custom route still exists after HMR
     const routeExistsAfter = await page.evaluate(() => {

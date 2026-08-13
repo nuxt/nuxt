@@ -3,6 +3,7 @@ import { isAbsolute, join, relative } from 'pathe'
 
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',
+  dependsOn: [],
   async getContents ({ nuxt }) {
     const references = [] as TSReference[]
     const declarations = [] as string[]
@@ -20,7 +21,7 @@ ${lines.join('\n')}
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from 'nuxt/app'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 
 declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {

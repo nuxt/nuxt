@@ -5,12 +5,10 @@ import { join, relative, resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getLayerDirectories, importModule } from '@nuxt/kit'
+import { configDiagnostics, createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, loadJiti } from '@nuxt/kit'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
-import untypedPlugin from 'untyped/babel-plugin'
-import { createJiti } from 'jiti'
-import { logger } from '../utils.ts'
+import { linkToAlias } from '../utils.ts'
 
 export default defineNuxtModule({
   meta: {
@@ -19,15 +17,37 @@ export default defineNuxtModule({
   async setup (_, nuxt) {
     const resolver = createResolver(import.meta.url)
 
-    // Initialize untyped/jiti loader
-    const _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
-      fsCache: false,
-      transformOptions: {
-        babel: {
-          plugins: [untypedPlugin],
+    // A schema file's JSDoc annotations are extracted by `untyped/babel-plugin`, which has to run
+    // as an import-time transform, so this is the one place Nuxt cannot fall back to loading the
+    // file with the runtime's own importer. `jiti` is an optional peer dependency and
+    // `untyped/babel-plugin` pulls in the whole of `@babel/core`, so neither is loaded unless a
+    // layer actually ships a `nuxt.schema.*` file.
+    let _resolveSchema: ReturnType<typeof createSchemaLoader> | undefined
+    function getSchemaLoader () {
+      _resolveSchema ||= createSchemaLoader()
+      return _resolveSchema
+    }
+
+    async function createSchemaLoader () {
+      const jiti = await loadJiti({
+        rootDir: nuxt.options.rootDir,
+        searchPaths: nuxt.options.modulesDir,
+      })
+
+      if (!jiti) {
+        return undefined
+      }
+
+      const { default: untypedPlugin } = await import('untyped/babel-plugin')
+      return jiti.createJiti(fileURLToPath(import.meta.url), {
+        fsCache: false,
+        transformOptions: {
+          babel: {
+            plugins: [untypedPlugin],
+          },
         },
-      },
-    })
+      })
+    }
 
     // Register module types
     nuxt.hook('prepare:types', async (ctx) => {
@@ -44,6 +64,10 @@ export default defineNuxtModule({
       if (nuxt.options._prepare) {
         await writeSchema(schema)
       }
+    })
+
+    nuxt.hook('nitro:prepare:types', (ctx) => {
+      ctx.references.push({ path: resolve(nuxt.options.buildDir, 'schema/nuxt.schema.d.ts') })
     })
 
     // Resolve schema after all modules initialized
@@ -77,7 +101,7 @@ export default defineNuxtModule({
           }
           return
         } catch {
-          logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
+          configDiagnostics.NUXT_B5009({ installCommand: await getAddDependencyCommand('@parcel/watcher', nuxt.options.rootDir, { dev: true }) })
         }
       }
 
@@ -110,16 +134,20 @@ export default defineNuxtModule({
       for (const dirs of layerDirs) {
         const filePath = await resolver.resolvePath(join(dirs.root, 'nuxt.schema'))
         if (filePath && existsSync(filePath)) {
+          const loader = await getSchemaLoader()
+          if (!loader) {
+            configDiagnostics.NUXT_B5019({
+              filePath: linkToAlias(filePath, nuxt),
+              installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
+            })
+            continue
+          }
           let loadedConfig: SchemaDefinition
           try {
             // TODO: fix type for second argument of `import`
-            loadedConfig = await _resolveSchema.import(filePath, { default: true }) as SchemaDefinition
+            loadedConfig = await loader.import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
-            logger.warn(
-              'Unable to load schema from',
-              filePath,
-              err,
-            )
+            configDiagnostics.NUXT_B5005({ filePath: linkToAlias(filePath, nuxt), cause: err })
             continue
           }
           schemaDefs.push(loadedConfig)

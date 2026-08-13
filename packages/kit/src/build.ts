@@ -1,6 +1,6 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
-import type { RspackPluginInstance } from '@rspack/core'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
+import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
 import { resolveAlias } from './resolve.ts'
@@ -8,6 +8,10 @@ import { getUserCaller, warn } from './internal/trace.ts'
 
 type Arrayable<T> = T | T[]
 type Thenable<T> = T | Promise<T>
+type RspackCompatiblePluginInstance = {
+  apply: (...args: any[]) => void
+  [k: string]: any
+}
 
 export interface ExtendConfigOptions {
   /**
@@ -141,7 +145,7 @@ export function addWebpackPlugin (pluginOrGetter: Arrayable<WebpackPluginInstanc
 /**
  * Append rspack plugin to the config.
  */
-export function addRspackPlugin (pluginOrGetter: Arrayable<RspackPluginInstance> | (() => Thenable<Arrayable<RspackPluginInstance>>), options?: ExtendWebpackConfigOptions): void {
+export function addRspackPlugin (pluginOrGetter: Arrayable<RspackCompatiblePluginInstance> | (() => Thenable<Arrayable<RspackCompatiblePluginInstance>>), options?: ExtendWebpackConfigOptions): void {
   extendRspackConfig(async (config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
@@ -165,32 +169,33 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
   }
 
   let needsEnvInjection = false
+  const isIsomorphic = options.server !== false && options.client !== false
+
   nuxt.hook('vite:extend', async ({ config }) => {
     config.plugins ||= []
 
     const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
-    if (options.server !== false && options.client !== false) {
-      const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-      config.plugins[method](...plugin)
-      return
-    }
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
 
+    // Without the environment API `applyToEnvironment` is ignored, so an isomorphic
+    // plugin can be added as-is and anything else has to be injected per environment.
     if (!config.environments?.ssr || !config.environments.client) {
-      needsEnvInjection = true
+      if (isIsomorphic) {
+        config.plugins[method](...plugin)
+      } else {
+        needsEnvInjection = true
+      }
       return
     }
 
     const environmentName = options.server === false ? 'client' : 'ssr'
-    const pluginName = plugin.map(p => p.name).join('|')
-    config.plugins.push({
-      name: `${pluginName}:wrapper`,
-      enforce: options?.prepend ? 'pre' : 'post',
-      applyToEnvironment (environment) {
-        if (environment.name === environmentName) {
-          return plugin
-        }
-      },
-    })
+    const isAllowed = isIsomorphic
+      ? (name: string) => name === 'client' || name === 'ssr'
+      : (name: string) => name === environmentName
+    // isomorphic plugins are normally just added to plugins, so only force when `prepend` is set
+    const defaultEnforce = isIsomorphic ? (options?.prepend ? 'pre' : undefined) : (options?.prepend ? 'pre' : 'post')
+
+    config.plugins[method](...plugin.map(p => scopeToEnvironments(p, defaultEnforce, isAllowed)))
   })
 
   nuxt.hook('vite:extendConfig', async (config, env) => {
@@ -208,10 +213,36 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
   })
 }
 
+/**
+ * `addVitePlugin` has always scoped plugins to the app builds. Builders can contribute
+ * further environments (Nitro adds `nitro`, and one per service), so a plugin registered
+ * here has to opt out of any environment it wasn't registered for. The check runs per
+ * environment as Vite resolves them, so environments added after the plugin was
+ * registered are still excluded.
+ *
+ * The plugin is returned as a top-level plugin rather than nested behind a wrapper
+ * so that Vite still applies `apply`, sorts by `enforce`, calls server-level hooks
+ * like `configureServer`, and exposes any extra properties the plugin declares
+ * (`api`, and whatever tooling scanning `config.plugins` looks for) as usual.
+ */
+function scopeToEnvironments (plugin: VitePlugin, defaultEnforce: VitePlugin['enforce'], isAllowed: (name: string) => boolean): VitePlugin {
+  const { applyToEnvironment } = plugin
+  return {
+    ...plugin,
+    enforce: plugin.enforce ?? defaultEnforce,
+    applyToEnvironment (environment) {
+      if (!isAllowed(environment.name)) {
+        return false
+      }
+      return applyToEnvironment ? applyToEnvironment(environment) : true
+    },
+  }
+}
+
 interface AddBuildPluginFactory {
   vite?: () => Thenable<Arrayable<VitePlugin>>
   webpack?: () => Thenable<Arrayable<WebpackPluginInstance>>
-  rspack?: () => Thenable<Arrayable<RspackPluginInstance>>
+  rspack?: () => Thenable<Arrayable<RspackCompatiblePluginInstance>>
 }
 
 export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions): void {
@@ -226,4 +257,11 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
   if (pluginFactory.rspack) {
     addRspackPlugin(pluginFactory.rspack, options)
   }
+}
+
+/**
+ * Set the build output for the given key. See {@link NuxtBuildOutputs}.
+ */
+export function setBuildOutput<K extends keyof NuxtBuildOutputs> (key: K, provider: NuxtBuildOutputs[K], nuxt: Nuxt = useNuxt()): void {
+  nuxt.buildOutputs[key] = provider
 }

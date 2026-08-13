@@ -4,6 +4,8 @@ on:
   issue_comment:
     types: [created]
 
+permissions: {}
+
 concurrency:
   group: llm-triage-comment-${{ github.event.issue.number }}
   cancel-in-progress: false

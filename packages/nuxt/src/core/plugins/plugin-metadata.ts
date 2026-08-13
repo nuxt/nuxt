@@ -1,15 +1,16 @@
 import type { Literal } from 'estree'
 import { defu } from 'defu'
-import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
-import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
+import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 
-import { parseAndWalk } from 'oxc-walker'
+import { parseAndWalk, walk } from 'oxc-walker'
+import { parseModule } from '../utils/parse.ts'
 import type { ESTree } from 'rolldown/utils'
-import { logger } from '../../utils.ts'
+import { pluginDiagnostics } from '@nuxt/kit'
+import { linkToAlias } from '../../utils.ts'
 
 const internalOrderMap = {
   // -50: pre-all (nuxt)
@@ -32,13 +33,30 @@ const internalOrderMap = {
   'nuxt-post-all': 30,
 }
 
-export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
+export const orderMap: Record<NonNullable<PluginMeta['enforce']>, number> = {
   pre: internalOrderMap['user-pre'],
   default: internalOrderMap['user-default'],
   post: internalOrderMap['user-post'],
 }
 
 export type ExtractedPluginMeta = PluginMeta & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean, _metaUnknown?: boolean }
+
+export type PluginBuildMode = 'client' | 'server'
+
+const pluginDependenciesByMode = new WeakMap<Nuxt, Partial<Record<PluginBuildMode, Map<string, string[]>>>>()
+
+export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode, plugins: Array<{ src: string, dependsOn?: string[], _metaUnknown?: boolean }>) {
+  const dependencies = new Map<string, string[]>()
+  for (const plugin of plugins) {
+    if (!plugin._metaUnknown && plugin.dependsOn) {
+      dependencies.set(normalize(plugin.src), plugin.dependsOn)
+    }
+  }
+
+  const metadata = pluginDependenciesByMode.get(nuxt) || {}
+  metadata[mode] = dependencies
+  pluginDependenciesByMode.set(nuxt, metadata)
+}
 
 const metaCache: Record<string, ExtractedPluginMeta> = {}
 export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
@@ -59,7 +77,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const metaArg = node.arguments[1]
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throw new Error('Invalid plugin metadata')
+        throw pluginDiagnostics.NUXT_B2001({ name: name as string, type: metaArg.type })
       }
       meta = extractMetaFromObject(metaArg.properties)
     }
@@ -107,7 +125,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
   const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
-      throw new Error('Invalid plugin metadata')
+      throw pluginDiagnostics.NUXT_B2002()
     }
     const propertyKey = property.key.name
     if (propertyKey === 'hooks') {
@@ -127,7 +145,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
     }
     if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
       if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
-        throw new Error('dependsOn must take an array of string literals')
+        throw pluginDiagnostics.NUXT_B2003()
       }
       meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
     }
@@ -135,16 +153,18 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
   return meta
 }
 
-export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
+export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) => createUnplugin(() => {
   return {
-    name: 'nuxt:remove-plugin-metadata',
+    name: `nuxt:remove-plugin-metadata:${mode}`,
     transform (code, id, meta?: unknown) {
       id = normalize(id)
       const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
       if (!plugin) { return }
 
+      const filteredDependencies = pluginDependenciesByMode.get(nuxt)?.[mode]?.get(id)
+
       if (!code.trim()) {
-        logger.warn(`Plugin \`${plugin.src}\` has no content.`)
+        pluginDiagnostics.NUXT_B2004({ src: linkToAlias(plugin.src, nuxt) })
 
         return {
           code: 'export default () => {}',
@@ -152,10 +172,17 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
         }
       }
 
-      const exports = findExports(code)
-      const defaultExport = exports.find(e => e.type === 'default' || e.name === 'default')
-      if (!defaultExport) {
-        logger.warn(`Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
+      let parsed: ReturnType<typeof parseModule>
+      try {
+        parsed = parseModule(code, id)
+      } catch (e) {
+        pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
+        return
+      }
+
+      const hasDefaultExport = parsed.module.staticExports.some(statement => statement.entries.some(entry => !entry.isType && (entry.exportName.kind === 'Default' || entry.exportName.name === 'default')))
+      if (!hasDefaultExport) {
+        pluginDiagnostics.NUXT_B2005({ src: linkToAlias(plugin.src, nuxt) })
         return {
           code: 'export default () => {}',
           map: null,
@@ -167,7 +194,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
       try {
-        parseAndWalk(code, id, (node) => {
+        walk(parsed.program, { enter: (node) => {
           if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && (node.imported.name === 'defineNuxtPlugin' || node.imported.name === 'definePayloadPlugin')) {
             wrapperNames.add(node.local.name)
           }
@@ -178,7 +205,8 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           wrapped = true
 
           // Remove metadata that already has been extracted
-          if (!('order' in plugin) && !('name' in plugin)) { return }
+          const removeExtractedMetadata = 'order' in plugin || 'name' in plugin
+          if (!filteredDependencies && !removeExtractedMetadata) { return }
           for (const [argIndex, arg] of node.arguments.entries()) {
             if (arg.type !== 'ObjectExpression') { continue }
 
@@ -186,7 +214,13 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
               if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
 
               const propertyKey = property.key.name
-              if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name') {
+              if (propertyKey === 'dependsOn' && filteredDependencies && property.value.type === 'ArrayExpression') {
+                const dependencies = property.value.elements.map(element => element?.type === 'Literal' && typeof element.value === 'string' ? element.value : null)
+                if (dependencies.length !== filteredDependencies.length || dependencies.some((dependency, index) => dependency !== filteredDependencies[index])) {
+                  s.overwrite(property.value.start, property.value.end, JSON.stringify(filteredDependencies))
+                }
+              }
+              if (removeExtractedMetadata && (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name')) {
                 const nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
                 const nextIndex = nextNode?.start || (arg.end - 1)
 
@@ -194,14 +228,14 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
               }
             }
           }
-        })
+        } })
       } catch (e) {
-        logger.error(e)
+        pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
         return
       }
 
       if (!wrapped) {
-        logger.warn(`Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`)
+        pluginDiagnostics.NUXT_B2007({ src: linkToAlias(plugin.src, nuxt) })
       }
 
       return generateTransform(s, id)

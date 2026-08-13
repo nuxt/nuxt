@@ -10,7 +10,6 @@ import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 import { _mergeTransitionProps, _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
-// @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 export interface NuxtPageProps extends RouterViewProps {
@@ -262,6 +261,7 @@ export default defineComponent({
                       renderKey: key || undefined,
                       trackRootNodes: hasTransition,
                       vnodeRef: pageRef,
+                      routeRecord: import.meta.dev ? routeProps.route.matched.find(m => m.components?.default === routeProps.Component.type) : undefined,
                     }
 
                     if (!keepaliveConfig) {

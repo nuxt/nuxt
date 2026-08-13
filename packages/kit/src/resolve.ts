@@ -5,11 +5,13 @@ import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { type GlobOptions, glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
-import { parseNodeModulePath } from 'mlly'
 import { directoryToURL } from './internal/esm.ts'
+import { parseNodeModulePath } from './internal/node-module.ts'
 import { tryUseNuxt } from './context.ts'
 import { isIgnored } from './ignore.ts'
 import { type RequirePicked, toArray } from './utils.ts'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from './constants.ts'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -105,7 +107,7 @@ export interface Resolver {
  */
 export function createResolver (base: string | URL): Resolver {
   if (!base) {
-    throw new Error('`base` argument is missing for createResolver(base)!')
+    throw kitDiagnostics.NUXT_B8002()
   }
 
   base = base.toString()
@@ -164,18 +166,13 @@ async function _resolvePathType (path: string, opts: ResolvePathOptions = {}, sk
     return
   }
 
-  const fd = await fsp.open(path, 'r').catch(() => null)
-  try {
-    const stats = await fd?.stat()
-    if (stats) {
-      return {
-        path,
-        type: stats.isFile() ? 'file' : 'dir',
-        virtual: false,
-      }
+  const stats = await fsp.stat(path).catch(() => null)
+  if (stats) {
+    return {
+      path,
+      type: stats.isFile() ? 'file' : 'dir',
+      virtual: false,
     }
-  } finally {
-    fd?.close()
   }
 }
 
@@ -199,7 +196,7 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
   // Use current nuxt options
   const nuxt = tryUseNuxt()
   const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
-  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
+  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : [...DEFAULT_JS_FILE_EXTENSIONS, '.json'])
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases

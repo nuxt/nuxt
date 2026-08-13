@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { execFileSync } from 'node:child_process'
 import { $fetch } from 'ofetch'
-import { inc } from 'semver'
+import { increment } from 'verkit'
 import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
 import { consola } from 'consola'
 import { determineBumpType, getContributors, getLatestCommits, getLatestReleasedTag, getLatestTag, getPreviousReleasedCommits, loadWorkspace } from './_utils.ts'
@@ -26,7 +26,7 @@ async function main () {
   ))
   const bumpType = await determineBumpType(sinceDate) || 'patch'
 
-  const newVersion = inc(workspace.find('nuxt').data.version, bumpType)
+  const newVersion = increment(workspace.find('nuxt').data.version, bumpType)
   const changelog = await generateMarkDown(commits, config)
 
   // Create and push a branch with bumped versions if it has not already been created

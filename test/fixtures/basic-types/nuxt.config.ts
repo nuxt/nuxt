@@ -1,7 +1,7 @@
 /// <reference path="./config-types.ts" />
 
 import { addTypeTemplate, installModule } from 'nuxt/kit'
-import { typescriptBundlerResolution, withMatrix } from '../../matrix'
+import { typescriptBundlerResolution, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   extends: [
@@ -97,15 +97,6 @@ export default withMatrix({
     appManifest: true,
   },
   nitro: {
-    typescript: {
-      tsConfig: {
-        compilerOptions: {
-          paths: {
-            '#app/internal/*': ['../../../../packages/nuxt/dist/app/internal/*'],
-          },
-        },
-      },
-    },
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {

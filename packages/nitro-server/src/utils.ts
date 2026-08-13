@@ -1,9 +1,19 @@
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'pathe'
 import escapeRE from 'escape-string-regexp'
+import type { NuxtBuildOutputs } from '@nuxt/schema'
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
+}
+
+export const NUXT_BUILD_OUTPUT_MAP: Record<string, keyof NuxtBuildOutputs> = {
+  'nuxt/entry': 'serverEntry',
+  'nuxt/manifest': 'clientManifest',
+  'nuxt/precomputed': 'clientPrecomputed',
+  'nuxt/styles': 'ssrStyles',
+  'nuxt/entry-chunk': 'entryChunkName',
+  'nuxt/entry-ids': 'entryIds',
 }
 
 const NODE_MODULES_RE = /\/node_modules\//g
