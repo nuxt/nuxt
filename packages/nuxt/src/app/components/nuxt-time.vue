@@ -69,7 +69,7 @@ if (import.meta.client && props.relative) {
 }
 
 const formatter = computed(() => {
-  const { locale: _, relative, relativeStyle, ...rest } = props
+  const { locale: _propLocale, relative, relativeStyle, ...rest } = props
   if (relative) {
     return new Intl.RelativeTimeFormat(locale.value, { ...rest, style: relativeStyle })
   }

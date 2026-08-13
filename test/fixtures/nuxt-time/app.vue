@@ -38,6 +38,14 @@ const changeDate = () => {
     />
     <br>
     <NuxtTime
+      data-testid="no-locale"
+      :datetime="date"
+      second="numeric"
+      month="long"
+      day="numeric"
+    />
+    <br>
+    <NuxtTime
       datetime="2023-08-19T02:57:00.000Z"
       time-zone="America/New_York"
     />
