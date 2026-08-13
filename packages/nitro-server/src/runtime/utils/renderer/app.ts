@@ -7,9 +7,9 @@ import { createHead } from '@unhead/vue/server'
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
 import { sharedPrerenderCache } from '../cache'
 import unheadOptions from '#internal/unhead-options.mjs'
-import { NUXT_NO_SSR, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
-const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
+const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
 export function createSSRContext (event: H3Event): NuxtSSRContext {
   const url = event.url.pathname + event.url.search + event.url.hash
