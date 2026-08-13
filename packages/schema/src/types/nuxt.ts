@@ -124,8 +124,10 @@ export interface NuxtBuildOutputs {
   /** Module body re-exporting the SSR app entry. */
   serverEntry: () => string | Promise<string>
   /**
-   * Module body for the per-component SSR styles map. Defaults to
-   * `export default {}` when the build produces no inline styles.
+   * Module body for the per-component SSR styles map, plus an `inlinedCSS`
+   * named export mapping each emitted CSS file whose `<link>` may be dropped at
+   * render time to the groups of module IDs that inline its contents. Defaults
+   * to an empty map for both.
    */
   ssrStyles: () => string | Promise<string>
   /** Serialized client manifest for `vue-bundle-renderer`. */
