@@ -46,6 +46,9 @@ const logLevelMapReverse = {
 
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
+  // status codes whose error page is server-rendered at build time
+  const errorPageOption = nuxt.options.experimental.prerenderErrorPages
+  const errorPages = errorPageOption === true ? [404] : errorPageOption || []
   const layerDirs = getLayerDirectories(nuxt)
   const excludePattern = [getLayerNodeModulesExcludePattern(layerDirs.map(dirs => dirs.root))]
 
@@ -228,7 +231,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         const pagePatterns = (nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns ?? []
         // SPA fallbacks written out as an empty shell, minus any error page that
         // is server-rendered at build time
-        const errorPages = prerenderedErrorPages(nuxt)
         const noSSRRoutes = ['/index.html', '/200.html', '/404.html'].filter(route => !errorPages.includes(Number(route.slice(1, -'.html'.length))))
         return [
           `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
@@ -1106,7 +1108,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       for (const route of ['/200.html', '/404.html']) {
         routes.add(route)
       }
-      for (const status of prerenderedErrorPages(nuxt)) {
+      for (const status of errorPages) {
         routes.add(`/${status}.html`)
       }
       if (!nuxt.options.ssr) {
@@ -1120,12 +1122,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   } else {
     setupLegacyDevAndBuild(nuxt, nitro)
   }
-}
-
-/** Status codes whose static error page (`404.html` and friends) should be server-rendered at build time. */
-function prerenderedErrorPages (nuxt: Nuxt): number[] {
-  const option = nuxt.options.experimental.prerenderErrorPages
-  return option === true ? [404] : option || []
 }
 
 const RELATIVE_RE = /^([^.])/

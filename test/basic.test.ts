@@ -1346,6 +1346,7 @@ describe('errors', () => {
     const html = await readFile(join(publicDir, '404.html'), 'utf-8')
 
     expect(html).toContain('This is the error page 😱')
+    expect(html).toContain('<title>Error: 404 - Fixture</title>')
 
     const { script, attrs } = parseData(html)
     expect(attrs['data-ssr']).toBe('true')
