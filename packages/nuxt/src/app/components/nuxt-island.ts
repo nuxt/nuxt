@@ -185,7 +185,11 @@ const NuxtIsland = defineComponent({
       let html = ssrHTML.value
 
       if (props.scopeId) {
-        html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
+        if (VUE_SCOPE_ID_RE.test(props.scopeId)) {
+          html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
+        } else if (import.meta.dev) {
+          renderDiagnostics.NUXT_E4019({ scopeId: props.scopeId })
+        }
       }
 
       if (import.meta.client && !canLoadClientComponent.value) {
