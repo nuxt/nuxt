@@ -48,7 +48,7 @@ const NuxtTeleportIslandComponent = /* @__PURE__ */ defineComponent({
     return () => {
       if (vapor && isVaporSlot(slots.default)) {
         if (import.meta.dev) {
-          renderDiagnostics.NUXT_E4021()
+          renderDiagnostics.NUXT_E4022()
         }
         return slots.default?.()
       }

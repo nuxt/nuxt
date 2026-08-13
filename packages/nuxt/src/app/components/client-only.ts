@@ -67,7 +67,7 @@ const ClientOnly = defineComponent({
           return [cloneVNode(vnodes[0]!, attrs)]
         }
         if (import.meta.dev && vapor && isVaporSlot(slots.default) && attrs && Object.keys(attrs).length > 0) {
-          renderDiagnostics.NUXT_E4020()
+          renderDiagnostics.NUXT_E4021()
         }
         return vnodes
       }

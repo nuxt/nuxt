@@ -69,7 +69,7 @@ const NuxtClientFallbackServer = defineComponent({
     try {
       if (vapor && isVaporSlot(ctx.slots.default)) {
         if (import.meta.dev) {
-          renderDiagnostics.NUXT_E4019()
+          renderDiagnostics.NUXT_E4020()
         }
         error.value = true
         return { ssrFailed: true, ssrVNodes: [] }

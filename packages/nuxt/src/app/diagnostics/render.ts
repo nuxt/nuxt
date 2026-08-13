@@ -99,23 +99,23 @@ export const renderDiagnostics = !import.meta.dev
           fix: (p: { key: string }) => `Declare \`${p.key}\` as a prop on the island, or set \`inheritAttrs: false\` so request input cannot reach the root element.`,
         },
         NUXT_E4019: {
+          why: (p: { scopeId: string }) => `\`<NuxtIsland>\` was passed a \`scopeId\` prop that is not a Vue scope attribute (\`${p.scopeId}\`) and it was ignored. The value is inserted into the island's opening tag, so only \`data-v-\` attributes are accepted.`,
+          fix: 'Pass a compiler-generated scope ID such as `data-v-abc123`, or omit the prop.',
+          docs: false,
+        },
+        NUXT_E4020: {
           why: '`<NuxtClientFallback>` cannot server-render a vapor slot child. Its content is not expressed as VNodes, so the SSR attempt (and the fallback-on-error behaviour that depends on it) will not work.',
           fix: 'Wrap the content in a vdom component if you need server-side fallback.',
           docs: false,
         },
-        NUXT_E4020: {
+        NUXT_E4021: {
           why: '`<ClientOnly>` cannot forward fallthrough attributes onto a vapor slot child.',
           fix: 'Move the attributes onto an element inside the slot, or wrap the content in a single vdom root.',
           docs: false,
         },
-        NUXT_E4021: {
+        NUXT_E4022: {
           why: 'A vapor component cannot be teleported as an interactive island. Island client hydration reads the wrapped component from its VNode, which a vapor slot does not expose.',
           fix: 'Use a vdom component for `nuxtClient` islands.',
-          docs: false,
-        },
-        NUXT_E4019: {
-          why: (p: { scopeId: string }) => `\`<NuxtIsland>\` was passed a \`scopeId\` prop that is not a Vue scope attribute (\`${p.scopeId}\`) and it was ignored. The value is inserted into the island's opening tag, so only \`data-v-\` attributes are accepted.`,
-          fix: 'Pass a compiler-generated scope ID such as `data-v-abc123`, or omit the prop.',
           docs: false,
         },
       },
