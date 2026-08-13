@@ -110,6 +110,14 @@ export default defineResolvers({
         return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
       },
     },
+    /**
+     * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
+     *
+     * Pass an array of status codes to control which error pages are generated. `true` is equivalent to `[404]`.
+     * @type {boolean | number[]}
+     */
+    prerenderErrorPages: false,
+
     clientFallback: false,
     crossOriginPrefetch: false,
 

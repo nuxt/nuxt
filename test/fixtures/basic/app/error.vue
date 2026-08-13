@@ -29,13 +29,8 @@
 
 <script setup lang="ts">
 import type { NuxtError, SerializedErrorCause } from '#app'
-import { useHead } from '#imports'
 
-const props = defineProps({
+defineProps({
   error: Object as () => NuxtError & { cause?: Extract<SerializedErrorCause, object> },
 })
-
-useHead(() => ({
-  title: `${props.error?.status || 500} - ${props.error?.statusText || 'Error'} | Basic Error Page`,
-}))
 </script>

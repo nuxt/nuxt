@@ -1340,15 +1340,20 @@ describe('errors', () => {
     expect(res).toContain('Hello Nuxt 3!')
   })
 
-  // Regression coverage for https://github.com/nuxt/nuxt/issues/34579: the
-  // prerendered `/404.html` should reflect `useHead()` in `error.vue`, not
-  // the default `app.head.title` from the nuxt config
-  it.skipIf(isDev)('should reflect error.vue head in the prerendered `/404.html`', async () => {
+  it.skipIf(isDev)('should server-render the static error page', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     const html = await readFile(join(publicDir, '404.html'), 'utf-8')
-    expect(html).toContain('404 - Page Not Found | Basic Error Page')
-    expect(html).not.toContain('<title>Nuxt Fixture App Title</title>')
+
+    expect(html).toContain('This is the error page 😱')
+
+    const { script, attrs } = parseData(html)
+    expect(attrs['data-ssr']).toBe('true')
+    expect(script.error).toMatchObject({ status: 404, statusText: 'Page Not Found' })
+    // the same file is served for every missing path, so it must not claim to
+    // be a prerender of `/404.html`
+    expect(script.path).toBeUndefined()
+    expect(script.error.url).toBeUndefined()
   })
 
   it('should allow catching errors within error boundaries', async () => {
