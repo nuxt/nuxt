@@ -11,7 +11,8 @@ import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
-import { SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from '../utils/error'
+import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from '../utils/error'
+import type { SSRError } from '../utils/error'
 import { relative } from 'pathe'
 
 import '../context'
@@ -30,7 +31,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import entryIds from 'nuxt/entry-ids'
 import { entryFileName } from 'nuxt/entry-chunk'
@@ -80,7 +81,9 @@ export default {
 
     const ssrError = isErrorRoute
       ? decodeSSRError(getQuery<Record<string, string>>(event)[SSR_ERROR_PARAM])
-      : undefined
+      : import.meta.prerender
+        ? getPrerenderedErrorPage(event)
+        : undefined
 
     // During prerender, refuse to recurse into a URL that is already rendering
     // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
@@ -101,6 +104,42 @@ export default {
 
     return renderRoute(event, ssrError).catch(error => rethrowWithResponseHeaders(event, error))
   },
+}
+
+const ERROR_PAGE_RE = /^\/(\d{3})\.html$/
+const STATUS_TEXT: Record<number, string> = {
+  400: 'Bad Request',
+  401: 'Unauthorized',
+  403: 'Forbidden',
+  404: 'Page Not Found',
+  410: 'Gone',
+  500: 'Internal Server Error',
+  503: 'Service Unavailable',
+}
+
+function isPrerenderedErrorPage (pathname: string) {
+  const status = Number(ERROR_PAGE_RE.exec(pathname)?.[1])
+  return status && (NUXT_PRERENDER_ERROR_PAGES as number[]).includes(status) ? status : undefined
+}
+
+/**
+ * Synthesise the error a static error page (`404.html` and friends) renders
+ * with, so the page is server-rendered at build time rather than written out as
+ * an empty SPA shell.
+ */
+function getPrerenderedErrorPage (event: H3Event): SSRError | undefined {
+  const status = isPrerenderedErrorPage(event.url.pathname)
+  if (!status) { return undefined }
+
+  const statusText = STATUS_TEXT[status] || 'Error'
+  return {
+    status,
+    statusText,
+    message: statusText,
+    fatal: false,
+    url: event.url.href,
+    [NUXT_ERROR_SIGNATURE]: true,
+  } as unknown as SSRError
 }
 
 async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<ReadableStream<Uint8Array> | Response> {
@@ -127,7 +166,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   }
 
   // Whether we are prerendering route or using ISR/SWR caching
-  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
+  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && !ssrError && (
     (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
     || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
   )
@@ -224,6 +263,13 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   const inlinedStyles = NUXT_INLINE_STYLES && !ssrContext['~renderResponse'] && !isRenderingPayload
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
+
+  if (import.meta.prerender && ssrError && isPrerenderedErrorPage(event.url.pathname)) {
+    delete ssrContext.payload.path
+    if (ssrContext.payload.error) {
+      (ssrContext.payload.error as { url?: string }).url = undefined
+    }
+  }
 
   const appRenderedResult = ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
   if (appRenderedResult instanceof Promise) { await appRenderedResult }

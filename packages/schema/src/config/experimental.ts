@@ -110,6 +110,27 @@ export default defineResolvers({
         return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
       },
     },
+    /**
+     * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
+     *
+     * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.
+     * @type {boolean | number[]}
+     */
+    prerenderErrorPages: {
+      $resolve: (val) => {
+        if (!Array.isArray(val)) {
+          return !!val
+        }
+        return val.filter((status) => {
+          if (Number.isInteger(status) && status >= 400 && status <= 599) {
+            return true
+          }
+          schemaDiagnostics.NUXT_B5020({ status: String(status) })
+          return false
+        })
+      },
+    },
+
     clientFallback: false,
     crossOriginPrefetch: false,
 
