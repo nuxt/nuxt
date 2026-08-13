@@ -1856,3 +1856,64 @@ describe('useAsyncData', () => {
     expect(handler).toHaveBeenCalledTimes(2)
   })
 })
+
+describe('clearNuxtData', () => {
+  let uniqueKey: string
+  let counter = 0
+
+  beforeEach(() => {
+    uniqueKey = `clear-key-${++counter}`
+  })
+
+  it('should reset data and status for a `serialize: false` entry with a no-arg clear', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data, status } = await useAsyncData(uniqueKey, () => Promise.resolve('secret'), { serialize: false })
+
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+    expect(data.value).toBe('secret')
+
+    clearNuxtData()
+
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+  })
+
+  it('should clear the error and reset status for a rejected handler with a no-arg clear', async () => {
+    const { error, status } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('boom')))
+
+    expect(error.value).toBeTruthy()
+    expect(status.value).toBe('error')
+
+    clearNuxtData()
+
+    expect(error.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+  })
+
+  it('should restore the default for a never-run (`immediate: false`) entry with a no-arg clear', () => {
+    const { data } = useAsyncData(uniqueKey, () => Promise.resolve('later'), { immediate: false, default: () => 'DFLT' })
+
+    expect(data.value).toBe('DFLT')
+    data.value = 'mutated'
+
+    clearNuxtData()
+
+    expect(data.value).toBe('DFLT')
+  })
+
+  it('should offer the predicate keys that never reached payload.data', async () => {
+    const nuxtApp = useNuxtApp()
+    await useAsyncData(uniqueKey, () => Promise.resolve('secret'), { serialize: false })
+
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+
+    const seen: string[] = []
+    clearNuxtData((key) => {
+      seen.push(key)
+      return true
+    })
+
+    expect(seen).toContain(uniqueKey)
+    expect(nuxtApp._asyncData[uniqueKey]?.data.value).toBeUndefined()
+  })
+})
