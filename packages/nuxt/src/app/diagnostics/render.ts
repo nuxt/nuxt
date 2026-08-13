@@ -99,5 +99,10 @@ export const renderDiagnostics = !import.meta.dev
           fix: (p: { key: string }) => `Declare \`${p.key}\` as a prop on the island, or set \`inheritAttrs: false\` so request input cannot reach the root element.`,
           docs: false,
         },
+        NUXT_E4019: {
+          why: (p: { scopeId: string }) => `\`<NuxtIsland>\` was passed a \`scopeId\` prop that is not a Vue scope attribute (\`${p.scopeId}\`) and it was ignored. The value is inserted into the island's opening tag, so only \`data-v-\` attributes are accepted.`,
+          fix: 'Pass a compiler-generated scope ID such as `data-v-abc123`, or omit the prop.',
+          docs: false,
+        },
       },
     })
