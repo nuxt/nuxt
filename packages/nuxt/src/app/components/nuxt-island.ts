@@ -23,6 +23,7 @@ const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
 const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
+const VUE_SCOPE_ID_RE = /^data-v-[\w-]+$/
 
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
@@ -182,7 +183,11 @@ const NuxtIsland = defineComponent({
       let html = ssrHTML.value
 
       if (props.scopeId) {
-        html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
+        if (VUE_SCOPE_ID_RE.test(props.scopeId)) {
+          html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
+        } else if (import.meta.dev) {
+          renderDiagnostics.NUXT_E4019({ scopeId: props.scopeId })
+        }
       }
 
       if (import.meta.client && !canLoadClientComponent.value) {
@@ -350,11 +355,25 @@ const NuxtIsland = defineComponent({
           if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : (mounted.value || instance.vnode?.el))) {
             for (const slot in slots) {
               if (availableSlots.value.has(slot)) {
+                const slotPayload = payloads.slots?.[slot]
+                const scopeId = slotPayload?.scopeId
+                // the scope id can come from a remote island, so it has to be validated
+                const slotScopeId = scopeId && VUE_SCOPE_ID_RE.test(scopeId) ? `${scopeId}-s` : undefined
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloads.slots?.[slot]?.props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
-                )
+                  { default: () => (slotPayload?.props?.length ? slotPayload.props : [{}]).map((data) => {
+                    const content = slots[slot]?.(data)
+                    if (!slotScopeId) {
+                      return content
+                    }
+                    // Vue only reads `slotScopeIds` off a fragment, and normally adds it in
+                    // `renderSlot`, which runs inside the scoped component rather than here.
+                    const fragment: VNode & { slotScopeIds?: string[] } = createVNode(Fragment, null, content)
+                    fragment.slotScopeIds = [slotScopeId]
+                    return fragment
+                  }) },
+                ))
               }
             }
             if (selectiveClient) {

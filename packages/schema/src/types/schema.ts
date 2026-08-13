@@ -1168,6 +1168,15 @@ export interface ConfigSchema {
     payloadExtraction: 'client' | boolean | undefined
 
     /**
+     * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
+     *
+     * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.
+     *
+     * @default false
+     */
+    prerenderErrorPages: boolean | number[]
+
+    /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
      * @default false

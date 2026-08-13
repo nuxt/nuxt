@@ -129,3 +129,5 @@ export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
 export const getServerApp: () => Promise<Entry> = lazyCachedFunction(getServerEntry)
 
 export const getSSRStyles: () => Promise<Record<string, () => Promise<string[]>>> = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('nuxt/styles').then(r => r.default || r))
+
+export const getInlinedCSS: () => Promise<Record<string, string[][]>> = lazyCachedFunction((): Promise<Record<string, string[][]>> => import('nuxt/styles').then(r => r.inlinedCSS || {}))

@@ -494,12 +494,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const aliases: Record<string, string> = nuxt.options.alias
 
   // TODO: remove support for baseUrl in nuxt v5
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const basePath = tsConfig.compilerOptions!.baseUrl
-    // TODO: remove support for baseUrl in nuxt v5
+  const baseUrl = isV5OrHigher
+    ? undefined
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
-    : nuxt.options.buildDir
+    : tsConfig.compilerOptions!.baseUrl
+  const basePath = baseUrl ? resolve(nuxt.options.buildDir, baseUrl) : nuxt.options.buildDir
 
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
@@ -578,6 +577,10 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     .filter(root => !rootDirWithSlash.startsWith(root))
 
   async function resolveConfig (tsConfig: TSConfig) {
+    if (isV5OrHigher) {
+      Reflect.deleteProperty(tsConfig.compilerOptions!, 'baseUrl')
+    }
+
     for (const alias in tsConfig.compilerOptions!.paths) {
       const paths = tsConfig.compilerOptions!.paths[alias]
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {

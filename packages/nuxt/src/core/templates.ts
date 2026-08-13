@@ -77,7 +77,26 @@ export const islandRendererTemplate: NuxtTemplate = {
 export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
   dependsOn: [],
-  getContents: ctx => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default']),
+  getContents: (ctx) => {
+    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder'
+    if (!ctx.nuxt.options.test || !ctx.nuxt.options.dev || !needsComponentMap) {
+      return genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
+    }
+
+    const paths = new Set<string>()
+    for (const component of ctx.app.components) {
+      if (!component._raw) {
+        paths.add(component.filePath)
+      }
+    }
+    return [
+      genImport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), 'testComponentWrapper'),
+      `const componentLoaders = {`,
+      ...[...paths].map(path => `  ${JSON.stringify(path)}: () => ${genDynamicImport(path, { wrapper: false })},`),
+      `}`,
+      `export default url => testComponentWrapper(url, componentLoaders)`,
+    ].join('\n')
+  },
 }
 
 export const cssTemplate: NuxtTemplate = {
