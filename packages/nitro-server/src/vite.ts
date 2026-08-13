@@ -215,8 +215,11 @@ const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
  * minifier nor Nitro's subsequent inline-and-minify pass can rename or
  * tree-shake it before the substitution runs. Because the sentinel sits in
  * expression position, deferred providers must produce a module body of
- * exactly the form `export default <expression>` (no other statements); the
- * substitution inlines the expression, parenthesised, in its place.
+ * exactly the form `export default <expression>`; the
+ * substitution inlines the expression, parenthesised, in its place. A provider
+ * may append `export const <name> = <expression>` statements for the named
+ * exports declared in `DEFERRED_NAMED_EXPORTS`; each gets its own sentinel and
+ * resolves to `undefined` when the provider omits it.
  *
  * `entryChunkName` is excluded: `StableEntryPlugin` finalises it in the client
  * env's `writeBundle`, which completes before the ssr env loads it.
@@ -228,17 +231,43 @@ const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
  */
 const DEFERRED_KEYS = new Set<keyof NuxtBuildOutputs>(['clientManifest', 'clientPrecomputed', 'entryIds', 'ssrStyles'])
 
-function sentinel (specifier: string): string {
-  return `__NUXT_BUILD_OUTPUT__${specifier.replace(/\W/g, '_')}__`
+/**
+ * Named exports a deferred build output provides in addition to its default
+ * export. Each one gets its own sentinel, and the provider must append an
+ * `export const <name> = <expression>` statement for it.
+ */
+const DEFERRED_NAMED_EXPORTS: Partial<Record<keyof NuxtBuildOutputs, readonly string[]>> = {
+  ssrStyles: ['inlinedCSS'],
 }
 
-async function getDeferredExpression (nuxt: Nuxt, key: keyof NuxtBuildOutputs): Promise<string> {
+function sentinel (specifier: string, name?: string): string {
+  return `__NUXT_BUILD_OUTPUT__${specifier.replace(/\W/g, '_')}${name ? `__${name}` : ''}__`
+}
+
+const NAMED_EXPORT_RE = /\nexport const (\w+) = /
+
+/**
+ * Split a deferred provider's module body into the expression for its default
+ * export and one for each of its named exports.
+ */
+async function getDeferredExpressions (nuxt: Nuxt, key: keyof NuxtBuildOutputs): Promise<Map<string | undefined, string>> {
   const code = String(await nuxt.buildOutputs[key]() ?? 'export default {}')
   const body = code.trim().replace(/;$/, '')
   if (!body.startsWith('export default ')) {
     throw new Error(`[nuxt] Deferred build output \`${key}\` must be a module body of the form \`export default <expression>\`.`)
   }
-  return body.slice('export default '.length)
+
+  const expressions = new Map<string | undefined, string>()
+  let name: string | undefined
+  let rest = body.slice('export default '.length)
+  let match: RegExpMatchArray | null
+  while ((match = rest.match(NAMED_EXPORT_RE))) {
+    expressions.set(name, rest.slice(0, match.index).trim().replace(/;$/, ''))
+    name = match[1]
+    rest = rest.slice(match.index! + match[0].length)
+  }
+  expressions.set(name, rest.trim().replace(/;$/, ''))
+  return expressions
 }
 
 /**
@@ -273,7 +302,11 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         // ssr env has bundled. They emit a sentinel here, substituted in
         // `generateBundle`.
         if (!nuxt.options.dev && DEFERRED_KEYS.has(key)) {
-          return { code: `export default ${JSON.stringify(sentinel(specifier))}`, map: null }
+          const statements = [`export default ${JSON.stringify(sentinel(specifier))}`]
+          for (const name of DEFERRED_NAMED_EXPORTS[key] ?? []) {
+            statements.push(`export const ${name} = ${JSON.stringify(sentinel(specifier, name))}`)
+          }
+          return { code: statements.join('\n'), map: null }
         }
 
         const code = await nuxt.buildOutputs[key]()
@@ -292,7 +325,11 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         const replacements = new Map<string, string>()
         for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
           if (!DEFERRED_KEYS.has(key)) { continue }
-          replacements.set(sentinel(specifier), `(${await getDeferredExpression(nuxt, key)})`)
+          const expressions = await getDeferredExpressions(nuxt, key)
+          replacements.set(sentinel(specifier), `(${expressions.get(undefined)})`)
+          for (const name of DEFERRED_NAMED_EXPORTS[key] ?? []) {
+            replacements.set(sentinel(specifier, name), `(${expressions.get(name) ?? 'undefined'})`)
+          }
         }
 
         const sourcemap = !!this.environment.config.build.sourcemap

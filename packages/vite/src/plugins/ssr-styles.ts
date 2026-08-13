@@ -113,6 +113,58 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     return true
   }
 
+  // For each emitted CSS file (base name) whose link is only safe to drop on
+  // requests that actually rendered the components inlining it, the groups of
+  // component ids that inline each of its CSS sources. A request may drop the
+  // link when every group has at least one module in `ssrContext.modules`.
+  const inlinedCSSConditions = new Map<string, string[][]>()
+
+  const serializeInlinedCSSConditions = () => JSON.stringify(Object.fromEntries(inlinedCSSConditions))
+
+  /**
+   * Decide how a droppable CSS file should be handled, recording a render-time
+   * condition when some of its sources are only inlined for components that may
+   * not be server-rendered on a given request (for example a component used
+   * inside `<ClientOnly>` on one route and server-rendered on another).
+   *
+   * Returns `true` when the link can be removed from the manifest outright,
+   * i.e. every CSS source is inlined for an entry module, which is always in
+   * `ssrContext.modules`.
+   */
+  const dropCSSFile = (file: string, entryIds: Set<string>) => {
+    const cssFile = basename(file)
+    const sources = cssSourcesByCSSFile.get(cssFile)!
+    const conditions: string[][] = []
+    for (const cssId of sources) {
+      const consumers = inlinedCSSConsumers.get(cssId)
+      if (!consumers?.size) { continue }
+      let alwaysRendered = false
+      for (const consumer of consumers) {
+        if (entryIds.has(consumer)) {
+          alwaysRendered = true
+          break
+        }
+      }
+      if (!alwaysRendered) {
+        conditions.push(Array.from(consumers))
+      }
+    }
+    if (!conditions.length) { return true }
+    inlinedCSSConditions.set(cssFile, conditions)
+    return false
+  }
+
+  /**
+   * Record a render-time condition for CSS files attributed to a single
+   * component, used for rolldown-generated chunks whose CSS is matched to the
+   * component by filename rather than through the module graph.
+   */
+  const dropComponentCSSFile = (file: string, componentId: string, entryIds: Set<string>) => {
+    if (entryIds.has(componentId)) { return true }
+    inlinedCSSConditions.set(basename(file), [[componentId]])
+    return false
+  }
+
   // Remove CSS entries for files that will have inlined styles
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
@@ -134,16 +186,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
     for (const id of chunksWithInlinedCSS) {
       const chunk = manifest[id]
+      if (chunk?.isEntry && chunk.src) {
+        entryIds.add(chunk.src)
+      }
+    }
+
+    for (const id of chunksWithInlinedCSS) {
+      const chunk = manifest[id]
       if (!chunk) {
         continue
-      }
-      if (chunk.isEntry && chunk.src) {
-        entryIds.add(chunk.src)
-      } else {
-        // A chunk's CSS also covers the CSS of the chunks it imports, which can
-        // include sources this component does not inline (for example CSS pulled
-        // in by a non-Vue module elsewhere in the graph). Keep those links.
-        chunk.css &&= chunk.css.filter(file => !isDroppableCSSFile(file))
       }
       // Rolldown may split a component into a facade chunk (with no CSS) and
       // a shared code chunk (with CSS). Also clear CSS from directly imported
@@ -157,7 +208,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             // Only clear if ALL CSS files in the chunk match this component
             const allMatch = imported.css.every((css: string) => css.startsWith(componentBaseName + '.'))
             if (allMatch) {
-              imported.css = []
+              imported.css = imported.css.filter(file => !dropComponentCSSFile(file, id, entryIds))
             }
           }
         }
@@ -167,9 +218,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // Drop a CSS link when every CSS source module bundled into that asset has
     // already been inlined as a `<style>` tag during SSR. This prevents
     // duplicate styles when `inlineStyles` is enabled. (#30435)
+    //
+    // Whether the styles are inlined is only fully known per request: the
+    // `<style>` tags are emitted for the components in `ssrContext.modules`. A
+    // link is therefore only removed here when every source is inlined for an
+    // entry module; otherwise it is kept and the renderer drops it for the
+    // requests that did inline it. (#36058)
     for (const chunk of Object.values(manifest)) {
       if (!chunk.css?.length) { continue }
-      chunk.css = chunk.css.filter(file => !isDroppableCSSFile(file))
+      chunk.css = chunk.css.filter(file => !(isDroppableCSSFile(file) && dropCSSFile(file, entryIds)))
     }
 
     setBuildOutput('entryIds', () => `export default ${JSON.stringify(Array.from(entryIds))}`, nuxt)
@@ -237,7 +294,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         buildStart () {
           if (!envApi && this.environment.name === 'ssr') {
             const stylesPath = resolve(this.environment.config.build.outDir, 'styles.mjs')
-            setBuildOutput('ssrStyles', () => `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`, nuxt)
+            setBuildOutput('ssrStyles', () => [
+              `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`,
+              `export const inlinedCSS = ${serializeInlinedCSSConditions()}`,
+            ].join('\n'), nuxt)
           }
         },
         resolveId: {
@@ -367,7 +427,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           if (envApi) {
             const envEntries = Object.entries(emitted).map(([key, value]) =>
               [key, `() => import('./${basename(this.getFileName(value))}').then(r => r.default || r || [])`]) as [string, string][]
-            setBuildOutput('ssrStyles', () => `export default ${genObjectFromRawEntries(envEntries)}`, nuxt)
+            setBuildOutput('ssrStyles', () => [
+              `export default ${genObjectFromRawEntries(envEntries)}`,
+              `export const inlinedCSS = ${serializeInlinedCSSConditions()}`,
+            ].join('\n'), nuxt)
           }
         },
         renderChunk (_code, chunk) {
