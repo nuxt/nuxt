@@ -155,6 +155,7 @@ export default withMatrix({
     decorators: true,
     typedPages: true,
     clientFallback: true,
+    prerenderErrorPages: true,
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
@@ -204,6 +205,7 @@ export default withMatrix({
         '/random/b',
         '/random/c',
         '/prefetch/server-components',
+        '/404.html',
       ],
     },
   },
