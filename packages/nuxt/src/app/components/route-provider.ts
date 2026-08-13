@@ -4,6 +4,8 @@ import type { RouteLocationNormalizedLoaded, RouteRecordNormalized } from 'vue-r
 import { renderDiagnostics } from '../diagnostics/render'
 import { trackRenderedRecord } from '../diagnostics/rendered-records'
 import { PageRouteSymbol } from './injections'
+import { ViewTransitionStage } from './view-transition-stage'
+import type { PendingViewTransition } from '../view-transitions'
 
 interface RouteProviderProps {
   route: RouteLocationNormalizedLoaded
@@ -13,6 +15,7 @@ interface RouteProviderProps {
   trackRootNodes?: boolean
   /** the matched route record this provider renders, used by dev-only render diagnostics */
   routeRecord?: RouteRecordNormalized
+  stage?: PendingViewTransition
 }
 
 export type RouteProviderComponent = DefineSetupFnComponent<RouteProviderProps>
@@ -29,6 +32,7 @@ export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderCompon
     renderKey: String,
     trackRootNodes: Boolean,
     routeRecord: Object as () => RouteRecordNormalized,
+    stage: Object as () => PendingViewTransition,
   },
   setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -69,12 +73,12 @@ export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderCompon
       if (!props.vnode) {
         return props.vnode
       }
-      if (import.meta.dev && import.meta.client) {
-        vnode = h(props.vnode, { ref: props.vnodeRef })
-        return vnode
-      }
 
-      return h(props.vnode, { ref: props.vnodeRef })
+      vnode = h(props.vnode, { ref: props.vnodeRef })
+
+      return props.stage
+        ? h(ViewTransitionStage, { session: props.stage }, { default: () => vnode })
+        : vnode
     }
   },
 }) as unknown as RouteProviderComponent

@@ -3,6 +3,7 @@ import { useRouter } from '../composables/router'
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import type { ViewTransitionPageOptions } from 'nuxt/schema'
+import { cancelPendingViewTransition, createPendingViewTransition, supersedePendingViewTransition } from '../view-transitions'
 import { appViewTransition as defaultViewTransition } from '#build/nuxt.config.mjs'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
@@ -10,21 +11,25 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
     return
   }
 
-  let transition: undefined | ViewTransition
   let hasUAVisualTransition = false
-  let finishTransition: undefined | (() => void)
-  let abortTransition: undefined | (() => void)
 
   const resetTransitionState = () => {
-    transition = undefined
-    hasUAVisualTransition = false
-    abortTransition = undefined
-    finishTransition = undefined
+    delete nuxtApp._pendingViewTransition
+  }
+
+  const cancelTransition = () => {
+    const session = nuxtApp._pendingViewTransition
+    if (session) {
+      cancelPendingViewTransition(session)
+    }
+    resetTransitionState()
   }
 
   window.addEventListener('popstate', (event) => {
     hasUAVisualTransition = event.hasUAVisualTransition
-    if (hasUAVisualTransition) { transition?.skipTransition() }
+    if (hasUAVisualTransition) {
+      cancelTransition()
+    }
   })
 
   const router = useRouter()
@@ -40,7 +45,26 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
   }
 
   router.beforeResolve(async (to, from) => {
-    if (to.matched.length === 0) { return }
+    const previousSession = nuxtApp._pendingViewTransition
+    let supersededSession: typeof previousSession
+    if (previousSession) {
+      if (previousSession.status === 'claimed' || previousSession.status === 'preparing' || previousSession.status === 'ready') {
+        supersedePendingViewTransition(previousSession)
+        supersededSession = previousSession
+      } else if (previousSession.status === 'armed') {
+        // NuxtPage never claimed it, so discard the session instead of superseding.
+        cancelTransition()
+      } else if (previousSession.status === 'committing') {
+        // wait for the browser to commit the previous session before starting a new one
+        await previousSession.committed
+      }
+      resetTransitionState()
+    }
+
+    if (to.matched.length === 0) {
+      hasUAVisualTransition = false
+      return
+    }
 
     const toViewTransitionOptions = normalizeViewTransitionOptions(to.meta.viewTransition)
     const fromViewTransitionOptions = normalizeViewTransitionOptions(from.meta.viewTransition)
@@ -52,8 +76,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
       viewTransitionMode === false ||
       prefersNoTransition ||
       hasUAVisualTransition ||
-      !isChangingPage(to, from)
+      !isChangingPage(to, from) ||
+      // Skip when the layout changes as view transitions only support page swaps for now
+      to.meta.layout !== from.meta.layout
     ) {
+      hasUAVisualTransition = false
       return
     }
 
@@ -67,58 +94,50 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
       []
     const viewTransitionFromTypes = resolveViewTransitionTypes(fromViewTransitionOptions.fromTypes) ?? []
     const viewTransitionToTypes = resolveViewTransitionTypes(toViewTransitionOptions.toTypes) ?? []
-
-    const allTypes = [
+    const session = createPendingViewTransition(to, from, [
       ...viewTransitionBaseTypes,
       ...viewTransitionFromTypes,
       ...viewTransitionToTypes,
-    ]
-
-    const promise = new Promise<void>((resolve, reject) => {
-      finishTransition = resolve
-      abortTransition = reject
-    })
-
-    let changeRoute: () => void
-    const ready = new Promise<void>(resolve => (changeRoute = resolve))
-
-    const update = () => {
-      changeRoute()
-      return promise
+    ])
+    if (supersededSession) {
+      session.superseded = [supersededSession]
     }
 
-    // Use the object form (Level 2) only when types are specified,
-    // falling back to the callback form (Level 1) for broader browser support.
-    transition = allTypes.length > 0
-      ? document.startViewTransition!({ update, types: allTypes })
-      : document.startViewTransition!(update)
+    session.start = () => {
+      if (nuxtApp._pendingViewTransition !== session || session.status !== 'ready') {
+        return
+      }
 
-    transition.finished.catch(() => {}).finally(resetTransitionState)
+      try {
+        const update = async () => {
+          if (session.status === 'cancelled') { return }
+          session.status = 'committing'
+          session.resolveGate()
+          await session.committed
+        }
+        session.transition = session.types.length > 0
+          ? document.startViewTransition!({ update, types: session.types })
+          : document.startViewTransition!(update)
 
-    await nuxtApp.callHook('page:view-transition:start', transition)
+        // Existing consumers can still customize or skip the native transition.
+        void nuxtApp.callHook('page:view-transition:start', session.transition)
+        session.transition.ready.catch(() => {})
+        session.transition.finished.catch(() => {}).finally(() => {
+          session.status = 'finished'
+        })
+      } catch {
+        // commit the staged branch if the browser rejects starting a transition
+        session.status = 'committing'
+        session.resolveGate()
+      }
+    }
 
-    return ready
+    nuxtApp._pendingViewTransition = session
   })
 
-  router.onError(() => {
-    abortTransition?.()
-    resetTransitionState()
-  })
-
-  nuxtApp.hook('app:error', () => {
-    abortTransition?.()
-    resetTransitionState()
-  })
-
-  nuxtApp.hook('vue:error', () => {
-    abortTransition?.()
-    resetTransitionState()
-  })
-
-  nuxtApp.hook('page:finish', () => {
-    finishTransition?.()
-    resetTransitionState()
-  })
+  router.onError(cancelTransition)
+  nuxtApp.hook('app:error', cancelTransition)
+  nuxtApp.hook('vue:error', cancelTransition)
 })
 
 export default plugin
