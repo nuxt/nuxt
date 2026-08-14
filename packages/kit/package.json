@@ -44,7 +44,6 @@
     "nostics": "catalog:build",
     "nypm": "catalog:build",
     "pathe": "catalog:build",
-    "pkg-types": "catalog:build",
     "rc9": "catalog:build",
     "scule": "catalog:build",
     "std-env": "catalog:build",
@@ -92,6 +91,7 @@
     "nitro": "catalog:nitro-runtime",
     "nitropack": "catalog:dev",
     "oxc-parser": "catalog:build",
+    "pkg-types": "catalog:build",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "untyped": "catalog:build",
@@ -111,6 +111,7 @@
   },
   "inlinedDependencies": {
     "c12": "4.0.0-beta.5",
+    "pkg-types": "2.3.1",
     "untyped": "2.0.0"
   }
 }

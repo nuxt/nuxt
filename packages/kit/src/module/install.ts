@@ -4,7 +4,7 @@ import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptio
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
-import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
+import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
 import { read as readRc, update as updateRc } from 'rc9'
 import { isGreater, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
@@ -483,7 +483,7 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
     if (res !== false) {
       const moduleRoot = parsed.dir
         ? parsed.dir + parsed.name
-        : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
+        : resolvePackageDir(modulePath, { try: true }) || modulePath
       nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
       const directory = moduleRoot.replace(/\/?$/, '/')
       if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {

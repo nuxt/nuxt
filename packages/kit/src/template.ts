@@ -6,7 +6,7 @@ import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, Resolved
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { isGreaterOrEqual } from 'verkit'
-import { readPackageJSON } from 'pkg-types'
+import { readPackageJSON } from './internal/package-json.ts'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
