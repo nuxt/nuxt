@@ -81,6 +81,11 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Rename one of the layouts, or remove the duplicate layout registration.',
       docs: false,
     },
+    NUXT_B4015: {
+      why: (p: { asset: string, route: string, page?: string }) => `The public asset \`${p.asset}\` is served at \`${p.route}\` and overrides the page route${p.page ? ` defined in \`${p.page}\`` : ''}.`,
+      fix: 'Rename or move the public asset, change its public asset base URL, or remove the conflicting page.',
+      docs: false,
+    },
     NUXT_B4016: {
       why: (p: { path: string, detail: string }) => `Inline route rules for \`${p.path}\` cannot be represented exactly by Nitro route rules, so they were not applied: ${p.detail}.`,
       fix: 'Define the affected route rules explicitly in `nitro.routeRules`.',

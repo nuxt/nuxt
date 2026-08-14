@@ -54,6 +54,16 @@ export function packageName (specifier: string): string {
   return specifier[0] === '@' ? segments.slice(0, 2).join('/') : segments[0]!
 }
 
+export interface ResolveTypePathsOptions {
+  /**
+   * Resolve a bare package to the file its entry resolves to, rather than to the package root.
+   *
+   * A `paths` substitution naming a directory is only followed under `bundler` resolution.
+   * `nodenext`, which the `node` environment's tsconfig uses, requires it to name a file.
+   */
+  entry?: boolean
+}
+
 const rootCache = new Map<string, Promise<string | undefined>>()
 
 function resolveRoot (basePkg: string, from: Array<string | URL>): Promise<string | undefined> {
@@ -83,17 +93,22 @@ function resolveRoot (basePkg: string, from: Array<string | URL>): Promise<strin
  *
  * Returns `[specifier, absolutePath]` pairs, omitting any specifier that cannot be resolved.
  */
-export async function resolveTypePaths (packages: string[], searchPaths: string[]): Promise<Array<[string, string]>> {
+export async function resolveTypePaths (packages: string[], searchPaths: string[], options: ResolveTypePathsOptions = {}): Promise<Array<[string, string]>> {
   const from = searchPaths.map(d => directoryToURL(d))
 
   const settled = await Promise.allSettled(packages.map(async (pkg): Promise<[string, string] | undefined> => {
-    if (pkg === packageName(pkg)) {
+    if (pkg === packageName(pkg) && !options.entry) {
       const root = await resolveRoot(pkg, from)
       return root ? [pkg, root] : undefined
     }
 
     const resolved = resolveModulePath(pkg, { from, try: true, ...TYPE_RESOLVE_OPTIONS })
-    return resolved ? [pkg, await resolveDeclarationPath(resolved)] : undefined
+    if (resolved) {
+      return [pkg, await resolveDeclarationPath(resolved)]
+    }
+
+    const root = options.entry ? await resolveRoot(pkg, from) : undefined
+    return root ? [pkg, root] : undefined
   }))
 
   return settled.flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : [])

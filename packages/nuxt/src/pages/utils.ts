@@ -13,7 +13,7 @@ import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 import { getLoader } from '../core/utils/index.ts'
-import { logger, toArray } from '../utils.ts'
+import { linkToAlias, logger, offsetToPosition, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
 // ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   }
   const emitOptions: VueRouterEmitOptions = {
     onDuplicateRouteName: (_name, file, existingFile) => {
-      pageDiagnostics.NUXT_B4004({ file, existingFile })
+      pageDiagnostics.NUXT_B4004({ file: linkToAlias(file), existingFile: linkToAlias(existingFile) })
     },
     attrs: { mode: modes },
   }
@@ -117,6 +117,17 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
 // augmentAndResolve — downstream pipeline (augmentation + hooks)
 // ---------------------------------------------------------------------------
 
+/**
+ * Whether serializable page meta is written into the route record.
+ *
+ * The macro transform and route augmentation both have to agree on this, and neither can
+ * extract when page meta is not scanned at all: the route record does not override the macro
+ * module in that case, so extracting would duplicate the values rather than replace them.
+ */
+export function shouldExtractSerializablePageMeta (nuxt = useNuxt()): boolean {
+  return !!nuxt.options.experimental.scanPageMeta && !!nuxt.options.experimental.extractSerializablePageMeta
+}
+
 export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt(), originalPagePaths?: WeakMap<NuxtPage, string>): Promise<NuxtPage[]> {
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
@@ -132,6 +143,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
       'middleware',
       ...extraPageMetaExtractionKeys,
     ]),
+    extractSerializable: shouldExtractSerializablePageMeta(nuxt),
     fullyResolvedPaths: trackedFiles,
     originalPagePaths,
   }
@@ -155,6 +167,7 @@ interface AugmentPagesContext {
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
   extraExtractionKeys?: Set<string>
+  extractSerializable?: boolean
   originalPagePaths?: WeakMap<NuxtPage, string>
 }
 
@@ -163,7 +176,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
-      const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
+      const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys, { extractSerializable: ctx.extractSerializable })
       if (route.meta) {
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
       }
@@ -194,14 +207,18 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   return ctx.augmentedPages
 }
 
-const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/gi
+const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/dgi
 function extractScriptContent (sfc: string) {
-  const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
+  const contents: Array<{ loader: 'tsx' | 'ts', code: string, offset: number }> = []
   for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
-    if (match?.groups?.content) {
+    const content = match?.groups?.content
+    if (content) {
+      const [contentStart] = match.indices!.groups!.content!
       contents.push({
-        loader: match.groups.attrs && /[tj]sx/.test(match.groups.attrs) ? 'tsx' : 'ts',
-        code: match.groups.content.trim(),
+        loader: match.groups!.attrs && /[tj]sx/.test(match.groups!.attrs) ? 'tsx' : 'ts',
+        code: content.trim(),
+        // offsets within the trimmed script block are reported against the whole SFC
+        offset: contentStart + content.length - content.trimStart().length,
       })
     }
   }
@@ -253,16 +270,25 @@ export function resolvePageMetaExtractionKeys (extraKeys: Iterable<string> = [])
  * - `dynamic` - an extracted key whose value needs evaluating, so that one route field falls back
  *   to the macro module.
  * - `reshape` - the macro transform rewrites the property into keys the route record cannot
- *   express (`layout: { name, props }` becomes `layout` plus `layoutProps`), so the macro module
- *   resolves it.
+ *   express (`layout: { name, props }` becomes `layout` plus `layoutProps`). A `value` means the
+ *   reshaped keys are statically known, so the route record owns them; without one the macro
+ *   module resolves it.
  * - `runtime` - the property is not extracted at all, so the whole meta object falls back to the
  *   macro module.
  */
 export type PageMetaProperty =
   | { kind: 'extract', key: string, value: any }
   | { kind: 'dynamic', key: string }
-  | { kind: 'reshape', key: string, node: ESTree.ObjectExpression }
+  | { kind: 'reshape', key: string, node: ESTree.ObjectExpression, value?: { name: any, props?: any } }
   | { kind: 'runtime' }
+
+export interface ClassifyPageMetaOptions {
+  /**
+   * Extract any JSON-serializable property, not just the keys in `extractionKeys`. Properties
+   * whose values cannot be serialized still fall back to the macro module.
+   */
+  extractSerializable?: boolean
+}
 
 /**
  * Classify a property of a `definePageMeta` object literal.
@@ -271,7 +297,7 @@ export type PageMetaProperty =
  * record, and vice versa, or its value is lost. Both sides call this so that the two cannot
  * drift apart.
  */
-export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>): PageMetaProperty {
+export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>, options: ClassifyPageMetaOptions = {}): PageMetaProperty {
   // Spreads, computed keys, getters and methods cannot be resolved without evaluating the module.
   if (property.type !== 'Property' || property.computed || property.kind !== 'init' || property.method) {
     return { kind: 'runtime' }
@@ -295,40 +321,65 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
       subProperty.type === 'Property' && !subProperty.computed && subProperty.kind === 'init' && !subProperty.method
       && subProperty.key.type === 'Identifier' && (subProperty.key.name === 'name' || subProperty.key.name === 'props'),
     )
-    return reshapable ? { kind: 'reshape', key, node: value } : { kind: 'runtime' }
+    if (!reshapable) {
+      return { kind: 'runtime' }
+    }
+    if (options.extractSerializable) {
+      const serialized = isSerializable(value)
+      // Without a `name` there is no `layout` key to write, and a route record cannot express
+      // `layoutProps` on its own, so leave the whole object to the macro module.
+      if (serialized.serializable && serialized.value && 'name' in serialized.value) {
+        return { kind: 'reshape', key, node: value, value: serialized.value }
+      }
+    }
+    return { kind: 'reshape', key, node: value }
   }
 
-  if (!extractionKeys.has(key)) {
+  const isExtractionKey = extractionKeys.has(key)
+  if (!isExtractionKey && !options.extractSerializable) {
     return { kind: 'runtime' }
   }
 
   const serialized = isSerializable(property.value)
-  return serialized.serializable ? { kind: 'extract', key, value: serialized.value } : { kind: 'dynamic', key }
+  if (serialized.serializable) {
+    return { kind: 'extract', key, value: serialized.value }
+  }
+  // An unlisted key has no route field of its own to fall back to, so the whole meta object has
+  // to come from the macro module.
+  return isExtractionKey ? { kind: 'dynamic', key } : { kind: 'runtime' }
 }
 
+const SERIALIZABLE_CACHE_SUFFIX = '\0serializable'
 const pageContentsCache: Record<string, string> = {}
 const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set()): Partial<Record<keyof NuxtPage, any>> {
+export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {
+  // The extracted metadata differs between the two extraction modes, but the file contents do not.
+  const cacheKey = options.extractSerializable ? absolutePath + SERIALIZABLE_CACHE_SUFFIX : absolutePath
+
   // set/update pageContentsCache, invalidate extractCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
     delete extractCache[absolutePath]
+    delete extractCache[absolutePath + SERIALIZABLE_CACHE_SUFFIX]
   }
 
-  if (absolutePath in extractCache && extractCache[absolutePath]) {
-    return klona(extractCache[absolutePath])
+  if (cacheKey in extractCache && extractCache[cacheKey]) {
+    return klona(extractCache[cacheKey])
   }
 
   const loader = getLoader(absolutePath)
-  const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader }]
+  const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
   if (!scriptBlocks) {
-    extractCache[absolutePath] = {}
+    extractCache[cacheKey] = {}
     return {}
   }
 
   const extractedData: Partial<Record<keyof NuxtPage, any>> = {}
+  const fileAt = (offset: number) => linkToAlias(absolutePath, undefined, offsetToPosition(contents, offset))
 
   const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
+  // Widened for lookups by a property name that may not be a route field at all.
+  const routeFieldKeys: ReadonlySet<string> = extractionKeys
   const dynamicProperties = new Set<keyof NuxtPage>()
 
   for (const script of scriptBlocks) {
@@ -358,7 +409,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // top-level statement (nested in a condition, or used as an expression) does not mean what
       // it looks like it means.
       if (!topLevelCalls.has(node)) {
-        pageDiagnostics.NUXT_B4007({ fnName, file: absolutePath })
+        pageDiagnostics.NUXT_B4007({ fnName, file: fileAt(script.offset + node.start) })
       }
 
       // The macro transform reads the first call per macro (and errors on a second
@@ -369,7 +420,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       const argument = unwrapStaticExpression(node.arguments[0])
 
       if (argument?.type !== 'ObjectExpression') {
-        pageDiagnostics.NUXT_B4005({ fnName, file: absolutePath, receivedType: String(argument?.type) })
+        pageDiagnostics.NUXT_B4005({ fnName, file: fileAt(script.offset + node.start), receivedType: String(argument?.type) })
         if (fnName === 'definePageMeta') {
           // The macro module resolves the object at runtime, so the route record cannot own it.
           dynamicProperties.add('meta')
@@ -380,7 +431,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       if (fnName === 'defineRouteRules') {
         const { value, serializable } = isSerializable(argument)
         if (!serializable) {
-          pageDiagnostics.NUXT_B4006({ fnName, file: absolutePath })
+          pageDiagnostics.NUXT_B4006({ fnName, file: fileAt(script.offset + node.start) })
           continue
         }
 
@@ -388,12 +439,12 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         continue
       }
 
-      const classified = new Map<string, Extract<PageMetaProperty, { kind: 'extract' | 'dynamic' }>>()
+      const classified = new Map<string, Extract<PageMetaProperty, { kind: 'extract' | 'dynamic' | 'reshape' }>>()
       let hasRuntimeProperty = false
 
       for (const property of argument.properties) {
-        const classification = classifyPageMetaProperty(property, extractionKeys)
-        if (classification.kind === 'extract' || classification.kind === 'dynamic') {
+        const classification = classifyPageMetaProperty(property, extractionKeys, options)
+        if (classification.kind === 'extract' || classification.kind === 'dynamic' || (classification.kind === 'reshape' && classification.value)) {
           // A duplicate key keeps its last occurrence, mirroring object-literal evaluation.
           classified.set(classification.key, classification)
           continue
@@ -405,10 +456,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // independent of the order they were written in.
       for (const key of extractionKeys) {
         const classification = classified.get(key)
-        if (!classification) { continue }
+        if (!classification || classification.kind === 'reshape') { continue }
 
         if (classification.kind === 'dynamic') {
-          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${fileAt(script.offset + node.start)}\`).`)
           dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
           continue
         }
@@ -419,6 +470,21 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         } else {
           extractedData[key] = classification.value
         }
+      }
+
+      // Keys with no route field of their own keep the order they were written in.
+      for (const [key, classification] of classified) {
+        if (classification.kind === 'reshape') {
+          extractedData.meta ??= {}
+          extractedData.meta.layout = classification.value!.name
+          if (classification.value!.props !== undefined) {
+            extractedData.meta.layoutProps = classification.value!.props
+          }
+          continue
+        }
+        if (routeFieldKeys.has(key) || classification.kind !== 'extract') { continue }
+        extractedData.meta ??= {}
+        extractedData.meta[key] = classification.value
       }
 
       if (hasRuntimeProperty) {
@@ -432,7 +498,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
   }
 
-  extractCache[absolutePath] = extractedData
+  extractCache[cacheKey] = extractedData
   return klona(extractedData)
 }
 
@@ -449,14 +515,39 @@ interface NormalizeRoutesOptions {
   clientComponentRuntime: string
 }
 
+// A page that can only render in one environment is imported there and stubbed
+// in the other, dropping its component from the bundle it can never be used in.
+const PAGE_STUBS = {
+  // Navigation to a `noScripts` route is a document load (see the guard in
+  // `runtime/plugins/router.ts`); the stub only recovers the right document if
+  // the route is somehow reached anyway.
+  noScripts: {
+    env: 'server',
+    name: '_noScriptsPageStub',
+    declaration: '\nconst _noScriptsPageStub = { mounted: () => window.location.reload(), render: () => null };',
+  },
+  // The server only ever emits the SPA shell for an `ssr: false` route.
+  spaOnly: {
+    env: 'client',
+    name: '_spaOnlyPageStub',
+    declaration: '\nconst _spaOnlyPageStub = { render: () => null };',
+  },
+} as const
+
 function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined, islandKey: string | undefined): string {
   if (page.mode === 'server') {
     return `() => createIslandPage(${routeName}, import.meta.server ? ${islandKey} : undefined)`
   }
   if (page.mode === 'client') {
-    return `() => createClientPage(${pageImport})`
+    return `() => createClientPage(${onlyOnClient(pageImport)})`
   }
   return pageImport
+}
+
+// Dropping the loader on the server keeps the page chunk out of that bundle;
+// `createClientPage` falls back to a placeholder without it.
+function onlyOnClient (pageImport: string) {
+  return `import.meta.client ? ${pageImport} : undefined`
 }
 
 function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | undefined, pageImportName: string, pageImport: string, routeName: string | undefined, metaRouteName: string, islandKey: string | undefined): string {
@@ -469,7 +560,7 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
   }
   // Client components return a processed component (not a module with .default)
   if (page.mode === 'client') {
-    return `() => createClientPage(${pageImport}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
+    return `() => createClientPage(${onlyOnClient(pageImport)}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
   }
   return `${pageImport}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
 }
@@ -479,7 +570,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
+      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] as Set<string> | undefined ?? new Set<string>()
       const metaFiltered: Record<string, any> = {}
       let skipMeta = true
       for (const key in page.meta || {}) {
@@ -520,11 +611,22 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
-      if (page._sync) {
+      const stub = page._noScripts ? PAGE_STUBS.noScripts : page._spaOnly ? PAGE_STUBS.spaOnly : undefined
+      if (stub) {
+        metaImports.add(stub.declaration)
+      }
+      const restrictToEnvironment = (loader: string) => stub
+        ? `import.meta.${stub.env} ? ${loader} : () => Promise.resolve(${stub.name})`
+        : loader
+
+      // A statically imported page would be linked into the bundle it is being
+      // dropped from even when its component is never referenced there, so
+      // environment-restricted pages fall back to a droppable dynamic import
+      if (page._sync && !stub) {
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const isSyncImport = page._sync && page.mode !== 'client'
+      const isSyncImport = page._sync && page.mode !== 'client' && !stub
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
       // Mirror whatever the route's own `name` resolves to below, so that a name extracted at
       // build time does not pull in the macro module purely to set `__name`. That import is the
@@ -539,9 +641,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? JSON.stringify(hash(relative(nuxt.options.rootDir, page.file)))
         : undefined
 
-      const component = nuxt.options.experimental.normalizePageNames
+      const component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
-        : normalizeComponent(page, pageImport, route.name, islandKey)
+        : normalizeComponent(page, pageImport, route.name, islandKey))
 
       // Named views from the `name@view.vue` filename convention. The scanner
       // emits `components: { default: <file>, <view>: <file> }`.
@@ -552,7 +654,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         for (const viewName in page.components) {
           if (viewName === 'default') { continue }
           const viewFile = normalize(page.components[viewName]!)
-          viewEntries.push(`${JSON.stringify(viewName)}: ${genDynamicImport(viewFile)}`)
+          viewEntries.push(`${JSON.stringify(viewName)}: ${restrictToEnvironment(genDynamicImport(viewFile))}`)
         }
         if (viewEntries.length > 0) {
           componentsObject = `{ default: ${component}, ${viewEntries.join(', ')} }`

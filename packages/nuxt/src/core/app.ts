@@ -1,12 +1,12 @@
 import { promises as fsp, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { performance } from 'node:perf_hooks'
-import { dirname, join, relative, resolve } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { Diagnostic } from 'nostics'
 import { buildDiagnostics, findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, pageDiagnostics, pluginDiagnostics, resolveFiles, resolvePath } from '@nuxt/kit'
 
-import { logger, resolveToAlias } from '../utils.ts'
+import { linkToAlias, logger } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
 import type { ExtractedPluginMeta, PluginBuildMode } from './plugins/plugin-metadata.ts'
@@ -116,12 +116,15 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const compileTime = Math.round((perf * 100)) / 100
 
     if ((nuxt.options.debug && nuxt.options.debug.templates) || compileTime > 500) {
-      logger.info(`Compiled \`${template.filename}\` in ${compileTime}ms`)
+      logger.info(`Compiled \`${linkToAlias(fullPath, nuxt)}\` in ${compileTime}ms`)
     }
 
     if (template.modified && template.write && !matchesDisk(fullPath, contents)) {
       dirs.add(dirname(fullPath))
       writes.push(() => writeFileSync(fullPath, contents, 'utf8'))
+      if (nuxt.options.debug && nuxt.options.debug.templates) {
+        logger.info(`Writing \`${template.filename}\` to \`${linkToAlias(fullPath, nuxt)}\``)
+      }
     }
   }
 
@@ -208,7 +211,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file, dirs.appLayouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
-        pageDiagnostics.NUXT_B4009({ file: resolveToAlias(file, nuxt) })
+        pageDiagnostics.NUXT_B4009({ file: linkToAlias(file, nuxt) })
         continue
       }
       layouts[name] ||= { name, file }
@@ -226,7 +229,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
-        pageDiagnostics.NUXT_B4010({ file: resolveToAlias(file, nuxt) })
+        pageDiagnostics.NUXT_B4010({ file: linkToAlias(file, nuxt) })
         continue
       }
       middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
@@ -313,7 +316,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promi
         ...plugin,
       })
     } catch (e) {
-      const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
+      const relativePluginSrc = linkToAlias(plugin.src, nuxt)
       const code = e instanceof Error ? e.name : ''
       if (code === 'NUXT_B2001' || code === 'NUXT_B2002') {
         pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc })

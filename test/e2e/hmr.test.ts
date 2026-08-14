@@ -174,6 +174,29 @@ test.describe('vite-only HMR tests', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
+  test('HMR for page meta crossing the static extraction boundary', async ({ page, goto }) => {
+    const pageContents = readFileSync(join(sourceDir, 'app/pages/page-meta.vue'), 'utf8')
+    const write = (value: string) => writeFileSync(join(fixtureDir, 'app/pages/page-meta.vue'), pageContents.replace(`some: 'stuff'`, value))
+
+    write(`some: 'stuff'`)
+    await goto('/page-meta')
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
+
+    // A template literal cannot be serialized, so the route record hands `meta` back to the
+    // macro module and the generated route gains an import it did not previously have.
+    write('some: `other ${\'stuff\'}`')
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'other stuff' }, null, 2))
+
+    // ...and dropping back to a serializable value has to remove that import again.
+    write(`some: 'final stuff'`)
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'final stuff' }, null, 2))
+
+    write(`some: 'stuff'`)
+    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
   test('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
     await goto('/state-component')
 

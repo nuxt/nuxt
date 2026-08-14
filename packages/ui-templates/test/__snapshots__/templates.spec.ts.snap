@@ -22,6 +22,12 @@ exports[`template > produces correct output for error-404 template 1`] = `
 .flex {
   display: flex;
 }
+.cursor-pointer {
+  cursor: pointer;
+}
+.appearance-none {
+  appearance: none;
+}
 .place-content-center {
   place-content: center;
 }
@@ -34,9 +40,18 @@ exports[`template > produces correct output for error-404 template 1`] = `
 .overflow-hidden {
   overflow: hidden;
 }
+.border-0 {
+  border-width: 0;
+}
+.bg-transparent {
+  background-color: #0000;
+}
 .bg-white {
   --un-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--un-bg-opacity));
+}
+.p-0 {
+  padding: 0;
 }
 .px-2 {
   padding-left: 0.5rem;
@@ -67,6 +82,9 @@ exports[`template > produces correct output for error-404 template 1`] = `
 .hover\\:text-\\[\\#00DC82\\]:hover {
   --un-text-opacity: 1;
   color: rgb(0 220 130 / var(--un-text-opacity));
+}
+.text-inherit {
+  color: inherit;
 }
 .font-medium {
   font-weight: 500;
@@ -174,14 +192,40 @@ h2 {
   font-weight: inherit;
 }
 a {
-  color: inherit;
   -webkit-text-decoration: inherit;
   text-decoration: inherit;
+}
+a,
+button {
+  color: inherit;
+}
+button {
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  font-family: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+  text-transform: none;
+}
+[type="button"],
+button {
+  -webkit-appearance: button;
+  background-color: #0000;
+  background-image: none;
 }
 h1,
 h2,
 p {
   margin: 0;
+}
+button {
+  cursor: pointer;
+}
+[hidden]:where(:not([hidden="until-found"])) {
+  display: none;
 }
 *,
 :after,

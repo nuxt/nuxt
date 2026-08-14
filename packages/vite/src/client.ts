@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger } from '@nuxt/kit'
+import { logger, recoverThrottledChanges } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 
@@ -93,7 +93,11 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     // Dev
     const viteServer = await vite.createServer(clientConfig)
     ctx.clientServer = viteServer
-    nuxt.hook('close', () => viteServer.close())
+    const disposeWatchRecovery = recoverThrottledChanges(viteServer.watcher)
+    nuxt.hook('close', () => {
+      disposeWatchRecovery()
+      return viteServer.close()
+    })
     await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
   } else {
     // Build

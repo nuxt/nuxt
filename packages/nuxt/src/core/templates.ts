@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
@@ -8,14 +8,18 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { useNitro } from '@nuxt/kit'
+import { resolveModulePath } from 'exsolve'
 
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
+const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
+
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
+  dependsOn: [],
   getContents: ({ nuxt }) => {
     if (!nuxt.options.typescript.shim) {
       return ''
@@ -34,11 +38,13 @@ export const vueShim: NuxtTemplate = {
 // TODO: Use an alias
 export const appComponentTemplate: NuxtTemplate = {
   filename: 'app-component.mjs',
+  dependsOn: [],
   getContents: ctx => genExport(ctx.app.mainComponent!, ['default']),
 }
 // TODO: Use an alias
 export const rootComponentTemplate: NuxtTemplate = {
   filename: 'root-component.mjs',
+  dependsOn: [],
   // TODO: fix upstream in vite - this ensures that vite generates a module graph for islands
   // but should not be necessary (and has a warmup performance cost). See https://github.com/nuxt/nuxt/pull/24584.
   getContents: ctx => (ctx.nuxt.options.dev ? 'import \'#build/components.islands.mjs\';\n' : '') + genExport(ctx.app.rootComponent!, ['default']),
@@ -46,10 +52,12 @@ export const rootComponentTemplate: NuxtTemplate = {
 // TODO: Use an alias
 export const errorComponentTemplate: NuxtTemplate = {
   filename: 'error-component.mjs',
+  dependsOn: [],
   getContents: ctx => genExport(ctx.app.errorComponent!, ['default']),
 }
 export const islandRendererTemplate: NuxtTemplate = {
   filename: 'island-renderer.mjs',
+  dependsOn: [],
   getContents (ctx) {
     if (!shouldEnableComponentIslands(ctx.nuxt, ctx.app)) {
       return 'const IslandRenderer = () => null\nexport default IslandRenderer'
@@ -66,17 +74,43 @@ export const islandRendererTemplate: NuxtTemplate = {
 // TODO: Use an alias
 export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
-  getContents: ctx => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default']),
+  dependsOn: [],
+  getContents: (ctx) => {
+    // bundlers that cannot resolve a fully dynamic import (webpack, rspack) need a static map of
+    // the files that may be requested. Vite resolves the import at request time, and a map would
+    // pull every component into the dev module graph, which leaks their styles into the CSS the
+    // dev server reports for a request.
+    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder'
+    if (!ctx.nuxt.options.test || !ctx.nuxt.options.dev || !needsComponentMap) {
+      return genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
+    }
+
+    const paths = new Set<string>()
+    for (const component of ctx.app.components) {
+      if (!component._raw) {
+        paths.add(component.filePath)
+      }
+    }
+    return [
+      genImport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), 'testComponentWrapper'),
+      `const componentLoaders = {`,
+      ...[...paths].map(path => `  ${JSON.stringify(path)}: () => ${genDynamicImport(path, { wrapper: false })},`),
+      `}`,
+      `export default url => testComponentWrapper(url, componentLoaders)`,
+    ].join('\n')
+  },
 }
 
 export const cssTemplate: NuxtTemplate = {
   filename: 'css.mjs',
+  dependsOn: [],
   getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n'),
 }
 
 const PLUGIN_TEMPLATE_RE = /_(?:45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins.client.mjs',
+  dependsOn: ['plugins'],
   async getContents (ctx) {
     const allPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => ctx.nuxt.options.dev || !p.mode || p.mode !== 'server'))
     const clientPlugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => !p.mode || p.mode !== 'server'), { warn: ctx.nuxt.options.dev, mode: 'client', allPlugins }))
@@ -99,6 +133,7 @@ export const clientPluginTemplate: NuxtTemplate = {
 
 export const serverPluginTemplate: NuxtTemplate = {
   filename: 'plugins.server.mjs',
+  dependsOn: ['plugins'],
   async getContents (ctx) {
     const allPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => ctx.nuxt.options.dev || !p.mode || p.mode !== 'client'))
     const serverPlugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => !p.mode || p.mode !== 'client'), { warn: ctx.nuxt.options.dev, mode: 'server', allPlugins }))
@@ -123,6 +158,7 @@ const TS_RE = /\.[cm]?tsx?$/
 const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
+  dependsOn: ['plugins'],
   getContents: async ({ nuxt, app }) => {
     const EXTENSION_RE = new RegExp(`(?<=\\w)(${nuxt.options.extensions.map(e => escapeRE(e)).join('|')})$`, 'g')
 
@@ -191,6 +227,7 @@ const IMPORT_NAME_RE = /\.\w+$/
 const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/runtime-config.d.ts',
+  dependsOn: [],
   getContents: async ({ nuxt }) => {
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
@@ -235,9 +272,33 @@ export const schemaTemplate: NuxtTemplate = {
 }
 export const schemaNodeTemplate: NuxtTemplate = {
   filename: 'types/modules.d.ts',
+  dependsOn: [],
   getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
-    const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
+    // The `node` environment resolves as `nodenext` from v5, which will not retry extensions for
+    // a path that does not name a file, so a module's own entry has to be named in full.
+    const keepExtension = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
+    const moduleExtensions = [...nuxt.options.extensions, '.mjs', '.cjs']
+    const getImportName = (name: string) => {
+      const specifier = name[0] === '.' ? './' + join(relativeRoot, name) : name
+      if (!keepExtension) {
+        return specifier.replace(IMPORT_NAME_RE, '')
+      }
+      if (IMPORT_NAME_RE.test(specifier) || (name[0] !== '.' && !isAbsolute(name))) {
+        return specifier
+      }
+      // A module registered by an aliased or extensionless path is recorded without one
+      const absolutePath = resolve(nuxt.options.rootDir, name)
+      for (const extension of moduleExtensions) {
+        if (existsSync(absolutePath + extension)) {
+          return specifier + extension
+        }
+        if (existsSync(join(absolutePath, 'index' + extension))) {
+          return specifier + '/index' + extension
+        }
+      }
+      return specifier
+    }
 
     const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
     for (const m of nuxt.options._installedModules) {
@@ -327,6 +388,7 @@ export const schemaNodeTemplate: NuxtTemplate = {
 // Add layouts template
 export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
       return [name, `defineAsyncComponent(${genDynamicImport(file, { interopDefault: true })})`]
@@ -341,6 +403,7 @@ export const layoutTemplate: NuxtTemplate = {
 // Add middleware template
 export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
+  dependsOn: [],
   getContents ({ app, nuxt }) {
     const globalMiddleware = app.middleware.filter(mw => mw.global)
     const namedMiddleware = app.middleware.filter(mw => !mw.global)
@@ -379,6 +442,7 @@ export const middlewareTemplate: NuxtTemplate = {
 
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
+  dependsOn: [],
   getContents: ({ nuxt }) => {
     const appId = JSON.stringify(nuxt.options.appId)
     return [
@@ -409,6 +473,7 @@ type MergedAppConfig<Resolved extends Record<string, unknown>, Custom extends Re
 
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
+  dependsOn: [],
   getContents ({ app, nuxt }) {
     const typesDir = join(nuxt.options.buildDir, 'types')
     const configPaths = app.configs.map(path => relative(typesDir, path).replace(EXTENSION_RE, ''))
@@ -441,6 +506,7 @@ declare module '@nuxt/schema' {
 // server programs (https://github.com/nuxt/nuxt/issues/34140).
 export const sharedAppConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/shared-app.config.d.ts',
+  dependsOn: [],
   getContents ({ nuxt }) {
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
@@ -460,6 +526,7 @@ declare module '@nuxt/schema' {
 
 export const appConfigTemplate: NuxtTemplate = {
   filename: 'app.config.mjs',
+  dependsOn: [],
   write: true,
   getContents ({ app, nuxt }) {
     return `
@@ -489,9 +556,10 @@ export default /*@__PURE__*/ defuFn(${app.configs.map((_id: string, index: numbe
 
 export const publicPathTemplate: NuxtTemplate = {
   filename: 'paths.mjs',
+  dependsOn: [],
   getContents ({ nuxt }) {
     return [
-      'import { joinRelativeURL } from \'ufo\'',
+      `import { joinRelativeURL } from ${JSON.stringify(ufoPath)}`,
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
@@ -520,6 +588,7 @@ export const publicPathTemplate: NuxtTemplate = {
 
 export const globalPolyfillsTemplate: NuxtTemplate = {
   filename: 'global-polyfills.mjs',
+  dependsOn: [],
   getContents () {
     // Node.js compatibility
     return `
@@ -531,6 +600,7 @@ if (!("global" in globalThis)) {
 
 export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.mjs',
+  dependsOn: [],
   getContents () {
     return [
       'import { $fetch as _$fetch } from \'ofetch\'',
@@ -547,6 +617,7 @@ export const dollarFetchTemplate: NuxtTemplate = {
 
 export const dollarFetchTypeTemplate: NuxtTemplate = {
   filename: 'fetch.d.ts',
+  dependsOn: [],
   getContents () {
     return 'export declare const $fetch: import(\'nitropack/types\').$Fetch\n'
   },
@@ -569,6 +640,9 @@ function shouldEnableComponentIslands (nuxt: { options: NuxtOptions }, app: Nuxt
 // Allow direct access to specific exposed nuxt.config
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
+  // `payloadExtraction` below is derived from nitro route rules, and `defineRouteRules`
+  // (`experimental.inlineRouteRules`) extracts those from page sources
+  dependsOn: ['plugins', 'pages'],
   async getContents (ctx) {
     const annotatedPlugins = ctx.nuxt.options.dev || ctx.nuxt.options.test
       ? null
@@ -616,6 +690,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
       `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,
+      `export const stripNeverHydratedData = ${!!ctx.nuxt.options.experimental.stripNeverHydratedData}`,
       `export const pendingWhenIdle = ${!!ctx.nuxt.options.experimental.pendingWhenIdle}`,
       `export const alwaysRunFetchOnKeyChange = ${!!ctx.nuxt.options.experimental.alwaysRunFetchOnKeyChange}`,
       `export const asyncCallHook = ${!!ctx.nuxt.options.experimental.asyncCallHook}`,
@@ -634,6 +709,7 @@ const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
 const DECLARATION_RE = /\.d\.[cm]?ts$/
 export const buildTypeTemplate: NuxtTemplate = {
   filename: 'types/build.d.ts',
+  dependsOn: [],
   getContents ({ app }) {
     let declarations = ''
 

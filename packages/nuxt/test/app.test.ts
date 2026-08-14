@@ -58,6 +58,7 @@ describe('resolveApp', () => {
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
           },
           {
+            "dependsOn": [],
             "filename": "components.plugin.mjs",
             "getContents": [Function],
             "mode": "all",

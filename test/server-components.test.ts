@@ -12,8 +12,6 @@ import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/util
 import { isDev, isRenderingJson, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
-const itFailsIf = (condition: boolean) => condition ? it.fails : it
-
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
   const ctx = opts.context ?? {}
@@ -231,6 +229,22 @@ describe('server components/islands', () => {
     expect(html.match(/Hello this is a server page/g)).toHaveLength(1)
   })
 
+  it('/server-page - island response is prefetched by NuxtLink', async () => {
+    const { page, requests } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+
+    const isServerPageIsland = (req: string) => /^\/__nuxt_island\/page_server-page_/.test(req)
+
+    expect(requests.some(isServerPageIsland)).toBe(true)
+    requests.length = 0
+
+    await page.getByText('to server page').click()
+    await page.waitForFunction(() => !!document.head.querySelector('meta[name="author"][content="Nuxt"]'))
+
+    expect(requests.some(isServerPageIsland)).toBe(false)
+    await page.close()
+  })
+
   it('/server-page-with-nuxtpage/child renders the parent server page with the child route', async () => {
     const html = await $fetch<string>('/server-page-with-nuxtpage/child')
     expect(html).toContain('id="server-page-with-nuxtpage"')
@@ -398,7 +412,7 @@ describe('component islands', () => {
     })
   }
 
-  itFailsIf(isWebpack && isDev)('renders pure components', async () => {
+  it('renders pure components', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', {
       props: {
         bool: false,
@@ -431,6 +445,11 @@ describe('component islands', () => {
           ],
         }
       `)
+    } else if (isWebpack) {
+      // island CSS is delivered by the vite dev server module graph, which webpack/rspack have no
+      // equivalent for in dev: https://github.com/nuxt/nuxt/issues/35573
+      expect(result.head.link).toBeUndefined()
+      expect(result.head.style).toBeUndefined()
     } else {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139

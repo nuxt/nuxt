@@ -16,11 +16,14 @@
     "nuxt": "bin/nuxt.mjs"
   },
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "types": "./types.dev.d.ts",
+      "default": "./src/index.ts"
+    },
     "./config": {
       "types": "./config.d.ts",
       "import": "./config.js",
-      "require": "./config.cjs"
+      "require": "./config.js"
     },
     "./schema": "./schema.js",
     "./kit": "./kit.js",
@@ -90,6 +93,7 @@
     "@unhead/vue": "catalog:app-runtime",
     "@vue/shared": "catalog:app-runtime",
     "chokidar": "catalog:build",
+    "clickable-path": "catalog:build",
     "compatx": "catalog:build",
     "consola": "catalog:app-runtime",
     "cookie-es": "catalog:app-runtime",
@@ -106,10 +110,8 @@
     "klona": "catalog:app-runtime",
     "knitwork": "catalog:build",
     "magic-string": "catalog:vite",
-    "mlly": "catalog:build",
     "nanotar": "catalog:build",
     "nostics": "catalog:app-runtime",
-    "nypm": "^0.6.9",
     "object-identity": "catalog:app-runtime",
     "ofetch": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",

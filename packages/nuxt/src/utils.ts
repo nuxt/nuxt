@@ -1,6 +1,9 @@
 import { promises as fsp, statSync } from 'node:fs'
 import { tryUseNuxt, useLogger } from '@nuxt/kit'
+import { link } from 'clickable-path'
 import { reverseResolveAlias } from 'pathe/utils'
+
+import type { Nuxt } from '@nuxt/schema'
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
@@ -69,4 +72,42 @@ export function resolveToAlias (path: string, nuxt = tryUseNuxt()) {
 const strippedAtAliases = {
   '@': '',
   '@@': '',
+}
+
+const QUERY_RE = /\?.*$/
+
+interface Position { line?: number, column?: number }
+
+/** Convert a 0-based offset within `code` into a 1-based line and column. */
+export function offsetToPosition (code: string, offset: number): Position {
+  let line = 1
+  let lineStart = 0
+  const end = Math.min(offset, code.length)
+  for (let i = 0; i < end; i++) {
+    if (code.charCodeAt(i) === 10 /* \n */) {
+      line++
+      lineStart = i + 1
+    }
+  }
+  return { line, column: end - lineStart + 1 }
+}
+
+/**
+ * Format `path` as its aliased form (`~/pages/index.vue`), wrapped in an OSC 8
+ * hyperlink so that supporting terminals can open the file at `line`/`column`.
+ *
+ * Aliased paths cannot be opened by clicking, and the hyperlink target is an
+ * absolute `file://` URL that isn't rendered, so the printed text is unchanged.
+ *
+ * Any module query (`?vue&type=template`) is dropped, as it is not part of the
+ * path on disk.
+ */
+export function linkToAlias (path: string, nuxt: Nuxt | null = tryUseNuxt(), position?: Position) {
+  return link(path.replace(QUERY_RE, ''), {
+    ...position,
+    cwd: nuxt?.options.rootDir,
+    // without a Nuxt instance there are no aliases to resolve against, so the
+    // default `cwd`-relative label applies
+    formatter: nuxt ? (absolute, line, column) => resolveToAlias(absolute, nuxt) + (line === undefined ? '' : `:${line}${column === undefined ? '' : `:${column}`}`) : undefined,
+  })
 }

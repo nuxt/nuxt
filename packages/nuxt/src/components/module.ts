@@ -4,7 +4,7 @@ import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addT
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, linkToAlias, logger } from '../utils.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
@@ -14,6 +14,7 @@ import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
 import { TransformPlugin } from './plugins/transform.ts'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
+import { ClientComponentStubPlugin } from './plugins/client-component-stub.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
@@ -100,7 +101,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          componentDiagnostics.NUXT_B3001({ dirPath })
+          componentDiagnostics.NUXT_B3001({ dirPath: linkToAlias(dirPath, nuxt) })
         }
 
         const inNodeModules = dirPath.includes('node_modules')
@@ -186,7 +187,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
       const path = resolve(nuxt.options.srcDir, relativePath)
       if (componentDirs.some(dir => dir.path === path)) {
-        logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        logger.info(`Directory \`${linkToAlias(path, nuxt)}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
     })
@@ -245,6 +246,13 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     addBuildPlugin(TreeShakeTemplatePlugin({ getComponents }), { client: false })
+
+    addBuildPlugin(ClientComponentStubPlugin({
+      getComponents,
+      serverPlaceholderPath,
+      alias: nuxt.options.alias,
+      dev: nuxt.options.dev,
+    }), { client: false })
 
     const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
 
@@ -314,6 +322,7 @@ export default defineNuxtModule<ComponentsOptions>({
       } else {
         addTemplate({
           filename: 'component-chunk.mjs',
+          dependsOn: [],
           getContents: () => `export default {}`,
         })
       }

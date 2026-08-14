@@ -24,6 +24,10 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 // thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if RawVueCompilerOptions is available.
 export type VueTSConfig = 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
+export interface NuxtPageMeta {
+  [key: PropertyKey]: unknown
+}
+
 export interface NuxtPage {
   name?: string
   path: string
@@ -36,7 +40,7 @@ export interface NuxtPage {
    * option so multiple `<NuxtPage name="..." />` outlets can render.
    */
   components?: Record<string, string>
-  meta?: Record<string, any>
+  meta?: NuxtPageMeta
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
@@ -53,6 +57,19 @@ export interface NuxtPage {
   mode?: 'client' | 'server' | 'all'
   /** @internal */
   _sync?: boolean
+  /**
+   * The page is served by a `noScripts` route rule: its component is excluded
+   * from the client bundle and client-side navigation to it triggers a full
+   * document load.
+   * @internal
+   */
+  _noScripts?: boolean
+  /**
+   * The page is served by an `ssr: false` route rule, so its component is
+   * excluded from the server bundle.
+   * @internal
+   */
+  _spaOnly?: boolean
 }
 
 export type NuxtMiddleware = {

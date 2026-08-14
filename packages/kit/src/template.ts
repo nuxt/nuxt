@@ -230,6 +230,28 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
 async function getPathSubstitution (absolutePath: string, buildDir: string): Promise<string> {
   return relativeWithDot(buildDir, await resolveDeclarationPath(absolutePath))
 }
+
+// Ordered by how specific the declaration is, so a hand-written `.d.ts` wins over the source it
+// describes, and TypeScript sources win over emitted JavaScript.
+const TS_PATH_TARGET_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']
+
+/**
+ * Resolve an extensionless `paths` target to the file TypeScript should load for it.
+ *
+ * `bundler` resolution retries a fixed set of extensions when a substitution is extensionless,
+ * but the `node` environment is resolved as `nodenext`, which does not: the target has to name a
+ * real file. Returns `undefined` when nothing matches, leaving the target untouched.
+ */
+async function resolveExtensionlessTarget (absolutePath: string): Promise<string | undefined> {
+  for (const extension of TS_PATH_TARGET_EXTENSIONS) {
+    const candidate = absolutePath + extension
+    if (await fsp.stat(candidate).then(s => s.isFile(), () => false)) {
+      return candidate
+    }
+  }
+  return undefined
+}
+
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
@@ -370,10 +392,10 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const isV5OrHigher = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
 
-  const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
+  const userExclude = [...(nuxt.options.typescript?.tsConfig?.exclude ?? []), ...(nuxt.options.typescript?.appTsConfig?.exclude ?? [])]
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
-  const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
+  const baseTsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: true,
@@ -431,37 +453,32 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...exclude],
   } satisfies TSConfig)
 
-  // This describes the environment where we load `nuxt.config.ts` (and modules)
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, baseTsConfig)
+
+  // `baseTsConfig.compilerOptions` already merges the user's global `typescript.tsConfig` with
+  // Nuxt's defaults. The `node` and `shared` environments load `nuxt.config` and modules, so
+  // they inherit that baseline minus the app-only (DOM/Vue) options, and always emit nothing,
+  // scan no ambient types, and start from empty `paths` (filled in below).
+  const appOnlyCompilerOptions = ['lib', 'libReplacement', 'jsx', 'jsxImportSource', 'noUncheckedSideEffectImports', 'experimentalDecorators'] as const
+  const nonAppCompilerOptions = (): NonNullable<TSConfig['compilerOptions']> => {
+    const compilerOptions = { ...baseTsConfig.compilerOptions }
+    for (const key of appOnlyCompilerOptions) {
+      delete compilerOptions[key]
+    }
+    return { ...compilerOptions, noEmit: true, types: [], paths: {} }
+  }
+
+  // This describes the environment where we load `nuxt.config.ts` (and modules).
   const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
     compilerOptions: {
-      /* Base options: */
-      esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
-      skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
-      target: tsConfig.compilerOptions?.target,
-      allowJs: tsConfig.compilerOptions?.allowJs,
-      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
-      resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
-      moduleDetection: tsConfig.compilerOptions?.moduleDetection,
-      isolatedModules: tsConfig.compilerOptions?.isolatedModules,
-      verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
-      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
-      /* Strictness */
-      strict: tsConfig.compilerOptions?.strict,
-      noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
-      forceConsistentCasingInFileNames: tsConfig.compilerOptions?.forceConsistentCasingInFileNames,
-      noImplicitOverride: tsConfig.compilerOptions?.noImplicitOverride,
-      /* If NOT transpiling with TypeScript: */
-      module: tsConfig.compilerOptions?.module,
-      noEmit: true,
-      /* remove auto-scanning for types */
-      types: [],
-      /* add paths object for filling-in later */
-      paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: tsConfig.compilerOptions?.moduleResolution,
-      useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
-      noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
-      allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
+      ...nonAppCompilerOptions(),
+      ...isV5OrHigher
+        ? {
+            module: 'nodenext',
+            moduleResolution: 'nodenext',
+            erasableSyntaxOnly: true,
+          }
+        : {},
     },
     include: [...nodeInclude],
     exclude: [...nodeExclude],
@@ -469,36 +486,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
   const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, {
-    compilerOptions: {
-      /* Base options: */
-      esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
-      skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
-      target: tsConfig.compilerOptions?.target,
-      allowJs: tsConfig.compilerOptions?.allowJs,
-      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
-      resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
-      moduleDetection: tsConfig.compilerOptions?.moduleDetection,
-      isolatedModules: tsConfig.compilerOptions?.isolatedModules,
-      verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
-      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
-      /* Strictness */
-      strict: tsConfig.compilerOptions?.strict,
-      noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
-      forceConsistentCasingInFileNames: tsConfig.compilerOptions?.forceConsistentCasingInFileNames,
-      noImplicitOverride: tsConfig.compilerOptions?.noImplicitOverride,
-      /* If NOT transpiling with TypeScript: */
-      module: tsConfig.compilerOptions?.module,
-      noEmit: true,
-      /* remove auto-scanning for types */
-      types: [],
-      /* add paths object for filling-in later */
-      paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: tsConfig.compilerOptions?.moduleResolution,
-      useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
-      noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
-      allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
-    },
+    compilerOptions: nonAppCompilerOptions(),
     include: [...sharedInclude],
     exclude: [...sharedExclude],
   } satisfies TSConfig)
@@ -595,9 +583,16 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
         if (!isAbsolute(path)) { return path }
         const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-        return stats?.isFile()
-          ? getPathSubstitution(path, nuxt.options.buildDir)
-          : relativeWithDot(nuxt.options.buildDir, path)
+        if (stats?.isFile()) {
+          return getPathSubstitution(path, nuxt.options.buildDir)
+        }
+        // A declaration file next to the target wins over a directory of the same name, which is
+        // how `#app/types` resolves to `types.ts` rather than the `types/` directory beside it.
+        const resolved = await resolveExtensionlessTarget(path)
+        if (resolved) {
+          return relativeWithDot(nuxt.options.buildDir, resolved)
+        }
+        return relativeWithDot(nuxt.options.buildDir, path)
       })))]
     }
 

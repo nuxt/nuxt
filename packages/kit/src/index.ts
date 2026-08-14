@@ -5,8 +5,8 @@ export { getDirectory, installModule, installModules, loadNuxtModuleInstance, no
 export { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './module/compatibility.ts'
 
 // Loader
-export { loadNuxtConfig } from './loader/config.ts'
-export type { LoadNuxtConfigOptions } from './loader/config.ts'
+export { diffNuxtConfig, loadNuxtConfig } from './loader/config.ts'
+export type { LoadNuxtConfigOptions, NuxtConfigDiffEntry, ResolvedNuxtConfigContext } from './loader/config.ts'
 export { extendNuxtSchema } from './loader/schema.ts'
 export { buildNuxt, loadNuxt } from './loader/nuxt.ts'
 export type { LoadNuxtOptions } from './loader/nuxt.ts'
@@ -43,6 +43,7 @@ export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
+export type { ResolveTypePathsOptions } from './types.ts'
 export { recoverThrottledChanges } from './watch.ts'
 export type { RecoverableWatcher } from './watch.ts'
 export { logger, useLogger } from './logger.ts'
@@ -60,7 +61,21 @@ export { configDiagnostics } from './diagnostics/config.ts'
 export { headDiagnostics } from './diagnostics/head.ts'
 export { bundlerDiagnostics } from './diagnostics/bundler.ts'
 
+// Dependencies
+export { ensureDependencyInstalled, getAddDependencyCommand } from './dependency.ts'
+export type { EnsureDependencyInstalledOptions } from './dependency.ts'
+
 // Internal Utils
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { directoryToURL, resolveModule, tryResolveModule, importModule, tryImportModule, requireModule, tryRequireModule } from './internal/esm.ts'
 export type { ImportModuleOptions, ResolveModuleOptions } from './internal/esm.ts'
+
+/** @internal */
+export { parseNodeModulePath } from './internal/node-module.ts'
+export type { ParsedNodeModulePath } from './internal/node-module.ts'
+/** @internal */
+export { resolveModuleExportNames } from './internal/exports.ts'
+export type { ResolveModuleExportNamesOptions } from './internal/exports.ts'
+
+/** @internal */
+export { loadJiti } from './internal/jiti.ts'

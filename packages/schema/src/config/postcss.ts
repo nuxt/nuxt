@@ -38,13 +38,20 @@ export default defineResolvers({
       },
     },
     plugins: {
-      autoprefixer: {},
+      autoprefixer: {
+        $resolve: async (val, get) => {
+          if (val || val === false) {
+            return val
+          }
+          return (await get('future.compatibilityVersion')) >= 5 ? false : {}
+        },
+      },
       cssnano: {
         $resolve: async (val, get) => {
           if (val || val === false) {
             return val
           }
-          if (await get('dev')) {
+          if (await get('dev') || (await get('future.compatibilityVersion')) >= 5) {
             return false
           }
           return {}

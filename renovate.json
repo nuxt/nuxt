@@ -7,8 +7,7 @@
   ],
   "baseBranchPatterns": [
     "main",
-    "4.x",
-    "3.x"
+    "4.x"
   ],
   "ignoreDeps": [
     "npm"
@@ -32,8 +31,7 @@
     {
       "matchBaseBranches": [
         "main",
-        "4.x",
-        "3.x"
+        "4.x"
       ],
       "ignoreDeps": [
         "nuxt",
@@ -43,8 +41,7 @@
     },
     {
       "matchBaseBranches": [
-        "4.x",
-        "3.x"
+        "4.x"
       ],
       "matchUpdateTypes": [
         "patch",
@@ -73,6 +70,18 @@
         "@oxc-project/types"
       ],
       "description": "nuxt peers on rolldown loosely so package managers can reuse vite's copy, but this workspace pins it to vite's exact version via the catalog and an override. Bump them together or the workspace resolves a second rolldown and loads a second native binding."
+    },
+    {
+      "groupName": "nitro",
+      "groupSlug": "nitro",
+      "dependencyDashboardApproval": true,
+      "matchPackageNames": [
+        "nitropack",
+        "h3",
+        "ofetch",
+        "unenv",
+        "unstorage"
+      ]
     },
     {
       "matchPackageNames": [

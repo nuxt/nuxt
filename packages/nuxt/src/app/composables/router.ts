@@ -2,7 +2,7 @@ import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onSco
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
-import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { decodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
@@ -280,8 +280,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     return Promise.resolve()
   }
 
-  // Encode the path portion of string locations to match vue-router's
-  // percent-encoded route records.
+  // Encode the path portion of string locations so that decoded paths like
+  // `/café` match vue-router's encoded route records.
   const encodedTo = typeof to === 'string' ? encodeRoutePath(to) : to
   return options?.replace ? router.replace(encodedTo) : router.push(encodedTo)
 }
@@ -384,5 +384,27 @@ export function encodeURL (location: string, isExternalHost = false): string {
  */
 export function encodeRoutePath (url: string): string {
   const parsed = parseURL(url)
-  return encodePath(decodePath(parsed.pathname)) + parsed.search + parsed.hash
+  return encodeVueRouterPath(decodePath(parsed.pathname)) + parsed.search + parsed.hash
+}
+
+const ENC_PIPE_RE = /%7C/g
+const ENC_BRACKET_OPEN_RE = /%5B/g
+const ENC_BRACKET_CLOSE_RE = /%5D/g
+const ENC_ENC_SLASH_RE = /%252F/gi
+const HASH_RE = /#/g
+const QUESTION_MARK_RE = /\?/g
+
+/**
+ * Apply vue-router's own path encoding, which leaves sub-delimiters like `&`
+ * and `+` literal. This must stay in sync with `encodeVueRouterPath` in
+ * `unrouting`, which encodes the route records we need to match against.
+ */
+function encodeVueRouterPath (value: string): string {
+  return encodeURI(value)
+    .replace(ENC_PIPE_RE, '|')
+    .replace(ENC_BRACKET_OPEN_RE, '[')
+    .replace(ENC_BRACKET_CLOSE_RE, ']')
+    .replace(HASH_RE, '%23')
+    .replace(QUESTION_MARK_RE, '%3F')
+    .replace(ENC_ENC_SLASH_RE, '%2F')
 }

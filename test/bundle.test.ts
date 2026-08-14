@@ -55,7 +55,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"188k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"189k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -115,7 +115,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"278k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"279k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, rootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"238k"`)
@@ -173,6 +173,105 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "vue-router",
       ]
     `)
+  })
+
+  it('splits page components by the environment they can render in', async () => {
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(pagesRootDir, '.output/server') }))
+        .map(file => fsp.readFile(join(pagesRootDir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    const client = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: join(pagesRootDir, '.output/public') }))
+        .map(file => fsp.readFile(join(pagesRootDir, '.output/public', file), 'utf8')),
+    )).join('\n')
+
+    expect(server).not.toContain('Client-only page')
+    expect(client).toContain('Client-only page')
+
+    expect(server).toContain('Server-only page')
+    expect(client).not.toContain('Server-only page')
+  })
+})
+
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('noScripts route rules', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/no-scripts', import.meta.url))
+
+  beforeAll(async () => {
+    await exec('pnpm', ['nuxt', 'build', rootDir])
+  }, 120 * 1000)
+
+  it('drops components of noScripts pages from the client bundle', async () => {
+    const dir = join(rootDir, '.output/public')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    // a flat and a dynamic-param page, both covered by a `noScripts` rule, are
+    // replaced by the reload stub, so their component markers never ship
+    expect(bundle).not.toContain('no-scripts-page')
+    expect(bundle).not.toContain('product-page')
+
+    // a nested child route (relative path resolved against its parent), and the
+    // parent shell it renders inside
+    expect(bundle).not.toContain('dashstatsheading')
+    expect(bundle).not.toContain('dash-page')
+
+    // the default and named views of a `noScripts` route are both stubbed
+    expect(bundle).not.toContain('report-default')
+    expect(bundle).not.toContain('report-aux')
+
+    // a page whose canonical path is `noScripts` but which has a scripted alias
+    // keeps its component so the alias can still render client-side
+    expect(bundle).toContain('aliased-page')
+  })
+})
+
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('ssr: false route rules', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/spa-only', import.meta.url))
+
+  beforeAll(async () => {
+    await exec('pnpm', ['nuxt', 'build', rootDir])
+  }, 120 * 1000)
+
+  it('drops components of client-only pages from the server bundle', async () => {
+    const dir = join(rootDir, '.output/server')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    // a flat page, a dynamic-param page, an inline `defineRouteRules` page and a
+    // nested child, all inside a client-only region
+    expect(bundle).not.toContain('admin-index-page')
+    expect(bundle).not.toContain('product-page')
+    expect(bundle).not.toContain('inline-page')
+    expect(bundle).not.toContain('parent-nested-page')
+
+    // the default and named views of a client-only route are both stubbed
+    expect(bundle).not.toContain('report-default')
+    expect(bundle).not.toContain('report-aux')
+
+    // a more specific `ssr: true` rule, and a child escaping its parent's region
+    // via an absolute path, each keep their own page and the parent shell
+    expect(bundle).toContain('admin-ssr-page')
+    expect(bundle).toContain('admin-shell')
+    expect(bundle).toContain('escaped-page')
+    expect(bundle).toContain('parent-shell')
+
+    // a client-only canonical path with a server-rendered alias
+    expect(bundle).toContain('aliased-page')
+
+    expect(bundle).toContain('index-page')
+  })
+
+  it('keeps client-only page code in the client bundle', async () => {
+    const dir = join(rootDir, '.output/public')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    expect(bundle).toContain('admin-index-page')
+    expect(bundle).toContain('product-page')
+    expect(bundle).toContain('inline-page')
   })
 })
 

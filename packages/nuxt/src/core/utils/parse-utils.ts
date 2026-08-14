@@ -1,5 +1,5 @@
 import type { ESTree } from 'rolldown/utils'
-import type { ParsedStaticImport } from 'mlly'
+import type { ParsedStaticImport } from './static-imports.ts'
 import { resolveAlias } from '@nuxt/kit'
 
 import { stripExtension } from '../../utils.ts'

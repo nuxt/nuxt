@@ -490,11 +490,45 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     await writeFile(join(throwingModule, 'package.json'), JSON.stringify({ name: 'throwing-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(throwingModule, 'index.js'), `throw new Error('boom from inside the module')\n`)
 
+    // records each evaluation before throwing, so a retry through another loader is observable
+    const sideEffectModule = join(tempDir, 'node_modules/side-effect-module')
+    await mkdir(sideEffectModule, { recursive: true })
+    await writeFile(join(sideEffectModule, 'package.json'), JSON.stringify({ name: 'side-effect-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(sideEffectModule, 'index.js'), [
+      `import { appendFileSync } from 'node:fs'`,
+      `appendFileSync(${JSON.stringify(join(tempDir, 'evaluations'))}, 'evaluated\\n')`,
+      `throw new Error('boom after a side effect')`,
+      ``,
+    ].join('\n'))
+
+    // the runtime raises a bare `SyntaxError` for a file it cannot parse and for one that misuses
+    // `JSON.parse`, so this records its evaluation to prove the two are not conflated
+    const runtimeSyntaxModule = join(tempDir, 'node_modules/runtime-syntax-module')
+    await mkdir(runtimeSyntaxModule, { recursive: true })
+    await writeFile(join(runtimeSyntaxModule, 'package.json'), JSON.stringify({ name: 'runtime-syntax-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(runtimeSyntaxModule, 'index.js'), [
+      `import { appendFileSync } from 'node:fs'`,
+      `appendFileSync(${JSON.stringify(join(tempDir, 'syntax-evaluations'))}, 'evaluated\\n')`,
+      `JSON.parse('{')`,
+      ``,
+    ].join('\n'))
+
     // entrypoint imports a dependency that does not exist
     const brokenDepModule = join(tempDir, 'node_modules/broken-dep-module')
     await mkdir(brokenDepModule, { recursive: true })
     await writeFile(join(brokenDepModule, 'package.json'), JSON.stringify({ name: 'broken-dep-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(brokenDepModule, 'index.js'), `import 'this-dependency-does-not-exist'\nexport default () => {}\n`)
+
+    // records its evaluation, then fails to resolve a specifier of its own at the top level
+    const dynamicImportModule = join(tempDir, 'node_modules/dynamic-import-module')
+    await mkdir(dynamicImportModule, { recursive: true })
+    await writeFile(join(dynamicImportModule, 'package.json'), JSON.stringify({ name: 'dynamic-import-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(dynamicImportModule, 'index.js'), [
+      `import { appendFileSync } from 'node:fs'`,
+      `appendFileSync(${JSON.stringify(join(tempDir, 'dynamic-evaluations'))}, 'evaluated\\n')`,
+      `await import('this-dependency-does-not-exist')`,
+      ``,
+    ].join('\n'))
 
     // installed dependency that only exports its main entry
     const depWithExports = join(tempDir, 'node_modules/dep-with-exports')
@@ -507,6 +541,24 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     await mkdir(nonFunctionModule, { recursive: true })
     await writeFile(join(nonFunctionModule, 'package.json'), JSON.stringify({ name: 'non-function-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(nonFunctionModule, 'index.js'), `export default {}\n`)
+
+    // plain ESM JavaScript, loadable by the runtime without any transpiler
+    const esmModule = join(tempDir, 'node_modules/esm-module')
+    await mkdir(esmModule, { recursive: true })
+    await writeFile(join(esmModule, 'package.json'), JSON.stringify({ name: 'esm-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(esmModule, 'index.js'), `export default () => {}\n`)
+
+    // CommonJS marked as transpiled ESM, so the default export is nested behind `__esModule`
+    const cjsInteropModule = join(tempDir, 'node_modules/cjs-interop-module')
+    await mkdir(cjsInteropModule, { recursive: true })
+    await writeFile(join(cjsInteropModule, 'package.json'), JSON.stringify({ name: 'cjs-interop-module', version: '1.0.0', type: 'commonjs', exports: './index.cjs' }))
+    await writeFile(join(cjsInteropModule, 'index.cjs'), `exports.__esModule = true\nexports.default = () => {}\n`)
+
+    // TypeScript source, which the runtime may or may not be able to import on its own
+    const tsModule = join(tempDir, 'node_modules/ts-module')
+    await mkdir(tsModule, { recursive: true })
+    await writeFile(join(tsModule, 'package.json'), JSON.stringify({ name: 'ts-module', version: '1.0.0', type: 'module', exports: './index.ts' }))
+    await writeFile(join(tsModule, 'index.ts'), `const mod = (): void => {}\nexport default mod\n`)
 
     // entrypoint imports a non-exported subpath, throwing ERR_PACKAGE_PATH_NOT_EXPORTED at import time
     const subpathModule = join(tempDir, 'node_modules/subpath-module')
@@ -529,6 +581,32 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect((error.cause as Error)?.message).toMatch(/boom from inside the module/)
   })
 
+  it('evaluates a module that throws at its top level only once', async () => {
+    const error = await loadError('side-effect-module')
+    expect(error.message).toMatch(/boom after a side effect/)
+    expect(error.message).not.toMatch(/jiti/)
+
+    const evaluations = await readFile(join(tempDir, 'evaluations'), 'utf8')
+    expect(evaluations.trim().split('\n')).toHaveLength(1)
+  })
+
+  it('evaluates a module that raises a runtime SyntaxError only once', async () => {
+    const error = await loadError('runtime-syntax-module')
+    expect((error.cause as Error)).toBeInstanceOf(SyntaxError)
+
+    const evaluations = await readFile(join(tempDir, 'syntax-evaluations'), 'utf8')
+    expect(evaluations.trim().split('\n')).toHaveLength(1)
+  })
+
+  it('evaluates a module whose top-level dynamic import fails only once', async () => {
+    const error = await loadError('dynamic-import-module')
+    expect(error.message).toMatch(/this-dependency-does-not-exist/)
+    expect(error.message).not.toMatch(/may not be installed/)
+
+    const evaluations = await readFile(join(tempDir, 'dynamic-evaluations'), 'utf8')
+    expect(evaluations.trim().split('\n')).toHaveLength(1)
+  })
+
   it('surfaces a missing sub-dependency rather than reporting the module as missing', async () => {
     const error = await loadError('broken-dep-module')
     expect(error.message).toMatch(/this-dependency-does-not-exist/)
@@ -549,10 +627,32 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect(error.message).not.toMatch(/may not be installed/)
   })
 
-  it('reports a genuinely missing module as not installed', async () => {
+  it('reports a genuinely missing module as not installed, using the project package manager', async () => {
     const error = await loadError('this-module-is-not-installed')
     expect(error.message).toMatch(/may not be installed/)
+    expect((error as Error & { fix?: string }).fix).toBe('Run `pnpm add this-module-is-not-installed` to install it.')
     expect(error.cause).toBeInstanceOf(Error)
+  })
+
+  it('does not suggest an install command for a missing local module path', async () => {
+    const error = await loadError('./modules/does-not-exist')
+    expect(error.message).toMatch(/may not be installed/)
+    expect((error as Error & { fix?: string }).fix).toBe('Check that the module path exists and points to a valid Nuxt module.')
+  })
+
+  it('loads a plain ESM module', async () => {
+    const { nuxtModule } = await loadNuxtModuleInstance('esm-module', nuxt)
+    expect(nuxtModule).toBeTypeOf('function')
+  })
+
+  it('unwraps the default export of a CommonJS module marked as transpiled ESM', async () => {
+    const { nuxtModule } = await loadNuxtModuleInstance('cjs-interop-module', nuxt)
+    expect(nuxtModule).toBeTypeOf('function')
+  })
+
+  it('loads a TypeScript module', async () => {
+    const { nuxtModule } = await loadNuxtModuleInstance('ts-module', nuxt)
+    expect(nuxtModule).toBeTypeOf('function')
   })
 })
 

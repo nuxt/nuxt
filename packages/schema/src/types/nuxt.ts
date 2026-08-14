@@ -2,7 +2,7 @@ import type { AsyncLocalStorage } from 'node:async_hooks'
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
 import type { NuxtModule } from './module.ts'
-import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks.ts'
+import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, WatchEvent } from './hooks.ts'
 import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
@@ -29,6 +29,21 @@ export interface NuxtPlugin {
 
 type TemplateDefaultOptions = Record<string, any>
 
+/**
+ * A well-known input a template can declare it depends on:
+ *
+ * - `'pages'`: the contents of the files backing `app.pages`
+ * - `'plugins'`: the contents of the files listed in `app.plugins`
+ */
+export type NuxtTemplateDependency = 'pages' | 'plugins'
+
+/** A watched file event that may require regenerating templates. */
+export interface NuxtTemplateChange {
+  event: WatchEvent
+  /** absolute path of the file the event was emitted for */
+  path: string
+}
+
 export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   /** resolved output file path (generated) */
   dst?: string
@@ -43,6 +58,19 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   getContents?: (data: { nuxt: Nuxt, app: NuxtApp, options: Options }) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean
+  /**
+   * The watched inputs the output of this template can depend on, beyond `nuxt.options` and the
+   * resolved structure of the app (which files exist, and where).
+   *
+   * Set this to `[]` if the template never reads the contents of a watched file. In dev mode
+   * Nuxt then skips recompiling it when a file changes without any file being added or removed.
+   * List well-known keys (such as `'pages'` or `'plugins'`) if the template reads those sources,
+   * or pass a function to decide per change.
+   *
+   * A template that declares nothing is regenerated on every change, unless it has a `src`, in
+   * which case it is regenerated only when that source file changes.
+   */
+  dependsOn?: NuxtTemplateDependency[] | ((change: NuxtTemplateChange, ctx: { nuxt: Nuxt, app: NuxtApp, options: Options }) => boolean)
   /**
    * The source path of the template (to try resolving dependencies from).
    * @internal

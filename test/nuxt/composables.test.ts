@@ -96,8 +96,10 @@ describe('composables', () => {
       'useRequestEvent',
       'useRequestFetch',
       'isPrerendered',
+      'useRequestHeader',
       'useRequestHeaders',
       'useResponseHeader',
+      'useLoadingIndicator',
       'useCookie',
       'clearNuxtState',
       'useState',
@@ -362,6 +364,21 @@ describe('clearNuxtState', () => {
     clearNuxtState([key1, key2], { reset: true })
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
+  })
+
+  it('expect ref-initialised state to reset', () => {
+    const key = 'clearNuxtState-ref'
+    const state = useState(key, () => ref('test'))
+    state.value = 'test-2'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('test')
+  })
+
+  it('expect ref-initialised state to clear', () => {
+    const key = 'clearNuxtState-ref-2'
+    const state = useState(key, () => ref('test'))
+    clearNuxtState(key, { reset: false })
+    expect(state.value).toBeUndefined()
   })
 
   it('expect state in payload for function to reset', () => {
@@ -793,6 +810,12 @@ describe('routing utilities: `navigateTo`', () => {
     return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
   }
 
+  it('matches routes case-insensitively by default', () => {
+    router.addRoute({ name: 'case-sensitive-test', path: '/case-sensitive-test', component: defineComponent({}) })
+    expect(router.resolve('/Case-Sensitive-Test').name).toBe('case-sensitive-test')
+    router.removeRoute('case-sensitive-test')
+  })
+
   it('navigateTo should disallow navigation to external URLs by default', () => {
     expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/4.x/errors/e2001]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
@@ -946,9 +969,15 @@ describe('routing utilities: `encodeRoutePath`', () => {
     expect(encodeRoutePath('/café?q=foo#bar')).toBe(`/${encodeURIComponent('café')}?q=foo#bar`)
   })
 
-  it('should encode special characters in path segments', () => {
-    expect(encodeRoutePath('/a&b')).toBe(`/a${encodeURIComponent('&')}b`)
+  it('should leave sub-delimiters literal, as vue-router does', () => {
+    expect(encodeRoutePath('/a&b')).toBe('/a&b')
+    expect(encodeRoutePath('/a+b')).toBe('/a+b')
+    expect(encodeRoutePath('/a[b]')).toBe('/a[b]')
     expect(encodeRoutePath('/normal')).toBe('/normal')
+  })
+
+  it('should preserve encoded slashes', () => {
+    expect(encodeRoutePath('/a%2Fb')).toBe('/a%2Fb')
   })
 })
 
@@ -1273,9 +1302,12 @@ describe('useCookie', () => {
 
     useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
     expect(document.cookie).toContain('cookie-watch-true=foo')
+  })
 
-    useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
-    expect(document.cookie).toContain('cookie-readonly=foo')
+  it('should not write a readonly cookie with a default value on client', () => {
+    const cookie = useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
+    expect(cookie.value).toBe('foo')
+    expect(document.cookie).not.toContain('cookie-readonly')
   })
 
   it('should re-write cookie on same-value assignment when refresh is true', async () => {
@@ -1314,6 +1346,107 @@ describe('useCookie', () => {
     await nextTick()
 
     expect(document.cookie).not.toContain('no-refresh-test=original')
+  })
+
+  it('should never write a readonly cookie, even when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+
+    document.cookie = 'readonly-refresh-test=original'
+    const cookie = useCookie('readonly-refresh-test', {
+      maxAge: 3600,
+      readonly: true,
+      refresh: true,
+    })
+    expect(cookie.value).toBe('original')
+
+    // Clear document.cookie to detect if a write happens
+    document.cookie = 'readonly-refresh-test=; Max-Age=0'
+    expect(document.cookie).not.toContain('readonly-refresh-test=original')
+
+    ;(cookie as any).value = 'stray-write'
+    expect(cookie.value).toBe('stray-write')
+    await nextTick()
+
+    expect(document.cookie).not.toContain('readonly-refresh-test=stray-write')
+  })
+
+  it('should re-evaluate expires getter on each cookie write', async () => {
+    const { nextTick } = await import('vue')
+    let callCount = 0
+    const cookie = useCookie('expires-getter', {
+      expires: () => {
+        callCount++
+        return new Date(Date.now() + 60_000)
+      },
+    })
+
+    // Initial write of default/undefined may or may not happen; start from a known count
+    const baseline = callCount
+    cookie.value = 'first'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(baseline)
+
+    const afterFirst = callCount
+    cookie.value = 'second'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(afterFirst)
+    expect(document.cookie).toContain('expires-getter=second')
+  })
+
+  it('should re-evaluate expires getter on same-value assignment when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+    let callCount = 0
+    document.cookie = 'expires-refresh=token'
+    const cookie = useCookie('expires-refresh', {
+      refresh: true,
+      expires: () => {
+        callCount++
+        return new Date(Date.now() + 60_000)
+      },
+    })
+    expect(cookie.value).toBe('token')
+
+    const baseline = callCount
+    cookie.value = 'token'
+    await nextTick()
+    expect(callCount).toBeGreaterThan(baseline)
+    expect(document.cookie).toContain('expires-refresh=token')
+  })
+
+  it('should support a static Date for expires without a getter', async () => {
+    const { nextTick } = await import('vue')
+    const cookie = useCookie('expires-static', {
+      expires: new Date(Date.now() + 60_000),
+    })
+    cookie.value = 'static-value'
+    await nextTick()
+    expect(document.cookie).toContain('expires-static=static-value')
+  })
+
+  it('should not treat an expires getter returning undefined as expired', () => {
+    const cookie = useCookie('expires-undefined-getter', {
+      default: () => 'fallback',
+      expires: () => undefined,
+    })
+    expect(cookie.value).toBe('fallback')
+  })
+
+  it('should keep session cookies without expires or maxAge as plain refs', async () => {
+    const { nextTick } = await import('vue')
+    vi.useFakeTimers()
+    try {
+      const cookie = useCookie('session-no-expiry', {
+        default: () => 'session',
+      })
+      cookie.value = 'session'
+      await nextTick()
+      expect(cookie.value).toBe('session')
+
+      vi.advanceTimersByTime(60_000)
+      expect(cookie.value).toBe('session')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 
