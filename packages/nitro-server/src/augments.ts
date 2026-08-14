@@ -3,7 +3,7 @@ import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, Nitro
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { AppConfig, HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
+import type { HookResult, RuntimeConfig, SharedAppConfig, TSReference } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`. Extends Nitro's own
@@ -296,7 +296,7 @@ declare module 'nuxt/schema' {
 }
 
 export interface NuxtRequestContext {
-  'appConfig'?: AppConfig
+  'appConfig'?: SharedAppConfig
   'noSSR'?: boolean
   /** @internal */
   '~internal'?: boolean
