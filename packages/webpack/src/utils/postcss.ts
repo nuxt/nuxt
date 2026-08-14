@@ -35,6 +35,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
   }
 
   const postcssOptions = defu({}, nuxt.options.postcss, {
+    config: false,
     plugins: defaultPlugins,
     sourceMap: nuxt.options.webpack.cssSourceMap,
   })
