@@ -6,7 +6,7 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { flushPromises } from '@vue/test-utils'
-import { Transition } from 'vue'
+import { Transition, isShallow } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
@@ -77,6 +77,12 @@ describe('useAsyncData', () => {
     expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
+  })
+
+  it('should expose shallow data as a shallow ref', async () => {
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve({ nested: { value: 'test' } }), { deep: false })
+
+    expect(isShallow(data)).toBe(true)
   })
 
   it('should throw TypeError when key is empty', () => {

@@ -624,7 +624,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       }
 
       const asyncReturn: _AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)> = {
-        data: writableComputedRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>),
+        data: isKeyReactive ? writableComputedRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>) : asyncData.data as Ref<ResT>,
         pending: writableComputedRef(() => nuxtApp._asyncData[key.value]?.pending as Ref<boolean>),
         status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status as Ref<AsyncDataRequestStatus>),
         error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
