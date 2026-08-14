@@ -1,7 +1,7 @@
 import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitropack/types'
 
-import { pageDiagnostics } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { isEqual } from 'ohash'
 import { vueRouterToRou3 } from 'unrouting'
 

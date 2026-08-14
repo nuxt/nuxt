@@ -2,7 +2,7 @@ import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
-import { type GlobOptions, glob } from 'tinyglobby'
+import { glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { directoryToURL } from './internal/esm.ts'
@@ -276,7 +276,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
  * @param opts.ignore additional glob patterns to ignore
  * @returns sorted array of absolute file paths
  */
-export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}): Promise<string[]> {
+export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: string | readonly string[] } = {}): Promise<string[]> {
   const files: string[] = []
   for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true, ignore: opts.ignore })) {
     if (!isIgnored(p)) {

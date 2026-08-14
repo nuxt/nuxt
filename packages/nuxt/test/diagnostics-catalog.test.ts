@@ -1,15 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-// Build-time (NUXT_B) catalogs: the public ones come through the kit barrel.
-import {
-  buildDiagnostics,
-  bundlerDiagnostics,
-  componentDiagnostics,
-  configDiagnostics,
-  headDiagnostics,
-  pageDiagnostics,
-  pluginDiagnostics,
-} from '@nuxt/kit'
+// Build-time (NUXT_B) catalogs.
+import { buildDiagnostics, bundlerDiagnostics, componentDiagnostics, configDiagnostics, headDiagnostics, pageDiagnostics, pluginDiagnostics } from '@nuxt/kit/internal'
 // The B8xxx kit-api catalog is intentionally kit-internal, so reach for it directly.
 import { kitDiagnostics } from '../../kit/src/diagnostics/kit-api.ts'
 

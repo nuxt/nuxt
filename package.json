@@ -35,6 +35,7 @@
     "test:no-jiti": "vitest run --project no-jiti",
     "test:unit": "vitest run --project unit",
     "test:attw": "pnpm --filter './packages/**' test:attw",
+    "test:public-api": "pnpm --filter @nuxt/kit --filter @nuxt/schema build && node ./scripts/check-public-api.ts",
     "test:e2e": "playwright test",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:ui": "playwright test --ui",

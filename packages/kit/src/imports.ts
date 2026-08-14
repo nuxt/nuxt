@@ -1,8 +1,8 @@
-import type { Import, Preset } from 'unimport'
+import type { NuxtImport, NuxtImportPresetSource } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
 
-export function addImports (imports: Import | Import[]): void {
+export function addImports (imports: NuxtImport | NuxtImport[]): void {
   useNuxt().hook('imports:extend', (_imports) => {
     _imports.push(...toArray(imports))
   })
@@ -15,8 +15,8 @@ export function addImportsDir (dirs: string | string[], opts: { prepend?: boolea
     }
   })
 }
-export function addImportsSources (presets: Preset | Preset[]): void {
-  useNuxt().hook('imports:sources', (_presets: Preset[]) => {
+export function addImportsSources (presets: NuxtImportPresetSource | NuxtImportPresetSource[]): void {
+  useNuxt().hook('imports:sources', (_presets) => {
     for (const preset of toArray(presets)) {
       _presets.push(preset)
     }

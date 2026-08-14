@@ -2,7 +2,8 @@ import createResolver from 'postcss-import-resolver'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { Plugin } from 'postcss'
-import { bundlerDiagnostics, directoryToURL, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
+import { directoryToURL, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
