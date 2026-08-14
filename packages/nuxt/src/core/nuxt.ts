@@ -4,10 +4,12 @@ import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
+import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { configDiagnostics, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -1067,7 +1069,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       && nuxt.options.debug.hooks
       && (nuxt.options.debug.hooks === true || nuxt.options.debug.hooks.server)
     ) {
-      createDebugger(nuxt.hooks, { tag: 'nuxt' })
+      createDebugger(nuxt.hooks as Hookable<NuxtHooks>, { tag: 'nuxt' })
     }
   })
 

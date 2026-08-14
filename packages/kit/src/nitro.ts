@@ -1,5 +1,5 @@
-import type { Import } from 'unimport'
 import { normalize } from 'pathe'
+import type { NuxtImport } from '@nuxt/schema'
 
 import { useNuxt } from './context.ts'
 import type { Nitro, NitroDevEventHandler, NitroEventHandler } from './nitro-types.ts'
@@ -89,7 +89,7 @@ export function useNitro (): Nitro {
 /**
  * Add server imports to be auto-imported by Nitro
  */
-export function addServerImports (imports: Import | Import[]): void {
+export function addServerImports (imports: NuxtImport | NuxtImport[]): void {
   const nuxt = useNuxt()
   const _imports = toArray(imports)
   nuxt.hook('nitro:config', (config) => {

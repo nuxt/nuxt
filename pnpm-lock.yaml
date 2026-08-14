@@ -889,9 +889,6 @@ importers:
       tsdown:
         specifier: catalog:dev
         version: 0.22.14(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.4.12)(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.9(typescript@6.0.3))
-      unimport:
-        specifier: catalog:build
-        version: 6.4.0(@rspack/core@2.1.7(@swc/helpers@0.5.23))(esbuild@0.28.1)(oxc-parser@0.143.0)(rolldown@1.2.3)(rollup@4.62.4)(vite@8.2.1)(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
       untyped:
         specifier: catalog:build
         version: 2.0.0
@@ -901,9 +898,6 @@ importers:
       vitest:
         specifier: catalog:dev
         version: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.1)(vite@8.2.1)
-      webpack:
-        specifier: catalog:webpack
-        version: 5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25)
 
   packages/nitro-server:
     dependencies:
@@ -1454,12 +1448,6 @@ importers:
       h3:
         specifier: catalog:dev
         version: 2.0.1-rc.22(crossws@0.4.10(srvx@0.11.22))
-      hookable:
-        specifier: catalog:app-runtime
-        version: 6.1.1
-      ignore:
-        specifier: catalog:build
-        version: 7.0.6
       mini-css-extract-plugin:
         specifier: catalog:webpack
         version: 2.10.2(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
@@ -1475,9 +1463,6 @@ importers:
       rollup-plugin-visualizer:
         specifier: catalog:dev
         version: 7.0.1(rolldown@1.2.3)(rollup@4.62.4)
-      scule:
-        specifier: catalog:build
-        version: 1.3.0
       tsdown:
         specifier: catalog:dev
         version: 0.22.14(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.4.12)(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(publint@0.3.21)(typescript@6.0.3)(vue-tsc@3.3.9(typescript@6.0.3))
@@ -1493,6 +1478,9 @@ importers:
       vite:
         specifier: 8.2.1
         version: 8.2.1(@types/node@24.13.3)(@vitejs/devtools@0.4.12)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
+      vitest:
+        specifier: catalog:dev
+        version: 4.1.10(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(happy-dom@20.11.1)(vite@8.2.1)
       vue:
         specifier: 3.5.40
         version: 3.5.40(typescript@6.0.3)
