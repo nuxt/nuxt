@@ -4,7 +4,6 @@ import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptio
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
-import { isRelative } from 'ufo'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { read as readRc, update as updateRc } from 'rc9'
 import { isGreater, satisfies } from 'verkit'
@@ -348,7 +347,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   // Import if input is string
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
 
-  if (isRelative(nuxtModule)) {
+  if (nuxtModule.startsWith('./') || nuxtModule.startsWith('../')) {
     nuxtModule = resolve(nuxt.options.rootDir, nuxtModule)
   }
 
@@ -376,7 +375,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   } catch (nativeError: unknown) {
     // A module that threw while it was running has already had whatever effect it had, and jiti
     // would only run it a second time and report its own error in place of the author's
-    if (!isLoaderError(nativeError, src)) {
+    if (!isLoaderError(nativeError)) {
       throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError })
     }
     // Otherwise the runtime declined to load the file: syntax that is not erasable, a file under

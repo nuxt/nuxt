@@ -1,6 +1,4 @@
-import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
-import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
-import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
+import type { Nuxt, NuxtBuildOutputs, ViteConfig, VitePlugin, WebpackConfig, WebpackPluginInstance } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
 import { resolveAlias } from './resolve.ts'

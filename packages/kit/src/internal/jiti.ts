@@ -11,6 +11,7 @@ type JitiModule = typeof import('jiti')
 // raises once it is running. Only the former are worth retrying through jiti.
 const LOADER_ERROR_CODES = new Set([
   'ERR_MODULE_NOT_FOUND',
+  'ERR_IMPORT_ATTRIBUTE_MISSING',
   'ERR_UNKNOWN_FILE_EXTENSION',
   'ERR_UNSUPPORTED_DIR_IMPORT',
   'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING',
@@ -22,21 +23,14 @@ const LOADER_ERROR_CODES = new Set([
  * Whether a failed `import()` failed because the runtime would not load the file, rather than
  * because the file threw once it was running.
  *
+ * A resolution failure anywhere in the imported file's static graph counts, not just one for the
+ * file itself.
+ *
  * @param error the error the failed `import()` rejected with
- * @param target the URL that was imported, used to tell an unresolved import of `target` itself
- * apart from one the file made after it had started running
  */
-export function isLoaderError (error: unknown, target?: string): boolean {
-  const { code, url } = (error ?? {}) as { code?: unknown, url?: unknown }
-  if (typeof code !== 'string' || !LOADER_ERROR_CODES.has(code)) {
-    return false
-  }
-  // node sets `url` only when `target` itself could not be found; when a specifier inside the file
-  // could not be resolved it is left unset, and the file has already run
-  if (code === 'ERR_MODULE_NOT_FOUND' && target) {
-    return url === target
-  }
-  return true
+export function isLoaderError (error: unknown): boolean {
+  const { code } = (error ?? {}) as { code?: unknown }
+  return typeof code === 'string' && LOADER_ERROR_CODES.has(code)
 }
 
 export interface LoadJitiOptions {

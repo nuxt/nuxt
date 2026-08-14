@@ -1,7 +1,6 @@
 import { stat } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { resolve } from 'pathe'
-import { withTrailingSlash } from 'ufo'
 import { loadNuxt } from './loader/nuxt.ts'
 import { findPath, resolveNuxtModule, resolvePath } from './resolve.ts'
 import { defineNuxtModule } from './module/define.ts'
@@ -36,7 +35,7 @@ describe('resolveNuxtModule', () => {
       ]
     `)
 
-    const resolved = await resolveNuxtModule(withTrailingSlash(nuxt.options.rootDir), [
+    const resolved = await resolveNuxtModule(`${nuxt.options.rootDir.replace(/\/$/, '')}/`, [
       ...installedModulePaths,
       '@nuxt/test-utils/module',
     ])

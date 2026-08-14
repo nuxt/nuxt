@@ -11,8 +11,16 @@
   "license": "MIT",
   "type": "module",
   "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "internal": [
+        "./dist/internal/index.d.mts"
+      ]
+    }
+  },
   "exports": {
     ".": "./src/index.ts",
+    "./internal": "./src/internal/index.ts",
     "./package.json": "./package.json"
   },
   "files": [
@@ -32,16 +40,15 @@
     "exsolve": "catalog:build",
     "ignore": "catalog:build",
     "klona": "catalog:build",
+    "microdiff": "catalog:build",
     "nostics": "catalog:build",
     "nypm": "catalog:build",
-    "ohash": "catalog:build",
     "pathe": "catalog:build",
     "pkg-types": "catalog:build",
     "rc9": "catalog:build",
     "scule": "catalog:build",
     "std-env": "catalog:build",
     "tinyglobby": "catalog:build",
-    "ufo": "catalog:build",
     "unctx": "catalog:build",
     "verkit": "catalog:build"
   },
@@ -87,11 +94,9 @@
     "oxc-parser": "catalog:build",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
-    "unimport": "catalog:build",
     "untyped": "catalog:build",
     "vite": "catalog:vite",
-    "vitest": "catalog:dev",
-    "webpack": "catalog:webpack"
+    "vitest": "catalog:dev"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -99,6 +104,7 @@
   "publishConfig": {
     "exports": {
       ".": "./dist/index.mjs",
+      "./internal": "./dist/internal/index.mjs",
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"
