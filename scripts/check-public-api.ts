@@ -32,8 +32,9 @@ const entrypoints: Record<string, PublicEntrypoint> = {
       'nitropack/types',
     ],
     augmentations: [
-      // Pulled in with `@nuxt/schema`, which augments `TSConfig`.
-      'pkg-types',
+      // Left over from bundling `pkg-types`' declarations, whose type-only imports of `exsolve`
+      // are elided. `exsolve` is a hard dependency of kit, so consumers always have it.
+      'exsolve',
     ],
   },
   // Schema describes configuration, so options that exist to configure a third party are typed

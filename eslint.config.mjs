@@ -207,6 +207,7 @@ export default createConfigForNuxt({
           {
             definedTags: [
               'experimental',
+              'knipignore',
               '__NO_SIDE_EFFECTS__',
             ],
           },

@@ -4,6 +4,7 @@
     "duplicates": "off"
   },
   "ignoreExportsUsedInFile": true,
+  "tags": ["-knipignore"],
   "ignoreIssues": {
     "**/.nuxt/**": ["unlisted", "unresolved"]
   },

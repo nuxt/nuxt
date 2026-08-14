@@ -77,6 +77,8 @@ export async function readPackageJSON (id: string | URL = process.cwd(), options
  * Detect the workspace root for `id`, preferring workspace manifests, then git, then lockfiles.
  *
  * Returns a promise because the inlined `c12` awaits this and attaches a `.catch()` to it.
+ *
+ * @knipignore reached only through the `pkg-types` alias in `tsdown.config.ts`
  */
 export function findWorkspaceDir (id: string | URL = process.cwd(), options: ResolveOptions = {}): Promise<string> {
   return Promise.resolve().then(() => resolveWorkspaceDir(id, options))
