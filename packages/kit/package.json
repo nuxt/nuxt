@@ -41,7 +41,6 @@
     "scule": "catalog:build",
     "std-env": "catalog:build",
     "tinyglobby": "catalog:build",
-    "ufo": "catalog:build",
     "unctx": "catalog:build",
     "verkit": "catalog:build"
   },
