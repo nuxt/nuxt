@@ -179,7 +179,9 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys, { extractSerializable: ctx.extractSerializable })
       if (route.meta) {
+        const dynamic = [...getDynamicMeta(routeMeta.meta), ...getDynamicMeta(route.meta)]
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
+        addDynamicMeta(routeMeta.meta, dynamic)
       }
       if (route.rules) {
         routeMeta.rules = defu({}, routeMeta.rules, route.rules)
@@ -232,7 +234,25 @@ const PAGE_META_MACRO_NAMES = new Set(['definePageMeta', 'defineRouteRules'])
 // is what actually identifies calls.
 const HAS_PAGE_MACRO_RE = new RegExp(`\\b(?:${[...PAGE_META_MACRO_NAMES].join('|')})\\b`)
 export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
-const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+/**
+ * Marks which `definePageMeta` keys could not be statically extracted and must come from the
+ * runtime macro module. A symbol keeps it out of `JSON.stringify`/`Object.keys` snapshots taken by
+ * modules that observe `page.meta`, at the cost of being dropped by key-enumerating helpers
+ * (`defu`, `klona`), so it is re-attached explicitly wherever meta is merged or cloned.
+ */
+const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
+
+function getDynamicMeta (meta: Record<PropertyKey, any> | undefined): Set<string> {
+  const dynamic = meta?.[DYNAMIC_META_KEY] as Set<string> | undefined
+  return dynamic ?? new Set<string>()
+}
+
+function addDynamicMeta (meta: Record<PropertyKey, any> | undefined, keys: Iterable<string>) {
+  const dynamic = new Set(keys)
+  if (meta && dynamic.size) {
+    meta[DYNAMIC_META_KEY] = dynamic
+  }
+}
 
 type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
 
@@ -365,7 +385,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   }
 
   if (cacheKey in extractCache && extractCache[cacheKey]) {
-    return klona(extractCache[cacheKey])
+    return cloneExtractedData(extractCache[cacheKey])
   }
 
   const loader = getLoader(absolutePath)
@@ -496,11 +516,17 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
   if (dynamicProperties.size) {
     extractedData.meta ??= {}
-    extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
+    addDynamicMeta(extractedData.meta, dynamicProperties)
   }
 
   extractCache[cacheKey] = extractedData
-  return klona(extractedData)
+  return cloneExtractedData(extractedData)
+}
+
+function cloneExtractedData (data: Partial<Record<keyof NuxtPage, any>>) {
+  const cloned = klona(data)
+  addDynamicMeta(cloned.meta, getDynamicMeta(data.meta))
+  return cloned
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {
@@ -573,11 +599,11 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] as Set<string> | undefined ?? new Set<string>()
+      const markedDynamic = getDynamicMeta(page.meta)
       const metaFiltered: Record<string, any> = {}
       let skipMeta = true
       for (const key in page.meta || {}) {
-        if (key !== DYNAMIC_META_KEY && page.meta![key] !== undefined) {
+        if (page.meta![key] !== undefined) {
           skipMeta = false
           metaFiltered[key] = page.meta![key]
         }
