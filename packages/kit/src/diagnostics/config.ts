@@ -73,5 +73,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to load it, or remove the \`nuxt.schema\` file.`,
       docs: false,
     },
+    NUXT_B5022: {
+      why: 'A `nuxt.config` in yaml, toml, jsonc or json5 is parsed by the `confbox` package, which is not installed.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\`, or rename your config to \`nuxt.config.ts\`.`,
+      docs: false,
+    },
   },
 })

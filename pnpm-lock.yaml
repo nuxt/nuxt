@@ -792,9 +792,6 @@ importers:
 
   packages/kit:
     dependencies:
-      confbox:
-        specifier: catalog:build
-        version: 0.2.4
       consola:
         specifier: catalog:build
         version: 3.4.2
@@ -828,9 +825,6 @@ importers:
       pathe:
         specifier: catalog:build
         version: 2.0.3
-      pkg-types:
-        specifier: catalog:build
-        version: 2.3.1
       rc9:
         specifier: catalog:build
         version: 3.0.1
@@ -859,6 +853,9 @@ importers:
       chokidar:
         specifier: catalog:build
         version: 5.0.0
+      confbox:
+        specifier: catalog:build
+        version: 0.2.4
       dotenv:
         specifier: catalog:build
         version: 17.4.2
@@ -883,6 +880,9 @@ importers:
       oxc-parser:
         specifier: 0.143.0
         version: 0.143.0
+      pkg-types:
+        specifier: catalog:build
+        version: 2.3.1
       rolldown:
         specifier: 1.2.3
         version: 1.2.3
