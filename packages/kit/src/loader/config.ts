@@ -11,7 +11,6 @@ import { klona } from 'klona'
 import microdiff from 'microdiff'
 import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
-import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { directoryToURL } from '../internal/esm.ts'
 import { isLoaderError, loadJiti } from '../internal/jiti.ts'
@@ -228,7 +227,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // can be told apart from them) and the canonical directory of every local layer.
   const autoScanSources = new Set(localLayers)
   const localLayerDirs = new Set(
-    localLayers.map(dir => canonicalLayerDir(resolve(rootCwd, withoutTrailingSlash(dir)))),
+    localLayers.map(dir => canonicalLayerDir(resolve(rootCwd, dir.replace(/\/$/, '')))),
   )
   // Local layers referenced in the root project's `extends`, in listed order (first = highest
   // priority). Used to reorder the auto-scanned layers so ordering can be driven from
@@ -410,7 +409,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const _layers: LoadedConfigLayer[] = []
   const processedLayers = new Set<string>()
-  const localRelativePaths = new Set(localLayers.map(layer => withoutTrailingSlash(layer)))
+  const localRelativePaths = new Set(localLayers.map(layer => layer.replace(/\/$/, '')))
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     // Create a shallow copy to avoid mutating the cached ESM config object
@@ -488,6 +487,13 @@ function canonicalLayerDir (path: string): string {
   return normalize(realpathSync(statSync(path).isDirectory() ? path : dirname(path)))
 }
 
+function withTrailingSlash (path: string | undefined): string {
+  if (!path) {
+    return '/'
+  }
+  return path.endsWith('/') ? path : `${path}/`
+}
+
 const LAYER_EXTENDS_ALIASES = ['~~', '@@', '~', '@']
 
 /**
@@ -517,7 +523,7 @@ function reorderLocalLayersByExtends (
   localLayerDirs: Set<string>,
 ) {
   const layerDir = (layer: LoadedConfigLayer) => {
-    const dir = withoutTrailingSlash(layer.config?.rootDir ?? layer.cwd ?? '')
+    const dir = (layer.config?.rootDir ?? layer.cwd ?? '').replace(/\/$/, '')
     try {
       return normalize(realpathSync(dir))
     } catch {

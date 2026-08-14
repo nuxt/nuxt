@@ -843,9 +843,6 @@ importers:
       tinyglobby:
         specifier: catalog:build
         version: 0.2.17
-      ufo:
-        specifier: catalog:build
-        version: 1.6.4
       unctx:
         specifier: catalog:build
         version: 3.0.0(magic-string@1.1.0)(oxc-parser@0.143.0)(rolldown@1.2.3)(unplugin@3.3.0(@rspack/core@2.1.7(@swc/helpers@0.5.23))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4)(vite@8.2.1)(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25)))
