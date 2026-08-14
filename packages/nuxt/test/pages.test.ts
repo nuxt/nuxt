@@ -432,7 +432,7 @@ describe('pages:relativizeToParent', () => {
 })
 
 describe('page:extends', () => {
-  const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+  const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
   it('should preserve distinct metadata for multiple routes referencing the same file', async () => {
     const files: NuxtPage[] = [
       { path: 'home', file: `pages/index.vue` },
@@ -490,7 +490,7 @@ describe('page:extends', () => {
 
 const pagesDir = 'pages'
 const layerDir = 'layer/pages'
-const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
 
 export const pageTests: Array<{
   description: string
