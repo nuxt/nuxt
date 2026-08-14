@@ -85,6 +85,20 @@ describe('useAsyncData', () => {
     expect(isShallow(data)).toBe(true)
   })
 
+  it('should expose shallow data as a shallow ref with a reactive key', async () => {
+    const key = shallowRef(`${uniqueKey}-a`)
+    const { data } = await useAsyncData(key, () => Promise.resolve(key.value), { deep: false })
+
+    expect(isShallow(data)).toBe(true)
+    expect(data.value).toBe(`${uniqueKey}-a`)
+
+    key.value = `${uniqueKey}-b`
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toBe(`${uniqueKey}-b`)
+  })
+
   it('should throw TypeError when key is empty', () => {
     expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot(`[NUXT_E3008: https://nuxt.com/docs/4.x/errors/e3008]`)
   })
