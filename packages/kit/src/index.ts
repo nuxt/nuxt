@@ -20,7 +20,7 @@ export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from './const
 
 // Utils
 export { setGlobalHead } from './head.ts'
-export { addImports, addImportsDir, addImportsSources } from './imports.ts'
+export { addImports, addImportsDir, addImportsSources, addSharedImports } from './imports.ts'
 export { updateAppConfig } from './app-config.ts'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config.ts'
 export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig, setBuildOutput } from './build.ts'
