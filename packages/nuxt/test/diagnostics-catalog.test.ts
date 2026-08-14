@@ -15,7 +15,10 @@ import { unheadDiagnostics } from '../src/app/diagnostics/head.ts'
 import { stateDiagnostics } from '../src/app/diagnostics/state.ts'
 import { serverDiagnostics } from '../../nitro-server/src/runtime/diagnostics.ts'
 
-const catalogs = [
+// Schema continues kit's B5xxx configuration range, so it has to be swept too.
+import { schemaDiagnostics } from '../../schema/src/diagnostics.ts'
+
+const catalogs = {
   buildDiagnostics,
   pluginDiagnostics,
   componentDiagnostics,
@@ -32,13 +35,24 @@ const catalogs = [
   unheadDiagnostics,
   stateDiagnostics,
   serverDiagnostics,
-]
+  schemaDiagnostics,
+}
 
 describe('diagnostics catalog', () => {
   it('has no duplicate codes across every catalog', () => {
     // Codes live in separate defineDiagnostics() calls, so nothing but this
     // global sweep can catch two diagnostics sharing a code.
-    const allCodes = catalogs.flatMap(c => Object.keys(c))
-    expect(new Set(allCodes).size).toBe(allCodes.length)
+    const owners = new Map<string, string[]>()
+    for (const [name, catalog] of Object.entries(catalogs)) {
+      for (const code of Object.keys(catalog)) {
+        owners.set(code, [...owners.get(code) || [], name])
+      }
+    }
+
+    const duplicates = [...owners]
+      .filter(([_code, names]) => names.length > 1)
+      .map(([code, names]) => `${code} is defined in ${names.join(' and ')}`)
+
+    expect(duplicates).toStrictEqual([])
   })
 })
