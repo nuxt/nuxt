@@ -55,4 +55,11 @@ describe('diagnostics catalog', () => {
 
     expect(duplicates).toStrictEqual([])
   })
+
+  it.each(Object.entries(catalogs))('%s lists its codes in ascending order', (_name, catalog) => {
+    // Gaps are fine; a code filed out of order is how two catalogs end up
+    // claiming the same number without anyone noticing in review.
+    const codes = Object.keys(catalog)
+    expect(codes).toStrictEqual([...codes].sort((a, b) => a.localeCompare(b, 'en', { numeric: true })))
+  })
 })
