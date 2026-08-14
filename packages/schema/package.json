@@ -54,7 +54,6 @@
     "esbuild": "catalog:dev",
     "esbuild-loader": "catalog:webpack",
     "h3": "catalog:dev",
-    "hookable": "catalog:app-runtime",
     "mini-css-extract-plugin": "catalog:webpack",
     "ofetch": "catalog:app-runtime",
     "oxc-transform": "catalog:dev",

@@ -1451,9 +1451,6 @@ importers:
       h3:
         specifier: catalog:dev
         version: 2.0.1-rc.22(crossws@0.4.10(srvx@0.11.22))
-      hookable:
-        specifier: catalog:app-runtime
-        version: 6.1.1
       mini-css-extract-plugin:
         specifier: catalog:webpack
         version: 2.10.2(webpack@5.109.2(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))

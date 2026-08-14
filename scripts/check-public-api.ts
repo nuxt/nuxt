@@ -10,7 +10,7 @@ interface PublicEntrypoint {
    */
   types: string[]
   /**
-   * Packages the declarations import for side effects only (`import "pkg"`). These bring in no
+   * Packages the declarations import for side effects only, with no bindings. These bring in no
    * names, but they do make the declarations depend on whatever that package augments, so they
    * are tracked separately rather than ignored.
    */
@@ -88,19 +88,25 @@ const entrypoints: Record<string, PublicEntrypoint> = {
       'hookable',
     ],
   },
+  // `@nuxt/schema/builder-env` declares `ImportMeta` globally, so anything it pulls in lands in
+  // every consuming project's global scope. It describes the bundler's `import.meta` inline
+  // today, and the empty list is what keeps it that way.
+  'packages/schema/dist/builder-env.d.mts': {
+    types: [],
+  },
 }
 
 /** Patterns that bind a name, and so put a package's types in our public surface. */
 const typeImportPatterns = [
-  // `import … from "pkg"` and `export … from "pkg"`, including `export * from "pkg"`
+  // `import … from` and `export … from`, including a bare `export *`
   /^\s*(?:import|export)\s[^'"]*\sfrom\s["']([^"']+)["'];?$/gm,
-  // `import("pkg")` in an inline type position
+  // an inline `import(…)` type
   /\bimport\(\s*["']([^"']+)["']\s*\)/g,
-  // `/// <reference types="pkg" />`
+  // a triple-slash `reference types` directive
   /\/\/\/\s*<reference\s+types="([^"]+)"\s*\/>/g,
 ]
 
-/** `import "pkg"`, which binds nothing but still pulls in the package's augmentations. */
+/** A bare import with no bindings, which still pulls in the package's augmentations. */
 const augmentationPatterns = [/^\s*import\s+["']([^"']+)["'];?$/gm]
 
 const root = new URL('../', import.meta.url)
