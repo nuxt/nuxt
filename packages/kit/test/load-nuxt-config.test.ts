@@ -275,3 +275,21 @@ describe('loadNuxtConfig onConfigResolved', () => {
     expect(done).toBe(true)
   })
 })
+
+describe('loadNuxtConfig confbox formats', () => {
+  const tempDir = join(repoRoot, 'temp', 'confbox-config')
+
+  beforeAll(async () => {
+    await mkdir(tempDir, { recursive: true })
+  })
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  it('loads a yaml `nuxt.config`', async () => {
+    await writeFile(join(tempDir, 'nuxt.config.yaml'), 'ssr: false\n')
+    const config = await loadNuxtConfig({ cwd: tempDir })
+    expect(config.ssr).toBe(false)
+  })
+})

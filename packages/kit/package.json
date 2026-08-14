@@ -32,7 +32,6 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "confbox": "catalog:build",
     "consola": "catalog:build",
     "defu": "catalog:build",
     "destr": "catalog:build",
@@ -52,6 +51,7 @@
     "verkit": "catalog:build"
   },
   "peerDependencies": {
+    "confbox": "catalog:build",
     "dotenv": "catalog:build",
     "giget": "catalog:build",
     "jiti": "catalog:build",
@@ -60,6 +60,9 @@
     "rolldown": ">=1.0.0"
   },
   "peerDependenciesMeta": {
+    "confbox": {
+      "optional": true
+    },
     "dotenv": {
       "optional": true
     },
@@ -83,6 +86,7 @@
     "@nuxt/schema": "workspace:*",
     "c12": "catalog:build",
     "chokidar": "catalog:build",
+    "confbox": "catalog:build",
     "dotenv": "catalog:build",
     "giget": "catalog:build",
     "hookable": "catalog:app-runtime",

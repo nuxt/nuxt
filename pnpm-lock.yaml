@@ -792,9 +792,6 @@ importers:
 
   packages/kit:
     dependencies:
-      confbox:
-        specifier: catalog:build
-        version: 0.2.4
       consola:
         specifier: catalog:build
         version: 3.4.2
@@ -856,6 +853,9 @@ importers:
       chokidar:
         specifier: catalog:build
         version: 5.0.0
+      confbox:
+        specifier: catalog:build
+        version: 0.2.4
       dotenv:
         specifier: catalog:build
         version: 17.4.2
