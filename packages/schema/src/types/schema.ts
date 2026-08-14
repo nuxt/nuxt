@@ -137,6 +137,11 @@ export interface ConfigSchema {
     propsDestructure: boolean
 
     /**
+     * Enable experimental support for Vue Vapor Mode (requires Vue 3.6+).
+     */
+    vapor: boolean
+
+    /**
      * It is possible to pass configure the Vue app globally. Only serializable options may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin.
      *
      * @see [Vue app config documentation](https://vuejs.org/api/application#app-config)
@@ -1161,6 +1166,15 @@ export interface ConfigSchema {
      * `@default` true (or 'client' when compatibilityVersion >= 5)
      */
     payloadExtraction: 'client' | boolean | undefined
+
+    /**
+     * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
+     *
+     * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.
+     *
+     * @default false
+     */
+    prerenderErrorPages: boolean | number[]
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.

@@ -1,11 +1,11 @@
 import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { decodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { isInComponentSetup, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import { sanitizeStatusCode } from '../utils/http-status'
 import type { NuxtError } from './error'
@@ -24,13 +24,19 @@ export const useRouter: typeof _useRouter = () => {
  * A detached scope (e.g. `createSharedComposable`) outlives the component, so the
  * per-page route injected there would freeze after navigation (#18903).
  */
+function getParentScope (scope: EffectScope): EffectScope | undefined {
+  // Vue <= 3.5 tracks the parent scope directly; Vue >= 3.6 links it as the scope's sole subscriber.
+  const internal = scope as EffectScope & { parent?: EffectScope, subs?: { sub?: EffectScope } }
+  return internal.parent ?? internal.subs?.sub
+}
+
 function isScopeWithinInstance (instance: ComponentInternalInstance): boolean {
-  // `scope`/`parent` are internal, but stable across vue versions
+  // `scope` and the scope-parent linkage are internal to vue
   const instanceScope = (instance as ComponentInternalInstance & { scope: EffectScope }).scope
-  let scope: (EffectScope & { parent?: EffectScope }) | undefined = getCurrentScope()
+  let scope: EffectScope | undefined = getCurrentScope()
   while (scope) {
     if (scope === instanceScope) { return true }
-    scope = scope.parent
+    scope = getParentScope(scope)
   }
   return false
 }
@@ -38,9 +44,12 @@ function isScopeWithinInstance (instance: ComponentInternalInstance): boolean {
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = (() => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
-    const middleware = useNuxtApp()._processingMiddleware
-    const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    navigationDiagnostics.NUXT_E2005({ middleware: typeof middleware === 'string' ? middleware : undefined, trace })
+    const nuxtApp = useNuxtApp()
+    if (!isInComponentSetup(nuxtApp)) {
+      const middleware = nuxtApp._processingMiddleware
+      const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
+      navigationDiagnostics.NUXT_E2005({ middleware: typeof middleware === 'string' ? middleware : undefined, trace })
+    }
   }
   if (hasInjectionContext()) {
     const instance = getCurrentInstance()
@@ -282,8 +291,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     return Promise.resolve()
   }
 
-  // Encode the path portion of string locations to match vue-router's
-  // percent-encoded route records.
+  // Encode the path portion of string locations so that decoded paths like
+  // `/café` match vue-router's encoded route records.
   const encodedTo = typeof to === 'string' ? encodeRoutePath(to) : to
   return options?.replace ? router.replace(encodedTo) : router.push(encodedTo)
 }
@@ -315,7 +324,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? MakeSerializableObject<NuxtLayouts[Layout]> : never): void => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
-    if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
+    if (import.meta.dev && isInComponentSetup(nuxtApp) && nuxtApp.payload.state._layout !== layout) {
       navigationDiagnostics.NUXT_E2007()
     }
     nuxtApp.payload.state._layout = layout
@@ -386,5 +395,27 @@ export function encodeURL (location: string, isExternalHost = false): string {
  */
 export function encodeRoutePath (url: string): string {
   const parsed = parseURL(url)
-  return encodePath(decodePath(parsed.pathname)) + parsed.search + parsed.hash
+  return encodeVueRouterPath(decodePath(parsed.pathname)) + parsed.search + parsed.hash
+}
+
+const ENC_PIPE_RE = /%7C/g
+const ENC_BRACKET_OPEN_RE = /%5B/g
+const ENC_BRACKET_CLOSE_RE = /%5D/g
+const ENC_ENC_SLASH_RE = /%252F/gi
+const HASH_RE = /#/g
+const QUESTION_MARK_RE = /\?/g
+
+/**
+ * Apply vue-router's own path encoding, which leaves sub-delimiters like `&`
+ * and `+` literal. This must stay in sync with `encodeVueRouterPath` in
+ * `unrouting`, which encodes the route records we need to match against.
+ */
+function encodeVueRouterPath (value: string): string {
+  return encodeURI(value)
+    .replace(ENC_PIPE_RE, '|')
+    .replace(ENC_BRACKET_OPEN_RE, '[')
+    .replace(ENC_BRACKET_CLOSE_RE, ']')
+    .replace(HASH_RE, '%23')
+    .replace(QUESTION_MARK_RE, '%3F')
+    .replace(ENC_ENC_SLASH_RE, '%2F')
 }

@@ -52,6 +52,40 @@ describe('tsConfig generation', () => {
     `)
   })
 
+  it.each([
+    {
+      compatibilityVersion: 4,
+      expectedAlias: './legacy-base/probe-target',
+      expectedBaseUrl: 'legacy-base',
+    },
+    {
+      compatibilityVersion: 5,
+      expectedAlias: './probe-target',
+      expectedBaseUrl: undefined,
+    },
+  ] as const)('should resolve aliases with compatibilityVersion $compatibilityVersion', async ({ compatibilityVersion, expectedAlias, expectedBaseUrl }) => {
+    const generatedTypes = await _generateTypes(mockNuxtWithOptions({
+      alias: {
+        '#probe/base-url': './probe-target/',
+      },
+      future: {
+        compatibilityVersion,
+      },
+      typescript: {
+        tsConfig: {
+          compilerOptions: {
+            baseUrl: 'legacy-base',
+          },
+        },
+      },
+    }))
+
+    expect(generatedTypes.tsConfig.compilerOptions?.paths?.['#probe/base-url']).toEqual([expectedAlias])
+    for (const tsConfig of [generatedTypes.tsConfig, generatedTypes.nodeTsConfig, generatedTypes.sharedTsConfig, generatedTypes.legacyTsConfig]) {
+      expect(Reflect.get(tsConfig.compilerOptions ?? {}, 'baseUrl')).toBe(expectedBaseUrl)
+    }
+  })
+
   it('should add exclude for module paths', async () => {
     const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
       modulesDir: ['/my-app/modules/test/node_modules', '/my-app/modules/node_modules', '/my-app/node_modules/@some/module/node_modules'],
