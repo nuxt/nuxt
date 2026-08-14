@@ -598,13 +598,15 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect(evaluations.trim().split('\n')).toHaveLength(1)
   })
 
-  it('evaluates a module whose top-level dynamic import fails only once', async () => {
+  it('retries a module whose top-level dynamic import fails to resolve', async () => {
     const error = await loadError('dynamic-import-module')
     expect(error.message).toMatch(/this-dependency-does-not-exist/)
     expect(error.message).not.toMatch(/may not be installed/)
 
+    // an unresolved specifier is indistinguishable from one in the static graph, which the
+    // runtime rejects before running anything, so this module is evaluated a second time
     const evaluations = await readFile(join(tempDir, 'dynamic-evaluations'), 'utf8')
-    expect(evaluations.trim().split('\n')).toHaveLength(1)
+    expect(evaluations.trim().split('\n')).toHaveLength(2)
   })
 
   it('surfaces a missing sub-dependency rather than reporting the module as missing', async () => {
