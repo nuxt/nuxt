@@ -1,5 +1,5 @@
 import { satisfies } from 'verkit'
-import { readPackageJSON } from 'pkg-types'
+import { readPackageJSON } from './internal/package-json.ts'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'

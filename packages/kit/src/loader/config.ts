@@ -16,7 +16,7 @@ import { directoryToURL } from '../internal/esm.ts'
 import { isLoaderError, loadJiti } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
-import { getAddDependencyCommand } from '../dependency.ts'
+import { ensureDependencyInstalled, getAddDependencyCommand } from '../dependency.ts'
 
 /**
  * A layer as it comes back from the underlying config loader, before its directory options have
@@ -205,6 +205,15 @@ async function assertRemoteLayerSupport (source: string, rootDir: string) {
   }
 }
 
+/**
+ * Whether a config load failed because `confbox` is not installed. It is an optional peer
+ * dependency, needed only to parse a `nuxt.config` written in yaml, toml, jsonc or json5.
+ */
+function isMissingConfbox (error: unknown): boolean {
+  const { code, message } = (error ?? {}) as { code?: unknown, message?: unknown }
+  return code === 'ERR_MODULE_NOT_FOUND' && typeof message === 'string' && message.includes(`'confbox`)
+}
+
 const merger = createDefu((obj, key, value) => {
   if (Array.isArray(obj[key]) && Array.isArray(value)) {
     obj[key] = obj[key].concat(value)
@@ -294,7 +303,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     }
   }
 
-  const resolved = await withDefineNuxtConfig(
+  const loadRootConfig = () => withDefineNuxtConfig(
     () => loadConfig<NuxtConfig>({
       name: 'nuxt',
       configFile: 'nuxt.config',
@@ -360,6 +369,24 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       },
     }),
   )
+
+  const resolved = await loadRootConfig().catch(async (error) => {
+    if (!isMissingConfbox(error)) {
+      throw error
+    }
+    if (!await ensureDependencyInstalled('confbox', { rootDir: rootCwd, from: import.meta.url })) {
+      throw configDiagnostics.NUXT_B5022({
+        installCommand: await getAddDependencyCommand('confbox', rootCwd, { dev: true }),
+        cause: error,
+      })
+    }
+    // The abandoned load already recorded the layers it reached, and a layer it has seen resolves
+    // to an empty config on the way past
+    seenLayerDirs.clear()
+    extendsLocalLayerOrder.length = 0
+    return loadRootConfig()
+  })
+
   const { configFile, layers = [], cwd, meta } = resolved
   // Clone with `klona` rather than `klona/full`: jiti-imported JSON/CJS modules in user config
   // carry a non-enumerable, self-referential `default` interop property, which `klona/full`
