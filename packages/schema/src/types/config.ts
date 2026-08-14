@@ -1,16 +1,28 @@
 import type { KeepAliveProps, TransitionProps, AppConfig as VueAppConfig } from 'vue'
-import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
+import type { Plugin as VitePluginType, ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
+import type { Configuration as WebpackConfiguration, WebpackPluginInstance as WebpackPluginInstanceType } from 'webpack'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { SnakeCase } from 'scule'
-import type { ConfigLayerMeta, DefineConfig, ResolvedConfig, UserInputConfig } from 'c12'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
+import type { SnakeCase } from './case.ts'
+import type { NuxtConfigLayer, NuxtConfigLayerMeta } from './layers.ts'
 import type { ConfigSchema } from './schema.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { AppHeadMetaObject } from './head.ts'
 
 export type { SchemaDefinition } from 'untyped'
+
+/**
+ * Bundler types re-exported for the utilities that extend a bundler's own configuration.
+ *
+ * Authoring a Vite or webpack plugin is not possible without the bundler's types, so these are a
+ * deliberate exception to Nuxt owning its public types: `@nuxt/kit` takes them from here rather
+ * than importing the bundlers itself.
+ */
+export type VitePlugin = VitePluginType
+export type WebpackConfig = WebpackConfiguration
+export type WebpackPluginInstance = WebpackPluginInstanceType
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -66,16 +78,22 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' 
   $schema?: SchemaDefinition
 }
 
-export type NuxtConfigLayer = ResolvedConfig<NuxtConfig & {
-  srcDir: ConfigSchema['srcDir']
-  rootDir: ConfigSchema['rootDir']
-}> & {
-  cwd: string
-  configFile: string
+/**
+ * Environment- and metadata-aware wrapper around a user configuration object, allowing
+ * `$production`/`$development`/`$test`/`$env` overrides and a `$meta` layer descriptor
+ * alongside the configuration itself.
+ */
+export type NuxtConfigInput<Config extends Record<string, any> = NuxtConfig> = Config & {
+  $test?: Config
+  $development?: Config
+  $production?: Config
+  $env?: Record<string, Config>
+  $meta?: NuxtConfigLayerMeta
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface DefineNuxtConfig<Config extends UserInputConfig = NuxtConfig> extends DefineConfig<Config, ConfigLayerMeta> {}
+export interface DefineNuxtConfig<Config extends Record<string, any> = NuxtConfig> {
+  (input: NuxtConfigInput<Config>): NuxtConfigInput<Config>
+}
 
 export interface NuxtBuilder {
   bundle: (nuxt: Nuxt) => Promise<void>
@@ -122,6 +140,11 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
 
   /**
    * Warmup vite entrypoint caches on dev startup.
+   *
+   * In dev mode Nuxt crawls the client entry's import graph once Nitro has built, transforming
+   * modules the browser is about to request. Set to `false` to skip this speculative work, which
+   * also disables Vite's own entry warmup.
+   * @default true
    */
   warmupEntry?: boolean
 

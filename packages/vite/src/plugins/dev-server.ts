@@ -67,6 +67,10 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
     async configureServer (viteServer) {
       await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
 
+      if (nuxt.options.experimental.nitroViteEnvironment) {
+        return
+      }
+
       const staticBases: string[] = []
       for (const folder of nitro.options.publicAssets) {
         if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {

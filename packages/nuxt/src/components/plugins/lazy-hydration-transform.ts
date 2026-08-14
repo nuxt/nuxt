@@ -2,11 +2,12 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { camelCase, pascalCase } from 'scule'
 
-import { componentDiagnostics, tryUseNuxt } from '@nuxt/kit'
+import { tryUseNuxt } from '@nuxt/kit'
+import { componentDiagnostics } from '@nuxt/kit/internal'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils/index.ts'
-import { resolveToAlias } from '../../utils.ts'
+import { linkToAlias, offsetToPosition } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -92,7 +93,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               const prop = camelCase(isDynamic ? attr.slice(1) : attr)
               if (prop in hydrationStrategyMap) {
                 if (strategy) {
-                  componentDiagnostics.NUXT_B3005({ component: node.name, file: id })
+                  componentDiagnostics.NUXT_B3005({ component: node.name, file: linkToAlias(id, nuxt, offsetToPosition(code, node.loc[0].start + offset)) })
                 } else {
                   strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
                 }
@@ -101,7 +102,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
 
             if (strategy && !/^(?:Lazy|lazy-)/.test(node.name)) {
               if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
-                const relativePath = resolveToAlias(id, nuxt)
+                const relativePath = linkToAlias(id, nuxt, offsetToPosition(code, node.loc[0].start + offset))
                 componentDiagnostics.NUXT_B3006({ component: node.name, file: relativePath, lazyName: `Lazy${pascalCase(node.name)}` })
               }
               return

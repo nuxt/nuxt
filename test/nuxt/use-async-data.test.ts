@@ -11,6 +11,7 @@ import { Transition } from 'vue'
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
+import type { AsyncDataRefreshCause } from '#app/composables/asyncData'
 import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
@@ -79,7 +80,7 @@ describe('useAsyncData', () => {
   })
 
   it('should throw TypeError when key is empty', () => {
-    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[NUXT_E3008: NUXT_E3008]')
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot(`[NUXT_E3008: https://nuxt.com/docs/4.x/errors/e3008]`)
   })
 
   it('should keep promise methods after destructuring', async () => {
@@ -292,6 +293,25 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('idle')
 
     vi.useRealTimers()
+  })
+
+  it('does not write resolved data to the payload with `serialize: false`', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('test'), { serialize: false })
+
+    expect(data.value).toBe('test')
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
+  })
+
+  it('does not write cached data to the payload with `serialize: false`', async () => {
+    const nuxtApp = useNuxtApp()
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('fetched'), {
+      serialize: false,
+      getCachedData: () => 'cached',
+    })
+
+    expect(data.value).toBe('cached')
+    expect(uniqueKey in nuxtApp.payload.data).toBe(false)
   })
 
   it('removes the key from payload.data and _asyncDataPromises on clear', async () => {
@@ -566,6 +586,32 @@ describe('useAsyncData', () => {
     })
   })
 
+  it('should batch watched dependency updates cascading within the same flush into a single refresh', async () => {
+    const a = ref(0)
+    const b = ref(0)
+    const promiseFn = vi.fn(() => Promise.resolve(`${a.value}-${b.value}`))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [a, b] })
+        // registered after useAsyncData, so it runs after the params watcher within the same flush
+        watch(a, val => (b.value = val))
+        return () => h('div', [data.value])
+      },
+    })
+
+    const c = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    a.value = 1
+    await nextTick()
+
+    // the fetch is deferred to the post-flush, so it observes the cascaded update of `b`
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    await vi.waitFor(() => {
+      expect(c.html()).toBe('<div>1-1</div>')
+    })
+  })
+
   it('should work correctly with nested components accessing the same asyncData', async () => {
     const useCustomData = () => useAsyncData(uniqueKey, async () => {
       await Promise.resolve()
@@ -788,6 +834,23 @@ describe('useAsyncData', () => {
 
     expect(capturedSignal!.aborted).toBe(true)
     expect(nuxtApp._asyncDataPromises[key]).toBeUndefined()
+  })
+
+  it('should settle status when unmounting mid-fetch with custom getCachedData', async () => {
+    const key = `settle-on-unmount-${++counter}`
+    const nuxtApp = useNuxtApp()
+    const scope = effectScope()
+    let res!: ReturnType<typeof useAsyncData>
+    scope.run(() => {
+      res = useAsyncData(key, () => new Promise<string>(() => {}), { getCachedData: () => undefined })
+    })
+    expect(res.status.value).toBe('pending')
+    scope.stop()
+    await nextTick()
+    await nextTick()
+    expect(res.status.value).toBe('idle')
+    expect(res.pending.value).toBe(false)
+    expect(nuxtApp._asyncData[key]?.status.value).toBe('idle')
   })
 
   it('should be synced with useNuxtData', async () => {
@@ -1761,5 +1824,35 @@ describe('useAsyncData', () => {
     clear()
     expect(data.value).toBeUndefined()
     expect(status.value).toBe('idle')
+  })
+
+  it('does not cross-pollute cache slots when the reactive key changes (#32836)', async () => {
+    const keyA = `${uniqueKey}-a`
+    const keyB = `${uniqueKey}-b`
+    const handler = vi.fn((param: string) => Promise.resolve(`hello ${param}`))
+    // caching strategy that always respects the per-key cache via `useNuxtData`
+    const getCachedData = (key: string, nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause }) => {
+      if (nuxtApp.isHydrating) {
+        return nuxtApp.payload.data[key]
+      }
+      const { data } = useNuxtData<string>(key)
+      if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook' && data.value) {
+        return data.value
+      }
+    }
+
+    const keyRef = ref(keyA)
+    const { data } = await useAsyncData(keyRef, () => handler(keyRef.value), { getCachedData })
+    expect(data.value).toBe(`hello ${keyA}`)
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    keyRef.value = keyB
+    await flushPromises()
+
+    // the new key's slot must hold the new key's data, not the previous key's
+    const { data: nuxtDataB } = useNuxtData(keyB)
+    expect(nuxtDataB.value).toBe(`hello ${keyB}`)
+    expect(data.value).toBe(`hello ${keyB}`)
+    expect(handler).toHaveBeenCalledTimes(2)
   })
 })

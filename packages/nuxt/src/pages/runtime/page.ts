@@ -261,6 +261,7 @@ export default defineComponent({
                       renderKey: key || undefined,
                       trackRootNodes: hasTransition,
                       vnodeRef: pageRef,
+                      routeRecord: import.meta.dev ? routeProps.route.matched.find(m => m.components?.default === routeProps.Component.type) : undefined,
                     }
 
                     if (!keepaliveConfig) {

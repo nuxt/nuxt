@@ -1,17 +1,18 @@
-import { buildDiagnostics, resolveAlias } from '@nuxt/kit'
+import { resolveAlias } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
-import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, logger, stripExtension } from '../../utils.ts'
+import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, linkToAlias, logger, stripExtension } from '../../utils.ts'
 import type { ESTree } from 'rolldown/utils'
 import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
-import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
 import type { ScanPlugin } from '../types.ts'
 import type { Import } from 'unimport'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 import { createScanPluginContext } from '../utils.ts'
+import { type ParsedStaticImport, parseStaticImports } from '../../core/utils/static-imports.ts'
 
 interface ParsedKeyedFunctionFactory {
   factoryName: string
@@ -24,7 +25,7 @@ interface ParsedKeyedFunctionFactory {
  * Check if the node is a named export of a keyed function factory, and if so,
  * return its VariableDeclarator node.
  */
-export function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
+function parseKeyedFunctionFactory (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
   if (node.type === 'ExportNamedDeclaration') {
     const parsed: ParsedKeyedFunctionFactory[] = []
 
@@ -133,7 +134,7 @@ function createFactoryProcessor (
     for (const parsedFactoryCall of parsedFactoryCalls) {
       const factoryMeta = getFactoryByLocalName(parsedFactoryCall.factoryName)
       if (!factoryMeta) {
-        buildDiagnostics.NUXT_B1008({ function: parsedFactoryCall.functionName, file: filePath })
+        buildDiagnostics.NUXT_B1008({ function: parsedFactoryCall.functionName, file: linkToAlias(filePath) })
         continue
       }
 
@@ -211,7 +212,7 @@ function createFactoryProcessor (
         continue
       }
 
-      logger.debug(`[nuxt:compiler] The factory function \`${factoryMeta.name}\` used to create \`${parsedFactoryCall.functionName}\` in file \`${filePath}\` is not imported and is not in auto-imports. Skipping processing.`)
+      logger.debug(`[nuxt:compiler] The factory function \`${factoryMeta.name}\` used to create \`${parsedFactoryCall.functionName}\` in file \`${linkToAlias(filePath)}\` is not imported and is not in auto-imports. Skipping processing.`)
     }
   }
 
@@ -427,7 +428,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           id,
           scopeTracker,
           namesToFactoryMeta,
-          findStaticImports(code).map(i => parseStaticImport(i)),
+          parseStaticImports(code, id),
           autoImportsToSources,
           options.alias,
         )

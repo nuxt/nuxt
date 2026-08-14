@@ -58,7 +58,7 @@ export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 
   return true
 }
 
-const JS_RE = /\.(?:[cm]?j|t)sx?$/
+const JS_RE = /\.(?:[cm]?[jt]s|[jt]sx)$/
 
 /** Matches module IDs for Vue files (ignoring query strings). */
 export const VUE_ID_RE = /\.vue(?:\?|$)/

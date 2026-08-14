@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { execFileSync } from 'node:child_process'
 import { consola } from 'consola'
 import { loadWorkspace } from './_utils'
 
@@ -15,6 +16,10 @@ async function main () {
   }
 
   await workspace.save()
+
+  // The committed ui-templates output bakes in the nuxt package version,
+  // so it must be regenerated whenever versions are bumped.
+  execFileSync('pnpm', ['--filter', '@nuxt/ui-templates', 'build'], { stdio: 'inherit' })
 }
 
 main().catch((err) => {

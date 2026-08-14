@@ -1,5 +1,7 @@
-import { configDiagnostics, findPath } from '@nuxt/kit'
+import { findPath } from '@nuxt/kit'
+import { configDiagnostics } from '@nuxt/kit/internal'
 import { basename } from 'pathe'
+import { link } from 'clickable-path'
 
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
@@ -24,7 +26,7 @@ function checkViteConfig () {
 
 function checkWebpackConfig () {
   // https://webpack.js.org/configuration/configuration-languages/
-  return checkConfigFileExistence('webpack.config', ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', 'coffee'])
+  return checkConfigFileExistence('webpack.config', ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', '.coffee'])
 }
 
 function checkNitroConfig () {
@@ -38,5 +40,5 @@ function checkPostCSSConfig () {
 
 async function checkConfigFileExistence (fileName: string, extensions: string[]) {
   const configFile = await findPath(fileName, { extensions }).catch(() => null)
-  return configFile ? basename(configFile) : undefined
+  return configFile ? link(configFile, { formatter: absolute => basename(absolute) }) : undefined
 }

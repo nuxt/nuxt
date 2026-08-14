@@ -12,7 +12,7 @@ import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
 
-import { getVueLoaderHash } from '#builder'
+import { getVueLoaderHash } from '../builder.ts'
 
 const CSS_URL_RE = /url\((['"]?)(\/[^)]+?)\1\)/g
 
@@ -52,7 +52,7 @@ function normalizeCSSContent (css: string) {
 
 // Reproduces the active Vue loader's scope id so styles extracted here match
 // the ids emitted by the server build. The loaders use different hash functions,
-// selected through #builder.
+// selected through the injected builder implementation.
 function getVueLoaderScopeId (filePath: string, source: string, rootContext: string) {
   const rawShortFilePath = relative(rootContext || process.cwd(), filePath).replace(/^(?:\.\.[/\\])+/, '')
   const shortFilePath = normalize(rawShortFilePath).replace(/\\/g, '/')
@@ -346,7 +346,10 @@ export class SSRStylesPlugin {
 
       compilation.emitAsset('styles.mjs', new rawSource(stylesSource))
       const stylesPath = resolve(this.nuxt.options.buildDir, 'dist/server/styles.mjs')
-      setBuildOutput('ssrStyles', () => `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`, this.nuxt)
+      setBuildOutput('ssrStyles', () => [
+        `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`,
+        'export const inlinedCSS = {}',
+      ].join('\n'), this.nuxt)
 
       const entryIds = Array.from(this.chunksWithInlinedCSS).filter(id => entryModules.has(id))
       setBuildOutput('entryIds', () => `export default ${JSON.stringify(entryIds)}`, this.nuxt)

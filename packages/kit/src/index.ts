@@ -1,12 +1,14 @@
+import { DEFAULT_JSX_FILE_EXTENSIONS as _DEFAULT_JSX_FILE_EXTENSIONS, DEFAULT_JS_FILE_EXTENSIONS as _DEFAULT_JS_FILE_EXTENSIONS } from './constants.ts'
+
 // Module
 export { defineNuxtModule } from './module/define.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export { getDirectory, installModule, installModules, loadNuxtModuleInstance, normalizeModuleTranspilePath, resolveModuleWithOptions } from './module/install.ts'
+export { getDirectory, installModule, loadNuxtModuleInstance, normalizeModuleTranspilePath, resolveModuleWithOptions } from './module/install.ts'
 export { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './module/compatibility.ts'
 
 // Loader
-export { loadNuxtConfig } from './loader/config.ts'
-export type { LoadNuxtConfigOptions } from './loader/config.ts'
+export { diffNuxtConfig, loadNuxtConfig } from './loader/config.ts'
+export type { LoadNuxtConfigOptions, NuxtConfigDiffEntry, ResolvedNuxtConfigContext } from './loader/config.ts'
 export { extendNuxtSchema } from './loader/schema.ts'
 export { buildNuxt, loadNuxt } from './loader/nuxt.ts'
 export type { LoadNuxtOptions } from './loader/nuxt.ts'
@@ -15,9 +17,16 @@ export type { LoadNuxtOptions } from './loader/nuxt.ts'
 export { getLayerDirectories } from './layers.ts'
 export type { LayerDirectories } from './layers.ts'
 
+// Constants
+/** @deprecated Internal. Import from `@nuxt/kit/internal` instead. */
+export const DEFAULT_JS_FILE_EXTENSIONS: string[] = _DEFAULT_JS_FILE_EXTENSIONS
+/** @deprecated Internal. Import from `@nuxt/kit/internal` instead. */
+export const DEFAULT_JSX_FILE_EXTENSIONS: string[] = _DEFAULT_JSX_FILE_EXTENSIONS
+
 // Utils
 export { setGlobalHead } from './head.ts'
 export { addImports, addImportsDir, addImportsSources } from './imports.ts'
+export { updateAppConfig } from './app-config.ts'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config.ts'
 export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig, setBuildOutput } from './build.ts'
 export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigOptions } from './build.ts'
@@ -28,6 +37,8 @@ export { addComponent, addComponentExports, addComponentsDir } from './component
 export type { AddComponentOptions } from './components.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { getNuxtCtx, runWithNuxtContext, tryUseNuxt, useNuxt, nuxtCtx } from './context.ts'
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export type { NuxtContext } from './context.ts'
 export { createIsIgnored, isIgnored, resolveIgnorePatterns } from './ignore.ts'
 export { addLayout } from './layout.ts'
 export { addRouteMiddleware, extendPages, extendRouteRules } from './pages.ts'
@@ -39,23 +50,14 @@ export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
+export type { ResolveTypePathsOptions } from './types.ts'
+export { recoverThrottledChanges } from './watch.ts'
+export type { RecoverableWatcher } from './watch.ts'
 export { logger, useLogger } from './logger.ts'
-
-// Build-time diagnostics catalogs (split by domain; imported directly, no barrel).
-// Re-exported here for use from other packages (nuxt, vite, webpack, nitro-server);
-// the B8xxx kit-api catalog is intentionally kit-internal. All catalogs are tagged
-// `@internal`: they are not public API and third-party modules should not report
-// or throw `NUXT_B` codes.
-export { buildDiagnostics } from './diagnostics/build.ts'
-export { pluginDiagnostics } from './diagnostics/plugins.ts'
-export { componentDiagnostics } from './diagnostics/components.ts'
-export { pageDiagnostics } from './diagnostics/pages.ts'
-export { configDiagnostics } from './diagnostics/config.ts'
-export { headDiagnostics } from './diagnostics/head.ts'
-export { bundlerDiagnostics } from './diagnostics/bundler.ts'
+export type { NuxtLogFn, NuxtLogInput, NuxtLogLevel, NuxtLogObject, NuxtLogReporter, NuxtLogType, NuxtLogger, NuxtLoggerOptions, NuxtPromptOptions } from './logger.ts'
 
 // Dependencies
-export { ensureDependencyInstalled } from './dependency.ts'
+export { ensureDependencyInstalled, getAddDependencyCommand } from './dependency.ts'
 export type { EnsureDependencyInstalledOptions } from './dependency.ts'
 
 // Internal Utils

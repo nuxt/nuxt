@@ -4,6 +4,8 @@ on:
   issues:
     types: [edited]
 
+permissions: {}
+
 concurrency:
   group: llm-triage-edit-${{ github.event.issue.number }}
   # avoid losing analysis if user edits rapidly

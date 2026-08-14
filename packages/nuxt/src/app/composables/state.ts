@@ -2,7 +2,7 @@ import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
-import { stateDiagnostics } from '../diagnostics/state.ts'
+import { stateDiagnostics } from '../diagnostics/state'
 
 import { useStateDefaults } from '#build/nuxt.config.mjs'
 
@@ -41,7 +41,7 @@ export function useState<T> (...args: any): Ref<T> {
     if (isRef(initialValue)) {
       // vue will unwrap the ref for us
       nuxtApp.payload.state[key] = initialValue
-      return initialValue as Ref<T>
+      return state
     }
     state.value = initialValue
   }

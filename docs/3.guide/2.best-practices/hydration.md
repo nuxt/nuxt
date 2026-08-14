@@ -6,7 +6,7 @@ description: Why fixing hydration issues is important
 
 When developing, you may face hydration issues. Don't ignore those warnings.
 
-## Why is it important to fix them?
+## Why Is It Important to Fix Them?
 
 Hydration mismatches are not just warnings - they are indicators of serious problems that can break your application:
 
@@ -21,7 +21,7 @@ Hydration mismatches are not just warnings - they are indicators of serious prob
 - **State inconsistencies**: Application state can become out of sync between what the user sees and what the application thinks is rendered
 - **SEO problems**: Search engines may index different content than what users actually see
 
-## How to detect them
+## How to Detect Them
 
 ### Development Console Warnings
 
@@ -29,7 +29,7 @@ Vue will log hydration mismatch warnings in the browser console during developme
 
 ![Screenshot of Vue hydration mismatch warning in the browser console](/assets/docs/best-practices/vue-console-hydration.png)
 
-## Common reasons
+## Common Reasons
 
 ### Browser-only APIs in Server Context
 
@@ -176,7 +176,7 @@ onMounted(() => {
 </script>
 ```
 
-## In summary
+## In Summary
 
 1. **Use SSR-friendly composables**: [`useFetch`](/docs/4.x/api/composables/use-fetch), [`useAsyncData`](/docs/4.x/api/composables/use-async-data), [`useState`](/docs/4.x/api/composables/use-state)
 2. **Wrap client-only code**: Use [`ClientOnly`](/docs/4.x/api/components/client-only) component for browser-specific content

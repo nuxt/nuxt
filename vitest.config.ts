@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { resolve } from 'pathe'
-import { defineVitestProject } from '@nuxt/test-utils/config'
+import { defineVitestProject as _defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
 import { isCI, isWindows } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
@@ -8,13 +8,35 @@ import codspeedPlugin from '@codspeed/vitest-plugin'
 import type { NuxtConfig } from 'nuxt/schema'
 import { defu } from 'defu'
 
+// TODO: fix upstream in nuxt/test-utils
+function defineVitestProject (config: Parameters<typeof _defineVitestProject>[0]) {
+  return _defineVitestProject(defu({
+    test: {
+      environmentOptions: {
+        nuxt: {
+          overrides: { experimental: { nitroViteEnvironment: false } } satisfies NuxtConfig,
+        },
+      },
+    },
+  }, config))
+}
+
 const commonSettings: NuxtConfig = {
   pages: true,
   routeRules: {
     '/specific-prerendered': { prerender: true },
+    '/isr/**': { isr: 60 },
     '/pre/test': { redirect: '/' },
     '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
+    // Decoded keys must match the percent-encoded path generated for a unicode page,
+    // including when a catch-all rule sets the same key, and when folding an
+    // encoded non-ASCII character is required to match.
+    '/测试': { redirect: '/unicode-target' },
+    '/unicode/**': { ssr: true },
+    '/unicode/测试': { ssr: false },
+    '/cafÉ': { redirect: '/accented-target' },
+    [`/pre-encoded/${encodeURIComponent('测试')}`]: { redirect: '/pre-encoded-target' },
   },
   experimental: {
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
@@ -43,7 +65,7 @@ const nuxtTestProjects: Record<string, NuxtConfig> = {
 // Matrix combinations for fixture tests (matches CI matrix with exclusions)
 interface FixtureMatrixEntry {
   env: 'dev' | 'built'
-  builder: 'vite' | 'rspack' | 'webpack'
+  builder: 'vite' | 'rspack' | 'webpack' | 'nitro-vite'
   context: 'async' | 'default'
   manifest: 'manifest-on' | 'manifest-off'
 }
@@ -58,6 +80,9 @@ const fixtureMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-off' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-off' },
+  // nitro-vite: only default context + manifest-on
+  { env: 'dev', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on' },
+  { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on' },
   // rspack: only manifest-on
   { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
@@ -111,6 +136,7 @@ export default defineConfig({
           name: fixtureProjectName(entry),
           include: ['test/*.test.ts'],
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: isWindows ? 60000 : 20000,
           retry: isCI ? 2 : 0,
@@ -122,6 +148,7 @@ export default defineConfig({
         test: {
           name: 'bundle',
           include: ['test/bundle.test.ts'],
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: 180_000,
           retry: isCI ? 2 : 0,
@@ -129,13 +156,26 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          name: 'no-jiti',
+          include: ['test/no-jiti/*.test.ts'],
+          globalSetup: ['./test/setup-prepare.ts'],
+          setupFiles: ['./test/setup-env.ts'],
+          testTimeout: 300_000,
+          benchmark: { include: [] },
+        },
+      },
+      {
         define: {
           'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+          'import.meta.server': '(globalThis.__TEST_SERVER__ ?? false)',
         },
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
+            '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
+            '#internal/nuxt/nitro-config.mjs': resolve('./test/mocks/nitro-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),
@@ -144,6 +184,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           benchmark: { include: [] },
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
           include: ['packages/**/*.{test,spec}.ts'],
           testTimeout: isWindows ? 60000 : 10000,
@@ -156,6 +197,7 @@ export default defineConfig({
           name: 'nuxt-universal',
           dir: './test/nuxt/universal',
           environment: 'nuxt',
+          globalSetup: ['./test/setup-prepare.ts'],
           environmentOptions: {
             nuxt: {
               overrides: { pages: false },
@@ -170,8 +212,9 @@ export default defineConfig({
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/insensitive/**', '**/sensitive/**'],
           environment: 'nuxt',
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
           env: {
             PROJECT: project,
@@ -185,12 +228,60 @@ export default defineConfig({
       }))),
       await defineVitestProject({
         define: {
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+        },
+        test: {
+          name: 'nuxt-insensitive',
+          dir: './test/nuxt/insensitive',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              // `sensitive: false` on a v5 app: the config the route-rule case-folding targets.
+              overrides: defu({
+                future: { compatibilityVersion: 5 },
+                router: { options: { sensitive: false } },
+                routeRules: {
+                  '/Secret/Docs/**': { ssr: false },
+                  '/Legacy/Home': { redirect: '/target' },
+                },
+              } satisfies NuxtConfig, commonSettings),
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        define: {
+          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+        },
+        test: {
+          name: 'nuxt-sensitive',
+          dir: './test/nuxt/sensitive',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu({
+                future: { compatibilityVersion: 5 },
+                router: { options: { sensitive: true } },
+                routeRules: {
+                  '/Admin/Dashboard': { redirect: '/admin-target' },
+                  '/admin/dashboard': { redirect: '/lower-target' },
+                },
+              } satisfies NuxtConfig, commonSettings),
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        define: {
           'import.meta.dev': 'true',
         },
         test: {
           name: 'nuxt-dev',
           dir: './test/nuxt/dev',
           environment: 'nuxt',
+          globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
           environmentOptions: {
             nuxt: {

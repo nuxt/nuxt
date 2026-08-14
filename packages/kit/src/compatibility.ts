@@ -1,4 +1,4 @@
-import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
+import { satisfies } from 'verkit'
 import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
@@ -15,7 +15,7 @@ const builderMap = {
   '@nuxt/webpack-builder': 'webpack',
 }
 
-export function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
+function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
   const nuxtVersion = getNuxtVersion(nuxt)
   return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
 }

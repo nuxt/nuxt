@@ -11,6 +11,7 @@ const distDir = fileURLToPath(new URL('../node_modules/.temp/dist/templates', im
 describe('template', () => {
   beforeAll(async () => {
     await exec('pnpm', ['build'], {
+      throwOnError: true,
       nodeOptions: {
         cwd: fileURLToPath(new URL('..', import.meta.url)),
         env: {

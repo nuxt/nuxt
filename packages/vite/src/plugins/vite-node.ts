@@ -8,17 +8,18 @@ import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { win32 as pathWin32 } from 'node:path'
-import { dirname, isAbsolute, join, normalize } from 'pathe'
-import { bundlerDiagnostics, directoryToURL, resolveAlias, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { dirname, join, normalize } from 'pathe'
+import { setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
-import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 
-import { isCSS, toVirtualId } from '../utils/index.ts'
+import { toVirtualId } from '../utils/index.ts'
+import { collectDevCss } from '../utils/css.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 import type { ErrorPartial } from '../types.ts'
 
@@ -67,46 +68,14 @@ export interface ViteNodeFetch {
 }
 
 function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string) {
-  const css = new Set<string>()
-  const ssrServer = viteServer.environments.ssr
-
-  // Collect CSS from module graph (already loaded modules)
-  for (const key of ssrServer.moduleGraph.urlToModuleMap.keys()) {
-    if (isCSS(key)) {
-      const query = getQuery(key)
-      if ('raw' in query) { continue }
-      const importers = ssrServer.moduleGraph.urlToModuleMap.get(key)?.importers
-      if (importers && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) {
-        continue
-      }
-      css.add(key)
-    }
-  }
-
-  // Add global CSS from config as fallback to prevent FOUC
-  // This ensures CSS is in manifest even if moduleGraph isn't populated yet
-  for (const globalCss of nuxt.options.css) {
-    if (typeof globalCss === 'string') {
-      let resolved: string | undefined = resolveAlias(globalCss, nuxt.options.alias)
-
-      // Resolve bare module specifiers to absolute paths
-      if (!isAbsolute(resolved)) {
-        resolved = resolveModulePath(resolved, {
-          try: true,
-          from: nuxt.options.modulesDir.map(d => directoryToURL(d)),
-        })
-        if (!resolved) { continue }
-        css.add('/@fs' + resolved.replace(/^(?!\/)/, '/'))
-      } else {
-        css.add(resolved)
-      }
-    }
-  }
+  // global CSS is included as a fallback to prevent FOUC before the ssr module
+  // graph is populated
+  const css = collectDevCss(nuxt, viteServer.environments.ssr.moduleGraph)
 
   const manifest = normalizeViteManifest({
     '@vite/client': {
       file: '@vite/client',
-      css: [...css],
+      css,
       module: true,
       isEntry: true,
     },
@@ -193,6 +162,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   if (!nuxt.options.dev) {
     return
   }
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    return
+  }
 
   let socketServer: net.Server | undefined
   const { socketPath, parentDir } = generateSocketPath()
@@ -219,6 +191,20 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
+
+  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath].map(p => pathToFileURL(p).href))
+  nitro.options.rollupConfig ||= {}
+  const existingExternal = nitro.options.rollupConfig.external
+  nitro.options.rollupConfig.external = (id, ...args) => {
+    if (externalRuntimeUrls.has(id)) {
+      return true
+    }
+    if (typeof existingExternal === 'function') {
+      return existingExternal(id, ...args)
+    }
+    const patterns = existingExternal == null ? [] : (Array.isArray(existingExternal) ? existingExternal : [existingExternal])
+    return patterns.some(e => typeof e === 'string' ? e === id : e.test(id))
+  }
 
   const serverEntryCode = `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`
   setBuildOutput('serverEntry', () => serverEntryCode)
@@ -427,6 +413,15 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                 }
                 throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
               }) as Exclude<FetchResult, { cache: true }>
+            // Attach the sourcemap from the module graph so vite-node can use it.
+            if (response && !response.map) {
+              const graph = ssrServer.environments.ssr.moduleGraph
+              const mod = graph.getModuleById(request.payload.moduleId)
+                       || graph.fileToModulesMap.get(request.payload.moduleId)?.values().next().value
+              if (mod?.transformResult?.map) {
+                response.map = mod.transformResult.map as FetchResult['map']
+              }
+            }
             sendResponse<typeof request.type>(socket, request.id, response)
             return
           }

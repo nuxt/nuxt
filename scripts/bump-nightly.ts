@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { execFileSync } from 'node:child_process'
-import { inc } from 'semver'
+import { increment } from 'verkit'
 import { determineBumpType, getLatestTag, loadWorkspace } from './_utils.ts'
 
 const nightlyPackages = {
@@ -25,7 +25,7 @@ export async function bumpNightly () {
   const bumpType = await determineBumpType(sinceDate)
 
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
-    const newVersion = inc(pkg.data.version, bumpType || 'patch')
+    const newVersion = increment(pkg.data.version, bumpType || 'patch')
     if (!newVersion) {
       throw new Error(`Failed to increment version for package ${pkg.data.name} with version ${pkg.data.version}`)
     }

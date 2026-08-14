@@ -6,7 +6,7 @@ import { $fetch } from '#build/fetch'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
-import { appDiagnostics } from '../diagnostics/core.ts'
+import { appDiagnostics } from '../diagnostics/core'
 import { useHead } from './head'
 
 /** @since 3.0.0 */
@@ -125,6 +125,9 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
   }
 
   const vm = getCurrentInstance()
+  if (import.meta.dev && !vm && key) {
+    appDiagnostics.NUXT_E1013()
+  }
   if (vm && key) {
     vm.attrs[PREHYDRATE_ATTR_KEY] ||= ''
     key = ':' + key + ':'
