@@ -160,6 +160,9 @@ catalogs:
     knitwork:
       specifier: ^1.3.0
       version: 1.3.0
+    microdiff:
+      specifier: ^1.6.0
+      version: 1.6.0
     mlly:
       specifier: ^1.8.2
       version: 1.8.2
@@ -813,15 +816,15 @@ importers:
       klona:
         specifier: catalog:build
         version: 2.0.6
+      microdiff:
+        specifier: catalog:build
+        version: 1.6.0
       nostics:
         specifier: catalog:build
         version: 1.2.0
       nypm:
         specifier: catalog:build
         version: 0.6.9
-      ohash:
-        specifier: catalog:build
-        version: 2.0.11
       pathe:
         specifier: catalog:build
         version: 2.0.3
@@ -7479,6 +7482,9 @@ packages:
   merge2@1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
+
+  microdiff@1.6.0:
+    resolution: {integrity: sha512-w7JWt8Bno6I8h0rEqlxr4lNG4UbT1FVtWo42wWosIiaJ+rP3pXh7shCYDnyqBrYx36LJ1CZ64p8A62aVp0sJpQ==}
 
   micromark-core-commonmark@2.0.3:
     resolution: {integrity: sha512-RDBrHEMSxVFLg6xvnXmb1Ayr2WzLAWjeSATAoxwKYJV94TeNavgoIdA0a9ytzDSVzBy2YKFK+emCPOEibLeCrg==}
@@ -16062,6 +16068,8 @@ snapshots:
   merge-stream@2.0.0: {}
 
   merge2@1.4.1: {}
+
+  microdiff@1.6.0: {}
 
   micromark-core-commonmark@2.0.3:
     dependencies:

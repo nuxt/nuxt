@@ -137,8 +137,34 @@ describe('loadNuxtConfig onConfigResolved', () => {
     await loadNuxtConfig({ cwd: tempDir, onConfigResolved: ctx => void (second = ctx.rawConfig) })
 
     const entries = diffNuxtConfig(first!, second!)
-    expect(entries.map(entry => entry.key).sort()).toEqual(['modules', 'ssr'])
-    expect(entries.find(entry => entry.key === 'ssr')).toMatchObject({ type: 'changed', oldValue: true, newValue: false })
+    expect(entries.map(entry => entry.label).sort()).toEqual(['modules', 'ssr'])
+    expect(entries.find(entry => entry.label === 'ssr')).toMatchObject({ type: 'changed', oldValue: true, newValue: false })
+  })
+
+  it('should report a structured path for keys containing a dot', async () => {
+    await writeFile(
+      join(tempDir, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ nitro: { routeRules: { \'/index.html\': { ssr: true } } } })',
+    )
+    let first: NuxtConfig | undefined
+    await loadNuxtConfig({ cwd: tempDir, onConfigResolved: ctx => void (first = ctx.rawConfig) })
+
+    await writeFile(
+      join(tempDir, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ nitro: { routeRules: { \'/index.html\': { ssr: false } } } })',
+    )
+    let second: NuxtConfig | undefined
+    await loadNuxtConfig({ cwd: tempDir, onConfigResolved: ctx => void (second = ctx.rawConfig) })
+
+    expect(diffNuxtConfig(first!, second!)).toMatchObject([
+      {
+        path: ['nitro', 'routeRules', '/index.html', 'ssr'],
+        label: 'nitro.routeRules[\'/index.html\'].ssr',
+        type: 'changed',
+        oldValue: true,
+        newValue: false,
+      },
+    ])
   })
 
   it('should not be required', async () => {
