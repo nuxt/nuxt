@@ -122,7 +122,7 @@
     "picomatch": "catalog:build",
     "pkg-types": "catalog:build",
     "rolldown-string": "catalog:vite",
-    "rou3": "^0.9.1",
+    "rou3": "^0.9.2",
     "scule": "catalog:build",
     "std-env": "catalog:build",
     "tinyglobby": "catalog:build",

@@ -72,7 +72,7 @@
     "case-police": "catalog:dev",
     "changelogen": "catalog:dev",
     "consola": "catalog:build",
-    "cssnano": "8.0.2",
+    "cssnano": "8.0.5",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
     "eslint": "catalog:dev",
@@ -113,6 +113,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.20.0",
+  "packageManager": "pnpm@11.21.0",
   "version": ""
 }
