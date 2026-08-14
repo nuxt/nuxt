@@ -113,6 +113,7 @@ export default defineConfig({
         test: {
           name: 'benchmark',
           include: [],
+          hookTimeout: 60_000,
           benchmark: {
             include: ['**/*.bench.ts'],
           },
