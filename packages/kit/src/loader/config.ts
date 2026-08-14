@@ -8,7 +8,7 @@ import type { NuxtConfig, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOption
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
 import { klona } from 'klona'
-import { diff } from 'ohash/utils'
+import microdiff from 'microdiff'
 import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
@@ -113,26 +113,71 @@ export interface LoadNuxtConfigOptions {
   onConfigResolved?: (context: ResolvedNuxtConfigContext) => void | Promise<void>
 }
 
-/** A single difference between two resolved Nuxt configurations. */
-export interface NuxtConfigDiffEntry {
-  /** Dot-separated path of the changed value, such as `modules` or `runtimeConfig.public.foo`. */
-  key: string
-  type: 'added' | 'changed' | 'removed'
-  newValue?: unknown
-  oldValue?: unknown
+interface NuxtConfigDiffLocation {
+  /**
+   * Property path of the changed value, with array indices as numbers: `['modules']`,
+   * `['runtimeConfig', 'public', 'foo']`, `['modules', 0]`. Prefer this over {@link label} when
+   * reading the value back out of a config object.
+   */
+  path: Array<string | number>
+  /**
+   * {@link path} written as a property accessor, for display and for matching against a known
+   * key: `ssr`, `runtimeConfig.public.foo`, `modules[0]`, `nitro.routeRules["/index.html"].ssr`.
+   */
+  label: string
 }
+
+const IDENTIFIER_RE = /^[a-z_$][\w$]*$/i
+
+function formatLabel (path: Array<string | number>) {
+  let label = ''
+  for (const segment of path) {
+    if (typeof segment === 'number') {
+      label += `[${segment}]`
+    } else if (IDENTIFIER_RE.test(segment)) {
+      label += label ? `.${segment}` : segment
+    } else {
+      label += `[${JSON.stringify(segment)}]`
+    }
+  }
+  return label
+}
+
+/** A single difference between two resolved Nuxt configurations. */
+export type NuxtConfigDiffEntry =
+  | (NuxtConfigDiffLocation & { type: 'added', newValue: unknown })
+  | (NuxtConfigDiffLocation & { type: 'removed', oldValue: unknown })
+  | (NuxtConfigDiffLocation & { type: 'changed', newValue: unknown, oldValue: unknown })
 
 /**
  * Compare two `rawConfig` snapshots (as provided to `onConfigResolved`) and return the
  * differences between them.
  */
 export function diffNuxtConfig (oldConfig: NuxtConfig, newConfig: NuxtConfig): NuxtConfigDiffEntry[] {
-  return diff(oldConfig, newConfig).map(entry => ({
-    key: entry.key,
-    type: entry.type,
-    newValue: entry.newValue?.value,
-    oldValue: entry.oldValue?.value,
-  }))
+  const entries: NuxtConfigDiffEntry[] = []
+
+  for (const entry of microdiff(oldConfig, newConfig)) {
+    const location = { path: entry.path, label: formatLabel(entry.path) }
+    switch (entry.type) {
+      case 'CREATE':
+        entries.push({ ...location, type: 'added', newValue: entry.value })
+        break
+      case 'REMOVE':
+        entries.push({ ...location, type: 'removed', oldValue: entry.oldValue })
+        break
+      case 'CHANGE':
+        if (!isSameFunction(entry.oldValue, entry.value)) {
+          entries.push({ ...location, type: 'changed', newValue: entry.value, oldValue: entry.oldValue })
+        }
+        break
+    }
+  }
+
+  return entries
+}
+
+function isSameFunction (a: unknown, b: unknown) {
+  return typeof a === 'function' && typeof b === 'function' && a.toString() === b.toString()
 }
 
 // The extensions `c12` teaches jiti about, so that an extensionless import inside a config file
