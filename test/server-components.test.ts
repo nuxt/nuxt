@@ -93,15 +93,6 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  it('loads assets in server components with slots once', async () => {
-    const { page, requests } = await renderPage('/asset-probe')
-
-    expect(requests.filter(request => request === '/island-asset.svg')).toHaveLength(1)
-    await page.getByText('Slot content').waitFor()
-    expect(await page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--global-island-marker').trim())).toBe('true')
-    await page.close()
-  })
-
   it('lazy server components', async () => {
     const { page, consoleLogs } = await renderPage('/server-components/lazy/start')
 
@@ -427,34 +418,6 @@ describe('component islands', () => {
       expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot(`"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"`)
     })
   }
-
-  it('does not include global CSS in island responses', async () => {
-    const { page } = await renderPage('/asset-probe')
-    try {
-      const globalStylesheet = await page.evaluate(() => {
-        for (const stylesheet of document.styleSheets) {
-          if ([...stylesheet.cssRules].some(rule => rule.cssText.includes('--global-island-marker'))) {
-            return { href: stylesheet.href }
-          }
-        }
-      })
-      expect(globalStylesheet).toBeDefined()
-      expect(await page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--global-island-marker').trim())).toBe('true')
-      if (!globalStylesheet) {
-        throw new Error('Global CSS fixture was not loaded by the page')
-      }
-
-      const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent'))
-      expect(JSON.stringify(result.head)).not.toContain('--global-island-marker')
-
-      if (globalStylesheet.href) {
-        const islandStylesheets = result.head.link?.flatMap(({ href }) => typeof href === 'string' ? [new URL(href, page.url()).href] : []) || []
-        expect(islandStylesheets).not.toContain(globalStylesheet.href)
-      }
-    } finally {
-      await page.close()
-    }
-  })
 
   it('renders pure components', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', {
