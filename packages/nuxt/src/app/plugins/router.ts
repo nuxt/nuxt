@@ -126,15 +126,14 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
     const baseURL = useRuntimeConfig().app.baseURL
 
     const route: Route = reactive(getRouteFromPath(initialURL))
-    const redirectChain = new Set<string>()
     let navigationCounter = 0
-    async function handleNavigation (url: string | Partial<Route>, replace?: boolean): Promise<void> {
+    async function handleNavigation (url: string | Partial<Route>, replace?: boolean, redirectChain?: Set<string>): Promise<void> {
       const navigationId = ++navigationCounter
       try {
         // Resolve route
         const to = getRouteFromPath(url)
 
-        if (import.meta.server || import.meta.dev) {
+        if ((import.meta.server || import.meta.dev) && redirectChain) {
           checkRedirectChain(redirectChain, to.fullPath)
         }
 
@@ -143,12 +142,14 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
           const result = await middleware(to, route)
           if (navigationId !== navigationCounter) { return }
           // Cancel navigation
-          if (result === false || result instanceof Error) {
-            redirectChain.clear()
-            return
-          }
+          if (result === false || result instanceof Error) { return }
           // Redirect
-          if (typeof result === 'string' && result.length) { return await handleNavigation(result, true) }
+          if (typeof result === 'string' && result.length) {
+            if (import.meta.server || import.meta.dev) {
+              return await handleNavigation(result, true, redirectChain ?? new Set<string>())
+            }
+            return await handleNavigation(result, true)
+          }
         }
 
         for (const handler of hooks['resolve:before']) {
@@ -168,13 +169,12 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         for (const middleware of hooks['navigate:after']) {
           await middleware(to, route)
         }
-        redirectChain.clear()
       } catch (err: any) {
-        redirectChain.clear()
-        const normalized = createError(err)
-
-        if (import.meta.server && normalized.fatal) {
-          await nuxtApp.runWithContext(() => showError(normalized))
+        if (import.meta.server) {
+          const normalized = createError(err)
+          if (normalized.fatal) {
+            await nuxtApp.runWithContext(() => showError(normalized))
+          }
         }
 
         if (import.meta.dev && !hooks.error.length) {

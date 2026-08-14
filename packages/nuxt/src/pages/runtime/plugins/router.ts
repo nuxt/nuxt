@@ -153,13 +153,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     const error = useError()
-    const redirectChain = new Set<string>()
-    const resetRedirectChain = () => redirectChain.clear()
+    let redirectChains: WeakMap<object, Set<string>> | undefined
     // we only skip redirect handlers for component islands, not page islands
     const isServerPage = import.meta.server && nuxtApp.ssrContext?.islandContext?.name?.startsWith('page_')
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
       router.afterEach(async (to, _from, failure) => {
-        resetRedirectChain()
         delete nuxtApp._processingMiddleware
         if (import.meta.server) {
           delete nuxtApp._middlewareTo
@@ -314,6 +312,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               }
 
               if ((import.meta.server || import.meta.dev) && !(result instanceof Error)) {
+                // vue-router keeps the initial location in `redirectedFrom` across guard redirects.
+                // Use it as the key so concurrent navigations never share redirect state.
+                const navigation = to.redirectedFrom ?? to
+                redirectChains ||= new WeakMap<object, Set<string>>()
+                let redirectChain = redirectChains.get(navigation)
+                if (!redirectChain) {
+                  redirectChain = new Set<string>()
+                  redirectChains.set(navigation, redirectChain)
+                }
                 const targetPath = router.resolve(result).fullPath
                 checkRedirectChain(redirectChain, targetPath)
               }
@@ -349,7 +356,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     router.onError(async () => {
-      resetRedirectChain()
       delete nuxtApp._processingMiddleware
       if (import.meta.server) {
         delete nuxtApp._middlewareTo
