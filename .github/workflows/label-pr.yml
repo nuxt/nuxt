@@ -20,7 +20,7 @@ jobs:
       pull-requests: write
     if: github.repository == 'nuxt/nuxt'
     steps:
-      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
           PULL_REQUEST_BASE_LABEL: ${{ github.event.pull_request.base.label }}

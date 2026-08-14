@@ -14,7 +14,7 @@ jobs:
       issues: write # to add reactions and post comments
       pull-requests: read # to read PR data
     steps:
-      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const user = context.payload.sender.login
@@ -51,7 +51,7 @@ jobs:
               throw new Error('User does not have the necessary permissions.')
             }
 
-      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         id: get-pr-data
         with:
           script: |
@@ -109,7 +109,7 @@ jobs:
           repositories: ecosystem-ci
           permission-actions: write
 
-      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         id: trigger
         env:
           COMMENT: ${{ github.event.comment.body }}
