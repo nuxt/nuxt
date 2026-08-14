@@ -12,6 +12,7 @@ const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const STYLE_QUERY_RE = /[?&]type=style/
 const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
+const ASYNC_DATA_CHUNK_RE = /\/async-data-chunk-\d+\.js$/
 
 export interface ExtractAsyncDataHandlersOptions {
   sourcemap: boolean
@@ -31,10 +32,15 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
         return source
       }
     },
-    load (id) {
-      if (id in asyncDatas) {
-        return asyncDatas[id]
-      }
+    load: {
+      filter: {
+        id: ASYNC_DATA_CHUNK_RE,
+      },
+      handler (id) {
+        if (id in asyncDatas) {
+          return asyncDatas[id]
+        }
+      },
     },
     transform: {
       filter: {
