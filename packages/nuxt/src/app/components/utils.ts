@@ -169,7 +169,7 @@ function getElementHTML (element: RendererNode, withoutSlots: boolean) {
   }
   const template = element.ownerDocument.createElement('template')
   template.innerHTML = element.outerHTML
-  template.content.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
+  template.content.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
   return template.innerHTML
 }
 
