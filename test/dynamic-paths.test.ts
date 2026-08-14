@@ -20,8 +20,8 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
   const publicFiles = ['/public.svg', '/css-only-public-asset.svg']
   const isPublicFile = (base = '/', file: string) => {
     if (isWebpack) {
-      // TODO: webpack does not yet support dynamic static paths
-      expect(publicFiles).toContain(file)
+      // TODO: webpack does not yet apply the base URL to public assets referenced from templates
+      expect(publicFiles).toContain(file.startsWith(base) ? file.replace(base, '/') : file)
       return true
     }
 
@@ -87,6 +87,19 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
 
     // TODO: document as breaking change
     expect(await $fetch<string>('/foo/url')).toContain('path: /url')
+  })
+
+  // remove `.fails` when webpack applies the base URL to public assets referenced from templates
+  it.skipIf(!isWebpack).fails('should apply base URL to public assets referenced from templates', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '/foo/',
+      },
+    })
+
+    const html = await $fetch<string>('/foo/assets')
+    const sources = Array.from(html.matchAll(/<img[^>]+src="([^"]+)"/g), m => m[1]!)
+    expect(sources).toContain('/foo/public.svg')
   })
 
   it('should allow setting relative baseURL', async () => {
