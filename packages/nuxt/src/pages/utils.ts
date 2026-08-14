@@ -512,6 +512,8 @@ type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> 
 type NormalizedRouteKeys = (keyof NormalizedRoute)[]
 interface NormalizeRoutesOptions {
   overrideMeta?: boolean
+  /** Pages whose component can only render in one environment, keyed by the stub to use elsewhere. */
+  restrictedPages?: ReadonlyMap<NuxtPage, keyof typeof PAGE_STUBS>
   serverComponentRuntime: string
   clientComponentRuntime: string
 }
@@ -612,7 +614,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
-      const stub = page._noScripts ? PAGE_STUBS.noScripts : page._spaOnly ? PAGE_STUBS.spaOnly : undefined
+      const restriction = options.restrictedPages?.get(page)
+      const stub = restriction ? PAGE_STUBS[restriction] : undefined
       if (stub) {
         metaImports.add(stub.declaration)
       }
