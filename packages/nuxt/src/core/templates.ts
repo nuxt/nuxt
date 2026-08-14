@@ -697,6 +697,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const clientNodePlaceholder = ${!!ctx.nuxt.options.experimental.clientNodePlaceholder}`,
       `export const tracingChannelNuxt = ${!!(ctx.nuxt.options.tracingChannel && typeof ctx.nuxt.options.tracingChannel === 'object' && ctx.nuxt.options.tracingChannel.nuxt)}`,
       `export const runtimeCompiler = ${!!ctx.nuxt.options.vue.runtimeCompiler}`,
+      `export const vapor = ${!!ctx.nuxt.options.vue.vapor}`,
       `export const hasPluginDependencies = ${pluginsHaveDependencies}`,
       `export const hasParallelPlugins = ${pluginsRunInParallel}`,
       `export const hasPluginHooks = ${pluginsHaveHooks}`,
