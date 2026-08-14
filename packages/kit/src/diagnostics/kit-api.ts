@@ -119,5 +119,10 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Add `oxc-parser` to your project; every supported version of Nuxt already ships a package that can be used here.',
       docs: false,
     },
+    NUXT_B8023: {
+      why: (p: { module: string, error: string }) => `The module \`${p.module}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
+      fix: 'Loading it natively is faster, as jiti has to transform the module first. Report it to the module author if the module is not your own.',
+      docs: false,
+    },
   },
 })

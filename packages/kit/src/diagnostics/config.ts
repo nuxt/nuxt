@@ -73,9 +73,19 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to load it, or remove the \`nuxt.schema\` file.`,
       docs: false,
     },
+    NUXT_B5021: {
+      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded as native ESM, which does not provide the CommonJS globals: ${p.error}`,
+      fix: (p: { installCommand: string }) => `Use \`import.meta.url\`, \`import.meta.dirname\` or \`createRequire(import.meta.url)\` from \`node:module\` instead of \`__dirname\`, \`__filename\` and \`require\`. Alternatively, run \`${p.installCommand}\` and Nuxt will load the file through jiti, which provides them.`,
+      docs: false,
+    },
     NUXT_B5022: {
       why: 'A `nuxt.config` in yaml, toml, jsonc or json5 is parsed by the `confbox` package, which is not installed.',
       fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\`, or rename your config to \`nuxt.config.ts\`.`,
+      docs: false,
+    },
+    NUXT_B5023: {
+      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
+      fix: 'Loading it natively is faster, as jiti has to transform the file first. Relative imports need an explicit file extension, and `import.meta.dirname` replaces `__dirname`.',
       docs: false,
     },
   },
