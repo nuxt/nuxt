@@ -122,7 +122,7 @@ interface NuxtConfigDiffLocation {
   path: Array<string | number>
   /**
    * {@link path} written as a property accessor, for display and for matching against a known
-   * key: `ssr`, `runtimeConfig.public.foo`, `modules[0]`, `nitro.routeRules['/index.html'].ssr`.
+   * key: `ssr`, `runtimeConfig.public.foo`, `modules[0]`, `nitro.routeRules["/index.html"].ssr`.
    */
   label: string
 }
@@ -137,7 +137,7 @@ function formatLabel (path: Array<string | number>) {
     } else if (IDENTIFIER_RE.test(segment)) {
       label += label ? `.${segment}` : segment
     } else {
-      label += `['${segment.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}']`
+      label += `[${JSON.stringify(segment)}]`
     }
   }
   return label
