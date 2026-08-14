@@ -277,6 +277,25 @@ describe('runtime server component', () => {
       wrapper.unmount()
     }
   })
+
+  it('should ignore a scopeId that is not a Vue scope attribute', async () => {
+    stubFetchRaw(() => Promise.resolve(islandResponse({
+      id: '123',
+      html: '<div>hello</div>',
+      state: {},
+      head: { link: [], style: [] },
+    })))
+
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: 'dummyName',
+        scopeId: `x><img src=x onerror="globalThis.__xss=1"><x`,
+      },
+    })
+
+    expect(wrapper.html()).not.toContain('onerror')
+    expect(wrapper.html()).not.toContain('<img')
+  })
 })
 
 describe('client components', () => {

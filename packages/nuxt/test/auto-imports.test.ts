@@ -201,6 +201,12 @@ const excludedVueHelpers = [
   'getCurrentWatcher',
   'patchProp',
   'nodeOps',
+  'MoveType',
+  'NULL_DYNAMIC_COMPONENT',
+  'VueElementBase',
+  'defineVaporAsyncComponent',
+  'setIsHydratingEnabled',
+  'useInstanceOption',
   'module.exports',
 ]
 

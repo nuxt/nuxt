@@ -7,7 +7,7 @@ import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -807,6 +807,15 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
+  if (nuxt.options.vue.vapor) {
+    if (await vueSupportsVapor(nuxt)) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/vapor-interop.client'))
+    } else {
+      nuxt.options.vue.vapor = false
+      logger.warn('`vue.vapor` requires vue `3.6.0` or later; vapor mode has been disabled.')
+    }
+  }
+
   if (nuxt.options.vue.config && Object.values(nuxt.options.vue.config).some(v => v !== null && v !== undefined)) {
     addPluginTemplate({
       filename: 'vue-app-config.mjs',
@@ -1227,6 +1236,16 @@ async function resolveTypescriptPaths (nuxt: Nuxt, options?: ResolveTypePathsOpt
 
 function withTrailingSlash (dir: string) {
   return dir.replace(/[^/]$/, '$&/')
+}
+
+async function vueSupportsVapor (nuxt: Nuxt) {
+  const path = resolveModulePath('vue/package.json', {
+    from: [directoryToURL(nuxt.options.rootDir), directoryToURL(nuxt.options.workspaceDir), import.meta.url],
+    try: true,
+  })
+  if (!path) { return false }
+  const { version } = await readPackageJSON(path).catch(() => ({}) as PackageJson)
+  return !!version && satisfies(version, '>=3.6.0-0')
 }
 
 const RELATIVE_CSS_ENTRY_RE = /^\.{1,2}\//
