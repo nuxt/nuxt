@@ -66,10 +66,7 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   const trackedFiles = new Set<string>()
 
   function shouldIncludeFile (filePath: string) {
-    if (!isDev && /\.dev\.[^.]+$/.test(filePath)) {
-      return false
-    }
-    if (isDev && /\.prod\.[^.]+$/.test(filePath)) {
+    if (!isDev && /(?:^|\.)dev(?:\.|$)/.test(filePath)) {
       return false
     }
     return true
@@ -665,14 +662,24 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
-      const restriction = options.restrictedPages?.get(page)
+      const isProdOnlyInDev = Boolean(nuxt.options.dev && /(?:^|\.)prod(?:\.|$)/.test(file))
+      if (isProdOnlyInDev) {
+        metaImports.add('\nconst _prodOnlyPageStub = { setup () { showError({ statusCode: 404, statusMessage: \'Production-Only Page\', message: \'This page is configured with a .prod suffix and will render its real content in production builds.\' }) }, render: () => null };')
+      }
+
+      const restriction = isProdOnlyInDev ? undefined : options.restrictedPages?.get(page)
       const stub = restriction ? PAGE_STUBS[restriction] : undefined
       if (stub) {
         metaImports.add(stub.declaration)
       }
-      const restrictToEnvironment = (loader: string) => stub
-        ? `import.meta.${stub.env} ? ${loader} : () => Promise.resolve(${stub.name})`
-        : loader
+      const restrictToEnvironment = (loader: string) => {
+        if (isProdOnlyInDev) {
+          return '() => Promise.resolve(_prodOnlyPageStub)'
+        }
+        return stub
+          ? `import.meta.${stub.env} ? ${loader} : () => Promise.resolve(${stub.name})`
+          : loader
+      }
 
       // A statically imported page would be linked into the bundle it is being
       // dropped from even when its component is never referenced there, so

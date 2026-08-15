@@ -411,7 +411,10 @@ export const middlewareTemplate: NuxtTemplate = {
       ...!nuxt.options.dev
         ? [
             `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
-            `export const namedMiddleware = ${genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))}`,
+            `export const namedMiddleware = ${genObjectFromRawEntries(namedMiddleware.map(mw => [
+              mw.name,
+              mw.path === 'virtual:nuxt-middleware-stub' ? '() => () => {}' : genDynamicImport(mw.path),
+            ]))}`,
           ]
         : [
             `const _globalMiddleware = ${genObjectFromRawEntries(globalMiddleware.map(mw => [reverseResolveAlias(mw.path, alias).pop() || mw.path, genSafeVariableName(mw.name)]))}`,
@@ -422,7 +425,7 @@ export const middlewareTemplate: NuxtTemplate = {
             `const _namedMiddleware = ${genArrayFromRaw(namedMiddleware.map(mw => ({
               name: genString(mw.name),
               path: genString(reverseResolveAlias(mw.path, alias).pop() || mw.path),
-              import: genDynamicImport(mw.path),
+              import: mw.path === 'virtual:nuxt-middleware-stub' ? '() => () => {}' : genDynamicImport(mw.path),
             })))}`,
             `for (const mw of _namedMiddleware) {`,
             `  const i = mw.import`,

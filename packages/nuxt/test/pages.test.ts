@@ -1283,23 +1283,26 @@ export const pageTests: Array<{
 ]
 
 describe('pages:environment-specific routes (.dev, .prod)', () => {
-  it('should include .dev routes and exclude .prod routes in dev mode', () => {
+  it('should include both .dev routes and .prod routes (with stub) in dev mode', () => {
     const files = [
       { path: 'pages/index.vue' },
       { path: 'pages/sandbox.dev.vue' },
+      { path: 'pages/client-sandbox.client.dev.vue' },
       { path: 'pages/maintenance.prod.vue' },
     ]
     const devRoutes = generateRoutesFromFiles(files, { roots: ['pages/'], dev: true })
     const devPaths = devRoutes.map(r => r.path)
     expect(devPaths).toContain('/sandbox')
+    expect(devPaths).toContain('/client-sandbox')
     expect(devPaths).toContain('/')
-    expect(devPaths).not.toContain('/maintenance')
+    expect(devPaths).toContain('/maintenance')
   })
 
   it('should include .prod routes and exclude .dev routes in prod mode', () => {
     const files = [
       { path: 'pages/index.vue' },
       { path: 'pages/sandbox.dev.vue' },
+      { path: 'pages/client-sandbox.client.dev.vue' },
       { path: 'pages/maintenance.prod.vue' },
     ]
     const prodRoutes = generateRoutesFromFiles(files, { roots: ['pages/'], dev: false })
@@ -1307,5 +1310,6 @@ describe('pages:environment-specific routes (.dev, .prod)', () => {
     expect(prodPaths).toContain('/maintenance')
     expect(prodPaths).toContain('/')
     expect(prodPaths).not.toContain('/sandbox')
+    expect(prodPaths).not.toContain('/client-sandbox')
   })
 })

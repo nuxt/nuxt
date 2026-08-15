@@ -7,7 +7,7 @@ import { resolve } from 'pathe'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigTemplate, publicPathTemplate } from '../src/core/templates.ts'
+import { appConfigTemplate, middlewareTemplate, publicPathTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -22,8 +22,12 @@ function makeNuxt (overrides: Partial<Nuxt['options']> = {}): Nuxt {
   } as unknown as Nuxt
 }
 
-function makeApp (configs: string[] = []): NuxtApp {
-  return { configs } as unknown as NuxtApp
+function makeApp (overrides: Partial<NuxtApp> = {}): NuxtApp {
+  return {
+    configs: [],
+    middleware: [],
+    ...overrides,
+  } as unknown as NuxtApp
 }
 
 describe('appConfigTemplate', () => {
@@ -51,5 +55,20 @@ describe('publicPathTemplate', () => {
 
     expect(contents).not.toMatch(/runtime-config/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
+  })
+})
+
+describe('middlewareTemplate', () => {
+  it('emits no-op function for stubbed named middleware in production', async () => {
+    const app = makeApp({
+      middleware: [
+        { name: 'auth', path: '/path/to/auth.prod.ts', global: false },
+        { name: 'logs', path: 'virtual:nuxt-middleware-stub', global: false },
+      ],
+    })
+    const contents = await middlewareTemplate.getContents!({ nuxt: makeNuxt({ dev: false }), app, options: {} })
+
+    expect(contents).toContain('logs: () => () => {}')
+    expect(contents).toContain('auth: () => import("/path/to/auth.prod.ts")')
   })
 })

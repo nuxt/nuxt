@@ -209,10 +209,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   for (const dirs of layerDirs) {
     const layoutFiles = await resolveFiles(dirs.appLayouts, `**/*{${extensionGlob}}`)
     for (const file of layoutFiles) {
-      if (!nuxt.options.dev && /\.dev\.[^.]+$/.test(file)) {
+      if (!nuxt.options.dev && /(?:^|\.)dev(?:\.|$)/.test(file)) {
         continue
       }
-      if (nuxt.options.dev && /\.prod\.[^.]+$/.test(file)) {
+      if (nuxt.options.dev && /(?:^|\.)prod(?:\.|$)/.test(file)) {
         continue
       }
       const name = getNameFromPath(file, dirs.appLayouts)
@@ -227,27 +227,44 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve middleware/ from all config layers, layers first
   let middleware: NuxtApp['middleware'] = []
+  const namedMiddlewareEntries = new Map<string, NuxtMiddleware>()
+  const globalMiddlewareEntries: NuxtMiddleware[] = []
+
   for (const dirs of reversedLayerDirs) {
     const middlewareFiles = await resolveFiles(dirs.appMiddleware, [
       `*{${extensionGlob}}`,
       `*/index{${extensionGlob}}`,
     ])
     for (const file of middlewareFiles) {
-      if (!nuxt.options.dev && /\.dev\.[^.]+$/.test(file)) {
+      const isGlobal = hasSuffix(file, '.global')
+      const isDevOnly = /(?:^|\.)dev(?:\.|$)/.test(file)
+      const isProdOnly = /(?:^|\.)prod(?:\.|$)/.test(file)
+      const shouldStub = (!nuxt.options.dev && isDevOnly) || (nuxt.options.dev && isProdOnly)
+
+      if (isGlobal && shouldStub) {
         continue
       }
-      if (nuxt.options.dev && /\.prod\.[^.]+$/.test(file)) {
-        continue
-      }
+
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
         pageDiagnostics.NUXT_B4010({ file: linkToAlias(file, nuxt) })
         continue
       }
-      middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
+
+      if (isGlobal) {
+        globalMiddlewareEntries.push({ name, path: file, global: true })
+      } else {
+        const existing = namedMiddlewareEntries.get(name)
+        const resolvedPath = shouldStub ? 'virtual:nuxt-middleware-stub' : file
+        if (!existing || (existing.path === 'virtual:nuxt-middleware-stub' && !shouldStub)) {
+          namedMiddlewareEntries.set(name, { name, path: resolvedPath, global: false })
+        }
+      }
     }
   }
+
+  middleware.push(...globalMiddlewareEntries, ...namedMiddlewareEntries.values())
 
   const reversedLayers = nuxt.options._layers.slice().reverse()
   // Resolve plugins, first extended layers and then base

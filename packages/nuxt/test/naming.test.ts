@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { pascalCase } from 'scule'
-import { getNameFromPath, resolveComponentNameSegments } from '../src/core/utils/index.ts'
+import { getNameFromPath, hasSuffix, resolveComponentNameSegments } from '../src/core/utils/index.ts'
 
 describe('getNameFromPath', () => {
   const cases: Record<string, string> = {
@@ -11,11 +11,24 @@ describe('getNameFromPath', () => {
     'base.dev.vue': 'base',
     'base.prod.vue': 'base',
     'base.dev.client.vue': 'base',
+    'base.client.dev.vue': 'base',
+    'base.prod.server.vue': 'base',
+    'base.server.prod.vue': 'base',
     'desktop/default.dev.vue': 'desktop-default',
     '(group)/default.dev.vue': 'default',
+    '(group)/default.client.dev.vue': 'default',
   }
   it.each(Object.keys(cases))('correctly deduplicates segments - %s', (filename) => {
     expect(getNameFromPath(filename)).toEqual(cases[filename])
+  })
+})
+
+describe('hasSuffix', () => {
+  it('detects simple and chained suffixes', () => {
+    expect(hasSuffix('logger.global.ts', '.global')).toBe(true)
+    expect(hasSuffix('logger.global.dev.ts', '.global')).toBe(true)
+    expect(hasSuffix('logger.dev.global.ts', '.global')).toBe(true)
+    expect(hasSuffix('logger.dev.ts', '.global')).toBe(false)
   })
 })
 
