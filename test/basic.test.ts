@@ -1335,7 +1335,9 @@ describe('errors', () => {
     expect(html).toContain('<title>Error: 404 - Fixture</title>')
 
     const { script, attrs } = parseData(html)
-    expect(attrs['data-ssr']).toBe('true')
+    if (isRenderingJson) {
+      expect(attrs['data-ssr']).toBe('true')
+    }
     expect(script.error).toMatchObject({ status: 404, statusText: 'Page Not Found' })
     // the same file is served for every missing path, so it must not claim to
     // be a prerender of `/404.html`

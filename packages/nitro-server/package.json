@@ -55,7 +55,7 @@
     "nostics": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
-    "rou3": "^0.9.1",
+    "rou3": "^0.9.2",
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
