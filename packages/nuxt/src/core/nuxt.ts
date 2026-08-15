@@ -980,7 +980,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
-  if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED && process.env.DO_NOT_TRACK !== '1') {
+  if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED && !process.env.DO_NOT_TRACK) {
     options._modules.push('@nuxt/telemetry')
   }
   if (options.experimental.typescriptPlugin) {
