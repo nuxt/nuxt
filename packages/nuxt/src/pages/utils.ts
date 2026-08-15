@@ -38,10 +38,16 @@ export interface PagesContext {
 export interface PagesContextOptions {
   roots?: string[]
   shouldUseServerComponents?: boolean
+  dev?: boolean
 }
 
 export function createPagesContext (options: PagesContextOptions = {}): PagesContext {
-  const modes = options.shouldUseServerComponents ? ['server', 'client'] : ['client']
+  const isDev = options.dev ?? true
+  const modes = [
+    ...(options.shouldUseServerComponents ? ['server', 'client'] : ['client']),
+    'dev',
+    'prod',
+  ]
   const treeOptions: BuildTreeOptions = {
     roots: options.roots,
     modes,
@@ -59,11 +65,24 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   let tree: RouteTree = buildTree([], treeOptions)
   const trackedFiles = new Set<string>()
 
+  function shouldIncludeFile (filePath: string) {
+    if (!isDev && /\.dev\.[^.]+$/.test(filePath)) {
+      return false
+    }
+    if (isDev && /\.prod\.[^.]+$/.test(filePath)) {
+      return false
+    }
+    return true
+  }
+
   return {
     emit () {
       return toVueRouter4(tree, emitOptions)
     },
     addFile (filePath: string, priority = 0) {
+      if (!shouldIncludeFile(filePath)) {
+        return
+      }
       addFile(tree, { path: filePath, priority }, compiledParse)
       trackedFiles.add(filePath)
     },
@@ -75,9 +94,10 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
       return removed
     },
     rebuild (files: InputFile[]) {
-      tree = buildTree(files, treeOptions)
+      const filteredFiles = files.filter(f => shouldIncludeFile(f.path))
+      tree = buildTree(filteredFiles, treeOptions)
       trackedFiles.clear()
-      for (const f of files) {
+      for (const f of filteredFiles) {
         trackedFiles.add(f.path)
       }
     },
@@ -107,7 +127,11 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
     pages = ctx.emit()
   } else {
     // One-shot for production / no-context case
-    const oneShot = createPagesContext({ roots: pagesDirs, shouldUseServerComponents: !!nuxt.options.experimental.componentIslands })
+    const oneShot = createPagesContext({
+      roots: pagesDirs,
+      shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
+      dev: nuxt.options.dev,
+    })
     oneShot.rebuild(inputFiles)
     pages = oneShot.emit()
   }

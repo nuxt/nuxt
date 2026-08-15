@@ -14,7 +14,7 @@ export function getNameFromPath (path: string, relativeTo?: string) {
     ? normalize(path).replace(withTrailingSlash(normalize(relativeTo)), '')
     : basename(path)
   const prefixParts = splitByCase(dirname(relativePath))
-  const fileName = basename(relativePath, extname(relativePath))
+  const fileName = basename(relativePath, extname(relativePath)).replace(/\.(?:dev|prod|client|server|global|island)(?=\.|$)/g, '')
   const segments = resolveComponentNameSegments(fileName.toLowerCase() === 'index' ? '' : fileName, prefixParts).filter(Boolean)
   return kebabCase(segments).replace(QUOTE_RE, '')
 }

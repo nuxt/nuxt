@@ -209,6 +209,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   for (const dirs of layerDirs) {
     const layoutFiles = await resolveFiles(dirs.appLayouts, `**/*{${extensionGlob}}`)
     for (const file of layoutFiles) {
+      if (!nuxt.options.dev && /\.dev\.[^.]+$/.test(file)) {
+        continue
+      }
+      if (nuxt.options.dev && /\.prod\.[^.]+$/.test(file)) {
+        continue
+      }
       const name = getNameFromPath(file, dirs.appLayouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
@@ -227,6 +233,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       `*/index{${extensionGlob}}`,
     ])
     for (const file of middlewareFiles) {
+      if (!nuxt.options.dev && /\.dev\.[^.]+$/.test(file)) {
+        continue
+      }
+      if (nuxt.options.dev && /\.prod\.[^.]+$/.test(file)) {
+        continue
+      }
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
