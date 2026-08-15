@@ -425,7 +425,7 @@ export const middlewareTemplate: NuxtTemplate = {
             `const _namedMiddleware = ${genArrayFromRaw(namedMiddleware.map(mw => ({
               name: genString(mw.name),
               path: genString(reverseResolveAlias(mw.path, alias).pop() || mw.path),
-              import: mw.path === 'virtual:nuxt-middleware-stub' ? '() => () => {}' : genDynamicImport(mw.path),
+              import: mw.path === 'virtual:nuxt-middleware-stub' ? '() => Promise.resolve(() => {})' : genDynamicImport(mw.path),
             })))}`,
             `for (const mw of _namedMiddleware) {`,
             `  const i = mw.import`,

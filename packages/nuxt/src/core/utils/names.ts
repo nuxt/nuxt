@@ -22,7 +22,7 @@ export function getNameFromPath (path: string, relativeTo?: string) {
 export function hasSuffix (path: string, suffix: string) {
   const base = basename(path, extname(path))
   const cleanSuffix = suffix.startsWith('.') ? suffix.slice(1) : suffix
-  return new RegExp(`(?:^|\\.)${cleanSuffix}(?:\\.|$)`).test(base) || base.endsWith(suffix)
+  return new RegExp(`(?:^|\\.)${cleanSuffix}(?:\\.|$)`).test(base)
 }
 
 export function resolveComponentNameSegments (fileName: string, prefixParts: string[]) {

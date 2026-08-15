@@ -684,11 +684,11 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       // A statically imported page would be linked into the bundle it is being
       // dropped from even when its component is never referenced there, so
       // environment-restricted pages fall back to a droppable dynamic import
-      if (page._sync && !stub) {
+      if (page._sync && !stub && !isProdOnlyInDev) {
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const isSyncImport = page._sync && page.mode !== 'client' && !stub
+      const isSyncImport = page._sync && page.mode !== 'client' && !stub && !isProdOnlyInDev
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
       // Mirror whatever the route's own `name` resolves to below, so that a name extracted at
       // build time does not pull in the macro module purely to set `__name`. That import is the

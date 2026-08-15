@@ -71,4 +71,17 @@ describe('middlewareTemplate', () => {
     expect(contents).toContain('logs: () => () => {}')
     expect(contents).toContain('auth: () => import("/path/to/auth.prod.ts")')
   })
+
+  it('emits Promise-wrapped no-op function for stubbed named middleware in dev mode', async () => {
+    const app = makeApp({
+      middleware: [
+        { name: 'auth', path: '/path/to/auth.dev.ts', global: false },
+        { name: 'prodOnly', path: 'virtual:nuxt-middleware-stub', global: false },
+      ],
+    })
+    const contents = await middlewareTemplate.getContents!({ nuxt: makeNuxt({ dev: true }), app, options: {} })
+
+    expect(contents).toContain('import: () => Promise.resolve(() => {})')
+    expect(contents).toContain('import: () => import("/path/to/auth.dev.ts")')
+  })
 })
