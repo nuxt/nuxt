@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
-import { pageDiagnostics } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
@@ -49,7 +49,7 @@ definePageMeta({
 
     expect(meta).toStrictEqual({
       meta: {
-        __nuxt_dynamic_meta_key: new Set(['meta']),
+        [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']),
       },
     })
   })
@@ -213,7 +213,7 @@ definePageMeta({ name: 'bar' })
           "/alias",
         ],
         "meta": {
-          "__nuxt_dynamic_meta_key": Set {
+          Symbol(nuxt:dynamic-page-meta): Set {
             "middleware",
             "meta",
           },
@@ -295,7 +295,7 @@ definePageMeta({ name: 'bar' })
     expect(meta).toMatchInlineSnapshot(`
       {
         "meta": {
-          "__nuxt_dynamic_meta_key": Set {
+          Symbol(nuxt:dynamic-page-meta): Set {
             "redirect",
           },
         },
@@ -328,7 +328,7 @@ definePageMeta({ name: 'bar' })
     expect(meta).toMatchInlineSnapshot(`
       {
         "meta": {
-          "__nuxt_dynamic_meta_key": Set {
+          Symbol(nuxt:dynamic-page-meta): Set {
             "middleware",
             "meta",
           },
@@ -357,7 +357,7 @@ definePageMeta({ name: 'bar' })
     expect(meta).toMatchInlineSnapshot(`
       {
         "meta": {
-          "__nuxt_dynamic_meta_key": Set {
+          Symbol(nuxt:dynamic-page-meta): Set {
             "middleware",
           },
         },
@@ -381,7 +381,7 @@ definePageMeta({ name: 'bar' })
     expect(meta).toMatchInlineSnapshot(`
       {
         "meta": {
-          "__nuxt_dynamic_meta_key": Set {
+          Symbol(nuxt:dynamic-page-meta): Set {
             "meta",
           },
         },
@@ -441,7 +441,7 @@ definePageMeta({ name: 'bar' })
     expect(meta).toMatchInlineSnapshot(`
       {
         "meta": {
-          "__nuxt_dynamic_meta_key": Set {
+          Symbol(nuxt:dynamic-page-meta): Set {
             "meta",
           },
         },
@@ -461,7 +461,7 @@ definePageMeta({ name: 'bar' })
     expect(meta).toMatchInlineSnapshot(`
       {
         "meta": {
-          "__nuxt_dynamic_meta_key": Set {
+          Symbol(nuxt:dynamic-page-meta): Set {
             "meta",
           },
         },
@@ -480,7 +480,7 @@ definePageMeta({ name: 'bar' })
     expect(meta).toMatchInlineSnapshot(`
       {
         "meta": {
-          "__nuxt_dynamic_meta_key": Set {
+          Symbol(nuxt:dynamic-page-meta): Set {
             "meta",
           },
         },
@@ -1408,7 +1408,7 @@ definePageMeta({ [name]: 'some-title' })
       `
       expect(macroModule(sfc, extractionKeys)).toContain('[name]: \'some-title\'')
       expect(getRouteMeta(sfc, '/app/pages/computed.vue')).toEqual({
-        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
       })
     })
 
@@ -1422,7 +1422,7 @@ definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
       expect(macro).toContain('layout: \'admin\'')
       expect(macro).toContain('layoutProps: { collapsed: true }')
       expect(getRouteMeta(sfc, '/app/pages/layout.vue', new Set(['layout']))).toEqual({
-        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
       })
     })
 
@@ -1455,7 +1455,7 @@ definePageMeta(meta)
       `
       expect(macroModule(sfc, extractionKeys)).toContain('const __nuxt_page_meta = meta')
       expect(getRouteMeta(sfc, '/app/pages/variable.vue')).toEqual({
-        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
       })
     })
 
@@ -1470,7 +1470,7 @@ definePageMeta({ layout: { ...shared, props: { collapsed: true } } })
       expect(macro).toContain('...shared')
       expect(macro).not.toContain('layoutProps')
       expect(getRouteMeta(sfc, '/app/pages/layout-spread.vue')).toEqual({
-        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
       })
     })
 
@@ -1494,7 +1494,7 @@ definePageMeta({ get name () { return 'from-getter' } })
       `
       expect(macroModule(sfc, extractionKeys)).toContain('from-getter')
       expect(getRouteMeta(sfc, '/app/pages/getter.vue')).toEqual({
-        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
       })
     })
   })
@@ -1534,7 +1534,7 @@ definePageMeta({ title: 'hello', validate: () => true })
 </script>
       `
       expect(extract(sfc)).toEqual({
-        meta: { title: 'hello', __nuxt_dynamic_meta_key: new Set(['meta']) },
+        meta: { title: 'hello', [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
       })
       expect(macroModule(sfc)).toContain('validate')
     })
@@ -1546,7 +1546,7 @@ definePageMeta({ path: ref('/dynamic') })
 </script>
       `
       expect(extract(sfc)).toEqual({
-        meta: { __nuxt_dynamic_meta_key: new Set(['path']) },
+        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['path']) },
       })
       expect(macroModule(sfc)).toContain('ref(\'/dynamic\')')
     })
@@ -1568,7 +1568,7 @@ definePageMeta({ title: 'first', title: 'last' })
       const path = '/app/pages/cache-key.vue'
       expect(getRouteMeta(sfc, path, new Set(), options)).toEqual({ meta: { title: 'hello' } })
       expect(getRouteMeta(sfc, path)).toEqual({
-        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
       })
     })
 
@@ -1580,7 +1580,7 @@ definePageMeta({ title: 'first', title: 'last' })
       const updated = `<script setup lang="ts">definePageMeta({ title: 'goodbye' })</script>`
       expect(getRouteMeta(updated, path, new Set(), options)).toEqual({ meta: { title: 'goodbye' } })
       expect(getRouteMeta(updated, path)).toEqual({
-        meta: { __nuxt_dynamic_meta_key: new Set(['meta']) },
+        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
       })
     })
 
@@ -1645,7 +1645,7 @@ definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } as const 
 definePageMeta({ layout: { props: { collapsed: true } } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
         const macro = macroModule(sfc)
         expect(macro).toContain('layoutProps: { collapsed: true }')
         expect(macro).not.toContain('layout:')
@@ -1657,7 +1657,7 @@ definePageMeta({ layout: { props: { collapsed: true } } })
 definePageMeta({ layout: {} })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
       })
 
       it('should leave a non-serializable layout name to the macro module', () => {
@@ -1667,7 +1667,7 @@ const layoutName = 'admin'
 definePageMeta({ layout: { name: layoutName } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
         expect(macroModule(sfc)).toContain('layout: layoutName')
       })
 
@@ -1677,7 +1677,7 @@ definePageMeta({ layout: { name: layoutName } })
 definePageMeta({ layout: { name: 'admin', props: { onClick: () => {} } } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
         const macro = macroModule(sfc)
         expect(macro).toContain('layout: \'admin\'')
         expect(macro).toContain('layoutProps: { onClick: () => {} }')
@@ -1690,7 +1690,7 @@ const shared = { name: 'admin' }
 definePageMeta({ layout: { ...shared } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
         expect(macroModule(sfc)).toContain('...shared')
       })
 
@@ -1700,7 +1700,7 @@ definePageMeta({ layout: { ...shared } })
 definePageMeta({ layout: { name: 'admin', other: 1 } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { __nuxt_dynamic_meta_key: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
         expect(macroModule(sfc)).toContain('other: 1')
       })
 

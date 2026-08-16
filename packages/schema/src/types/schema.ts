@@ -8,12 +8,10 @@ import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
 import type { NuxtDotenvOptions, NuxtLayerSourceOptions } from './layers.ts'
 import type { CompatibilityDateSpec } from 'compatx'
-import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from '#app/types'
-import type { FetchOptions } from 'ofetch'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
@@ -38,6 +36,7 @@ import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
 import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
@@ -135,6 +134,11 @@ export interface ConfigSchema {
      * Enable reactive destructure for `defineProps`
      */
     propsDestructure: boolean
+
+    /**
+     * Enable experimental support for Vue Vapor Mode (requires Vue 3.6+).
+     */
+    vapor: boolean
 
     /**
      * It is possible to pass configure the Vue app globally. Only serializable options may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin.
@@ -877,7 +881,7 @@ export interface ConfigSchema {
    * }
    * ```
    */
-  ignoreOptions: Options
+  ignoreOptions: NuxtIgnoreOptions
 
   /**
    * Any file in `pages/`, `layouts/`, `middleware/`, and `public/` directories will be ignored during the build process if its filename starts with the prefix specified by `ignorePrefix`. This is intended to prevent certain files from being processed or served in the built application. By default, the `ignorePrefix` is set to '-', ignoring any files starting with '-'.
@@ -1163,6 +1167,15 @@ export interface ConfigSchema {
     payloadExtraction: 'client' | boolean | undefined
 
     /**
+     * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
+     *
+     * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.
+     *
+     * @default false
+     */
+    prerenderErrorPages: boolean | number[]
+
+    /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
      * @default false
@@ -1382,7 +1395,16 @@ export interface ConfigSchema {
         resetOnClear: boolean
       }
 
-      useFetch: Pick<FetchOptions, 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>
+      useFetch: {
+        /** Request timeout in milliseconds. */
+        timeout?: number
+        /** Number of times to retry a failed request, or `false` to disable retries. */
+        retry?: number | false
+        /** Delay between retries in milliseconds. */
+        retryDelay?: number | ((context: any) => number)
+        /** Response status codes that trigger a retry. */
+        retryStatusCodes?: number[]
+      }
     }
 
     /**

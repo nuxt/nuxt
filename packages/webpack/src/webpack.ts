@@ -1,4 +1,4 @@
-import pify from 'pify'
+import { promisify } from 'node:util'
 import type { H3Event as H3V1Event } from 'h3'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type webpackDevMiddleware from 'webpack-dev-middleware'
@@ -9,7 +9,8 @@ import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
-import { bundlerDiagnostics, logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
+import { logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
@@ -280,8 +281,7 @@ async function createDevMiddleware (compiler: Compiler) {
     ...nuxt.options.webpack.devMiddleware,
   })
 
-  // @ts-expect-error need better types for `pify`
-  nuxt.hook('close', () => pify(devMiddleware.close.bind(devMiddleware))())
+  nuxt.hook('close', () => promisify(devMiddleware.close.bind(devMiddleware))())
 
   const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
   const hotMiddleware = webpackHotMiddleware(compiler, {
@@ -355,7 +355,7 @@ async function compile (compiler: Compiler) {
     const compilersWatching: Array<Watching | MultiWatching> = []
 
     nuxt.hook('close', async () => {
-      await Promise.all(compilersWatching.map(watching => watching && pify(watching.close.bind(watching))()))
+      await Promise.all(compilersWatching.map(watching => watching && promisify(watching.close.bind(watching))()))
     })
 
     // Client build

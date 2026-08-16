@@ -1,4 +1,5 @@
-import { buildDiagnostics, directoryToURL, getAddDependencyCommand, importModule } from '@nuxt/kit'
+import { directoryToURL, getAddDependencyCommand, importModule } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 

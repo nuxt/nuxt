@@ -58,6 +58,11 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { name: string }) => `Run \`npx nuxt add ${p.name}\` to install it.`,
       docs: false,
     },
+    NUXT_B5017: {
+      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` could not be loaded: ${p.error}`,
+      fix: (p: { installCommand: string }) => `Relative imports need an explicit file extension (\`./foo.ts\`, not \`./foo\`), and TypeScript syntax that emits code (such as \`enum\`) cannot be stripped. Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      docs: false,
+    },
     NUXT_B5018: {
       why: (p: { source: string }) => `Extending from \`${p.source}\` downloads the layer at build time, which needs the \`giget\` package.`,
       fix: (p: { source: string, installCommand: string }) => `Add the layer to \`package.json\` instead, so it is pinned and in your lockfile (for example \`"my-layer": "${p.source.replace(/^gh:/, 'github:')}#<commit>"\`), then extend from its package name. Otherwise run \`${p.installCommand}\` to keep downloading it.`,
@@ -68,9 +73,19 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to load it, or remove the \`nuxt.schema\` file.`,
       docs: false,
     },
-    NUXT_B5017: {
-      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` could not be loaded: ${p.error}`,
-      fix: (p: { installCommand: string }) => `Relative imports need an explicit file extension (\`./foo.ts\`, not \`./foo\`), and TypeScript syntax that emits code (such as \`enum\`) cannot be stripped. Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+    NUXT_B5021: {
+      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded as native ESM, which does not provide the CommonJS globals: ${p.error}`,
+      fix: (p: { installCommand: string }) => `Use \`import.meta.url\`, \`import.meta.dirname\` or \`createRequire(import.meta.url)\` from \`node:module\` instead of \`__dirname\`, \`__filename\` and \`require\`. Alternatively, run \`${p.installCommand}\` and Nuxt will load the file through jiti, which provides them.`,
+      docs: false,
+    },
+    NUXT_B5022: {
+      why: 'A `nuxt.config` in yaml, toml, jsonc or json5 is parsed by the `confbox` package, which is not installed.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\`, or rename your config to \`nuxt.config.ts\`.`,
+      docs: false,
+    },
+    NUXT_B5023: {
+      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
+      fix: 'Loading it natively is faster, as jiti has to transform the file first. Relative imports need an explicit file extension, and `import.meta.dirname` replaces `__dirname`.',
       docs: false,
     },
   },

@@ -11,8 +11,16 @@
   "license": "MIT",
   "type": "module",
   "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "internal": [
+        "./dist/internal/index.d.mts"
+      ]
+    }
+  },
   "exports": {
     ".": "./src/index.ts",
+    "./internal": "./src/internal/index.ts",
     "./package.json": "./package.json"
   },
   "files": [
@@ -24,7 +32,6 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "confbox": "catalog:build",
     "consola": "catalog:build",
     "defu": "catalog:build",
     "destr": "catalog:build",
@@ -32,20 +39,19 @@
     "exsolve": "catalog:build",
     "ignore": "catalog:build",
     "klona": "catalog:build",
+    "microdiff": "catalog:build",
     "nostics": "catalog:build",
     "nypm": "catalog:build",
-    "ohash": "catalog:build",
     "pathe": "catalog:build",
-    "pkg-types": "catalog:build",
     "rc9": "catalog:build",
     "scule": "catalog:build",
     "std-env": "catalog:build",
     "tinyglobby": "catalog:build",
-    "ufo": "catalog:build",
     "unctx": "catalog:build",
     "verkit": "catalog:build"
   },
   "peerDependencies": {
+    "confbox": "catalog:build",
     "dotenv": "catalog:build",
     "giget": "catalog:build",
     "jiti": "catalog:build",
@@ -54,6 +60,9 @@
     "rolldown": ">=1.0.0"
   },
   "peerDependenciesMeta": {
+    "confbox": {
+      "optional": true
+    },
     "dotenv": {
       "optional": true
     },
@@ -77,6 +86,7 @@
     "@nuxt/schema": "workspace:*",
     "c12": "catalog:build",
     "chokidar": "catalog:build",
+    "confbox": "catalog:build",
     "dotenv": "catalog:build",
     "giget": "catalog:build",
     "hookable": "catalog:app-runtime",
@@ -85,13 +95,12 @@
     "nitro": "catalog:nitro-runtime",
     "nitropack": "catalog:dev",
     "oxc-parser": "catalog:build",
+    "pkg-types": "catalog:build",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
-    "unimport": "catalog:build",
     "untyped": "catalog:build",
     "vite": "catalog:vite",
-    "vitest": "catalog:dev",
-    "webpack": "catalog:webpack"
+    "vitest": "catalog:dev"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -99,12 +108,14 @@
   "publishConfig": {
     "exports": {
       ".": "./dist/index.mjs",
+      "./internal": "./dist/internal/index.mjs",
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"
   },
   "inlinedDependencies": {
     "c12": "4.0.0-beta.5",
+    "pkg-types": "2.3.1",
     "untyped": "2.0.0"
   }
 }

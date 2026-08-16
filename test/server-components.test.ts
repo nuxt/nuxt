@@ -12,8 +12,6 @@ import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/util
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
-const itFailsIf = (condition: boolean) => condition ? it.fails : it
-
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
   const ctx = opts.context ?? {}
@@ -257,6 +255,34 @@ describe('server components/islands', () => {
     expect(html).toContain('id="server-page-with-nuxtpage"')
     expect(html).toContain('Parent body')
   })
+
+  // https://github.com/nuxt/nuxt/issues/31510
+  it.skipIf(isWebpack)('applies scoped styles to server component slots', async () => {
+    const { page } = await renderPage('/slotted-styles')
+
+    try {
+      const slotted = page.locator('#slotted-style-in-server')
+      expect(await slotted.count()).toBe(1)
+
+      const slottedStyles = await slotted.evaluate((element) => {
+        const scopeIds = element.getAttributeNames().filter(attribute => attribute.startsWith('data-v-'))
+        return {
+          backgroundColor: getComputedStyle(element).backgroundColor,
+          color: getComputedStyle(element).color,
+          hasParentScopeId: scopeIds.some(attribute => !attribute.endsWith('-s')),
+          hasSlottedScopeId: scopeIds.some(attribute => attribute.endsWith('-s')),
+        }
+      })
+      expect(slottedStyles).toEqual({
+        backgroundColor: 'rgb(4, 5, 6)',
+        color: 'rgb(1, 2, 3)',
+        hasParentScopeId: true,
+        hasSlottedScopeId: true,
+      })
+    } finally {
+      await page.close()
+    }
+  })
 })
 
 describe('component islands', () => {
@@ -264,10 +290,6 @@ describe('component islands', () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     delete result.id
@@ -286,10 +308,6 @@ describe('component islands', () => {
 
   it('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
@@ -344,10 +362,6 @@ describe('component islands', () => {
 
   it('render .server async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     result.props = {}
@@ -373,13 +387,6 @@ describe('component islands', () => {
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient'))
-      if (isDev) {
-        result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-
-        if (!result.head.link) {
-          delete result.head.link
-        }
-      }
       const { components } = result
       result.components = {}
       result.slots = {}
@@ -412,7 +419,7 @@ describe('component islands', () => {
     })
   }
 
-  itFailsIf(isWebpack && isDev)('renders pure components', async () => {
+  it('renders pure components', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', {
       props: {
         bool: false,
@@ -445,10 +452,12 @@ describe('component islands', () => {
           ],
         }
       `)
+    } else if (isWebpack) {
+      // island CSS is delivered by the vite dev server module graph, which webpack/rspack have no
+      // equivalent for in dev: https://github.com/nuxt/nuxt/issues/35573
+      expect(result.head.link).toBeUndefined()
+      expect(result.head.style).toBeUndefined()
     } else {
-      // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
-      // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
       if (result.head.link?.[0]?.href) {
         result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
       }

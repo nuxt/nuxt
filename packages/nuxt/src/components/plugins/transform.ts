@@ -1,5 +1,6 @@
 import { isObject } from '@vue/shared'
-import { buildDiagnostics, isIgnored } from '@nuxt/kit'
+import { isIgnored } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'

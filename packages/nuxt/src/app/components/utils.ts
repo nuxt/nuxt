@@ -48,6 +48,19 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   return true
 }
 
+/**
+ * Detect a vapor slot function passed into a vdom component via interop.
+ *
+ * Vapor slots register `__vapor`/`__vs` markers on the slot function itself, so
+ * we can recognise them without invoking the slot. Calling a vapor slot to
+ * inspect the shape of its returned VNodes is not a safe dry run (its content is
+ * not expressed as a VNode tree), so callers use this to skip VNode-shape
+ * heuristics rather than silently make a wrong decision.
+ */
+export function isVaporSlot (slot: ((...args: any[]) => any) | undefined | null): boolean {
+  return !!slot && (!!(slot as any).__vapor || !!(slot as any).__vs)
+}
+
 const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
 /** Return `tag` if it is a safe HTML tag name, otherwise `fallback`. */
 export function sanitizeTag (tag: string | undefined, fallback: string): string {
@@ -135,30 +148,29 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)
     }
-    if (withoutSlots) {
-      const clone = element.cloneNode(true)
-      clone.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
-      return [clone.outerHTML]
-    }
-    return [element.outerHTML]
+    return [getElementHTML(element, withoutSlots)]
   }
 }
 
 function getFragmentChildren (element: RendererNode | null, blocks: string[] = [], withoutSlots = false) {
-  if (element && element.nodeName) {
-    if (isEndFragment(element)) {
-      return blocks
-    } else if (!isStartFragment(element)) {
-      const clone = element.cloneNode(true) as Element
-      if (withoutSlots) {
-        clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
-      }
-      blocks.push(clone.outerHTML)
+  let current = element
+  while (current?.nodeName && !isEndFragment(current)) {
+    if (!isStartFragment(current)) {
+      blocks.push(getElementHTML(current, withoutSlots))
     }
-
-    getFragmentChildren(element.nextSibling, blocks, withoutSlots)
+    current = current.nextSibling
   }
   return blocks
+}
+
+function getElementHTML (element: RendererNode, withoutSlots: boolean) {
+  if (!withoutSlots || !element.querySelector?.('[data-island-slot]')) {
+    return element.outerHTML
+  }
+  const template = element.ownerDocument.createElement('template')
+  template.innerHTML = element.outerHTML
+  template.content.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
+  return template.innerHTML
 }
 
 /**

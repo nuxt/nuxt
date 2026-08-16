@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, pageDiagnostics, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -722,12 +723,15 @@ export default defineNuxtModule({
       nitroForRouteCoverage = nitro
     })
     function markPagesForRouteRules (pages: NuxtPage[]) {
+      const restrictedPages = new Map<NuxtPage, 'noScripts' | 'spaOnly'>()
       const nitro = nitroForRouteCoverage
-      if (!nitro) { return }
+      if (!nitro) { return restrictedPages }
 
       markPagesCoveredByRouteRule(pages, nitro, {
         isCovered: rules => !!rules.noScripts,
-        mark: (page, covered) => { page._noScripts = covered },
+        mark: (page, covered) => {
+          if (covered) { restrictedPages.set(page, 'noScripts') }
+        },
       })
 
       // server components render on the server by definition, whatever `ssr` says
@@ -736,16 +740,20 @@ export default defineNuxtModule({
         isCovered: rules => rules.ssr === false,
         filter: page => page.mode !== 'server',
         mark: (page, covered, resolvedPath) => {
-          if (covered && page._noScripts) {
+          if (!covered) { return }
+          if (restrictedPages.get(page) === 'noScripts') {
             conflicting.push(resolvedPath)
+            return
           }
-          page._spaOnly = covered && !page._noScripts
+          restrictedPages.set(page, 'spaOnly')
         },
       })
 
       if (conflicting.length) {
         logger.warn(`\`ssr: false\` and \`noScripts\` both apply to ${conflicting.map(path => `\`${path}\``).join(', ')}, which leaves nothing to render the route: the server emits an empty shell and no client bundle is loaded to fill it. Remove one of the two rules.`)
       }
+
+      return restrictedPages
     }
 
     // Add routes template
@@ -755,8 +763,9 @@ export default defineNuxtModule({
       dependsOn: nuxt.options.experimental.scanPageMeta ? ['pages'] : [],
       getContents ({ app }) {
         if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
-        markPagesForRouteRules(app.pages)
+        const restrictedPages = markPagesForRouteRules(app.pages)
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
+          restrictedPages,
           serverComponentRuntime,
           clientComponentRuntime,
           overrideMeta: !!nuxt.options.experimental.scanPageMeta,

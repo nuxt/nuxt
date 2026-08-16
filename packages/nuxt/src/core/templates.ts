@@ -17,6 +17,7 @@ import type { NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
+const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -76,7 +77,26 @@ export const islandRendererTemplate: NuxtTemplate = {
 export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
   dependsOn: [],
-  getContents: ctx => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default']),
+  getContents: (ctx) => {
+    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder'
+    if (!ctx.nuxt.options.test || !ctx.nuxt.options.dev || !needsComponentMap) {
+      return genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
+    }
+
+    const paths = new Set<string>()
+    for (const component of ctx.app.components) {
+      if (!component._raw) {
+        paths.add(component.filePath)
+      }
+    }
+    return [
+      genImport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), 'testComponentWrapper'),
+      `const componentLoaders = {`,
+      ...[...paths].map(path => `  ${JSON.stringify(path)}: () => ${genDynamicImport(path, { wrapper: false })},`),
+      `}`,
+      `export default url => testComponentWrapper(url, componentLoaders)`,
+    ].join('\n')
+  },
 }
 
 export const cssTemplate: NuxtTemplate = {
@@ -518,7 +538,9 @@ import { _replaceAppConfig } from '#app/config'
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    _replaceAppConfig(newModule.default)
+    if (newModule) {
+      _replaceAppConfig(newModule.default)
+    }
   })
 }
 /** client-end **/
@@ -535,7 +557,7 @@ export const publicPathTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents ({ nuxt }) {
     return [
-      'import { joinRelativeURL } from \'ufo\'',
+      `import { joinRelativeURL } from ${JSON.stringify(ufoPath)}`,
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime-config\'',
 
       nuxt.options.dev
@@ -702,6 +724,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const clientNodePlaceholder = ${!!ctx.nuxt.options.experimental.clientNodePlaceholder}`,
       `export const tracingChannelNuxt = ${!!(ctx.nuxt.options.tracingChannel && typeof ctx.nuxt.options.tracingChannel === 'object' && ctx.nuxt.options.tracingChannel.nuxt)}`,
       `export const runtimeCompiler = ${!!ctx.nuxt.options.vue.runtimeCompiler}`,
+      `export const vapor = ${!!ctx.nuxt.options.vue.vapor}`,
       `export const hasPluginDependencies = ${pluginsHaveDependencies}`,
       `export const hasParallelPlugins = ${pluginsRunInParallel}`,
       `export const hasPluginHooks = ${pluginsHaveHooks}`,

@@ -1,6 +1,7 @@
 import type { Plugin } from 'vite'
 import type { SourceMapInput } from 'rollup'
-import { bundlerDiagnostics, ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import jsTokens from 'js-tokens'
 

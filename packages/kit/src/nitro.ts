@@ -1,4 +1,4 @@
-import type { Import } from 'unimport'
+import type { NuxtImport } from '@nuxt/schema'
 import defu from 'defu'
 import { normalize } from 'pathe'
 
@@ -95,7 +95,7 @@ export function useNitro (): Nitro {
 /**
  * Add server imports to be auto-imported by Nitro
  */
-export function addServerImports (imports: Import | Import[]): void {
+export function addServerImports (imports: NuxtImport | NuxtImport[]): void {
   const nuxt = useNuxt()
   const _imports = toArray(imports)
   nuxt.hook('nitro:config', (config) => {

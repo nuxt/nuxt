@@ -4,8 +4,7 @@ import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptio
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
-import { isRelative } from 'ufo'
-import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
+import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
 import { read as readRc, update as updateRc } from 'rc9'
 import { isGreater, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
@@ -15,7 +14,7 @@ import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
-import { isLoaderError, loadJiti } from '../internal/jiti.ts'
+import { getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
@@ -296,17 +295,28 @@ let _jitiCache: WeakMap<Nuxt, Promise<Jiti | undefined>> | undefined
  * Needed only for module sources the runtime cannot import itself (TypeScript that cannot be
  * type-stripped, CJS interop, alias-prefixed imports). Cached per Nuxt instance so at most one
  * install prompt is shown per build.
+ *
+ * @param nuxt the Nuxt instance the jiti instance is scoped to
+ * @param install whether looking for jiti may extend to offering to install it, which is only
+ * appropriate where jiti is expected to be the answer
  */
-function getSharedJiti (nuxt: Nuxt): Promise<Jiti | undefined> {
+async function getSharedJiti (nuxt: Nuxt, install: boolean): Promise<Jiti | undefined> {
   _jitiCache ||= new WeakMap()
-  let jiti = _jitiCache.get(nuxt)
-  if (!jiti) {
-    jiti = loadJiti({ rootDir: nuxt.options.rootDir, searchPaths: nuxt.options.modulesDir })
+  let promise = _jitiCache.get(nuxt)
+  if (!promise) {
+    promise = loadJiti({ rootDir: nuxt.options.rootDir, searchPaths: nuxt.options.modulesDir, install })
       .then(mod => mod?.createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias }))
-    _jitiCache.set(nuxt, jiti)
+    _jitiCache.set(nuxt, promise)
+  }
+  const jiti = await promise
+  // a lookup that was not allowed to install says nothing about one that is
+  if (!jiti && !install) {
+    _jitiCache.delete(nuxt)
   }
   return jiti
 }
+
+const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not provide the CommonJS globals `__dirname`, `__filename`, `require`, `module` or `exports`. Use `import.meta.url`, `import.meta.dirname` and `createRequire(import.meta.url)` from `node:module` instead.'
 
 /**
  * Explain a failed native import in terms of what the author can change. The runtime supports
@@ -314,6 +324,9 @@ function getSharedJiti (nuxt: Nuxt): Promise<Jiti | undefined> {
  * will not do.
  */
 function describeNativeImportFailure (error: unknown): string {
+  if (getMissingCjsGlobal(error)) {
+    return CJS_GLOBALS_HINT
+  }
   switch ((error as { code?: string } | undefined)?.code) {
     case 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING': {
       return 'Published packages cannot ship TypeScript entrypoints, because the runtime does not strip types under `node_modules`. Ask the author to publish compiled JavaScript.'
@@ -348,7 +361,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   // Import if input is string
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
 
-  if (isRelative(nuxtModule)) {
+  if (nuxtModule.startsWith('./') || nuxtModule.startsWith('../')) {
     nuxtModule = resolve(nuxt.options.rootDir, nuxtModule)
   }
 
@@ -374,15 +387,15 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   try {
     resolvedNuxtModule = await import(src).then(r => interopDefault(r))
   } catch (nativeError: unknown) {
-    // A module that threw while it was running has already had whatever effect it had, and jiti
-    // would only run it a second time and report its own error in place of the author's
-    if (!isLoaderError(nativeError, src)) {
-      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError })
-    }
-    // Otherwise the runtime declined to load the file: syntax that is not erasable, a file under
-    // `node_modules`, or an unresolved specifier. Retry through jiti if it is available.
-    const jiti = await getSharedJiti(nuxt)
+    const missingGlobal = getMissingCjsGlobal(nativeError)
+    // Whether jiti is the answer, or the module simply has a bug a second loader will repeat
+    const jitiCanHelp = isLoaderError(nativeError) || !!missingGlobal
+    // A module is a function Nuxt calls later, so evaluating one twice repeats no work of its own
+    const jiti = await getSharedJiti(nuxt, jitiCanHelp)
     if (!jiti) {
+      if (!jitiCanHelp) {
+        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError })
+      }
       throw kitDiagnostics.NUXT_B8020({
         module: nuxtModule,
         error: nativeError instanceof Error ? nativeError.message : String(nativeError),
@@ -394,7 +407,17 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     try {
       resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
     } catch (error: unknown) {
-      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(error), cause: error })
+      // jiti's error is only the better one where jiti was expected to get further; a repeat of the
+      // same failure keeps the native error and its untransformed stack
+      const repeated = missingGlobal && getMissingCjsGlobal(error) === missingGlobal
+      const reported = jitiCanHelp && !repeated ? error : nativeError
+      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(reported), cause: reported })
+    }
+    if (shouldReportJitiFallbackOnce(resolvedModulePath, nuxt.options.rootDir, nuxt.options.future?.compatibilityVersion ?? 4)) {
+      kitDiagnostics.NUXT_B8023({
+        module: nuxtModule,
+        error: nativeError instanceof Error ? nativeError.message : String(nativeError),
+      })
     }
   }
 
@@ -484,7 +507,7 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
     if (res !== false) {
       const moduleRoot = parsed.dir
         ? parsed.dir + parsed.name
-        : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
+        : resolvePackageDir(modulePath, { try: true }) || modulePath
       nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
       const directory = moduleRoot.replace(/\/?$/, '/')
       if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
