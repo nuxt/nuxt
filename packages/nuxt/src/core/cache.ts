@@ -240,7 +240,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
 
     const isIgnored = createIsIgnored(nuxt)
     const sourceFiles = await readFilesRecursive(options.cwd(layer), {
-      shouldIgnore: isIgnored, // TODO: Validate if works with absolute paths
+      shouldIgnore: isIgnored,
       cwd: nuxt.options.rootDir,
       patterns: options.patterns(layer),
     })
@@ -251,7 +251,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
     })
 
     const rootFiles = await readFilesRecursive(layer.config?.rootDir || layer.cwd, {
-      shouldIgnore: isIgnored, // TODO: Validate if works with absolute paths
+      shouldIgnore: isIgnored,
       cwd: nuxt.options.rootDir,
       patterns: [
         '.nuxtrc',
@@ -293,7 +293,8 @@ type FileWithMeta = TarFileInput & {
 }
 
 interface ReadFilesRecursiveOptions {
-  shouldIgnore?: (name: string) => boolean
+  /** Called with the absolute path of each matched file. */
+  shouldIgnore?: (path: string) => boolean
   patterns: string[]
   cwd: string
 }
@@ -306,7 +307,7 @@ async function readFilesRecursive (dir: string | string[], opts: ReadFilesRecurs
   const files = await glob(opts.patterns, { cwd: dir })
 
   const fileEntries = await Promise.all(files.map(async (fileName) => {
-    if (!opts.shouldIgnore?.(fileName)) {
+    if (!opts.shouldIgnore?.(resolve(dir, fileName))) {
       const file = await readFileWithMeta(dir, fileName)
       if (!file) { return }
       return {
