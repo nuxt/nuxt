@@ -13,8 +13,12 @@ links:
 `navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
 
 ::warning
-Make sure to always use `await` or `return` on result of `navigateTo` when calling it.
+`navigateTo` returns a Promise that resolves when the navigation finishes. Make sure to use `await` or `return` on `navigateTo()` in order to control the execution flow as intended.
+
+* Use **`return navigateTo(...)`** to stop your function immediately. This is also **required** in route middleware so Nuxt knows to redirect the user.
+* Use **`await navigateTo(...)`** if you want to pause and wait for the page transition to finish before running the rest of your code.
 ::
+
 
 ::note
 `navigateTo` cannot be used within Nitro routes. To perform a server-side redirect in Nitro routes, use [`sendRedirect`](https://h3.dev/utils/response#redirectlocation-status-statustext) instead.
