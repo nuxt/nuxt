@@ -237,7 +237,10 @@ const NuxtIsland = defineComponent({
         throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
-        const result = r._data!
+        const result: unknown = r._data
+        if (typeof result !== 'object' || result === null || typeof (result as NuxtIslandResponse).html !== 'string' || !(result as NuxtIslandResponse).html) {
+          throw createError({ status: 500, statusText: 'Invalid island response' })
+        }
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')
@@ -245,8 +248,8 @@ const NuxtIsland = defineComponent({
             event!.res.headers.append('x-nitro-prerender', hints)
           }
         }
-        setPayload(key, result)
-        return result
+        setPayload(key, result as NuxtIslandResponse)
+        return result as NuxtIslandResponse
       } catch (e: any) {
         if (r.status !== 200) {
           throw renderDiagnostics.NUXT_E4012({ name: props.name, status: r.status, detail: e.message, cause: e })

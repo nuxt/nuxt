@@ -220,6 +220,50 @@ describe('runtime server component', () => {
     fetchRaw.mockReset()
   })
 
+  it('expect NuxtIsland to emit an error for a malformed (non-object) payload', async () => {
+    const fetchRaw = stubFetchRaw(() => {
+      return Promise.resolve(islandResponse('<html>not an island response</html>'))
+    })
+
+    const wrapper = await mountSuspended(createServerComponent('MalformedPayloadServerComponent'), {
+      props: {
+        name: 'MalformedPayload',
+        props: {
+          force: true,
+        },
+      },
+      attachTo: 'body',
+    })
+
+    expect(fetchRaw).toHaveBeenCalledOnce()
+    expect(wrapper.emitted('error')).toHaveLength(1)
+    const [[emitted]] = wrapper.emitted('error')!
+    expect((emitted as Error & { status?: number }).status).toBe(500)
+    fetchRaw.mockReset()
+  })
+
+  it('expect NuxtIsland to emit an error for a payload missing html', async () => {
+    const fetchRaw = stubFetchRaw(() => {
+      return Promise.resolve(islandResponse({ head: { link: [], style: [] } }))
+    })
+
+    const wrapper = await mountSuspended(createServerComponent('MissingHtmlServerComponent'), {
+      props: {
+        name: 'MissingHtml',
+        props: {
+          force: true,
+        },
+      },
+      attachTo: 'body',
+    })
+
+    expect(fetchRaw).toHaveBeenCalledOnce()
+    expect(wrapper.emitted('error')).toHaveLength(1)
+    const [[emitted]] = wrapper.emitted('error')!
+    expect((emitted as Error & { status?: number }).status).toBe(500)
+    fetchRaw.mockReset()
+  })
+
   it('expect NuxtIsland to have parent scopeId', async () => {
     stubFetchRaw(() => Promise.resolve(islandResponse({
       id: '123',
