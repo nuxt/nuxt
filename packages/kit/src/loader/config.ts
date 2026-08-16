@@ -7,7 +7,6 @@ import { loadConfig, setupDotenv } from 'c12'
 import type { NuxtConfig, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { klona } from 'klona'
 import microdiff from 'microdiff'
 import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
@@ -421,10 +420,13 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   })
 
   const { configFile, layers = [], cwd, meta } = resolved
-  // Clone with `klona` rather than `klona/full`: jiti-imported JSON/CJS modules in user config
-  // carry a non-enumerable, self-referential `default` interop property, which `klona/full`
-  // would follow into infinite recursion.
-  const nuxtConfig = klona(resolved.config)
+  // Clone without following cycles: a build-time config may hold cyclic references (for
+  // example a `vite.plugins` entry whose object graph points back at itself), which `klona`
+  // would recurse into forever. The clone mirrors `klona`'s semantics for acyclic values, and
+  // resolves a repeated reference to the clone already being built rather than walking it
+  // again. It still skips `klona/full`: jiti-imported JSON/CJS modules in user config carry a
+  // non-enumerable, self-referential `default` interop property, which must not be cloned.
+  const nuxtConfig = cloneConfig(resolved.config)
 
   // Merge of the layers c12 produced, minus the synthetic layer it creates for `overrides`, so
   // caller-supplied `overrides`/`defaults` never appear as user configuration. Taken before the
@@ -542,6 +544,98 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   return options
+}
+
+/**
+ * Deep-clone a build-time config value without following cycles, mirroring `klona`'s
+ * semantics for acyclic values: enumerable own properties, objects keep their constructor,
+ * and arrays/sets/maps/dates/regexps/typed arrays are copied rather than shared. A value
+ * already being cloned (a cyclic or repeated reference) resolves to the clone in progress
+ * instead of recursing, so `vite.plugins` entries that point back into their own object
+ * graph survive the clone. Non-enumerable properties (like jiti's self-referential
+ * `default` interop on imported JSON/CJS modules) are never visited.
+ */
+function cloneConfig<T> (input: T, seen: Map<object, unknown> = new Map()): T {
+  if (typeof input !== 'object' || input === null) {
+    return input
+  }
+
+  const existing = seen.get(input)
+  if (existing) {
+    return existing as T
+  }
+
+  const tag = Object.prototype.toString.call(input)
+
+  if (tag === '[object Object]') {
+    const output: Record<string, unknown> = typeof (input as { constructor?: unknown }).constructor === 'function'
+      ? Object.create(Object.getPrototypeOf(input))
+      : {}
+    seen.set(input, output)
+    for (const key of Object.keys(input)) {
+      const value = cloneConfig((input as Record<string, unknown>)[key], seen)
+      if (key === '__proto__') {
+        Object.defineProperty(output, key, { value, configurable: true, enumerable: true, writable: true })
+      } else {
+        output[key] = value
+      }
+    }
+    return output as T
+  }
+
+  if (Array.isArray(input)) {
+    const output: unknown[] = new Array(input.length)
+    seen.set(input, output)
+    for (let index = 0; index < input.length; index++) {
+      output[index] = cloneConfig(input[index], seen)
+    }
+    return output as T
+  }
+
+  if (tag === '[object Set]') {
+    const output = new Set()
+    seen.set(input, output)
+    for (const value of input as unknown as Set<unknown>) {
+      output.add(cloneConfig(value, seen))
+    }
+    return output as T
+  }
+
+  if (tag === '[object Map]') {
+    const output = new Map()
+    seen.set(input, output)
+    for (const [key, value] of input as unknown as Map<unknown, unknown>) {
+      output.set(cloneConfig(key, seen), cloneConfig(value, seen))
+    }
+    return output as T
+  }
+
+  if (tag === '[object Date]') {
+    return new Date(+(input as unknown as Date)) as T
+  }
+
+  if (tag === '[object RegExp]') {
+    const regexp = input as unknown as RegExp
+    return new RegExp(regexp.source, regexp.flags) as T
+  }
+
+  if (tag === '[object ArrayBuffer]') {
+    return (input as unknown as ArrayBuffer).slice(0) as T
+  }
+
+  if (tag === '[object DataView]') {
+    const dataView = input as unknown as DataView
+    const DataViewConstructor = dataView.constructor as new (buffer: ArrayBufferLike) => DataView
+    return new DataViewConstructor(cloneConfig(dataView.buffer, seen) as ArrayBufferLike) as T
+  }
+
+  // Typed arrays: `new` so the copy does not share the source's buffer
+  if (tag.endsWith('Array]')) {
+    const TypedArray = (input as unknown as { constructor: unknown }).constructor as new (value: unknown) => T
+    return new TypedArray(input) as T
+  }
+
+  return input
 }
 
 /**

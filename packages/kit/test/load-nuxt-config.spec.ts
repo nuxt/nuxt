@@ -112,7 +112,7 @@ describe('loadNuxtConfig', () => {
     }
   })
 
-  it.fails('should support cyclic references in build-time config', async () => {
+  it('should support cyclic references in build-time config', async () => {
     const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-cyclic-config-'))
     await writeFile(join(tempDir, 'nuxt.config.ts'), `const api: Record<string, unknown> = {}
     const plugin = { name: 'cyclic-plugin', api }
