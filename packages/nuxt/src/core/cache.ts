@@ -306,7 +306,11 @@ async function readFilesRecursive (dir: string | string[], opts: ReadFilesRecurs
   const files = await glob(opts.patterns, { cwd: dir })
 
   const fileEntries = await Promise.all(files.map(async (fileName) => {
-    if (!opts.shouldIgnore?.(fileName)) {
+    // `shouldIgnore` (e.g. `isIgnored` from `@nuxt/kit`) expects absolute paths,
+    // so resolve the glob-relative file name before testing it against the
+    // ignore rules. Otherwise every file escapes the layer roots and the
+    // rules never match, leaving ignored files in the build cache hash.
+    if (!opts.shouldIgnore?.(resolve(dir, fileName))) {
       const file = await readFileWithMeta(dir, fileName)
       if (!file) { return }
       return {

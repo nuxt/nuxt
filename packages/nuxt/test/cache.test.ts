@@ -279,4 +279,42 @@ describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
     const latestJson = JSON.parse(await readFile(join(nuxt2.options.buildDir, 'manifest', 'latest.json'), 'utf-8'))
     expect(latestJson.id).toBe('build-2')
   })
+
+  it('should ignore ignored files when computing the cache hash', async () => {
+    const rootDir = join(tmpDir, 'project')
+
+    // `unit.spec.ts` matches the default `ignore` rules (`**/*.{spec,test}.{js,ts}`)
+    // and must never influence the build cache hash
+    await writeFile(join(rootDir, 'unit.spec.ts'), 'export default () => "first"')
+
+    const nuxt1 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'ignore-1',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt1)
+
+    // Change only the ignored file: this must still be a cache hit that
+    // restores the first buildId
+    await writeFile(join(rootDir, 'unit.spec.ts'), 'export default () => "second"')
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'ignore-2',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+
+    // The buildId is restored on a cache hit, so the ignored file change must
+    // not have invalidated the cache
+    expect(nuxt2.options.buildId).toBe('ignore-1')
+    await build(nuxt2)
+  })
 })
