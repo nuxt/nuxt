@@ -6,6 +6,7 @@ import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 import { resolveModulePath } from 'exsolve'
+import { klona } from 'klona'
 
 import { isDirectory, linkToAlias, logger } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
@@ -42,8 +43,14 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     polyfills: true,
   }),
   setup (options, nuxt) {
-    // TODO: fix sharing of defaults between invocations of modules
-    const presets: InlinePreset[] = JSON.parse(JSON.stringify(options.presets))
+    // Clone the presets so that mutations from `imports:sources` listeners (or the
+    // `appCompatPresets` push below) never leak back into `defaultPresets` or between
+    // invocations of this module. `klona` preserves RegExp/function values that
+    // `JSON.parse(JSON.stringify())` would silently drop (e.g. a package preset's
+    // `ignore` filter), keeping `#imports` consistent across invocations/layers.
+    // (`options.presets` is always defined via the module defaults; the fallback only
+    // satisfies the type system.)
+    const presets = klona(options.presets ?? []) as InlinePreset[]
 
     if (options.polyfills) {
       presets.push(...appCompatPresets)
