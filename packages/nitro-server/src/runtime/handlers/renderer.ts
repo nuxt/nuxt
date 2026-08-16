@@ -24,6 +24,7 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from
 import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
+import { getNonceFromHeadTags } from '../utils/renderer/nonce'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { patchDevClientCss } from '../utils/renderer/dev-css'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
@@ -603,7 +604,7 @@ async function renderStreamedResponse (ctx: {
   // a strict `script-src 'nonce-…'` policy would block them. Reuse whatever
   // nonce a security module stamped onto the rendered head scripts; if none is
   // present the attribute is omitted and behaviour is unchanged.
-  const cspNonce = headTags.match(/<script[^>]+\bnonce="([^"]*)"/)?.[1]
+  const cspNonce = getNonceFromHeadTags(headTags)
   const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
 
   // 6. Build the HTML shell context and fire `render:html` with `streaming: true`.
