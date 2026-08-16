@@ -17,6 +17,10 @@ Make sure to always use `await` or `return` on result of `navigateTo` when calli
 ::
 
 ::note
+`await navigateTo(...)` does not halt the current execution flow like a hard redirect. The returned promise resolves once the navigation is performed, and code after the `await` will continue to run. If you need to stop further execution (for example, within route middleware), use `return navigateTo(...)` instead.
+::
+
+::note
 `navigateTo` cannot be used within Nitro routes. To perform a server-side redirect in Nitro routes, use [`sendRedirect`](https://h3.dev/utils/response#redirectlocation-status-statustext) instead.
 ::
 
