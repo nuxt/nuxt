@@ -1,6 +1,21 @@
 import type { NuxtIslandResponse, NuxtSSRContext } from '#app/types'
 import { appRootTag } from '#internal/nuxt.config.mjs'
 
+/**
+ * Escape HTML attribute values derived from teleport keys. Keeping this local
+ * (instead of importing `escapeHtml`) avoids pulling the shared util into the
+ * server bundle.
+ */
+function escapeHtmlAttribute (value: string): string {
+  return value.replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    '\'': '&#39;',
+  })[char]!)
+}
+
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)
 
 /**
@@ -92,14 +107,14 @@ export function renderStreamedIslandTeleports (ssrContext: NuxtSSRContext, nonce
     if (matchClientComp) {
       const [, uid, clientId] = matchClientComp
       if (!uid || !clientId) { continue }
-      templates += `<template data-island-uid="${uid}" data-island-component="${clientId}">${teleports[key]}</template>`
+      templates += `<template data-island-uid="${escapeHtmlAttribute(uid)}" data-island-component="${escapeHtmlAttribute(clientId)}">${teleports[key]}</template>`
       continue
     }
     const matchSlot = key.match(SSR_SLOT_TELEPORT_MARKER)
     if (matchSlot) {
       const [, uid, slot] = matchSlot
       if (!uid || !slot) { continue }
-      templates += `<template data-island-uid="${uid}" data-island-slot="${slot}">${teleports[key]}</template>`
+      templates += `<template data-island-uid="${escapeHtmlAttribute(uid)}" data-island-slot="${escapeHtmlAttribute(slot)}">${teleports[key]}</template>`
     }
   }
   if (!templates) { return '' }
