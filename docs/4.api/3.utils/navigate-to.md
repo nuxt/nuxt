@@ -19,7 +19,6 @@ links:
 * Use **`await navigateTo(...)`** if you want to pause and wait for the page transition to finish before running the rest of your code.
 ::
 
-
 ::note
 `navigateTo` cannot be used within Nitro routes. To perform a server-side redirect in Nitro routes, use [`sendRedirect`](https://h3.dev/utils/response#redirectlocation-status-statustext) instead.
 ::
@@ -78,13 +77,13 @@ In this case, `navigateTo` will be executed but not returned, which may lead to 
 
 The `external` parameter in `navigateTo` influences how navigating to URLs is handled:
 
-- **Without `external: true`**:
-  - Internal URLs navigate as expected.
-  - External URLs throw an error.
+* **Without `external: true`**:
+  * Internal URLs navigate as expected.
+  * External URLs throw an error.
 
-- **With `external: true`**:
-  - Internal URLs navigate with a full-page reload.
-  - External URLs navigate as expected.
+* **With `external: true`**:
+  * Internal URLs navigate with a full-page reload.
+  * External URLs navigate as expected.
 
 #### Example
 
@@ -177,49 +176,49 @@ await navigateTo({ name: 'product', params: { id: 1 } })
 
 An object accepting the following properties:
 
-- `replace`
+* `replace`
 
-  - **Type**: `boolean`
-  - **Default**: `false`
-  - By default, `navigateTo` pushes the given route into the Vue Router's instance on the client side.
+  * **Type**: `boolean`
+  * **Default**: `false`
+  * By default, `navigateTo` pushes the given route into the Vue Router's instance on the client side.
 
     This behavior can be changed by setting `replace` to `true`, to indicate that given route should be replaced.
 
-- `redirectCode`
+* `redirectCode`
 
-  - **Type**: `number`
-  - **Default**: `302`
+  * **Type**: `number`
+  * **Default**: `302`
 
-  - `navigateTo` redirects to the given path and sets the redirect code to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/302) by default when the redirection takes place on the server side.
+  * `navigateTo` redirects to the given path and sets the redirect code to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/302) by default when the redirection takes place on the server side.
 
     This default behavior can be modified by providing different `redirectCode`. Commonly, [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/301) can be used for permanent redirections.
 
-- `external`
+* `external`
 
-  - **Type**: `boolean`
-  - **Default**: `false`
+  * **Type**: `boolean`
+  * **Default**: `false`
 
-  - Allows navigating to an external URL when set to `true`. Otherwise, `navigateTo` will throw an error, as external navigation is not allowed by default.
+  * Allows navigating to an external URL when set to `true`. Otherwise, `navigateTo` will throw an error, as external navigation is not allowed by default.
 
-- `open`
+* `open`
 
-  - **Type**: `OpenOptions`
-  - Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This option is only applicable on the client side and will be ignored on the server side.
+  * **Type**: `OpenOptions`
+  * Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This option is only applicable on the client side and will be ignored on the server side.
 
     An object accepting the following properties:
 
-  - `target`
+  * `target`
 
-    - **Type**: `string`
-    - **Default**: `'_blank'`
+    * **Type**: `string`
+    * **Default**: `'_blank'`
 
-    - A string, without whitespace, specifying the name of the browsing context the resource is being loaded into.
+    * A string, without whitespace, specifying the name of the browsing context the resource is being loaded into.
 
-  - `windowFeatures`
+  * `windowFeatures`
 
-    - **Type**: `OpenWindowFeatures`
+    * **Type**: `OpenWindowFeatures`
 
-    - An object accepting the following properties:
+    * An object accepting the following properties:
 
       | Property                  | Type      | Description                                                                                    |
       |---------------------------|-----------|------------------------------------------------------------------------------------------------|
