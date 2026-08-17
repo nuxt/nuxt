@@ -18,6 +18,9 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let key: string
   let disableCssCodeSplit: boolean
   let manifestFile: string
+  // `closeBundle` can run more than once for the ssr environment, and its last step
+  // removes `manifestFile`. Cache the source so a later pass does not read an ENOENT.
+  let manifestSource: string | undefined
 
   let precomputedCode = 'export default undefined'
   // Default empty manifest so the build output is loadable before the real one is populated.
@@ -97,8 +100,15 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   }
 
   function readManifestFromDisk (): string {
+    // Cache the raw source rather than the parsed manifest: callers mutate the object
+    // they get back (and `build:manifest` hooks mutate it further), so each pass must
+    // still parse its own copy.
+    if (manifestSource !== undefined) {
+      return manifestSource
+    }
     try {
-      return readFileSync(manifestFile, 'utf-8')
+      manifestSource = readFileSync(manifestFile, 'utf-8')
+      return manifestSource
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         throw bundlerDiagnostics.NUXT_B7021({ manifestFile })
