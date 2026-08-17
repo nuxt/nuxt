@@ -168,7 +168,7 @@ catalogs:
     picomatch: ^4.0.5
     pkg-types: ^2.3.1
     postcss: ^8.5.26
-    postcss-import: ^16.2.0
+    postcss-import: ^17.0.0
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^8.2.1
     postcss-url: ^10.1.4
