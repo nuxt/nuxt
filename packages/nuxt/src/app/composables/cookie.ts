@@ -96,7 +96,15 @@ export function useCookie<T = string | null | undefined> (name: string, _opts: C
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   opts.filter ??= key => key === name
-  const cookies = readRawCookies(opts) || {}
+
+  let rawValue: string | undefined
+  let cookies: Record<string, unknown>
+  if (import.meta.client) {
+    rawValue = opts.filter(name) ? readClientCookieJar()[name] : undefined
+    cookies = { [name]: rawValue === undefined ? undefined : opts.decode(rawValue) }
+  } else {
+    cookies = readRawCookies(opts) || {}
+  }
 
   let delay: number | undefined
 
@@ -118,7 +126,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   const hasExpired = delay !== undefined && delay <= 0
-  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (hasExpired || cookies[name] === undefined || cookies[name] === null)
+  const cookieValueIsNullish = cookies[name] === undefined || cookies[name] === null
+  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (hasExpired || cookieValueIsNullish) && !(rawValue === undefined && cookieValueIsNullish && opts.default === undefined)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
@@ -158,6 +167,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     let cookieWatcher: WatchHandle | undefined
 
     const handleChange = (data: { value?: string | null, refresh?: boolean }) => {
+      if (data.refresh) { invalidateClientCookieJar() }
       const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
       cookieWatcher?.pause()
       cookie.value = value
@@ -257,6 +267,72 @@ export function refreshCookie (name: string): void {
   }
 }
 
+/**
+ * Cache of the raw (undecoded) cookie jar, populated only on the client.
+ *
+ * The cache is dropped on the next microtask to keep it accurate.
+ */
+let clientCookieJar: Record<string, string | undefined> | undefined
+
+function invalidateClientCookieJar () {
+  if (import.meta.client) {
+    clientCookieJar = undefined
+  }
+}
+
+function readClientCookieJar () {
+  if (import.meta.client && !clientCookieJar) {
+    clientCookieJar = parse(document.cookie, { decode: identity })
+    queueMicrotask(invalidateClientCookieJar)
+  }
+  return clientCookieJar || {}
+}
+
+/**
+ * Cookie attributes that mean the value we just wrote will not necessarily be
+ * readable back from `document.cookie` on the current document, either because
+ * the browser rejects the write or because it is scoped elsewhere.
+ */
+function isWriteVisibleToDocument (opts: CookieOptions) {
+  // a partitioned cookie is readable from the partition that set it, so it is not excluded here
+  if (opts.domain || opts.httpOnly) { return false }
+  if (opts.secure && location.protocol !== 'https:') { return false }
+  if (opts.sameSite === 'none' && !opts.secure) { return false }
+  return opts.path === undefined || isCurrentPath(opts.path)
+}
+
+// cookie path matching, per RFC 6265 section 5.1.4
+function isCurrentPath (path: string) {
+  const { pathname } = location
+  if (pathname === path) { return true }
+  if (!pathname.startsWith(path)) { return false }
+  return path.endsWith('/') || pathname[path.length] === '/'
+}
+
+/**
+ * A write with a non-positive `maxAge` or a past `expires` date deletes the
+ * cookie in the browser regardless of the value passed alongside it.
+ */
+function isExpiredWrite (opts: CookieOptions) {
+  if (opts.maxAge !== undefined) { return opts.maxAge <= 0 }
+  const expires = resolveExpires(opts.expires)
+  return expires !== undefined && expires.getTime() <= Date.now()
+}
+
+function updateClientCookieJar (name: string, value: string | undefined, opts: CookieOptions) {
+  if (!clientCookieJar) { return }
+
+  if (!isWriteVisibleToDocument(opts)) {
+    return invalidateClientCookieJar()
+  }
+
+  if (value === undefined || isExpiredWrite(opts)) {
+    delete clientCookieJar[name]
+  } else {
+    clientCookieJar[name] = value
+  }
+}
+
 function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
   if (import.meta.server) {
     return parse(useRequestEvent()!.req.headers.get('cookie') || '', opts)
@@ -266,14 +342,14 @@ function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | un
 }
 
 // value is expected to be already encoded via `opts.encode`; pass through as-is
-const identityEncode = (val: string) => val
+const identity = (val: string) => val
 
 function toSerializeOptions (opts: CookieOptions): CookieSerializeOptions {
   const { encode: _encode, decode: _decode, expires, ...rest } = opts
   return {
     ...rest,
     expires: resolveExpires(expires),
-    encode: identityEncode,
+    encode: identity,
   }
 }
 
@@ -288,6 +364,7 @@ function serializeCookie (name: string, value: string | undefined, opts: CookieO
 function writeClientCookie (name: string, value: string | undefined, opts: CookieOptions = {}) {
   if (import.meta.client) {
     document.cookie = serializeCookie(name, value, opts)
+    updateClientCookieJar(name, value, opts)
   }
 }
 

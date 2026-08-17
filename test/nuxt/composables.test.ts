@@ -1229,6 +1229,83 @@ describe('useCookie', () => {
     expect(computedVal.value).toBe(0)
   })
 
+  it('should not re-read `document.cookie` for every call', async () => {
+    document.cookie = 'read-count-a=1'
+    document.cookie = 'read-count-b=2'
+
+    let target: any = document
+    let descriptor: PropertyDescriptor | undefined
+    while (target && !descriptor) {
+      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
+      if (!descriptor) { target = Object.getPrototypeOf(target) }
+    }
+
+    let reads = 0
+    let writes = 0
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get () {
+        reads++
+        return descriptor!.get!.call(document)
+      },
+      set (value) {
+        writes++
+        descriptor!.set!.call(document, value)
+      },
+    })
+
+    try {
+      for (let i = 0; i < 10; i++) {
+        useCookie('read-count-a')
+        useCookie('read-count-b')
+        useCookie('read-count-absent-' + i)
+      }
+      expect(reads).toBe(1)
+      expect(writes).toBe(0)
+
+      for (let i = 0; i < 10; i++) {
+        useCookie('read-count-default', { default: () => 'value' })
+      }
+      expect(reads).toBe(1)
+      expect(writes).toBe(1)
+
+      useCookie('read-count-scoped', { default: () => 'value', domain: 'example.com' })
+      useCookie('read-count-a')
+      expect(reads).toBe(2)
+
+      await nextTick()
+      useCookie('read-count-a')
+      expect(reads).toBe(3)
+    } finally {
+      delete (document as any).cookie
+    }
+  })
+
+  it('should invalidate the cached cookie jar after a write', async () => {
+    const cookie = useCookie<string>('invalidate-me', { default: () => 'initial' })
+    expect(useCookie<string>('invalidate-me').value).toBe('initial')
+
+    cookie.value = 'updated'
+    await nextTick()
+    expect(useCookie<string>('invalidate-me').value).toBe('updated')
+  })
+
+  it('should not read a cookie excluded by `filter`', () => {
+    document.cookie = 'filtered-out=set'
+
+    let decodeCallCount = 0
+    const cookie = useCookie<string>('filtered-out', {
+      default: () => 'default',
+      filter: () => false,
+      decode (value) {
+        decodeCallCount++
+        return value
+      },
+    })
+    expect(cookie.value).toBe('default')
+    expect(decodeCallCount).toBe(0)
+  })
+
   it('cookie decode function should be invoked once', () => {
     // Pre-set cookies
     document.cookie = 'foo=Foo'
@@ -1258,7 +1335,7 @@ describe('useCookie', () => {
     })
     quxCookie.value.s3++
     expect(quxCookie.value.s3).toBe(0)
-    expect(quxCallCount).toBe(2)
+    expect(quxCallCount).toBe(0)
   })
 
   it('should not watch custom cookie refs when shallow', () => {
