@@ -15,7 +15,7 @@ links:
 ::warning
 During normal client-side navigation, `navigateTo` returns a Promise that resolves when the navigation finishes. In route middleware, return the redirect result so Nuxt can apply the redirect.
 
-* Use **`return navigateTo(...)`** to stop your function immediately. This is also **required** in route middleware so Nuxt knows to redirect the user.
+* Use **`return navigateTo(...)`** to exit the current function scope. This is also **required** in route middleware so Nuxt knows to redirect the user.
 * Use **`await navigateTo(...)`** if you want to pause and wait for the page transition to finish before running the rest of your code.
 ::
 
