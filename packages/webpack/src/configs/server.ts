@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { isAbsolute, normalize, resolve } from 'pathe'
 import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
 import { parseNodeModulePath } from '@nuxt/kit/internal'
@@ -98,7 +99,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
         try: true,
       })
       if (resolved && isAbsolute(resolved)) {
-        return cb(undefined, resolved)
+        return cb(undefined, ctx.nuxt.options.dev ? pathToFileURL(resolved).href : resolved)
       }
       return cb(undefined, true)
     }
