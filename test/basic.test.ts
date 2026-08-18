@@ -2057,8 +2057,11 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
     expect(Array.isArray(data.data['swr-data'])).toBe(true)
   })
 
-  it('should render payload for overlapping dynamic SWR routes', async () => {
-    const payload = await $fetch<string>('/swr-dynamic/travel/about/_payload.json', { responseType: 'text' })
+  it.each([
+    '/swr-dynamic/travel/about/_payload.json',
+    '/swr-dynamic/en/travel/about/_payload.json',
+  ])('should render payload for overlapping dynamic SWR route %s', async (url) => {
+    const payload = await $fetch<string>(url, { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-dynamic-test']).toBeDefined()

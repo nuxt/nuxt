@@ -29,7 +29,7 @@ import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { normalizeRouteRulePath, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
+import { normalizeRouteRulePath, resolveRouteRules, unifyDynamicRouteRuleSegments } from '../../nuxt/src/core/utils/route-rules.ts'
 import { decodeRoutePath } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -531,6 +531,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   })
 
+  // Runs before payload rules are derived, so generated `/_payload.json` keys inherit the
+  // unified segment names.
+  nuxt.hook('nitro:init', (nitro) => {
+    nitro.hooks.hook('build:before', (nitro) => {
+      unifyDynamicRouteRuleSegments(nitro.options.routeRules)
+    })
+  })
+
   if (nuxt.options.experimental.payloadExtraction) {
     if (nuxt.options.dev) {
       nuxt.hook('nitro:config', (nitroConfig) => {
@@ -549,24 +557,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
             if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
-              const sourcePayloadKey = (route === '/' ? '' : route) + '/_payload.json'
-              // Work around https://github.com/h3js/rou3/pull/196 in Nitro 2.
-              const payloadKey = sourcePayloadKey
-                .replace(/\/\*\*:[$\w]+/g, '/**:_')
-                .replace(/\/:[$\w]+(?=[?+*(/]|$)/g, '/:_')
+              const payloadKey = (route === '/' ? '' : route) + '/_payload.json'
               const defaults = { ssr: true } as Record<string, any>
               for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
                 if (key in value) {
                   defaults[key] = value[key as keyof typeof value]
                 }
               }
-              if (sourcePayloadKey === payloadKey) {
-                nitro.options.routeRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
-              } else {
-                const payloadRule = nitro.options.routeRules[sourcePayloadKey]
-                delete nitro.options.routeRules[sourcePayloadKey]
-                nitro.options.routeRules[payloadKey] = defu(payloadRule, nitro.options.routeRules[payloadKey], defaults)
-              }
+              nitro.options.routeRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
             }
           }
         }
