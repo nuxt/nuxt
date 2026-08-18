@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { unifyDynamicRouteRuleSegments } from '../src/core/utils/route-rules.ts'
+import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
 
 function unify (routeRules: Record<string, Record<string, any>>) {
   unifyDynamicRouteRuleSegments(routeRules)

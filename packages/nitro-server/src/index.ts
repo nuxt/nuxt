@@ -29,7 +29,8 @@ import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { normalizeRouteRulePath, resolveRouteRules, unifyDynamicRouteRuleSegments } from '../../nuxt/src/core/utils/route-rules.ts'
+import { normalizeRouteRulePath, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
+import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
 import { decodeRoutePath } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
