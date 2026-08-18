@@ -531,8 +531,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   })
 
-  // Runs before payload rules are derived, so generated `/_payload.json` keys inherit the
-  // unified segment names.
+  // runs before payload rules are derived so generated `/_payload.json` keys inherit unified names
   nuxt.hook('nitro:init', (nitro) => {
     nitro.hooks.hook('build:before', (nitro) => {
       unifyDynamicRouteRuleSegments(nitro.options.routeRules)

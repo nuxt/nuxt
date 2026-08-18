@@ -17,20 +17,22 @@ export function normalizeRouteRulePath (path: string, fold: boolean): string {
   return fold ? decoded.toLowerCase() : decoded
 }
 
-// Only bare placeholders are unified: a segment carrying a pattern or modifier (`:id(\d+)`,
-// `:slug?`) is left alone, since presets honour those and copying one onto a sibling would change
-// what that sibling matches.
+// bare placeholders only: renaming `:id(\d+)` or `:slug?` would change what they match
 const DYNAMIC_SEGMENT_RE = /^(?::[$\w]+|\*)$/
 
+// a name conflicts if another segment carries it and cannot itself be renamed away
+function conflictsWithin (segments: string[], name: string, index: number): boolean {
+  return segments.some((segment, i) =>
+    i !== index &&
+    segment.match(/^:([$\w]+)/)?.[1] === name &&
+    (i < index || !DYNAMIC_SEGMENT_RE.test(segment)),
+  )
+}
+
 /**
- * Rename dynamic segments in route rule keys, in place, so that siblings (dynamic segments at the
- * same position under the same preceding path) share a single name.
- *
- * `radix3`, which Nitro 2 uses to match route rules, drops the placeholder name when it keys a
- * dynamic segment, so `/:slug/about` and `/:locale/:slug/about` end up in the same table entry and
- * whichever was declared first is silently discarded, taking its rules with it. Keys are only
- * rewritten when such a clash exists, and a name is never repeated within one route because
- * deployment presets compile each one to a named capture group.
+ * Rename dynamic segments in route rule keys, in place, so sibling segments share a single name.
+ * `radix3` keys dynamic segments without their placeholder name, so `/:slug/about` and
+ * `/:locale/:slug/about` collide and one silently loses its rules.
  *
  * @internal
  */
@@ -45,29 +47,29 @@ export function unifyDynamicRouteRuleSegments (routeRules: Record<string, Record
     for (let index = 1; index < segments.length; index++) {
       const segment = segments[index]!
       if (!DYNAMIC_SEGMENT_RE.test(segment)) { continue }
-      // The preceding path is already unified, so it identifies the group of sibling segments.
       const group = segments.slice(0, index).join('/')
       let name = unifiedNames.get(group)
       if (!name) {
         name = segment === '*' ? `_${index}` : segment.slice(1)
-        while (segments.some((other, i) => i !== index && other === `:${name}`)) {
+        while (conflictsWithin(segments, name, index)) {
           name += '_'
         }
         unifiedNames.set(group, name)
       }
-      if (segment !== `:${name}`) {
-        clashed = true
-        segments[index] = `:${name}`
-        if (segment !== '*') {
-          renames.set(segment.slice(1), name)
-        }
+      if (segment === `:${name}` || conflictsWithin(segments, name, index)) { continue }
+      clashed = true
+      segments[index] = `:${name}`
+      if (segment !== '*') {
+        renames.set(segment.slice(1), name)
       }
     }
-    for (const key of ['redirect', 'proxy']) {
-      // Presets substitute placeholders in targets by name, so a renamed key must be followed.
-      const target = rules[key]
-      if (target?.to) {
-        target.to = target.to.replace(/\/:([$\w]+)/g, (match: string, name: string) => renames.has(name) ? `/:${renames.get(name)}` : match)
+    if (renames.size) {
+      // redirect/proxy targets reference placeholders by name
+      for (const key of ['redirect', 'proxy']) {
+        const target = rules[key]
+        if (target?.to) {
+          target.to = target.to.replace(/\/:([$\w]+)/g, (match: string, name: string) => renames.has(name) ? `/:${renames.get(name)}` : match)
+        }
       }
     }
     unified.push([segments.join('/'), rules])
@@ -75,7 +77,7 @@ export function unifyDynamicRouteRuleSegments (routeRules: Record<string, Record
 
   if (!clashed) { return }
 
-  // Mutated in place: `runtimeConfig.nitro.routeRules` already references this object.
+  // mutate in place: `runtimeConfig.nitro.routeRules` references this object
   for (const route of Object.keys(routeRules)) {
     delete routeRules[route]
   }

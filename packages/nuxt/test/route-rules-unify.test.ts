@@ -49,6 +49,15 @@ describe('unifyDynamicRouteRuleSegments', () => {
     expect(unify({ ...routeRules })).toStrictEqual(routeRules)
   })
 
+  it('skips a rename that would duplicate a constrained or optional placeholder name', () => {
+    const routeRules = {
+      '/:a/x': { swr: 60 },
+      '/:b/:a(\\d+)/y': { swr: 60 },
+      '/:c/:a?/z': { swr: 60 },
+    }
+    expect(unify({ ...routeRules })).toStrictEqual(routeRules)
+  })
+
   it('follows renames into redirect and proxy targets', () => {
     expect(unify({
       '/:slug/about': { swr: 60 },
