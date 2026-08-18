@@ -898,18 +898,26 @@ export function routerOptionsMayModifyRoutes (code: string, filename: string): b
  * path, each alias, and the whole subtree below it. Returns `undefined` when any
  * path cannot be converted, so callers can fall back to matching everything.
  */
-export function collectRou3PagePatterns (pages: NuxtPage[], prefix = '/'): string[] | undefined {
+export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] = ['/']): string[] | undefined {
   const patterns: string[] = []
   for (const page of pages) {
-    const path = page.path.startsWith('/') ? page.path : joinURL(prefix, page.path)
-    const aliases = toArray(page.alias || []).map(alias => alias.startsWith('/') ? alias : joinURL(prefix, alias))
-    for (const route of [path, ...aliases]) {
+    const routes = new Set<string>()
+    for (const route of [page.path, ...toArray(page.alias || [])]) {
+      if (route.startsWith('/')) {
+        routes.add(route)
+      } else {
+        for (const prefix of prefixes) {
+          routes.add(joinURL(prefix, route))
+        }
+      }
+    }
+    for (const route of routes) {
       const { patterns: converted } = vueRouterToRou3(route, { collapse: true })
       if (!converted.length) { return undefined }
       patterns.push(...converted)
     }
     if (page.children?.length) {
-      const childPatterns = collectRou3PagePatterns(page.children, path)
+      const childPatterns = collectRou3PagePatterns(page.children, [...routes])
       if (!childPatterns) { return undefined }
       patterns.push(...childPatterns)
     }

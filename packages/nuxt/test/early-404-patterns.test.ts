@@ -21,15 +21,16 @@ describe('collectRou3PagePatterns', () => {
     `)
   })
 
-  it('should include aliases and nested children', () => {
+  it('should nest children (and their aliases) under every parent path and alias', () => {
     const pages: NuxtPage[] = [
       {
         name: 'parent',
         path: '/parent',
-        alias: ['/p', 'relative-alias'],
+        alias: ['/p'],
         children: [
-          { name: 'child', path: 'child' },
+          { name: 'child', path: 'child', alias: ['kid'] },
           { name: 'absolute', path: '/elsewhere' },
+          { name: 'deep', path: 'deep', children: [{ name: 'leaf', path: 'leaf' }] },
         ],
       },
     ]
@@ -37,9 +38,15 @@ describe('collectRou3PagePatterns', () => {
       [
         "/parent",
         "/p",
-        "/relative-alias",
         "/parent/child",
+        "/p/child",
+        "/parent/kid",
+        "/p/kid",
         "/elsewhere",
+        "/parent/deep",
+        "/p/deep",
+        "/parent/deep/leaf",
+        "/p/deep/leaf",
       ]
     `)
   })
