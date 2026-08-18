@@ -222,6 +222,11 @@ export default defineResolvers({
     },
     clientNodeCompat: false,
     navigationRepaint: true,
+    navigateToEarlyReturn: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     buildCache: false,
     normalizeComponentNames: {
       $resolve: (val) => {
