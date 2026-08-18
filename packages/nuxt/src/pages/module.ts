@@ -14,7 +14,7 @@ import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
@@ -28,6 +28,7 @@ import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+const ROOT_CATCHALL_PATTERN_RE = /^\/\*\*(?::[\w-]+)?$/
 const RELATIVE_WITH_DOT_RE = /^([^.])/
 
 function relativeWithDot (from: string, to: string) {
@@ -577,17 +578,51 @@ export default defineNuxtModule({
 
     nuxt.hook('nitro:build:before', () => warnPublicAssetConflicts())
 
-    // Expose the URLPattern of every page route so pages served without scripts
-    // can scope their speculation rules to same-origin *page* navigations, which
-    // are safe to GET, instead of a blanket rule that could prefetch/prerender
-    // non-idempotent server routes (`~/server/routes/*`). A catch-all page
-    // (`[...slug]`) widens this back to a blanket `*`.
-    nuxt.hook('nitro:build:before', (nitro) => {
-      const patterns = new Set<string>()
-      for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
-        patterns.add(rou3PatternToURLPattern(route).pattern)
+    // Both consumers below share one set of page route patterns:
+    //
+    // - the URLPattern of every page route, so pages served without scripts can
+    //   scope their speculation rules to same-origin *page* navigations, which
+    //   are safe to GET, instead of a blanket rule that could prefetch/prerender
+    //   non-idempotent server routes (`~/server/routes/*`). A catch-all page
+    //   (`[...slug]`) widens this back to a blanket `*`.
+    // - the rou3 patterns the renderer compiles into an early-404 matcher for
+    //   paths that cannot match any page, before loading the app.
+    nuxt.hook('nitro:build:before', async (nitro) => {
+      const pages = nuxt.apps.default?.pages || []
+      const patterns = collectRou3PagePatterns(pages)
+
+      const urlPatterns = new Set<string>()
+      for (const route of patterns ?? toRou3Patterns(pages)) {
+        urlPatterns.add(rou3PatternToURLPattern(route).pattern)
       }
-      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...patterns]
+      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...urlPatterns]
+
+      if (!nuxt.options.experimental.early404 || nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
+
+      if (!patterns) {
+        pageDiagnostics.NUXT_B4018({})
+        return
+      }
+
+      if (patterns.some(pattern => ROOT_CATCHALL_PATTERN_RE.test(pattern))) {
+        pageDiagnostics.NUXT_B4019({})
+        return
+      }
+
+      const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
+      for (const file of routerOptionsFiles) {
+        if (file.optional) { continue }
+        const code = await readFile(file.path, 'utf-8').catch(() => undefined)
+        if (code === undefined || routerOptionsMayModifyRoutes(code, file.path)) {
+          pageDiagnostics.NUXT_B4020({ file: linkToAlias(file.path, nuxt) })
+          return
+        }
+      }
+
+      // Patterns and lookups are always case-folded: with `sensitive` routing this can
+      // only let a request through to the app (which still 404s), never wrongly 404 it.
+      ;(nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns
+        = [...new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))]
     })
 
     nuxt.hook('nitro:build:before', (nitro) => {
@@ -856,6 +891,24 @@ export default defineNuxtModule({
         ].join('\n')
       },
     }, { nuxt: true, nitro: true, node: true })
+
+    // `router.addRoute()` would bypass the build-time route patterns used for early
+    // 404 responses, so remove it from the router type. `removeRoute` stays: it only
+    // narrows the real route set, which is the safe direction for the matcher.
+    if (nuxt.options.experimental.early404) {
+      addTypeTemplate({
+        filename: 'types/early404.d.ts',
+        dependsOn: [],
+        getContents: () => [
+          'declare module \'nuxt/app\' {',
+          '  interface Early404IncompatibleRouterMethods {',
+          '    addRoute: true',
+          '  }',
+          '}',
+          'export {}',
+        ].join('\n'),
+      })
+    }
 
     // add page meta types if enabled
     if (nuxt.options.experimental.viewTransition) {
