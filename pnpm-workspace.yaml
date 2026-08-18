@@ -75,7 +75,7 @@ catalogs:
     nostics: ^1.2.0
     object-identity: ^0.2.3
     ofetch: ^1.5.1
-    ohash: ^2.0.11
+    ohash: ^2.0.12
     pathe: ^2.0.3
     perfect-debounce: ^2.1.0
     ufo: ^1.6.4
@@ -93,7 +93,7 @@ catalogs:
     '@vitejs/plugin-vue': ^6.0.8
     '@vue/compiler-sfc': 3.5.41
     rspack-vue-loader: ^17.6.2
-    vue-component-type-helpers: ^3.3.9
+    vue-component-type-helpers: ^3.3.10
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
   vite:
@@ -127,8 +127,8 @@ catalogs:
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
   build:
-    '@dxup/nuxt': ^0.5.6
-    '@nuxt/cli': npm:@nuxt/cli-nightly@4.0.0-20260812-132059-0bb4e52
+    '@dxup/nuxt': ^0.5.8
+    '@nuxt/cli': npm:@nuxt/cli-nightly@4.0.0-20260817-085717-0bb4e52
     '@nuxt/devtools': ^3.4.1
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.41
@@ -139,7 +139,7 @@ catalogs:
     compatx: ^0.2.0
     confbox: ^0.2.4
     consola: ^3.4.2
-    cssnano: ^8.0.5
+    cssnano: ^8.0.6
     defu: ^6.1.7
     destr: ^2.0.5
     dotenv: ^17.4.2
@@ -150,7 +150,7 @@ catalogs:
     get-port-please: ^3.2.0
     giget: ^3.3.1
     ignore: ^7.0.6
-    impound: ^1.1.6
+    impound: ^1.1.7
     jiti: ^2.7.0
     js-tokens: ^10.0.0
     klona: ^2.0.6
@@ -161,7 +161,7 @@ catalogs:
     nanotar: ^0.3.0
     nostics: ^1.2.0
     nypm: ^0.6.9
-    ohash: ^2.0.11
+    ohash: ^2.0.12
     on-change: ^6.0.2
     oxc-parser: ^0.144.0
     pathe: ^2.0.3
@@ -186,7 +186,7 @@ catalogs:
     unplugin: ^3.3.0
     unrouting: ^0.2.3
     untyped: ^2.0.0
-    verkit: ^0.3.2
+    verkit: ^0.4.0
     vue-bundle-renderer: ^2.3.2
   dev:
     '@arethetypeswrong/cli': 0.18.5
@@ -198,7 +198,7 @@ catalogs:
     '@codspeed/vitest-plugin': 5.7.1
     '@eslint/markdown': 8.0.3
     '@nuxt/eslint-config': 1.17.0
-    '@nuxt/scripts': 1.3.4
+    '@nuxt/scripts': 1.3.6
     '@nuxt/test-utils': 4.1.0
     '@parcel/watcher': 2.6.0
     '@playwright/test': 1.62.1
@@ -219,7 +219,7 @@ catalogs:
     '@vitest/coverage-v8': 4.1.10
     '@vue/compiler-core': 3.5.41
     '@vue/devtools-api': 8.2.1
-    '@vue/language-core': 3.3.9
+    '@vue/language-core': 3.3.10
     '@vue/test-utils': 2.4.11
     acorn: 8.18.0
     beasties: 0.4.3
@@ -233,7 +233,7 @@ catalogs:
     eslint-typegen: 2.3.1
     h3: 1.15.11
     happy-dom: 20.11.2
-    html-validate: 11.6.2
+    html-validate: 11.8.0
     htmlnano: 3.4.0
     installed-check: 11.0.0
     knip: 6.32.2
@@ -242,11 +242,11 @@ catalogs:
     nitropack: 2.13.4
     nuxt-content-twoslash: 0.4.0
     oxc-transform: 0.144.0
-    pkg-pr-new: 0.0.87
+    pkg-pr-new: 0.0.88
     playwright-core: 1.62.1
     prettier: 3.9.6
     rollup: 4.62.4
-    rollup-plugin-visualizer: 7.0.1
+    rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
     svgo: 4.0.2
     tinyexec: 1.3.0
@@ -256,4 +256,4 @@ catalogs:
     vitest: 4.1.10
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.2.5
-    vue-tsc: 3.3.9
+    vue-tsc: 3.3.10
