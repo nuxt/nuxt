@@ -20,6 +20,12 @@ if (import.meta.server) {
   useRequestEvent()!.res.headers.append('set-cookie', 'set-via-h3=h3-value; Path=/')
 }
 const fromH3 = useCookie('set-via-h3')
+
+if (import.meta.server) {
+  useRequestEvent()!.res.headers.append('set-cookie', 'set-via-h3-then-deleted=h3-value; Path=/')
+}
+useCookie('set-via-h3-then-deleted').value = null
+const h3ThenDeleted = useCookie('set-via-h3-then-deleted')
 </script>
 
 <template>
@@ -41,6 +47,9 @@ const fromH3 = useCookie('set-via-h3')
     </div>
     <div id="from-h3">
       {{ fromH3 }}
+    </div>
+    <div id="h3-then-deleted">
+      {{ h3ThenDeleted ?? 'empty' }}
     </div>
   </div>
 </template>

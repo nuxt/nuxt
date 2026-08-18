@@ -407,13 +407,20 @@ function writeServerCookie (event: H3Event, name: string, value: string | undefi
       return setCookie(event, name, value, serializeOpts)
     }
 
-    // delete if cookie exists in browser and value is null/undefined
-    if (getCookie(event, name) !== undefined) {
+    // delete if cookie exists in browser, or was set earlier in the response, and value is null/undefined
+    if (getCookie(event, name) !== undefined || responseSetsCookie(event, name)) {
       return deleteCookie(event, name, serializeOpts)
     }
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined
   }
+}
+
+function responseSetsCookie (event: H3Event, name: string) {
+  for (const raw of event.res.headers.getSetCookie()) {
+    if (parseSetCookie(raw, { decode: false })?.name === name) { return true }
+  }
+  return false
 }
 
 /**
