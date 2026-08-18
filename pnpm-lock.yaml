@@ -197,8 +197,8 @@ catalogs:
       specifier: ^8.5.26
       version: 8.5.26
     postcss-import:
-      specifier: ^16.2.0
-      version: 16.2.0
+      specifier: ^17.0.0
+      version: 17.0.0
     postcss-import-resolver:
       specifier: ^2.0.0
       version: 2.0.0
@@ -1298,7 +1298,7 @@ importers:
         version: 8.5.26
       postcss-import:
         specifier: catalog:build
-        version: 16.2.0(postcss@8.5.26)
+        version: 17.0.0(postcss@8.5.26)
       postcss-import-resolver:
         specifier: catalog:build
         version: 2.0.0
@@ -1733,7 +1733,7 @@ importers:
         version: 8.5.26
       postcss-import:
         specifier: catalog:build
-        version: 16.2.0(postcss@8.5.26)
+        version: 17.0.0(postcss@8.5.26)
       postcss-import-resolver:
         specifier: catalog:build
         version: 2.0.0
@@ -8228,9 +8228,9 @@ packages:
   postcss-import-resolver@2.0.0:
     resolution: {integrity: sha512-y001XYgGvVwgxyxw9J1a5kqM/vtmIQGzx34g0A0Oy44MFcy/ZboZw1hu/iN3VYFjSTRzbvd7zZJJz0Kh0AGkTw==}
 
-  postcss-import@16.2.0:
-    resolution: {integrity: sha512-0mQUGlSp87Zl70K58RNwQAN1WS9plFE6KWGui9nyK6ninduMyjW/Khaoy/BpBoFTBh7ndAvAKrSKVbwy6vd/BA==}
-    engines: {node: '>=18.0.0'}
+  postcss-import@17.0.0:
+    resolution: {integrity: sha512-qzVMJhcq39KweT7Fp0HcjE5YxL5yI854Q3CtufxDuZKO9HLQUp2rptB9+U0MIj3pT1ZEVXoqnpeC1mSkfYuz4Q==}
+    engines: {node: '>=22.0.0'}
     peerDependencies:
       postcss: ^8.0.0
 
@@ -17088,7 +17088,7 @@ snapshots:
     dependencies:
       enhanced-resolve: 4.5.0
 
-  postcss-import@16.2.0(postcss@8.5.26):
+  postcss-import@17.0.0(postcss@8.5.26):
     dependencies:
       postcss: 8.5.26
       postcss-value-parser: 4.2.0
