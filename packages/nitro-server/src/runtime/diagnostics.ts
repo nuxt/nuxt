@@ -58,5 +58,9 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       why: (p: { path: string, reasons: string }) => `\`${p.path}\` relies on client-side JavaScript, but \`features.noScripts: 'production'\` will strip scripts from this route in production:\n  - ${p.reasons}`,
       fix: 'Remove the client-side dependency from this route, or scope script stripping with the `noScripts` route rule instead of enabling it globally.',
     },
+    NUXT_E8008: {
+      why: (p: { path: string, tags: string }) => `Head tags (\`${p.tags}\`) were registered while streaming \`${p.path}\`, after the shell \`<head>\` was already sent. They are delivered as client-side patches, so they are missing from the served HTML for clients that do not run JavaScript (some crawlers, link unfurlers, \`curl\`).`,
+      fix: (p: { path: string }) => `Register SEO-critical tags (canonical links, JSON-LD, social meta) synchronously in \`setup\` (before any \`await\`) or in a plugin so they render into the shell, or opt this route out of streaming with \`routeRules: { '${p.path}': { streaming: false } }\`.`,
+    },
   },
 })

@@ -31,6 +31,7 @@ import { createInlinedCSSFilter } from '../utils/renderer/inlined-css'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
+import { collectStreamedHeadTags, warnStreamedHeadTags } from '../utils/renderer/streamed-head'
 import { extractCspNonce } from '../utils/renderer/csp-nonce'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
@@ -706,6 +707,10 @@ async function renderStreamedResponse (ctx: {
       }
     : null
 
+  // Head tags that miss the shell and become client-side patches, for the
+  // dev diagnostic emitted once the stream ends.
+  const demotedHeadTags = import.meta.dev ? new Set<string>() : null
+
   // 8. Build the streaming response
   const encoder = new TextEncoder()
   let chunkIndex = 0
@@ -759,6 +764,7 @@ async function renderStreamedResponse (ctx: {
         await enqueueChunk(controller, encoder.encode((await renderRouteStyles()) + APP_ROOT_OPEN_TAG))
         if (firstChunk) {
           await enqueueChunk(controller, firstChunk)
+          if (demotedHeadTags) { collectStreamedHeadTags(ssrContext.head, demotedHeadTags) }
           const headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
           if (headChunk && !NO_SCRIPTS) {
             await enqueueChunk(controller, encoder.encode(`<script${nonceAttr}>${headChunk};document.currentScript.remove()</script>`))
@@ -773,6 +779,7 @@ async function renderStreamedResponse (ctx: {
             await enqueueChunk(controller, value)
 
             // Inject head updates from resolved suspense boundaries
+            if (demotedHeadTags) { collectStreamedHeadTags(ssrContext.head, demotedHeadTags) }
             const headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
             if (headChunk && !NO_SCRIPTS) {
               await enqueueChunk(controller, encoder.encode(`<script${nonceAttr}>${headChunk};document.currentScript.remove()</script>`))
@@ -786,6 +793,7 @@ async function renderStreamedResponse (ctx: {
         // resolves (e.g. `bodyClose` scripts via `onPrehydrate`) would otherwise
         // bypass the streaming push pipeline and land as static tags in `</body>`.
         if (!NO_SCRIPTS) {
+          if (demotedHeadTags) { collectStreamedHeadTags(ssrContext.head, demotedHeadTags) }
           const finalHeadChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
           if (finalHeadChunk) {
             await enqueueChunk(controller, encoder.encode(`<script${nonceAttr}>${finalHeadChunk};document.currentScript.remove()</script>`))
@@ -819,6 +827,7 @@ async function renderStreamedResponse (ctx: {
         // Render any final head updates (payload scripts, etc.) and fire the
         // streaming `render:html:close` hook so modules can inject final
         // bodyAppend content (analytics tags, end-of-body scripts, etc.).
+        if (demotedHeadTags) { collectStreamedHeadTags(ssrContext.head, demotedHeadTags) }
         const closingHead = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
         const closeContext = { bodyAppend: normalizeChunks([bodyTags, closingHead.bodyTags]) }
         const closeResult = nitroHooks.callHook('render:html:close', closeContext, { event })
@@ -855,6 +864,10 @@ async function renderStreamedResponse (ctx: {
 
         if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
           warnNoScriptsClientReliance(ssrContext, event.url.pathname)
+        }
+
+        if (demotedHeadTags && !ssrError) {
+          warnStreamedHeadTags(event.url.pathname, demotedHeadTags)
         }
 
         if (committedSnapshot) {
