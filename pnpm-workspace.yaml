@@ -27,6 +27,7 @@ ignoreWorkspaceCycles: true
 overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
+  "@types/node": "24.13.3"
   nuxt: "workspace:*"
   oxc-parser: "0.144.0"
   rolldown: "1.2.4"
