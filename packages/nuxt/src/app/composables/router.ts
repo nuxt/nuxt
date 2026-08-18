@@ -260,7 +260,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       // We wait to perform the redirect last in case any other middleware will intercept the redirect
       // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
-        router.afterEach(final => final.fullPath === fullPath ? redirect(false) : undefined)
+        // vue-router normalises queries so in this case we need to resolve instead of directly comparing
+        let expectedPath = fullPath
+        if (typeof to === 'string' && toPath.includes('?')) {
+          const target = router.resolve(to)
+          expectedPath = router.resolve({ path: target.path, query: target.query, hash: target.hash }).fullPath || '/'
+        }
+        router.afterEach(final => final.fullPath === expectedPath ? redirect(false) : undefined)
         return to
       }
       return redirect(!inMiddleware ? undefined : /* abort route navigation */ false)
