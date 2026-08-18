@@ -37,6 +37,10 @@ function matchesPageRoute (pathname: string): boolean {
  *
  * When a `cache` route rule covers the path, its `maxAge` is advertised on
  * GET/HEAD misses too, so CDNs can absorb repeat probes for unknown paths.
+ *
+ * The error is rendered as JSON or as the HTML error page depending on `Accept`,
+ * so the response always varies on it. A 404 is heuristically cacheable, which
+ * means a shared cache can store one without being asked to.
  */
 export function throwIfUnmatchedPagePath (event: H3Event, routeOptions: { cache?: { options?: { maxAge?: number } } }): void {
   if (matchesPageRoute(event.url.pathname)) {
@@ -49,6 +53,9 @@ export function throwIfUnmatchedPagePath (event: H3Event, routeOptions: { cache?
     status: 404,
     statusText: `Page not found: ${path}`,
     data: { path },
-    ...cacheable ? { headers: { 'cache-control': `public, max-age=${maxAge}` } } : {},
+    headers: {
+      vary: 'accept',
+      ...cacheable ? { 'cache-control': `public, max-age=${maxAge}` } : {},
+    },
   })
 }
