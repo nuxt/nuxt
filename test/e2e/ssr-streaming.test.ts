@@ -40,13 +40,16 @@ test.describe('SSR Streaming', () => {
     }
   })
 
-  test('head tags are delivered via streaming push', async ({ fetch }) => {
+  test('synchronous head tags land in the shell <head>', async ({ fetch }) => {
     const res = await fetch('/')
     const html = await res.text()
 
-    // useHead runs during component render, so title is delivered via streaming push (not in shell <head>)
+    const head = html.slice(0, html.indexOf('</head>'))
+    expect(head).toContain('<title>Streaming Home</title>')
+    expect(head).toContain('rel="canonical"')
+    expect(head).toContain('application/ld+json')
+    // head entries registered after an await are still streamed as pushes
     expect(html).toContain('window.__unhead__.push(')
-    expect(html).toContain('Streaming Home')
   })
 
   test('async page streams head updates via suspense chunks', async ({ fetch }) => {
