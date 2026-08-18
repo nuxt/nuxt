@@ -10,7 +10,7 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { createNitro, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -435,7 +435,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         // Only the matcher that will actually be used at runtime should report collisions.
         if (fold === caseSensitiveRouteRules || warnedKeyCollisions.has(key)) { return }
         warnedKeyCollisions.add(key)
-        logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path; \`${route}\` takes precedence. Disambiguate the keys${fold ? ' or set `router.options.sensitive: true`' : ''}.`)
+        bundlerDiagnostics.NUXT_B7022({ existing, route, canFold: fold })
       })
       const compileOptions: NonNullable<Parameters<typeof sourceRouter.compileToString>[0]> = {
         matchAll: true,

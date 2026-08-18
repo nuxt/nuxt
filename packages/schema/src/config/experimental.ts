@@ -355,7 +355,7 @@ export default defineResolvers({
         const builder = await get('builder')
         if (builder !== 'vite' && (builder as string) !== '@nuxt/vite-builder') {
           if (val === true) {
-            console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+            schemaDiagnostics.NUXT_B5027()
           }
           return false
         }
