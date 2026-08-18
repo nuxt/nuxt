@@ -578,27 +578,26 @@ export default defineNuxtModule({
 
     nuxt.hook('nitro:build:before', () => warnPublicAssetConflicts())
 
-    // Both consumers below share one set of page route patterns:
-    //
-    // - the URLPattern of every page route, so pages served without scripts can
-    //   scope their speculation rules to same-origin *page* navigations, which
-    //   are safe to GET, instead of a blanket rule that could prefetch/prerender
-    //   non-idempotent server routes (`~/server/routes/*`). A catch-all page
-    //   (`[...slug]`) widens this back to a blanket `*`.
-    // - the rou3 patterns the renderer compiles into an early-404 matcher for
-    //   paths that cannot match any page, before loading the app.
-    nuxt.hook('nitro:build:before', async (nitro) => {
-      const pages = nuxt.apps.default?.pages || []
-      const patterns = collectRou3PagePatterns(pages)
-
+    // Expose the URLPattern of every page route so pages served without scripts
+    // can scope their speculation rules to same-origin *page* navigations, which
+    // are safe to GET, instead of a blanket rule that could prefetch/prerender
+    // non-idempotent server routes (`~/server/routes/*`). A catch-all page
+    // (`[...slug]`) widens this back to a blanket `*`. These stay named
+    // (`/products/:id`) rather than using the collapsed early-404 patterns.
+    nuxt.hook('nitro:build:before', (nitro) => {
       const urlPatterns = new Set<string>()
-      for (const route of patterns ?? toRou3Patterns(pages)) {
+      for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
         urlPatterns.add(rou3PatternToURLPattern(route).pattern)
       }
       ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...urlPatterns]
+    })
 
+    // The rou3 patterns the renderer compiles into an early-404 matcher for
+    // paths that cannot match any page, before loading the app.
+    nuxt.hook('nitro:build:before', async (nitro) => {
       if (!nuxt.options.experimental.early404 || nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
 
+      const patterns = collectRou3PagePatterns(nuxt.apps.default?.pages || [])
       if (!patterns) {
         pageDiagnostics.NUXT_B4018({})
         return
