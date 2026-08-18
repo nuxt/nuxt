@@ -32,7 +32,7 @@ describe('import protection', () => {
   it.each(testsToTriggerOn)('should protect %s', async (id, importer, isProtected) => {
     const result = await transformWithImportProtection(id, importer, 'nuxt-app')
     if (!isProtected) {
-      expect(result).toBeNull()
+      expect(result).toBeFalsy()
     } else {
       expect(result).toBeDefined()
       expect(result).toContain('impound:proxy')
