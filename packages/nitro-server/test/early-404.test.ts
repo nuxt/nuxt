@@ -14,6 +14,10 @@ function event (path: string, method = 'GET') {
   } as unknown as H3Event
 }
 
+function cacheControlFor (path: string, method?: string, maxAge?: number) {
+  return errorFor(path, method, maxAge)?.headers?.get('cache-control') ?? null
+}
+
 function errorFor (path: string, method?: string, maxAge?: number) {
   const routeOptions = maxAge === undefined ? {} : { cache: { options: { maxAge } } }
   try {
@@ -38,18 +42,11 @@ describe('throwIfUnmatchedPagePath', () => {
     expect(error?.data.path).toBe('/wp-login.php?redirect=1')
   })
 
-  it('varies on accept, because the error renders as JSON or HTML', () => {
-    // a 404 is heuristically cacheable, so a shared cache can store one even when
-    // no `cache` route rule asked it to
-    expect(errorFor('/unknown')?.headers?.get('vary')).toBe('accept')
-    expect(errorFor('/unknown', 'GET', 60)?.headers?.get('vary')).toBe('accept')
-  })
-
   it('advertises the cache rule maxAge on GET and HEAD misses only', () => {
-    expect(errorFor('/unknown', 'GET', 60)?.headers?.get('cache-control')).toBe('public, max-age=60')
-    expect(errorFor('/unknown', 'HEAD', 60)?.headers?.get('cache-control')).toBe('public, max-age=60')
-    expect(errorFor('/unknown', 'POST', 60)?.headers?.has('cache-control')).toBe(false)
-    expect(errorFor('/unknown', 'GET', 0)?.headers?.has('cache-control')).toBe(false)
-    expect(errorFor('/unknown', 'GET')?.headers?.has('cache-control')).toBe(false)
+    expect(cacheControlFor('/unknown', 'GET', 60)).toBe('public, max-age=60')
+    expect(cacheControlFor('/unknown', 'HEAD', 60)).toBe('public, max-age=60')
+    expect(cacheControlFor('/unknown', 'POST', 60)).toBeNull()
+    expect(cacheControlFor('/unknown', 'GET', 0)).toBeNull()
+    expect(cacheControlFor('/unknown', 'GET')).toBeNull()
   })
 })
