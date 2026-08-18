@@ -2076,6 +2076,17 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
     expect(Array.isArray(data.data['swr-data'])).toBe(true)
   })
 
+  it.each([
+    '/swr-dynamic/travel/about/_payload.json',
+    '/swr-dynamic/en/travel/about/_payload.json',
+  ])('should render payload for overlapping dynamic SWR route %s', async (url) => {
+    const payload = await $fetch<string>(url, { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['swr-dynamic-test']).toBeDefined()
+    expect(Array.isArray(data.data['swr-dynamic-test'])).toBe(true)
+  })
+
   it('preserves query parameters in extracted payloads for cached routes', async () => {
     const { page, requests } = await renderPage('/payload-query?page=1')
 

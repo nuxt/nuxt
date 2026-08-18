@@ -31,6 +31,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { normalizeRouteRulePath, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
+import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
 import { decodeRoutePath } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -538,6 +539,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           : `export default path => defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
       ].filter(Boolean).join('\n')
     },
+  })
+
+  // runs before payload rules are derived so generated `/_payload.json` keys inherit unified names
+  nuxt.hook('nitro:init', (nitro) => {
+    nitro.hooks.hook('build:before', (nitro) => {
+      unifyDynamicRouteRuleSegments(nitro.options.routeRules)
+    })
   })
 
   if (nuxt.options.experimental.payloadExtraction) {
