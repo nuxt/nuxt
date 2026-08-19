@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, pageDiagnostics, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -20,7 +21,7 @@ import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
-import { createFoldedRouteRulesRouter } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -497,7 +498,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = useNitro()
+      const nitro = useNitro() as Nitro
       if (nitro.options.prerender.crawlLinks || ('routing' in nitro && nitro.routing.routeRules.routes.some(r => r.data.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
@@ -601,15 +602,13 @@ export default defineNuxtModule({
 
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static) {
-        // Fold keys (unless `sensitive`) to mirror the compiled `#build/route-rules.mjs`
-        // matcher, so a `prerender: true` rule keyed `/Admin` is honoured at `/Admin`.
+        // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs`
+        // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
+        // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules ? route : route.toLowerCase()
-        const ruleMatcher = caseSensitiveRouteRules
-          ? nitro.routing.routeRules
-          : createFoldedRouteRulesRouter(nitro.routing.routeRules, nitro.options.baseURL)
+        const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules, nitro.options.baseURL, !caseSensitiveRouteRules)
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', foldRouteRuleKey(route)).reverse())
+          const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
@@ -656,7 +655,7 @@ export default defineNuxtModule({
     nuxt.hook('pages:extend', (routes) => {
       const nitro = useNitro()
       let resolvedRoutes: string[]
-      for (const route of 'routing' in nitro ? nitro.routing.routeRules.routes : []) {
+      for (const route of nitro.routing?.routeRules.routes ?? []) {
         if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path
@@ -724,12 +723,15 @@ export default defineNuxtModule({
       nitroForRouteCoverage = nitro
     })
     function markPagesForRouteRules (pages: NuxtPage[]) {
+      const restrictedPages = new Map<NuxtPage, 'noScripts' | 'spaOnly'>()
       const nitro = nitroForRouteCoverage
-      if (!nitro) { return }
+      if (!nitro) { return restrictedPages }
 
       markPagesCoveredByRouteRule(pages, nitro, {
         isCovered: rules => !!rules.noScripts,
-        mark: (page, covered) => { page._noScripts = covered },
+        mark: (page, covered) => {
+          if (covered) { restrictedPages.set(page, 'noScripts') }
+        },
       })
 
       // server components render on the server by definition, whatever `ssr` says
@@ -738,16 +740,20 @@ export default defineNuxtModule({
         isCovered: rules => rules.ssr === false,
         filter: page => page.mode !== 'server',
         mark: (page, covered, resolvedPath) => {
-          if (covered && page._noScripts) {
+          if (!covered) { return }
+          if (restrictedPages.get(page) === 'noScripts') {
             conflicting.push(resolvedPath)
+            return
           }
-          page._spaOnly = covered && !page._noScripts
+          restrictedPages.set(page, 'spaOnly')
         },
       })
 
       if (conflicting.length) {
         logger.warn(`\`ssr: false\` and \`noScripts\` both apply to ${conflicting.map(path => `\`${path}\``).join(', ')}, which leaves nothing to render the route: the server emits an empty shell and no client bundle is loaded to fill it. Remove one of the two rules.`)
       }
+
+      return restrictedPages
     }
 
     // Add routes template
@@ -757,8 +763,9 @@ export default defineNuxtModule({
       dependsOn: nuxt.options.experimental.scanPageMeta ? ['pages'] : [],
       getContents ({ app }) {
         if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
-        markPagesForRouteRules(app.pages)
+        const restrictedPages = markPagesForRouteRules(app.pages)
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
+          restrictedPages,
           serverComponentRuntime,
           clientComponentRuntime,
           overrideMeta: !!nuxt.options.experimental.scanPageMeta,

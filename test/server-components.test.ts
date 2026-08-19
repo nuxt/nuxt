@@ -9,10 +9,8 @@ import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/is
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { builder, isDev, isWebpack } from './matrix'
+import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
-
-const itFailsIf = (condition: boolean) => condition ? it.fails : it
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
@@ -44,7 +42,7 @@ await setup({
 })
 
 describe('server components/islands', () => {
-  itFailsIf(builder === 'webpack' && isDev)('/islands', async () => {
+  it('/islands', async () => {
     const { page } = await renderPage('/islands')
     const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
@@ -134,7 +132,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('non-lazy server components', async () => {
+  it('non-lazy server components', async () => {
     const { page } = await renderPage('/server-components/lazy/start')
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
@@ -257,6 +255,34 @@ describe('server components/islands', () => {
     expect(html).toContain('id="server-page-with-nuxtpage"')
     expect(html).toContain('Parent body')
   })
+
+  // https://github.com/nuxt/nuxt/issues/31510
+  it.skipIf(isWebpack)('applies scoped styles to server component slots', async () => {
+    const { page } = await renderPage('/slotted-styles')
+
+    try {
+      const slotted = page.locator('#slotted-style-in-server')
+      expect(await slotted.count()).toBe(1)
+
+      const slottedStyles = await slotted.evaluate((element) => {
+        const scopeIds = element.getAttributeNames().filter(attribute => attribute.startsWith('data-v-'))
+        return {
+          backgroundColor: getComputedStyle(element).backgroundColor,
+          color: getComputedStyle(element).color,
+          hasParentScopeId: scopeIds.some(attribute => !attribute.endsWith('-s')),
+          hasSlottedScopeId: scopeIds.some(attribute => attribute.endsWith('-s')),
+        }
+      })
+      expect(slottedStyles).toEqual({
+        backgroundColor: 'rgb(4, 5, 6)',
+        color: 'rgb(1, 2, 3)',
+        hasParentScopeId: true,
+        hasSlottedScopeId: true,
+      })
+    } finally {
+      await page.close()
+    }
+  })
 })
 
 describe('component islands', () => {
@@ -264,10 +290,6 @@ describe('component islands', () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     delete result.id
@@ -284,12 +306,8 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('render async component', async () => {
+  it('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
@@ -342,12 +360,8 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('render .server async component', async () => {
+  it('render .server async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     result.props = {}
@@ -373,13 +387,6 @@ describe('component islands', () => {
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient'))
-      if (isDev) {
-        result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-
-        if (!result.head.link) {
-          delete result.head.link
-        }
-      }
       const { components } = result
       result.components = {}
       result.slots = {}
@@ -412,7 +419,7 @@ describe('component islands', () => {
     })
   }
 
-  itFailsIf(isWebpack && isDev)('renders pure components', async () => {
+  it('renders pure components', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', {
       props: {
         bool: false,
@@ -445,10 +452,12 @@ describe('component islands', () => {
           ],
         }
       `)
+    } else if (isWebpack) {
+      // island CSS is delivered by the vite dev server module graph, which webpack/rspack have no
+      // equivalent for in dev: https://github.com/nuxt/nuxt/issues/35573
+      expect(result.head.link).toBeUndefined()
+      expect(result.head.style).toBeUndefined()
     } else {
-      // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
-      // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
       if (result.head.link?.[0]?.href) {
         result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
       }
@@ -480,7 +489,7 @@ describe('component islands', () => {
     `)
   })
 
-  itFailsIf(builder === 'webpack' && isDev)('test client-side navigation', async () => {
+  it('test client-side navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('#islands')
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/islands')
@@ -712,16 +721,14 @@ describe('denial-of-service protections', () => {
   // Bounds both the plain-element path (`ssrRenderList`, rendered inline into `html`) and the
   // slot path (`vforToArray`, whose `:props` array and fallback content are teleported into
   // the slot response rather than the island body).
-  // The webpack dev build does not apply the islands transform to the compiled template (see the
-  // `it.fails` island tests above), so neither the bound nor the slot teleport is present there.
-  it.skipIf(builder === 'webpack' && isDev)('bounds plain and slot v-for over a large-integer prop', async () => {
+  it('bounds plain and slot v-for over a large-integer prop', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 10_000_000 } }))
     expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(result.slots?.loop?.props?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
   })
 
-  it.skipIf(builder === 'webpack' && isDev)('renders a small v-for prop unchanged', async () => {
+  it('renders a small v-for prop unchanged', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 3 } }))
     expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
     expect(result.slots?.loop?.props?.length ?? 0).toBe(3)

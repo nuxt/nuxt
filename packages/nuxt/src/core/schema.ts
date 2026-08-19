@@ -5,11 +5,10 @@ import { join, relative, resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { configDiagnostics, createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
+import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
+import { configDiagnostics, loadJiti } from '@nuxt/kit/internal'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
-import { createJiti } from 'jiti'
-import type { Jiti } from 'jiti'
 import { linkToAlias } from '../utils.ts'
 
 export default defineNuxtModule({
@@ -19,19 +18,36 @@ export default defineNuxtModule({
   async setup (_, nuxt) {
     const resolver = createResolver(import.meta.url)
 
-    // `untyped/babel-plugin` pulls in the whole of `@babel/core`, so the loader is
-    // only created if a layer actually ships a `nuxt.schema.*` file.
-    let _resolveSchema: Promise<Jiti> | undefined
+    // A schema file's JSDoc annotations are extracted by `untyped/babel-plugin`, which has to run
+    // as an import-time transform, so this is the one place Nuxt cannot fall back to loading the
+    // file with the runtime's own importer. `jiti` is an optional peer dependency and
+    // `untyped/babel-plugin` pulls in the whole of `@babel/core`, so neither is loaded unless a
+    // layer actually ships a `nuxt.schema.*` file.
+    let _resolveSchema: ReturnType<typeof createSchemaLoader> | undefined
     function getSchemaLoader () {
-      _resolveSchema ||= import('untyped/babel-plugin').then(({ default: untypedPlugin }) => createJiti(fileURLToPath(import.meta.url), {
+      _resolveSchema ||= createSchemaLoader()
+      return _resolveSchema
+    }
+
+    async function createSchemaLoader () {
+      const jiti = await loadJiti({
+        rootDir: nuxt.options.rootDir,
+        searchPaths: nuxt.options.modulesDir,
+      })
+
+      if (!jiti) {
+        return undefined
+      }
+
+      const { default: untypedPlugin } = await import('untyped/babel-plugin')
+      return jiti.createJiti(fileURLToPath(import.meta.url), {
         fsCache: false,
         transformOptions: {
           babel: {
             plugins: [untypedPlugin],
           },
         },
-      }))
-      return _resolveSchema
+      })
     }
 
     // Register module types
@@ -119,10 +135,18 @@ export default defineNuxtModule({
       for (const dirs of layerDirs) {
         const filePath = await resolver.resolvePath(join(dirs.root, 'nuxt.schema'))
         if (filePath && existsSync(filePath)) {
+          const loader = await getSchemaLoader()
+          if (!loader) {
+            configDiagnostics.NUXT_B5019({
+              filePath: linkToAlias(filePath, nuxt),
+              installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
+            })
+            continue
+          }
           let loadedConfig: SchemaDefinition
           try {
             // TODO: fix type for second argument of `import`
-            loadedConfig = await (await getSchemaLoader()).import(filePath, { default: true }) as SchemaDefinition
+            loadedConfig = await loader.import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
             configDiagnostics.NUXT_B5005({ filePath: linkToAlias(filePath, nuxt), cause: err })
             continue

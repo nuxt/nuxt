@@ -4,16 +4,17 @@ import { hash } from 'ohash'
 
 import { parseAndWalk } from 'oxc-walker'
 import { transformAndMinify } from '../../core/utils/parse.ts'
-import { isJS, isVue } from '../utils/index.ts'
+import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
 export function PrehydrateTransformPlugin () {
   return createUnplugin(() => ({
     name: 'nuxt:prehydrate-transform',
-    transformInclude (id) {
-      return isJS(id) || isVue(id, { type: ['script'] })
-    },
     transform: {
       filter: {
+        id: {
+          include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
+          exclude: VUE_NON_SCRIPT_BLOCK_RE,
+        },
         code: { include: /onPrehydrate\(/ },
       },
       handler (code, id, meta?: unknown) {

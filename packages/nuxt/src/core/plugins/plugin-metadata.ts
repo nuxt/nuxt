@@ -1,15 +1,15 @@
 import type { Literal } from 'estree'
 import { defu } from 'defu'
-import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
-import type { NuxtAppLiterals, PluginMeta } from '../../app/types'
+import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 
-import { parseAndWalk } from 'oxc-walker'
+import { parseAndWalk, walk } from 'oxc-walker'
+import { parseModule } from '../utils/parse.ts'
 import type { ESTree } from 'rolldown/utils'
-import { pluginDiagnostics } from '@nuxt/kit'
+import { pluginDiagnostics } from '@nuxt/kit/internal'
 import { linkToAlias } from '../../utils.ts'
 
 const internalOrderMap = {
@@ -172,9 +172,16 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
         }
       }
 
-      const exports = findExports(code)
-      const defaultExport = exports.find(e => e.type === 'default' || e.names.includes('default'))
-      if (!defaultExport) {
+      let parsed: ReturnType<typeof parseModule>
+      try {
+        parsed = parseModule(code, id)
+      } catch (e) {
+        pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
+        return
+      }
+
+      const hasDefaultExport = parsed.module.staticExports.some(statement => statement.entries.some(entry => !entry.isType && (entry.exportName.kind === 'Default' || entry.exportName.name === 'default')))
+      if (!hasDefaultExport) {
         pluginDiagnostics.NUXT_B2005({ src: linkToAlias(plugin.src, nuxt) })
         return {
           code: 'export default () => {}',
@@ -187,7 +194,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
       const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
       try {
-        parseAndWalk(code, id, (node) => {
+        walk(parsed.program, { enter: (node) => {
           if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && (node.imported.name === 'defineNuxtPlugin' || node.imported.name === 'definePayloadPlugin')) {
             wrapperNames.add(node.local.name)
           }
@@ -221,7 +228,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
               }
             }
           }
-        })
+        } })
       } catch (e) {
         pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
         return

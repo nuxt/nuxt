@@ -1,16 +1,18 @@
+import { createHash } from 'node:crypto'
 import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
-import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { isGreaterOrEqual } from 'verkit'
-import { readPackageJSON } from 'pkg-types'
+import { readPackageJSON } from './internal/package-json.ts'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
 import { distDirURL, filterInPlace } from './utils.ts'
+import { recordServerSource } from './nitro.ts'
+import type { NitroVersionOptions } from './nitro.ts'
 import { directoryToURL } from './internal/esm.ts'
 import { resolveDeclarationPath } from './types.ts'
 import { getDirectory } from './module/install.ts'
@@ -54,11 +56,12 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNu
 /**
  * Adds a virtual file that can be used within the Nuxt Nitro server build.
  */
-export function addServerTemplate (template: NuxtServerTemplate): NuxtServerTemplate {
+export function addServerTemplate (template: NuxtServerTemplate, options: NitroVersionOptions = {}): NuxtServerTemplate {
   const nuxt = useNuxt()
 
   nuxt.options.nitro.virtual ||= {}
   nuxt.options.nitro.virtual[template.filename] = template.getContents
+  recordServerSource(nuxt, template.filename, options.version)
 
   return template
 }
@@ -119,6 +122,11 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
   return template
 }
 
+// `-` is stripped so the digest is safe to embed in an identifier as well as a filename.
+function hashPath (path: string) {
+  return createHash('sha256').update(path).digest('base64url').slice(0, 10).replace(/-/g, '_')
+}
+
 /**
  * Normalize a nuxt template object
  */
@@ -141,7 +149,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
-      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src).replace(/-/g, '_')}${srcPath.ext}`
+      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hashPath(template.src)}${srcPath.ext}`
     }
   }
 
@@ -230,6 +238,28 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
 async function getPathSubstitution (absolutePath: string, buildDir: string): Promise<string> {
   return relativeWithDot(buildDir, await resolveDeclarationPath(absolutePath))
 }
+
+// Ordered by how specific the declaration is, so a hand-written `.d.ts` wins over the source it
+// describes, and TypeScript sources win over emitted JavaScript.
+const TS_PATH_TARGET_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']
+
+/**
+ * Resolve an extensionless `paths` target to the file TypeScript should load for it.
+ *
+ * `bundler` resolution retries a fixed set of extensions when a substitution is extensionless,
+ * but the `node` environment is resolved as `nodenext`, which does not: the target has to name a
+ * real file. Returns `undefined` when nothing matches, leaving the target untouched.
+ */
+async function resolveExtensionlessTarget (absolutePath: string): Promise<string | undefined> {
+  for (const extension of TS_PATH_TARGET_EXTENSIONS) {
+    const candidate = absolutePath + extension
+    if (await fsp.stat(candidate).then(s => s.isFile(), () => false)) {
+      return candidate
+    }
+  }
+  return undefined
+}
+
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
@@ -446,9 +476,18 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     return { ...compilerOptions, noEmit: true, types: [], paths: {} }
   }
 
-  // This describes the environment where we load `nuxt.config.ts` (and modules)
+  // This describes the environment where we load `nuxt.config.ts` (and modules).
   const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
-    compilerOptions: nonAppCompilerOptions(),
+    compilerOptions: {
+      ...nonAppCompilerOptions(),
+      ...isV5OrHigher
+        ? {
+            module: 'nodenext',
+            moduleResolution: 'nodenext',
+            erasableSyntaxOnly: true,
+          }
+        : {},
+    },
     include: [...nodeInclude],
     exclude: [...nodeExclude],
   } satisfies TSConfig)
@@ -463,12 +502,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const aliases: Record<string, string> = nuxt.options.alias
 
   // TODO: remove support for baseUrl in nuxt v5
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const basePath = tsConfig.compilerOptions!.baseUrl
-    // TODO: remove support for baseUrl in nuxt v5
+  const baseUrl = isV5OrHigher
+    ? undefined
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
-    : nuxt.options.buildDir
+    : tsConfig.compilerOptions!.baseUrl
+  const basePath = baseUrl ? resolve(nuxt.options.buildDir, baseUrl) : nuxt.options.buildDir
 
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
@@ -547,14 +585,25 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     .filter(root => !rootDirWithSlash.startsWith(root))
 
   async function resolveConfig (tsConfig: TSConfig) {
+    if (isV5OrHigher) {
+      Reflect.deleteProperty(tsConfig.compilerOptions!, 'baseUrl')
+    }
+
     for (const alias in tsConfig.compilerOptions!.paths) {
       const paths = tsConfig.compilerOptions!.paths[alias]
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
         if (!isAbsolute(path)) { return path }
         const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-        return stats?.isFile()
-          ? getPathSubstitution(path, nuxt.options.buildDir)
-          : relativeWithDot(nuxt.options.buildDir, path)
+        if (stats?.isFile()) {
+          return getPathSubstitution(path, nuxt.options.buildDir)
+        }
+        // A declaration file next to the target wins over a directory of the same name, which is
+        // how `#app/types` resolves to `types.ts` rather than the `types/` directory beside it.
+        const resolved = await resolveExtensionlessTarget(path)
+        if (resolved) {
+          return relativeWithDot(nuxt.options.buildDir, resolved)
+        }
+        return relativeWithDot(nuxt.options.buildDir, path)
       })))]
     }
 

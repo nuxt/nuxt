@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-nested-suspense",
   "scripts": {
     "build": "nuxt build"

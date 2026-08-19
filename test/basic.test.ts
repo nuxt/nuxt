@@ -1,4 +1,4 @@
-import { readdir } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
@@ -10,8 +10,6 @@ import { createRegExp, exactly } from 'magic-regexp'
 
 import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
-
-const itFailsIf = (condition: boolean) => condition ? it.fails : it
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -113,6 +111,11 @@ describe('route rules', () => {
 
   it('should run middleware defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/middleware')
+    expect(html).toContain('Hello from routeRules!')
+  })
+
+  it('should run appMiddleware from a decoded route rule key on a unicode page', async () => {
+    const html = await $fetch<string>(`/route-rules/${encodeURIComponent('测试')}`)
     expect(html).toContain('Hello from routeRules!')
   })
 
@@ -423,7 +426,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  itFailsIf(isWebpack && isDev)('/client-only-components', async () => {
+  it('/client-only-components', async () => {
     const html = await $fetch<string>('/client-only-components')
     expect(html).toContain('<div>Fallback</div>')
     // ensure components are not rendered server-side
@@ -672,6 +675,30 @@ describe('pages', () => {
     expect(html).toContain('Extended layout from foo')
   })
 
+  it('renders pages with sub-delimiters in route', async () => {
+    expect(await $fetch<string>('/non-ascii/a&b')).toContain('sub-delimiter page: a&amp;b')
+    expect(await $fetch<string>('/non-ascii/a+b')).toContain('sub-delimiter page: a+b')
+  })
+
+  it('navigates to pages with sub-delimiters in route', async () => {
+    const { page } = await renderPage('/non-ascii/navigate')
+
+    for (const [id, path, content] of [
+      ['#navigate-ampersand', '/non-ascii/a&b', 'sub-delimiter page: a&b'],
+      ['#navigate-plus', '/non-ascii/a+b', 'sub-delimiter page: a+b'],
+    ] as const) {
+      await page.locator(id).click()
+      await page.waitForFunction(p => window.useNuxtApp?.()._route.path === p, path)
+      expect(await page.evaluate(() => window.useNuxtApp?.()._route.matched.length)).toBe(1)
+      expect(await page.evaluate(() => window.location.pathname)).toBe(path)
+      expect(await page.innerText('body')).toContain(content)
+      await page.goBack()
+      await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/non-ascii/navigate')
+    }
+
+    await page.close()
+  })
+
   it.skipIf(isDev)('prerenders pages with special characters', async () => {
     const html = await $fetch('/prerender/ç')
     expect(html).toContain('should be prerendered: true')
@@ -719,6 +746,50 @@ describe('pages', () => {
     await page.close()
   })
 
+  it.skipIf(isDev).each([
+    ['/prerender/query-reactivity'],
+    ['/prerender/%C3%A7'],
+  ])('does not rewrite the URL when hydrating prerendered %s requested with a trailing slash', async (path) => {
+    const page = await createPage()
+    await page.addInitScript(() => {
+      const paths: string[] = []
+      Object.assign(window, { __historyPaths: paths })
+      const replaceState = history.replaceState.bind(history)
+      history.replaceState = (...args: Parameters<History['replaceState']>) => {
+        const result = replaceState(...args)
+        paths.push(window.location.pathname)
+        return result
+      }
+    })
+
+    await page.goto(url(path + '/'))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const paths = await page.evaluate(() => (window as unknown as { __historyPaths: string[] }).__historyPaths)
+    expect(paths).not.toContain(path)
+    expect(new URL(page.url()).pathname).toBe(path + '/')
+
+    await page.close()
+  })
+
+  it.skipIf(isDev)('awaited useAsyncData resolves with data when a catch-all remounts during the deferred route restore', async () => {
+    const { page, pageErrors, consoleLogs } = await renderPage('/prerender/catchall/a/b/?test=true')
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const states = await page.evaluate(() => (window as unknown as { __asyncDataStates: Array<{ path: string, status: string, hasData: boolean }> }).__asyncDataStates)
+    expect(states.length).toBeGreaterThan(0)
+    for (const state of states) {
+      expect.soft(state).toMatchObject({ status: 'success', hasData: true })
+    }
+
+    expect(await page.innerText('#catchall-async-data')).toBe('/prerender/catchall/a/b/')
+    expect(pageErrors).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+
+    await page.close()
+  })
+
   it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
     const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
 
@@ -749,6 +820,15 @@ describe('nuxt composables', () => {
     const cookies = res.headers.get('set-cookie')
     expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
+  it('does not write a readonly cookie with a default value, on server or client', async () => {
+    const res = await fetch('/cookies')
+    expect(res.headers.get('set-cookie')).not.toContain('readonly-with-default')
+
+    const { page } = await renderPage('/cookies')
+    expect(await page.evaluate(() => document.cookie)).not.toContain('readonly-with-default')
+    await page.close()
+  })
+
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
     async function extractCookie () {
@@ -1278,6 +1358,23 @@ describe('errors', () => {
     expect(res).toContain('Hello Nuxt 3!')
   })
 
+  it.skipIf(isDev)('should server-render the static error page', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    const html = await readFile(join(publicDir, '404.html'), 'utf-8')
+
+    expect(html).toContain('This is the error page 😱')
+    expect(html).toContain('<title>Error: 404 - Fixture</title>')
+
+    const { script, attrs } = parseData(html)
+    expect(attrs['data-ssr']).toBe('true')
+    expect(script.error).toMatchObject({ status: 404, statusText: 'Page Not Found' })
+    // the same file is served for every missing path, so it must not claim to
+    // be a prerender of `/404.html`
+    expect(script.path).toBeUndefined()
+    expect(script.error.url).toBeUndefined()
+  })
+
   it('should allow catching errors within error boundaries', async () => {
     const { page } = await renderPage('/error/error-boundary')
     await page.getByText('This is the error rendering').first().waitFor()
@@ -1406,6 +1503,18 @@ describe('middlewares', () => {
     const html = await fetch('/navigate-to-redirect', { redirect: 'manual' })
     expect(html.headers.get('location')).toEqual('/')
     expect(html.status).toEqual(307)
+  })
+
+  it('should preserve percent-encoding in redirect query with navigateTo on server side', async () => {
+    const res = await fetch('/navigate-to-encoded-query', { redirect: 'manual' })
+    expect(res.headers.get('location')).toEqual('/?callback=%2Fother')
+    expect(res.status).toEqual(302)
+  })
+
+  it('should preserve percent-encoded spaces in redirect query with navigateTo on server side', async () => {
+    const res = await fetch('/navigate-to-encoded-space', { redirect: 'manual' })
+    expect(res.headers.get('location')).toEqual('/?q=a%20b')
+    expect(res.status).toEqual(302)
   })
 })
 
@@ -2125,12 +2234,10 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 })
 
 describe.runIf(isDev)('component testing', () => {
-  itFailsIf(isWebpack && isDev)('should work', async () => {
-    // TODO: fix in nuxt/test-utils
+  it('should work', async () => {
     const comp1 = await $fetchComponent('app/components/Counter.vue', { multiplier: 2 })
     expect(comp1).toContain('12 x 2 = 24')
 
-    // TODO: fix in nuxt/test-utils
     const comp2 = await $fetchComponent('app/components/Counter.vue', { multiplier: 4 })
     expect(comp2).toContain('12 x 4 = 48')
   })

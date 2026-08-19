@@ -8,12 +8,12 @@ import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
-import { _mergeTransitionProps, _wrapInTransition } from './utils'
+import { _mergeTransitionProps, _wrapInTransition, isVaporSlot } from './utils'
 import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
 import { useRoute as useVueRouterRoute } from '#build/pages'
 import layouts from '#build/layouts'
-import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
+import { appLayoutTransition as defaultLayoutTransition, vapor } from '#build/nuxt.config.mjs'
 
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
@@ -208,6 +208,7 @@ const LayoutProvider = defineComponent({
     if (import.meta.dev && import.meta.client) {
       onMounted(() => {
         nextTick(() => {
+          if (vapor && isVaporSlot(context.slots.default)) { return }
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
               renderDiagnostics.NUXT_E4002({ name })

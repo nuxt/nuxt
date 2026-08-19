@@ -1,4 +1,5 @@
-import { buildDiagnostics, resolveAlias } from '@nuxt/kit'
+import { resolveAlias } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, linkToAlias, logger, stripExtension } from '../../utils.ts'
 import type { ESTree } from 'rolldown/utils'
@@ -6,12 +7,12 @@ import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
-import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
 import type { ScanPlugin } from '../types.ts'
 import type { Import } from 'unimport'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 import { createScanPluginContext } from '../utils.ts'
+import { type ParsedStaticImport, parseStaticImports } from '../../core/utils/static-imports.ts'
 
 interface ParsedKeyedFunctionFactory {
   factoryName: string
@@ -427,7 +428,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           id,
           scopeTracker,
           namesToFactoryMeta,
-          findStaticImports(code).map(i => parseStaticImport(i)),
+          parseStaticImports(code, id),
           autoImportsToSources,
           options.alias,
         )

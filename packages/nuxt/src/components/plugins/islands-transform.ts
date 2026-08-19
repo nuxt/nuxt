@@ -1,5 +1,5 @@
 import type { Component } from '@nuxt/schema'
-import { componentDiagnostics } from '@nuxt/kit'
+import { componentDiagnostics } from '@nuxt/kit/internal'
 import { linkToAlias } from '../../utils.ts'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
@@ -263,6 +263,7 @@ type ChunkPluginOptions = {
 
 const COMPONENT_CHUNK_ID = `#build/component-chunk`
 const COMPONENT_CHUNK_RESOLVED_ID = '\0nuxt-component-chunk'
+const COMPONENT_CHUNK_RESOLVED_ID_RE = /^\0nuxt-component-chunk$/
 
 export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => {
   const chunkIds = new Map<string, string>()
@@ -311,8 +312,11 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
           }
         },
       },
-      load (id) {
-        if (id === COMPONENT_CHUNK_RESOLVED_ID) {
+      load: {
+        filter: {
+          id: COMPONENT_CHUNK_RESOLVED_ID_RE,
+        },
+        handler () {
           if (options.dev) {
             const filePaths: Record<string, string> = {}
             for (const c of options.getComponents()) {
@@ -328,7 +332,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
             genObjectFromRawEntries(Array.from(paths.entries())
               .map(([name, id]) => [name, genString('/' + id)]))
           }`
-        }
+        },
       },
     },
   ]

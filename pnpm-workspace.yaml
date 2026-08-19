@@ -11,6 +11,8 @@ packages:
 patchedDependencies:
   changelogen: patches/changelogen.patch
   nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
+  # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
+  nitropack@2.13.4: patches/nitropack@2.13.4.patch
 
 publicHoistPattern:
   - '*-loader'
@@ -25,12 +27,12 @@ ignoreWorkspaceCycles: true
 overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
+  "@types/node": "24.13.3"
   nuxt: "workspace:*"
-  oxc-parser: "0.141.0"
-  # TODO: nitro depends on `rolldown: ^1.1.0`, and pulls in a second copy
-  rolldown: "1.1.5"
-  vite: "8.1.5"
-  vue: "3.5.40"
+  oxc-parser: "0.144.0"
+  rolldown: "1.2.4"
+  vite: "8.2.1"
+  vue: "3.5.41"
   # TODO: temporary — local build with the manifest template-scan feature; drop once released
   vue-onigiri: "link:D:/repo/vue-onigiri/packages/core"
 
@@ -58,17 +60,19 @@ minimumReleaseAgeExclude:
   - unhead@3.2.1
   - impound@1.1.6
   - oxc-walker@1.1.1
+  - vue
+  - '@vue/*'
   - vue-onigiri@0.4.1
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
   app-runtime:
-    '@unhead/vue': ^3.2.3
-    '@vue/shared': ^3.5.40
+    '@unhead/vue': ^3.3.2
+    '@vue/shared': ^3.5.41
     consola: ^3.4.2
     cookie-es: ^3.1.1
     defu: ^6.1.7
-    devalue: ^5.8.2
+    devalue: ^5.9.0
     errx: ^0.1.2
     fnv1a-64: ^0.1.2
     hookable: ^6.1.1
@@ -76,15 +80,15 @@ catalogs:
     nostics: ^1.2.0
     object-identity: ^0.2.3
     ofetch: 2.0.0-alpha.3 # intentionally pinned to match nitro's dependency
-    ohash: ^2.0.11
+    ohash: ^2.0.12
     pathe: ^2.0.3
     perfect-debounce: ^2.1.0
     ufo: ^1.6.4
     uncrypto: ^0.1.3
     unctx: ^3.0.0
-    unhead: ^3.2.3
-    vue: ^3.5.40
-    vue-bundle-renderer: ^2.3.1
+    unhead: ^3.3.2
+    vue: ^3.5.41
+    vue-bundle-renderer: ^2.3.2
     vue-router: ^5.2.0
 
   # imported in the server runtime (packages/nuxt/src/runtime/server, packages/nitro-server/src/runtime)
@@ -99,107 +103,111 @@ catalogs:
   vue:
     '@vitejs/plugin-vue': ^6.0.8
     # kept in lockstep with the vue override above
-    '@vue/compiler-sfc': 3.5.40
-    rspack-vue-loader: ^17.6.1
-    vue-component-type-helpers: ^3.3.8
+    '@vue/compiler-sfc': 3.5.41
+    rspack-vue-loader: ^17.6.2
+    vue-component-type-helpers: ^3.3.10
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
 
   # vite/rolldown/oxc toolchain
   vite:
-    magic-string: ^1.1.0
+    magic-string: ^1.2.0
     oxc-walker: ^1.1.1
     # needs to match vite's own `~1.1.5` pin
-    rolldown: ~1.1.5
+    rolldown: ~1.2.4
     rolldown-string: ^0.3.1
     # resolution is pinned via the vite override above
-    vite: ^8.1.5
+    vite: ^8.2.1
     vite-node: ^6.0.0
     vite-plugin-checker: ^0.14.5
 
   # webpack/rspack pipeline
   webpack:
     '@nuxt/friendly-errors-webpack-plugin': ^2.6.0
-    '@rsbuild/core': ~2.1.8
+    '@rsbuild/core': ~2.1.13
     css-loader: ^7.1.4
     css-minimizer-webpack-plugin: ^8.0.0
     esbuild-loader: ^4.5.0
     file-loader: ^6.2.0
     fork-ts-checker-webpack-plugin: ^9.1.0
     hash-sum: ^2.0.0
-    memfs: ^4.64.0
+    memfs: ^4.68.1
     mini-css-extract-plugin: ^2.10.2
-    pify: ^6.1.0
     pug-plain-loader: ^1.1.0
     raw-loader: ^4.0.2
     time-fix-plugin: ^2.0.7
-    ts-checker-rspack-plugin: ^1.6.0
+    ts-checker-rspack-plugin: ^1.6.1
     url-loader: ^4.1.1
-    webpack: ^5.109.0
+    webpack: ^5.109.2
     webpack-bundle-analyzer: ^5.3.1
-    webpack-dev-middleware: ^8.1.0
+    webpack-dev-middleware: ^8.1.1
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
 
   # build-time deps of published packages
   build:
     '@ampproject/remapping': ^2.3.0
-    '@dxup/nuxt': ^0.5.5
-    '@nuxt/cli': ^3.37.0
-    '@nuxt/devtools': ^4.0.0-alpha.9
+    '@dxup/nuxt': ^0.5.8
+    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260817-085717-0bb4e52
+    '@nuxt/devtools': ^4.0.0-alpha.10
     '@nuxt/telemetry': ^2.8.0
-    '@vue/shared': ^3.5.40
+    '@vue/shared': ^3.5.41
     autoprefixer: ^10.5.4
-    c12: ^3.3.4
+    c12: 4.0.0-beta.5
     chokidar: ^5.0.0
     clickable-path: ^0.0.1
     compatx: ^0.2.0
+    confbox: ^0.2.4
     consola: ^3.4.2
-    cssnano: ^8.0.2
+    cssnano: ^8.0.6
     defu: ^6.1.7
     destr: ^2.0.5
+    dotenv: ^17.4.2
     errx: ^0.1.2
     escape-string-regexp: ^5.0.0
     exsolve: ^1.1.1
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
+    giget: ^3.3.1
     ignore: ^7.0.6
-    impound: ^1.1.6
+    impound: ^1.1.7
     jiti: ^2.7.0
     js-tokens: ^10.0.0
     klona: ^2.0.6
     knitwork: ^1.3.0
+    microdiff: ^1.6.0
     mlly: ^1.8.2
     mocked-exports: ^0.1.1
     nanotar: ^0.3.0
     nostics: ^1.2.0
-    nypm: ^0.6.8
-    ohash: ^2.0.11
+    nypm: ^0.6.9
+    ohash: ^2.0.12
     on-change: ^6.0.2
+    oxc-parser: ^0.144.0
     pathe: ^2.0.3
     picomatch: ^4.0.5
     pkg-types: ^2.3.1
-    postcss: ^8.5.23
-    postcss-import: ^16.1.1
+    postcss: ^8.5.26
+    postcss-import: ^17.0.0
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^8.2.1
     postcss-url: ^10.1.4
     rc9: ^3.0.1
     scule: ^1.3.0
-    seroval: ^1.5.6
+    seroval: ^1.6.2
     std-env: ^4.2.0
     tinyglobby: ^0.2.17
     ufo: ^1.6.4
     ultrahtml: ^1.7.0
     unctx: ^3.0.0
-    undici: ^8.9.0
+    undici: ^8.10.0
     unenv: 2.0.0-rc.24 # intentionally pinned to match nitro's dependency
-    unimport: ^6.3.1
+    unimport: ^6.4.0
     unplugin: ^3.3.0
-    unrouting: ^0.2.2
+    unrouting: ^0.2.3
     untyped: ^2.0.0
-    verkit: ^0.3.1
-    vue-bundle-renderer: ^2.3.1
+    verkit: ^0.4.0
+    vue-bundle-renderer: ^2.3.2
 
   # dev/test/workspace tooling (pinned)
   dev:
@@ -211,13 +219,13 @@ catalogs:
     '@codspeed/core': 5.7.1
     '@codspeed/vitest-plugin': 5.7.1
     '@eslint/markdown': 8.0.3
-    '@nuxt/eslint-config': 1.16.0
-    '@nuxt/scripts': 1.3.2
+    '@nuxt/eslint-config': 1.17.0
+    '@nuxt/scripts': 1.3.6
     '@nuxt/test-utils': 4.1.0
     '@parcel/watcher': 2.6.0
-    '@playwright/test': 1.62.0
+    '@playwright/test': 1.62.1
     '@rollup/plugin-babel': 7.1.0
-    '@rspack/core': 2.1.5
+    '@rspack/core': 2.1.10
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5
     '@types/estree': 1.0.9
@@ -227,48 +235,48 @@ catalogs:
     '@types/pug': 2.0.10
     '@types/webpack-bundle-analyzer': 4.7.0
     '@types/webpack-hot-middleware': 2.25.12
-    '@typescript-eslint/parser': 8.65.0
+    '@typescript-eslint/parser': 8.67.0
     '@unocss/reset': 66.7.5
     '@vitejs/plugin-vue-jsx': 5.1.6
     '@vitest/coverage-v8': 4.1.10
-    '@vue/compiler-core': 3.5.40
+    '@vue/compiler-core': 3.5.41
     '@vue/devtools-api': 8.2.1
-    '@vue/language-core': 3.3.8
+    '@vue/language-core': 3.3.10
     '@vue/test-utils': 2.4.11
     acorn: 8.18.0
     beasties: 0.4.3
     case-police: 2.2.1
     changelogen: 0.6.2
-    esbuild: 0.28.1
-    eslint: 10.8.0
+    esbuild: 0.28.2
+    eslint: 10.8.1
     eslint-plugin-import-x: 4.17.1
     eslint-plugin-no-only-tests: 3.4.0
-    eslint-plugin-perfectionist: 5.10.0
+    eslint-plugin-perfectionist: 5.10.1
     eslint-typegen: 2.3.1
     h3: 2.0.1-rc.22 # intentionally pinned to match nitro's dependency
     h3-next: 'npm:h3@2.0.1-rc.22' # intentionally pinned to match nitro's dependency
-    happy-dom: 20.11.1
-    html-validate: 11.5.6
+    happy-dom: 20.11.2
+    html-validate: 11.8.0
     htmlnano: 3.4.0
-    installed-check: 10.0.1
-    knip: 6.29.0
+    installed-check: 11.0.0
+    knip: 6.32.2
     magic-regexp: 0.11.0
     markdownlint-cli: 0.49.1
     nitropack: 2.13.4
     nuxt-content-twoslash: 0.4.0
-    oxc-transform: 0.142.0
-    pkg-pr-new: 0.0.80
-    playwright-core: 1.62.0
+    oxc-transform: 0.144.0
+    pkg-pr-new: 0.0.88
+    playwright-core: 1.62.1
     prettier: 3.9.6
-    rollup: 4.62.3
-    rollup-plugin-visualizer: 7.0.1
+    rollup: 4.62.4
+    rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
     svgo: 4.0.2
-    tinyexec: 1.2.4
+    tinyexec: 1.3.0
     tsdown: 0.22.14
     typescript: 6.0.3
     unocss: 66.7.5
     vitest: 4.1.10
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.2.5
-    vue-tsc: 3.3.8
+    vue-tsc: 3.3.10

@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
@@ -17,6 +17,7 @@ import type { NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
+const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -76,7 +77,26 @@ export const islandRendererTemplate: NuxtTemplate = {
 export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
   dependsOn: [],
-  getContents: ctx => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default']),
+  getContents: (ctx) => {
+    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder'
+    if (!ctx.nuxt.options.test || !ctx.nuxt.options.dev || !needsComponentMap) {
+      return genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
+    }
+
+    const paths = new Set<string>()
+    for (const component of ctx.app.components) {
+      if (!component._raw) {
+        paths.add(component.filePath)
+      }
+    }
+    return [
+      genImport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), 'testComponentWrapper'),
+      `const componentLoaders = {`,
+      ...[...paths].map(path => `  ${JSON.stringify(path)}: () => ${genDynamicImport(path, { wrapper: false })},`),
+      `}`,
+      `export default url => testComponentWrapper(url, componentLoaders)`,
+    ].join('\n')
+  },
 }
 
 export const cssTemplate: NuxtTemplate = {
@@ -253,7 +273,30 @@ export const schemaNodeTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
-    const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
+    // The `node` environment resolves as `nodenext` from v5, which will not retry extensions for
+    // a path that does not name a file, so a module's own entry has to be named in full.
+    const keepExtension = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
+    const moduleExtensions = [...nuxt.options.extensions, '.mjs', '.cjs']
+    const getImportName = (name: string) => {
+      const specifier = name[0] === '.' ? './' + join(relativeRoot, name) : name
+      if (!keepExtension) {
+        return specifier.replace(IMPORT_NAME_RE, '')
+      }
+      if (IMPORT_NAME_RE.test(specifier) || (name[0] !== '.' && !isAbsolute(name))) {
+        return specifier
+      }
+      // A module registered by an aliased or extensionless path is recorded without one
+      const absolutePath = resolve(nuxt.options.rootDir, name)
+      for (const extension of moduleExtensions) {
+        if (existsSync(absolutePath + extension)) {
+          return specifier + extension
+        }
+        if (existsSync(join(absolutePath, 'index' + extension))) {
+          return specifier + '/index' + extension
+        }
+      }
+      return specifier
+    }
 
     const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
     for (const m of nuxt.options._installedModules) {
@@ -495,7 +538,9 @@ import { _replaceAppConfig } from '#app/config'
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    _replaceAppConfig(newModule.default)
+    if (newModule) {
+      _replaceAppConfig(newModule.default)
+    }
   })
 }
 /** client-end **/
@@ -512,7 +557,7 @@ export const publicPathTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents ({ nuxt }) {
     return [
-      'import { joinRelativeURL } from \'ufo\'',
+      `import { joinRelativeURL } from ${JSON.stringify(ufoPath)}`,
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime-config\'',
 
       nuxt.options.dev
@@ -679,6 +724,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const clientNodePlaceholder = ${!!ctx.nuxt.options.experimental.clientNodePlaceholder}`,
       `export const tracingChannelNuxt = ${!!(ctx.nuxt.options.tracingChannel && typeof ctx.nuxt.options.tracingChannel === 'object' && ctx.nuxt.options.tracingChannel.nuxt)}`,
       `export const runtimeCompiler = ${!!ctx.nuxt.options.vue.runtimeCompiler}`,
+      `export const vapor = ${!!ctx.nuxt.options.vue.vapor}`,
       `export const hasPluginDependencies = ${pluginsHaveDependencies}`,
       `export const hasParallelPlugins = ${pluginsRunInParallel}`,
       `export const hasPluginHooks = ${pluginsHaveHooks}`,

@@ -239,6 +239,63 @@ describe('runtime server component', () => {
 
     expect(wrapper.find('*').attributes()).toHaveProperty('data-v-654e2b21')
   })
+
+  it.each([
+    { name: 'valid', scopeId: 'data-v-deadbeef', expectedScopeId: 'data-v-deadbeef-s' },
+    { name: 'invalid', scopeId: 'x onmouseover=alert(1)', expectedScopeId: undefined },
+    { name: 'trailing-newline', scopeId: 'data-v-deadbeef\n', expectedScopeId: undefined },
+  ])('should validate the scope ID of a remote island slot ($name)', async ({ name, scopeId, expectedScopeId }) => {
+    stubFetchRaw(() => Promise.resolve(islandResponse({
+      id: '123',
+      html: '<div data-island-uid><div data-island-uid data-island-slot="default"></div></div>',
+      state: {},
+      head: { link: [], style: [] },
+      slots: {
+        default: {
+          props: [],
+          scopeId,
+        },
+      },
+    })))
+
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: `RemoteSlot${name}`,
+      },
+      slots: {
+        default: () => h('span', { id: `remote-slot-${name}` }, 'slot'),
+      },
+      attachTo: 'body',
+    })
+
+    try {
+      const attributes = wrapper.find(`#remote-slot-${name}`).attributes()
+      expect(Object.keys(attributes).find(attribute => attribute.endsWith('-s'))).toBe(expectedScopeId)
+      expect(wrapper.html()).not.toContain('onmouseover')
+      expect(wrapper.html()).not.toContain('alert(1)')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('should ignore a scopeId that is not a Vue scope attribute', async () => {
+    stubFetchRaw(() => Promise.resolve(islandResponse({
+      id: '123',
+      html: '<div>hello</div>',
+      state: {},
+      head: { link: [], style: [] },
+    })))
+
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: 'dummyName',
+        scopeId: `x><img src=x onerror="globalThis.__xss=1"><x`,
+      },
+    })
+
+    expect(wrapper.html()).not.toContain('onerror')
+    expect(wrapper.html()).not.toContain('<img')
+  })
 })
 
 describe('client components', () => {
