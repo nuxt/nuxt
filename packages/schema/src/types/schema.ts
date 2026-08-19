@@ -28,6 +28,7 @@ import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
+import type { TypeCheckOption } from '../utils/type-check.ts'
 
 import type { RouterConfigSerializable } from './router.ts'
 import type { NuxtHooks } from './hooks.ts'
@@ -1890,7 +1891,7 @@ export interface ConfigSchema {
      *
      * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
      */
-    typeCheck: boolean | 'build' | 'dev'
+    typeCheck: TypeCheckOption
 
     /**
      * Extend the generated tsconfig files with shared options.
