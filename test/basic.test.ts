@@ -772,6 +772,24 @@ describe('pages', () => {
     await page.close()
   })
 
+  it.skipIf(isDev)('awaited useAsyncData resolves with data when a catch-all remounts during the deferred route restore', async () => {
+    const { page, pageErrors, consoleLogs } = await renderPage('/prerender/catchall/a/b/?test=true')
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const states = await page.evaluate(() => (window as unknown as { __asyncDataStates: Array<{ path: string, status: string, hasData: boolean }> }).__asyncDataStates)
+    expect(states.length).toBeGreaterThan(0)
+    for (const state of states) {
+      expect.soft(state).toMatchObject({ status: 'success', hasData: true })
+    }
+
+    expect(await page.innerText('#catchall-async-data')).toBe('/prerender/catchall/a/b/')
+    expect(pageErrors).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+
+    await page.close()
+  })
+
   it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
     const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
 
@@ -1485,6 +1503,18 @@ describe('middlewares', () => {
     const html = await fetch('/navigate-to-redirect', { redirect: 'manual' })
     expect(html.headers.get('location')).toEqual('/')
     expect(html.status).toEqual(307)
+  })
+
+  it('should preserve percent-encoding in redirect query with navigateTo on server side', async () => {
+    const res = await fetch('/navigate-to-encoded-query', { redirect: 'manual' })
+    expect(res.headers.get('location')).toEqual('/?callback=%2Fother')
+    expect(res.status).toEqual(302)
+  })
+
+  it('should preserve percent-encoded spaces in redirect query with navigateTo on server side', async () => {
+    const res = await fetch('/navigate-to-encoded-space', { redirect: 'manual' })
+    expect(res.headers.get('location')).toEqual('/?q=a%20b')
+    expect(res.status).toEqual(302)
   })
 })
 

@@ -498,7 +498,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = useNitro()
+      const nitro = useNitro() as Nitro
       if (nitro.options.prerender.crawlLinks || ('routing' in nitro && nitro.routing.routeRules.routes.some(r => r.data.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
@@ -655,7 +655,7 @@ export default defineNuxtModule({
     nuxt.hook('pages:extend', (routes) => {
       const nitro = useNitro()
       let resolvedRoutes: string[]
-      for (const route of 'routing' in nitro ? nitro.routing.routeRules.routes : []) {
+      for (const route of nitro.routing?.routeRules.routes ?? []) {
         if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path

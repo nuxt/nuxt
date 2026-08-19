@@ -88,6 +88,7 @@
     "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
     "nitro": "catalog:nitro-runtime",
+    "nitropack": "catalog:dev",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "catalog:dev",
     "ofetch": "catalog:app-runtime",
@@ -112,6 +113,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.21.0",
+  "packageManager": "pnpm@11.22.0",
   "version": ""
 }
