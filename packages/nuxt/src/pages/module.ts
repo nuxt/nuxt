@@ -498,7 +498,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = useNitro()
+      const nitro = useNitro() as Nitro
       if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
@@ -654,7 +654,7 @@ export default defineNuxtModule({
 
     // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
     nuxt.hook('pages:extend', (routes) => {
-      const nitro = useNitro()
+      const nitro = useNitro() as Nitro
       let resolvedRoutes: string[]
       for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
         if (!rule.redirect) { continue }

@@ -8,6 +8,7 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { useNitro } from '@nuxt/kit'
+import type { Nitro } from 'nitropack/types'
 import { resolveModulePath } from 'exsolve'
 
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
@@ -658,7 +659,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     }
     const componentIslandsActive = hasActiveComponentIslands(ctx)
     const componentIslands = shouldEnableComponentIslands(ctx.nuxt, ctx.app)
-    const nitro = useNitro()
+    const nitro = useNitro() as Nitro
 
     const hasCachedRoutes = Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
     const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (nitro.options.static || hasCachedRoutes || (nitro.options.prerender.routes && nitro.options.prerender.routes.length > 0) || Object.values(nitro.options.routeRules).some(r => r.prerender))

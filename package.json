@@ -88,6 +88,7 @@
     "knip": "catalog:dev",
     "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
+    "nitro": "catalog:nitro-runtime",
     "nitropack": "2.13.4",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "catalog:dev",

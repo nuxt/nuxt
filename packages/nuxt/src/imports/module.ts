@@ -5,6 +5,7 @@ import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
+import type { Nitro } from 'nitropack/types'
 import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
 
@@ -296,7 +297,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       if (!options.autoImport) {
         return GENERATED_BY_COMMENT + AUTO_IMPORTS_DISABLED_COMMENT
       }
-      const nitro = useNitro()
+      const nitro = useNitro() as Nitro
 
       const nuxtImports = await ctx.getImports()
 

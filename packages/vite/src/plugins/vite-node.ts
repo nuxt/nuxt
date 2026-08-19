@@ -14,6 +14,7 @@ import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import type { FetchResult } from 'vite-node'
 import { ViteNodeServer } from 'vite-node/server'
+import type { Nitro } from 'nitropack/types'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
@@ -186,7 +187,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
     }
   }
 
-  const nitro = useNitro()
+  const nitro = useNitro() as Nitro
 
   const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })

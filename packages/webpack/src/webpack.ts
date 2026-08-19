@@ -36,7 +36,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   /** Remove Nitro rollup plugin for handling dynamic imports from webpack chunks */
   if (!nuxt.options.dev) {
     const nitro = useNitro()
-    nitro.hooks.hook('rollup:before', (_nitro, config) => {
+    nitro.hooks.hook('rollup:before', (_nitro: unknown, config: { plugins?: unknown }) => {
       const plugins = config.plugins as InputPluginOption[]
 
       const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
