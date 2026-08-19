@@ -199,6 +199,7 @@ export default withMatrix({
         '/random/b',
         '/random/c',
         '/prefetch/server-components',
+        '/prerender/catchall/a/b',
         '/404.html',
       ],
     },
