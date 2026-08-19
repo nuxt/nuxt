@@ -7,7 +7,7 @@ import { withTrailingSlash } from 'ufo'
 import { genArrayFromRaw, genObjectFromRawEntries } from 'knitwork'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveAlias, setBuildOutput, useNitro } from '@nuxt/kit'
-import { parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
+import { VUE_ID_RE, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
@@ -16,7 +16,6 @@ import { getVueLoaderHash } from '../builder.ts'
 
 const CSS_URL_RE = /url\((['"]?)(\/[^)]+?)\1\)/g
 
-const isVueFile = (id: string) => /\.vue(?:\?|$)/.test(id)
 const isCSSLike = (name: string) => /\.(?:css|scss|sass|less|styl(?:us)?|postcss|pcss)(?:\?|$)/.test(name)
 
 function normalizePath (nuxt: Nuxt, id?: string | null): string | null {
@@ -303,7 +302,7 @@ export class SSRStylesPlugin {
       for (const module of compilation.modules) {
         const normal = module as NormalModule
         const resource = normal.resource
-        if (!resource || !isVueFile(resource)) { continue }
+        if (!resource || !VUE_ID_RE.test(resource)) { continue }
         const rel = normalizePath(this.nuxt, resource)
         if (!rel) { continue }
         if (collected.has(rel)) { continue }
