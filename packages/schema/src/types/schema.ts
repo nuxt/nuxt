@@ -1779,6 +1779,13 @@ export interface ConfigSchema {
   _majorVersion: number
 
   /**
+   * The nitro major version the host Nuxt builds against, set before any module
+   * runs so `@nuxt/kit` version detection is reliable during module setup.
+   * @private
+   */
+  _nitroMajor: number
+
+  /**
    *
    * @private
    */
