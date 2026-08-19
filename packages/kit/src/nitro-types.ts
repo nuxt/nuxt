@@ -8,6 +8,9 @@
 
 type MaybeArray<T> = T | T[]
 
+/** Supported nitro majors for version-tagged server registrations. */
+export type NitroCompatibilityVersion = 2 | 3
+
 export type NitroHandlerMethod = 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE'
 type NitroHandlerMethodV3 = NitroHandlerMethod | 'QUERY'
 
