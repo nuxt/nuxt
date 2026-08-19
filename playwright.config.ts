@@ -71,6 +71,8 @@ export default defineConfig<E2eConfigOptions>({
           defaults: {
             nuxt: {
               dev: entry.isDev,
+              setupTimeout: (isWindows ? 360 : 120) * 1000,
+              serverStartTimeout: (isWindows ? 300 : 120) * 1000,
               nuxtConfig: {
                 builder: entry.builder,
                 devtools: { enabled: false },
