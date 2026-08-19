@@ -576,8 +576,8 @@ catalogs:
 
 overrides:
   '@nuxt/kit': workspace:*
-  '@types/node': 24.13.3
   '@nuxt/schema': workspace:*
+  '@types/node': 24.13.3
   nuxt: workspace:*
   oxc-parser: 0.144.0
   rolldown: 1.2.4
@@ -716,6 +716,9 @@ importers:
       nitro:
         specifier: catalog:nitro-runtime
         version: 3.0.260610-beta(patch_hash=9273407579edf95350876c36b226440ebe6482463a007ad87c2f535365e21162)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.4)(vite@8.2.1)
+      nitropack:
+        specifier: catalog:dev
+        version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.4)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.1)(webpack@5.109.2(cssnano@8.0.6(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -869,12 +872,6 @@ importers:
       mlly:
         specifier: catalog:build
         version: 1.8.2
-      nitro:
-        specifier: catalog:nitro-runtime
-        version: 3.0.260610-beta(patch_hash=9273407579edf95350876c36b226440ebe6482463a007ad87c2f535365e21162)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.4)(vite@8.2.1)
-      nitropack:
-        specifier: catalog:dev
-        version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(oxc-parser@0.144.0)(rolldown@1.2.4)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.1)(webpack@5.109.2(cssnano@8.0.6(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
       oxc-parser:
         specifier: 0.144.0
         version: 0.144.0
