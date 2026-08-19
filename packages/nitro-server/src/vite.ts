@@ -170,6 +170,9 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
       // but extension-less Vite URLs such as `/_nuxt/@id/__x00__plugin-vue:export-helper`
       // need to be routed to Vite. Setting `_nitroHandled` here is a stopgap
       // until Nitro's own exemption for Vite-internal prefixes is base-aware.
+      // TODO: drop `_nitroHandled` and narrow `VITE_INTERNAL_RE` back to the
+      // root-served handlers once we require a Nitro version including
+      // https://github.com/nitrojs/nitro/pull/4540
       const buildAssetsDir = nuxt.options.app.buildAssetsDir
       const buildAssetsPrefix = escapeRE(buildAssetsDir.replace(/\/+$/, ''))
       const VITE_INTERNAL_RE = new RegExp(`^${buildAssetsPrefix}\\/@[^/?#]`)
