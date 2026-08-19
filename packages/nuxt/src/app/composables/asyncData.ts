@@ -511,7 +511,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
         const hasServerData = key.value in nuxtApp.payload.data
 
-        if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || asyncData.data.value !== undefined)) {
+        if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || (asyncData.data.value !== undefined && (hasServerData || asyncData._initialCachedData !== undefined)))) {
           // 1. Hydration (server: true): no fetch
           if (pendingWhenIdle) {
             asyncData.pending.value = false
