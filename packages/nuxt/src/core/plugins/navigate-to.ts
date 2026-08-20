@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, walk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
-import { isVue } from '../utils/index.ts'
+import { VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 import { parseModule } from '../utils/parse.ts'
 
 const NAVIGATE_TO_RE = /\bnavigateTo\s*\(/
@@ -32,11 +32,12 @@ export const NavigateToEarlyReturnPlugin = () => createUnplugin(() => {
   return {
     name: 'nuxt:navigate-to-early-return',
     enforce: 'post',
-    transformInclude (id) {
-      return isVue(id, { type: ['script'] })
-    },
     transform: {
       filter: {
+        id: {
+          include: VUE_SCRIPT_ID_FILTER,
+          exclude: /node_modules\//,
+        },
         code: { include: /withAsyncContext/ },
       },
       handler (code, id, meta?: unknown) {
