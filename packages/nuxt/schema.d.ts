@@ -1,5 +1,6 @@
 import type {
   AppConfig as _AppConfig,
+  AppConfigInput as _AppConfigInput,
   ConfigSchema as _ConfigSchema,
   CustomAppConfig as _CustomAppConfig,
   ModuleDependencies as _ModuleDependencies,
@@ -23,6 +24,8 @@ declare module 'nuxt/schema' {
   interface ConfigSchema extends _ConfigSchema { hooks: NuxtHooks }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface AppConfig extends _AppConfig {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface AppConfigInput extends _AppConfigInput {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface CustomAppConfig extends _CustomAppConfig {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
