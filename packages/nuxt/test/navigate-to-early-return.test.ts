@@ -43,16 +43,16 @@ await navigateTo('/b')
 
       let __temp, __restore
 
-      ;if (((
+      ;{ if (((
         ([__temp,__restore] = _withAsyncContext(() => navigateTo('/a'))),
         __temp = await __temp,
         __restore()
       )
-      , __temp) === undefined) return __nuxt_navigate_to_early_return();if (((
+      , __temp) === undefined) return __nuxt_navigate_to_early_return(); }{ if (((
         ([__temp,__restore] = _withAsyncContext(() => navigateTo('/b'))),
         __temp = await __temp,
         __restore()
-      ), __temp) === undefined) return __nuxt_navigate_to_early_return()
+      ), __temp) === undefined) return __nuxt_navigate_to_early_return() }
 
       const __returned__ = { a }
       Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
@@ -74,6 +74,33 @@ if (a) {
 </script>
 `)
     expect(result).toContain('return __nuxt_navigate_to_early_return()')
+    expect(result).toMatchInlineSnapshot(`
+      "import { _navigateToEarlyReturn as __nuxt_navigate_to_early_return } from '#app/composables/router';
+      import { withAsyncContext as _withAsyncContext } from 'vue'
+      const a = 1
+
+      export default {
+        __name: 'app',
+        async setup(__props, { expose: __expose }) {
+        __expose();
+
+      let __temp, __restore
+
+      if (a) {
+        { if (((
+        ([__temp,__restore] = _withAsyncContext(() => navigateTo('/a', { replace: true }))),
+        __temp = await __temp,
+        __restore()
+      ), __temp) === undefined) return __nuxt_navigate_to_early_return() }
+      }
+
+      const __returned__ = { a }
+      Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+      return __returned__
+      }
+
+      }"
+    `)
   })
 
   it('transforms `await navigateTo()` in an unbraced conditional', async () => {
@@ -85,6 +112,69 @@ if (a) await navigateTo('/a')
 </script>
 `)
     expect(result).toContain('return __nuxt_navigate_to_early_return()')
+    expect(result).toMatchInlineSnapshot(`
+      "import { _navigateToEarlyReturn as __nuxt_navigate_to_early_return } from '#app/composables/router';
+      import { withAsyncContext as _withAsyncContext } from 'vue'
+      const a = 1
+
+      export default {
+        __name: 'app',
+        async setup(__props, { expose: __expose }) {
+        __expose();
+
+      let __temp, __restore
+
+      if (a) { if (((
+        ([__temp,__restore] = _withAsyncContext(() => navigateTo('/a'))),
+        __temp = await __temp,
+        __restore()
+      ), __temp) === undefined) return __nuxt_navigate_to_early_return() }
+
+      const __returned__ = { a }
+      Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+      return __returned__
+      }
+
+      }"
+    `)
+  })
+
+  it('does not rebind `else` in an unbraced conditional', async () => {
+    const result = await transform(`
+<template><div /></template>
+<script setup>
+const a = 1
+if (a) await navigateTo('/a')
+else console.log('else branch')
+</script>
+`)
+    expect(result).toContain('return __nuxt_navigate_to_early_return()')
+    expect(result).toMatchInlineSnapshot(`
+      "import { _navigateToEarlyReturn as __nuxt_navigate_to_early_return } from '#app/composables/router';
+      import { withAsyncContext as _withAsyncContext } from 'vue'
+      const a = 1
+
+      export default {
+        __name: 'app',
+        async setup(__props, { expose: __expose }) {
+        __expose();
+
+      let __temp, __restore
+
+      if (a) { if (((
+        ([__temp,__restore] = _withAsyncContext(() => navigateTo('/a'))),
+        __temp = await __temp,
+        __restore()
+      ), __temp) === undefined) return __nuxt_navigate_to_early_return() }
+      else console.log('else branch')
+
+      const __returned__ = { a }
+      Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+      return __returned__
+      }
+
+      }"
+    `)
   })
 
   it('does not transform when the result is used', async () => {
@@ -198,6 +288,31 @@ await navigateTo('/a')
     const result = await plugin.transform.handler(compileSFC(source, { inlineTemplate: true }), 'app.vue')
     const code = typeof result === 'string' ? result : result?.code
     expect(code).toContain('return __nuxt_navigate_to_early_return()')
+    expect(code).toMatchInlineSnapshot(`
+      "import { _navigateToEarlyReturn as __nuxt_navigate_to_early_return } from '#app/composables/router';
+      import { withAsyncContext as _withAsyncContext } from 'vue'
+      import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+      export default {
+        __name: 'app',
+        async setup(__props) {
+
+      let __temp, __restore
+
+      ;{ if (((
+        ([__temp,__restore] = _withAsyncContext(() => navigateTo('/a'))),
+        __temp = await __temp,
+        __restore()
+      ), __temp) === undefined) return __nuxt_navigate_to_early_return() }
+
+      return (_ctx, _cache) => {
+        return (_openBlock(), _createElementBlock("div"))
+      }
+      }
+
+      }"
+    `)
   })
 })
 

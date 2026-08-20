@@ -79,10 +79,13 @@ export const NavigateToEarlyReturnPlugin = () => createUnplugin(() => {
               return
             }
 
-            s.appendLeft(node.start, 'if ((')
+            // wrap in a block so an `else` attached to an enclosing unbraced `if`
+            // does not rebind to the `if` statement we generate here
+            s.appendLeft(node.start, '{ if ((')
             s.appendLeft(match.awaited.start, `${match.tempName} = `)
             const end = code[node.end - 1] === ';' ? node.end - 1 : node.end
             s.appendLeft(end, `, ${match.tempName}) === undefined) return ${HELPER_LOCAL}()`)
+            s.appendLeft(node.end, ' }')
             transformed = true
           },
           leave (node) {
