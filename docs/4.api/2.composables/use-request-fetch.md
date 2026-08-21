@@ -1,6 +1,6 @@
 ---
 title: 'useRequestFetch'
-description: 'Forward the request context and headers for server-side fetch requests with the useRequestFetch composable.'
+description: 'Access the same $fetch instance used during server-side rendering with useRequestFetch.'
 minimalVersion: "3.2"
 links:
   - label: Source
@@ -9,45 +9,22 @@ links:
     size: xs
 ---
 
-You can use `useRequestFetch` to forward the request context and headers when making server-side fetch requests.
+`useRequestFetch` returns the same [`$fetch`](/docs/4.x/api/utils/dollarfetch) instance Nuxt uses during SSR. It does **not** forward browser cookies or other request headers for you.
 
-When making a client-side fetch request, the browser automatically sends the necessary headers.
-However, when making a request during server-side rendering, due to security considerations, we need to forward the headers manually.
-
-::note
-Headers that are **not meant to be forwarded** will **not be included** in the request. These headers include, for example:
-`transfer-encoding`, `connection`, `keep-alive`, `upgrade`, `expect`, `host`, `accept`
-::
-
-::tip
-The [`useFetch`](/docs/4.x/api/composables/use-fetch) composable uses `useRequestFetch` under the hood to automatically forward the request context and headers.
-::
-
-::code-group
+During SSR, forward the headers you need with [`useRequestHeaders`](/docs/4.x/api/composables/use-request-headers):
 
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
-// This will forward the user's headers to the `/api/cookies` event handler
-// Result: { cookies: { foo: 'bar' } }
-const requestFetch = useRequestFetch()
-const { data: forwarded } = await useAsyncData(() => requestFetch('/api/cookies'))
-
-// This will NOT forward anything
-// Result: { cookies: {} }
-const { data: notForwarded } = await useAsyncData((_nuxtApp, { signal }) => $fetch('/api/cookies', { signal }))
+const { data } = await useAsyncData(() => $fetch('/api/cookies', {
+  headers: useRequestHeaders(['cookie']),
+}))
 </script>
 ```
 
-```ts [server/api/cookies.ts]
-export default defineEventHandler((event) => {
-  const cookies = parseCookies(event)
-
-  return { cookies }
-})
-```
-
+::read-more{to="/docs/4.x/getting-started/data-fetching#pass-client-headers-to-the-api"}
+See Pass Client Headers to the API for more detail.
 ::
 
 ::tip
-In the browser during client-side navigation, `useRequestFetch` will behave just like regular [`$fetch`](/docs/4.x/api/utils/dollarfetch).
+In the browser during client-side navigation, `useRequestFetch` behaves like regular [`$fetch`](/docs/4.x/api/utils/dollarfetch).
 ::
