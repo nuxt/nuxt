@@ -88,6 +88,7 @@
     "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
     "nitro": "catalog:nitro-runtime",
+    "nitropack": "catalog:dev",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "catalog:dev",
     "ofetch": "catalog:app-runtime",

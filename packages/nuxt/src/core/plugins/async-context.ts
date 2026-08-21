@@ -1,18 +1,16 @@
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Nuxt } from '@nuxt/schema'
-import { isVue } from '../utils/index.ts'
+import { VUE_SCRIPT_TEMPLATE_ID_FILTER } from '../utils/index.ts'
 
 const WITH_ASYNC_CONTEXT_IMPORT_RE = /withAsyncContext as _withAsyncContext,?/
 
 export const AsyncContextInjectionPlugin = (_nuxt: Nuxt) => createUnplugin(() => {
   return {
     name: 'nuxt:vue-async-context',
-    transformInclude (id) {
-      return isVue(id, { type: ['template', 'script'] })
-    },
     transform: {
       filter: {
+        id: { include: VUE_SCRIPT_TEMPLATE_ID_FILTER },
         code: { include: /_withAsyncContext/ },
       },
       handler (code, id, meta?: unknown) {

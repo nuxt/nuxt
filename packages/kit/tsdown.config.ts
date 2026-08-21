@@ -23,8 +23,6 @@ export default defineConfig({
       'dotenv',
       'jiti',
       '@nuxt/schema',
-      'nitro/types',
-      'nitropack/types',
       /^rolldown(\/|$)/,
       'oxc-parser',
       'mlly',

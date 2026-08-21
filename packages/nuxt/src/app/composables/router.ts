@@ -317,6 +317,34 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 }
 
 /**
+ * Produces the render function returned from `setup()` when
+ * `experimental.navigateToEarlyReturn` short-circuits after a successful navigation.
+ *
+ * The returned function renders a placeholder comment both as a client render function
+ * and as an inline `ssrRender` (where it is called with a `push` function). On the server
+ * it is also assigned to `instance.ssrRender`, because the server renderer prefers the
+ * component's compiled `ssrRender` over a render function returned from `setup()`, and the
+ * compiled template must not run against the empty setup state left by the early return.
+ * @internal
+ */
+export function _navigateToEarlyReturn () {
+  const render = (_ctx?: unknown, push?: unknown) => {
+    if (typeof push === 'function') {
+      push('<!---->')
+      return
+    }
+    return null
+  }
+  if (import.meta.server) {
+    const instance = getCurrentInstance() as (ComponentInternalInstance & { ssrRender?: typeof render }) | null
+    if (instance) {
+      instance.ssrRender = render
+    }
+  }
+  return render
+}
+
+/**
  * This will abort navigation within a Nuxt route middleware handler.
  * @since 3.0.0
  */

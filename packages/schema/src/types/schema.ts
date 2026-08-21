@@ -1452,6 +1452,19 @@ export interface ConfigSchema {
     navigationRepaint: boolean
 
     /**
+     * Transform top-level `await navigateTo()` calls in `<script setup>` into an early return
+     * from the compiled `setup()` function when the navigation succeeds.
+     *
+     * This stops execution of the rest of your setup code after a redirect, and renders
+     * a placeholder comment while the navigation proceeds, rather than continuing to run
+     * code (and potentially navigating again) after `navigateTo` has been called.
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     * @see [Nuxt Issue #23698](https://github.com/nuxt/nuxt/issues/23698)
+     */
+    navigateToEarlyReturn: boolean
+
+    /**
      * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
      *
      * This only works for source files within `srcDir` and `serverDir` for the Vue/Nitro parts of your app.
@@ -1788,6 +1801,13 @@ export interface ConfigSchema {
    * @private
    */
   _majorVersion: number
+
+  /**
+   * The nitro major version the host Nuxt builds against, set before any module
+   * runs so `@nuxt/kit` version detection is reliable during module setup.
+   * @private
+   */
+  _nitroMajor: number
 
   /**
    *
