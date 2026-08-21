@@ -597,9 +597,10 @@ export default defineNuxtModule({
     nuxt.hook('nitro:build:before', async (nitro) => {
       if (!nuxt.options.experimental.early404 || nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
 
-      const patterns = collectRou3PagePatterns(nuxt.apps.default?.pages || [])
+      const blockedRoutes = new Set<string>()
+      const patterns = collectRou3PagePatterns(nuxt.apps.default?.pages || [], ['/'], route => blockedRoutes.add(route))
       if (!patterns) {
-        pageDiagnostics.NUXT_B4018({})
+        pageDiagnostics.NUXT_B4018({ paths: [...blockedRoutes] })
         return
       }
 

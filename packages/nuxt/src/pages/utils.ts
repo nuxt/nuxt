@@ -896,10 +896,12 @@ export function routerOptionsMayModifyRoutes (code: string, filename: string): b
 /**
  * Collect a rou3 pattern for every path a page can be reached by: its canonical
  * path, each alias, and the whole subtree below it. Returns `undefined` when any
- * path cannot be converted, so callers can fall back to matching everything.
+ * path cannot be converted, so callers can fall back to matching everything;
+ * the routes that could not be converted are reported via `onUnconvertible`.
  */
-export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] = ['/']): string[] | undefined {
+export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] = ['/'], onUnconvertible?: (route: string) => void): string[] | undefined {
   const patterns: string[] = []
+  let failed = false
   for (const page of pages) {
     const routes = new Set<string>()
     for (const route of [page.path, ...toArray(page.alias || [])]) {
@@ -913,16 +915,19 @@ export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] =
     }
     for (const route of routes) {
       const { patterns: converted } = vueRouterToRou3(route, { collapse: true })
-      if (!converted.length) { return undefined }
+      if (!converted.length) {
+        onUnconvertible?.(route)
+        failed = true
+        continue
+      }
       patterns.push(...converted)
     }
     if (page.children?.length) {
-      const childPatterns = collectRou3PagePatterns(page.children, [...routes])
-      if (!childPatterns) { return undefined }
-      patterns.push(...childPatterns)
+      const childPatterns = collectRou3PagePatterns(page.children, [...routes], onUnconvertible)
+      if (childPatterns) { patterns.push(...childPatterns) } else { failed = true }
     }
   }
-  return patterns
+  return failed ? undefined : patterns
 }
 
 export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {

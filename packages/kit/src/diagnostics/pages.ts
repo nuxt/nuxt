@@ -97,7 +97,7 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B4018: {
-      why: 'Some page routes could not be analysed statically, so `experimental.early404` has been disabled.',
+      why: (p: { paths: string[] }) => `Some page routes could not be analysed statically, so \`experimental.early404\` has been disabled: ${p.paths.map(path => `\`${path}\``).join(', ')}.`,
       fix: 'Simplify the affected page paths, or disable `experimental.early404`.',
       docs: false,
     },

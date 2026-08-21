@@ -61,6 +61,22 @@ describe('collectRou3PagePatterns', () => {
       ]
     `)
   })
+
+  it('should collapse routes it cannot express exactly into broader patterns', () => {
+    const pages: NuxtPage[] = [
+      { name: 'index', path: '/' },
+      { name: 'product', path: '/products/:id(\\d+)/edit' },
+      { name: 'parent', path: '/parent', children: [{ name: 'user', path: ':user(.*)*' }] },
+    ]
+    const unconvertible: string[] = []
+    expect(collectRou3PagePatterns(pages, ['/'], route => unconvertible.push(route))).toStrictEqual([
+      '/',
+      '/products/**',
+      '/parent',
+      '/parent/**',
+    ])
+    expect(unconvertible).toStrictEqual([])
+  })
 })
 
 describe('routerOptionsMayModifyRoutes', () => {
