@@ -9,6 +9,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import genericNames from 'generic-names'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
+import { withInlineQuery } from '../utils/inline-styles.ts'
 import { resolveClientEntry } from '../utils/config.ts'
 import escapeStringRegexp from 'escape-string-regexp'
 
@@ -57,19 +58,6 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const clientCSSMap: Record<string, Set<string>> = {}
 
   const stripQuery = (id: string) => id.replace(QUERY_RE, '')
-
-  // Add the `inline&used` params used to extract a module's CSS for SSR
-  // inlining. Vite/plugin-vue keep the `lang.<ext>` marker last so the id ends
-  // in a CSS extension, which is what vite's `isCSSRequest` and user plugins
-  // gate on. Insert the params *before* that trailing marker so the id keeps its
-  // CSS suffix and stays visible to extension-gated transforms. (#29232)
-  const withInlineQuery = (id: string) => {
-    const match = id.match(/([?&])lang\.[^&?]+$/)
-    if (match) {
-      return id.slice(0, match.index) + match[1] + 'inline&used&' + id.slice(match.index! + 1)
-    }
-    return id + (id.includes('?') ? '&' : '?') + 'inline&used'
-  }
 
   // For each CSS source module id (with `?...` query stripped) whose styles are
   // inlined into the SSR response, the `cssMap` keys of the components it is
