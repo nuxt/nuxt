@@ -832,7 +832,7 @@ async function initNuxt (nuxt: Nuxt) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/vapor-interop.client'))
     } else {
       nuxt.options.vue.vapor = false
-      logger.warn('`vue.vapor` requires vue `3.6.0` or later; vapor mode has been disabled.')
+      configDiagnostics.NUXT_B5024()
     }
   }
 
@@ -1281,7 +1281,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     if (RELATIVE_CSS_ENTRY_RE.test(entry)) {
       const absolute = resolve(nuxt.options.rootDir, entry)
       const asAlias = '~/' + relative(nuxt.options.srcDir, absolute)
-      logger.warn(`\`css\` entries are resolved as module ids, not relative to \`nuxt.config\`. Replace \`${entry}\` with ${existsSync(absolute) ? `\`${link(absolute, { formatter: () => asAlias })}\`` : 'an aliased or absolute path'}.`)
+      configDiagnostics.NUXT_B5025({ entry, replacement: existsSync(absolute) ? `\`${link(absolute, { formatter: () => asAlias })}\`` : 'an aliased or absolute path' })
       continue
     }
 
@@ -1289,7 +1289,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     // be resolved by builder-specific aliases, so neither can be checked here
     const resolved = resolveAlias(entry, nuxt.options.alias)
     if (isAbsolute(resolved) && !resolved.startsWith(nuxt.options.buildDir) && !existsSync(resolved)) {
-      logger.warn(`\`css\` entry \`${entry}\` could not be found${resolved === entry ? '' : ` (resolved to \`${linkToAlias(resolved, nuxt)}\`)`}.`)
+      configDiagnostics.NUXT_B5026({ entry, resolved: resolved === entry ? undefined : linkToAlias(resolved, nuxt) })
     }
   }
 }

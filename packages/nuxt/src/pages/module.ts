@@ -790,7 +790,7 @@ export default defineNuxtModule({
       })
 
       if (conflicting.length) {
-        logger.warn(`\`ssr: false\` and \`noScripts\` both apply to ${conflicting.map(path => `\`${path}\``).join(', ')}, which leaves nothing to render the route: the server emits an empty shell and no client bundle is loaded to fill it. Remove one of the two rules.`)
+        pageDiagnostics.NUXT_B4021({ paths: conflicting.map(path => `\`${path}\``).join(', ') })
       }
 
       return restrictedPages

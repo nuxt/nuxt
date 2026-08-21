@@ -111,5 +111,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check that no Vite plugin removes or renames the client build manifest in a `generateBundle`/`writeBundle` hook. If this happens with no such plugin, please report it at https://github.com/nuxt/nuxt/issues.',
       docs: false,
     },
+    NUXT_B7022: {
+      why: (p: { existing: string, route: string }) => `Route rules for \`${p.existing}\` and \`${p.route}\` resolve to the same path; \`${p.route}\` takes precedence.`,
+      fix: (p: { canFold: boolean }) => `Disambiguate the keys${p.canFold ? ' or set `router.options.sensitive: true`' : ''}.`,
+      docs: false,
+    },
   },
 })

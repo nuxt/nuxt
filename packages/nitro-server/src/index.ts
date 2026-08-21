@@ -465,7 +465,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         // Only the matcher that will actually be used at runtime should report collisions.
         if (existing !== undefined && existing !== route && fold !== caseSensitiveRouteRules && !warnedKeyCollisions.has(key)) {
           warnedKeyCollisions.add(key)
-          logger.warn(`Route rules for \`${existing}\` and \`${route}\` resolve to the same path; \`${route}\` takes precedence. Disambiguate the keys${fold ? ' or set `router.options.sensitive: true`' : ''}.`)
+          bundlerDiagnostics.NUXT_B7022({ existing, route, canFold: fold })
         }
         normalizedKeys.set(key, route)
         addRoute(routeRulesRouter, undefined, key, rules)
