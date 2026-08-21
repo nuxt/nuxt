@@ -18,6 +18,10 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let key: string
   let disableCssCodeSplit: boolean
   let manifestFile: string
+  // `closeBundle` can run more than once for the ssr environment, and its last step
+  // removes `manifestFile`. Keep the last source read as a fallback so a later pass in
+  // the same build does not read an ENOENT.
+  let manifestSource: string | undefined
 
   let precomputedCode = 'export default undefined'
   // Default empty manifest so the build output is loadable before the real one is populated.
@@ -98,9 +102,20 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
 
   function readManifestFromDisk (): string {
     try {
-      return readFileSync(manifestFile, 'utf-8')
+      // Read through to the file on every pass and refresh the fallback: Vite reuses this
+      // plugin across rebuilds, so a later client build writes a new manifest that must
+      // win over anything cached from an earlier one.
+      manifestSource = readFileSync(manifestFile, 'utf-8')
+      return manifestSource
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        // An earlier pass in this build already consumed and removed `manifestFile`, so
+        // reuse the source it read. This caches the raw source rather than the parsed
+        // manifest because callers mutate the object they get back (and `build:manifest`
+        // hooks mutate it further), so each pass must still parse its own copy.
+        if (manifestSource !== undefined) {
+          return manifestSource
+        }
         throw bundlerDiagnostics.NUXT_B7021({ manifestFile })
       }
       throw error
