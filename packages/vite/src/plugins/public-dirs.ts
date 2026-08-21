@@ -6,6 +6,8 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { isCSSRequest } from 'vite'
 import type { Plugin } from 'vite'
 
+import { isInlineStyleId } from '../utils/inline-styles.ts'
+
 const PREFIX = '\0virtual:public?'
 const PREFIX_RE = /^\0virtual:public\?/
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
@@ -64,7 +66,7 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
         },
       },
       renderChunk (code, chunk) {
-        if (!chunk.facadeModuleId?.includes('?inline&used')) { return }
+        if (!isInlineStyleId(chunk.facadeModuleId)) { return }
 
         const s = rolldownString(code, chunk.fileName)
         const q = code.match(RENDER_CHUNK_RE)?.[0] || '"'
