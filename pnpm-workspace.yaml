@@ -196,6 +196,7 @@ catalogs:
     tinyglobby: ^0.2.17
     ufo: ^1.6.4
     ultrahtml: ^1.7.0
+    rou3: ^0.8.1
     unctx: ^3.0.0
     undici: ^8.10.0
     unenv: 2.0.0-rc.24 # intentionally pinned to match nitro's dependency

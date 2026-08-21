@@ -211,6 +211,9 @@ catalogs:
     rc9:
       specifier: ^3.0.1
       version: 3.0.1
+    rou3:
+      specifier: ^0.8.1
+      version: 0.8.1
     scule:
       specifier: ^1.3.0
       version: 1.3.0
@@ -956,6 +959,9 @@ importers:
       pathe:
         specifier: catalog:app-runtime
         version: 2.0.3
+      rou3:
+        specifier: catalog:build
+        version: 0.8.1
       srvx:
         specifier: catalog:nitro-runtime
         version: 0.11.22
