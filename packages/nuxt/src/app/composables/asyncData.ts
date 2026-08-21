@@ -759,17 +759,42 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
   await nuxtApp.hooks.callHookParallel('app:data:refresh', _keys)
 }
 
-/** @since 3.0.0 */
-export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
-  const nuxtApp = useNuxtApp()
-  const _allKeys = Object.keys(nuxtApp.payload.data)
-  const _keys: string[] = !keys
-    ? _allKeys
-    : typeof keys === 'function'
-      ? _allKeys.filter(keys)
-      : toArray(keys)
+export interface ClearNuxtDataOptions {
+  /**
+   * Which category of cached data to clear.
+   * @default 'all'
+   */
+  scope?: 'all' | 'async' | 'fetch' | 'island'
+}
 
-  for (const key of _keys) {
+function isClearOptions (keys: unknown): keys is ClearNuxtDataOptions {
+  return keys != null && typeof keys === 'object' && !Array.isArray(keys)
+}
+
+/** @since 3.0.0 */
+export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean) | ClearNuxtDataOptions, options?: ClearNuxtDataOptions): void {
+  const isOpts = isClearOptions(keys)
+  const _options = isOpts ? keys : (options ?? {})
+  const _keys = isOpts ? undefined : keys
+  const { scope = 'all' } = _options
+  const nuxtApp = useNuxtApp()
+
+  if (scope === 'island') {
+    const all = Object.keys(nuxtApp.payload.data)
+    const matched = !_keys ? all : typeof _keys === 'function' ? all.filter(_keys) : toArray(_keys)
+    for (const key of matched) {
+      if (!nuxtApp.payload.data[key]?.__nuxt_island) { continue }
+      delete nuxtApp.payload.data[key]
+      delete nuxtApp._islandPromises?.[key]
+    }
+    return
+  }
+
+  const all = Object.keys(nuxtApp._asyncData)
+  const matched = !_keys ? all : typeof _keys === 'function' ? all.filter(_keys) : toArray(_keys)
+  for (const key of matched) {
+    if (scope === 'fetch' && !key.startsWith('$f')) { continue }
+    if (scope === 'async' && key.startsWith('$f')) { continue }
     clearNuxtDataByKey(nuxtApp, key)
   }
 }
