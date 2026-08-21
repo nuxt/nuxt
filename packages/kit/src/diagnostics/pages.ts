@@ -111,5 +111,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Avoid modifying `routes` in `router.options`, or disable `experimental.early404`.',
       docs: false,
     },
+    NUXT_B4021: {
+      why: (p: { paths: string }) => `\`ssr: false\` and \`noScripts\` both apply to ${p.paths}, which leaves nothing to render the route: the server emits an empty shell and no client bundle is loaded to fill it.`,
+      fix: 'Remove one of the two rules.',
+      docs: false,
+    },
   },
 })
