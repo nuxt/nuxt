@@ -38,10 +38,16 @@ export interface PagesContext {
 export interface PagesContextOptions {
   roots?: string[]
   shouldUseServerComponents?: boolean
+  dev?: boolean
 }
 
 export function createPagesContext (options: PagesContextOptions = {}): PagesContext {
-  const modes = options.shouldUseServerComponents ? ['server', 'client'] : ['client']
+  const isDev = options.dev ?? true
+  const modes = [
+    ...(options.shouldUseServerComponents ? ['server', 'client'] : ['client']),
+    'dev',
+    'prod',
+  ]
   const treeOptions: BuildTreeOptions = {
     roots: options.roots,
     modes,
@@ -59,11 +65,21 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   let tree: RouteTree = buildTree([], treeOptions)
   const trackedFiles = new Set<string>()
 
+  function shouldIncludeFile (filePath: string) {
+    if (!isDev && /(?:^|\.)dev(?:\.|$)/.test(filePath)) {
+      return false
+    }
+    return true
+  }
+
   return {
     emit () {
       return toVueRouter4(tree, emitOptions)
     },
     addFile (filePath: string, priority = 0) {
+      if (!shouldIncludeFile(filePath)) {
+        return
+      }
       addFile(tree, { path: filePath, priority }, compiledParse)
       trackedFiles.add(filePath)
     },
@@ -75,9 +91,10 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
       return removed
     },
     rebuild (files: InputFile[]) {
-      tree = buildTree(files, treeOptions)
+      const filteredFiles = files.filter(f => shouldIncludeFile(f.path))
+      tree = buildTree(filteredFiles, treeOptions)
       trackedFiles.clear()
-      for (const f of files) {
+      for (const f of filteredFiles) {
         trackedFiles.add(f.path)
       }
     },
@@ -107,7 +124,11 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
     pages = ctx.emit()
   } else {
     // One-shot for production / no-context case
-    const oneShot = createPagesContext({ roots: pagesDirs, shouldUseServerComponents: !!nuxt.options.experimental.componentIslands })
+    const oneShot = createPagesContext({
+      roots: pagesDirs,
+      shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
+      dev: nuxt.options.dev,
+    })
     oneShot.rebuild(inputFiles)
     pages = oneShot.emit()
   }
@@ -641,23 +662,33 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
-      const restriction = options.restrictedPages?.get(page)
+      const isProdOnlyInDev = Boolean(nuxt.options.dev && /(?:^|\.)prod(?:\.|$)/.test(file))
+      if (isProdOnlyInDev) {
+        metaImports.add('\nconst _prodOnlyPageStub = { setup () { showError({ statusCode: 404, statusMessage: \'Production-Only Page\', message: \'This page is configured with a .prod suffix and will render its real content in production builds.\' }) }, render: () => null };')
+      }
+
+      const restriction = isProdOnlyInDev ? undefined : options.restrictedPages?.get(page)
       const stub = restriction ? PAGE_STUBS[restriction] : undefined
       if (stub) {
         metaImports.add(stub.declaration)
       }
-      const restrictToEnvironment = (loader: string) => stub
-        ? `import.meta.${stub.env} ? ${loader} : () => Promise.resolve(${stub.name})`
-        : loader
+      const restrictToEnvironment = (loader: string) => {
+        if (isProdOnlyInDev) {
+          return '() => Promise.resolve(_prodOnlyPageStub)'
+        }
+        return stub
+          ? `import.meta.${stub.env} ? ${loader} : () => Promise.resolve(${stub.name})`
+          : loader
+      }
 
       // A statically imported page would be linked into the bundle it is being
       // dropped from even when its component is never referenced there, so
       // environment-restricted pages fall back to a droppable dynamic import
-      if (page._sync && !stub) {
+      if (page._sync && !stub && !isProdOnlyInDev) {
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const isSyncImport = page._sync && page.mode !== 'client' && !stub
+      const isSyncImport = page._sync && page.mode !== 'client' && !stub && !isProdOnlyInDev
       const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
       // Mirror whatever the route's own `name` resolves to below, so that a name extracted at
       // build time does not pull in the macro module purely to set `__name`. That import is the

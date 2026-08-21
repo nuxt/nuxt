@@ -14,13 +14,15 @@ export function getNameFromPath (path: string, relativeTo?: string) {
     ? normalize(path).replace(withTrailingSlash(normalize(relativeTo)), '')
     : basename(path)
   const prefixParts = splitByCase(dirname(relativePath))
-  const fileName = basename(relativePath, extname(relativePath))
+  const fileName = basename(relativePath, extname(relativePath)).replace(/\.(?:dev|prod|client|server|global|island)(?=\.|$)/g, '')
   const segments = resolveComponentNameSegments(fileName.toLowerCase() === 'index' ? '' : fileName, prefixParts).filter(Boolean)
   return kebabCase(segments).replace(QUOTE_RE, '')
 }
 
 export function hasSuffix (path: string, suffix: string) {
-  return basename(path, extname(path)).endsWith(suffix)
+  const base = basename(path, extname(path))
+  const cleanSuffix = suffix.startsWith('.') ? suffix.slice(1) : suffix
+  return new RegExp(`(?:^|\\.)${cleanSuffix}(?:\\.|$)`).test(base)
 }
 
 export function resolveComponentNameSegments (fileName: string, prefixParts: string[]) {
