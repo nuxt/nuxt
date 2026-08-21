@@ -163,6 +163,7 @@ export default withMatrix({
     },
     inlineRouteRules: true,
     prefetchPreloadTags: true,
+    navigateToEarlyReturn: true,
   },
   nitro: {
     publicAssets: [
