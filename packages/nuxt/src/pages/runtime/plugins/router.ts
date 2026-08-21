@@ -1,6 +1,6 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
-import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, RouteRecordRaw, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
@@ -23,6 +23,26 @@ import { pageIslandRoutes } from '#build/components.islands.mjs'
 
 // matches a trailing slash on the path only, leaving query and hash significant
 const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
+const NON_ASCII_RE = /\P{ASCII}+/gu
+
+function encodeRouteAliases (routes: readonly RouteRecordRaw[]): RouteRecordRaw[] {
+  return routes.map((route) => {
+    const encodedRoute = { ...route }
+    if (route.alias) {
+      encodedRoute.alias = typeof route.alias === 'string'
+        ? encodeNonAscii(route.alias)
+        : route.alias.map(encodeNonAscii)
+    }
+    if (route.children) {
+      encodedRoute.children = encodeRouteAliases(route.children)
+    }
+    return encodedRoute
+  })
+}
+
+function encodeNonAscii (path: string): string {
+  return path.replace(NON_ASCII_RE, encodeURIComponent)
+}
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -62,7 +82,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       : createMemoryHistory(routerBase)
     )
 
-    const routes = routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes
+    const routes = encodeRouteAliases(routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes)
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
 
