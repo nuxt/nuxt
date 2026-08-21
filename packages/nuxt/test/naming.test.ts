@@ -8,6 +8,10 @@ describe('getNameFromPath', () => {
     'base/base.vue': 'base',
     'base/base-layout.vue': 'base-layout',
     'base-1-layout': 'base-1-layout',
+    '(group)/default.vue': 'default',
+    '(group)/custom.vue': 'custom',
+    'desktop/(group)/default.vue': 'desktop-default',
+    '(group)/desktop/default.vue': 'desktop-default',
   }
   it.each(Object.keys(cases))('correctly deduplicates segments - %s', (filename) => {
     expect(getNameFromPath(filename)).toEqual(cases[filename])
