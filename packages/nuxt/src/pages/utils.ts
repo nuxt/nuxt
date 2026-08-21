@@ -11,7 +11,7 @@ import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
-import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
+import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4, vueRouterToRou3 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 import { getLoader } from '../core/utils/index.ts'
 import { linkToAlias, logger, offsetToPosition, toArray } from '../utils.ts'
@@ -862,6 +862,71 @@ export function isSerializable (node: ESTree.Node): { value?: any, serializable:
   }
 
   return { serializable: false }
+}
+
+/**
+ * Statically determine whether a `router.options` file may modify `routes`.
+ * Returns `true` (conservatively) when the default export is not a plain object
+ * literal, contains spreads or computed keys, or defines a `routes` property.
+ */
+export function routerOptionsMayModifyRoutes (code: string, filename: string): boolean {
+  let mayModify = true
+  try {
+    parseAndWalk(code, filename, (node) => {
+      if (node.type !== 'ExportDefaultDeclaration') { return }
+      let declaration = node.declaration
+      while (declaration.type === 'TSAsExpression' || declaration.type === 'TSTypeAssertion' || declaration.type === 'TSSatisfiesExpression' || declaration.type === 'ParenthesizedExpression') {
+        declaration = declaration.expression
+      }
+      if (declaration.type !== 'ObjectExpression') { return }
+      mayModify = declaration.properties.some((property) => {
+        if (property.type === 'SpreadElement') { return true }
+        const key = property.key
+        const name = key.type === 'Identifier' && !property.computed ? key.name : key.type === 'Literal' ? String(key.value) : undefined
+        return name === undefined || name === 'routes'
+      })
+    })
+  } catch {
+    return true
+  }
+  return mayModify
+}
+
+/**
+ * Collect a rou3 pattern for every path a page can be reached by: its canonical
+ * path, each alias, and the whole subtree below it. Returns `undefined` when any
+ * path cannot be converted, so callers can fall back to matching everything;
+ * the routes that could not be converted are reported via `onUnconvertible`.
+ */
+export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] = ['/'], onUnconvertible?: (route: string) => void): string[] | undefined {
+  const patterns: string[] = []
+  let failed = false
+  for (const page of pages) {
+    const routes = new Set<string>()
+    for (const route of [page.path, ...toArray(page.alias || [])]) {
+      if (route.startsWith('/')) {
+        routes.add(route)
+      } else {
+        for (const prefix of prefixes) {
+          routes.add(joinURL(prefix, route))
+        }
+      }
+    }
+    for (const route of routes) {
+      const { patterns: converted } = vueRouterToRou3(route, { collapse: true })
+      if (!converted.length) {
+        onUnconvertible?.(route)
+        failed = true
+        continue
+      }
+      patterns.push(...converted)
+    }
+    if (page.children?.length) {
+      const childPatterns = collectRou3PagePatterns(page.children, [...routes], onUnconvertible)
+      if (childPatterns) { patterns.push(...childPatterns) } else { failed = true }
+    }
+  }
+  return failed ? undefined : patterns
 }
 
 export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {

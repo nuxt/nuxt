@@ -1191,6 +1191,25 @@ export interface ConfigSchema {
     prerenderErrorPages: boolean | number[]
 
     /**
+     * Respond with an early 404 error for requests whose path cannot match any page route,
+     * without loading the Vue app, its plugins or middleware on the server.
+     *
+     * Page routes (including aliases) are converted to route patterns at build time and
+     * requests are checked against them before server-side rendering begins.
+     *
+     * This is opt-in as it can break apps that rely on runtime routing: pages added
+     * dynamically with `router.addRoute()` (on the server or the client), or route
+     * middleware that redirects unknown paths to existing ones. It also applies to
+     * `ssr: false` routes, which respond with a 404 error rather than the SPA shell when
+     * no page can match. The option is disabled automatically in development, when using
+     * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
+     * file may modify `routes`.
+     *
+     * @default false
+     */
+    early404: boolean
+
+    /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
      * @default false

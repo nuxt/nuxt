@@ -257,6 +257,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         // module; pages served without scripts scope their blanket speculation
         // rules to these (safe-to-GET) same-origin navigations
         const pagePatterns = (nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns ?? []
+        // rou3 patterns for every page route, provided by the pages module when
+        // `experimental.early404` is active; the renderer 404s early on paths that
+        // cannot match any of them
+        const early404Patterns = (nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns ?? []
         // SPA fallbacks written out as an empty shell, minus any error page that
         // is server-rendered at build time
         const noSSRRoutes = ['/index.html', '/200.html', '/404.html'].filter(route => !errorPages.includes(Number(route.slice(1, -'.html'.length))))
@@ -271,6 +275,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_VIEW_TRANSITIONS = ${!!(nuxt.options.app.viewTransition && typeof nuxt.options.app.viewTransition === 'object' && nuxt.options.app.viewTransition.enabled)}`,
           `export const NUXT_NO_SCRIPTS_PATTERNS = ${JSON.stringify(noScriptsPatterns)}`,
           `export const NUXT_PAGE_PATTERNS = ${JSON.stringify(pagePatterns)}`,
+          `export const NUXT_EARLY_404 = ${early404Patterns.length > 0}`,
+          `export ${compilePageMatcher(early404Patterns)}`,
           `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
           `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
@@ -1252,4 +1258,19 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   return ''
+}
+
+/**
+ * Compile page route patterns into a static `NUXT_PAGE_MATCHER` matcher
+ * declaration, so the renderer needs no runtime router construction.
+ */
+function compilePageMatcher (patterns: string[]): string {
+  if (!patterns.length) {
+    return 'const NUXT_PAGE_MATCHER = undefined'
+  }
+  const router = createRou3Router()
+  for (const pattern of patterns) {
+    addRoute(router, '', pattern, 1)
+  }
+  return compileRouterToString(router, 'NUXT_PAGE_MATCHER')
 }

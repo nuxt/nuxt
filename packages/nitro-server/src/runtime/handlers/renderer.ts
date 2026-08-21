@@ -22,12 +22,13 @@ import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, sp
 import { createSSRContext, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { createInlinedCSSFilter } from '../utils/renderer/inlined-css'
+import { throwIfUnmatchedPagePath } from '../utils/renderer/early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
 import { extractCspNonce } from '../utils/renderer/csp-nonce'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import entryIds from 'nuxt/entry-ids'
 import { entryFileName } from 'nuxt/entry-chunk'
@@ -163,6 +164,13 @@ async function renderRoute (event: H3Event, ssrError: (NuxtPayload['error'] & { 
 
   if (routeOptions.ssr === false) {
     ssrContext.noSSR = true
+  }
+
+  // Fail fast for paths that cannot match any page route, before the app (and
+  // its plugins and middleware) is loaded. Skipped when prerendering SPA shell
+  // fallbacks (`/index.html`, `/200.html`), which are not page routes.
+  if (NUXT_EARLY_404 && !ssrError && !(import.meta.prerender && ssrContext.noSSR)) {
+    throwIfUnmatchedPagePath(event, routeOptions)
   }
 
   // Whether we are prerendering route or using ISR/SWR caching
