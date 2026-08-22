@@ -14,7 +14,7 @@ import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
@@ -28,6 +28,7 @@ import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+const ROOT_CATCHALL_PATTERN_RE = /^\/\*\*(?::[\w-]+)?$/
 const RELATIVE_WITH_DOT_RE = /^([^.])/
 
 function relativeWithDot (from: string, to: string) {
@@ -498,7 +499,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = useNitro()
+      const nitro = useNitro() as Nitro
       if (nitro.options.prerender.crawlLinks || ('routing' in nitro && nitro.routing.routeRules.routes.some(r => r.data.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
@@ -581,13 +582,47 @@ export default defineNuxtModule({
     // can scope their speculation rules to same-origin *page* navigations, which
     // are safe to GET, instead of a blanket rule that could prefetch/prerender
     // non-idempotent server routes (`~/server/routes/*`). A catch-all page
-    // (`[...slug]`) widens this back to a blanket `*`.
+    // (`[...slug]`) widens this back to a blanket `*`. These stay named
+    // (`/products/:id`) rather than using the collapsed early-404 patterns.
     nuxt.hook('nitro:build:before', (nitro) => {
-      const patterns = new Set<string>()
+      const urlPatterns = new Set<string>()
       for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
-        patterns.add(rou3PatternToURLPattern(route).pattern)
+        urlPatterns.add(rou3PatternToURLPattern(route).pattern)
       }
-      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...patterns]
+      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...urlPatterns]
+    })
+
+    // The rou3 patterns the renderer compiles into an early-404 matcher for
+    // paths that cannot match any page, before loading the app.
+    nuxt.hook('nitro:build:before', async (nitro) => {
+      if (!nuxt.options.experimental.early404 || nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
+
+      const blockedRoutes = new Set<string>()
+      const patterns = collectRou3PagePatterns(nuxt.apps.default?.pages || [], ['/'], route => blockedRoutes.add(route))
+      if (!patterns) {
+        pageDiagnostics.NUXT_B4018({ paths: [...blockedRoutes] })
+        return
+      }
+
+      if (patterns.some(pattern => ROOT_CATCHALL_PATTERN_RE.test(pattern))) {
+        pageDiagnostics.NUXT_B4019({})
+        return
+      }
+
+      const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
+      for (const file of routerOptionsFiles) {
+        if (file.optional) { continue }
+        const code = await readFile(file.path, 'utf-8').catch(() => undefined)
+        if (code === undefined || routerOptionsMayModifyRoutes(code, file.path)) {
+          pageDiagnostics.NUXT_B4020({ file: linkToAlias(file.path, nuxt) })
+          return
+        }
+      }
+
+      // Patterns and lookups are always case-folded: with `sensitive` routing this can
+      // only let a request through to the app (which still 404s), never wrongly 404 it.
+      ;(nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns
+        = [...new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))]
     })
 
     nuxt.hook('nitro:build:before', (nitro) => {
@@ -655,7 +690,7 @@ export default defineNuxtModule({
     nuxt.hook('pages:extend', (routes) => {
       const nitro = useNitro()
       let resolvedRoutes: string[]
-      for (const route of 'routing' in nitro ? nitro.routing.routeRules.routes : []) {
+      for (const route of nitro.routing?.routeRules.routes ?? []) {
         if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path
@@ -750,7 +785,7 @@ export default defineNuxtModule({
       })
 
       if (conflicting.length) {
-        logger.warn(`\`ssr: false\` and \`noScripts\` both apply to ${conflicting.map(path => `\`${path}\``).join(', ')}, which leaves nothing to render the route: the server emits an empty shell and no client bundle is loaded to fill it. Remove one of the two rules.`)
+        pageDiagnostics.NUXT_B4021({ paths: conflicting.map(path => `\`${path}\``).join(', ') })
       }
 
       return restrictedPages
@@ -856,6 +891,24 @@ export default defineNuxtModule({
         ].join('\n')
       },
     }, { nuxt: true, nitro: true, node: true })
+
+    // `router.addRoute()` would bypass the build-time route patterns used for early
+    // 404 responses, so remove it from the router type. `removeRoute` stays: it only
+    // narrows the real route set, which is the safe direction for the matcher.
+    if (nuxt.options.experimental.early404) {
+      addTypeTemplate({
+        filename: 'types/early404.d.ts',
+        dependsOn: [],
+        getContents: () => [
+          'declare module \'nuxt/app\' {',
+          '  interface Early404IncompatibleRouterMethods {',
+          '    addRoute: true',
+          '  }',
+          '}',
+          'export {}',
+        ].join('\n'),
+      })
+    }
 
     // add page meta types if enabled
     if (nuxt.options.experimental.viewTransition) {

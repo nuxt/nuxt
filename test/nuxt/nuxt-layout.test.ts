@@ -215,6 +215,26 @@ describe('NuxtLayout', () => {
     expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-2')
   })
 
+  it('should not block navigation when name is overridden to the current meta layout', async () => {
+    const override = ref<string | undefined>(undefined)
+    const overrideEl = await mountSuspended({
+      // @ts-expect-error dynamically-added layout is not typed
+      setup: () => () => h(NuxtLayout, { name: override.value }, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/layout-1')
+    await flushPromises()
+    expect.soft(overrideEl.find('h3').text()).toBe('Current route: /layout-1')
+
+    override.value = 'layout-1'
+    await nextTick()
+
+    await navigateTo('/no-layout')
+    await flushPromises()
+    expect.soft(overrideEl.find('h1').text()).toBe(`'layout-1' layout`)
+    expect.soft(overrideEl.find('h3').text()).toBe('Current route: /no-layout')
+  })
+
   it.todo('should not change layout before child page resolves', async () => {
     await navigateTo('/layout-1')
     await flushPromises()

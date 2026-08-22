@@ -70,6 +70,8 @@ export default defineComponent({
 
     provide(LayoutSymbol, layout)
 
+    const resolveRouteLayout = (routeToCheck: RouteLocationNormalizedLoaded) => resolveLayoutName(routeToCheck, props.name)
+
     const layoutRef = shallowRef()
     context.expose({ layoutRef })
 
@@ -131,6 +133,7 @@ export default defineComponent({
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
+              resolveRouteLayout,
               isRenderingNewLayout: (name?: string | boolean) => {
                 return (name !== previouslyRenderedLayout && name === layout.value)
               },
@@ -162,6 +165,10 @@ const LayoutProvider = defineComponent({
       type: Function as unknown as () => (name?: string | boolean) => boolean,
       required: true,
     },
+    resolveRouteLayout: {
+      type: Function as unknown as () => (route: RouteLocationNormalizedLoaded) => string | false,
+      required: true,
+    },
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -170,7 +177,7 @@ const LayoutProvider = defineComponent({
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
         // When name=false, always return true so NuxtPage doesn't skip rendering
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === resolveLayoutName(route),
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === props.resolveRouteLayout(route),
       })
     }
 

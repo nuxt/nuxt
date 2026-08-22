@@ -6,7 +6,7 @@ import { relative } from 'pathe'
 
 import { tryUseNuxt } from '@nuxt/kit'
 import { componentDiagnostics } from '@nuxt/kit/internal'
-import { QUOTE_RE, SX_RE, isVue } from '../../core/utils/index.ts'
+import { QUOTE_RE, SX_RE, VUE_SCRIPT_TEMPLATE_ID_FILTER } from '../../core/utils/index.ts'
 import { installNuxtModule } from '../../core/features.ts'
 import { linkToAlias } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
@@ -41,134 +41,133 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   return {
     name: 'nuxt:components-loader',
     enforce: 'post',
-    transformInclude (id) {
-      if (exclude.some(pattern => pattern.test(id))) {
-        return false
-      }
-      if (include.some(pattern => pattern.test(id))) {
-        return true
-      }
-      return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
-    },
-    transform (code, id, meta?: unknown) {
-      const components = options.getComponents()
+    transform: {
+      filter: {
+        id: {
+          include: [...include, ...VUE_SCRIPT_TEMPLATE_ID_FILTER, SX_RE],
+          exclude,
+        },
+      },
+      handler (code, id, meta?: unknown) {
+        const components = options.getComponents()
 
-      let num = 0
-      const imports = new Set<string>()
-      const map = new Map<Component, string>()
-      const s = rolldownString(code, id, meta)
-      // replace `_resolveComponent("...")` to direct import
-      for (const match of code.matchAll(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE)) {
-        const groups = match.groups!
-        const lazy = groups.hLazy || groups.lazy || groups.vaporLazy
-        const modifier = groups.hModifier || groups.modifier || groups.vaporModifier
-        const name = groups.hName || groups.name || groups.vaporName
-        const isVapor = groups.vaporQuote !== undefined
-        const normalComponent = findComponent(components, name!, options.mode)
-        const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
-        const component = normalComponent || modifierComponent
+        let num = 0
+        const imports = new Set<string>()
+        const map = new Map<Component, string>()
+        const s = rolldownString(code, id, meta)
+        // replace `_resolveComponent("...")` to direct import
+        for (const match of code.matchAll(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE)) {
+          const groups = match.groups!
+          const lazy = groups.hLazy || groups.lazy || groups.vaporLazy
+          const modifier = groups.hModifier || groups.modifier || groups.vaporModifier
+          const name = groups.hName || groups.name || groups.vaporName
+          const isVapor = groups.vaporQuote !== undefined
+          const normalComponent = findComponent(components, name!, options.mode)
+          const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
+          const component = normalComponent || modifierComponent
 
-        if (component) {
-          // TODO: refactor to @nuxt/cli
-          const internalInstall = ((component as any)._internal_install) as string
-          if (internalInstall && nuxt?.options.test === false) {
-            if (!nuxt.options.dev) {
-              throw componentDiagnostics.NUXT_B3004({ file: linkToAlias(id, nuxt), component: component.pascalName, requiredModule: internalInstall })
+          if (component) {
+            // TODO: refactor to @nuxt/cli
+            const internalInstall = ((component as any)._internal_install) as string
+            if (internalInstall && nuxt?.options.test === false) {
+              if (!nuxt.options.dev) {
+                throw componentDiagnostics.NUXT_B3004({ file: linkToAlias(id, nuxt), component: component.pascalName, requiredModule: internalInstall })
+              }
+              installNuxtModule(internalInstall)
             }
-            installNuxtModule(internalInstall)
-          }
-          let identifier = map.get(component) || `__nuxt_component_${num++}`
-          map.set(component, identifier)
+            let identifier = map.get(component) || `__nuxt_component_${num++}`
+            map.set(component, identifier)
 
-          const isServerOnly = !component._raw && component.mode === 'server' &&
-            !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
-          if (isServerOnly) {
-            imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
-            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
-            if (!options.experimentalComponentIslands) {
-              componentDiagnostics.NUXT_B3003({ component: name! })
+            const isServerOnly = !component._raw && component.mode === 'server' &&
+              !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
+            if (isServerOnly) {
+              imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
+              imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
+              if (!options.experimentalComponentIslands) {
+                componentDiagnostics.NUXT_B3003({ component: name! })
+              }
+              s.overwrite(match.index, match.index + match[0].length, isVapor ? vaporReplacement(imports, identifier) : identifier)
+              continue
             }
-            s.overwrite(match.index, match.index + match[0].length, isVapor ? vaporReplacement(imports, identifier) : identifier)
-            continue
-          }
 
-          const isClientOnly = !component._raw && component.mode === 'client'
-          if (isClientOnly) {
-            imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
-            identifier += '_client'
-          }
+            const isClientOnly = !component._raw && component.mode === 'client'
+            if (isClientOnly) {
+              imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
+              identifier += '_client'
+            }
 
-          if (lazy) {
-            const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
-            if (modifier && normalComponent) {
-              const relativePath = relative(options.srcDir, component.filePath)
-              switch (modifier) {
-                case 'Visible':
-                case 'visible-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
-                  identifier += '_lazy_visible'
-                  imports.add(`const ${identifier} = createLazyVisibleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                  break
-                case 'Interaction':
-                case 'interaction-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyInteractionComponent' }]))
-                  identifier += '_lazy_event'
-                  imports.add(`const ${identifier} = createLazyInteractionComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                  break
-                case 'Idle':
-                case 'idle-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
-                  identifier += '_lazy_idle'
-                  imports.add(`const ${identifier} = createLazyIdleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                  break
-                case 'MediaQuery':
-                case 'media-query-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaQueryComponent' }]))
-                  identifier += '_lazy_media'
-                  imports.add(`const ${identifier} = createLazyMediaQueryComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                  break
-                case 'If':
-                case 'if-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
-                  identifier += '_lazy_if'
-                  imports.add(`const ${identifier} = createLazyIfComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                  break
-                case 'Never':
-                case 'never-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNeverComponent' }]))
-                  identifier += '_lazy_never'
-                  imports.add(`const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                  break
-                case 'Time':
-                case 'time-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
-                  identifier += '_lazy_time'
-                  imports.add(`const ${identifier} = createLazyTimeComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                  break
+            if (lazy) {
+              const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
+              if (modifier && normalComponent) {
+                const relativePath = relative(options.srcDir, component.filePath)
+                switch (modifier) {
+                  case 'Visible':
+                  case 'visible-':
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
+                    identifier += '_lazy_visible'
+                    imports.add(`const ${identifier} = createLazyVisibleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                    break
+                  case 'Interaction':
+                  case 'interaction-':
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyInteractionComponent' }]))
+                    identifier += '_lazy_event'
+                    imports.add(`const ${identifier} = createLazyInteractionComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                    break
+                  case 'Idle':
+                  case 'idle-':
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
+                    identifier += '_lazy_idle'
+                    imports.add(`const ${identifier} = createLazyIdleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                    break
+                  case 'MediaQuery':
+                  case 'media-query-':
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaQueryComponent' }]))
+                    identifier += '_lazy_media'
+                    imports.add(`const ${identifier} = createLazyMediaQueryComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                    break
+                  case 'If':
+                  case 'if-':
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
+                    identifier += '_lazy_if'
+                    imports.add(`const ${identifier} = createLazyIfComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                    break
+                  case 'Never':
+                  case 'never-':
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNeverComponent' }]))
+                    identifier += '_lazy_never'
+                    imports.add(`const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                    break
+                  case 'Time':
+                  case 'time-':
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
+                    identifier += '_lazy_time'
+                    imports.add(`const ${identifier} = createLazyTimeComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                    break
+                }
+              } else {
+                imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
+                identifier += '_lazy'
+                imports.add(`const ${identifier} = __defineAsyncComponent(${dynamicImport}${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
               }
             } else {
-              imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
-              identifier += '_lazy'
-              imports.add(`const ${identifier} = __defineAsyncComponent(${dynamicImport}${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
-            }
-          } else {
-            imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
+              imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
 
-            if (isClientOnly) {
-              imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
-              identifier += '_wrapped'
+              if (isClientOnly) {
+                imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
+                identifier += '_wrapped'
+              }
             }
+
+            s.overwrite(match.index, match.index + match[0].length, isVapor ? vaporReplacement(imports, identifier) : identifier)
           }
-
-          s.overwrite(match.index, match.index + match[0].length, isVapor ? vaporReplacement(imports, identifier) : identifier)
         }
-      }
 
-      if (imports.size) {
-        s.prepend([...imports, ''].join('\n'))
-      }
+        if (imports.size) {
+          s.prepend([...imports, ''].join('\n'))
+        }
 
-      return generateTransform(s, id)
+        return generateTransform(s, id)
+      },
     },
   }
 })
