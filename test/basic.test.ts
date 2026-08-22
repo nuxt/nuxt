@@ -64,6 +64,16 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
       }
     `)
   })
+
+  it('should resolve server auto-imports named explicitly from #imports/server', async () => {
+    const res = await $fetch('/api/server-imports')
+    expect(res).toMatchInlineSnapshot(`
+      {
+        "fromServerDir": "test-utils",
+        "thisIs": "serverAutoImported",
+      }
+    `)
+  })
 })
 
 describe('route rules', () => {
