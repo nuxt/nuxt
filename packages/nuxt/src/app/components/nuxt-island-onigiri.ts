@@ -27,8 +27,6 @@ interface NuxtIslandProps {
   props?: Record<string, any>
   context?: Record<string, any>
   scopeId?: string | undefined | null
-  source?: string
-  dangerouslyLoadClientComponents?: boolean
 }
 
 type NuxtIslandEmits = {
@@ -61,14 +59,6 @@ const NuxtIsland = defineComponent({
       type: String as PropType<string | undefined | null>,
       default: () => undefined,
     },
-    source: {
-      type: String,
-      default: () => undefined,
-    },
-    dangerouslyLoadClientComponents: {
-      type: Boolean,
-      default: false,
-    },
   },
   emits: ['error'],
   async setup (props, { expose, emit }) {
@@ -76,7 +66,7 @@ const NuxtIsland = defineComponent({
     const error = ref<unknown>(null)
     const nuxtApp = useNuxtApp()
     const serializedProps = computed(() => serializeIslandProps(props.props))
-    const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
+    const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context }))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     const ast = ref(nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.ast)
@@ -109,7 +99,7 @@ const NuxtIsland = defineComponent({
 
       if (!force && nuxtApp.payload.data[key]?.ast) { return nuxtApp.payload.data[key] }
 
-      const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
+      const url = `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
@@ -118,7 +108,8 @@ const NuxtIsland = defineComponent({
       // $fetch handles `app.baseURL` for relative URLs
       const r = await $fetch.raw<NuxtIslandResponse>(url, {
         // custom island sources should not be resolved against `app.baseURL` (#23093)
-        ...(props.source ? { baseURL: '' } : {}),
+        // think again of if we want remote islands again
+        // ...(props.source ? { baseURL: '' } : {}),
         query: {
           ...props.context,
           props: props.props ? serializedProps.value : undefined,
