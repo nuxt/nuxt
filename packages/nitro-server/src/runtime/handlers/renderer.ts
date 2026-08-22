@@ -7,7 +7,7 @@ import { FastResponse } from 'srvx'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
-import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '@unhead/vue/stream/server'
+import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell, renderStreamBodyTags } from '@unhead/vue/stream/server'
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
@@ -31,7 +31,6 @@ import { createInlinedCSSFilter } from '../utils/renderer/inlined-css'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
-import { collectStreamedHeadTags, warnStreamedHeadTags } from '../utils/renderer/streamed-head'
 import { extractCspNonce } from '../utils/renderer/csp-nonce'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
@@ -707,10 +706,6 @@ async function renderStreamedResponse (ctx: {
       }
     : null
 
-  // Head tags that miss the shell and become client-side patches, for the
-  // dev diagnostic emitted once the stream ends.
-  const demotedHeadTags = import.meta.dev ? new Set<string>() : null
-
   // 8. Build the streaming response
   const encoder = new TextEncoder()
   let chunkIndex = 0
@@ -764,7 +759,6 @@ async function renderStreamedResponse (ctx: {
         await enqueueChunk(controller, encoder.encode((await renderRouteStyles()) + APP_ROOT_OPEN_TAG))
         if (firstChunk) {
           await enqueueChunk(controller, firstChunk)
-          if (demotedHeadTags) { collectStreamedHeadTags(ssrContext.head, demotedHeadTags) }
           const headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
           if (headChunk && !NO_SCRIPTS) {
             await enqueueChunk(controller, encoder.encode(`<script${nonceAttr}>${headChunk};document.currentScript.remove()</script>`))
@@ -779,7 +773,6 @@ async function renderStreamedResponse (ctx: {
             await enqueueChunk(controller, value)
 
             // Inject head updates from resolved suspense boundaries
-            if (demotedHeadTags) { collectStreamedHeadTags(ssrContext.head, demotedHeadTags) }
             const headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
             if (headChunk && !NO_SCRIPTS) {
               await enqueueChunk(controller, encoder.encode(`<script${nonceAttr}>${headChunk};document.currentScript.remove()</script>`))
@@ -793,7 +786,6 @@ async function renderStreamedResponse (ctx: {
         // resolves (e.g. `bodyClose` scripts via `onPrehydrate`) would otherwise
         // bypass the streaming push pipeline and land as static tags in `</body>`.
         if (!NO_SCRIPTS) {
-          if (demotedHeadTags) { collectStreamedHeadTags(ssrContext.head, demotedHeadTags) }
           const finalHeadChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
           if (finalHeadChunk) {
             await enqueueChunk(controller, encoder.encode(`<script${nonceAttr}>${finalHeadChunk};document.currentScript.remove()</script>`))
@@ -827,9 +819,10 @@ async function renderStreamedResponse (ctx: {
         // Render any final head updates (payload scripts, etc.) and fire the
         // streaming `render:html:close` hook so modules can inject final
         // bodyAppend content (analytics tags, end-of-body scripts, etc.).
-        if (demotedHeadTags) { collectStreamedHeadTags(ssrContext.head, demotedHeadTags) }
+        // held-back markup from renderSSRHeadSuspenseChunk goes here
+        const streamBodyTags = renderStreamBodyTags(ssrContext.head)
         const closingHead = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-        const closeContext = { bodyAppend: normalizeChunks([bodyTags, closingHead.bodyTags]) }
+        const closeContext = { bodyAppend: normalizeChunks([streamBodyTags, bodyTags, closingHead.bodyTags]) }
         const closeResult = nitroHooks.callHook('render:html:close', closeContext, { event })
         if (closeResult instanceof Promise) { await closeResult }
 
@@ -866,10 +859,6 @@ async function renderStreamedResponse (ctx: {
           warnNoScriptsClientReliance(ssrContext, event.url.pathname)
         }
 
-        if (demotedHeadTags && !ssrError) {
-          warnStreamedHeadTags(event.url.pathname, demotedHeadTags)
-        }
-
         if (committedSnapshot) {
           const currentHeaders = Array.from(event.res.headers.entries()).sort().map(([k, v]) => `${k}: ${v}`).join('\n')
           const lateMutations: string[] = []
@@ -900,11 +889,28 @@ async function renderStreamedResponse (ctx: {
             ssrContext.head.push({
               script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload }),
             }, { tagPosition: 'bodyClose', tagPriority: 'high' })
+            // classify pending entries so their markup is held; a getter
+            // that throws on the error's broken state must not lose the
+            // payload script, the client's only path to the error page
+            try {
+              renderSSRHeadSuspenseChunk(ssrContext.head)
+            } catch (error) {
+              serverDiagnostics.NUXT_E8009({
+                path: event.url.pathname,
+                what: 'flushing the head tags registered after the shell',
+                cause: String(error),
+              })
+            }
+            const streamBodyTags = renderStreamBodyTags(ssrContext.head)
             const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-            controller.enqueue(encoder.encode(tail.bodyTags))
+            controller.enqueue(encoder.encode(streamBodyTags + tail.bodyTags))
           }
-        } catch {
-          // best-effort
+        } catch (error) {
+          serverDiagnostics.NUXT_E8009({
+            path: event.url.pathname,
+            what: 'rendering the closing HTML that carries the page error',
+            cause: String(error),
+          })
         }
         controller.enqueue(encoder.encode(APP_ROOT_CLOSE_TAG + '</body></html>'))
         controller.close()

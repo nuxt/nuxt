@@ -4,12 +4,30 @@ import { useRuntimeConfig } from 'nitro/runtime-config'
 
 import '../../context'
 import { createHead } from '@unhead/vue/server'
+import { createStreamableHead } from '@unhead/vue/stream/server'
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
 import { sharedPrerenderCache } from '../cache'
+import { registerStreamedHeadWarning } from './streamed-head'
 import unheadOptions from '#internal/unhead-options.mjs'
-import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SHARED_DATA, NUXT_SSR_STREAMING } from '#internal/nuxt/nitro-config.mjs'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
+
+/**
+ * Streaming wants `createStreamableHead`: it marks the head so late JSON-LD,
+ * `noscript` and body-positioned tags render as markup at `</body>` instead
+ * of client patches.
+ */
+function createServerHead (path: string): NuxtSSRContext['head'] {
+  if (!NUXT_SSR_STREAMING) {
+    return createHead(unheadOptions) as NuxtSSRContext['head']
+  }
+  const { head } = createStreamableHead({ ...unheadOptions, writesBodyTags: true })
+  if (import.meta.dev) {
+    registerStreamedHeadWarning(head, path)
+  }
+  return head as NuxtSSRContext['head']
+}
 
 export function createSSRContext (event: H3Event): NuxtSSRContext {
   const url = event.url.pathname + event.url.search + event.url.hash
@@ -18,7 +36,7 @@ export function createSSRContext (event: H3Event): NuxtSSRContext {
     event,
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR: !!(NUXT_NO_SSR) || event.context.nuxt?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
-    head: createHead(unheadOptions),
+    head: createServerHead(event.url.pathname),
     error: false,
     nuxt: undefined!, /* NuxtApp */
     payload: {},
