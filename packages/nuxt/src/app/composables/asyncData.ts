@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, reactive, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { hashFunction, hashKey } from '../utils/hash'
 import { debounceTick } from '../utils/debounce-tick'
@@ -445,9 +445,13 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
         const existing = nuxtApp._asyncData[key.value]
         if (!existing?._init) {
-          initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-          nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
-          nuxtApp._asyncData[key.value]!._initialCachedData = initialFetchOptions.cachedData
+          if (existing?._preserveOnInit) {
+            nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, existing.data.value as NoInfer<DataT>)
+          } else {
+            initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+            nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
+            nuxtApp._asyncData[key.value]!._initialCachedData = initialFetchOptions.cachedData
+          }
         } else if (nuxtApp._asyncDataPromises[key.value]) {
           // reuse the cache lookup performed by the first concurrent caller while their fetch is still in flight
           initialFetchOptions.cachedData = existing._initialCachedData
@@ -530,13 +534,13 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
           initialFetch()
         }
 
-        function unregister (key: string) {
+        function unregister (key: string, disposeType: 'scope' | 'key' = 'scope') {
           const data = nuxtApp._asyncData[key]
           if (data?._deps) {
             data._deps--
             // clean up memory when it no longer is needed
             if (data._deps === 0) {
-              data?._off()
+              data?._off(disposeType)
             }
           }
         }
@@ -573,7 +577,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
                 // Now it's safe to drop the old container.
                 if (oldKey) {
-                  unregister(oldKey)
+                  unregister(oldKey, 'key')
                 }
 
                 // Trigger the fetch for the new key if needed.
@@ -620,7 +624,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
             unsubKeyWatcher()
             unsubParamsWatcher()
             unsubEnabledWatcher()
-            unregister(key.value)
+            unregister(key.value, 'scope')
           })
         }
       }
@@ -774,18 +778,50 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
-function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
+function setRefValueSilently (data: unknown, value: unknown): boolean {
+  // Vue does not expose a public "set without trigger"; keep a guarded path and fallback.
+  if (!data || typeof data !== 'object' || !('_value' in data)) {
+    return false
+  }
+  const dataRef = data as { _value: unknown, _rawValue?: unknown }
+  if ('_rawValue' in dataRef) {
+    dataRef._rawValue = value
+    // Deep refs store a reactive proxy in `_value`; mirror the conversion a normal setter
+    // would apply so an object default isn't left as a raw (untracked) object.
+    dataRef._value = !isShallow(data) && value !== null && typeof value === 'object'
+      ? reactive(value)
+      : value
+  } else {
+    dataRef._value = value
+  }
+  return true
+}
+
+function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, opts: { silent?: boolean } = {}): void {
   delete nuxtApp.payload.data[key]
   delete nuxtApp.payload._errors[key]
 
   if (nuxtApp._asyncData[key]) {
-    nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
-    nuxtApp._asyncData[key]!.error.value = undefined
-    if (pendingWhenIdle) {
-      nuxtApp._asyncData[key]!.pending.value = false
+    const data = nuxtApp._asyncData[key]!
+    delete data._preserveOnInit
+    const defaultValue = unref(data._default())
+    if (opts.silent) {
+      // Bypass triggers to avoid stale `v-once` effects reading cleared data (`#32154`).
+      // Held computed wrappers can remain transiently stale until they invalidate.
+      if (!setRefValueSilently(data.data, defaultValue)) {
+        dataDiagnostics.NUXT_E3010()
+        data.data.value = defaultValue
+      }
+    } else {
+      data.data.value = defaultValue
     }
-    nuxtApp._asyncData[key]!.status.value = 'idle'
-    nuxtApp._asyncData[key]!._initialCachedData = undefined
+    // This asymmetry is intentional: status/error/pending updates should stay reactive.
+    data.error.value = undefined
+    if (pendingWhenIdle) {
+      data.pending.value = false
+    }
+    data.status.value = 'idle'
+    data._initialCachedData = undefined
   }
 
   delete nuxtApp._asyncDataPromises[key]
@@ -799,7 +835,7 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: (reason?: 'scope' | 'key') => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController, _preserveOnInit?: boolean }
 
 function buildAsyncData<
   ResT,
@@ -972,7 +1008,7 @@ function buildAsyncData<
     _deps: 0,
     _init: true,
     _hash: import.meta.dev ? createHash(_handler, options) : undefined,
-    _off: () => {
+    _off: (reason = 'scope') => {
       unsubRefreshAsyncData()
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
@@ -990,12 +1026,23 @@ function buildAsyncData<
       }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
-        nextTick(() => {
-          if (!nuxtApp._asyncData[key]?._init) {
-            clearNuxtDataByKey(nuxtApp, key)
-            asyncData.execute = () => Promise.resolve()
+        const dataRef = nuxtApp._asyncData[key]!.data as { dep?: { subs?: unknown } }
+        nuxtApp._asyncData[key]!._preserveOnInit = reason === 'scope' && Boolean(dataRef.dep?.subs)
+        if (nuxtApp._asyncData[key]!._preserveOnInit) {
+          delete nuxtApp.payload.data[key]
+          nuxtApp._asyncData[key]!.status.value = 'idle'
+          nuxtApp._asyncData[key]!.error.value = undefined
+          if (pendingWhenIdle) {
+            nuxtApp._asyncData[key]!.pending.value = false
           }
-        })
+        } else {
+          nextTick(() => {
+            if (!nuxtApp._asyncData[key]?._init) {
+              clearNuxtDataByKey(nuxtApp, key, { silent: true })
+            }
+          })
+        }
+        asyncData.execute = () => Promise.resolve()
       }
     },
   }
