@@ -45,9 +45,10 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
         if (!isCSSRequest(id) || !CSS_URL_SINGLE_RE.test(code)) { return }
 
         const s = rolldownString(code, id, meta)
-        for (const [full, url] of code.matchAll(CSS_URL_RE)) {
+        for (const match of code.matchAll(CSS_URL_RE)) {
+          const [full, url] = match
           if (url && resolveFromPublicAssets(url)) {
-            s.replace(full, `url(${options.baseURL}${url})`)
+            s.update(match.index, match.index + full.length, `url(${options.baseURL}${url})`)
           }
         }
 

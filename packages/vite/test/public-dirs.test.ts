@@ -25,6 +25,17 @@ afterAll(() => {
   rmSync(publicDir, { recursive: true, force: true })
 })
 
+describe('PublicDirsPlugin dev transform', () => {
+  const plugin = PublicDirsPlugin({ dev: true, baseURL: '/cdn' })[0]!
+  const transform = typeof plugin.transform === 'function' ? plugin.transform : plugin.transform!.handler
+
+  it('prefixes every public asset url with the base URL', () => {
+    const code = 'a{background:url(/logo.svg)}b{background:url(/icon.svg)}c{background:url(/logo.svg)}'
+    const result = (transform as any).call({}, code, '/styles.css')
+    expect(result.code.toString()).toBe('a{background:url(/cdn/logo.svg)}b{background:url(/cdn/icon.svg)}c{background:url(/cdn/logo.svg)}')
+  })
+})
+
 describe('PublicDirsPlugin', () => {
   const plugins = PublicDirsPlugin({})
   const plugin = plugins[1]!
@@ -45,6 +56,21 @@ describe('PublicDirsPlugin', () => {
     const result = (load as any).call({}, id)
     expect(result).toContain('publicAssetsURL')
     expect(result).toContain(JSON.stringify('/logo.svg'))
+  })
+
+  describe('generateBundle', () => {
+    const generateBundle = typeof plugin.generateBundle === 'function' ? plugin.generateBundle : plugin.generateBundle!.handler
+
+    it('relativises every public asset url in an emitted stylesheet', () => {
+      const bundle = {
+        'assets/styles.css': {
+          type: 'asset',
+          source: 'a{background:url(/logo.svg)}b{background:url(/icon.svg)}c{background:url(/logo.svg)}',
+        },
+      }
+      ;(generateBundle as any).call({}, {}, bundle)
+      expect((bundle['assets/styles.css'] as any).source).toBe('a{background:url(../logo.svg)}b{background:url(../icon.svg)}c{background:url(../logo.svg)}')
+    })
   })
 
   describe('renderChunk', () => {
