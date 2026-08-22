@@ -11,7 +11,7 @@ import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
-import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from '../utils/error'
+import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData, toPayloadError } from '../utils/error'
 import type { SSRError } from '../utils/error'
 import { relative } from 'pathe'
 
@@ -887,7 +887,9 @@ async function renderStreamedResponse (ctx: {
         // well-formed closing so HTML parsing doesn't choke.
         await Promise.resolve(ssrContext.nuxt?.hooks.callHook('app:error', error)).catch(() => {})
         ssrContext.payload ||= {} as NuxtPayload
-        ssrContext.payload.error ||= error as any
+        // flatten the error: Vue errors arrive normalised, anything else
+        // would fail payload serialisation and lose the error page
+        ssrContext.payload.error ||= toPayloadError(error, ssrContext.url)
         try {
           if (!NO_SCRIPTS) {
             ssrContext.head.push({

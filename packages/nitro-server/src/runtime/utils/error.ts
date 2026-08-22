@@ -85,6 +85,37 @@ export function stringifyErrorData (data: unknown): unknown {
 }
 
 /**
+ * Flatten an error the streaming renderer caught into payload-safe data.
+ *
+ * Errors from outside Vue (a nitro hook, a util) skip the app-side
+ * normalisation that Vue errors get, so a raw `Error` reaches the payload as
+ * a non-POJO and devalue refuses it. Losing that race loses the payload
+ * script, the client's only path to the error page once the shell committed
+ * the status.
+ *
+ * The result mirrors `decodeSSRError` output: a plain object carrying the
+ * nuxt error signature, which the payload reducers leave to ordinary
+ * serialisation.
+ *
+ * @internal
+ */
+export function toPayloadError (error: unknown, url: string): SSRError {
+  const source = (error || {}) as Partial<Error> & { status?: unknown, statusCode?: unknown, statusText?: unknown, statusMessage?: unknown, data?: unknown }
+  const status = Number(source.status ?? source.statusCode)
+  return {
+    [NUXT_ERROR_SIGNATURE]: true,
+    message: source.message || (typeof error === 'string' ? error : String(source.statusText || source.statusMessage || 'Unknown error')),
+    stack: (import.meta.dev && source.stack) || undefined,
+    status: Number.isInteger(status) && status >= 100 && status <= 599 ? status : 500,
+    statusText: typeof source.statusText === 'string' ? source.statusText : undefined,
+    fatal: true,
+    unhandled: true,
+    data: source.data,
+    url,
+  }
+}
+
+/**
  * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.ts
  */
 
