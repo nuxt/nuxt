@@ -43,20 +43,9 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
   - fnv1a-64
-  # Renovate security update: esbuild@0.28.1
-  - esbuild@0.28.1
   - vue-bundle-renderer
   - unrouting
   - unimport
-  # Renovate security update: undici@8.5.0
-  - undici@8.5.0
-  - unctx@3.0.0-beta.2
-  - magic-string@1.0.0
-  - verkit@0.1.2
-  - '@unhead/bundler@3.2.1'
-  - '@unhead/vue@3.2.1'
-  - unhead@3.2.1
-  - impound@1.1.6
   - oxc-walker@1.1.1
   - vue
   - '@vue/*'
@@ -278,3 +267,6 @@ catalogs:
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.2.5
     vue-tsc: 3.3.10
+
+catalogPrune: true
+minimumReleaseAgeExcludePrune: true
