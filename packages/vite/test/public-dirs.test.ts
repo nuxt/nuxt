@@ -18,6 +18,7 @@ const { PublicDirsPlugin } = await import('../src/plugins/public-dirs')
 beforeAll(() => {
   mkdirSync(publicDir, { recursive: true })
   writeFileSync(join(publicDir, 'logo.svg'), '<svg/>')
+  writeFileSync(join(publicDir, 'icon.svg'), '<svg/>')
 })
 
 afterAll(() => {
@@ -44,5 +45,37 @@ describe('PublicDirsPlugin', () => {
     const result = (load as any).call({}, id)
     expect(result).toContain('publicAssetsURL')
     expect(result).toContain(JSON.stringify('/logo.svg'))
+  })
+
+  describe('renderChunk', () => {
+    const renderChunk = typeof plugin.renderChunk === 'function' ? plugin.renderChunk : plugin.renderChunk!.handler
+    const chunk = { fileName: 'chunk.js', facadeModuleId: '/app.vue?inline&used' } as any
+
+    function render (code: string) {
+      const result = (renderChunk as any).call({}, code, chunk, {}, {})
+      return result?.code?.toString() ?? code
+    }
+
+    it('rewrites every public asset url in a chunk', () => {
+      const code = 'const a = "a{background:url(/logo.svg)}b{background:url(/icon.svg)}c{background:url(/logo.svg)}"'
+      const output = render(code)
+      expect(output).not.toMatch(/url\(\//)
+      expect(output.match(/publicAssetsURL\(/g)).toHaveLength(3)
+    })
+
+    it('leaves non-public urls alone', () => {
+      const code = 'const a = "a{background:url(/missing.svg)}"'
+      expect(render(code)).toBe(code)
+    })
+
+    it('uses the quote style of each enclosing string literal', () => {
+      const code = [
+        'const a = "a{background:url(/logo.svg)}"',
+        'const b = \'b{background:url(/icon.svg)}\'',
+      ].join('\n')
+      const output = render(code)
+      expect(output).toContain('"a{background:url(" + publicAssetsURL("/logo.svg") + ")}"')
+      expect(output).toContain('\'b{background:url(\' + publicAssetsURL(\'/icon.svg\') + \')}\'')
+    })
   })
 })

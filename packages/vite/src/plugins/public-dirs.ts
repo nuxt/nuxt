@@ -12,7 +12,20 @@ const PREFIX = '\0virtual:public?'
 const PREFIX_RE = /^\0virtual:public\?/
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
 const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
-const RENDER_CHUNK_RE = /(?<= = )['"`]/
+const QUOTE_RE = /['"`]/
+
+/**
+ * Find the quote character of the string literal containing the given index, so that
+ * merged chunks with differently-quoted literals are each handled correctly.
+ */
+function enclosingQuote (code: string, index: number) {
+  for (let i = index - 1; i >= 0; i--) {
+    if (QUOTE_RE.test(code[i]!) && code[i - 1] !== '\\') {
+      return code[i]!
+    }
+  }
+  return '"'
+}
 
 interface VitePublicDirsPluginOptions {
   dev?: boolean
@@ -69,10 +82,12 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
         if (!isInlineStyleId(chunk.facadeModuleId)) { return }
 
         const s = rolldownString(code, chunk.fileName)
-        const q = code.match(RENDER_CHUNK_RE)?.[0] || '"'
-        for (const [full, url] of code.matchAll(CSS_URL_RE)) {
+        for (const match of code.matchAll(CSS_URL_RE)) {
+          const [full, url] = match
           if (url && resolveFromPublicAssets(url)) {
-            s.replace(full, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
+            const q = enclosingQuote(code, match.index)
+            // update by index to cover every `url()` in a chunk
+            s.update(match.index, match.index + full.length, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
           }
         }
 
