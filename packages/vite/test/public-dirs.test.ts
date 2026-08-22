@@ -26,13 +26,21 @@ afterAll(() => {
 })
 
 describe('PublicDirsPlugin dev transform', () => {
-  const plugin = PublicDirsPlugin({ dev: true, baseURL: '/cdn' })[0]!
-  const transform = typeof plugin.transform === 'function' ? plugin.transform : plugin.transform!.handler
+  function transformCSS (baseURL: string, code: string) {
+    const plugin = PublicDirsPlugin({ dev: true, baseURL })[0]!
+    const transform = typeof plugin.transform === 'function' ? plugin.transform : plugin.transform!.handler
+    return (transform as any).call({}, code, '/styles.css').code.toString()
+  }
+
+  const code = 'a{background:url(/logo.svg)}b{background:url(/icon.svg)}c{background:url(/logo.svg)}'
+  const expected = 'a{background:url(/cdn/logo.svg)}b{background:url(/cdn/icon.svg)}c{background:url(/cdn/logo.svg)}'
 
   it('prefixes every public asset url with the base URL', () => {
-    const code = 'a{background:url(/logo.svg)}b{background:url(/icon.svg)}c{background:url(/logo.svg)}'
-    const result = (transform as any).call({}, code, '/styles.css')
-    expect(result.code.toString()).toBe('a{background:url(/cdn/logo.svg)}b{background:url(/cdn/icon.svg)}c{background:url(/cdn/logo.svg)}')
+    expect(transformCSS('/cdn', code)).toBe(expected)
+  })
+
+  it('does not double up slashes when the base URL has a trailing slash', () => {
+    expect(transformCSS('/cdn/', code)).toBe(expected)
   })
 })
 

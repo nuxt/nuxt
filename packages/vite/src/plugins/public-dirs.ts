@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { useNitro } from '@nuxt/kit'
-import { withLeadingSlash, withTrailingSlash } from 'ufo'
+import { joinURL, withLeadingSlash, withTrailingSlash } from 'ufo'
 import { dirname, relative } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { isCSSRequest } from 'vite'
@@ -48,7 +48,7 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
         for (const match of code.matchAll(CSS_URL_RE)) {
           const [full, url] = match
           if (url && resolveFromPublicAssets(url)) {
-            s.update(match.index, match.index + full.length, `url(${options.baseURL}${url})`)
+            s.update(match.index, match.index + full.length, `url(${joinURL(options.baseURL!, url)})`)
           }
         }
 
