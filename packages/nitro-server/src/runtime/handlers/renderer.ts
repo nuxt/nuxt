@@ -7,7 +7,7 @@ import { FastResponse } from 'srvx'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
-import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '@unhead/vue/stream/server'
+import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell, renderStreamBodyTags } from '@unhead/vue/stream/server'
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
@@ -603,61 +603,9 @@ async function renderStreamedResponse (ctx: {
     return returnRenderResponse(event, ssrContext['~renderResponse'])
   }
 
-  // 5. Render the shell head (atomically renders and clears entries pushed
-  // by both the shell-prep section above and the just-completed plugin phase).
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
-
-  // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
-  // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
-  // a strict `script-src 'nonce-…'` policy would block them. Reuse whatever
-  // nonce a security module stamped onto the rendered head scripts; if none is
-  // present the attribute is omitted and behaviour is unchanged.
-  const cspNonce = extractCspNonce(headTags)
-  const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
-
-  // 6. Build the HTML shell context and fire `render:html` with `streaming: true`.
-  // Modules that mutate `htmlAttrs`/`head`/`bodyAttrs`/`bodyPrepend` see their
-  // changes land in the shell. `body`/`bodyAppend` mutations are silently
-  // dropped (the body is about to stream), and a dev warning is emitted if
-  // either array is touched.
-  const bootstrapScript = NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce)
-  let iifeScript = ''
-  if (!NO_SCRIPTS) {
-    if (!import.meta.dev && iifeChunkFileName) {
-      iifeScript = `<script async${nonceAttr} src="${buildAssetsURL(iifeChunkFileName)}"></script>`
-    } else {
-      iifeScript = `<script${nonceAttr}>${streamingIifeCode}</script>`
-    }
-  }
-  const shellContext: NuxtRenderHTMLContext = {
-    htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([bootstrapScript, headTags]),
-    bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
-    bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
-    body: [],
-    bodyAppend: [],
-  }
-  const nitroHooks = useNitroHooks()
-  if (import.meta.dev) {
-    const initialBodyLen = shellContext.body.length
-    const initialAppendLen = shellContext.bodyAppend.length
-    const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
-    if (r instanceof Promise) { await r }
-    if (shellContext.body.length !== initialBodyLen || shellContext.bodyAppend.length !== initialAppendLen) {
-      serverDiagnostics.NUXT_E8001({ path: event.url.pathname })
-    }
-  } else {
-    const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
-    if (r instanceof Promise) { await r }
-  }
-
-  const shellHtml = '<!DOCTYPE html>'
-    + `<html${joinAttrs(shellContext.htmlAttrs)}>`
-    + `<head>${joinTags(shellContext.head)}</head>`
-    + `<body${joinAttrs(shellContext.bodyAttrs)}>`
-    + joinTags(shellContext.bodyPrepend)
-
-  // 7. Create the Vue stream
+  // 5. Create the Vue stream and pre-read the first chunk. The shell head is
+  // rendered after this pre-read (step 6) so `useHead` calls made
+  // synchronously during setup land in the shell `<head>`.
   const vueStream = renderToWebStream(vueApp, ssrContext)
   const reader = vueStream.getReader()
 
@@ -699,6 +647,60 @@ async function renderStreamedResponse (ctx: {
     event.res.headers.delete('link')
     throw ssrContext.payload.error
   }
+
+  // 6. Render the shell head (atomically renders and clears all entries
+  // pushed so far, including those from the synchronous part of setup).
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
+
+  // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
+  // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
+  // a strict `script-src 'nonce-…'` policy would block them. Reuse whatever
+  // nonce a security module stamped onto the rendered head scripts; if none is
+  // present the attribute is omitted and behaviour is unchanged.
+  const cspNonce = extractCspNonce(headTags)
+  const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
+
+  // 7. Build the HTML shell context and fire `render:html` with `streaming: true`.
+  // Modules that mutate `htmlAttrs`/`head`/`bodyAttrs`/`bodyPrepend` see their
+  // changes land in the shell. `body`/`bodyAppend` mutations are silently
+  // dropped (the body is about to stream), and a dev warning is emitted if
+  // either array is touched.
+  const bootstrapScript = NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce)
+  let iifeScript = ''
+  if (!NO_SCRIPTS) {
+    if (!import.meta.dev && iifeChunkFileName) {
+      iifeScript = `<script async${nonceAttr} src="${buildAssetsURL(iifeChunkFileName)}"></script>`
+    } else {
+      iifeScript = `<script${nonceAttr}>${streamingIifeCode}</script>`
+    }
+  }
+  const shellContext: NuxtRenderHTMLContext = {
+    htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
+    head: normalizeChunks([bootstrapScript, headTags]),
+    bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
+    bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
+    body: [],
+    bodyAppend: [],
+  }
+  const nitroHooks = useNitroHooks()
+  if (import.meta.dev) {
+    const initialBodyLen = shellContext.body.length
+    const initialAppendLen = shellContext.bodyAppend.length
+    const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
+    if (r instanceof Promise) { await r }
+    if (shellContext.body.length !== initialBodyLen || shellContext.bodyAppend.length !== initialAppendLen) {
+      serverDiagnostics.NUXT_E8001({ path: event.url.pathname })
+    }
+  } else {
+    const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
+    if (r instanceof Promise) { await r }
+  }
+
+  const shellHtml = '<!DOCTYPE html>'
+    + `<html${joinAttrs(shellContext.htmlAttrs)}>`
+    + `<head>${joinTags(shellContext.head)}</head>`
+    + `<body${joinAttrs(shellContext.bodyAttrs)}>`
+    + joinTags(shellContext.bodyPrepend)
 
   // Snapshot status + headers before shell commit so we can warn in dev when
   // composables like `useCookie`, `setResponseStatus`, or `useResponseHeader`
@@ -825,8 +827,10 @@ async function renderStreamedResponse (ctx: {
         // Render any final head updates (payload scripts, etc.) and fire the
         // streaming `render:html:close` hook so modules can inject final
         // bodyAppend content (analytics tags, end-of-body scripts, etc.).
+        // held-back markup from renderSSRHeadSuspenseChunk goes here
+        const streamBodyTags = renderStreamBodyTags(ssrContext.head)
         const closingHead = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-        const closeContext = { bodyAppend: normalizeChunks([bodyTags, closingHead.bodyTags]) }
+        const closeContext = { bodyAppend: normalizeChunks([streamBodyTags, bodyTags, closingHead.bodyTags]) }
         const closeResult = nitroHooks.callHook('render:html:close', closeContext, { event })
         if (closeResult instanceof Promise) { await closeResult }
 
@@ -893,11 +897,28 @@ async function renderStreamedResponse (ctx: {
             ssrContext.head.push({
               script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload }),
             }, { tagPosition: 'bodyClose', tagPriority: 'high' })
+            // classify pending entries so their markup is held; a getter
+            // that throws on the error's broken state must not lose the
+            // payload script, the client's only path to the error page
+            try {
+              renderSSRHeadSuspenseChunk(ssrContext.head)
+            } catch (error) {
+              serverDiagnostics.NUXT_E8009({
+                path: event.url.pathname,
+                what: 'flushing the head tags registered after the shell',
+                cause: String(error),
+              })
+            }
+            const streamBodyTags = renderStreamBodyTags(ssrContext.head)
             const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-            controller.enqueue(encoder.encode(tail.bodyTags))
+            controller.enqueue(encoder.encode(streamBodyTags + tail.bodyTags))
           }
-        } catch {
-          // best-effort
+        } catch (error) {
+          serverDiagnostics.NUXT_E8009({
+            path: event.url.pathname,
+            what: 'rendering the closing HTML that carries the page error',
+            cause: String(error),
+          })
         }
         controller.enqueue(encoder.encode(APP_ROOT_CLOSE_TAG + '</body></html>'))
         controller.close()

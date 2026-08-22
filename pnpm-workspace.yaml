@@ -33,6 +33,9 @@ overrides:
   rolldown: "1.2.4"
   vite: "8.2.1"
   vue: "3.5.41"
+  unhead: "3.4.0"
+  "@unhead/vue": "3.4.0"
+  "@unhead/bundler": "3.4.0"
 
 allowBuilds:
   '@parcel/watcher': true
@@ -46,6 +49,9 @@ minimumReleaseAgeExclude:
   - vue-bundle-renderer
   - unrouting
   - unimport
+  - '@unhead/bundler@3.4.0'
+  - '@unhead/vue@3.4.0'
+  - unhead@3.4.0
   - oxc-walker@1.1.1
   - vue
   - '@vue/*'
@@ -53,7 +59,7 @@ minimumReleaseAgeExclude:
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
   app-runtime:
-    '@unhead/vue': ^3.3.2
+    '@unhead/vue': ^3.4.0
     '@vue/shared': ^3.5.41
     consola: ^3.4.2
     cookie-es: ^3.1.1
@@ -72,7 +78,7 @@ catalogs:
     ufo: ^1.6.4
     uncrypto: ^0.1.3
     unctx: ^3.0.0
-    unhead: ^3.3.2
+    unhead: ^3.4.0
     vue: ^3.5.41
     vue-bundle-renderer: ^2.3.2
     vue-router: ^5.2.0

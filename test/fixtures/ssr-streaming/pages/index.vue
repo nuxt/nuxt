@@ -51,5 +51,9 @@
 </template>
 
 <script setup lang="ts">
-useHead({ title: 'Streaming Home' })
+useHead({
+  title: 'Streaming Home',
+  link: [{ rel: 'canonical', href: 'https://example.com/' }],
+  script: [{ type: 'application/ld+json', innerHTML: '{"@type":"Organization","name":"Acme"}' }],
+})
 </script>
