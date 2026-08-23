@@ -40,13 +40,16 @@ test.describe('SSR Streaming', () => {
     }
   })
 
-  test('head tags are delivered via streaming push', async ({ fetch }) => {
+  test('synchronous head tags land in the shell <head>', async ({ fetch }) => {
     const res = await fetch('/')
     const html = await res.text()
 
-    // useHead runs during component render, so title is delivered via streaming push (not in shell <head>)
+    const head = html.slice(0, html.indexOf('</head>'))
+    expect(head).toContain('<title>Streaming Home</title>')
+    expect(head).toContain('rel="canonical"')
+    expect(head).toContain('application/ld+json')
+    // head entries registered after an await are still streamed as pushes
     expect(html).toContain('window.__unhead__.push(')
-    expect(html).toContain('Streaming Home')
   })
 
   test('async page streams head updates via suspense chunks', async ({ fetch }) => {
@@ -57,6 +60,89 @@ test.describe('SSR Streaming', () => {
     expect(html).toContain('Async Head Title')
     expect(html).toContain('Async description from suspense')
     expect(html).toContain('window.__unhead__.push(')
+  })
+
+  // late JSON-LD/noscript/bodyClose tags come back as real markup, only
+  // head-only tags (title, meta) ship as patches
+  test('late JSON-LD, noscript and bodyClose tags render as markup before </body>', async ({ fetch }) => {
+    const res = await fetch('/late-tags')
+    const html = await res.text()
+
+    const contentIdx = html.indexOf('late-loaded')
+    expect(contentIdx, 'page content must render').toBeGreaterThan(-1)
+
+    // markup, not escaped inside a push payload
+    const jsonLd = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>/)
+    expect(jsonLd, 'JSON-LD must render as markup').toBeTruthy()
+    expect(jsonLd!.index!, 'JSON-LD markup must follow the app content').toBeGreaterThan(contentIdx)
+    expect(html).toContain('"@type":"Product"')
+
+    expect(html, 'noscript must render as markup').toMatch(/<noscript[^>]*>late noscript fallback<\/noscript>/)
+    const bodyClose = html.lastIndexOf('</body>')
+    expect(html.indexOf('late noscript fallback')).toBeLessThan(bodyClose)
+
+    expect(html, 'entry-level bodyClose script must render as markup').toMatch(/<script[^>]*src="\/late-body-close\.js"[^>]*><\/script>/)
+
+    // patches never become served markup
+    expect(html).toContain('window.__unhead__.push(')
+    expect(html).not.toContain('<meta property="og:title"')
+    expect(html).not.toContain('<meta name="description"')
+  })
+
+  test('late tags hydrate: markup adopted, no duplicates, head patched', async ({ page, goto }) => {
+    const pageErrors: string[] = []
+    const consoleErrors: string[] = []
+    page.on('pageerror', err => pageErrors.push(err.message))
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') { consoleErrors.push(msg.text()) }
+    })
+
+    await goto('/late-tags')
+
+    await expect(page.locator('[data-testid="content"]').first()).toHaveText('late-loaded')
+    await expect(page).toHaveTitle('Late Tags Title')
+    await expect(page.locator('head meta[name="description"]')).toHaveAttribute('content', 'Late description from suspense')
+    await expect(page.locator('head meta[property="og:title"]')).toHaveAttribute('content', 'Late Tags og')
+
+    // the client adopts served markup instead of duplicating it
+    await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
+    await expect(page.locator('noscript')).toHaveCount(1)
+    await expect(page.locator('script[src="/late-body-close.js"]')).toHaveCount(1)
+
+    expect(pageErrors, `pageerror events: ${pageErrors.join(' | ')}`).toEqual([])
+    expect(consoleErrors, `console.error output: ${consoleErrors.join(' | ')}`).toEqual([])
+  })
+
+  // an identical late block must not double up, a distinct one still renders
+  test('late JSON-LD identical to the shell block is not served twice', async ({ fetch }) => {
+    const res = await fetch('/jsonld-dedupe')
+    const html = await res.text()
+
+    const acmeCount = (html.match(/"name":"Acme"/g) || []).length
+    expect(acmeCount, 'the shell Acme block must appear exactly once').toBe(1)
+    expect(html, 'the distinct late block must render as markup').toContain('"@type":"Product","name":"Dedupe Product"')
+
+    // nothing head-only here, so no patch at all
+    expect(html).not.toContain('window.__unhead__.push(')
+  })
+
+  // once the stream dies a held tag can't ship as a patch, the error close
+  // must still write it
+  test('held JSON-LD survives a mid-stream render error', async ({ fetch }) => {
+    const res = await fetch('/error-late-tags')
+    const html = await res.text()
+
+    expect(res.status).toBe(200)
+    expect(html).toContain('error late tags shell content')
+    expect(html).toContain('Late tags render failure')
+
+    // pushed after the shell flushed, must not land in the shell head
+    const jsonLdIdx = html.indexOf('"name":"Held Error Product"')
+    expect(jsonLdIdx, 'held JSON-LD must be written with the error closing').toBeGreaterThan(-1)
+    expect(jsonLdIdx).toBeGreaterThan(html.indexOf('id="__nuxt"'))
+    const headEnd = html.indexOf('</head>')
+    expect(jsonLdIdx, 'held JSON-LD must not be in the shell head').toBeGreaterThan(headEnd)
+    expect(html.trimEnd()).toMatch(/<\/body><\/html>$/)
   })
 
   test('client hydration works with streamed head', async ({ page, goto }) => {
@@ -307,8 +393,8 @@ test.describe('SSR Streaming', () => {
     const res = await fetch('/nonce')
     const html = await res.text()
 
-    // Bootstrap queue carries the nonce
-    expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__=\{_q:\[\]/)
+    // bootstrap keeps the nonce (3.4 added the `||(` clobber guard)
+    expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\|\|\(window\.__unhead__=\{_q:\[\]/)
     // Streamed head-push chunks carry the nonce
     expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\.push/)
 
