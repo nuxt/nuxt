@@ -391,13 +391,13 @@ defineProps<{ count: number }>()
     })
   })
 
-  describe('v-load-client', () => {
+  describe('nuxt-client', () => {
     describe('vite', () => {
       it('test transform with vite', async () => {
         const result = await viteTransform(`<template>
         <div>
           <HelloWorld />
-          <HelloWorld v-load-client />
+          <HelloWorld nuxt-client />
         </div>
       </template>
 
@@ -410,7 +410,7 @@ defineProps<{ count: number }>()
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent :v-load-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -426,11 +426,11 @@ defineProps<{ count: number }>()
         `)
       })
 
-      it('test dynamic v-load-client', async () => {
+      it('test dynamic nuxt-client', async () => {
         const result = await viteTransform(`<template>
         <div>
           <HelloWorld />
-          <HelloWorld :v-load-client="nuxtClient" />
+          <HelloWorld :nuxt-client="nuxtClient" />
         </div>
       </template>
 
@@ -445,7 +445,7 @@ defineProps<{ count: number }>()
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent :v-load-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -467,7 +467,7 @@ defineProps<{ count: number }>()
         const result = await viteTransform(`<template>
         <div>
           <HelloWorld />
-          <HelloWorld :v-load-client="nuxtClient" />
+          <HelloWorld :nuxt-client="nuxtClient" />
         </div>
       </template>
 
@@ -482,7 +482,7 @@ defineProps<{ count: number }>()
           "<template>
                   <div>
                     <HelloWorld />
-                    <HelloWorld :v-load-client="nuxtClient" />
+                    <HelloWorld :nuxt-client="nuxtClient" />
                   </div>
                 </template>
 
@@ -504,7 +504,7 @@ defineProps<{ count: number }>()
         const result = await viteTransform(`<template>
         <div>
           <HelloWorld />
-          <HelloWorld v-load-client />
+          <HelloWorld nuxt-client />
         </div>
       </template>
 
@@ -519,7 +519,7 @@ defineProps<{ count: number }>()
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent :v-load-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -531,7 +531,7 @@ defineProps<{ count: number }>()
       it('should not wrap an existing NuxtTeleportIslandComponent (#34817)', async () => {
         const result = await viteTransform(`<template>
         <div>
-          <NuxtTeleportIslandComponent :v-load-client="true">
+          <NuxtTeleportIslandComponent :nuxt-client="true">
             <HelloWorld />
           </NuxtTeleportIslandComponent>
         </div>
@@ -552,9 +552,9 @@ defineProps<{ count: number }>()
       it('should move v-if to the wrapper component', async () => {
         const result = await viteTransform(`<template>
         <div>
-        <HelloWorld v-if="false" v-load-client />
-        <HelloWorld v-else-if="true" v-load-client />
-        <HelloWorld v-else v-load-client />
+        <HelloWorld v-if="false" nuxt-client />
+        <HelloWorld v-else-if="true" nuxt-client />
+        <HelloWorld v-else nuxt-client />
         </div>
       </template>
       `, 'hello.server.vue', true)
@@ -567,9 +567,9 @@ defineProps<{ count: number }>()
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
-                  <NuxtTeleportIslandComponent v-if="false" :v-load-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
-                  <NuxtTeleportIslandComponent v-else-if="true" :v-load-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
-                  <NuxtTeleportIslandComponent v-else :v-load-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-if="false" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else-if="true" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
                 "
@@ -586,7 +586,7 @@ defineProps<{ count: number }>()
           <HelloWorld />
 
           <!-- should be not wrapped by NuxtTeleportIslandComponent for now -->
-          <HelloWorld v-load-client />
+          <HelloWorld nuxt-client />
         </div>
       </template>
 
@@ -603,7 +603,7 @@ defineProps<{ count: number }>()
                     <HelloWorld />
 
                     <!-- should be not wrapped by NuxtTeleportIslandComponent for now -->
-                    <HelloWorld v-load-client />
+                    <HelloWorld nuxt-client />
                   </div>
                 </template>
 
@@ -653,9 +653,9 @@ defineProps<{ to: string }>()
       expect(result).toContain('<NuxtTeleportSsrSlot')
     })
 
-    it('still wraps v-load-client on non-island components in deep mode', async () => {
+    it('still wraps nuxt-client on non-island components in deep mode', async () => {
       const source = `<template>
-<div><HelloWorld v-load-client /></div>
+<div><HelloWorld nuxt-client /></div>
 </template>
 
 <script setup lang="ts">
@@ -663,17 +663,17 @@ import HelloWorld from './HelloWorld.vue'
 </script>
 `
       const result = await viteTransform(source, 'components/Wrapper.vue', 'deep')
-      // The v-load-client wrapping is the whole point of `'deep'` mode and
+      // The nuxt-client wrapping is the whole point of `'deep'` mode and
       // must keep working for non-island files.
-      expect(result).toContain('<NuxtTeleportIslandComponent :v-load-client=')
+      expect(result).toContain('<NuxtTeleportIslandComponent :nuxt-client=')
     })
   })
 
   // https://github.com/nuxt/nuxt/issues/30016
   describe('selectiveClient: true with island pages', () => {
-    it('wraps v-load-client used directly inside a server page', async () => {
+    it('wraps nuxt-client used directly inside a server page', async () => {
       const source = `<template>
-<div><InteractiveButton v-load-client /></div>
+<div><InteractiveButton nuxt-client /></div>
 </template>
 
 <script setup lang="ts">
@@ -682,7 +682,7 @@ import InteractiveButton from '~/components/InteractiveButton.vue'
 `
       const pageFile = 'pages/index.server.vue'
       const result = await viteTransform(source, pageFile, true, () => [pageFile])
-      expect(result).toContain('<NuxtTeleportIslandComponent :v-load-client=')
+      expect(result).toContain('<NuxtTeleportIslandComponent :nuxt-client=')
     })
   })
 })

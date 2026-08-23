@@ -13,21 +13,21 @@ interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
   /**
    * Returns the resolved file paths of pages that should be rendered as islands
-   * (i.e. `pages/*.server.vue`). These need the same `<slot>` / `v-load-client`
+   * (i.e. `pages/*.server.vue`). These need the same `<slot>` / `nuxt-client`
    * transform as island components, but they live in the pages registry rather
    * than the components registry.
    */
   getServerPages?: () => string[]
   /**
-   * allow using `v-load-client` attribute on components
+   * allow using `nuxt-client` attribute on components
    */
   selectiveClient?: boolean | 'deep'
 }
 
-const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|v-load-client/
+const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const HAS_VFOR_RE = /\sv-for=/
 const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
-const NUXTCLIENT_ATTR_RE = /\s:?v-load-client(?:="[^"]*")?/g
+const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(?:="[^"]*")?/g
 const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport { vforBound as __vforBound } from \'#app/components/vfor\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(?:="[^"]*")?/g
 const KEY_RE = /:?key="[^"]"/g
@@ -156,7 +156,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             return
           }
 
-          if (!('v-load-client' in node.attributes) && !(':v-load-client' in node.attributes)) {
+          if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
             if (isIsland && 'v-for' in node.attributes) {
               const start = startingIndex + node.loc[0].start
               const end = startingIndex + node.loc[0].end
@@ -176,7 +176,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           }
 
           const { loc, attributes } = node
-          const attributeValue = attributes[':v-load-client'] || attributes['v-load-client'] || 'true'
+          const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
           const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
 
           let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
@@ -187,7 +187,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             startTag = boundVForInTag(startTag)
           }
 
-          s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :v-load-client="${attributeValue}">`)
+          s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
           s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
           s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
         })
