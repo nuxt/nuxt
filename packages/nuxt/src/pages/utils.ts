@@ -2,7 +2,8 @@ import fs from 'node:fs'
 
 import { normalize, relative } from 'pathe'
 import { joinURL } from 'ufo'
-import { getLayerDirectories, pageDiagnostics, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
+import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
@@ -10,7 +11,7 @@ import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
-import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
+import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4, vueRouterToRou3 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 
 import { getLoader } from '../core/utils/index.ts'
@@ -179,7 +180,9 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys, { extractSerializable: ctx.extractSerializable })
       if (route.meta) {
+        const dynamic = [...getDynamicMeta(routeMeta.meta), ...getDynamicMeta(route.meta)]
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
+        addDynamicMeta(routeMeta.meta, dynamic)
       }
       if (route.rules) {
         routeMeta.rules = defu({}, routeMeta.rules, route.rules)
@@ -232,7 +235,25 @@ const PAGE_META_MACRO_NAMES = new Set(['definePageMeta', 'defineRouteRules'])
 // is what actually identifies calls.
 const HAS_PAGE_MACRO_RE = new RegExp(`\\b(?:${[...PAGE_META_MACRO_NAMES].join('|')})\\b`)
 export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
-const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+/**
+ * Marks which `definePageMeta` keys could not be statically extracted and must come from the
+ * runtime macro module. A symbol keeps it out of `JSON.stringify`/`Object.keys` snapshots taken by
+ * modules that observe `page.meta`, at the cost of being dropped by key-enumerating helpers
+ * (`defu`, `klona`), so it is re-attached explicitly wherever meta is merged or cloned.
+ */
+const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
+
+function getDynamicMeta (meta: Record<PropertyKey, any> | undefined): Set<string> {
+  const dynamic = meta?.[DYNAMIC_META_KEY] as Set<string> | undefined
+  return dynamic ?? new Set<string>()
+}
+
+function addDynamicMeta (meta: Record<PropertyKey, any> | undefined, keys: Iterable<string>) {
+  const dynamic = new Set(keys)
+  if (meta && dynamic.size) {
+    meta[DYNAMIC_META_KEY] = dynamic
+  }
+}
 
 type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
 
@@ -365,7 +386,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   }
 
   if (cacheKey in extractCache && extractCache[cacheKey]) {
-    return klona(extractCache[cacheKey])
+    return cloneExtractedData(extractCache[cacheKey])
   }
 
   const loader = getLoader(absolutePath)
@@ -496,11 +517,17 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
   if (dynamicProperties.size) {
     extractedData.meta ??= {}
-    extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
+    addDynamicMeta(extractedData.meta, dynamicProperties)
   }
 
   extractCache[cacheKey] = extractedData
-  return klona(extractedData)
+  return cloneExtractedData(extractedData)
+}
+
+function cloneExtractedData (data: Partial<Record<keyof NuxtPage, any>>) {
+  const cloned = klona(data)
+  addDynamicMeta(cloned.meta, getDynamicMeta(data.meta))
+  return cloned
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {
@@ -512,6 +539,8 @@ type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> 
 type NormalizedRouteKeys = (keyof NormalizedRoute)[]
 interface NormalizeRoutesOptions {
   overrideMeta?: boolean
+  /** Pages whose component can only render in one environment, keyed by the stub to use elsewhere. */
+  restrictedPages?: ReadonlyMap<NuxtPage, keyof typeof PAGE_STUBS>
   serverComponentRuntime: string
   clientComponentRuntime: string
 }
@@ -571,11 +600,11 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] as Set<string> | undefined ?? new Set<string>()
+      const markedDynamic = getDynamicMeta(page.meta)
       const metaFiltered: Record<string, any> = {}
       let skipMeta = true
       for (const key in page.meta || {}) {
-        if (key !== DYNAMIC_META_KEY && page.meta![key] !== undefined) {
+        if (page.meta![key] !== undefined) {
           skipMeta = false
           metaFiltered[key] = page.meta![key]
         }
@@ -612,7 +641,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
-      const stub = page._noScripts ? PAGE_STUBS.noScripts : page._spaOnly ? PAGE_STUBS.spaOnly : undefined
+      const restriction = options.restrictedPages?.get(page)
+      const stub = restriction ? PAGE_STUBS[restriction] : undefined
       if (stub) {
         metaImports.add(stub.declaration)
       }
@@ -833,6 +863,71 @@ export function isSerializable (node: ESTree.Node): { value?: any, serializable:
   }
 
   return { serializable: false }
+}
+
+/**
+ * Statically determine whether a `router.options` file may modify `routes`.
+ * Returns `true` (conservatively) when the default export is not a plain object
+ * literal, contains spreads or computed keys, or defines a `routes` property.
+ */
+export function routerOptionsMayModifyRoutes (code: string, filename: string): boolean {
+  let mayModify = true
+  try {
+    parseAndWalk(code, filename, (node) => {
+      if (node.type !== 'ExportDefaultDeclaration') { return }
+      let declaration = node.declaration
+      while (declaration.type === 'TSAsExpression' || declaration.type === 'TSTypeAssertion' || declaration.type === 'TSSatisfiesExpression' || declaration.type === 'ParenthesizedExpression') {
+        declaration = declaration.expression
+      }
+      if (declaration.type !== 'ObjectExpression') { return }
+      mayModify = declaration.properties.some((property) => {
+        if (property.type === 'SpreadElement') { return true }
+        const key = property.key
+        const name = key.type === 'Identifier' && !property.computed ? key.name : key.type === 'Literal' ? String(key.value) : undefined
+        return name === undefined || name === 'routes'
+      })
+    })
+  } catch {
+    return true
+  }
+  return mayModify
+}
+
+/**
+ * Collect a rou3 pattern for every path a page can be reached by: its canonical
+ * path, each alias, and the whole subtree below it. Returns `undefined` when any
+ * path cannot be converted, so callers can fall back to matching everything;
+ * the routes that could not be converted are reported via `onUnconvertible`.
+ */
+export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] = ['/'], onUnconvertible?: (route: string) => void): string[] | undefined {
+  const patterns: string[] = []
+  let failed = false
+  for (const page of pages) {
+    const routes = new Set<string>()
+    for (const route of [page.path, ...toArray(page.alias || [])]) {
+      if (route.startsWith('/')) {
+        routes.add(route)
+      } else {
+        for (const prefix of prefixes) {
+          routes.add(joinURL(prefix, route))
+        }
+      }
+    }
+    for (const route of routes) {
+      const { patterns: converted } = vueRouterToRou3(route, { collapse: true })
+      if (!converted.length) {
+        onUnconvertible?.(route)
+        failed = true
+        continue
+      }
+      patterns.push(...converted)
+    }
+    if (page.children?.length) {
+      const childPatterns = collectRou3PagePatterns(page.children, [...routes], onUnconvertible)
+      if (childPatterns) { patterns.push(...childPatterns) } else { failed = true }
+    }
+  }
+  return failed ? undefined : patterns
 }
 
 export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {

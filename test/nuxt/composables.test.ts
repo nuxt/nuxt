@@ -96,8 +96,10 @@ describe('composables', () => {
       'useRequestEvent',
       'useRequestFetch',
       'isPrerendered',
+      'useRequestHeader',
       'useRequestHeaders',
       'useResponseHeader',
+      'useLoadingIndicator',
       'useCookie',
       'clearNuxtState',
       'useState',
@@ -358,6 +360,21 @@ describe('clearNuxtState', () => {
     clearNuxtState([key1, key2], { reset: true })
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
+  })
+
+  it('expect ref-initialised state to reset', () => {
+    const key = 'clearNuxtState-ref'
+    const state = useState(key, () => ref('test'))
+    state.value = 'test-2'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('test')
+  })
+
+  it('expect ref-initialised state to clear', () => {
+    const key = 'clearNuxtState-ref-2'
+    const state = useState(key, () => ref('test'))
+    clearNuxtState(key, { reset: false })
+    expect(state.value).toBeUndefined()
   })
 
   it('expect state in payload for function to reset', () => {
@@ -931,9 +948,15 @@ describe('routing utilities: `encodeRoutePath`', () => {
     expect(encodeRoutePath('/café?q=foo#bar')).toBe(`/${encodeURIComponent('café')}?q=foo#bar`)
   })
 
-  it('should encode special characters in path segments', () => {
-    expect(encodeRoutePath('/a&b')).toBe(`/a${encodeURIComponent('&')}b`)
+  it('should leave sub-delimiters literal, as vue-router does', () => {
+    expect(encodeRoutePath('/a&b')).toBe('/a&b')
+    expect(encodeRoutePath('/a+b')).toBe('/a+b')
+    expect(encodeRoutePath('/a[b]')).toBe('/a[b]')
     expect(encodeRoutePath('/normal')).toBe('/normal')
+  })
+
+  it('should preserve encoded slashes', () => {
+    expect(encodeRoutePath('/a%2Fb')).toBe('/a%2Fb')
   })
 })
 

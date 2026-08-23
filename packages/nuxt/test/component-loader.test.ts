@@ -55,7 +55,7 @@ import{defineComponent as _defineComponent}from"vue";const _sfc_main=_defineComp
 
 function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", line, column, vnode) }
 `
-    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: (code: string, id: string) => { code: string, map?: unknown } | null }).transform(
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string, map?: unknown } | null } }).transform.handler(
       content,
       '/app.vue',
     ))
@@ -127,7 +127,7 @@ export default {
   }
 };
 `
-    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: (code: string, id: string) => { code: string } | null }).transform(
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }).transform.handler(
       content,
       '/app.vue?vue&type=script&setup=true&lang.jsx',
     ))
@@ -266,6 +266,26 @@ export default {
       const __nuxt_component_0_lazy_if = createLazyIfComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_never = createLazyNeverComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));"
     `)
+  })
+
+  it('should auto-import components resolved via vapor createAssetComponent', async () => {
+    const content = `import { createAssetComponent as _createAssetComponent, template as _template } from "vue";
+const t0 = _template("<div></div>", 1);
+function _sfc_render(_ctx) {
+  const n3 = t0();
+  const n2 = _createAssetComponent("MyComponent", { label: "nested" });
+  const n4 = _createAssetComponent("UnknownComponent");
+  return n3;
+}
+`
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }).transform.handler(
+      content,
+      '/pages/index.vue',
+    ))
+    expect(code?.code).toContain('import { default as __nuxt_component_0 } from "/components/MyComponent.vue"')
+    expect(code?.code).toContain('import { createComponentWithFallback as __nuxt_createComponentWithFallback } from "vue"')
+    expect(code?.code).toContain('__nuxt_createComponentWithFallback(__nuxt_component_0, { label: "nested" })')
+    expect(code?.code).toContain('_createAssetComponent("UnknownComponent")')
   })
 
   it.each([

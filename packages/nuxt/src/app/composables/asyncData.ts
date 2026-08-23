@@ -15,7 +15,7 @@ import { dataDiagnostics } from '../diagnostics/data'
 
 import { neverHydratedSymbol } from './lazy-hydration'
 
-import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -491,10 +491,19 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       // data, not the in-flight background revalidation in `_asyncDataPromises`.
       let initialFetchPromise: Promise<unknown> | undefined
 
+      // vapor components have no vdom instance, but their setup still runs within a
+      // dedicated effect scope (distinct from the nuxt app's own scope, which plugins
+      // run in) where vue lifecycle hooks can register
+      const isWithinVaporComponent = () => {
+        if (!vapor || getCurrentInstance()) { return false }
+        const scope = getCurrentScope()
+        return !!scope && scope !== nuxtApp._scope
+      }
+
       // Server side
       if (import.meta.server && fetchOnServer && opts.immediate) {
         const promise = initialFetchPromise = initialFetch()
-        if (getCurrentInstance()) {
+        if (getCurrentInstance() || isWithinVaporComponent()) {
           onServerPrefetch(() => promise)
         } else {
           nuxtApp.hook('app:created', async () => { await promise })
@@ -505,13 +514,14 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       if (import.meta.client) {
         // Setup hook callbacks once per instance
         const instance = getCurrentInstance()
+        const inComponentSetup = !!instance || isWithinVaporComponent()
 
         // @ts-expect-error - instance.sp is an internal vue property
         if (instance && fetchOnServer && opts.immediate && !instance.sp) {
           // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
           instance.sp = []
         }
-        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
+        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
@@ -524,9 +534,11 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
           onUnmounted(() => cbs.splice(0, cbs.length))
         }
 
-        const isWithinClientOnly = instance && (instance._nuxtClientOnly || inject(clientOnlySymbol, false))
+        const isWithinClientOnly = inComponentSetup && (instance?._nuxtClientOnly || inject(clientOnlySymbol, false))
 
-        if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || asyncData.data.value !== undefined)) {
+        const hasServerData = key.value in nuxtApp.payload.data
+
+        if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || (asyncData.data.value !== undefined && (hasServerData || asyncData._initialCachedData !== undefined)))) {
           // 1. Hydration (server: true): no fetch
           if (pendingWhenIdle) {
             asyncData.pending.value = false
@@ -540,10 +552,14 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
               }
             })
           }
-        } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || opts.lazy) && opts.immediate) {
+        } else if (inComponentSetup && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating && (!fetchOnServer || hasServerData)) || opts.lazy) && opts.immediate) {
           // 2. Initial load (server: false): fetch on mounted
           // 3. Initial load or navigation (lazy: true): fetch on mounted
-          instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          if (instance) {
+            instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          } else {
+            onBeforeMount(() => { initialFetch() })
+          }
         } else if (opts.immediate && asyncData.status.value !== 'success') {
           // 4. Navigation (lazy: false) - or plugin usage: await fetch
           initialFetchPromise = initialFetch()

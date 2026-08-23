@@ -10,4 +10,21 @@ export default withMatrix({
       dir: `.output-${projectSuffix}`,
     },
   },
+  vite: {
+    plugins: [
+      {
+        name: 'test:virtual-module',
+        resolveId (id) {
+          if (id === 'test-virtual-module') {
+            return '\0test-virtual-module'
+          }
+        },
+        load (id) {
+          if (id === '\0test-virtual-module') {
+            return 'export default "virtual"'
+          }
+        },
+      },
+    ],
+  },
 })

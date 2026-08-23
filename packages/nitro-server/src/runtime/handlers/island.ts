@@ -17,7 +17,7 @@ import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } fr
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
-import { patchDevClientCss } from '../utils/renderer/dev-css'
+import { isStyleOfModule, patchDevClientCss } from '../utils/renderer/dev-css'
 import { recordDevClientCss } from '../utils/renderer/dev-client-css'
 import { prerenderRenderingURLs } from '../utils/cache'
 import { useStorage } from 'nitro/storage'
@@ -167,14 +167,15 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
 
     const link: Link[] = []
+    const modules = ssrContext.modules ?? []
     for (const resource of Object.values(styles)) {
       // Do not add links to resources that are inlined (vite v5+)
       if ('inline' in getURLQuery(resource.file)) {
         continue
       }
-      // Add CSS links in <head> for CSS files
-      // - in dev mode when rendering an island and the file has scoped styles and is not a page
-      if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
+      // The dev CSS set covers the whole module graph, so restrict it to the styles of the
+      // components this island rendered.
+      if (isStyleOfModule(resource.file, modules)) {
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
       }
     }

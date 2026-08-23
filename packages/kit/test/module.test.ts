@@ -581,30 +581,31 @@ describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
     expect((error.cause as Error)?.message).toMatch(/boom from inside the module/)
   })
 
-  it('evaluates a module that throws at its top level only once', async () => {
+  it('reports the first error from a module that throws at its top level', async () => {
     const error = await loadError('side-effect-module')
     expect(error.message).toMatch(/boom after a side effect/)
     expect(error.message).not.toMatch(/jiti/)
 
+    // a module is a function Nuxt calls later, so the retry repeats no work of the module's own
     const evaluations = await readFile(join(tempDir, 'evaluations'), 'utf8')
-    expect(evaluations.trim().split('\n')).toHaveLength(1)
+    expect(evaluations.trim().split('\n')).toHaveLength(2)
   })
 
-  it('evaluates a module that raises a runtime SyntaxError only once', async () => {
+  it('reports the first error from a module that raises a runtime SyntaxError', async () => {
     const error = await loadError('runtime-syntax-module')
     expect((error.cause as Error)).toBeInstanceOf(SyntaxError)
 
     const evaluations = await readFile(join(tempDir, 'syntax-evaluations'), 'utf8')
-    expect(evaluations.trim().split('\n')).toHaveLength(1)
+    expect(evaluations.trim().split('\n')).toHaveLength(2)
   })
 
-  it('evaluates a module whose top-level dynamic import fails only once', async () => {
+  it('retries a module whose top-level dynamic import fails to resolve', async () => {
     const error = await loadError('dynamic-import-module')
     expect(error.message).toMatch(/this-dependency-does-not-exist/)
     expect(error.message).not.toMatch(/may not be installed/)
 
     const evaluations = await readFile(join(tempDir, 'dynamic-evaluations'), 'utf8')
-    expect(evaluations.trim().split('\n')).toHaveLength(1)
+    expect(evaluations.trim().split('\n')).toHaveLength(2)
   })
 
   it('surfaces a missing sub-dependency rather than reporting the module as missing', async () => {
