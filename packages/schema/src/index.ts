@@ -6,7 +6,7 @@ export type { AppConfig, AppConfigInput, CustomAppConfig, DefineNuxtConfig, Nuxt
 export type { NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtLayerSourceOptions } from './types/layers.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export type { ImportPresetWithDeprecation } from './types/hooks.ts'
-export type { GenerateAppOptions, HookResult, NuxtAnalyzeMeta, NuxtHookName, NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, NuxtPageMeta, TSReference, VueTSConfig, WatchEvent } from './types/hooks.ts'
+export type { GenerateAppOptions, HookResult, ModuleInstallInfo, NuxtAnalyzeMeta, NuxtHookName, NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, NuxtPageMeta, TSReference, VueTSConfig, WatchEvent } from './types/hooks.ts'
 export type { NuxtDeprecatedHook, NuxtHookCallback, NuxtHookKeys, NuxtHookRegistry, NuxtHookSpyEvent, NuxtNestedHooks } from './types/hookable.ts'
 export type { NuxtManifest, NuxtManifestResource } from './types/manifest.ts'
 export type { NuxtIgnoreMatcher, NuxtIgnoreOptions, NuxtIgnoreTestResult } from './types/ignore.ts'
