@@ -583,7 +583,6 @@ overrides:
   rolldown: 1.2.4
   vite: 8.2.1
   vue: 3.5.41
-  vue-onigiri: github:huang-julien/vue-cryo#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core
 
 patchedDependencies:
   changelogen: 8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b
@@ -784,8 +783,8 @@ importers:
         specifier: catalog:vue
         version: 3.3.10
       vue-onigiri:
-        specifier: github:huang-julien/vue-cryo#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core
-        version: git+https://github.com/huang-julien/vue-cryo.git#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))
+        specifier: 0.5.1
+        version: 0.5.1(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.2.0(@rspack/core@2.1.10(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.62.4)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))(webpack@5.109.2(cssnano@8.0.6(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
@@ -991,8 +990,8 @@ importers:
         specifier: catalog:vue
         version: 0.1.0
       vue-onigiri:
-        specifier: github:huang-julien/vue-cryo#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core
-        version: git+https://github.com/huang-julien/vue-cryo.git#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))
+        specifier: ^0.5.1
+        version: 0.5.1(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -1190,8 +1189,8 @@ importers:
         specifier: catalog:vue
         version: 3.3.10
       vue-onigiri:
-        specifier: github:huang-julien/vue-cryo#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core
-        version: git+https://github.com/huang-julien/vue-cryo.git#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))
+        specifier: ^0.5.1
+        version: 0.5.1(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.2.0(@rspack/core@2.1.10(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.62.4)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))(webpack@5.109.2(cssnano@8.0.6(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
@@ -1628,8 +1627,8 @@ importers:
         specifier: catalog:build
         version: 2.3.2
       vue-onigiri:
-        specifier: github:huang-julien/vue-cryo#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core
-        version: git+https://github.com/huang-julien/vue-cryo.git#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))
+        specifier: ^0.5.1
+        version: 0.5.1(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -10065,9 +10064,8 @@ packages:
       vue:
         optional: true
 
-  vue-onigiri@git+https://github.com/huang-julien/vue-cryo.git#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core:
-    resolution: {commit: fb85b53e258c56fb38a2cb3285274bea040370a6, path: /packages/core, repo: https://github.com/huang-julien/vue-cryo.git, type: git}
-    version: 0.4.1
+  vue-onigiri@0.5.1:
+    resolution: {integrity: sha512-INEiVS4ON63yuNWkNAZntp/+1/7hC6rsVHN2EXsYy5VczCar86ycvTTH/KYbYk4TDaxHz5Z4EOujLf9ndkps0w==}
     peerDependencies:
       '@vue/server-renderer': ^3.5.0
       vite: 8.2.1
@@ -18894,7 +18892,7 @@ snapshots:
       '@vue/compiler-sfc': 3.5.41
       vue: 3.5.41(typescript@6.0.3)
 
-  vue-onigiri@git+https://github.com/huang-julien/vue-cryo.git#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3)):
+  vue-onigiri@0.5.1(@vue/server-renderer@3.5.41)(vite@8.2.1)(vue@3.5.41(typescript@6.0.3)):
     dependencies:
       '@babel/parser': 7.29.8
       '@vue/compiler-dom': 3.5.41

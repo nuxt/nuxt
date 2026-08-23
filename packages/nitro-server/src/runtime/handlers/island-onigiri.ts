@@ -7,6 +7,7 @@ import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
 import { serializeApp } from 'vue-onigiri/runtime/serialize'
+import { defineComponent, getCurrentInstance, h } from 'vue'
 import { filterIslandProps, getIslandHash } from '#app/island-hash'
 import { findUnsafeIslandPropKey } from '#app/island-props'
 import { MAX_ISLAND_BODY_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
@@ -24,10 +25,26 @@ import type { Storage } from 'unstorage'
 export const islandCache: Storage<NuxtIslandResponse> | null = import.meta.prerender ? useStorage<NuxtIslandResponse>('internal:nuxt:prerender:island') : null
 export const islandPropCache: Storage<string> | null = import.meta.prerender ? useStorage<string>('internal:nuxt:prerender:island-props') : null
 
-let _componentsPromise: Promise<Record<string, any>> | undefined
-function getComponents (): Promise<Record<string, any>> {
-  _componentsPromise ||= getComponentsIslands().then(r => r.islandComponents)
-  return _componentsPromise
+type IslandsModule = Awaited<ReturnType<typeof getComponentsIslands>>
+
+let _islandsPromise: Promise<IslandsModule> | undefined
+function getIslands (): Promise<IslandsModule> {
+  _islandsPromise ||= getComponentsIslands()
+  return _islandsPromise
+}
+
+const PAGE_ISLAND_PREFIX = 'page_'
+
+function createPageIslandRoot (name: string, islands: IslandsModule) {
+  return defineComponent({
+    name: 'PageIslandRoot',
+    inheritAttrs: false,
+    setup (_, { attrs }) {
+      const route = getCurrentInstance()!.appContext.config.globalProperties.$route
+      islands.providePageIslandDepth(route, islands.pageIslandRoutes[name])
+      return () => h(islands.islandComponents[name], attrs)
+    },
+  })
 }
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
@@ -138,8 +155,10 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   // Pin the SSR app's root to the requested island component so
   // `serializeApp` produces the island's AST (not the wrapping app
   // shell). Resolved via the build-time `components.islands.mjs` map.
-  const components = await getComponents()
-  const rootComponent = components[islandContext.name]
+  const islands = await getIslands()
+  const rootComponent = islandContext.name.startsWith(PAGE_ISLAND_PREFIX)
+    ? createPageIslandRoot(islandContext.name, islands)
+    : islands.islandComponents[islandContext.name]
 
   const app = await createSSRApp(ssrContext, { rootComponent })
 

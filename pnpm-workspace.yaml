@@ -33,15 +33,11 @@ overrides:
   rolldown: "1.2.4"
   vite: "8.2.1"
   vue: "3.5.41"
-  # TODO: temporary — pinned to the manifest template-scan + `extraEntries` commits; switch to the released version once published
-  vue-onigiri: "github:huang-julien/vue-cryo#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core"
 
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   unrs-resolver: false
-  # The git-pinned vue-onigiri builds its dist via `prepack` on install
-  'vue-onigiri@git+https://github.com/huang-julien/vue-cryo.git#fb85b53e258c56fb38a2cb3285274bea040370a6&path:/packages/core': true
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
@@ -64,7 +60,7 @@ minimumReleaseAgeExclude:
   - oxc-walker@1.1.1
   - vue
   - '@vue/*'
-  - vue-onigiri@0.4.1
+  - vue-onigiri@0.5.1
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)

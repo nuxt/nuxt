@@ -194,7 +194,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const islandsResolvedPath = resolveModulePath('#vite-node-islands-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
 
-  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath].map(p => pathToFileURL(p).href))
+  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, islandsResolvedPath, fetchResolvedPath].map(p => pathToFileURL(p).href))
   nitro.options.rollupConfig ||= {}
   const existingExternal = nitro.options.rollupConfig.external
   nitro.options.rollupConfig.external = (id, ...args) => {
