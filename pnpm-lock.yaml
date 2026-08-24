@@ -77,8 +77,8 @@ catalogs:
       specifier: ^0.5.10
       version: 0.5.10
     '@nuxt/cli':
-      specifier: npm:@nuxt/cli-nightly@4.0.0-20260824-085102-53f3342
-      version: 4.0.0-20260824-085102-53f3342
+      specifier: npm:@nuxt/cli-nightly@4.0.0-20260824-100352-14c268e
+      version: 4.0.0-20260824-100352-14c268e
     '@nuxt/devtools':
       specifier: ^3.4.2
       version: 3.4.2
@@ -602,7 +602,7 @@ importers:
         version: 8.0.3(supports-color@10.2.2)
       '@nuxt/cli':
         specifier: catalog:build
-        version: '@nuxt/cli-nightly@4.0.0-20260824-085102-53f3342(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.146.0)(rolldown@1.2.5)'
+        version: '@nuxt/cli-nightly@4.0.0-20260824-100352-14c268e(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.146.0)(rolldown@1.2.5)'
       '@nuxt/eslint-config':
         specifier: catalog:dev
         version: 1.17.0(@typescript-eslint/utils@8.67.0(eslint@10.9.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.5.41)(eslint@10.9.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -1005,7 +1005,7 @@ importers:
         version: 0.5.10(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(webpack@5.109.2(cssnano@8.0.8(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
       '@nuxt/cli':
         specifier: catalog:build
-        version: '@nuxt/cli-nightly@4.0.0-20260824-085102-53f3342(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.146.0)(rolldown@1.2.5)'
+        version: '@nuxt/cli-nightly@4.0.0-20260824-100352-14c268e(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.146.0)(rolldown@1.2.5)'
       '@nuxt/devtools':
         specifier: catalog:build
         version: 3.4.2(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))(supports-color@10.2.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -2922,8 +2922,8 @@ packages:
     resolution: {integrity: sha512-llZkSzeTsimFx64U+ThT2xQM2uEce8GIQUYvxgbB6ZFvBhV2LP9LeJJb3HT+syG0uCFLsTCHjV9SfC0WNU1vtA==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@nuxt/cli-nightly@4.0.0-20260824-085102-53f3342':
-    resolution: {integrity: sha512-kcZ4+B/gTKQst0ma7ogMAc19tzVtqXTPjdvYZXAHRmHy6uVxPethW2nRJ89/K1fn1OgMrxYM8kOVfFld/p3GsQ==}
+  '@nuxt/cli-nightly@4.0.0-20260824-100352-14c268e':
+    resolution: {integrity: sha512-VFxQZKz1TwYcfDw/eMjb3y9dKVMniXZAkETvGsNn9pUX/pnUZ3/wg7+IRj0n+zG+h/3BXwxLkrMzrCk4CVhXFQ==}
     engines: {node: ^22.19.0 || ^24.11.0 || >=26.0.0}
     hasBin: true
     peerDependencies:
@@ -11203,7 +11203,7 @@ snapshots:
     dependencies:
       which: 7.0.0
 
-  '@nuxt/cli-nightly@4.0.0-20260824-085102-53f3342(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.146.0)(rolldown@1.2.5)':
+  '@nuxt/cli-nightly@4.0.0-20260824-100352-14c268e(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.146.0)(rolldown@1.2.5)':
     dependencies:
       '@clack/prompts': 1.7.0
       args-tokenizer: 0.3.0
