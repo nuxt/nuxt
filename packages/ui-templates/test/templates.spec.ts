@@ -73,13 +73,13 @@ describe('template', () => {
       const script = template().match(/<script>([^<]*__NUXT_LOADING__[^<]*)<\/script>/)![1]!
 
       const delays: number[] = []
-      const fetches: string[] = []
+      const fetches: Array<{ url: string, init?: { headers?: Record<string, string> } }> = []
       let reloaded = false
       let next: (() => void) | undefined
 
       const window = {
-        fetch: (url: string) => {
-          fetches.push(url)
+        fetch: (url: string, init?: { headers?: Record<string, string> }) => {
+          fetches.push({ url, init })
           return Promise.resolve({ text: () => Promise.resolve(options.body) })
         },
         location: { href: 'http://localhost:3000/', reload: () => { reloaded = true } },
@@ -126,6 +126,13 @@ describe('template', () => {
       await poll.advance(1)
 
       expect(poll.reloaded).toBe(true)
+    })
+
+    it('polls as a document request', async () => {
+      const poll = await runPoll({ body: '<html>ready</html>' })
+      await poll.advance(1)
+
+      expect(poll.fetches).toEqual([{ url: 'http://localhost:3000/', init: { headers: { accept: 'text/html' } } }])
     })
   })
 })
