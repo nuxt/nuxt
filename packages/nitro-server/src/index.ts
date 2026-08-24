@@ -150,6 +150,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   delete globalCompilerOptions.paths
   delete globalCompilerOptions.noEmit
 
+  // Nitro writes server auto-imports (including anything registered with `addServerImports`)
+  // to `nitro-imports.d.ts` here, and maps `#imports` to it in `tsconfig.server.json`.
+  const nitroGeneratedTypesDir = join(nuxt.options.buildDir, 'types/nitro')
+  const serverImportsDeclaration = join(nitroGeneratedTypesDir, 'nitro-imports')
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     typescript: {
       tsConfig: { compilerOptions: globalCompilerOptions } as NitroTSConfig,
@@ -206,6 +211,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     baseURL: nuxt.options.app.baseURL,
     virtual: {
+      // server auto-imports under a specifier that is unambiguous outside the server
+      // context; nitro re-exports `#imports` as `#nitro` in the same way
+      '#imports/server': 'export * from "#imports"',
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
@@ -277,7 +285,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     typescript: {
       generateTsConfig: true,
       tsconfigPath: join(nuxt.options.buildDir, 'tsconfig.server.json'),
-      generatedTypesDir: join(nuxt.options.buildDir, 'types/nitro'),
+      generatedTypesDir: nitroGeneratedTypesDir,
       tsConfig: {
         compilerOptions: {
           lib: ['esnext', 'webworker', 'dom.iterable'],
@@ -286,6 +294,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           moduleResolution: 'bundler',
           noUncheckedIndexedAccess: true,
           allowArbitraryExtensions: true,
+          paths: {
+            // same target nitro maps `#imports` to, under a server-unambiguous specifier
+            '#imports/server': [serverImportsDeclaration],
+          },
         },
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
@@ -1100,6 +1112,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
     opts.references.push({ path: resolve(nuxt.options.rootDir, nitroConfig.typescript!.generatedTypesDir!, 'nitro.d.ts') })
+
+    // Server files are also checked in the app context, where `#imports` resolves to the Vue
+    // app's auto-imports and server-only utils are missing. Deliberately not a
+    // `nuxt.options.alias` entry: importing server utils in app code must remain an error.
+    opts.tsConfig.compilerOptions ||= {}
+    opts.tsConfig.compilerOptions.paths ||= {}
+    opts.tsConfig.compilerOptions.paths['#imports/server'] ||= [serverImportsDeclaration]
 
     // ensure aliases shared between nuxt + nitro are included in shared tsconfig
     opts.sharedTsConfig.compilerOptions ||= {}
