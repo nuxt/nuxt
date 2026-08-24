@@ -66,6 +66,10 @@ export default withMatrix({
   },
   appConfig: {
     fromNuxtConfig: true,
+    themed: {
+      colors: { primary: 'blue', neutral: 'gray' },
+      slots: { root: '', body: '' },
+    },
     nested: {
       val: 1,
     },
