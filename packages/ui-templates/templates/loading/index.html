@@ -70,7 +70,7 @@
         const check = async () => {
           try {
             const body = await window
-              .fetch(window.location.href)
+              .fetch(window.location.href, { headers: { accept: 'text/html' } })
               .then(r => r.text())
             if (!body.includes('__NUXT_LOADING__')) {
               return window
