@@ -225,7 +225,7 @@ catalogs:
     '@typescript-eslint/parser': 8.67.0
     '@unocss/reset': 66.8.1
     '@vitejs/plugin-vue-jsx': 5.1.6
-    '@vitest/coverage-v8': 4.1.10
+    '@vitest/coverage-v8': 4.1.11
     '@vue/compiler-core': 3.5.41
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.11
@@ -263,7 +263,7 @@ catalogs:
     tsdown: 0.22.14
     typescript: 6.0.3
     unocss: 66.8.1
-    vitest: 4.1.10
+    vitest: 4.1.11
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.2.5
     vue-tsc: 3.3.11
