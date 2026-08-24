@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
 import type { ConfigOptions } from '@nuxt/test-utils/playwright'
 import { isCI, isWindows } from 'std-env'
