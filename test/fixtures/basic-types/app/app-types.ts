@@ -6,8 +6,8 @@ import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
 import type { $Fetch, NitroFetchRequest, NitroRouteRules } from 'nitropack/types'
 
 import { $fetch } from '#build/fetch'
-import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
-import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
+import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
+import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError, PageMeta } from '#app'
@@ -872,9 +872,30 @@ describe('app config', () => {
       someThing?: {
         value?: string | false
       }
+      themed: {
+        colors: { primary: string, neutral: string }
+        slots: { root: string, body: string }
+        variants: string[]
+        format: (value: string) => string
+      }
       [key: string]: unknown
     }
     expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
+  })
+  it('does not recurse into function and array values', () => {
+    expectTypeOf<AppConfig['themed']['format']>().toEqualTypeOf<(value: string) => string>()
+    expectTypeOf<AppConfig['themed']['variants']>().toEqualTypeOf<string[]>()
+  })
+  it('accepts partial overrides of module-provided app config', () => {
+    expectTypeOf<AppConfigInput['themed']>().toEqualTypeOf<{
+      colors?: { primary?: string, neutral?: string }
+      slots?: { root?: string, body?: string }
+      variants?: string[]
+      format?: (value: string) => string
+    } | undefined>()
+  })
+  it('resolves the same input type through `nuxt/schema` and `@nuxt/schema`', () => {
+    expectTypeOf<AppConfigInputFromNuxt['themed']>().toEqualTypeOf<AppConfigInput['themed']>()
   })
 })
 
