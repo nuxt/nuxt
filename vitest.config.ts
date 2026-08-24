@@ -110,9 +110,14 @@ const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nux
 
 export default defineConfig({
   test: {
+    includeTaskLocation: true,
     onConsoleLog (log) {
       if (log.includes('<Suspense> is an experimental feature')) { return false }
     },
+    reporters: [
+      'default',
+      ['@flakiness/vitest', { flakinessProject: 'nuxt/nuxt' }]
+    ],
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },

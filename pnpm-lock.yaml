@@ -281,6 +281,12 @@ catalogs:
     '@eslint/markdown':
       specifier: 8.0.3
       version: 8.0.3
+    '@flakiness/playwright':
+      specifier: 2.0.2
+      version: 2.0.2
+    '@flakiness/vitest':
+      specifier: 1.9.1
+      version: 1.9.1
     '@nuxt/eslint-config':
       specifier: 1.17.0
       version: 1.17.0
@@ -608,6 +614,12 @@ importers:
       '@eslint/markdown':
         specifier: catalog:dev
         version: 8.0.3(supports-color@10.2.2)
+      '@flakiness/playwright':
+        specifier: catalog:dev
+        version: 2.0.2
+      '@flakiness/vitest':
+        specifier: catalog:dev
+        version: 1.9.1
       '@nuxt/cli':
         specifier: catalog:build
         version: '@nuxt/cli-nightly@4.0.0-20260817-085717-0bb4e52(@nuxt/schema@packages+schema)(cac@7.0.0)(commander@15.0.0)(jiti@2.7.0)(oxc-parser@0.144.0)(rolldown@1.2.4)'
@@ -2739,6 +2751,15 @@ packages:
   '@eslint/plugin-kit@0.7.2':
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@flakiness/playwright@2.0.2':
+    resolution: {integrity: sha512-HYcItgyZQ10UwpCPdePZgxK6gP0ow26oQfqrH4vAJtmXrmsB9NP3yfY7D/5X0DkKAlR86QWX94Ql2nIsO5V+xQ==}
+    engines: {node: ^20.17.0 || >=22.9.0}
+    hasBin: true
+
+  '@flakiness/vitest@1.9.1':
+    resolution: {integrity: sha512-BQBekpxKD8Be58M+mPmtvh4FGDBJzStzPBJWW2+QDC6ax2ZqKxRTE2O/wHjeZERyOs5Et9mgaXjL51AY1NSoVg==}
+    engines: {node: ^20.17.0 || >=22.9.0}
 
   '@floating-ui/core@1.8.0':
     resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
@@ -11025,6 +11046,10 @@ snapshots:
     dependencies:
       '@eslint/core': 1.2.1
       levn: 0.4.1
+
+  '@flakiness/playwright@2.0.2': {}
+
+  '@flakiness/vitest@1.9.1': {}
 
   '@floating-ui/core@1.8.0':
     dependencies:
