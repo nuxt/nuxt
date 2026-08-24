@@ -53,12 +53,12 @@ minimumReleaseAgeExclude:
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
   app-runtime:
-    '@unhead/vue': ^3.3.2
+    '@unhead/vue': ^3.4.0
     '@vue/shared': ^3.5.41
     consola: ^3.4.2
     cookie-es: ^3.1.1
     defu: ^6.1.7
-    devalue: ^5.9.0
+    devalue: ^5.9.1
     errx: ^0.1.2
     fnv1a-64: ^0.1.2
     hookable: ^6.1.1
@@ -71,8 +71,8 @@ catalogs:
     perfect-debounce: ^2.1.0
     ufo: ^1.6.4
     uncrypto: ^0.1.3
-    unctx: ^3.0.0
-    unhead: ^3.3.2
+    unctx: ^3.0.1
+    unhead: ^3.4.0
     vue: ^3.5.41
     vue-bundle-renderer: ^2.3.2
     vue-router: ^5.2.0
@@ -91,13 +91,13 @@ catalogs:
     # kept in lockstep with the vue override above
     '@vue/compiler-sfc': 3.5.41
     rspack-vue-loader: ^17.6.2
-    vue-component-type-helpers: ^3.3.10
+    vue-component-type-helpers: ^3.3.11
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
 
   # vite/rolldown/oxc toolchain
   vite:
-    magic-string: ^1.2.0
+    magic-string: ^1.2.2
     oxc-walker: ^1.1.1
     # needs to match vite's own `~1.1.5` pin
     rolldown: ~1.2.4
@@ -133,9 +133,9 @@ catalogs:
   # build-time deps of published packages
   build:
     '@ampproject/remapping': ^2.3.0
-    '@dxup/nuxt': ^0.5.8
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260817-085717-0bb4e52
-    '@nuxt/devtools': ^4.0.0-alpha.10
+    '@dxup/nuxt': ^0.5.10
+    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260824-000041-020d1d2
+    '@nuxt/devtools': ^4.0.0-alpha.15
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.41
     autoprefixer: ^10.5.4
@@ -145,7 +145,7 @@ catalogs:
     compatx: ^0.2.0
     confbox: ^0.2.4
     consola: ^3.4.2
-    cssnano: ^8.0.6
+    cssnano: ^8.0.8
     defu: ^6.1.7
     destr: ^2.0.5
     dotenv: ^17.4.2
@@ -180,13 +180,13 @@ catalogs:
     postcss-url: ^10.1.4
     rc9: ^3.0.1
     scule: ^1.3.0
-    seroval: ^1.6.2
+    seroval: ^1.6.3
     std-env: ^4.2.0
     tinyglobby: ^0.2.17
     ufo: ^1.6.4
     ultrahtml: ^1.7.0
-    rou3: ^0.8.1
-    unctx: ^3.0.0
+    rou3: ^0.9.2
+    unctx: ^3.0.1
     undici: ^8.10.0
     unenv: 2.0.0-rc.24 # intentionally pinned to match nitro's dependency
     unimport: ^6.4.0
@@ -207,7 +207,7 @@ catalogs:
     '@codspeed/vitest-plugin': 5.7.1
     '@eslint/markdown': 8.0.3
     '@nuxt/eslint-config': 1.17.0
-    '@nuxt/scripts': 1.3.6
+    '@nuxt/scripts': 1.3.8
     '@nuxt/test-utils': 4.1.0
     '@parcel/watcher': 2.6.0
     '@playwright/test': 1.62.1
@@ -223,27 +223,27 @@ catalogs:
     '@types/webpack-bundle-analyzer': 4.7.0
     '@types/webpack-hot-middleware': 2.25.12
     '@typescript-eslint/parser': 8.67.0
-    '@unocss/reset': 66.7.5
+    '@unocss/reset': 66.8.1
     '@vitejs/plugin-vue-jsx': 5.1.6
     '@vitest/coverage-v8': 4.1.10
     '@vue/compiler-core': 3.5.41
     '@vue/devtools-api': 8.2.1
-    '@vue/language-core': 3.3.10
+    '@vue/language-core': 3.3.11
     '@vue/test-utils': 2.4.11
     acorn: 8.18.0
     beasties: 0.4.3
     case-police: 2.2.1
     changelogen: 0.6.2
     esbuild: 0.28.2
-    eslint: 10.8.1
+    eslint: 10.9.0
     eslint-plugin-import-x: 4.17.1
     eslint-plugin-no-only-tests: 3.4.0
     eslint-plugin-perfectionist: 5.10.1
     eslint-typegen: 2.3.1
     h3: 2.0.1-rc.22 # intentionally pinned to match nitro's dependency
     h3-next: 'npm:h3@2.0.1-rc.22' # intentionally pinned to match nitro's dependency
-    happy-dom: 20.11.2
-    html-validate: 11.8.0
+    happy-dom: 20.11.6
+    html-validate: 11.9.0
     htmlnano: 3.4.0
     installed-check: 11.0.0
     knip: 6.32.2
@@ -251,22 +251,22 @@ catalogs:
     markdownlint-cli: 0.49.1
     nitropack: 2.13.4
     nuxt-content-twoslash: 0.4.0
-    oxc-transform: 0.144.0
+    oxc-transform: 0.146.0
     pkg-pr-new: 0.0.88
     playwright-core: 1.62.1
     prettier: 3.9.6
-    rollup: 4.62.4
+    rollup: 4.62.5
     rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
     svgo: 4.0.2
     tinyexec: 1.3.0
     tsdown: 0.22.14
     typescript: 6.0.3
-    unocss: 66.7.5
+    unocss: 66.8.1
     vitest: 4.1.10
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.2.5
-    vue-tsc: 3.3.10
+    vue-tsc: 3.3.11
 
 catalogPrune: true
 minimumReleaseAgeExcludePrune: true
