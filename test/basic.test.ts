@@ -38,7 +38,7 @@ await setup({
 
 describe.skipIf(!runsOnceInMatrix)('server api', () => {
   it('provides the application secret only in private runtime config', async () => {
-    expect(await $fetch<string>('/api/runtime-config')).toBe(secretKey)
+    expect(await $fetch<string>('/api/runtime-config/secret-key')).toBe(secretKey)
     expect(await $fetch<string>('/')).not.toContain(secretKey)
   })
 
