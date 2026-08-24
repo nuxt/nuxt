@@ -116,7 +116,7 @@ export default defineConfig({
     },
     reporters: [
       'default',
-      ['@flakiness/vitest', { flakinessProject: 'nuxt/nuxt' }]
+      ['@flakiness/vitest', { flakinessProject: 'nuxt/nuxt' }],
     ],
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
