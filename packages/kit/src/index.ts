@@ -58,6 +58,8 @@ export type { ResolveTypePathsOptions } from './types.ts'
 export { recoverThrottledChanges } from './watch.ts'
 export type { RecoverableWatcher } from './watch.ts'
 export { logger, useLogger } from './logger.ts'
+export { useTerminal } from './terminal.ts'
+export type { NuxtTerminal, NuxtTerminalNotice, NuxtTerminalNotification, NuxtTerminalTask } from './terminal.ts'
 export type { NuxtLogFn, NuxtLogInput, NuxtLogLevel, NuxtLogObject, NuxtLogReporter, NuxtLogType, NuxtLogger, NuxtLoggerOptions, NuxtPromptOptions } from './logger.ts'
 
 // Dependencies
