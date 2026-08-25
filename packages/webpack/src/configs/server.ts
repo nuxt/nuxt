@@ -1,5 +1,6 @@
 import { isAbsolute, normalize, resolve } from 'pathe'
 import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
+import { shouldEnableTypeCheck } from '@nuxt/schema'
 import { parseNodeModulePath } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
 import type { WebpackConfigContext } from '../utils/config.ts'
@@ -54,7 +55,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'nuxt-nightly',
     '!',
     '-!',
-    '~',
+    '~!',
     '@/',
     '#',
     ...ctx.options.build.transpile,
@@ -64,7 +65,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'nitro/runtime-config',
     // TODO: remove in v5
     '#internal/nitro',
-    'nitropack/runtime',
+    'nitropack/runtime-config',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
     ...ctx.nuxt['~runtimeDependencies'] || [],
@@ -149,7 +150,7 @@ function serverPlugins (ctx: WebpackConfigContext) {
   }
 
   // Add type-checking
-  if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
+  if (shouldEnableTypeCheck(ctx.nuxt.options.typescript.typeCheck, { dev: ctx.nuxt.options.dev, test: ctx.nuxt.options.test })) {
     ctx.config.plugins!.push(new TsCheckerPlugin({
       logger,
     }))
