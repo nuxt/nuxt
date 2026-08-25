@@ -15,7 +15,6 @@ allowBuilds:
   unrs-resolver: false
 
 patchedDependencies:
-  changelogen: patches/changelogen.patch
   # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
   nitropack@2.13.4: patches/nitropack@2.13.4.patch
 
@@ -217,7 +216,6 @@ catalogs:
     acorn: 8.18.0
     beasties: 0.4.3
     case-police: 2.2.1
-    changelogen: 0.6.2
     esbuild: 0.28.2
     eslint: 10.9.0
     eslint-plugin-import-x: 4.17.1

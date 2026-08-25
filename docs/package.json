@@ -10,6 +10,9 @@
   "description": "Documentation for Nuxt in raw markdown",
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "prepack": "node ../scripts/prepack.ts"
+  },
   "exports": {
     "./*": "./*"
   },

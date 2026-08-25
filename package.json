@@ -72,7 +72,6 @@
     "acorn": "catalog:dev",
     "autoprefixer": "10.5.4",
     "case-police": "catalog:dev",
-    "changelogen": "catalog:dev",
     "consola": "catalog:build",
     "cssnano": "8.0.8",
     "defu": "catalog:build",
