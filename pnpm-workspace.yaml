@@ -9,7 +9,6 @@ packages:
   - test/fixtures/*/_local-modules/*
 
 patchedDependencies:
-  changelogen: patches/changelogen.patch
   nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
   # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
   nitropack@2.13.4: patches/nitropack@2.13.4.patch
@@ -235,7 +234,6 @@ catalogs:
     acorn: 8.18.0
     beasties: 0.4.3
     case-police: 2.2.1
-    changelogen: 0.6.2
     esbuild: 0.28.2
     eslint: 10.9.0
     eslint-plugin-import-x: 4.17.1

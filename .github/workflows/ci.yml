@@ -576,9 +576,9 @@ jobs:
           cache: true
 
       - name: Release nightly
-        run: node scripts/release.ts --nightly
+        run: node scripts/release.ts
         env:
-          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || github.ref == 'refs/heads/4.x' && 'latest' || '3x' }}
+          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || 'latest' }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
