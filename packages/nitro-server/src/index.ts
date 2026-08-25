@@ -141,6 +141,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
+  const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
 
   // `nuxt.options.nitro.typescript.tsConfig` is a portal onto `typescript.serverTsConfig`,
   // so this baseline sits under whichever of the two the user set. `types`, `paths` and
@@ -276,8 +277,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     typescript: {
       generateTsConfig: true,
-      tsconfigPath: join(nuxt.options.buildDir, 'tsconfig.server.json'),
-      generatedTypesDir: join(nuxt.options.buildDir, 'types/nitro'),
+      tsconfigPath: join(typesDir, 'tsconfig.server.json'),
+      generatedTypesDir: join(typesDir, 'types/nitro'),
       tsConfig: {
         compilerOptions: {
           lib: ['esnext', 'webworker', 'dom.iterable'],
@@ -288,20 +289,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           allowArbitraryExtensions: true,
         },
         include: [
-          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
+          join(typesDir, 'types/nitro-nuxt.d.ts'),
           ...modules.flatMap((m) => {
-            const moduleDir = relativeWithDot(nuxt.options.buildDir, m)
+            const moduleDir = relativeWithDot(typesDir, m)
             return [
               join(moduleDir, 'runtime/server'),
               join(moduleDir, 'dist/runtime/server'),
             ]
           }),
-          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.server, '**/*'))),
-          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
+          ...layerDirs.map(dirs => relativeWithDot(typesDir, join(dirs.server, '**/*'))),
+          ...layerDirs.map(dirs => relativeWithDot(typesDir, join(dirs.shared, '**/*.d.ts'))),
         ],
         exclude: [
-          ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-          relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
+          ...nuxt.options.modulesDir.map(m => relativeWithDot(typesDir, m)),
+          relativeWithDot(typesDir, resolve(nuxt.options.rootDir, 'dist')),
         ],
       },
     },
@@ -809,7 +810,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const isV5OrHigher = nuxt.options.future.compatibilityVersion >= 5
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const baseUrl = isV5OrHigher ? undefined : nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl
-  const basePath = baseUrl ? resolve(nuxt.options.buildDir, baseUrl) : nuxt.options.buildDir
+  const basePath = baseUrl ? resolve(typesDir, baseUrl) : typesDir
   const aliases = nitroConfig.alias!
   const importPaths = nuxt.options.modulesDir.map(d => pathToFileURL(withTrailingSlash(d)))
   const tsConfig = nitroConfig.typescript!.tsConfig!
@@ -1086,19 +1087,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // ensure Nitro types only apply to server directory and not the whole root directory
   nitro.hooks.hook('types:extend', (types) => {
     types.tsConfig ||= {}
-    const rootDirGlob = relativeWithDot(nuxt.options.buildDir, join(nuxt.options.rootDir, '**/*'))
+    const rootDirGlob = relativeWithDot(typesDir, join(nuxt.options.rootDir, '**/*'))
     types.tsConfig.include = types.tsConfig.include?.filter(i => i !== rootDirGlob)
   })
 
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
-    if (!nuxt.options.dev || nuxt.options.experimental.nitroViteEnvironment) {
-      await writeTypes(nitro)
-    }
+    // in the legacy dev path Nitro's own watcher writes these again once handlers have
+    // been scanned, but the project `tsconfig.json` references `tsconfig.server.json`,
+    // so it has to exist before anything resolves the references
+    await writeTypes(nitro)
     // Exclude nitro output dir from typescript
     opts.tsConfig.exclude ||= []
-    opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
-    opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
+    opts.tsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
+    opts.tsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
     opts.references.push({ path: resolve(nuxt.options.rootDir, nitroConfig.typescript!.generatedTypesDir!, 'nitro.d.ts') })
 
     // ensure aliases shared between nuxt + nitro are included in shared tsconfig
