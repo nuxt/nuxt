@@ -52,6 +52,8 @@
     "@codspeed/core": "catalog:dev",
     "@codspeed/vitest-plugin": "catalog:dev",
     "@eslint/markdown": "catalog:dev",
+    "@flakiness/playwright": "catalog:dev",
+    "@flakiness/vitest": "catalog:dev",
     "@nuxt/cli": "catalog:build",
     "@nuxt/eslint-config": "catalog:dev",
     "@nuxt/kit": "workspace:*",
