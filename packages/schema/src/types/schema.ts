@@ -28,6 +28,7 @@ import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
+import type { TypeCheckOption } from '../utils/type-check.ts'
 
 import type { RouterConfigSerializable } from './router.ts'
 import type { NuxtHooks } from './hooks.ts'
@@ -109,7 +110,7 @@ export interface ConfigSchema {
     /**
      * Include Vue compiler in runtime bundle.
      *
-     * Enabling this allows components to compile templates at runtime (for example,
+     * Enabling this allows components to compile at runtime (for example,
      * string `template` options or templates supplied via data).
      *
      * Runtime-compiled templates can execute arbitrary JavaScript. Never pass
@@ -177,7 +178,7 @@ export interface ConfigSchema {
     baseURL: string
 
     /**
-     * The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime.
+     * The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized.
      */
     buildAssetsDir: string
 
@@ -195,7 +196,7 @@ export interface ConfigSchema {
      * })
      * ```
      *
-     * This can be set to a different value at runtime by setting the `NUXT_APP_CDN_URL` environment variable.
+     * This can be set to a different value at runtime by setting the NUXT_APP_CDN_URL environment variable.
      *
      * @example
      * ```bash
@@ -216,17 +217,17 @@ export interface ConfigSchema {
      *       { name: 'viewport', content: 'width=device-width, initial-scale=1' }
      *     ],
      *     script: [
-     *       // <script src="https://myawesome-lib.js"></script>
-     *       { src: 'https://awesome-lib.js' }
+     *       // <script src="myawesome-lib.js"></script>
+     *       { src: 'myawesome-lib.js' }
      *     ],
      *     link: [
-     *       // <link rel="stylesheet" href="https://myawesome-lib.css">
-     *       { rel: 'stylesheet', href: 'https://awesome-lib.css' }
+     *       // <link rel="stylesheet" href="myawesome-lib.css">
+     *       { rel: 'stylesheet', href: 'myawesome-lib.css' }
      *     ],
      *     // please note that this is an area that is likely to change
      *     style: [
-     *       // <style>:root { color: red }</style>
-     *       { textContent: ':root { color: red }' }
+     *       // <style>body { background-color: red }</style>
+     *       { style: 'body { background-color: red }' }
      *     ],
      *     noscript: [
      *       // <noscript>JavaScript is required</noscript>
@@ -241,7 +242,7 @@ export interface ConfigSchema {
     /**
      * Default values for layout transitions.
      *
-     * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
+     * This can be overridden on a per-page basis with `definePageMeta`.
      *
      * @see [Vue Transition docs](https://vuejs.org/api/built-in-components#transition)
      */
@@ -250,7 +251,7 @@ export interface ConfigSchema {
     /**
      * Default values for page transitions.
      *
-     * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
+     * This can be overridden on a per-page basis with `definePageMeta`.
      *
      * @see [Vue Transition docs](https://vuejs.org/api/built-in-components#transition)
      */
@@ -260,7 +261,7 @@ export interface ConfigSchema {
      * Default values for view transitions.
      *
      * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental).
-     * This can be overridden with `definePageMeta` on an individual page.
+     * This can be overridden on a per-page basis with `definePageMeta`.
      *
      * @see [Nuxt View Transition API docs](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental)
      */
@@ -269,7 +270,7 @@ export interface ConfigSchema {
     /**
      * Default values for KeepAlive configuration between pages.
      *
-     * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
+     * This can be overridden on a per-page basis with `definePageMeta`.
      *
      * @see [Vue KeepAlive](https://vuejs.org/api/built-in-components#keepalive)
      */
@@ -391,7 +392,6 @@ export interface ConfigSchema {
    *   '~/plugins/foo.client.js', // only in client side
    *   '~/plugins/bar.server.js', // only in server side
    *   '~/plugins/baz.js', // both client & server
-   *   { src: '~/plugins/both-sides.js' },
    *   { src: '~/plugins/client-only.js', mode: 'client' }, // only on client side
    *   { src: '~/plugins/server-only.js', mode: 'server' } // only on server side
    * ]
@@ -409,9 +409,9 @@ export interface ConfigSchema {
    * css: [
    *   // Load a Node.js module directly (here it's a Sass file).
    *   'bulma',
-   *   // CSS file in the project
+   *   // A CSS file in the project
    *   '~/assets/css/main.css',
-   *   // SCSS file in the project
+   *   // A SCSS file in the project
    *   '~/assets/css/main.scss'
    * ]
    * ```
@@ -439,7 +439,7 @@ export interface ConfigSchema {
     legacy: boolean
 
     /**
-     * An object that will be passed to `renderSSRHead` to customize the output.
+     * An object that will be passed to `renderSSRHeadOptions` to customize the output.
      */
     renderSSRHeadOptions: RenderSSRHeadOptions
 
@@ -466,7 +466,7 @@ export interface ConfigSchema {
    * Configures whether and how sourcemaps are generated for server and/or client bundles.
    *
    * If set to a single boolean, that value applies to both server and client. Additionally, the `'hidden'` option is also available for both server and client.
-   * Available options for both client and server: - `true`: Generates sourcemaps and includes source references in the final bundle. - `false`: Does not generate any sourcemaps. - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
+   * Available options for both server and client: - `true`: Generates sourcemaps and includes source references in the final bundle. - `false`: Does not generate any sourcemaps. - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
    */
   sourcemap: boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }
 
@@ -502,7 +502,7 @@ export interface ConfigSchema {
      * templates: [
      *   {
      *     src: '~/modules/support/plugin.js', // `src` can be absolute or relative
-     *     dst: 'support.js', // `dst` is relative to project `.nuxt` dir
+     *     dst: 'support.plugin.js', // `dst` is relative to project `.nuxt` dir
      *   }
      * ]
      * ```
@@ -512,7 +512,7 @@ export interface ConfigSchema {
     /**
      * Nuxt allows visualizing your bundles and how to optimize them.
      *
-     * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
+     * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
      *
      * @example
      * ```js
@@ -531,8 +531,7 @@ export interface ConfigSchema {
     /**
      * Functions to inject a key for.
      *
-     * As long as the number of arguments passed to the function is lower than `argumentLength`, an additional magic string will be injected that can be used to deduplicate requests between server and client. You will need to take steps to handle this additional key.
-     * The key will be unique based on the location of the function being invoked within the file.
+     * As long as the number of arguments passed to the function is lower than `argumentLength`, an additional magic string will be injected that can be used to deduplicate requests between server and client. The key will be unique based on the location of the function being invoked within the file.
      *
      */
     keyedComposables: KeyedFunction[]
@@ -595,9 +594,9 @@ export interface ConfigSchema {
   theme: string
 
   /**
-   * Define the root directory of your application.
+   * Define the root directory of your Nuxt application.
    *
-   * This property can be overwritten (for example, running `nuxt ./my-app/` will set the `rootDir` to the absolute path of `./my-app/` from the current/working directory.
+   * This property can be overwritten (for example, running `nuxt ./my-app/` will set the `rootDir` to the absolute path of `./my-app/` instead of the current/working directory.
    * It is normally not needed to configure this option.
    *
    */
@@ -629,6 +628,7 @@ export interface ConfigSchema {
    * -| app/
    * ---| assets/
    * ---| components/
+   * ---| composables/
    * ---| layouts/
    * ---| middleware/
    * ---| pages/
@@ -646,9 +646,7 @@ export interface ConfigSchema {
   srcDir: string
 
   /**
-   * Define the server directory of your Nuxt application, where Nitro routes, middleware and plugins are kept.
-   *
-   * If a relative path is specified, it will be relative to your `rootDir`.
+   * Define the server directory of your Nuxt application, where Nitro routes, middleware, and server-side logic are kept.
    *
    */
   serverDir: string
@@ -701,8 +699,6 @@ export interface ConfigSchema {
   /**
    * The directory where Nuxt will store the generated files when running `nuxt analyze`.
    *
-   * If a relative path is specified, it will be relative to your `rootDir`.
-   *
    */
   analyzeDir: string
 
@@ -734,7 +730,7 @@ export interface ConfigSchema {
   /**
    * Set to `true` to enable debug mode.
    *
-   * At the moment, it prints out hook names and timings on the server, and logs hook arguments as well in the browser.
+   * At the moment, it prints out hook names and timings in the server, and logs hook arguments as well in the browser.
    * You can also set this to an object to enable specific debug options.
    *
    */
@@ -749,7 +745,7 @@ export interface ConfigSchema {
   /**
    * Modules are Nuxt extensions which can extend its core functionality and add endless integrations.
    *
-   * Each module is either a string (which can refer to a package, or be a path to a file), a tuple with the module as first string and the options as a second object, or an inline module function.
+   * Each module is either a string (which can refer to a package or be a path to a file), a tuple with the module as first string and the options as a second object, or an inline module function.
    * Nuxt tries to resolve each item in the modules array using node require path (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
    *
    * @note Modules are executed sequentially so the order is important. First, the modules defined in `nuxt.config.ts` are loaded. Then, modules found in the `modules/`
@@ -760,7 +756,7 @@ export interface ConfigSchema {
    * modules: [
    *   // Using package name
    *   '@nuxtjs/axios',
-   *   // Relative to your project srcDir
+   *   // Relative to project srcDir
    *   '~/modules/awesome.js',
    *   // Providing options
    *   ['@nuxtjs/google-analytics', { ua: 'X1234567' }],
@@ -805,7 +801,7 @@ export interface ConfigSchema {
     pages: string
 
     /**
-     * The plugins directory, each file of which will be auto-registered as a Nuxt plugin.
+     * The plugins directory, each file in which will be auto-registered as a Nuxt plugin.
      */
     plugins: string
 
@@ -815,7 +811,7 @@ export interface ConfigSchema {
     shared: string
 
     /**
-     * The directory containing your static files, which will be directly accessible via the Nuxt server and copied across into your `dist` folder when your app is generated.
+     * The directory containing your static files, which will be directly accessible to the Nuxt server and copied across into your `dist` folder when your app is generated.
      */
     public: string
   }
@@ -884,7 +880,7 @@ export interface ConfigSchema {
   ignoreOptions: NuxtIgnoreOptions
 
   /**
-   * Any file in `pages/`, `layouts/`, `middleware/`, and `public/` directories will be ignored during the build process if its filename starts with the prefix specified by `ignorePrefix`. This is intended to prevent certain files from being processed or served in the built application. By default, the `ignorePrefix` is set to '-', ignoring any files starting with '-'.
+   * Any file in `pages/`, `layouts/`, `middleware/`, and `public/` directories will be ignored during the build process if its filename starts with the prefix specified by the `ignorePrefix`. This is intended to prevent certain files from being processed or served in the built application. By default, the `ignorePrefix` is set to '-', ignoring any files starting with this prefix.
    *
    */
   ignorePrefix: string
@@ -923,7 +919,7 @@ export interface ConfigSchema {
     /**
      * Options to pass directly to `chokidar`.
      *
-     * @see [chokidar](https://github.com/paulmillr/chokidar)
+     * @see [chokidar](https://github.com/paulmillr/chokidar#api)
      */
     chokidar: ChokidarOptions
   }
@@ -967,7 +963,7 @@ export interface ConfigSchema {
    * ```js
    * export default {
    *  runtimeConfig: {
-   *     apiKey: '', // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
+   *     apiKey: '', // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY=my-api-key
    *     public: {
    *        baseURL: '' // Exposed to the frontend as well.
    *     }
@@ -980,7 +976,7 @@ export interface ConfigSchema {
   /**
    * Additional app configuration
    *
-   * For programmatic usage and type support, you can directly provide app config with this option. It will be merged with `app.config` file as default value.
+   * For programmatic usage and type support, you can directly provide app config as default value. It will be merged with `app.config` file as default value.
    */
   appConfig: AppConfig
 
@@ -1304,7 +1300,7 @@ export interface ConfigSchema {
     /**
      * Allow defining `routeRules` directly within your `~/pages` directory using `defineRouteRules`.
      *
-     * Rules are converted (based on the path) and applied for server requests. For example, a rule defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests. A rule in `~/pages/foo/[id].vue` will be applied to `/foo/**` requests.
+     * Rules are converted (based on the path) and applied for server requests. For example, a rule defined in `~/pages/foo/bar.vue` will be applied for `/foo/bar` requests. A rule in `~/pages/foo/[id].vue` will be applied to `/foo/**` requests.
      * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you should set `routeRules` directly within your `nuxt.config`.
      *
      * @default false
@@ -1921,13 +1917,15 @@ export interface ConfigSchema {
     includeWorkspace: boolean
 
     /**
-     * Enable build-time type checking.
+     * Enable type checking.
      *
-     * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
+     * If set to true, this will type check in development and at build time.
+     * Set to `build` to type check only when building, or `dev` to type check only in the dev server.
+     * Requires installing `typescript` and `vue-tsc` as dev dependencies.
      *
      * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
      */
-    typeCheck: boolean | 'build'
+    typeCheck: TypeCheckOption
 
     /**
      * Extend the generated tsconfig files with shared options.
@@ -1994,7 +1992,7 @@ export interface ConfigSchema {
   /**
    * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
    *
-   * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
+   * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
    *
    * @example
    * ```js
@@ -2010,7 +2008,7 @@ export interface ConfigSchema {
      *
      * It is normally enabled by CLI argument `--profile`.
      *
-     * @see [webpackbar](https://github.com/unjs/webpackbar#profile).
+     * @see [webpackbar](https://unjs.io/packages/webpackbar#profile).
      */
     profile: boolean
 
