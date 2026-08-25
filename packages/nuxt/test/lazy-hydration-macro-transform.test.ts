@@ -334,6 +334,7 @@ async function transform (code: string, filename: string, noComponents?: boolean
         getComponents: () => components,
         srcDir: '/',
         mode: 'server',
+        isComponentFile: () => false,
       }).rolldown(),
       LazyHydrationMacroTransformPlugin({
         clientDelayedComponentRuntime: '/client-runtime.mjs',
