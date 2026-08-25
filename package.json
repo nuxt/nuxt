@@ -71,7 +71,6 @@
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
     "case-police": "catalog:dev",
-    "changelogen": "catalog:dev",
     "consola": "catalog:build",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
