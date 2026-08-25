@@ -46,7 +46,10 @@ export default defineConfig<E2eConfigOptions>({
   forbidOnly: !!isCI,
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['@flakiness/playwright', { flakinessProject: 'nuxt/nuxt' }],
+  ],
   projects: [
     {
       name: 'setup fixtures',

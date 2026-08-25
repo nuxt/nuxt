@@ -1344,6 +1344,7 @@ definePageMeta({
   describe('strip extracted metadata', () => {
     it.each([
       {
+        description: 'when it is the last key, with a trailing comma and an inline closing brace',
         input: `
 <script setup>
 definePageMeta({
@@ -1353,6 +1354,7 @@ definePageMeta({
       `,
       },
       {
+        description: 'when it is the first key and another key follows on the same line',
         input: `
 <script setup>
 definePageMeta({
@@ -1361,6 +1363,7 @@ definePageMeta({
       `,
       },
       {
+        description: 'when it is the only key, with a trailing comma',
         input: `
 <script setup>
 definePageMeta({
@@ -1370,6 +1373,7 @@ definePageMeta({
       `,
       },
       {
+        description: 'when it is the only key, without a trailing comma',
         input: `
 <script setup>
 definePageMeta({
@@ -1378,7 +1382,7 @@ definePageMeta({
 </script>
       `,
       },
-    ])(`should strip extracted metadata from the script block`, ({ input }) => {
+    ])(`should strip extracted metadata from the script block $description`, ({ input }) => {
       const res = compileScript(parse(input).descriptor, { id: 'component.vue' })
       const result = transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code
       expect.soft(result).not.contain('extracted')
