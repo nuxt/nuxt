@@ -55,7 +55,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'nuxt-nightly',
     '!',
     '-!',
-    '~!',
+    '~',
     '@/',
     '#',
     ...ctx.options.build.transpile,
@@ -65,7 +65,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'nitro/runtime-config',
     // TODO: remove in v5
     '#internal/nitro',
-    'nitropack/runtime-config',
+    'nitropack/runtime',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
     ...ctx.nuxt['~runtimeDependencies'] || [],
