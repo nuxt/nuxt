@@ -115,6 +115,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  // When the base URL is only known at runtime, the `base-url` middleware strips it from incoming
+  // requests, so nitro's routes must stay unprefixed for the internally re-dispatched request to
+  // match them.
+  const nitroBaseURL = nuxt.options.experimental.runtimeBaseURL ? '/' : nuxt.options.app.baseURL
   if (nuxt.options.experimental.runtimeBaseURL) {
     nuxt.options.serverHandlers.unshift({
       route: '',
@@ -218,7 +222,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     renderer: {
       handler: resolve(distDir, 'runtime/handlers/renderer'),
     },
-    baseURL: nuxt.options.app.baseURL,
+    baseURL: nitroBaseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
@@ -559,7 +563,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     nitroConfig.prerender ||= {}
     nitroConfig.prerender.ignore ||= []
-    nitroConfig.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, manifestPrefix))
+    nitroConfig.prerender.ignore.push(joinURL(nitroBaseURL, manifestPrefix))
 
     nitroConfig.publicAssets!.unshift(
       // build manifest

@@ -44,6 +44,50 @@ index 76694ff062bae1ef5f6d548ae80b53dcfd8362ef..dbcec7dd4403102031410d3c7660a30d
  					code: `import {base64ToUint8Array } from "${HELPER_ID}" \n export default base64ToUint8Array("${Buffer.from(code, "binary").toString("base64")}")`,
  					map: rawAssetMap(path)
  				};
+diff --git a/dist/_chunks/nitro.mjs b/dist/_chunks/nitro.mjs
+index 6729fe35539d20c1bc01e9b6dc706aceaf8fd4d6..1c1859a048a24fe00f832c4b840b8844441a8f02 100644
+--- a/dist/_chunks/nitro.mjs
++++ b/dist/_chunks/nitro.mjs
+@@ -829,7 +829,7 @@ var Router = class {
+ 		this._router = createRouter();
+ 		this._compiled = void 0;
+ 		for (const route of routes) addRoute(this._router, route.method, this._baseURL + route.route, route.data);
+-		if (opts?.merge) mergeCatchAll(this._router);
++		if (opts?.merge) mergeCatchAll(this._router, this._baseURL);
+ 	}
+ 	hasRoutes() {
+ 		return this._routes.length > 0;
+@@ -841,9 +841,11 @@ var Router = class {
+ 		this._compiled[key] = compileRouterToString(this._router, void 0, opts);
+ 		if (this.routes.length === 1 && this.routes[0].route === "/**" && this.routes[0].method === "") {
+ 			const data = (opts?.serialize || JSON.stringify)(this.routes[0].data);
+-			let retCode = `{data,params:{"_":p.slice(1)}}`;
++			const base = this._baseURL;
++			let retCode = `{data,params:{"_":p.slice(${base.length + 1})}}`;
+ 			if (opts?.matchAll) retCode = `[${retCode}]`;
+-			this._compiled[key] = `/* @__PURE__ */ (() => {const data=${data};return ((_m, p)=>{return ${retCode};})})()`;
++			const guardCode = base ? `if(p!==${JSON.stringify(base)}&&!p.startsWith(${JSON.stringify(base + "/")})){return ${opts?.matchAll ? "[]" : "undefined"};}` : "";
++			this._compiled[key] = `/* @__PURE__ */ (() => {const data=${data};return ((_m, p)=>{${guardCode}return ${retCode};})})()`;
+ 		}
+ 		return this._compiled[key];
+ 	}
+@@ -854,8 +856,14 @@ var Router = class {
+ 		return findAllRoutes(this._router, method, path).map((route) => route.data);
+ 	}
+ };
+-function mergeCatchAll(router) {
+-	const handlers = router.root?.wildcard?.methods?.[""];
++function mergeCatchAll(router, baseURL) {
++	let node = router.root;
++	for (const segment of baseURL.split("/")) {
++		if (!segment) continue;
++		node = node?.static?.[segment];
++		if (!node) return;
++	}
++	const handlers = node?.wildcard?.methods?.[""];
+ 	if (!handlers || handlers.length < 2) return;
+ 	handlers.splice(0, handlers.length, {
+ 		...handlers[0],
 diff --git a/dist/runtime/internal/error/dev.mjs b/dist/runtime/internal/error/dev.mjs
 index 129d65476eff5b8f4486600a247a612dbdafd137..8b209fdd581bac45646de4cbed124bd78ab9b3ae 100644
 --- a/dist/runtime/internal/error/dev.mjs
