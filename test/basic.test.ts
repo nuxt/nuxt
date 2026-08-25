@@ -1700,7 +1700,7 @@ describe('layout change not load page twice', () => {
     '/internal-layout/with-layout': '/internal-layout/with-layout2',
   }
 
-  it.each(Object.entries(cases))('should not cause run of page setup to repeat if layout changed', async (path1, path2) => {
+  it.each(Object.entries(cases))('should not cause run of page setup to repeat if layout changed (%s)', async (path1, path2) => {
     const { page, consoleLogs } = await renderPage(path1)
     await page.click(`[href="${path2}"]`)
     await page.waitForSelector('#with-layout2')
