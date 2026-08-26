@@ -23,13 +23,6 @@ const entrypoints: Record<string, PublicEntrypoint> = {
       // Nuxt's own contract types. `@nuxt/schema` may itself depend on a third party where that
       // third party is the concept (Vite's config type for `nuxt.options.vite`, and so on).
       '@nuxt/schema',
-      // TODO: the remaining leak. Handlers, route rules and the instance `useNitro()` hands out
-      // are all the server builder's, resolved against whichever Nitro major is installed.
-      // Describing them in Nuxt means widening them, and an interface for `@nuxt/nitro-server` to
-      // augment would leave them untyped for anyone using `@nuxt/kit` on its own. To be resolved
-      // when kit wraps the server builder rather than passing it through.
-      'nitro/types',
-      'nitropack/types',
     ],
     augmentations: [
       // Left over from bundling `pkg-types`' declarations, whose type-only imports of `exsolve`
