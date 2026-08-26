@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type * as UpstreamV2 from 'nitropack/types'
 import type * as UpstreamV3 from 'nitro/types'
 
-import type { Nitro, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandlerV2, NitroEventHandlerV3, NitroOptions, NitroRouteConfig } from '../src/nitro-types.ts'
+import type { NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandlerV2, NitroEventHandlerV3, NitroRouteConfig } from '../src/nitro-types.ts'
 
 type KnownKeys<T> = keyof { [K in keyof T as string extends K ? never : number extends K ? never : K]: 0 }
 
@@ -28,11 +28,6 @@ describe('inlined nitro v2 types', () => {
   it('accepts the upstream `NitroRouteConfig`', () => {
     expectTypeOf<UpstreamV2.NitroRouteConfig>().toExtend<NitroRouteConfig>()
   })
-
-  it('accepts the upstream `Nitro` instance and options', () => {
-    expectTypeOf<UpstreamV2.Nitro>().toExtend<Nitro>()
-    expectTypeOf<UpstreamV2.NitroOptions>().toExtend<NitroOptions>()
-  })
 })
 
 describe('inlined nitro v3 types', () => {
@@ -53,18 +48,6 @@ describe('inlined nitro v3 types', () => {
 
   it('accepts the upstream `NitroRouteConfig`', () => {
     expectTypeOf<UpstreamV3.NitroRouteConfig>().toExtend<NitroRouteConfig>()
-  })
-
-  it('accepts the upstream `Nitro` instance and options', () => {
-    expectTypeOf<UpstreamV3.Nitro>().toExtend<Nitro>()
-    expectTypeOf<UpstreamV3.NitroOptions>().toExtend<NitroOptions>()
-  })
-})
-
-describe('inlined `Nitro` shapes', () => {
-  it('declare no members that are missing from both upstream majors', () => {
-    expectTypeOf<keyof Nitro>().toExtend<keyof UpstreamV2.Nitro | keyof UpstreamV3.Nitro>()
-    expectTypeOf<keyof NitroOptions>().toExtend<keyof UpstreamV2.NitroOptions | keyof UpstreamV3.NitroOptions>()
   })
 })
 
