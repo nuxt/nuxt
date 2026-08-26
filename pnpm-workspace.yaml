@@ -46,6 +46,7 @@ minimumReleaseAgeExclude:
   - unrouting
   - unimport
   - oxc-walker@1.1.1
+  - impound@1.2.0
   - vue
   - '@vue/*'
 
@@ -155,7 +156,7 @@ catalogs:
     get-port-please: ^3.2.0
     giget: ^3.3.1
     ignore: ^7.0.6
-    impound: ^1.1.7
+    impound: ^1.2.0
     jiti: ^2.7.0
     js-tokens: ^10.0.0
     klona: ^2.0.6
