@@ -91,3 +91,10 @@ const contextFlags = {
   'nuxt-app': 'the Vue part of your app',
   'shared': 'the #shared directory',
 } as const
+
+// Eager tracing transforms every module to record its code and sourcemap, for a report
+// a green build never reads. `'lazy'` rebuilds it from the module graph on violation
+export function resolveImportProtectionTrace (nuxt: { options: NuxtOptions }): boolean | 'lazy' {
+  // Lazy reports in `buildEnd`, which a vite dev server only calls when it shuts down
+  return nuxt.options.dev ? true : 'lazy'
+}

@@ -42,7 +42,7 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
-import { createImportProtectionPatterns } from './plugins/import-protection.ts'
+import { createImportProtectionPatterns, resolveImportProtectionTrace } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
 import { DevOnlyPlugin } from './plugins/dev-only.ts'
@@ -458,12 +458,13 @@ async function initNuxt (nuxt: Nuxt) {
 
     // shared folder import protection
     if (!nuxt.options.test) {
+      const trace = resolveImportProtectionTrace(nuxt)
       const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
       const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
       const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
       const sharedProtectionConfig = {
         cwd: nuxt.options.rootDir,
-        trace: true,
+        trace,
         include: sharedPatterns,
         patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
       }
@@ -476,7 +477,7 @@ async function initNuxt (nuxt: Nuxt) {
       // Add import protection
       const nuxtProtectionConfig = {
         cwd: nuxt.options.rootDir,
-        trace: true,
+        trace,
         // Exclude top-level resolutions by plugins
         exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
         patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
@@ -489,7 +490,8 @@ async function initNuxt (nuxt: Nuxt) {
       // Register Vite import protection plugins with split enforce:
       // - The main impound plugin (resolveId) needs prepend to run before Vite's resolver
       // - The impound:trace plugin (transform) should run after SFC compilation so
-      //   es-module-lexer can parse the compiled JS and produce accurate code snippets
+      //   es-module-lexer can parse the compiled JS and produce accurate code snippets.
+      //   impound only registers it when tracing eagerly, so it is dev-only
       for (const envOptions of [
         { client: false } as const,
         { server: false } as const,

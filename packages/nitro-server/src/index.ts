@@ -30,7 +30,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 import { addRoute as addRou3Route, createRouter as createRou3Router } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
-import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { createImportProtectionPatterns, resolveImportProtectionTrace } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { decodeRoutePath } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
@@ -714,16 +714,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
   const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
   const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+  const trace = resolveImportProtectionTrace(nuxt)
   const serverProtectionConfigs = [
     {
       cwd: nuxt.options.rootDir,
-      trace: true,
+      trace,
       include: sharedPatterns,
       patterns: createImportProtectionPatterns(nuxt, { context: 'shared' as const }),
     },
     {
       cwd: nuxt.options.rootDir,
-      trace: true,
+      trace,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' as const }),
       exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
     },
