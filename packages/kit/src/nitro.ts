@@ -1,11 +1,11 @@
 import { normalize } from 'pathe'
 import { resolveModulePath } from 'exsolve'
-import type { Nuxt, NuxtImport } from '@nuxt/schema'
+import type { NitroInstance, Nuxt, NuxtImport } from '@nuxt/schema'
+import type { NitroCompatibilityVersion, NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3 } from './nitro-types.ts'
 
 import { useNuxt } from './context.ts'
 import { getNitroVersion } from './compatibility.ts'
 import { resolveAlias } from './resolve.ts'
-import type { Nitro, NitroCompatibilityVersion, NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3 } from './nitro-types.ts'
 import { toArray } from './utils.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
@@ -209,7 +209,7 @@ export function addPrerenderRoutes (routes: string | string[]): void {
  * })
  * ```
  */
-export function useNitro (): Nitro {
+export function useNitro (): NitroInstance {
   const nuxt = useNuxt()
   if (!(nuxt as any)._nitro) {
     throw kitDiagnostics.NUXT_B8003()
