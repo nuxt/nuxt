@@ -49,6 +49,7 @@ minimumReleaseAgeExclude:
   - impound@1.2.0
   - vue
   - '@vue/*'
+  - '@flakiness/vitest@1.9.2'
 
 catalogs:
   app-runtime:
@@ -189,7 +190,7 @@ catalogs:
     '@codspeed/vitest-plugin': 5.7.1
     '@eslint/markdown': 8.0.3
     '@flakiness/playwright': 2.0.2
-    '@flakiness/vitest': 1.9.1
+    '@flakiness/vitest': 1.9.2
     '@nuxt/eslint-config': 1.17.0
     '@nuxt/scripts': 1.3.8
     '@nuxt/test-utils': 4.1.0

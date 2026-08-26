@@ -282,8 +282,8 @@ catalogs:
       specifier: 2.0.2
       version: 2.0.2
     '@flakiness/vitest':
-      specifier: 1.9.1
-      version: 1.9.1
+      specifier: 1.9.2
+      version: 1.9.2
     '@nuxt/eslint-config':
       specifier: 1.17.0
       version: 1.17.0
@@ -607,7 +607,7 @@ importers:
         version: 2.0.2
       '@flakiness/vitest':
         specifier: catalog:dev
-        version: 1.9.1
+        version: 1.9.2
       '@nuxt/cli':
         specifier: catalog:build
         version: '@nuxt/cli-nightly@4.0.0-20260824-125839-d3213ce(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.146.0)(rolldown@1.2.5)'
@@ -2656,8 +2656,8 @@ packages:
     engines: {node: ^20.17.0 || >=22.9.0}
     hasBin: true
 
-  '@flakiness/vitest@1.9.1':
-    resolution: {integrity: sha512-BQBekpxKD8Be58M+mPmtvh4FGDBJzStzPBJWW2+QDC6ax2ZqKxRTE2O/wHjeZERyOs5Et9mgaXjL51AY1NSoVg==}
+  '@flakiness/vitest@1.9.2':
+    resolution: {integrity: sha512-dZwXW0vzjqNCiH056ADChmzOloHW6iKWIwJRnl3GGi8PdZRB3k+N9zLgXIhiaReXL+pC2spIsywh8qt1AYiHyQ==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
   '@floating-ui/core@1.8.0':
@@ -10876,7 +10876,7 @@ snapshots:
 
   '@flakiness/playwright@2.0.2': {}
 
-  '@flakiness/vitest@1.9.1': {}
+  '@flakiness/vitest@1.9.2': {}
 
   '@floating-ui/core@1.8.0':
     dependencies:
