@@ -1,5 +1,5 @@
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { shouldEnableTypeCheck, type Nuxt } from '@nuxt/schema'
+import { type Nuxt, shouldEnableTypeCheck } from '@nuxt/schema'
 import type { Plugin } from 'vite'
 import { resolveClientEntry } from '../utils/config.ts'
 

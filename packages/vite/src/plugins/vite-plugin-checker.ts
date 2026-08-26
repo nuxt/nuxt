@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite'
-import { shouldEnableTypeCheck, type Nuxt } from '@nuxt/schema'
+import { type Nuxt, shouldEnableTypeCheck } from '@nuxt/schema'
 import { readTSConfig, resolveTSConfig } from 'pkg-types'
 
 export async function VitePluginCheckerPlugin (nuxt: Nuxt, environment?: string): Promise<Array<Plugin | undefined> | undefined> {
