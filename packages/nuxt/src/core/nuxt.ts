@@ -443,6 +443,11 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   nuxt.hook('modules:done', () => {
+    // Transform initial composable call within `<script setup>` to preserve context
+    if (nuxt.options.experimental.asyncContext) {
+      addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
+    }
+
     const helperModule = resolveModulePath('unctx', { from: import.meta.url, try: true }) ?? 'unctx'
     // Add unctx transform
     addBuildPlugin(UnctxTransformPlugin({
@@ -538,11 +543,6 @@ async function initNuxt (nuxt: Nuxt) {
 
     // add plugin to make warnings less verbose in dev mode
     addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
-  }
-
-  // Transform initial composable call within `<script setup>` to preserve context
-  if (nuxt.options.experimental.asyncContext) {
-    addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
