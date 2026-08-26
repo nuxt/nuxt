@@ -88,5 +88,20 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Loading it natively is faster, as jiti has to transform the file first. Relative imports need an explicit file extension, and `import.meta.dirname` replaces `__dirname`.',
       docs: false,
     },
+    NUXT_B5024: {
+      why: '`vue.vapor` requires vue `3.6.0` or later, so vapor mode has been disabled.',
+      fix: 'Upgrade to vue `3.6.0` or later, or remove `vue.vapor` from your `nuxt.config`.',
+      docs: false,
+    },
+    NUXT_B5025: {
+      why: (p: { entry: string }) => `\`css\` entries are resolved as module ids, not relative to \`nuxt.config\`, so \`${p.entry}\` may not resolve to the intended file.`,
+      fix: (p: { replacement: string }) => `Replace it with ${p.replacement}.`,
+      docs: false,
+    },
+    NUXT_B5026: {
+      why: (p: { entry: string, resolved?: string }) => `\`css\` entry \`${p.entry}\` could not be found${p.resolved ? ` (resolved to \`${p.resolved}\`)` : ''}.`,
+      fix: 'Ensure the file exists, or remove the entry from `css` in your `nuxt.config`.',
+      docs: false,
+    },
   },
 })

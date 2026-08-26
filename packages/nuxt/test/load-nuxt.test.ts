@@ -275,7 +275,7 @@ describe('loadNuxt', () => {
     const aliasPath = compilerOptions.paths?.['#probe/base-url']?.[0]
     await nuxt.close()
 
-    expect(aliasPath).toBe(resolve(nuxt.options.buildDir, expectedAlias))
+    expect(aliasPath).toBe(resolve(nuxt.options.typesDir, expectedAlias))
     expect(Reflect.get(compilerOptions, 'baseUrl')).toBe(expectedBaseUrl)
   })
 

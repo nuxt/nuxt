@@ -37,7 +37,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   /** Remove Nitro rollup plugin for handling dynamic imports from webpack chunks */
   if (!nuxt.options.dev) {
     const nitro = useNitro()
-    nitro.hooks.hook('rollup:before', (_nitro, config) => {
+    nitro.hooks.hook('rollup:before', (_nitro: unknown, config: { plugins?: unknown }) => {
       const plugins = config.plugins as InputPluginOption[]
 
       const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
@@ -389,8 +389,10 @@ async function compile (compiler: Compiler) {
   if (stats.hasErrors()) {
     const formatted = stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true })
     const compilationErrors = stats.compilation?.errors ?? []
+    // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
     logger.error(formatted || '(no formatted errors emitted; see compilation errors below)')
     for (const err of compilationErrors) {
+      // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
       logger.error(err)
     }
     throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name!, cause: compilationErrors })

@@ -468,6 +468,132 @@ export default Object.assign((options) => {
   })
 })
 
+describe('module install hooks', { sequential: true }, () => {
+  let nuxt: Nuxt
+
+  const tempDir = join(repoRoot, 'node_modules/.temp/module-install-hooks')
+
+  beforeAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+    const fakeModule = join(tempDir, 'node_modules/named-module')
+    await mkdir(fakeModule, { recursive: true })
+    await writeFile(join(fakeModule, 'package.json'), JSON.stringify({ name: 'named-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(fakeModule, 'index.js'), `export default () => {}\n`)
+
+    await writeFile(join(tempDir, 'local-module.mjs'), `export default () => {}\n`)
+  })
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  afterEach(async () => {
+    await nuxt?.close()
+  })
+
+  it('fires `module:before` and `module:done` for each module', async () => {
+    const before: string[] = []
+    const done: string[] = []
+
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          'named-module',
+          defineNuxtModule({ meta: { name: 'inline-module' } }),
+        ],
+      },
+      ready: false,
+    })
+    nuxt.hook('module:before', ({ name }) => { before.push(name) })
+    nuxt.hook('module:done', ({ name }) => { done.push(name) })
+    await nuxt.ready()
+
+    expect(before).toContain('named-module')
+    expect(before).toContain('inline-module')
+    expect(done).toEqual(before)
+  })
+
+  it('always provides a renderable name', async () => {
+    const names: string[] = []
+
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          './local-module.mjs',
+          () => {},
+          function myNamedFunctionModule () {},
+        ],
+      },
+      ready: false,
+    })
+    nuxt.hook('module:before', ({ name }) => { names.push(name) })
+    await nuxt.ready()
+
+    expect(names).toContain('./local-module.mjs')
+    expect(names).toContain('myNamedFunctionModule')
+    expect(names.every(Boolean)).toBe(true)
+  })
+
+  it('reports timings and entry path in `module:done`', async () => {
+    const timings: Array<{ name: string, setup?: number, entryPath?: string }> = []
+
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: ['named-module'],
+      },
+      ready: false,
+    })
+    nuxt.hook('module:done', ({ name, timings: t, entryPath }) => { timings.push({ name, setup: t.setup, entryPath }) })
+    await nuxt.ready()
+
+    const named = timings.find(t => t.name === 'named-module')
+    expect(named).toBeDefined()
+    expect(named!.setup).toBeTypeOf('number')
+    expect(named!.entryPath).toBe('named-module')
+  })
+
+  it('keeps module-reported timings alongside the measured setup time', async () => {
+    let timings: Record<string, number | undefined> | undefined
+
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'reports-timings' },
+            setup: () => ({ timings: { custom: 5, setup: 9999 } }),
+          }),
+        ],
+      },
+      ready: false,
+    })
+    nuxt.hook('module:done', (mod) => {
+      if (mod.name === 'reports-timings') {
+        timings = mod.timings
+      }
+    })
+    await nuxt.ready()
+
+    expect(timings?.custom).toBe(5)
+    expect(timings?.setup).not.toBe(9999)
+    expect(nuxt.options._installedModules.find(m => m.meta.name === 'reports-timings')?.timings).toEqual(timings)
+  })
+
+  it('fires for modules installed via `installModule`', async () => {
+    const names: string[] = []
+
+    nuxt = await loadNuxt({ cwd: tempDir })
+    nuxt.hook('module:before', ({ name }) => { names.push(name) })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    await installModule('named-module', {}, nuxt)
+
+    expect(names).toEqual(['named-module'])
+  })
+})
+
 describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
   let nuxt: Nuxt
 

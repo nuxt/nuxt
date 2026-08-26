@@ -27,7 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -92,8 +92,6 @@
     "hookable": "catalog:app-runtime",
     "jiti": "catalog:build",
     "mlly": "catalog:build",
-    "nitro": "catalog:nitro-runtime",
-    "nitropack": "catalog:dev",
     "oxc-parser": "catalog:build",
     "pkg-types": "catalog:build",
     "rolldown": "catalog:vite",

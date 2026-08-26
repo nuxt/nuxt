@@ -453,6 +453,15 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
+
+  // the project `tsconfig.json` references the generated configurations by path, so they
+  // have to keep being written where the project expects them even when we build
+  // elsewhere. A `buildDir` supplied as an override (as test utilities do) is not what the
+  // project references, so prefer the value the project configured for itself.
+  nuxtConfig.typesDir ||= opts.overrides?.buildDir
+    ? layers.find(l => l.config?.buildDir && l.config.buildDir !== opts.overrides?.buildDir)?.config?.buildDir || defaultBuildDir
+    : nuxtConfig.buildDir || defaultBuildDir
+
   if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
     nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
   }

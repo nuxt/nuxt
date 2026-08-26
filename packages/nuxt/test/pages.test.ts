@@ -328,17 +328,17 @@ describe('pages:generateRouteKey', () => {
     output?: string | false
     it?: TestAPI
   }> = [
-    { description: 'should handle overrides', override: 'key', route: getRouteProps(), output: 'key' },
-    { description: 'should handle overrides', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
+    { description: 'should use a string override as the key', override: 'key', route: getRouteProps(), output: 'key' },
+    { description: 'should use the result of a function override as the key', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
     {
-      description: 'should handle overrides',
+      description: 'should return `false` for a `false` override',
       // @ts-expect-error testing behaviour with invalid prop
       override: false,
       route: getRouteProps(),
       output: false,
     },
     {
-      description: 'should key dynamic routes without keys',
+      description: 'should key an unkeyed dynamic route by its param value',
       route: getRouteProps({
         path: '/test/:id',
         meta: {},
@@ -346,7 +346,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/foo',
     },
     {
-      description: 'should key dynamic routes without keys',
+      description: 'should key an unkeyed dynamic route with a custom matcher by its param value',
       route: getRouteProps({
         path: '/test/:id(\\d+)',
         meta: {},
@@ -354,7 +354,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/foo',
     },
     {
-      description: 'should key dynamic routes with optional params',
+      description: 'should key an optional param by its value',
       route: getRouteProps({
         path: '/test/:optional?',
         meta: {},
@@ -362,7 +362,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/bar',
     },
     {
-      description: 'should key dynamic routes with optional params',
+      description: 'should key an optional param with a custom matcher by its value',
       route: getRouteProps({
         path: '/test/:optional(\\d+)?',
         meta: {},
@@ -370,7 +370,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/bar',
     },
     {
-      description: 'should key dynamic routes with optional params',
+      description: 'should key an unmatched optional param as an empty segment',
       route: getRouteProps({
         path: '/test/:undefined(\\d+)?',
         meta: {},
@@ -378,7 +378,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/',
     },
     {
-      description: 'should key dynamic routes with array params',
+      description: 'should join the values of a one-or-more repeatable param',
       route: getRouteProps({
         path: '/:array+',
         meta: {},
@@ -386,7 +386,7 @@ describe('pages:generateRouteKey', () => {
       output: '/a,b',
     },
     {
-      description: 'should key dynamic routes with array params',
+      description: 'should join the values of a zero-or-more repeatable param',
       route: getRouteProps({
         path: '/test/:array*',
         meta: {},
@@ -394,7 +394,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/a,b',
     },
     {
-      description: 'should key dynamic routes with array params',
+      description: 'should key an unmatched zero-or-more repeatable param as an empty segment',
       route: getRouteProps({
         path: '/test/:other*',
         meta: {},

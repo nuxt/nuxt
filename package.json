@@ -52,6 +52,8 @@
     "@codspeed/core": "catalog:dev",
     "@codspeed/vitest-plugin": "catalog:dev",
     "@eslint/markdown": "catalog:dev",
+    "@flakiness/playwright": "catalog:dev",
+    "@flakiness/vitest": "catalog:dev",
     "@nuxt/cli": "catalog:build",
     "@nuxt/eslint-config": "catalog:dev",
     "@nuxt/kit": "workspace:*",
@@ -69,7 +71,6 @@
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
     "case-police": "catalog:dev",
-    "changelogen": "catalog:dev",
     "consola": "catalog:build",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
@@ -88,6 +89,7 @@
     "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
     "nitro": "catalog:nitro-runtime",
+    "nitropack": "catalog:dev",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "catalog:dev",
     "ofetch": "catalog:app-runtime",
@@ -112,6 +114,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@11.24.0",
   "version": ""
 }
