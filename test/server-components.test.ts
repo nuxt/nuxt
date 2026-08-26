@@ -677,11 +677,10 @@ describe('denial-of-service protections', () => {
   })
 
   it('rejects a deeply nested island body before hashing', async () => {
-    const props = '['.repeat(500) + ']'.repeat(500)
     const res = await fetch('/__nuxt_island/PureComponent_deadbeef.json', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ props }),
+      body: `{"props":${'['.repeat(500)}${']'.repeat(500)}}`,
     })
     expect(res.status).toBe(400)
   })
