@@ -38,7 +38,11 @@ export async function renderPage (path = '/', opts?: { retries?: number }) {
   })
 
   if (path) {
-    await gotoPath(page, path, opts?.retries)
+    await gotoPath(page, path, opts?.retries, () => {
+      pageErrors.length = 0
+      requests.length = 0
+      consoleLogs.length = 0
+    })
   }
 
   return {
@@ -57,23 +61,30 @@ export async function expectNoClientErrors (path: string) {
 
   const { page, pageErrors, consoleLogs } = (await renderPage(path))!
 
-  expect(pageErrors).toEqual([])
+  expect(pageErrors.map(e => e.message)).toEqual([])
   expectNoErrorsOrWarnings(consoleLogs)
 
   await page.close()
 }
 
 function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, text: string }>) {
-  const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
-  const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
+  const consoleLogErrors = consoleLogs.filter(i => i.type === 'error').map(i => i.text)
+  const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning').map(i => i.text)
 
   expect(consoleLogErrors).toEqual([])
   expect(consoleLogWarnings).toEqual([])
 }
 
 const BASE_TIMEOUT = isCI ? 6_000 : 3_000
-export async function gotoPath (page: Page, path: string, retries = 2) {
-  await vi.waitFor(() => page.goto(url(path), { timeout: BASE_TIMEOUT }), { timeout: BASE_TIMEOUT * retries || BASE_TIMEOUT })
+export async function gotoPath (page: Page, path: string, retries = 2, onRetry?: () => void) {
+  await vi.waitFor(async () => {
+    try {
+      return await page.goto(url(path), { timeout: BASE_TIMEOUT })
+    } catch (error) {
+      onRetry?.()
+      throw error
+    }
+  }, { timeout: BASE_TIMEOUT * retries || BASE_TIMEOUT })
   await page.waitForFunction(path => window.useNuxtApp?.()?._route?.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
 }
 
