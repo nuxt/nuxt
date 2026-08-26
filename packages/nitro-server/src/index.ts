@@ -744,20 +744,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
   const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
   const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
-  nitroConfig.rollupConfig!.plugins!.push(
-    ImpoundPlugin.rollup({
-      cwd: nuxt.options.rootDir,
-      trace: true,
-      include: sharedPatterns,
-      patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
-    }),
-    ImpoundPlugin.rollup({
-      cwd: nuxt.options.rootDir,
-      trace: true,
-      patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
-      exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
-    }),
-  )
+  const trace = nuxt.options.dev ? true : 'lazy' as const
+  // Both matchers share a single plugin instance so eager tracing parses each module once.
+  nitroConfig.rollupConfig!.plugins!.push(ImpoundPlugin.rollup({
+    cwd: nuxt.options.rootDir,
+    trace,
+    matchers: [
+      {
+        include: sharedPatterns,
+        patterns: createImportProtectionPatterns(nuxt, { context: 'shared' as const }),
+      },
+      {
+        patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' as const }),
+        exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
+      },
+    ],
+  }))
 
   // Apply Nuxt's ignore configuration to the root and src unstorage mounts
   // created by Nitro. This ensures that the unstorage watcher will use the
