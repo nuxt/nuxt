@@ -6,6 +6,11 @@ declare module '#build/router.options.mjs' {
   export default _default
 }
 
+declare module '#build/server-path-filter.mjs' {
+  export const serverPathFallback: boolean
+  export const mightBeServerPath: (path: string) => boolean
+}
+
 declare module '#build/routes' {
   import type { RouterOptions } from '@nuxt/schema'
   import type { Router, RouterOptions as VueRouterOptions } from 'vue-router'
