@@ -20,5 +20,3 @@ export type { NuxtDebugContext, NuxtDebugOptions, NuxtDebugModuleMutationRecord 
 
 // Schema
 export { default as NuxtConfigSchema } from './config/index.ts'
-export { shouldEnableTypeCheck } from './utils/type-check.ts'
-export type { TypeCheckOption } from './utils/type-check.ts'

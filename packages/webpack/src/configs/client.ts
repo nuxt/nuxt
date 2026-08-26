@@ -2,7 +2,6 @@ import querystring from 'node:querystring'
 import { normalize, resolve } from 'pathe'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger, resolveAlias } from '@nuxt/kit'
-import { shouldEnableTypeCheck } from '@nuxt/schema'
 import type { Module } from 'webpack'
 import { joinURL } from 'ufo'
 import { defineEnv } from 'unenv'
@@ -165,7 +164,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // Normally type checking runs in server config, but in `ssr: false` there is
   // no server build, so we inject here instead.
   if (!ctx.nuxt.options.ssr) {
-    if (shouldEnableTypeCheck(ctx.nuxt.options.typescript.typeCheck, { dev: ctx.nuxt.options.dev, test: ctx.nuxt.options.test })) {
+    if (ctx.nuxt.options.typescript.typeCheck === true) {
       ctx.config.plugins!.push(new TsCheckerPlugin({
         logger,
       }))

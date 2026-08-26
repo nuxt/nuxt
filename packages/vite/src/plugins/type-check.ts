@@ -1,5 +1,5 @@
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { type Nuxt, shouldEnableTypeCheck } from '@nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 import type { Plugin } from 'vite'
 import { resolveClientEntry } from '../utils/config.ts'
 
@@ -11,7 +11,7 @@ export function TypeCheckPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:type-check',
     applyToEnvironment: environment => environment.name === 'client' && !environment.config.isProduction,
     apply: () => {
-      return shouldEnableTypeCheck(nuxt.options.typescript.typeCheck, { dev: true, test: nuxt.options.test })
+      return nuxt.options.typescript.typeCheck === true
     },
     configResolved (config) {
       try {
