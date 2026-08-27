@@ -616,6 +616,7 @@ svg {
   background: #00dc8229;
   height: 2px;
   overflow: hidden;
+  width: 100% !important;
 }
 .nuxt-loader-bar > span {
   background: var(--nuxt-mint);
