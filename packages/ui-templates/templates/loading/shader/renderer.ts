@@ -1,5 +1,5 @@
-/// <reference types="@webgpu/types" />
-import shader from './mountains.wgsl?raw'
+import fragmentSource from './mountains.frag.glsl?raw'
+import vertexSource from './mountains.vert.glsl?raw'
 
 const COLS = 704
 const ROWS = 260
@@ -17,12 +17,6 @@ const POINTER_FOLLOW_SECONDS = 0.22
 const POINTER_HOLD_SECONDS = 0.35
 /** shockwaves per second while the lockup is hovered */
 const WAVE_RATE = 0.55
-
-const UNIFORM_BYTES = 64
-
-/** the ground each theme clears to, matching the page background */
-const PAPER = { r: 1, g: 1, b: 1, a: 1 }
-const INK = { r: 0, g: 0, b: 0, a: 1 }
 
 export type Renderer = {
   ready: Promise<void>
@@ -72,16 +66,10 @@ export function createRenderer (
   lockup: HTMLElement | null,
 ): Renderer {
   let disposed = false
-  let device: GPUDevice | undefined
-  let context: GPUCanvasContext | undefined
-  let uniforms: GPUBuffer | undefined
-  let bindGroup: GPUBindGroup | undefined
+  let gl: WebGL2RenderingContext | undefined
+  let program: WebGLProgram | undefined
   let observer: ResizeObserver | undefined
   let rafId = 0
-  // one pipeline per theme: they differ only in blend op, and the viewer can
-  // change theme under us, so both are kept once built
-  const pipelines = new Map<number, GPURenderPipeline>()
-  let buildPipeline: ((light: number) => GPURenderPipeline) | undefined
 
   let width = 1
   let height = 1
@@ -112,13 +100,14 @@ export function createRenderer (
   const lightQuery = window.matchMedia('(prefers-color-scheme: light)')
   let light = lightQuery.matches ? 1 : 0
   let winter = isWinter() ? 1 : 0
-  const scratch = new Float32Array(UNIFORM_BYTES / 4)
+
+  type Uniforms = Record<'uLogoCentre' | 'uLogoScale' | 'uResolution' | 'uPointer' | 'uWave' | 'uMisc' | 'uSeason' | 'uLight', WebGLUniformLocation | null>
+  let uniforms: Uniforms | undefined
 
   /**
    * Draw one more frame after a change that reduced motion would otherwise sit
    * on. Before the first paint there is nothing to do: the frame that is
-   * already coming reads the new value, and scheduling one here would race the
-   * loop `initialise` starts.
+   * already coming reads the new value.
    */
   const redraw = () => {
     if (disposed || paused || !painted) { return }
@@ -135,11 +124,27 @@ export function createRenderer (
 
   const handleThemeChange = (event: MediaQueryListEvent) => {
     light = event.matches ? 1 : 0
+    applyBlend()
     redraw()
   }
 
+  /**
+   * The dark theme adds light to black, so overlapping dust brightens towards
+   * white. The light theme composites premultiplied over the page, so it
+   * converges on the ink colour rather than running away to black. Alpha is
+   * left at the cleared 1 either way: the canvas is opaque.
+   */
+  const applyBlend = () => {
+    if (!gl) { return }
+    if (light > 0) {
+      gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE)
+    } else {
+      gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE)
+    }
+  }
+
   const measure = () => {
-    if (!device || !context) { return }
+    if (!gl) { return }
     const rect = canvas.getBoundingClientRect()
     if (rect.width <= 0 || rect.height <= 0) { return }
     const ratio = Math.min(
@@ -156,6 +161,7 @@ export function createRenderer (
       height = next[1]!
       canvas.width = width
       canvas.height = height
+      gl.viewport(0, 0, width, height)
     }
     const slotRect = slot.getBoundingClientRect()
     logoCentre = [
@@ -182,6 +188,13 @@ export function createRenderer (
   }
   const handleLockupEnter = () => { overLockup = true }
   const handleLockupLeave = () => { overLockup = false }
+  // A lost context clears the drawing buffer, so the canvas would be left as a
+  // blank rectangle over the page. Drop it and fall back to the plain lockup.
+  const handleContextLost = (event: Event) => {
+    event.preventDefault()
+    dispose()
+    canvas.remove()
+  }
 
   const setPaused = (next: boolean) => {
     if (next === paused || disposed) { return }
@@ -218,14 +231,8 @@ export function createRenderer (
       lastTime = (now - timeOffset) / 1000
     }
     if (now - lastRender < FRAME_INTERVAL_MS) { return }
-    if (!device || !context || !buildPipeline || !uniforms || !bindGroup) { return }
+    if (!gl || !program || !uniforms) { return }
     lastRender = now
-
-    let pipeline = pipelines.get(light)
-    if (!pipeline) {
-      pipeline = buildPipeline(light)
-      pipelines.set(light, pipeline)
-    }
 
     const time = (now - timeOffset) / 1000
     const dt = Math.min(Math.max(time - lastTime, 0), 0.05)
@@ -246,31 +253,19 @@ export function createRenderer (
       }
     }
 
-    scratch.set([
-      logoCentre[0], logoCentre[1],
-      logoScale[0], logoScale[1],
-      width, height,
-      smoothed[0], smoothed[1],
-      wavePhase, waveAlive,
-      time, pointerHold,
-      winter, light,
-    ])
-    device.queue.writeBuffer(uniforms, 0, scratch)
+    gl.uniform2f(uniforms.uLogoCentre, logoCentre[0], logoCentre[1])
+    gl.uniform2f(uniforms.uLogoScale, logoScale[0], logoScale[1])
+    gl.uniform2f(uniforms.uResolution, width, height)
+    gl.uniform2f(uniforms.uPointer, smoothed[0], smoothed[1])
+    gl.uniform2f(uniforms.uWave, wavePhase, waveAlive)
+    gl.uniform2f(uniforms.uMisc, time, pointerHold)
+    gl.uniform2f(uniforms.uSeason, winter, light)
+    gl.uniform1f(uniforms.uLight, light)
 
-    const encoder = device.createCommandEncoder()
-    const pass = encoder.beginRenderPass({
-      colorAttachments: [{
-        view: context.getCurrentTexture().createView(),
-        loadOp: 'clear',
-        storeOp: 'store',
-        clearValue: light > 0 ? PAPER : INK,
-      }],
-    })
-    pass.setPipeline(pipeline)
-    pass.setBindGroup(0, bindGroup)
-    pass.draw(winter > 0 ? WINTER_VERTICES : TERRAIN_VERTICES)
-    pass.end()
-    device.queue.submit([encoder.finish()])
+    const ground = light > 0 ? 1 : 0
+    gl.clearColor(ground, ground, ground, 1)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.drawArrays(gl.TRIANGLES, 0, winter > 0 ? WINTER_VERTICES : TERRAIN_VERTICES)
 
     if (!painted) {
       painted = true
@@ -295,70 +290,72 @@ export function createRenderer (
     lockup?.removeEventListener('pointerenter', handleLockupEnter)
     lockup?.removeEventListener('pointerleave', handleLockupLeave)
     lightQuery.removeEventListener('change', handleThemeChange)
-    uniforms?.destroy()
-    device?.destroy()
-    device = undefined
-    context = undefined
+    canvas.removeEventListener('webglcontextlost', handleContextLost)
+    if (gl && program) { gl.deleteProgram(program) }
+    gl = undefined
+    program = undefined
   }
 
-  const initialise = async () => {
-    const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'low-power' })
-    if (!adapter) { throw new Error('No WebGPU adapter.') }
-    const gpu = await adapter.requestDevice()
-    if (disposed) {
-      gpu.destroy()
-      return
+  const compile = (context: WebGL2RenderingContext, type: number, source: string) => {
+    const shader = context.createShader(type)
+    if (!shader) { throw new Error('Could not create shader.') }
+    context.shaderSource(shader, source)
+    context.compileShader(shader)
+    if (!context.getShaderParameter(shader, context.COMPILE_STATUS)) {
+      const log = context.getShaderInfoLog(shader)
+      context.deleteShader(shader)
+      throw new Error(`Shader failed to compile: ${log}`)
     }
-    device = gpu
-    device.lost.then(() => dispose())
+    return shader
+  }
 
-    const ctx = canvas.getContext('webgpu') as GPUCanvasContext | null
-    if (!ctx) { throw new Error('No WebGPU canvas context.') }
-    context = ctx
-    const format = navigator.gpu.getPreferredCanvasFormat()
-    context.configure({ device, format, alphaMode: 'opaque' })
+  const initialise = () => {
+    const context = canvas.getContext('webgl2', {
+      alpha: false,
+      antialias: false,
+      depth: false,
+      stencil: false,
+      powerPreference: 'low-power',
+    })
+    if (!context) { throw new Error('No WebGL2 context.') }
+    gl = context
 
-    const module = device.createShaderModule({ label: 'nuxt-loading-mountains', code: shader })
-    // an explicit layout, so the one bind group serves both theme pipelines
-    const bindGroupLayout = device.createBindGroupLayout({
-      entries: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform' } }],
-    })
-    const layout = device.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] })
-    buildPipeline = (theme: number) => device!.createRenderPipeline({
-      label: theme > 0 ? 'nuxt-loading-mountains-light' : 'nuxt-loading-mountains',
-      layout,
-      vertex: { module, entryPoint: 'vs_main' },
-      fragment: {
-        module,
-        entryPoint: theme > 0 ? 'fs_light' : 'fs_main',
-        // Particles accumulate either way. On the dark theme they add light, so
-        // overlapping dust brightens towards white. On the light one they
-        // composite premultiplied, so it converges on the ink colour instead of
-        // running away to black. Alpha stays at the cleared 1: the canvas is
-        // opaque, and the page shows through only where nothing was drawn.
-        targets: [{
-          format,
-          blend: theme > 0
-            ? {
-                color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
-                alpha: { srcFactor: 'zero', dstFactor: 'one' },
-              }
-            : {
-                color: { srcFactor: 'one', dstFactor: 'one' },
-                alpha: { srcFactor: 'one', dstFactor: 'one' },
-              },
-        }],
-      },
-    })
-    uniforms = device.createBuffer({
-      label: 'nuxt-loading-params',
-      size: UNIFORM_BYTES,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    })
-    bindGroup = device.createBindGroup({
-      layout: bindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: uniforms } }],
-    })
+    const vertex = compile(context, context.VERTEX_SHADER, vertexSource)
+    const fragment = compile(context, context.FRAGMENT_SHADER, fragmentSource)
+    const linked = context.createProgram()
+    if (!linked) { throw new Error('Could not create program.') }
+    context.attachShader(linked, vertex)
+    context.attachShader(linked, fragment)
+    context.linkProgram(linked)
+    // the shaders live on inside the program once it is linked
+    context.deleteShader(vertex)
+    context.deleteShader(fragment)
+    if (!context.getProgramParameter(linked, context.LINK_STATUS)) {
+      const log = context.getProgramInfoLog(linked)
+      context.deleteProgram(linked)
+      throw new Error(`Program failed to link: ${log}`)
+    }
+    program = linked
+    context.useProgram(linked)
+
+    const at = (name: string) => context.getUniformLocation(linked, name)
+    uniforms = {
+      uLogoCentre: at('uLogoCentre'),
+      uLogoScale: at('uLogoScale'),
+      uResolution: at('uResolution'),
+      uPointer: at('uPointer'),
+      uWave: at('uWave'),
+      uMisc: at('uMisc'),
+      uSeason: at('uSeason'),
+      uLight: at('uLight'),
+    }
+
+    // every vertex comes from gl_VertexID, so there is nothing to bind beyond
+    // an empty vertex array
+    context.bindVertexArray(context.createVertexArray())
+    context.disable(context.DEPTH_TEST)
+    context.enable(context.BLEND)
+    applyBlend()
 
     measure()
     observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure)
@@ -369,13 +366,21 @@ export function createRenderer (
     lockup?.addEventListener('pointerenter', handleLockupEnter)
     lockup?.addEventListener('pointerleave', handleLockupLeave)
     lightQuery.addEventListener('change', handleThemeChange)
+    canvas.addEventListener('webglcontextlost', handleContextLost)
     rafId ||= requestAnimationFrame(frame)
   }
 
-  const ready = initialise().catch((error: unknown) => {
+  // WebGL2 sets up synchronously, unlike WebGPU's adapter request. `ready` stays
+  // a promise so callers keep one way to hear about a failure; the rejection
+  // handler is attached in the same tick, before microtasks run.
+  let ready: Promise<void>
+  try {
+    initialise()
+    ready = Promise.resolve()
+  } catch (error) {
     dispose()
-    throw error
-  })
+    ready = Promise.reject(error instanceof Error ? error : new Error(String(error)))
+  }
 
   const api: Renderer = { ready, dispose, setPaused, setWinter }
   return api
