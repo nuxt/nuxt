@@ -18,6 +18,7 @@
   "devDependencies": {
     "@unocss/reset": "catalog:dev",
     "@vue/shared": "catalog:build",
+    "@webgpu/types": "catalog:dev",
     "beasties": "catalog:dev",
     "html-validate": "catalog:dev",
     "htmlnano": "catalog:dev",

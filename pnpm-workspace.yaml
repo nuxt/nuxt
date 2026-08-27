@@ -233,6 +233,7 @@ catalogs:
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.11
     '@vue/test-utils': 2.4.11
+    '@webgpu/types': 0.1.71
     acorn: 8.18.0
     beasties: 0.4.3
     case-police: 2.2.1

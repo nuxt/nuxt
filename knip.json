@@ -95,7 +95,8 @@
     },
     "packages/ui-templates": {
       "entry": [
-        "lib/*.ts"
+        "lib/*.ts",
+        "templates/**/shader/start.ts!"
       ],
       "ignoreDependencies": [
         "@vue/shared"
