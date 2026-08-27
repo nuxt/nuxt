@@ -47,6 +47,16 @@ function mountSeasonToggle (renderer: Renderer) {
   })
 }
 
+/** `?webgpu=0` forces the fallback, so it can be checked without a second browser */
+function forcedOff (): boolean {
+  try {
+    const value = new URLSearchParams(window.location.search).get('webgpu')
+    return value === '0' || value === 'false'
+  } catch {
+    return false
+  }
+}
+
 function start () {
   // the status line and progress bar work with or without the shader
   mountProgress()
@@ -56,7 +66,7 @@ function start () {
 
   // Without WebGPU the lockup and the progress bar are the whole screen, so the
   // canvas is dropped rather than left behind as an empty layer.
-  if (!canvas || !slot || !navigator.gpu) {
+  if (!canvas || !slot || !navigator.gpu || forcedOff()) {
     canvas?.remove()
     return
   }
