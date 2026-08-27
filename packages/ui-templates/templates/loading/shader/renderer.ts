@@ -19,6 +19,8 @@ const UNIFORM_BYTES = 48
 export type Renderer = {
   ready: Promise<void>
   dispose: () => void
+  /** stop drawing entirely; time freezes so the scene resumes in place */
+  setPaused: (paused: boolean) => void
   /** fires once the first frame has actually been painted */
   onFirstFrame?: () => void
 }
@@ -62,6 +64,13 @@ export function createRenderer (
   let lastTime = 0
   let lastRender = -Infinity
   let painted = false
+  // With several dev servers open, only the focused one should cost anything.
+  // Browsers suspend frames for hidden tabs but not for unfocused windows, so
+  // the scene is paused explicitly, and time is frozen so it resumes in place.
+  let paused = false
+  let pauseWhenPainted = false
+  let pausedAt = 0
+  let timeOffset = 0
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const scratch = new Float32Array(UNIFORM_BYTES / 4)
@@ -111,6 +120,29 @@ export function createRenderer (
   const handleLockupEnter = () => { overLockup = true }
   const handleLockupLeave = () => { overLockup = false }
 
+  const setPaused = (next: boolean) => {
+    if (next === paused || disposed) { return }
+    // never pause before the first frame, or the screen would stay blank
+    if (next && !painted) {
+      pauseWhenPainted = true
+      return
+    }
+    paused = next
+    if (paused) {
+      pausedAt = performance.now()
+      pointer = undefined
+      overLockup = false
+      if (rafId) { cancelAnimationFrame(rafId) }
+      rafId = 0
+      return
+    }
+    pauseWhenPainted = false
+    timeOffset += performance.now() - pausedAt
+    lastRender = -Infinity
+    lastTime = (performance.now() - timeOffset) / 1000
+    if (!rafId) { rafId = requestAnimationFrame(frame) }
+  }
+
   const frame = (now: number) => {
     if (disposed) { return }
     rafId = requestAnimationFrame(frame)
@@ -118,7 +150,7 @@ export function createRenderer (
     if (!device || !context || !pipeline || !uniforms || !bindGroup) { return }
     lastRender = now
 
-    const time = now / 1000
+    const time = (now - timeOffset) / 1000
     const dt = Math.min(Math.max(time - lastTime, 0), 0.05)
     lastTime = time
 
@@ -165,6 +197,8 @@ export function createRenderer (
     if (!painted) {
       painted = true
       api.onFirstFrame?.()
+      // the window may already have been in the background at startup
+      if (pauseWhenPainted) { setPaused(true) }
     }
     if (reducedMotion) {
       cancelAnimationFrame(rafId)
@@ -249,6 +283,6 @@ export function createRenderer (
     throw error
   })
 
-  const api: Renderer = { ready, dispose }
+  const api: Renderer = { ready, dispose, setPaused }
   return api
 }
