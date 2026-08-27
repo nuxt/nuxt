@@ -303,7 +303,7 @@ test.describe('SSR Streaming', () => {
   // pushes) that bypass unhead. When a security module has stamped a nonce on
   // the head scripts, the renderer reuses it so a strict `script-src` policy
   // does not block them. The `/nonce` fixture plugin stamps `test-csp-nonce`.
-  test('a head-script nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
+  test('a script nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
     const res = await fetch('/nonce')
     const html = await res.text()
 
@@ -311,10 +311,12 @@ test.describe('SSR Streaming', () => {
     expect(html).toMatch(/<script nonce="test-csp-nonce">[^<]*window\.__unhead__=\{_q:\[\]/)
     // Streamed head-push chunks carry the nonce
     expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\.push/)
+    // Inline script that injected by renderPayloadJsonScript
+    expect(html).toMatch(/<script[^>]*\snonce="test-csp-nonce"[^>]*>window\.__NUXT__=/)
 
     if (!isDev) {
       // Production IIFE chunk is loaded as an external script — also nonced
-      expect(html).toMatch(/<script async nonce="test-csp-nonce" src=/)
+      expect(html).toMatch(/<script nonce="test-csp-nonce" async src=/)
       // Route-level inline `<style>` carries the nonce too (strict `style-src`)
       expect(html).toMatch(/<style nonce="test-csp-nonce">[^<]*\.nonce-probe/)
     }
