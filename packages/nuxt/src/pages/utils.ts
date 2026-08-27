@@ -906,7 +906,7 @@ export function isSerializable (node: ESTree.Node): { value?: any, serializable:
       if (!serializable) {
         return { serializable: false }
       }
-      value[key] = propertyValue
+      Object.defineProperty(value, key, { value: propertyValue, enumerable: true, writable: true, configurable: true })
     }
     return { value, serializable: true }
   }
