@@ -20,11 +20,17 @@ const WAVE_RATE = 0.55
 
 const UNIFORM_BYTES = 64
 
+/** the ground each theme clears to, matching the page background */
+const PAPER = { r: 1, g: 1, b: 1, a: 1 }
+const INK = { r: 0, g: 0, b: 0, a: 1 }
+
 export type Renderer = {
   ready: Promise<void>
   dispose: () => void
   /** stop drawing entirely; time freezes so the scene resumes in place */
   setPaused: (paused: boolean) => void
+  /** snow on the peaks and falling flakes, toggleable while running */
+  setWinter: (winter: boolean) => void
   /** fires once the first frame has actually been painted */
   onFirstFrame?: () => void
 }
@@ -68,11 +74,14 @@ export function createRenderer (
   let disposed = false
   let device: GPUDevice | undefined
   let context: GPUCanvasContext | undefined
-  let pipeline: GPURenderPipeline | undefined
   let uniforms: GPUBuffer | undefined
   let bindGroup: GPUBindGroup | undefined
   let observer: ResizeObserver | undefined
   let rafId = 0
+  // one pipeline per theme: they differ only in blend op, and the viewer can
+  // change theme under us, so both are kept once built
+  const pipelines = new Map<number, GPURenderPipeline>()
+  let buildPipeline: ((light: number) => GPURenderPipeline) | undefined
 
   let width = 1
   let height = 1
@@ -100,8 +109,34 @@ export function createRenderer (
   let timeOffset = 0
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const winter = isWinter() ? 1 : 0
+  const lightQuery = window.matchMedia('(prefers-color-scheme: light)')
+  let light = lightQuery.matches ? 1 : 0
+  let winter = isWinter() ? 1 : 0
   const scratch = new Float32Array(UNIFORM_BYTES / 4)
+
+  /**
+   * Draw one more frame after a change that reduced motion would otherwise sit
+   * on. Before the first paint there is nothing to do: the frame that is
+   * already coming reads the new value, and scheduling one here would race the
+   * loop `initialise` starts.
+   */
+  const redraw = () => {
+    if (disposed || paused || !painted) { return }
+    lastRender = -Infinity
+    rafId ||= requestAnimationFrame(frame)
+  }
+
+  const setWinter = (next: boolean) => {
+    const value = next ? 1 : 0
+    if (value === winter) { return }
+    winter = value
+    redraw()
+  }
+
+  const handleThemeChange = (event: MediaQueryListEvent) => {
+    light = event.matches ? 1 : 0
+    redraw()
+  }
 
   const measure = () => {
     if (!device || !context) { return }
@@ -183,8 +218,14 @@ export function createRenderer (
       lastTime = (now - timeOffset) / 1000
     }
     if (now - lastRender < FRAME_INTERVAL_MS) { return }
-    if (!device || !context || !pipeline || !uniforms || !bindGroup) { return }
+    if (!device || !context || !buildPipeline || !uniforms || !bindGroup) { return }
     lastRender = now
+
+    let pipeline = pipelines.get(light)
+    if (!pipeline) {
+      pipeline = buildPipeline(light)
+      pipelines.set(light, pipeline)
+    }
 
     const time = (now - timeOffset) / 1000
     const dt = Math.min(Math.max(time - lastTime, 0), 0.05)
@@ -212,7 +253,7 @@ export function createRenderer (
       smoothed[0], smoothed[1],
       wavePhase, waveAlive,
       time, pointerHold,
-      winter, 0,
+      winter, light,
     ])
     device.queue.writeBuffer(uniforms, 0, scratch)
 
@@ -222,7 +263,7 @@ export function createRenderer (
         view: context.getCurrentTexture().createView(),
         loadOp: 'clear',
         storeOp: 'store',
-        clearValue: { r: 0, g: 0, b: 0, a: 1 },
+        clearValue: light > 0 ? PAPER : INK,
       }],
     })
     pass.setPipeline(pipeline)
@@ -253,6 +294,7 @@ export function createRenderer (
     document.documentElement.removeEventListener('pointerleave', handlePointerLeave)
     lockup?.removeEventListener('pointerenter', handleLockupEnter)
     lockup?.removeEventListener('pointerleave', handleLockupLeave)
+    lightQuery.removeEventListener('change', handleThemeChange)
     uniforms?.destroy()
     device?.destroy()
     device = undefined
@@ -277,20 +319,34 @@ export function createRenderer (
     context.configure({ device, format, alphaMode: 'opaque' })
 
     const module = device.createShaderModule({ label: 'nuxt-loading-mountains', code: shader })
-    pipeline = device.createRenderPipeline({
-      label: 'nuxt-loading-mountains',
-      layout: 'auto',
+    // an explicit layout, so the one bind group serves both theme pipelines
+    const bindGroupLayout = device.createBindGroupLayout({
+      entries: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: 'uniform' } }],
+    })
+    const layout = device.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] })
+    buildPipeline = (theme: number) => device!.createRenderPipeline({
+      label: theme > 0 ? 'nuxt-loading-mountains-light' : 'nuxt-loading-mountains',
+      layout,
       vertex: { module, entryPoint: 'vs_main' },
       fragment: {
         module,
-        entryPoint: 'fs_main',
-        // particles accumulate, so overlapping dust brightens rather than occludes
+        entryPoint: theme > 0 ? 'fs_light' : 'fs_main',
+        // Particles accumulate either way. On the dark theme they add light, so
+        // overlapping dust brightens towards white. On the light one they
+        // composite premultiplied, so it converges on the ink colour instead of
+        // running away to black. Alpha stays at the cleared 1: the canvas is
+        // opaque, and the page shows through only where nothing was drawn.
         targets: [{
           format,
-          blend: {
-            color: { srcFactor: 'one', dstFactor: 'one' },
-            alpha: { srcFactor: 'one', dstFactor: 'one' },
-          },
+          blend: theme > 0
+            ? {
+                color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+                alpha: { srcFactor: 'zero', dstFactor: 'one' },
+              }
+            : {
+                color: { srcFactor: 'one', dstFactor: 'one' },
+                alpha: { srcFactor: 'one', dstFactor: 'one' },
+              },
         }],
       },
     })
@@ -300,7 +356,7 @@ export function createRenderer (
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
     bindGroup = device.createBindGroup({
-      layout: pipeline.getBindGroupLayout(0),
+      layout: bindGroupLayout,
       entries: [{ binding: 0, resource: { buffer: uniforms } }],
     })
 
@@ -312,7 +368,8 @@ export function createRenderer (
     document.documentElement.addEventListener('pointerleave', handlePointerLeave)
     lockup?.addEventListener('pointerenter', handleLockupEnter)
     lockup?.addEventListener('pointerleave', handleLockupLeave)
-    rafId = requestAnimationFrame(frame)
+    lightQuery.addEventListener('change', handleThemeChange)
+    rafId ||= requestAnimationFrame(frame)
   }
 
   const ready = initialise().catch((error: unknown) => {
@@ -320,6 +377,6 @@ export function createRenderer (
     throw error
   })
 
-  const api: Renderer = { ready, dispose, setPaused }
+  const api: Renderer = { ready, dispose, setPaused, setWinter }
   return api
 }

@@ -1,5 +1,51 @@
 import { mountProgress } from './progress'
-import { createRenderer } from './renderer'
+import { createRenderer, isWinter } from './renderer'
+import type { Renderer } from './renderer'
+
+/** the key the previous snow easter egg used, so an existing choice carries over */
+const SNOW_KEY = 'nuxt-snow'
+
+function readSnowPreference (): boolean {
+  try {
+    return window.localStorage.getItem(SNOW_KEY) !== 'false'
+  } catch {
+    // storage can be unavailable or blocked
+    return true
+  }
+}
+
+/**
+ * Winter is opt-out, and only offered while it is in season. The button ships
+ * hidden in the markup rather than being created here, so the critical-CSS pass
+ * keeps its styles.
+ */
+function mountSeasonToggle (renderer: Renderer) {
+  const inSeason = isWinter()
+  let enabled = readSnowPreference()
+  renderer.setWinter(inSeason && enabled)
+  if (!inSeason) { return }
+
+  const button = document.querySelector<HTMLElement>('#nuxt-season')
+  if (!button) { return }
+  const paint = () => {
+    // set inline: a selector that only matches after JS runs would be dropped
+    button.style.opacity = enabled ? '1' : '0.4'
+    button.setAttribute('aria-pressed', String(enabled))
+    button.title = enabled ? 'Turn off snow' : 'Turn on snow'
+  }
+  paint()
+  button.hidden = false
+  button.addEventListener('click', () => {
+    enabled = !enabled
+    renderer.setWinter(enabled)
+    paint()
+    try {
+      window.localStorage.setItem(SNOW_KEY, String(enabled))
+    } catch {
+      // the toggle still works for this page load
+    }
+  })
+}
 
 function start () {
   // the status line and progress bar work with or without the shader
@@ -16,6 +62,7 @@ function start () {
   }
 
   const renderer = createRenderer(canvas, slot, document.querySelector('.nuxt-lockup'))
+  mountSeasonToggle(renderer)
   // Styles that only ever apply after JS runs are set inline: the build's
   // critical-CSS pass drops any selector absent from the initial markup.
   renderer.onFirstFrame = () => { canvas.style.opacity = '1' }

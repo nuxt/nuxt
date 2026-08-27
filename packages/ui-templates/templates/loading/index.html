@@ -10,6 +10,8 @@
         --nuxt-mint: #00dc82;
         --nuxt-mist: rgba(232, 255, 244, 0.88);
         --nuxt-dim: rgba(0, 220, 130, 0.55);
+        /* the mint, deepened only where it has to carry small text on white */
+        --nuxt-accent: #00dc82;
         /* official combined mark (viewBox 0 0 128 32): the icon is 48x32, the
            text runs 56-128, so gap = icon/6 and the caps are half its width */
         --nuxt-logo: min(15vw, 99px);
@@ -91,7 +93,7 @@
         transition: color 0.2s ease;
       }
       .nuxt-home:hover { color: var(--nuxt-mist); }
-      .nuxt-version { color: var(--nuxt-mint); }
+      .nuxt-version { color: var(--nuxt-accent); }
       .nuxt-progress {
         position: fixed;
         bottom: 0;
@@ -140,12 +142,55 @@
         0% { transform: translateX(-120%); }
         100% { transform: translateX(360%); }
       }
+      .nuxt-season {
+        position: fixed;
+        right: 22px;
+        bottom: 26px;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        color: var(--nuxt-mint);
+        background: rgba(0, 220, 130, 0.08);
+        border: 1px solid rgba(0, 220, 130, 0.24);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: opacity 0.2s ease, background-color 0.2s ease;
+      }
+      /* an author `display` beats the UA rule for [hidden], so restate it */
+      .nuxt-season[hidden] { display: none; }
+      .nuxt-season:hover { background: rgba(0, 220, 130, 0.16); }
+      .nuxt-season > svg { width: 16px; height: 16px; }
+      .nuxt-sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
       @media (prefers-reduced-motion: reduce) {
         .nuxt-loader-bar > span {
           width: 100%;
           transform: none;
           animation: none;
         }
+      }
+      /* The shader draws the range as ink on paper in light mode. The mark keeps
+         the brand green on both themes; only the text around it swaps to the
+         brand ink, since #00dc82 is too light to read on white at 11px. */
+      @media (prefers-color-scheme: light) {
+        :root {
+          --nuxt-mist: rgba(2, 4, 32, 0.76);
+          --nuxt-dim: rgba(2, 4, 32, 0.42);
+          --nuxt-accent: #00a86a;
+        }
+        html, body { background: #fff; }
+        .nuxt-wordmark { color: #020420; }
+        .nuxt-loader-bar { background: rgba(0, 220, 130, 0.22); }
       }
     </style>
   </head>
@@ -168,6 +213,15 @@
       <a class="nuxt-home" href="https://nuxt.com/?utm_source=nuxt-loading-screen" target="_blank" rel="noopener">nuxt.com</a>
       <span class="nuxt-version">{{ version }}</span>
     </div>
+    <!-- Revealed by JS only when winter is in season. It ships in the markup so
+         the build's critical-CSS pass keeps its styles. -->
+    <button class="nuxt-season" id="nuxt-season" type="button" hidden aria-pressed="true" title="Turn off snow">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M8 1.6v12.8M2.46 4.8l11.08 6.4M2.46 11.2l11.08-6.4" />
+        <path d="M6.1 3.1 8 4.2l1.9-1.1M6.1 12.9 8 11.8l1.9 1.1" />
+      </svg>
+      <span class="nuxt-sr">Snow</span>
+    </button>
     <div class="nuxt-progress" id="nuxt-progress">
       <p class="nuxt-progress-status" id="nuxt-progress-status" aria-live="polite"></p>
       <div class="nuxt-loader-bar"><span id="nuxt-progress-fill"></span></div>
