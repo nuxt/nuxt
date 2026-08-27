@@ -21,6 +21,8 @@ struct Params {
   wave: vec2f,
   /** x: seconds, y: pointer presence 0..1 */
   misc: vec2f,
+  /** x: winter 0..1 — snow on the peaks and falling flakes */
+  season: vec2f,
 }
 @group(0) @binding(0) var<uniform> params: Params;
 
@@ -30,6 +32,10 @@ const MINT_PALE = vec3f(0.6235294, 1.0, 0.8156863);
 // grid of particles
 const COLS = 704u;
 const ROWS = 260u;
+const TERRAIN_COUNT = COLS * ROWS;
+// flakes are drawn from the indices past the terrain, so winter costs nothing
+// out of season: the draw call is simply shorter
+const SNOW = vec3f(0.88, 1.0, 0.96);
 
 // camera
 const Z_NEAR = 1.3;
@@ -91,14 +97,65 @@ struct Particle {
   @location(1) tint: vec3f,
 }
 
+fn quadCorner (corner: u32) -> vec2f {
+  let quad = array<vec2f, 6>(
+    vec2f(-1.0, -1.0), vec2f(1.0, -1.0), vec2f(-1.0, 1.0),
+    vec2f(-1.0, 1.0), vec2f(1.0, -1.0), vec2f(1.0, 1.0),
+  );
+  let corners = quad;
+  return corners[corner];
+}
+
+// A flake drifting down the screen, in its own parallax layer. Independent of
+// the terrain: it lives in screen space and wraps around forever.
+fn flake (id: u32, corner: u32, t: f32, resolution: vec2f, centre: vec2f, logoH: f32, aspect: f32) -> Particle {
+  let fi = f32(id - TERRAIN_COUNT);
+  let r1 = hash21(vec2f(fi, 1.7));
+  let r2 = hash21(vec2f(fi, 5.3));
+  let r3 = hash21(vec2f(fi, 9.1));
+  // near flakes are bigger, brighter and fall faster
+  let depth = 0.30 + r3 * 0.70;
+
+  let x = (r1 * 2.4 - 1.2) + sin(t * (0.25 + r2 * 0.35) + r1 * 40.0) * 0.05 * depth;
+  let y = 1.2 - fract(r2 + t * (0.020 + r3 * 0.035)) * 2.5;
+  var pos = vec2f(x, y);
+
+  // flakes thin out over the lockup so they never sit on the wordmark
+  let toCentre = vec2f((pos.x - centre.x) * aspect, pos.y - centre.y);
+  let clear = abs(toCentre / vec2f(logoH * 7.0, logoH * 3.2));
+  let clearing = 0.25 + 0.75 * smoothstep(0.5, 1.2, pow(pow(clear.x, 3.0) + pow(clear.y, 3.0), 1.0 / 3.0));
+
+  let twinkle = 0.75 + 0.25 * sin(t * (1.1 + r1 * 2.0) + r2 * 30.0);
+  let sizePx = (0.55 + depth * 1.5) * (resolution.y / 900.0);
+  let offset = quadCorner(corner);
+
+  var out: Particle;
+  out.position = vec4f(pos + offset * sizePx * 2.0 / resolution, 0.5, 1.0);
+  out.local = offset;
+  out.tint = SNOW * (0.16 + 0.48 * depth) * twinkle * clearing * params.season.x;
+  return out;
+}
+
 @vertex fn vs_main (@builtin(vertex_index) index: u32) -> Particle {
   let id = index / 6u;
   let corner = index % 6u;
-  let col = id % COLS;
-  let row = id / COLS;
   let t = params.misc.x;
   let resolution = max(params.resolution, vec2f(1.0));
   let aspect = max(resolution.x / resolution.y, 0.5);
+  let winter = params.season.x;
+
+  // the lockup centre is needed by both the terrain and the flakes
+  let logoH0 = max(params.logoScale.y, 0.01);
+  let centre0 = vec2f(
+    params.logoCentre.x * 2.0 - 1.0 + logoH0 * 2.5 / aspect,
+    1.0 - 2.0 * params.logoCentre.y,
+  );
+  if (id >= TERRAIN_COUNT) {
+    return flake(id, corner, t, resolution, centre0, logoH0, aspect);
+  }
+
+  let col = id % COLS;
+  let row = id / COLS;
 
   let seed = vec2f(f32(col), f32(row));
   let jitterX = hash21(seed) - 0.5;
@@ -142,12 +199,8 @@ struct Particle {
   // the lockup sits in a clearing so it always reads on plain black. Its centre
   // is right of the icon slot: the official mark is 128 units wide for a
   // 48-unit icon, so the middle is 1.25 icon-heights along.
-  let logoH = max(params.logoScale.y, 0.01);
-  let centre = vec2f(
-    params.logoCentre.x * 2.0 - 1.0 + logoH * 2.5 / aspect,
-    1.0 - 2.0 * params.logoCentre.y,
-  );
-  let toCentre = vec2f((u - centre.x) * aspect, sy - centre.y);
+  let logoH = logoH0;
+  let toCentre = vec2f((u - centre0.x) * aspect, sy - centre0.y);
   let distance = length(toCentre);
   // The clearing has to read as haze, not as a hole cut out of the scene, so
   // it fades over a long distance and its edge is broken up by noise. A
@@ -178,7 +231,9 @@ struct Particle {
 
   let fog = exp(-(z - Z_NEAR) * 0.075) * smoothstep(1.0, 0.86, v);
   let nearFade = smoothstep(Z_NEAR, 2.6, z);
-  let snow = smoothstep(2.6, 3.6, h);
+  // in winter the snowline drops a long way and the caps turn properly white
+  let snowline = 2.6 - winter * 1.7;
+  let snow = smoothstep(snowline, snowline + 1.0 - winter * 0.45, h);
   let shimmer = 0.88 + 0.12 * sin(t * (0.7 + rnd * 1.4) + rnd * 31.0);
   let grain = 0.88 + 0.24 * noise2(vec2f(xw * 3.0, z * 3.0));
 
@@ -192,12 +247,14 @@ struct Particle {
   let waveB = noise2(vec2f(xw * 0.55 + t * 0.09, z * 0.55 - t * 0.14)) - 0.5;
   let wave = 1.0 + waveA * 0.24 + waveB * 0.16;
 
-  let lit = diffuse * 0.18 + crest * (0.34 + diffuse * 0.45) + snow * 0.06;
+  // snow throws light back, so the caps read brighter as well as whiter
+  let lit = diffuse * 0.18 + crest * (0.34 + diffuse * 0.45) + snow * (0.06 + winter * 0.30);
   let brightness = (0.008 + lit * grain)
     * fog * nearFade * wave * shimmer
     * (1.0 + pulse * (0.18 + pulses * 1.1))
     * (1.0 + ripple * 0.75 + shock * 3.0);
-  var tint = mix(MINT * 0.75, MINT_PALE, clamp(crest + snow * 0.5, 0.0, 1.0)) * brightness;
+  var tint = mix(MINT * 0.75, MINT_PALE, clamp(crest + snow * 0.5, 0.0, 1.0));
+  tint = mix(tint, SNOW, winter * snow) * brightness;
 
   let glint = step(0.993, rnd) * diffuse * (0.5 + 0.5 * sin(t * 2.0 + rnd * 47.0));
   tint += vec3f(0.85, 1.0, 0.93) * glint * fog * 0.55;

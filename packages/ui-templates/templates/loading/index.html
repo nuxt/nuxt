@@ -42,7 +42,6 @@
         opacity: 0;
         transition: opacity 0.4s ease;
       }
-      #nuxt-shader.is-ready { opacity: 1; }
       .nuxt-lockup {
         position: relative;
         z-index: 1;
@@ -135,8 +134,6 @@
         animation: none;
         transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      /* nothing animates while this window is in the background */
-      [data-idle] .nuxt-loader-bar > span { animation-play-state: paused; }
       @keyframes nuxt-bar {
         0% { transform: translateX(-120%); }
         100% { transform: translateX(360%); }
@@ -171,7 +168,7 @@
     </div>
     <div class="nuxt-progress" id="nuxt-progress">
       <p class="nuxt-progress-status" id="nuxt-progress-status" aria-live="polite"></p>
-      <div class="nuxt-loader-bar"><span></span></div>
+      <div class="nuxt-loader-bar"><span id="nuxt-progress-fill"></span></div>
     </div>
     <script>
       if (typeof window.fetch === 'undefined') {
