@@ -2,7 +2,10 @@ import shader from './mountains.wgsl?raw'
 
 const COLS = 704
 const ROWS = 260
-const VERTEX_COUNT = COLS * ROWS * 6
+const TERRAIN_VERTICES = COLS * ROWS * 6
+/** flakes are appended after the terrain, and only drawn in winter */
+const SNOWFLAKES = 2200
+const WINTER_VERTICES = TERRAIN_VERTICES + SNOWFLAKES * 6
 
 /** cap the backing store so huge displays don't pay for pixels nobody sees */
 const MAX_RENDER_WIDTH = 2688
@@ -14,7 +17,7 @@ const POINTER_HOLD_SECONDS = 0.35
 /** shockwaves per second while the lockup is hovered */
 const WAVE_RATE = 0.55
 
-const UNIFORM_BYTES = 48
+const UNIFORM_BYTES = 64
 
 export type Renderer = {
   ready: Promise<void>
@@ -33,6 +36,27 @@ function follow (current: Point, target: Point, dt: number, seconds: number): Po
     current[0] + (target[0] - current[0]) * alpha,
     current[1] + (target[1] - current[1]) * alpha,
   ]
+}
+
+/**
+ * Winter runs Nov-Jan in the northern hemisphere and May-Jul in the southern
+ * one, worked out from the timezone offsets, as the previous snow easter egg
+ * did. `?winter` / `?winter=0` forces it either way for testing.
+ */
+export function isWinter (): boolean {
+  try {
+    const forced = new URLSearchParams(window.location.search).get('winter')
+    if (forced !== null) { return forced !== '0' && forced !== 'false' }
+  } catch {
+    // URL unavailable
+  }
+  const now = new Date()
+  const year = now.getFullYear()
+  const january = -new Date(year, 0, 1).getTimezoneOffset()
+  const july = -new Date(year, 6, 1).getTimezoneOffset()
+  if (january === july) { return false }
+  const months = january - july > 0 ? [4, 5, 6] : [10, 11, 0]
+  return months.includes(now.getMonth())
 }
 
 export function createRenderer (
@@ -73,6 +97,7 @@ export function createRenderer (
   let timeOffset = 0
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const winter = isWinter() ? 1 : 0
   const scratch = new Float32Array(UNIFORM_BYTES / 4)
 
   const measure = () => {
@@ -176,6 +201,7 @@ export function createRenderer (
       smoothed[0], smoothed[1],
       wavePhase, waveAlive,
       time, pointerHold,
+      winter, 0,
     ])
     device.queue.writeBuffer(uniforms, 0, scratch)
 
@@ -190,7 +216,7 @@ export function createRenderer (
     })
     pass.setPipeline(pipeline)
     pass.setBindGroup(0, bindGroup)
-    pass.draw(VERTEX_COUNT)
+    pass.draw(winter > 0 ? WINTER_VERTICES : TERRAIN_VERTICES)
     pass.end()
     device.queue.submit([encoder.finish()])
 
