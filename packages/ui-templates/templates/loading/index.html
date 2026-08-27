@@ -118,6 +118,8 @@
         height: 2px;
         overflow: hidden;
         background: rgba(0, 220, 130, 0.16);
+        /* @nuxt/cli still sizes this class as the old single-element bar */
+        width: 100% !important;
       }
       .nuxt-loader-bar > span {
         display: block;
