@@ -1,3 +1,4 @@
+/// <reference types="@webgpu/types" />
 import shader from './mountains.wgsl?raw'
 
 const COLS = 704
@@ -93,7 +94,9 @@ export function createRenderer (
   // the scene is paused explicitly, and time is frozen so it resumes in place.
   let paused = false
   let pauseWhenPainted = false
+  let resuming = false
   let pausedAt = 0
+  let lastFrame = 0
   let timeOffset = 0
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -154,7 +157,8 @@ export function createRenderer (
     }
     paused = next
     if (paused) {
-      pausedAt = performance.now()
+      // the last frame's timestamp is the moment the clock stopped
+      pausedAt = lastFrame
       pointer = undefined
       overLockup = false
       if (rafId) { cancelAnimationFrame(rafId) }
@@ -162,15 +166,22 @@ export function createRenderer (
       return
     }
     pauseWhenPainted = false
-    timeOffset += performance.now() - pausedAt
-    lastRender = -Infinity
-    lastTime = (performance.now() - timeOffset) / 1000
-    if (!rafId) { rafId = requestAnimationFrame(frame) }
+    // the paused span is only known once the next frame reports its timestamp
+    resuming = true
+    rafId ||= requestAnimationFrame(frame)
   }
 
   const frame = (now: number) => {
     if (disposed) { return }
     rafId = requestAnimationFrame(frame)
+    lastFrame = now
+    if (resuming) {
+      // skip the paused span so the scene carries on where it stopped
+      resuming = false
+      timeOffset += now - pausedAt
+      lastRender = -Infinity
+      lastTime = (now - timeOffset) / 1000
+    }
     if (now - lastRender < FRAME_INTERVAL_MS) { return }
     if (!device || !context || !pipeline || !uniforms || !bindGroup) { return }
     lastRender = now
@@ -259,7 +270,7 @@ export function createRenderer (
     device = gpu
     device.lost.then(() => dispose())
 
-    const ctx = canvas.getContext('webgpu')
+    const ctx = canvas.getContext('webgpu') as GPUCanvasContext | null
     if (!ctx) { throw new Error('No WebGPU canvas context.') }
     context = ctx
     const format = navigator.gpu.getPreferredCanvasFormat()
