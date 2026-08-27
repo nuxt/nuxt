@@ -135,6 +135,8 @@
         animation: none;
         transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       }
+      /* nothing animates while this window is in the background */
+      [data-idle] .nuxt-loader-bar > span { animation-play-state: paused; }
       @keyframes nuxt-bar {
         0% { transform: translateX(-120%); }
         100% { transform: translateX(360%); }
