@@ -4,63 +4,173 @@
     <title>{{ messages.loading }} | {{ messages.appName }}</title>
     <meta charset="utf-8" />
     <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport" />
-    <script type="module" src="/styles.ts"></script>
+    <script type="module" src="/templates/loading/shader/start.ts"></script>
     <style>
-      .nuxt-loader-bar {
-        background: #00DC82;
+      :root {
+        --nuxt-mint: #00dc82;
+        --nuxt-mist: rgba(232, 255, 244, 0.88);
+        --nuxt-dim: rgba(0, 220, 130, 0.55);
+        /* official combined mark (viewBox 0 0 128 32): the icon is 48x32, the
+           text runs 56-128, so gap = icon/6 and the caps are half its width */
+        --nuxt-logo: min(15vw, 99px);
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        color: var(--nuxt-mist);
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      svg { display: block; }
+      #nuxt-shader {
+        display: block;
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        touch-action: none;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+      #nuxt-shader.is-ready { opacity: 1; }
+      .nuxt-lockup {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        /* the icon sits on the wordmark baseline, as in the official svg */
+        align-items: flex-end;
+        gap: calc(var(--nuxt-logo) / 6);
+        text-decoration: none;
+        color: inherit;
+      }
+      .nuxt-logo-slot {
+        width: var(--nuxt-logo);
+        height: calc(var(--nuxt-logo) * 32 / 48);
+        flex: 0 0 var(--nuxt-logo);
+        color: var(--nuxt-mint);
+      }
+      .nuxt-logo-slot > svg { width: 100%; height: 100%; }
+      .nuxt-logo-slot > svg > path { fill: currentColor; }
+      .nuxt-wordmark {
+        width: calc(var(--nuxt-logo) * 1.5);
+        height: calc(var(--nuxt-logo) * 0.5);
+        color: #fff;
+        transition: color 0.2s ease;
+      }
+      .nuxt-lockup:hover .nuxt-wordmark { color: var(--nuxt-mist); }
+      .nuxt-corners {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        padding: 22px 26px;
+        pointer-events: none;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.12em;
+        line-height: 1;
+      }
+      .nuxt-home {
+        color: var(--nuxt-dim);
+        text-decoration: none;
+        pointer-events: auto;
+        transition: color 0.2s ease;
+      }
+      .nuxt-home:hover { color: var(--nuxt-mist); }
+      .nuxt-version { color: var(--nuxt-mint); }
+      .nuxt-progress {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        height: 3px;
+        z-index: 1;
       }
-      .triangle-loading {
-        position: absolute;
+      .nuxt-progress-status {
+        margin: 0 0 14px;
+        text-align: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.08em;
+        line-height: 1;
+        color: var(--nuxt-dim);
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
-      .triangle-loading>path {
-        fill: none;
-        stroke-width: 4px;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        /* Stroke-dasharray property */
-        stroke-dasharray: 128;
-        stroke-dashoffset: 128;
-        animation: nuxt-loading-move 3s linear infinite;
+      .nuxt-progress[data-mode="determinate"] .nuxt-progress-status { opacity: 1; }
+      .nuxt-progress-step { color: var(--nuxt-mist); }
+      .nuxt-loader-bar {
+        height: 2px;
+        overflow: hidden;
+        background: rgba(0, 220, 130, 0.16);
       }
-      .nuxt-logo:hover .triangle-loading>path {
-        animation-play-state: paused;
+      .nuxt-loader-bar > span {
+        display: block;
+        height: 100%;
+        width: 32%;
+        background: var(--nuxt-mint);
+        transform: translateX(-120%);
+        animation: nuxt-bar 1.8s ease-in-out infinite;
       }
-      @keyframes nuxt-loading-move {
-        100% {
-          stroke-dashoffset: -128;
-        }
+      /* a known step count turns the sweep into a real progress bar */
+      .nuxt-progress[data-mode="determinate"] .nuxt-loader-bar > span {
+        width: var(--nuxt-progress, 0%);
+        transform: none;
+        animation: none;
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      @media (prefers-color-scheme: dark) {
-        html, body {
-          color: white;
-          color-scheme: dark;
-        }
+      @keyframes nuxt-bar {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(360%); }
       }
       @media (prefers-reduced-motion: reduce) {
-        #snow-canvas {
-          display: none !important;
+        .nuxt-loader-bar > span {
+          width: 100%;
+          transform: none;
+          animation: none;
         }
       }
     </style>
   </head>
-  <body class="font-sans antialiased relative overflow-hidden min-h-screen bg-white dark:bg-[#020420] text-[#020420] dark:text-white flex flex-col justify-center items-center text-center">
-    <a href="https://nuxt.com/?utm_source=nuxt-loading-screen" target="_blank" rel="noopener" class="nuxt-logo group flex items-end gap-4" id="nuxtImg">
-      <div class="relative">
-        <svg class="triangle-loading text-[#00DC82]/80 group-hover:text-[#00DC82]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 25" fill="none" width="80">
-          <path stroke="currentColor" d="M24.236 22.006h10.742L25.563 5.822l-8.979 14.31a4 4 0 0 1-3.388 1.874H2.978l11.631-20 5.897 10.567" />
+  <body>
+    <canvas id="nuxt-shader" aria-hidden="true"></canvas>
+    <a href="https://nuxt.com/?utm_source=nuxt-loading-screen" target="_blank" rel="noopener" class="nuxt-lockup" id="nuxtImg" aria-label="{{ messages.appName }}">
+      <span id="nuxt-logo-slot" class="nuxt-logo-slot">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" fill="none" aria-hidden="true">
+          <path d="M26.88 32H44.64C45.2068 32.0001 45.7492 31.8009 46.24 31.52C46.7308 31.2391 47.2367 30.8865 47.52 30.4C47.8033 29.9135 48.0002 29.3615 48 28.7998C47.9998 28.2381 47.8037 27.6864 47.52 27.2001L35.52 6.56C35.2368 6.0736 34.8907 5.72084 34.4 5.44C33.9093 5.15916 33.2066 4.96 32.64 4.96C32.0734 4.96 31.5307 5.15916 31.04 5.44C30.5493 5.72084 30.2032 6.0736 29.92 6.56L26.88 11.84L20.8 1.59962C20.5165 1.11326 20.1708 0.600786 19.68 0.32C19.1892 0.0392139 18.6467 0 18.08 0C17.5133 0 16.9708 0.0392139 16.48 0.32C15.9892 0.600786 15.4835 1.11326 15.2 1.59962L0.32 27.2001C0.0363166 27.6864 0.000246899 28.2381 3.05588e-07 28.7998C-0.000246288 29.3615 0.0367437 29.9134 0.32 30.3999C0.603256 30.8864 1.10919 31.2391 1.6 31.52C2.09081 31.8009 2.63324 32.0001 3.2 32H14.4C18.8379 32 22.068 30.0092 24.32 26.24L29.76 16.8L32.64 11.84L41.44 26.88H29.76L26.88 32ZM14.24 26.88H6.4L18.08 6.72L24 16.8L20.0786 23.636C18.5831 26.0816 16.878 26.88 14.24 26.88Z" />
         </svg>
-        <svg class="dark:text-gray-200 dark:group-hover:text-white text-[#020420]/80 group-hover:text-[#020420]" xmlns="http://www.w3.org/2000/svg" width="214" height="53" fill="none" viewBox="0 0 800 200">
-          <path fill="currentColor" d="M377 200a4 4 0 0 0 4-4v-93s5.244 8.286 15 25l38.707 66.961c1.789 3.119 5.084 5.039 8.649 5.039H470V50h-27a4 4 0 0 0-4 4v94l-17-30-36.588-62.98c-1.792-3.108-5.081-5.02-8.639-5.02H350v150h27ZM676.203 143.857 710.551 92h-25.73a9.972 9.972 0 0 0-8.333 4.522L660.757 120.5l-15.731-23.978A9.972 9.972 0 0 0 636.693 92h-25.527l34.348 51.643L608.524 200h24.966a9.969 9.969 0 0 0 8.29-4.458l19.18-28.756 18.981 28.72a9.968 9.968 0 0 0 8.313 4.494h24.736l-36.787-56.143ZM724.598 92h19.714V60.071h28.251V92H800v24.857h-27.437V159.5c0 10.5 5.284 15.429 14.43 15.429H800V200h-16.869c-23.576 0-38.819-14.143-38.819-39.214v-43.929h-19.714V92ZM590 92h-15c-3.489 0-6.218.145-8.5 2.523-2.282 2.246-2.5 3.63-2.5 7.066v52.486c0 8.058-.376 12.962-4 16.925-3.624 3.831-8.619 5-16 5-7.247 0-12.376-1.169-16-5-3.624-3.963-4-8.867-4-16.925v-52.486c0-3.435-.218-4.82-2.5-7.066C519.218 92.145 516.489 92 513 92h-15v62.422c0 14.004 3.892 25.101 11.676 33.292C517.594 195.905 529.103 200 544 200c14.897 0 26.204-4.095 34.123-12.286 7.918-8.191 11.877-19.288 11.877-33.292V92Z" />
-        </svg>
-      </div>
-      <span class="inline-block font-mono leading-none text-[#00DC82] group-hover:border-[#00DC42] text-[16px] font-semibold border-[#00DC42]/50 bg-[#00DC42]/10 group-hover:bg-[#00DC42]/15 px-2.5 py-1.5 border rounded">{{ version }}</span>
+      </span>
+      <svg class="nuxt-wordmark" xmlns="http://www.w3.org/2000/svg" viewBox="56 8 72 24" fill="none" aria-hidden="true">
+        <path fill="currentColor" d="M60.32 32C60.6656 32 60.96 31.7135 60.96 31.36V16.48C60.96 16.48 61.76 17.92 63.2 20.32L69.44 31.04C69.7255 31.6384 70.359 32 70.88 32H75.2V8H70.88C70.5923 8 70.24 8.23906 70.24 8.64V23.68L67.36 18.56L61.6 8.8C61.3197 8.3026 60.7166 8 60.16 8H56V32H60.32Z" />
+        <path fill="currentColor" d="M116.16 14.72H118.24C118.77 14.72 119.2 14.2902 119.2 13.76V9.6H123.68V14.72H128V18.56H123.68V25.44C123.68 27.12 124.489 27.84 125.92 27.84H128V32H125.28C121.592 32 119.2 29.6114 119.2 25.6V18.56H116.16V14.72Z" />
+        <path fill="currentColor" d="M94.56 14.72V24.64C94.56 26.8806 93.7188 28.7695 92.48 30.08C91.2412 31.3905 89.5306 32 87.2 32C84.8694 32 82.9988 31.3905 81.76 30.08C80.5422 28.7695 79.68 26.8806 79.68 24.64V14.72H82.24C82.7859 14.72 83.3231 14.8195 83.68 15.2C84.0369 15.5593 84.16 15.7704 84.16 16.32V24.64C84.16 25.9294 84.2331 26.7259 84.8 27.36C85.3669 27.973 86.0662 28.16 87.2 28.16C88.3548 28.16 88.8731 27.973 89.44 27.36C90.0069 26.7259 90.08 25.9294 90.08 24.64V16.32C90.08 15.7704 90.2031 15.4205 90.56 15.04C90.8736 14.7057 91.2045 14.7136 91.68 14.72C91.7457 14.7209 91.9337 14.72 92 14.72H94.56Z" />
+        <path fill="currentColor" d="M108.16 23.04L113.6 14.72H109.44C108.916 14.72 108.45 14.9081 108.16 15.36L105.6 19.2L103.2 15.52C102.91 15.0681 102.284 14.72 101.76 14.72H97.76L103.2 22.88L97.28 32H101.44C101.96 32 102.429 31.486 102.72 31.04L105.6 26.72L108.64 31.2C108.931 31.646 109.4 32 109.92 32H114.08L108.16 23.04Z" />
+      </svg>
     </a>
-    <div class="nuxt-loader-bar"></div>
+    <div class="nuxt-corners">
+      <a class="nuxt-home" href="https://nuxt.com/?utm_source=nuxt-loading-screen" target="_blank" rel="noopener">nuxt.com</a>
+      <span class="nuxt-version">{{ version }}</span>
+    </div>
+    <div class="nuxt-progress" id="nuxt-progress">
+      <p class="nuxt-progress-status" id="nuxt-progress-status" aria-live="polite"></p>
+      <div class="nuxt-loader-bar"><span></span></div>
+    </div>
     <script>
       if (typeof window.fetch === 'undefined') {
         setTimeout(() => window.location.reload(), 200)
@@ -82,87 +192,6 @@
           delay = Math.min(Math.round(delay * 1.5), 1000)
         }
         check()
-      }
-    </script>
-    <script>
-      // Snow effect with localStorage toggle
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      function whatHemisphere() {
-        let y = new Date()
-        if (y.getTimezoneOffset == undefined) return null
-        y = y.getFullYear()
-        let jan = -(new Date(y, 0, 1, 0, 0, 0, 0).getTimezoneOffset())
-        let jul = -(new Date(y, 6, 1, 0, 0, 0, 0).getTimezoneOffset())
-        let diff = jan - jul
-        return diff < 0 ? 'N' : diff > 0 ? 'S' : null
-      }
-      // Only run in November, December, and January (N hemisphere) or May, June, and July (S hemisphere)
-      const months = { N: [10, 11, 0], S: [4, 5, 6] }
-      const hemisphere = whatHemisphere()
-      if (hemisphere && months[hemisphere].includes(new Date().getMonth()) && !prefersReducedMotion) {
-        let snowEnabled = localStorage.getItem('nuxt-snow') !== 'false'
-        let animationId = null, particles = [], lastCall = Date.now()
-        const density = 0.00025, gravity = 1.25
-        const wind = { current: 0, maxCurrent: 4, force: 0.1, target: 0.1, min: 0.1, max: 0.4, easing: 0.01 }
-        const mod = (a, b) => ((a % b) + b) % b
-
-        // Create toggle button and canvas
-        const $btn = document.createElement('button')
-        $btn.id = 'snow-toggle'
-        $btn.style = 'position:fixed;bottom:16px;right:16px;z-index:100;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:20px;'
-        document.body.appendChild($btn)
-
-        const $canvas = document.createElement('canvas')
-        $canvas.id = 'snow-canvas'
-        $canvas.style = 'position:fixed;inset:0;z-index:-10;pointer-events:none;opacity:0;transition:opacity 0.5s;filter:blur(4px);'
-        document.body.appendChild($canvas)
-        const ctx = $canvas.getContext('2d')
-
-        // Resize and initialize particles
-        function resize() {
-          $canvas.width = window.innerWidth
-          $canvas.height = window.innerHeight
-          particles = Array.from({ length: Math.floor($canvas.width * $canvas.height * density) }, () => ({
-            x: Math.random() * $canvas.width, y: Math.random() * $canvas.height,
-            vx: 1 + Math.random(), vy: 1 + Math.random(), vsin: Math.random() * 10,
-            rangle: Math.random() * 2 * Math.PI, rsin: Math.random() * 10,
-            color: `rgba(255,255,255,${0.1 + Math.random() * 0.15})`,
-            size: 5 * Math.random() * 4 * ($canvas.height / 1000)
-          }))
-        }
-
-        // Draw particles
-        function draw() {
-          ctx.clearRect(0, 0, $canvas.width, $canvas.height)
-          const now = Date.now(), delta = now - lastCall
-          lastCall = now
-          wind.force += (wind.target - wind.force) * wind.easing
-          wind.current = Math.max(-wind.maxCurrent, Math.min(wind.current + wind.force * delta * 0.05, wind.maxCurrent))
-          if (Math.random() > 0.995) wind.target = (wind.min + Math.random() * (wind.max - wind.min)) * (Math.random() > 0.5 ? -1 : 1)
-          const uTime = delta * 0.2
-          particles.forEach(p => {
-            p.x = mod(p.x + uTime + wind.current * p.vx, $canvas.width)
-            p.y = mod(p.y + uTime * p.vy * gravity, $canvas.height)
-            p.x += Math.sin(uTime * p.vsin) * p.rsin * 0.5
-            p.rangle += uTime * 0.01
-            ctx.fillStyle = p.color
-            ctx.beginPath()
-            ctx.ellipse(p.x, p.y, p.size, p.size * 0.66, p.rangle, 0, Math.PI * 2)
-            ctx.fill()
-          })
-          animationId = requestAnimationFrame(draw)
-        }
-
-        // Update snow effect and handle toggle (resize)
-        function update() {
-          $btn.innerHTML = snowEnabled ? '☀️' : '❄️'
-          $btn.title = snowEnabled ? 'Disable snow' : 'Enable snow'
-          if (snowEnabled) { resize(); window.addEventListener('resize', resize); $canvas.style.opacity = 1; lastCall = Date.now(); draw() }
-          else { if (animationId) cancelAnimationFrame(animationId); animationId = null; window.removeEventListener('resize', resize); $canvas.style.opacity = 0 }
-        }
-
-        $btn.onclick = () => { snowEnabled = !snowEnabled; localStorage.setItem('nuxt-snow', snowEnabled); update() }
-        update()
       }
     </script>
   </body>
