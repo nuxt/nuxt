@@ -80,6 +80,7 @@
     "eslint-plugin-perfectionist": "catalog:dev",
     "eslint-typegen": "catalog:dev",
     "exsolve": "catalog:build",
+    "fast-check": "catalog:dev",
     "get-port-please": "catalog:build",
     "h3": "catalog:dev",
     "happy-dom": "catalog:dev",
