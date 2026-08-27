@@ -495,6 +495,7 @@ exports[`template > produces correct output for loading template 1`] = `
   --nuxt-mint: #00dc82;
   --nuxt-mist: rgba(232, 255, 244, 0.88);
   --nuxt-dim: rgba(0, 220, 130, 0.55);
+  --nuxt-accent: #00dc82;
   --nuxt-logo: min(15vw, 99px);
 }
 *,
@@ -590,7 +591,7 @@ svg {
   color: var(--nuxt-mist);
 }
 .nuxt-version {
-  color: var(--nuxt-mint);
+  color: var(--nuxt-accent);
 }
 .nuxt-progress {
   position: fixed;
@@ -643,11 +644,66 @@ svg {
     transform: translateX(360%);
   }
 }
+.nuxt-season {
+  position: fixed;
+  right: 22px;
+  bottom: 26px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: var(--nuxt-mint);
+  background: rgba(0, 220, 130, 0.08);
+  border: 1px solid rgba(0, 220, 130, 0.24);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+.nuxt-season[hidden] {
+  display: none;
+}
+.nuxt-season:hover {
+  background: rgba(0, 220, 130, 0.16);
+}
+.nuxt-season > svg {
+  width: 16px;
+  height: 16px;
+}
+.nuxt-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 @media (prefers-reduced-motion: reduce) {
   .nuxt-loader-bar > span {
     width: 100%;
     transform: none;
     animation: none;
+  }
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --nuxt-mist: rgba(2, 4, 32, 0.76);
+    --nuxt-dim: rgba(2, 4, 32, 0.42);
+    --nuxt-accent: #00a86a;
+  }
+  body,
+  html {
+    background: #fff;
+  }
+  .nuxt-wordmark {
+    color: #020420;
+  }
+  .nuxt-loader-bar {
+    background: rgba(0, 220, 130, 0.22);
   }
 }
 "
@@ -658,6 +714,7 @@ exports[`template > produces correct output for loading template 2`] = `
   --nuxt-mint: #00dc82;
   --nuxt-mist: rgba(232, 255, 244, 0.88);
   --nuxt-dim: rgba(0, 220, 130, 0.55);
+  --nuxt-accent: #00dc82;
   --nuxt-logo: min(15vw, 99px);
 }
 *,
@@ -701,6 +758,17 @@ svg {
   }
   to {
     transform: translateX(360%);
+  }
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --nuxt-mist: rgba(2, 4, 32, 0.76);
+    --nuxt-dim: rgba(2, 4, 32, 0.42);
+    --nuxt-accent: #00a86a;
+  }
+  body,
+  html {
+    background: #fff;
   }
 }
 "
