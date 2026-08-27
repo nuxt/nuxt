@@ -21,13 +21,22 @@ struct Params {
   wave: vec2f,
   /** x: seconds, y: pointer presence 0..1 */
   misc: vec2f,
-  /** x: winter 0..1 — snow on the peaks and falling flakes */
+  /** x: winter 0..1 — snow on the peaks and falling flakes; y: 1 in light mode */
   season: vec2f,
 }
 @group(0) @binding(0) var<uniform> params: Params;
 
 const MINT = vec3f(0.0, 0.8627451, 0.5098039);
 const MINT_PALE = vec3f(0.6235294, 1.0, 0.8156863);
+
+// Light mode draws the same range as ink on paper. Emitted light becomes
+// coverage, and the pipeline blends it over the page instead of adding it to
+// the dark. Alpha rather than subtraction, so a crest that many particles
+// land on settles on the brand green instead of running away to black.
+const INK_SOFT = vec3f(0.6588235, 0.7882353, 0.7294118);
+const INK_DEEP = vec3f(0.0, 0.8627451, 0.5098039);
+const FLAKE_INK = vec3f(0.5215687, 0.6039216, 0.6588235);
+const LUMA = vec3f(0.2126, 0.7152, 0.0722);
 
 // grid of particles
 const COLS = 704u;
@@ -94,7 +103,8 @@ fn terrain (x: f32, z: f32, u: f32, shape: f32) -> f32 {
 struct Particle {
   @builtin(position) position: vec4f,
   @location(0) local: vec2f,
-  @location(1) tint: vec3f,
+  /** dark: emitted colour, w unused. light: ink colour, w its coverage. */
+  @location(1) tint: vec4f,
 }
 
 fn quadCorner (corner: u32) -> vec2f {
@@ -108,7 +118,7 @@ fn quadCorner (corner: u32) -> vec2f {
 
 // A flake drifting down the screen, in its own parallax layer. Independent of
 // the terrain: it lives in screen space and wraps around forever.
-fn flake (id: u32, corner: u32, t: f32, resolution: vec2f, centre: vec2f, logoH: f32, aspect: f32) -> Particle {
+fn flake (id: u32, corner: u32, t: f32, resolution: vec2f, centre: vec2f, logoH: f32, aspect: f32, light: f32) -> Particle {
   let fi = f32(id - TERRAIN_COUNT);
   let r1 = hash21(vec2f(fi, 1.7));
   let r2 = hash21(vec2f(fi, 5.3));
@@ -129,10 +139,14 @@ fn flake (id: u32, corner: u32, t: f32, resolution: vec2f, centre: vec2f, logoH:
   let sizePx = (0.55 + depth * 1.5) * (resolution.y / 900.0);
   let offset = quadCorner(corner);
 
+  let amount = (0.16 + 0.48 * depth) * twinkle * clearing * params.season.x;
+
   var out: Particle;
   out.position = vec4f(pos + offset * sizePx * 2.0 / resolution, 0.5, 1.0);
   out.local = offset;
-  out.tint = SNOW * (0.16 + 0.48 * depth) * twinkle * clearing * params.season.x;
+  // white flakes cannot show on paper, so in light mode they are drawn as the
+  // cool grey a flake reads as against a bright sky
+  out.tint = select(vec4f(SNOW * amount, 1.0), vec4f(FLAKE_INK, amount * 1.6), light > 0.5);
   return out;
 }
 
@@ -143,6 +157,7 @@ fn flake (id: u32, corner: u32, t: f32, resolution: vec2f, centre: vec2f, logoH:
   let resolution = max(params.resolution, vec2f(1.0));
   let aspect = max(resolution.x / resolution.y, 0.5);
   let winter = params.season.x;
+  let light = params.season.y;
 
   // the lockup centre is needed by both the terrain and the flakes
   let logoH0 = max(params.logoScale.y, 0.01);
@@ -151,7 +166,7 @@ fn flake (id: u32, corner: u32, t: f32, resolution: vec2f, centre: vec2f, logoH:
     1.0 - 2.0 * params.logoCentre.y,
   );
   if (id >= TERRAIN_COUNT) {
-    return flake(id, corner, t, resolution, centre0, logoH0, aspect);
+    return flake(id, corner, t, resolution, centre0, logoH0, aspect, light);
   }
 
   let col = id % COLS;
@@ -266,6 +281,22 @@ fn flake (id: u32, corner: u32, t: f32, resolution: vec2f, centre: vec2f, logoH:
   let push = normalize(toPointer + vec2f(0.0001, 0.0)) * excite * (0.006 + 0.010 * rnd);
   tint *= 1.0 + excite * 1.3;
 
+  // Light mode reuses every lighting term above and only reinterprets it: how
+  // much light a particle emits becomes how much ink it lays down. Taking the
+  // luminance keeps the two themes at matching density, and the crests that go
+  // palest on black carry the brand green on paper. Snow is the one term that
+  // has to invert — a white cap can only read on paper by leaving it bare.
+  var out: Particle;
+  if (light > 0.5) {
+    // lifted, since faint dust that reads fine against black all but vanishes
+    // against white
+    let coverage = pow(clamp(dot(tint, LUMA) * 2.2, 0.0, 1.0), 0.8) * (1.0 - winter * snow * 0.6);
+    let ink = mix(INK_SOFT, INK_DEEP, clamp(crest * 1.15 + snow * 0.3, 0.0, 1.0));
+    out.tint = vec4f(ink, coverage * (1.0 - occluded) * clearing);
+  } else {
+    out.tint = vec4f(tint * (1.0 - occluded) * clearing, 1.0);
+  }
+
   // particles float around their anchor, more freely up close
   let floatAmp = (0.0015 + (1.0 - v) * 0.006) * (1.0 + excite * 2.5);
   let drift = vec2f(
@@ -286,17 +317,23 @@ fn flake (id: u32, corner: u32, t: f32, resolution: vec2f, centre: vec2f, logoH:
   let corners = quad;
   let offset = corners[corner];
 
-  var out: Particle;
   out.position = vec4f(
     vec2f(u, sy) + drift + push + shockPush + offset * sizePx * 2.0 / resolution,
     0.5,
     1.0,
   );
   out.local = offset;
-  out.tint = tint * (1.0 - occluded) * clearing;
   return out;
 }
 
-@fragment fn fs_main (@location(0) local: vec2f, @location(1) tint: vec3f) -> @location(0) vec4f {
-  return vec4f(tint * smoothstep(1.0, 0.45, length(local)), 1.0);
+@fragment fn fs_main (@location(0) local: vec2f, @location(1) tint: vec4f) -> @location(0) vec4f {
+  return vec4f(tint.rgb * smoothstep(1.0, 0.45, length(local)), 1.0);
+}
+
+// Light mode's counterpart: the same particle, premultiplied so it composites
+// over the page. Where the dark theme piles light up towards white, this
+// settles on the ink colour however much dust lands on it.
+@fragment fn fs_light (@location(0) local: vec2f, @location(1) tint: vec4f) -> @location(0) vec4f {
+  let alpha = tint.a * smoothstep(1.0, 0.45, length(local));
+  return vec4f(tint.rgb * alpha, alpha);
 }
