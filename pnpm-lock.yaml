@@ -359,9 +359,6 @@ catalogs:
     '@vue/test-utils':
       specifier: 2.4.11
       version: 2.4.11
-    '@webgpu/types':
-      specifier: 0.1.71
-      version: 0.1.71
     acorn:
       specifier: 8.18.0
       version: 8.18.0
@@ -1517,9 +1514,6 @@ importers:
       '@vue/shared':
         specifier: catalog:build
         version: 3.5.41
-      '@webgpu/types':
-        specifier: catalog:dev
-        version: 0.1.71
       beasties:
         specifier: catalog:dev
         version: 0.4.3
@@ -4914,9 +4908,6 @@ packages:
 
   '@webassemblyjs/wast-printer@1.14.1':
     resolution: {integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==}
-
-  '@webgpu/types@0.1.71':
-    resolution: {integrity: sha512-mMy8/ODcKhab808co15eW+yN+HgXoQxRQHTiBV9Mrvl1r0ufnid7YOcI+gi4eUWSWl9ezD6TW2KXccrL8HCh2A==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -13413,8 +13404,6 @@ snapshots:
     dependencies:
       '@webassemblyjs/ast': 1.14.1
       '@xtuc/long': 4.2.2
-
-  '@webgpu/types@0.1.71': {}
 
   '@xtuc/ieee754@1.2.0': {}
 
