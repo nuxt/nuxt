@@ -47,10 +47,10 @@ function mountSeasonToggle (renderer: Renderer) {
   })
 }
 
-/** `?webgpu=0` forces the fallback, so it can be checked without a second browser */
+/** `?shader=0` forces the fallback, so it can be checked without a second browser */
 function forcedOff (): boolean {
   try {
-    const value = new URLSearchParams(window.location.search).get('webgpu')
+    const value = new URLSearchParams(window.location.search).get('shader')
     return value === '0' || value === 'false'
   } catch {
     return false
@@ -64,9 +64,9 @@ function start () {
   const canvas = document.querySelector<HTMLCanvasElement>('#nuxt-shader')
   const slot = document.querySelector<HTMLElement>('#nuxt-logo-slot')
 
-  // Without WebGPU the lockup and the progress bar are the whole screen, so the
+  // Without WebGL2 the lockup and the progress bar are the whole screen, so the
   // canvas is dropped rather than left behind as an empty layer.
-  if (!canvas || !slot || !navigator.gpu || forcedOff()) {
+  if (!canvas || !slot || !window.WebGL2RenderingContext || forcedOff()) {
     canvas?.remove()
     return
   }
