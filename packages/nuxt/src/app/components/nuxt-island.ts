@@ -2,6 +2,7 @@ import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsTy
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
+import type { H3Event } from '@nuxt/nitro-server/h3'
 import { randomUUID } from 'uncrypto'
 import { joinURL } from 'ufo'
 
@@ -66,6 +67,16 @@ type NuxtIslandSlots = SlotsType<{
   fallback?: (props: { error: unknown }) => VNode[]
   [name: string]: ((props: any) => VNode[]) | undefined
 }>
+
+// mirrors h3 v1 `getProxyRequestHeaders`, which `event.fetch` used to forward island subrequest headers
+const IGNORED_ISLAND_HEADERS = new Set(['transfer-encoding', 'accept-encoding', 'connection', 'keep-alive', 'upgrade', 'expect', 'host', 'accept'])
+function getIslandRequestHeaders (event: H3Event) {
+  const headers: Record<string, string> = {}
+  for (const [name, value] of event.req.headers) {
+    if (!IGNORED_ISLAND_HEADERS.has(name)) { headers[name] = value }
+  }
+  return headers
+}
 
 const NuxtIsland = defineComponent({
   name: 'NuxtIsland',
@@ -226,6 +237,9 @@ const NuxtIsland = defineComponent({
       const r = await $fetch.raw<NuxtIslandResponse>(url, {
         // custom island sources should not be resolved against `app.baseURL` (#23093)
         ...(props.source ? { baseURL: '' } : {}),
+        // forward the page request's headers (e.g. cookie/authorization) to same-origin islands,
+        // as `event.fetch` did before nitro v3 (#21740). Never forwarded to remote island sources.
+        headers: import.meta.server && event && !props.source ? getIslandRequestHeaders(event) : undefined,
         query: {
           ...props.context,
           props: props.props ? serializedProps.value : undefined,

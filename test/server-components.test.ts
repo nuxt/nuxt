@@ -814,6 +814,41 @@ describe('page-island middleware', () => {
   })
 })
 
+describe('island request header forwarding', () => {
+  // Regression coverage for #21740: islands rendered during page SSR must see the page
+  // request's credentials. Passes on 4.x (`event.fetch`), fails on main since #33005.
+  it('forwards cookie and authorization from the page request to the SSR island subrequest', async () => {
+    const html = await $fetch<string>('/island-headers', {
+      headers: {
+        cookie: 'session=alice',
+        authorization: 'Bearer alice-token',
+      },
+    })
+
+    // sanity: the page itself saw the headers
+    expect(html).toContain('<span id="page-cookie">session=alice</span>')
+    expect(html).toContain('<span id="page-authorization">Bearer alice-token</span>')
+
+    // direction 1: the island subrequest carried them
+    const spy = await $fetch<{ cookie: string | null, authorization: string | null } | null>('/api/island-request-spy')
+    expect(spy).toEqual({ cookie: 'session=alice', authorization: 'Bearer alice-token' })
+
+    // direction 2: the rendered island output reflects them
+    expect(html).toContain('<span id="island-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-authorization">Bearer alice-token</span>')
+  })
+
+  it('does not leak one requester\'s headers to another', async () => {
+    const html = await $fetch<string>('/island-headers', { headers: { cookie: 'session=bob' } })
+    expect(html).toContain('<span id="island-cookie">session=bob</span>')
+    expect(html).toContain('<span id="island-authorization">none</span>')
+
+    const anon = await $fetch<string>('/island-headers')
+    expect(anon).toContain('<span id="island-cookie">none</span>')
+    expect(anon).toContain('<span id="island-authorization">none</span>')
+  })
+})
+
 describe.skipIf(isDev || isWebpack)('regressions', () => {
   // https://github.com/nuxt/nuxt/issues/26527
   it('renders <Counter nuxt-client /> when nested two levels deep in server components', async () => {
