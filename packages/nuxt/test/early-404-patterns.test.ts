@@ -62,6 +62,16 @@ describe('collectRou3PagePatterns', () => {
     `)
   })
 
+  it('should refuse to convert a path that cannot be decoded', () => {
+    const pages: NuxtPage[] = [
+      { name: 'index', path: '/' },
+      { name: 'odd', path: '/100% legit' },
+    ]
+    const unconvertible: string[] = []
+    expect(collectRou3PagePatterns(pages, ['/'], route => unconvertible.push(route))).toBeUndefined()
+    expect(unconvertible).toStrictEqual(['/100% legit'])
+  })
+
   it('should collapse routes it cannot express exactly into broader patterns', () => {
     const pages: NuxtPage[] = [
       { name: 'index', path: '/' },
