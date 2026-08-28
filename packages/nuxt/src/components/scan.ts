@@ -1,5 +1,5 @@
 import { readdir } from 'node:fs/promises'
-import { basename, dirname, extname, join, relative } from 'pathe'
+import { basename, dirname, extname, join, relative, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, useNuxt } from '@nuxt/kit'
@@ -10,10 +10,11 @@ import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
 import { linkToAlias, resolveToAlias } from '../utils.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
-const ISLAND_RE = /\.island(?:\.global)?$/
-const GLOBAL_RE = /\.global(?:\.island)?$/
-const COMPONENT_MODE_RE = /(?<=\.)(client|server)(?:\.global|\.island)*$/
-const MODE_REPLACEMENT_RE = /(?:\.(?:client|server))?(?:\.global|\.island)*$/
+const ISLAND_RE = /(?:^|\.)island(?=\.|$)/
+const GLOBAL_RE = /(?:^|\.)global(?=\.|$)/
+const COMPONENT_ENV_RE = /(?:^|\.)(dev|prod)(?=\.|$)/
+const COMPONENT_MODE_RE = /(?:^|\.)(client|server)(?=\.|$)/
+const MODIFIER_REPLACEMENT_RE = /\.(?:dev|prod|client|server|global|island)(?=\.|$)/g
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
@@ -22,6 +23,9 @@ const MODE_REPLACEMENT_RE = /(?:\.(?:client|server))?(?:\.global|\.island)*$/
  * @returns {Promise} Component found promise
  */
 export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Promise<Component[]> {
+  const nuxt = useNuxt()
+  const isDev = nuxt.options?.dev ?? true
+
   // All scanned components
   const components: Component[] = []
 
@@ -48,7 +52,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         const directoryLowerCase = directory.toLowerCase()
         for (const sibling of siblings) {
           if (sibling.toLowerCase() === directoryLowerCase) {
-            const nuxt = useNuxt()
             const original = resolveToAlias(dir.path, nuxt)
             const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
             componentDiagnostics.NUXT_B3008({ scannedPath: corrected, expectedPath: original })
@@ -89,10 +92,15 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       let fileName = basename(filePath, extname(filePath))
 
+      const env = fileName.match(COMPONENT_ENV_RE)?.[1]
+      const shouldStub = Boolean((env === 'dev' && !isDev) || (env === 'prod' && isDev))
+      const placeholderPath = nuxt?.options?.appDir ? resolve(nuxt.options.appDir, 'components/server-placeholder') : 'virtual:nuxt-empty'
+      const resolvedFilePath = shouldStub ? placeholderPath : filePath
+
       const island = ISLAND_RE.test(fileName) || dir.island
       const global = GLOBAL_RE.test(fileName) || dir.global
       const mode = island ? 'server' : (fileName.match(COMPONENT_MODE_RE)?.[1] || 'all') as 'client' | 'server' | 'all'
-      fileName = fileName.replace(MODE_REPLACEMENT_RE, '')
+      fileName = fileName.replace(MODIFIER_REPLACEMENT_RE, '')
 
       if (fileName.toLowerCase() === 'index') {
         fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
@@ -107,10 +115,15 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
-        warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
-        continue
+        if (!shouldStub) {
+          const existingEntry = componentsByName.get(pascalName)?.find(e => e.component.mode === 'all' || e.component.mode === mode)
+          if (existingEntry && (existingEntry.component.priority ?? 0) > 0) {
+            warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
+          }
+        }
+      } else {
+        resolvedNames.set(pascalName + suffix, filePath)
       }
-      resolvedNames.set(pascalName + suffix, filePath)
 
       const kebabName = kebabCase(componentNameSegments)
       const shortPath = relative(srcDir, filePath)
@@ -124,15 +137,15 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         prefetch: Boolean(dir.prefetch),
         preload: Boolean(dir.preload),
         // specific to the file
-        filePath,
+        filePath: resolvedFilePath,
         declarationPath: filePath,
         pascalName,
         kebabName,
         chunkName,
         shortPath,
         export: 'default',
-        // by default, give priority to scanned components
-        priority: dir.priority ?? 1,
+        // by default, give priority to scanned components, real implementation over stub
+        priority: shouldStub ? 0 : (dir.priority ?? 1),
         // @ts-expect-error untyped property
         _scanned: true,
       }

@@ -8,9 +8,11 @@ import type { ComponentsDir } from 'nuxt/schema'
 
 const rFixture = (...p: string[]) => resolve(componentsFixtureDir, ...p)
 
+let mockDev = true
 vi.mock('@nuxt/kit', () => ({
   isIgnored: () => false,
   useLogger: () => consola.create({}).withTag('nuxt'),
+  useNuxt: () => ({ options: { dev: mockDev } }),
 }))
 
 const dirs: ComponentsDir[] = [
@@ -243,12 +245,42 @@ const expectedComponents = [
 const srcDir = rFixture('.')
 
 it('components:scanComponents', async () => {
+  mockDev = true
   const scannedComponents = await scanComponents(dirs, srcDir)
-  for (const c of scannedComponents) {
+  const baseComponents = scannedComponents.filter(c => !['DebugOnly', 'DevClient', 'ProdOnly'].includes(c.pascalName))
+  for (const c of baseComponents) {
     // @ts-expect-error filePath is not optional but we don't want it to be in the snapshot
     delete c.filePath
     // @ts-expect-error _scanned is added internally but we don't want it to be in the snapshot
     delete c._scanned
   }
-  expect(scannedComponents).deep.eq(expectedComponents)
+  expect(baseComponents).deep.eq(expectedComponents)
+})
+
+it('components:scanComponents environment modifiers (.dev, .prod)', async () => {
+  mockDev = true
+  const devComponents = await scanComponents(dirs, srcDir)
+  const debugInDev = devComponents.find(c => c.pascalName === 'DebugOnly')
+  const prodInDev = devComponents.find(c => c.pascalName === 'ProdOnly')
+  const devClientInDev = devComponents.find(c => c.pascalName === 'DevClient')
+
+  expect(debugInDev?.priority).toBe(1)
+  expect(debugInDev?.filePath).toContain('DebugOnly.dev.vue')
+  expect(devClientInDev?.mode).toBe('client')
+  expect(devClientInDev?.priority).toBe(1)
+  // Prod-only component is stubbed in dev
+  expect(prodInDev?.priority).toBe(0)
+  expect(prodInDev?.filePath).not.toContain('ProdOnly.prod.vue')
+
+  mockDev = false
+  const prodComponents = await scanComponents(dirs, srcDir)
+  const debugInProd = prodComponents.find(c => c.pascalName === 'DebugOnly')
+  const prodInProd = prodComponents.find(c => c.pascalName === 'ProdOnly')
+
+  expect(prodInProd?.priority).toBe(1)
+  expect(prodInProd?.filePath).toContain('ProdOnly.prod.vue')
+  // Dev-only component is stubbed in prod
+  expect(debugInProd?.priority).toBe(0)
+  expect(debugInProd?.filePath).not.toContain('DebugOnly.dev.vue')
+  expect(debugInProd?.declarationPath).toContain('DebugOnly.dev.vue')
 })
