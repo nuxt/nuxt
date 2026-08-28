@@ -801,6 +801,22 @@ describe('pages', () => {
 })
 
 describe('nuxt composables', () => {
+  it('forwards request headers from `useFetch` to relative urls only', async () => {
+    const html = await $fetch<string>('/forwarded-headers', {
+      headers: {
+        cookie: 'session=alice',
+        authorization: 'Bearer alice-token',
+      },
+    })
+
+    const [forwarded, absolute] = [...html.matchAll(/<pre id="(?:forwarded|absolute)">([^<]*)<\/pre>/g)].map(m => JSON.parse(m[1]!.replaceAll('&quot;', '"')))
+
+    expect(forwarded).toMatchObject({ cookie: 'session=alice', authorization: 'Bearer alice-token' })
+    // `accept` is not replayed, so the subrequest is free to negotiate its own response type
+    expect(forwarded.accept).not.toBe('text/html')
+    expect(absolute).toMatchObject({ cookie: null, authorization: null })
+  })
+
   it('has useRequestURL()', async () => {
     const html = await $fetch<string>('/url')
     expect(html).toContain('path: /url')

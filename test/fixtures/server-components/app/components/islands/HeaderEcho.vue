@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Echoes the request headers the island subrequest was rendered with.
 const headers = useRequestHeaders(['cookie', 'authorization'])
 </script>
 

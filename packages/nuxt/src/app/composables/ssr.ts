@@ -1,6 +1,7 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import type { $Fetch } from 'nitro/types'
+import type { $Fetch as OFetch } from 'ofetch'
 import { $fetch } from '#build/fetch'
 
 import type { NuxtApp } from '../nuxt'
@@ -45,9 +46,63 @@ export function useRequestHeader (header: string): string | null | undefined {
   return event ? event.req.headers.get(header) : undefined
 }
 
+// hop-by-hop headers, and headers describing a request body the subrequest does not have
+const UNFORWARDED_HEADERS = new Set([
+  'accept',
+  'accept-encoding',
+  'connection',
+  'content-length',
+  'content-md5',
+  'content-type',
+  'expect',
+  'host',
+  'if-match',
+  'if-modified-since',
+  'if-none-match',
+  'if-range',
+  'if-unmodified-since',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'te',
+  'trailer',
+  'transfer-encoding',
+  'upgrade',
+])
+
+const requestFetchers = new WeakMap<H3Event, $Fetch>()
+
+function createRequestFetch (event: H3Event): $Fetch {
+  const base = $fetch as unknown as OFetch
+  // the wrapper is installed as the underlying `fetch` rather than as an `onRequest` hook or
+  // default headers, so that neither user-provided hooks nor absolute URLs can bypass the check
+  return base.create({}, {
+    fetch (request, options) {
+      if (typeof request === 'string' && request[0] === '/') {
+        const headers = new Headers(options?.headers)
+        for (const [name, value] of event.req.headers) {
+          if (!UNFORWARDED_HEADERS.has(name) && !headers.has(name)) {
+            headers.set(name, value)
+          }
+        }
+        options = { ...options, headers }
+      }
+      return base.native(request, options)
+    },
+  }) as unknown as $Fetch
+}
+
 /** @since 3.2.0 */
 export function useRequestFetch (): $Fetch {
-  return $fetch as $Fetch
+  if (import.meta.client) { return $fetch as $Fetch }
+  const event = useRequestEvent()
+  if (!event) { return $fetch as $Fetch }
+  let fetcher = requestFetchers.get(event)
+  if (!fetcher) {
+    fetcher = createRequestFetch(event)
+    requestFetchers.set(event, fetcher)
+  }
+  return fetcher
 }
 
 /** @since 3.0.0 */
