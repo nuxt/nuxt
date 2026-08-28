@@ -32,11 +32,7 @@ export const RenderPlugin = () => {
     },
     enforce: 'post',
     async writeBundle () {
-      const critters = new Beasties({
-        path: outputDir,
-        // JS toggles [data-mode=determinate] after load; keep those rules.
-        allowRules: [/\[data-mode=["']determinate["']\]/],
-      })
+      const critters = new Beasties({ path: outputDir })
       const htmlFiles = await glob(['templates/**/*.html'], {
         cwd: outputDir,
         absolute: true,

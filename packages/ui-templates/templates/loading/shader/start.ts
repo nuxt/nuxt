@@ -1,4 +1,3 @@
-import { mountProgress } from './progress'
 import { createRenderer, isWinter } from './renderer'
 import type { Renderer } from './renderer'
 
@@ -58,9 +57,6 @@ function forcedOff (): boolean {
 }
 
 function start () {
-  // the status line and progress bar work with or without the shader
-  mountProgress()
-
   const canvas = document.querySelector<HTMLCanvasElement>('#nuxt-shader')
   const slot = document.querySelector<HTMLElement>('#nuxt-logo-slot')
 
@@ -81,13 +77,8 @@ function start () {
 
   // Nothing moves unless this window is the one being looked at. Someone running
   // several dev servers should only pay for the one in front of them, and hidden
-  // tabs are not enough: browsers keep animating an unfocused but visible
-  // window. The progress bar's CSS animation is frozen alongside it.
-  const bar = document.querySelector<HTMLElement>('#nuxt-progress-fill')
-  const setIdle = (idle: boolean) => {
-    if (bar) { bar.style.animationPlayState = idle ? 'paused' : '' }
-    renderer.setPaused(idle)
-  }
+  // tabs are not enough: browsers keep animating an unfocused but visible window.
+  const setIdle = (idle: boolean) => renderer.setPaused(idle)
   window.addEventListener('blur', () => setIdle(true))
   window.addEventListener('focus', () => setIdle(false))
   document.addEventListener('visibilitychange', () => {
