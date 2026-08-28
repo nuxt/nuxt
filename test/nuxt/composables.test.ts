@@ -862,7 +862,7 @@ describe('routing utilities: `navigateTo`', () => {
       expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
     } finally {
       config.app.baseURL = originalBaseURL
-      open.mockRestore()y
+      open.mockRestore()
     }
   })
 
