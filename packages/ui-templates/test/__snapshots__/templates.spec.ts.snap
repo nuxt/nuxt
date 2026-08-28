@@ -593,47 +593,14 @@ svg {
 .nuxt-version {
   color: var(--nuxt-accent);
 }
-.nuxt-progress {
+.nuxt-loader-bar {
   z-index: 1;
+  background: var(--nuxt-mint);
+  height: 2px;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-}
-.nuxt-progress-status {
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
-  color: var(--nuxt-dim);
-  opacity: 0;
-  margin: 0 0 14px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1;
-  transition: opacity 0.3s;
-}
-.nuxt-loader-bar {
-  background: #00dc8229;
-  height: 2px;
-  overflow: hidden;
-  width: 100% !important;
-}
-.nuxt-loader-bar > span {
-  background: var(--nuxt-mint);
-  width: 32%;
-  height: 100%;
-  animation: nuxt-bar 1.8s ease-in-out infinite;
-  display: block;
-  transform: translate(-120%);
-}
-@keyframes nuxt-bar {
-  0% {
-    transform: translate(-120%);
-  }
-  to {
-    transform: translate(360%);
-  }
 }
 .nuxt-season {
   z-index: 1;
@@ -673,13 +640,6 @@ svg {
   position: absolute;
   overflow: hidden;
 }
-@media (prefers-reduced-motion: reduce) {
-  .nuxt-loader-bar > span {
-    width: 100%;
-    animation: none;
-    transform: none;
-  }
-}
 @media (prefers-color-scheme: light) {
   :root {
     --nuxt-mist: #020420c2;
@@ -692,9 +652,6 @@ svg {
   }
   .nuxt-wordmark {
     color: #020420;
-  }
-  .nuxt-loader-bar {
-    background: #00dc8238;
   }
 }
 "
@@ -742,14 +699,6 @@ svg {
   transition: opacity 0.4s;
   position: fixed;
   inset: 0;
-}
-@keyframes nuxt-bar {
-  0% {
-    transform: translate(-120%);
-  }
-  to {
-    transform: translate(360%);
-  }
 }
 @media (prefers-color-scheme: light) {
   :root {
