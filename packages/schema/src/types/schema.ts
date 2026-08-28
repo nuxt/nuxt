@@ -6,14 +6,12 @@ import type { UnheadVueViteOptions } from '@unhead/vue/vite'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
-import type { DotenvOptions, SourceOptions } from 'c12'
+import type { NuxtDotenvOptions, NuxtLayerSourceOptions } from './layers.ts'
 import type { CompatibilityDateSpec } from 'compatx'
-import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from '#app/types'
-import type { FetchOptions } from 'ofetch'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
@@ -38,6 +36,7 @@ import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
 import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
@@ -109,6 +108,15 @@ export interface ConfigSchema {
 
     /**
      * Include Vue compiler in runtime bundle.
+     *
+     * Enabling this allows components to compile templates at runtime (for example,
+     * string `template` options or templates supplied via data).
+     *
+     * Runtime-compiled templates can execute arbitrary JavaScript. Never pass
+     * user-provided or otherwise untrusted content to a runtime-compiled template;
+     * treat any string that reaches the compiler as executable code.
+     *
+     * @see [Vue security guide](https://vuejs.org/guide/best-practices/security.html)
      */
     runtimeCompiler: boolean
 
@@ -126,6 +134,11 @@ export interface ConfigSchema {
      * Enable reactive destructure for `defineProps`
      */
     propsDestructure: boolean
+
+    /**
+     * Enable experimental support for Vue Vapor Mode (requires Vue 3.6+).
+     */
+    vapor: boolean
 
     /**
      * It is possible to pass configure the Vue app globally. Only serializable options may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin.
@@ -561,11 +574,9 @@ export interface ConfigSchema {
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`
    *
-   * @see [`c12` docs on extending config layers](https://github.com/unjs/c12#extending-config-layer-from-remote-sources)
-   *
    * @see [`giget` documentation](https://github.com/unjs/giget)
    */
-  extends: string | [string, SourceOptions?] | (string | [string, SourceOptions?])[]
+  extends: string | [string, NuxtLayerSourceOptions?] | (string | [string, NuxtLayerSourceOptions?])[]
 
   /**
    * Specify a compatibility date for your app.
@@ -658,6 +669,18 @@ export interface ConfigSchema {
   buildDir: string
 
   /**
+   * Define the directory where generated types and `tsconfig.json` files will be placed.
+   *
+   * This defaults to your `buildDir`, and is separate from it so that the configurations
+   * referenced by your project `tsconfig.json` stay in place even when Nuxt builds
+   * elsewhere (as it does when building a project that has already been run in
+   * development).
+   *
+   * If a relative path is specified, it will be relative to your `rootDir`.
+   */
+  typesDir: string
+
+  /**
    * For multi-app projects, the unique id of the Nuxt application.
    *
    * Defaults to `nuxt-app`.
@@ -710,7 +733,7 @@ export interface ConfigSchema {
   test: boolean
 
   /**
-   * The active Nuxt environment name, used by `c12` to select configuration
+   * The active Nuxt environment name, used to select configuration
    * overrides (e.g. `$env.staging`). Defaults to the explicit `envName` passed to
    * `loadNuxtConfig` (e.g. via `nuxt --envName`), falling back to `'development'`
    * in dev mode and `'production'` otherwise.
@@ -870,7 +893,7 @@ export interface ConfigSchema {
    * }
    * ```
    */
-  ignoreOptions: Options
+  ignoreOptions: NuxtIgnoreOptions
 
   /**
    * Any file in `pages/`, `layouts/`, `middleware/`, and `public/` directories will be ignored during the build process if its filename starts with the prefix specified by `ignorePrefix`. This is intended to prevent certain files from being processed or served in the built application. By default, the `ignorePrefix` is set to '-', ignoring any files starting with '-'.
@@ -1156,6 +1179,34 @@ export interface ConfigSchema {
     payloadExtraction: 'client' | boolean | undefined
 
     /**
+     * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
+     *
+     * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.
+     *
+     * @default false
+     */
+    prerenderErrorPages: boolean | number[]
+
+    /**
+     * Respond with an early 404 error for requests whose path cannot match any page route,
+     * without loading the Vue app, its plugins or middleware on the server.
+     *
+     * Page routes (including aliases) are converted to route patterns at build time and
+     * requests are checked against them before server-side rendering begins.
+     *
+     * This is opt-in as it can break apps that rely on runtime routing: pages added
+     * dynamically with `router.addRoute()` (on the server or the client), or route
+     * middleware that redirects unknown paths to existing ones. It also applies to
+     * `ssr: false` routes, which respond with a 404 error rather than the SPA shell when
+     * no page can match. The option is disabled automatically in development, when using
+     * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
+     * file may modify `routes`.
+     *
+     * @default false
+     */
+    early404: boolean
+
+    /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
      * @default false
@@ -1203,6 +1254,8 @@ export interface ConfigSchema {
 
     /**
      * Enable the new experimental typed router using vue-router.
+     *
+     * This is enabled by default with compatibility version 5.
      *
      * @default false
      */
@@ -1290,6 +1343,23 @@ export interface ConfigSchema {
     extraPageMetaExtractionKeys: string[]
 
     /**
+     * Extract every JSON-serializable `definePageMeta` property into the generated route record,
+     * rather than only the keys Nuxt reads at build time.
+     *
+     * When every property of a page's `definePageMeta` can be resolved statically, the generated
+     * route no longer imports the page's macro module at all, removing one module per page from
+     * the dev module graph. Properties whose values cannot be serialized are unaffected and are
+     * still resolved by the macro module at runtime.
+     *
+     * This has no effect when `experimental.scanPageMeta` is `false`, as the route record does
+     * not override the macro module in that case.
+     *
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    extractSerializablePageMeta: boolean
+
+    /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same data in different pages.
      *
      * It is particularly important when enabling this feature to make sure that any unique key of your data is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch` should do this automatically for you.)
@@ -1356,7 +1426,16 @@ export interface ConfigSchema {
         resetOnClear: boolean
       }
 
-      useFetch: Pick<FetchOptions, 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>
+      useFetch: {
+        /** Request timeout in milliseconds. */
+        timeout?: number
+        /** Number of times to retry a failed request, or `false` to disable retries. */
+        retry?: number | false
+        /** Delay between retries in milliseconds. */
+        retryDelay?: number | ((context: any) => number)
+        /** Response status codes that trigger a retry. */
+        retryStatusCodes?: number[]
+      }
     }
 
     /**
@@ -1383,6 +1462,19 @@ export interface ConfigSchema {
      * @default true
      */
     navigationRepaint: boolean
+
+    /**
+     * Transform top-level `await navigateTo()` calls in `<script setup>` into an early return
+     * from the compiled `setup()` function when the navigation succeeds.
+     *
+     * This stops execution of the rest of your setup code after a redirect, and renders
+     * a placeholder comment while the navigation proceeds, rather than continuing to run
+     * code (and potentially navigating again) after `navigateTo` has been called.
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     * @see [Nuxt Issue #23698](https://github.com/nuxt/nuxt/issues/23698)
+     */
+    navigateToEarlyReturn: boolean
 
     /**
      * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
@@ -1558,6 +1650,14 @@ export interface ConfigSchema {
     granularCachedData: boolean
 
     /**
+     * Apply `serialize: false` by default to `useAsyncData` and `useFetch` calls made within components lazily hydrated with `hydrate-never`, keeping their data out of the `__NUXT_DATA__` payload.
+     *
+     * An explicit `serialize` option always takes precedence. Note that data shared with other components via a common key follows the options of whichever call creates the shared entry first.
+     * @default false
+     */
+    stripNeverHydratedData: boolean
+
+    /**
      * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
      *
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
@@ -1569,8 +1669,14 @@ export interface ConfigSchema {
     /**
      * Whether to parse `error.data` when rendering a server error page.
      *
+     * @deprecated The error sent to the error page is JSON-encoded, so
+     * `error.data` keeps its original shape and is never stringified. With
+     * `compatibilityVersion: 5` this is forced on and setting it is ignored;
+     * before that, `false` stringifies `error.data` again for backwards
+     * compatibility.
      * @default true
      */
+    // TODO: remove this option before Nuxt 5 is released
     parseErrorData: boolean
 
     /**
@@ -1660,7 +1766,7 @@ export interface ConfigSchema {
      * Nitro's own Rolldown pipeline.
      *
      * Only effective when using `@nuxt/vite-builder`.
-     * @default false
+     * @default true
      */
     nitroViteEnvironment: boolean
 
@@ -1709,6 +1815,13 @@ export interface ConfigSchema {
   _majorVersion: number
 
   /**
+   * The nitro major version the host Nuxt builds against, set before any module
+   * runs so `@nuxt/kit` version detection is reliable during module setup.
+   * @private
+   */
+  _nitroMajor: number
+
+  /**
    *
    * @private
    */
@@ -1724,7 +1837,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | DotenvOptions, envName?: string | false }
+  _loadOptions: { dotenv?: boolean | NuxtDotenvOptions, envName?: string | false }
 
   /**
    *

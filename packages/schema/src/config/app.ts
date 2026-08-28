@@ -28,6 +28,20 @@ export default defineResolvers({
         return (await get('future.compatibilityVersion')) < 5
       },
     },
+
+    /**
+     * Enable experimental support for Vue Vapor Mode (requires Vue 3.6+).
+     *
+     * This installs Vue's `vaporInteropPlugin` so that vapor components (SFCs using
+     * `<script setup vapor>` or `<template vapor>`) can be used alongside regular
+     * VDOM components.
+     * @see [Vue Vapor Mode release notes](https://github.com/vuejs/core/releases/tag/v3.6.0-rc.1)
+     */
+    vapor: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
     propsDestructure: true,
 
     config: {},
@@ -43,10 +57,9 @@ export default defineResolvers({
     },
     buildAssetsDir: {
       $resolve: (val) => {
-        if (typeof val === 'string') {
-          return val
-        }
-        return process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+        const dir = typeof val === 'string' ? val : (process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/')
+        // normalised so consumers can compare it directly against request paths
+        return dir.replace(/^\/?/, '/').replace(/\/?$/, '/')
       },
     },
 

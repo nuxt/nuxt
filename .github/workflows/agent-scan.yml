@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: AgentScan
         id: agentscan
-        uses: MatteoGabriele/agentscan-action@e02ef270c024bfad3541b2a71619c3c9f20b3312 # v2.2.0
+        uses: MatteoGabriele/agentscan-action@98202262c925c508d4c1424b1dfbe17ee35b0c02 # v2.4.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           mode: 'labels'

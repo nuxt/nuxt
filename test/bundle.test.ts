@@ -22,8 +22,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"106k"`)
-    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"39.5k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"109k"`)
+    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"40.5k"`)
 
     const entry = await fsp.readFile(join(rootDir, '.output/public', clientStats!.files.find(f => f.startsWith('_nuxt/entry'))!), 'utf8')
     expect(entry).not.toContain('[ofetch] global.fetch is not supported')
@@ -40,7 +40,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('does not ship payload revival machinery in a spa build', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(spaRootDir, '.output/public'), spaRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"101k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"102k"`)
 
     const contents = await Promise.all(
       (await glob(['**/*.js'], { cwd: join(spaRootDir, '.output/public') }))
@@ -55,7 +55,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"177k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"184k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -76,27 +76,25 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"271k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"270k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@unhead/vue+[...]",
+        "_vue/server-renderer+[...]",
         "defu",
-        "destr",
         "devalue",
         "h3+rou3+srvx",
-        "nostics",
+        "hookable",
         "ocache+ohash",
         "ofetch",
-        "pathe",
         "scule",
         "ufo",
-        "unhead",
         "unstorage",
         "vue",
-        "vue-bundle-renderer",
-        "vue__server-renderer",
+        "vue__reactivity+vue__shared",
+        "vue__runtime-core",
+        "vue__runtime-dom",
       ]
     `)
   })
@@ -105,32 +103,127 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"344k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"317k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@unhead/vue+[...]",
+        "_vue/server-renderer+[...]",
         "defu",
-        "destr",
         "devalue",
         "h3+rou3+srvx",
-        "nostics",
+        "hookable",
         "ocache+ohash",
         "ofetch",
-        "pathe",
         "scule",
         "ufo",
-        "uncrypto",
-        "unhead",
         "unstorage",
         "vue",
-        "vue-bundle-renderer",
-        "vue-devtools-stub",
         "vue-router",
-        "vue__server-renderer",
+        "vue__reactivity+vue__shared",
+        "vue__runtime-core",
+        "vue__runtime-dom",
       ]
     `)
+  })
+
+  it('splits page components by the environment they can render in', async () => {
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(pagesRootDir, '.output/server') }))
+        .map(file => fsp.readFile(join(pagesRootDir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    const client = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: join(pagesRootDir, '.output/public') }))
+        .map(file => fsp.readFile(join(pagesRootDir, '.output/public', file), 'utf8')),
+    )).join('\n')
+
+    expect(server).not.toContain('Client-only page')
+    expect(client).toContain('Client-only page')
+
+    expect(server).toContain('Server-only page')
+    expect(client).not.toContain('Server-only page')
+  })
+})
+
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('noScripts route rules', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/no-scripts', import.meta.url))
+
+  beforeAll(async () => {
+    await exec('pnpm', ['nuxt', 'build', rootDir])
+  }, 120 * 1000)
+
+  it('drops components of noScripts pages from the client bundle', async () => {
+    const dir = join(rootDir, '.output/public')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    // a flat and a dynamic-param page, both covered by a `noScripts` rule, are
+    // replaced by the reload stub, so their component markers never ship
+    expect(bundle).not.toContain('no-scripts-page')
+    expect(bundle).not.toContain('product-page')
+
+    // a nested child route (relative path resolved against its parent), and the
+    // parent shell it renders inside
+    expect(bundle).not.toContain('dashstatsheading')
+    expect(bundle).not.toContain('dash-page')
+
+    // the default and named views of a `noScripts` route are both stubbed
+    expect(bundle).not.toContain('report-default')
+    expect(bundle).not.toContain('report-aux')
+
+    // a page whose canonical path is `noScripts` but which has a scripted alias
+    // keeps its component so the alias can still render client-side
+    expect(bundle).toContain('aliased-page')
+  })
+})
+
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('ssr: false route rules', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/spa-only', import.meta.url))
+
+  beforeAll(async () => {
+    await exec('pnpm', ['nuxt', 'build', rootDir])
+  }, 120 * 1000)
+
+  it('drops components of client-only pages from the server bundle', async () => {
+    const dir = join(rootDir, '.output/server')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    // a flat page, a dynamic-param page, an inline `defineRouteRules` page and a
+    // nested child, all inside a client-only region
+    expect(bundle).not.toContain('admin-index-page')
+    expect(bundle).not.toContain('product-page')
+    expect(bundle).not.toContain('inline-page')
+    expect(bundle).not.toContain('parent-nested-page')
+
+    // the default and named views of a client-only route are both stubbed
+    expect(bundle).not.toContain('report-default')
+    expect(bundle).not.toContain('report-aux')
+
+    // a more specific `ssr: true` rule, and a child escaping its parent's region
+    // via an absolute path, each keep their own page and the parent shell
+    expect(bundle).toContain('admin-ssr-page')
+    expect(bundle).toContain('admin-shell')
+    expect(bundle).toContain('escaped-page')
+    expect(bundle).toContain('parent-shell')
+
+    // a client-only canonical path with a server-rendered alias
+    expect(bundle).toContain('aliased-page')
+
+    expect(bundle).toContain('index-page')
+  })
+
+  it('keeps client-only page code in the client bundle', async () => {
+    const dir = join(rootDir, '.output/public')
+    const bundle = (await Promise.all(
+      (await glob(['**/*.js'], { cwd: dir })).map(file => fsp.readFile(join(dir, file), 'utf8')),
+    )).join('\n')
+
+    expect(bundle).toContain('admin-index-page')
+    expect(bundle).toContain('product-page')
+    expect(bundle).toContain('inline-page')
   })
 })
 

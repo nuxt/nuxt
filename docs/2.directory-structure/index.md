@@ -46,6 +46,10 @@ The [`server/`](/docs/4.x/directory-structure/server) directory is the directory
 
 The [`shared/`](/docs/4.x/directory-structure/shared) directory is the directory that contains the shared code of the Nuxt application and Nuxt server. This code can be used in both the Vue app and the Nitro server.
 
+## Test Directory
+
+The [`test/`](/docs/4.x/directory-structure/test) directory is the recommended place for application tests (unit, Nuxt runtime, and end-to-end). See [Organizing Your Tests](/docs/4.x/getting-started/testing#organizing-your-tests) for layout and setup details.
+
 ## Content Directory
 
 The [`content/`](/docs/4.x/directory-structure/content) directory is enabled by the [Nuxt Content](https://content.nuxt.com) module. It is used to create a file-based CMS for your application using Markdown files.

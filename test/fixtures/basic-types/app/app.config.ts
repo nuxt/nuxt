@@ -5,4 +5,9 @@ export default defineAppConfig({
   nested: {
     val: 2,
   },
+  themed: {
+    colors: { primary: 'green' },
+    variants: ['solid'],
+    format: (value: string) => value,
+  },
 })

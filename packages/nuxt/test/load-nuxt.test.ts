@@ -1,12 +1,13 @@
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { normalize } from 'pathe'
+import { normalize, resolve } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
 import { loadNuxt } from '../src/index.ts'
 import type { NuxtConfig } from '../schema.ts'
+import type { Nitro } from 'nitro/types'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -188,6 +189,70 @@ describe('loadNuxt', () => {
     expect(tsConfigPaths).toHaveProperty('#server/*')
 
     await nuxt.close()
+  })
+
+  it('resolves nitro aliases pointing at bare module specifiers', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        modules: [
+          (_options, nuxt) => {
+            nuxt.options.nitro.alias ||= {}
+            nuxt.options.nitro.alias['#probe/defu'] = 'defu'
+          },
+        ],
+      },
+    })
+
+    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+
+    expect(tsConfigPaths['#probe/defu']?.[0]?.replace(/\\/g, '/')).toMatch(/node_modules\/defu\//)
+
+    await nuxt.close()
+  })
+
+  it.each([
+    {
+      compatibilityVersion: 4,
+      expectedAlias: 'legacy-base/probe-target',
+      expectedBaseUrl: 'legacy-base',
+    },
+    {
+      compatibilityVersion: 5,
+      expectedAlias: 'probe-target',
+      expectedBaseUrl: undefined,
+    },
+  ] as const)('resolves nitro aliases with compatibilityVersion $compatibilityVersion', async ({ compatibilityVersion, expectedAlias, expectedBaseUrl }) => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        future: {
+          compatibilityVersion,
+        },
+        nitro: {
+          alias: {
+            '#probe/base-url': './probe-target',
+          },
+          typescript: {
+            tsConfig: {
+              compilerOptions: {
+                baseUrl: 'legacy-base',
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const nitro = (nuxt as typeof nuxt & { _nitro?: Nitro })._nitro
+    const compilerOptions = nitro?.options.typescript?.tsConfig?.compilerOptions ?? {}
+    const aliasPath = compilerOptions.paths?.['#probe/base-url']?.[0]
+    await nuxt.close()
+
+    expect(aliasPath).toBe(resolve(nuxt.options.typesDir, expectedAlias))
+    expect(Reflect.get(compilerOptions, 'baseUrl')).toBe(expectedBaseUrl)
   })
 
   it('applies global typescript.tsConfig compiler options to the nitro tsconfig', async () => {

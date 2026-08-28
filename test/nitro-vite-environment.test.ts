@@ -31,11 +31,13 @@ describe.skipIf(builder !== 'nitro-vite' || isBuilt)('nitro/vite environment dev
   })
 
   it.each([
-    ['without sec-fetch-dest', undefined],
-    ['with sec-fetch-dest: script', 'script'],
-  ])('serves @vite/client under buildAssetsDir %s', async (_, secFetchDest) => {
+    ['@vite/client', 'without sec-fetch-dest', undefined],
+    ['@vite/client', 'with sec-fetch-dest: script', 'script'],
+    ['@id/__x00__test-virtual-module', 'without sec-fetch-dest', undefined],
+    ['@id/__x00__test-virtual-module', 'with sec-fetch-dest: script', 'script'],
+  ])('serves %s under buildAssetsDir %s', async (path, _, secFetchDest) => {
     const buildAssetsDir = nuxt.options.app.buildAssetsDir
-    const url = `http://127.0.0.1:${port}${buildAssetsDir}@vite/client`
+    const url = `http://127.0.0.1:${port}${buildAssetsDir}${path}`
     const res = await fetch(url, secFetchDest ? { headers: { 'sec-fetch-dest': secFetchDest } } : undefined)
     expect(res.status, `${url} (sec-fetch-dest=${secFetchDest ?? 'unset'})`).toBe(200)
     expect(res.headers.get('content-type')).toMatch(/(text|application)\/javascript/)

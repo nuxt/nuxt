@@ -91,3 +91,4 @@ playwright-report
 temp
 
 packages/ui-templates/node-compile-cache/
+flakiness-report/

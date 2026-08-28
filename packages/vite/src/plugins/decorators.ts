@@ -1,8 +1,10 @@
 import type { Plugin } from 'vite'
 import type { SourceMapInput } from 'rollup'
-import { bundlerDiagnostics, ensureDependencyInstalled } from '@nuxt/kit'
+import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import jsTokens from 'js-tokens'
+import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const
 
@@ -52,7 +54,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
       })
 
       if (result !== true) {
-        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), install: result.join(' ') })
+        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), installCommand: await getAddDependencyCommand(result, nuxt.options.rootDir, { dev: true }) })
         return false
       }
 
@@ -66,19 +68,8 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
         code: '@',
 
         id: {
-          // Restrict transform to JavaScript/TypeScript and Vue files only
-          include: [/\.(ts|js|tsx|jsx|vue)$/],
-
-          // Explicitly exclude non-JS assets and Vue sub-blocks
-          // (e.g. <style> or <template> in SFCs)
-          exclude: [
-            /\.css$/,
-            /\.scss$/,
-            /\.sass$/,
-            /\.less$/,
-            /\.styl$/,
-            /\.vue\?.*\btype=(?:style|template)\b/,
-          ],
+          include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
+          exclude: VUE_NON_SCRIPT_BLOCK_RE,
         },
       },
       handler (code, id) {

@@ -10,9 +10,12 @@ import type { SSRHeadPayload } from '@unhead/vue/server'
 import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '@unhead/vue/stream/server'
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
-import destr from 'destr'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
+import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from '../utils/error'
+import type { SSRError } from '../utils/error'
 import { relative } from 'pathe'
+
+import '../context'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
@@ -24,16 +27,19 @@ import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '..
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { patchDevClientCss } from '../utils/renderer/dev-css'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
+import { createInlinedCSSFilter } from '../utils/renderer/inlined-css'
+import { throwIfUnmatchedPagePath } from '../utils/renderer/early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
+import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
+import { extractCspNonce } from '../utils/renderer/csp-nonce'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import entryIds from 'nuxt/entry-ids'
 import { entryFileName } from 'nuxt/entry-chunk'
 import { iifeChunkFileName } from '#internal/streaming-iife-chunk.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../utils/paths'
-import type { AppConfig } from '@nuxt/schema'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -67,16 +73,20 @@ export default {
     }
 
     // Whether we're rendering an error page
-    const ssrError = event.url.pathname.startsWith('/__nuxt_error')
-      ? getQuery<NuxtPayload['error'] & { url: string }>(event)
-      : undefined
+    const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
 
-    if (ssrError && !event.context.nuxt?.['~rendering-error'] /* allow internal fetch from the error handler */) {
+    if (isErrorRoute && !event.context.nuxt?.['~rendering-error'] /* allow internal fetch from the error handler */) {
       throw new HTTPError({
         status: 404,
         statusText: 'Page Not Found: /__nuxt_error',
       })
     }
+
+    const ssrError = isErrorRoute
+      ? decodeSSRError(getQuery<Record<string, string>>(event)[SSR_ERROR_PARAM])
+      : import.meta.prerender
+        ? getPrerenderedErrorPage(event)
+        : undefined
 
     // During prerender, refuse to recurse into a URL that is already rendering
     // higher in the same call chain. Without this, a `useFetch`/`$fetch` against
@@ -99,6 +109,42 @@ export default {
   },
 }
 
+const ERROR_PAGE_RE = /^\/(\d{3})\.html$/
+const STATUS_TEXT: Record<number, string> = {
+  400: 'Bad Request',
+  401: 'Unauthorized',
+  403: 'Forbidden',
+  404: 'Page Not Found',
+  410: 'Gone',
+  500: 'Internal Server Error',
+  503: 'Service Unavailable',
+}
+
+function isPrerenderedErrorPage (pathname: string) {
+  const status = Number(ERROR_PAGE_RE.exec(pathname)?.[1])
+  return status && (NUXT_PRERENDER_ERROR_PAGES as number[]).includes(status) ? status : undefined
+}
+
+/**
+ * Synthesise the error a static error page (`404.html` and friends) renders
+ * with, so the page is server-rendered at build time rather than written out as
+ * an empty SPA shell.
+ */
+function getPrerenderedErrorPage (event: H3Event): SSRError | undefined {
+  const status = isPrerenderedErrorPage(event.url.pathname)
+  if (!status) { return undefined }
+
+  const statusText = STATUS_TEXT[status] || 'Error'
+  return {
+    status,
+    statusText,
+    message: statusText,
+    fatal: false,
+    url: event.url.href,
+    [NUXT_ERROR_SIGNATURE]: true,
+  } as unknown as SSRError
+}
+
 async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<ReadableStream<Uint8Array> | Response> {
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(event)
@@ -106,18 +152,11 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   ssrContext.head.push(appHead)
 
   if (ssrError) {
-    // @ts-expect-error TODO: investigate creating new error
-    ssrError.status &&= Number.parseInt(ssrError.status.toString())
-    if (PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
-      try {
-        // @ts-expect-error TODO: investigate creating new error
-        ssrError.data = destr(ssrError.data)
-      } catch {
-        // ignore
-      }
+    if (!PARSE_ERROR_DATA) {
+      (ssrError as { data?: unknown }).data = stringifyErrorData(ssrError.data)
     }
     if (import.meta.dev && event.context.nuxt?.['~error-cause'] !== undefined) {
-      (ssrError as { cause?: SerializedErrorCause }).cause = event.context.nuxt['~error-cause']
+      (ssrError as { cause?: SerializedErrorCause }).cause = event.context.nuxt['~error-cause'] as SerializedErrorCause
     }
     setSSRError(ssrContext, ssrError)
   }
@@ -129,8 +168,15 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     ssrContext.noSSR = true
   }
 
+  // Fail fast for paths that cannot match any page route, before the app (and
+  // its plugins and middleware) is loaded. Skipped when prerendering SPA shell
+  // fallbacks (`/index.html`, `/200.html`), which are not page routes.
+  if (NUXT_EARLY_404 && !ssrError && !(import.meta.prerender && ssrContext.noSSR)) {
+    throwIfUnmatchedPagePath(event, routeOptions)
+  }
+
   // Whether we are prerendering route or using ISR/SWR caching
-  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
+  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && !ssrError && (
     (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
     || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
   )
@@ -228,6 +274,13 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
+  if (import.meta.prerender && ssrError && isPrerenderedErrorPage(event.url.pathname)) {
+    delete ssrContext.payload.path
+    if (ssrContext.payload.error) {
+      (ssrContext.payload.error as { url?: string }).url = undefined
+    }
+  }
+
   const appRenderedResult = ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
   if (appRenderedResult instanceof Promise) { await appRenderedResult }
 
@@ -259,8 +312,14 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
+  if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
+    warnNoScriptsClientReliance(ssrContext, event.url.pathname)
+  }
+
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
+
+  pushNoScriptsHints(ssrContext, NO_SCRIPTS)
 
   // 0. Add import map for stable chunk hashes
   if (entryFileName && !NO_SCRIPTS) {
@@ -305,9 +364,15 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   }
 
   const link: Link[] = []
+  const inlinedHrefs: string[] = []
+  const isCSSInlined = NUXT_INLINE_STYLES ? await createInlinedCSSFilter(ssrContext.modules) : undefined
   for (const resource of Object.values(styles)) {
     // Do not add links to resources that are inlined (vite v5+)
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
+      continue
+    }
+    if (isCSSInlined?.(resource.file)) {
+      inlinedHrefs.push(renderer.rendererContext.buildAssetsURL(resource.file))
       continue
     }
     // Add CSS links in <head> for CSS files
@@ -327,13 +392,30 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
       ? { exclude: ssrContext['~lazyHydratedModules'] }
       : undefined
-    const stylesheetHrefs = new Set(link.map(l => l.href))
-    ssrContext.head.push({
-      link: [
-        ...getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
-        ...getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[],
-      ].filter(l => !stylesheetHrefs.has(l.href)),
-    })
+    // exclude hrefs already linked as stylesheets (or delivered as inline styles),
+    // plus never-hydrated chunks which the client can never fetch
+    const excludeHrefs = new Set(link.map(l => l.href))
+    for (const href of inlinedHrefs) {
+      excludeHrefs.add(href)
+    }
+    for (const id of ssrContext['~neverHydratedModules'] ?? []) {
+      const file = renderer.rendererContext.manifest?.[id]?.file
+      if (file) {
+        excludeHrefs.add(renderer.rendererContext.buildAssetsURL(file))
+      }
+    }
+    const hints: Link[] = []
+    for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+      if (!excludeHrefs.has(l.href)) {
+        hints.push(l)
+      }
+    }
+    for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+      if (!excludeHrefs.has(l.href)) {
+        hints.push(l)
+      }
+    }
+    ssrContext.head.push({ link: hints })
     // 5. Payloads
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
@@ -404,6 +486,8 @@ async function renderStreamedResponse (ctx: {
 }): Promise<ReadableStream<Uint8Array> | Response> {
   const { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
+
+  pushNoScriptsHints(ssrContext, NO_SCRIPTS)
 
   // 1. Set HTTP Link headers with entry-point preload hints (fastest resource hinting)
   const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext)
@@ -528,7 +612,7 @@ async function renderStreamedResponse (ctx: {
   // a strict `script-src 'nonce-…'` policy would block them. Reuse whatever
   // nonce a security module stamped onto the rendered head scripts; if none is
   // present the attribute is omitted and behaviour is unchanged.
-  const cspNonce = headTags.match(/<script[^>]+\bnonce="([^"]*)"/)?.[1]
+  const cspNonce = extractCspNonce(headTags)
   const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
 
   // 6. Build the HTML shell context and fire `render:html` with `streaming: true`.
@@ -775,6 +859,10 @@ async function renderStreamedResponse (ctx: {
         await enqueueChunk(controller, encoder.encode(closingHtml))
         controller.close()
 
+        if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
+          warnNoScriptsClientReliance(ssrContext, event.url.pathname)
+        }
+
         if (committedSnapshot) {
           const currentHeaders = Array.from(event.res.headers.entries()).sort().map(([k, v]) => `${k}: ${v}`).join('\n')
           const lateMutations: string[] = []
@@ -829,6 +917,57 @@ async function renderStreamedResponse (ctx: {
   return new FastResponse(outputStream, event.res)
 }
 
+/**
+ * Routes served without scripts navigate with full-page loads. This emits the
+ * declarative navigation hints that speed those up, on both the pages served
+ * without scripts (a blanket rule over same-origin links) and scripted pages
+ * that may link to them (rules scoped to the `noScripts` route patterns):
+ *
+ * - speculation rules, so supporting browsers prefetch and prerender the
+ *   target ahead of the navigation;
+ * - when view transitions are enabled, an opt-in to same-origin cross-document
+ *   view transitions, animating the navigation without a client runtime (the
+ *   client-side `startViewTransition` plugin is not shipped).
+ *
+ * Both tags are declarative and execute no JavaScript.
+ */
+function pushNoScriptsHints (ssrContext: NuxtSSRContext, noScripts: boolean) {
+  if (noScripts) {
+    // scope to same-origin page routes (safe to GET) so we do not prefetch or
+    // prerender non-idempotent server routes; fall back to a blanket rule when
+    // there are no pages to enumerate (e.g. pages disabled)
+    pushSpeculationRulesScript(ssrContext, NUXT_PAGE_PATTERNS.length ? NUXT_PAGE_PATTERNS : ['/*'])
+  } else if (NUXT_NO_SCRIPTS_PATTERNS.length) {
+    pushSpeculationRulesScript(ssrContext, NUXT_NO_SCRIPTS_PATTERNS)
+  } else {
+    return
+  }
+  if (NUXT_VIEW_TRANSITIONS) {
+    ssrContext.head.push({
+      style: [{
+        tagPosition: 'head',
+        innerHTML: '@view-transition{navigation:auto}',
+      }],
+    })
+  }
+}
+
+function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: string[]) {
+  const rules = patterns.map(href_matches => ({ where: { href_matches }, eagerness: 'moderate' }))
+  ssrContext.head.push({
+    script: [{
+      tagPosition: 'head',
+      // unhead's script type union does not yet include 'speculationrules'
+      type: 'speculationrules' as any,
+      // unhead v3 JSON-stringifies object innerHTML for <script> tags
+      innerHTML: {
+        prefetch: rules,
+        prerender: rules,
+      },
+    }],
+  })
+}
+
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {
   const url = new URL(ssrContext.url, 'http://localhost')
   const baseURL = ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL
@@ -880,35 +1019,6 @@ function applyRenderOptions (payload: SSRHeadPayload, options: { omitLineBreaks?
     bodyTagsOpen: payload.bodyTagsOpen.replaceAll('\n', ''),
     htmlAttrs: payload.htmlAttrs,
     bodyAttrs: payload.bodyAttrs,
-  }
-}
-
-interface NuxtRequestContext {
-  'appConfig'?: AppConfig
-  'noSSR'?: boolean
-  /** @internal */
-  '~internal'?: boolean
-  /** @internal */
-  '~rendering-error'?: boolean
-  /**
-   * Dev-only: CSS module URLs the builder has loaded for this request, provided
-   * by a dev integration so the SSR renderer can emit the right stylesheet
-   * links / inline styles. @internal
-   */
-  '~devClientCss'?: string[]
-  /** @internal */
-  '~error-cause'?: SerializedErrorCause
-}
-
-declare module 'srvx' {
-  interface ServerRequestContext {
-    nuxt?: NuxtRequestContext
-  }
-}
-
-declare module 'h3' {
-  interface H3EventContext {
-    nuxt?: NuxtRequestContext
   }
 }
 

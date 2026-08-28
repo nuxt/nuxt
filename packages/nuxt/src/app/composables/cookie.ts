@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { Ref, WatchHandle } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
@@ -50,6 +50,8 @@ export interface CookieOptions<T = any> extends _CookieOptions {
    *
    * Note: the expiration is not refreshed automatically — you must
    * assign to `cookie.value` to trigger the refresh.
+   *
+   * Ignored when `readonly` is set.
    *
    * @default false
    */
@@ -116,7 +118,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   const hasExpired = delay !== undefined && delay <= 0
-  const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
+  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (hasExpired || cookies[name] === undefined || cookies[name] === null)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
@@ -153,21 +155,21 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       channel?.postMessage({ value: opts.encode(cookie.value as T) })
     }
 
+    let cookieWatcher: WatchHandle | undefined
+
     const handleChange = (data: { value?: string | null, refresh?: boolean }) => {
       const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
-      watchPaused = true
+      cookieWatcher?.pause()
       cookie.value = value
       cookies[name] = klona(value)
-      nextTick(() => { watchPaused = false })
+      nextTick(() => cookieWatcher?.resume())
     }
-
-    let watchPaused = false
 
     const hasScope = !!getCurrentScope()
 
     if (hasScope) {
       onScopeDispose(() => {
-        watchPaused = true
+        cookieWatcher?.pause()
         callback()
         channel?.close()
       })
@@ -195,12 +197,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       channel.onmessage = ({ data }) => handleChange(data)
     }
 
-    if (opts.watch) {
-      watch(cookie, () => {
-        if (watchPaused) { return }
-        callback(opts.refresh)
-      },
-      { deep: opts.watch !== 'shallow' })
+    if (opts.watch && !opts.readonly) {
+      cookieWatcher = watch(cookie, () => callback(opts.refresh), { deep: opts.watch !== 'shallow' })
     }
 
     if (shouldSetInitialClientCookie) {

@@ -31,5 +31,10 @@ export const headDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove `experimental.headNext` from your `nuxt.config`, or set `unhead.legacy: true` to opt out temporarily.',
       docs: false,
     },
+    NUXT_B6005: {
+      why: (p: { name: string, from: string }) => `Could not resolve \`${p.from}\` used by the auto-import \`${p.name}\`.`,
+      fix: 'Check the `from` path in `imports.presets` (or the module that registered this import). Auto-imports from an unresolvable module are silently skipped and can surface as unrelated type errors elsewhere.',
+      docs: false,
+    },
   },
 })

@@ -3,7 +3,7 @@ import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, Nitro
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
+import type { AppConfig, HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`. Extends Nitro's own
@@ -60,6 +60,10 @@ declare module 'nitro/types' {
 type _NitroOnlyRuntimeConfig = Omit<NonNullable<NitroRuntimeConfig['nitro']>, 'envPrefix'> & { envPrefix: string }
 
 declare module '@nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -178,6 +182,10 @@ declare module '@nuxt/schema' {
 }
 
 declare module 'nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -292,6 +300,35 @@ declare module 'nuxt/schema' {
 
   interface NuxtPage {
     rules?: NitroRouteConfig
+  }
+}
+
+export interface NuxtRequestContext {
+  'appConfig'?: AppConfig
+  'noSSR'?: boolean
+  /** @internal */
+  '~internal'?: boolean
+  /** @internal */
+  '~rendering-error'?: boolean
+  /**
+   * Dev-only: CSS module URLs the builder has loaded for this request, provided
+   * by a dev integration so the SSR renderer can emit the right stylesheet
+   * links / inline styles. @internal
+   */
+  '~devClientCss'?: string[]
+  /** @internal */
+  '~error-cause'?: unknown
+}
+
+declare module 'srvx' {
+  interface ServerRequestContext {
+    nuxt?: NuxtRequestContext
+  }
+}
+
+declare module 'h3' {
+  interface H3EventContext {
+    nuxt?: NuxtRequestContext
   }
 }
 

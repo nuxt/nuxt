@@ -1,5 +1,5 @@
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
-import { Teleport, createVNode, defineComponent, h, inject } from 'vue'
+import { Teleport, createVNode, defineComponent, getCurrentInstance, h, inject } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { NuxtTeleportIslandSymbol } from './nuxt-teleport-island-component'
 
@@ -36,6 +36,7 @@ const NuxtTeleportIslandSlot = /* @__PURE__ */ defineComponent({
   },
   setup (props, { slots }) {
     const nuxtApp = useNuxtApp()
+    const scopeId = getCurrentInstance()?.vnode.scopeId
     const islandContext = nuxtApp.ssrContext?.islandContext
     if (!islandContext) {
       return () => slots.default?.()[0]
@@ -44,6 +45,7 @@ const NuxtTeleportIslandSlot = /* @__PURE__ */ defineComponent({
     const componentName = inject(NuxtTeleportIslandSymbol, false)
     islandContext.slots[props.name] = {
       props: (props.props || []) as unknown[],
+      scopeId: scopeId ?? undefined,
     }
 
     return () => {

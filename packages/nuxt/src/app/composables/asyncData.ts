@@ -15,7 +15,9 @@ import { dataDiagnostics } from '../diagnostics/data'
 import { attachAddonExtensions, runAddonSetups, wrapPromiseMethod } from './addons'
 import type { AsyncDataAddonSetup, MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataAddon } from './addons'
 
-import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { neverHydratedSymbol } from './lazy-hydration'
+
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -107,6 +109,14 @@ interface BaseAsyncDataOptions<
    * @default true
    */
   enabled?: MaybeRefOrGetter<boolean>
+  /**
+   * Whether to store resolved data in the Nuxt payload (and therefore serialize it into `__NUXT_DATA__` when server-rendered).
+   * When `false`, data fetched on the server is kept out of the payload entirely and the client will refetch
+   * after hydration if a component renders it. Pair with lazy hydration (e.g. `hydrate-never`) to avoid
+   * hydration mismatches and unnecessary client fetches.
+   * @default true
+   */
+  serialize?: boolean
   /**
    * AsyncData middleware wrapping the handler execution.
    * Middleware is executed in the order of the array, with the first entry being the outermost wrapper.
@@ -423,6 +433,10 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       opts.dedupe ??= 'cancel'
       opts.enabled ??= true
 
+      if (import.meta.server && stripNeverHydratedData && opts.serialize === undefined && getCurrentInstance() && inject(neverHydratedSymbol, false)) {
+        opts.serialize = false
+      }
+
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
         for (const key in factoryOptions) {
@@ -451,7 +465,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         if (values.handler !== currentData._hash?.handler) {
           warnings.push(`different handler`)
         }
-        for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
+        for (const opt of ['transform', 'pick', 'getCachedData', 'serialize'] as const) {
           if (values[opt] !== currentData._hash![opt]) {
             warnings.push(`different \`${opt}\` option`)
           }
@@ -492,10 +506,19 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
       const fetchOnServer = opts.server !== false && nuxtApp.payload.serverRendered
 
+      // vapor components have no vdom instance, but their setup still runs within a
+      // dedicated effect scope (distinct from the nuxt app's own scope, which plugins
+      // run in) where vue lifecycle hooks can register
+      const isWithinVaporComponent = () => {
+        if (!vapor || getCurrentInstance()) { return false }
+        const scope = getCurrentScope()
+        return !!scope && scope !== nuxtApp._scope
+      }
+
       // Server side
       if (import.meta.server && fetchOnServer && opts.immediate) {
         const promise = initialFetch()
-        if (getCurrentInstance()) {
+        if (getCurrentInstance() || isWithinVaporComponent()) {
           onServerPrefetch(() => promise)
         } else {
           nuxtApp.hook('app:created', async () => { await promise })
@@ -506,13 +529,14 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       if (import.meta.client) {
         // Setup hook callbacks once per instance
         const instance = getCurrentInstance()
+        const inComponentSetup = !!instance || isWithinVaporComponent()
 
         // @ts-expect-error - instance.sp is an internal vue property
         if (instance && fetchOnServer && opts.immediate && !instance.sp) {
           // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
           instance.sp = []
         }
-        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
+        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
@@ -525,18 +549,24 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
           onUnmounted(() => cbs.splice(0, cbs.length))
         }
 
-        const isWithinClientOnly = instance && (instance._nuxtClientOnly || inject(clientOnlySymbol, false))
+        const isWithinClientOnly = inComponentSetup && (instance?._nuxtClientOnly || inject(clientOnlySymbol, false))
 
-        if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || asyncData.data.value !== undefined)) {
+        const hasServerData = key.value in nuxtApp.payload.data
+
+        if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || (asyncData.data.value !== undefined && (hasServerData || asyncData._initialCachedData !== undefined)))) {
           // 1. Hydration (server: true): no fetch
           if (pendingWhenIdle) {
             asyncData.pending.value = false
           }
           asyncData.status.value = asyncData.error.value ? 'error' : 'success'
-        } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || opts.lazy) && opts.immediate) {
+        } else if (inComponentSetup && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating && (!fetchOnServer || hasServerData)) || opts.lazy) && opts.immediate) {
           // 2. Initial load (server: false): fetch on mounted
           // 3. Initial load or navigation (lazy: true): fetch on mounted
-          instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          if (instance) {
+            instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          } else {
+            onBeforeMount(() => { initialFetch() })
+          }
         } else if (opts.immediate && asyncData.status.value !== 'success') {
           // 4. Navigation (lazy: false) - or plugin usage: await fetch
           initialFetch()
@@ -879,7 +909,10 @@ function buildAsyncData<
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (cachedData !== undefined) {
-          nuxtApp.payload.data[key] = asyncData.data.value = cachedData as DataT
+          if (options.serialize !== false) {
+            nuxtApp.payload.data[key] = cachedData
+          }
+          asyncData.data.value = cachedData as DataT
           asyncData.error.value = undefined
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
@@ -947,7 +980,9 @@ function buildAsyncData<
             dataDiagnostics.NUXT_E3006({ fn: options._functionName || 'useAsyncData', sources: caller ? [`${caller.source}:${caller.line}:${caller.column}`] : undefined })
           }
 
-          nuxtApp.payload.data[key] = result
+          if (options.serialize !== false) {
+            nuxtApp.payload.data[key] = result
+          }
 
           asyncData.data.value = result
           asyncData.error.value = undefined
@@ -1001,6 +1036,13 @@ function buildAsyncData<
       if (nuxtApp._asyncDataPromises[key]) {
         asyncData._abortController?.abort(new DOMException('AsyncData request cancelled by unmount', 'AbortError'))
         delete nuxtApp._asyncDataPromises[key]
+        // the rejection handler bails out once the promise is detached, so settle the state here
+        if (asyncData.status.value === 'pending') {
+          asyncData.status.value = 'idle'
+        }
+        if (pendingWhenIdle) {
+          asyncData.pending.value = false
+        }
       }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
@@ -1035,6 +1077,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     transform: options.transform ? hashFunction(options.transform as (...args: any[]) => any) : undefined,
     pick: options.pick ? hashKey(options.pick) : undefined,
     getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
+    serialize: String(options.serialize ?? true),
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {

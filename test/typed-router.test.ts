@@ -55,4 +55,16 @@ describe.skipIf(!runsOnceInMatrix)('typed router integration', () => {
       expect(dts).not.toMatch(/'\/[^']*\.vue':/)
     })
   })
+
+  // `vue-component-type-helpers` is a dependency of `nuxt`, so a bare specifier is not resolvable
+  // from a project that does not depend on it directly. An absolute path resolves but ties the
+  // generated declaration to the machine that produced it.
+  it('imports ComponentProps in layouts.d.ts via a path relative to the build dir', async () => {
+    const r = await x('nuxt', ['prepare', rootDir])
+    expect(r.exitCode, r.stderr).toBe(0)
+    const dts = readFileSync(resolve(rootDir, '.nuxt/types/layouts.d.ts'), 'utf8')
+    const importPath = dts.match(/import type \{ ComponentProps \} from "([^"]+)"/)?.[1]
+    expect(importPath).toBeDefined()
+    expect(importPath).toMatch(/^\.\.\/.*\/vue-component-type-helpers\//)
+  })
 })

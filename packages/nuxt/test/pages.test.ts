@@ -1,7 +1,7 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob, relativizeToParent } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, relativizeToParent } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -328,17 +328,17 @@ describe('pages:generateRouteKey', () => {
     output?: string | false
     it?: TestAPI
   }> = [
-    { description: 'should handle overrides', override: 'key', route: getRouteProps(), output: 'key' },
-    { description: 'should handle overrides', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
+    { description: 'should use a string override as the key', override: 'key', route: getRouteProps(), output: 'key' },
+    { description: 'should use the result of a function override as the key', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
     {
-      description: 'should handle overrides',
+      description: 'should return `false` for a `false` override',
       // @ts-expect-error testing behaviour with invalid prop
       override: false,
       route: getRouteProps(),
       output: false,
     },
     {
-      description: 'should key dynamic routes without keys',
+      description: 'should key an unkeyed dynamic route by its param value',
       route: getRouteProps({
         path: '/test/:id',
         meta: {},
@@ -346,7 +346,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/foo',
     },
     {
-      description: 'should key dynamic routes without keys',
+      description: 'should key an unkeyed dynamic route with a custom matcher by its param value',
       route: getRouteProps({
         path: '/test/:id(\\d+)',
         meta: {},
@@ -354,7 +354,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/foo',
     },
     {
-      description: 'should key dynamic routes with optional params',
+      description: 'should key an optional param by its value',
       route: getRouteProps({
         path: '/test/:optional?',
         meta: {},
@@ -362,7 +362,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/bar',
     },
     {
-      description: 'should key dynamic routes with optional params',
+      description: 'should key an optional param with a custom matcher by its value',
       route: getRouteProps({
         path: '/test/:optional(\\d+)?',
         meta: {},
@@ -370,7 +370,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/bar',
     },
     {
-      description: 'should key dynamic routes with optional params',
+      description: 'should key an unmatched optional param as an empty segment',
       route: getRouteProps({
         path: '/test/:undefined(\\d+)?',
         meta: {},
@@ -378,7 +378,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/',
     },
     {
-      description: 'should key dynamic routes with array params',
+      description: 'should join the values of a one-or-more repeatable param',
       route: getRouteProps({
         path: '/:array+',
         meta: {},
@@ -386,7 +386,7 @@ describe('pages:generateRouteKey', () => {
       output: '/a,b',
     },
     {
-      description: 'should key dynamic routes with array params',
+      description: 'should join the values of a zero-or-more repeatable param',
       route: getRouteProps({
         path: '/test/:array*',
         meta: {},
@@ -394,7 +394,7 @@ describe('pages:generateRouteKey', () => {
       output: '/test/a,b',
     },
     {
-      description: 'should key dynamic routes with array params',
+      description: 'should key an unmatched zero-or-more repeatable param as an empty segment',
       route: getRouteProps({
         path: '/test/:other*',
         meta: {},
@@ -411,35 +411,20 @@ describe('pages:generateRouteKey', () => {
   }
 })
 
-const pathToNitroGlobTests = {
-  '/': '/',
-  '/:id': '/**',
-  '/:id()': '/**',
-  '/:id?': '/**',
-  '/some-:id?': '/**',
-  '/other/some-:id?': '/other/**',
-  '/other/some-:id()-more': '/other/**',
-  '/other/nested': '/other/nested',
-}
-
-describe('pages:pathToNitroGlob', () => {
-  it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
-    expect(pathToNitroGlob(path)).to.equal(expected)
-  })
-})
-
 describe('pages:relativizeToParent', () => {
-  const tests: Array<[parentFullPath: string, childPath: string, expected: string]> = [
+  const tests: Array<[parentFullPath: string, childPath: string, expected: string | undefined]> = [
     ['/parent', '/parent/child', 'child'],
     ['/parent/:id()', '/parent/:id/child', 'child'],
     ['/parent/:id', '/parent/:id()/child', 'child'],
     ['/parent/:id()+', '/parent/:id+/child', 'child'],
     ['/parent/:id(\\d+)', '/parent/:id(\\d+)/child', 'child'],
-    ['/parent/:id()', '/parent/:id(\\d+)/child', ':id(\\d+)/child'],
-    ['/parent', '/detached', 'detached'],
-    ['/parent', '/parent-sibling/child', 'parent-sibling/child'],
+    ['/parent/:id()', '/parent/:id()/:childId?/child', ':childId?/child'],
     ['/parent', 'relative/child', 'relative/child'],
     ['/', '/child', 'child'],
+    ['/parent/:id()', '/parent/:id(\\d+)/child', undefined],
+    ['/parent', '/detached', undefined],
+    ['/parent', '/parent-sibling/child', undefined],
+    ['/parent/:id()', '/parent', undefined],
   ]
   it.each(tests)('should relativize %s + %s to %s', (parentFullPath, childPath, expected) => {
     expect(relativizeToParent(parentFullPath, childPath)).toBe(expected)
@@ -447,7 +432,7 @@ describe('pages:relativizeToParent', () => {
 })
 
 describe('page:extends', () => {
-  const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+  const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
   it('should preserve distinct metadata for multiple routes referencing the same file', async () => {
     const files: NuxtPage[] = [
       { path: 'home', file: `pages/index.vue` },
@@ -505,7 +490,7 @@ describe('page:extends', () => {
 
 const pagesDir = 'pages'
 const layerDir = 'layer/pages'
-const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
 
 export const pageTests: Array<{
   description: string
@@ -885,7 +870,7 @@ export const pageTests: Array<{
       { path: `${pagesDir}/a\\b.vue` },
     ],
     output: [
-      { name: 'a&b', path: `/a${encodeURIComponent('&')}b`, file: `${pagesDir}/a&b.vue`, children: [] },
+      { name: 'a&b', path: '/a&b', file: `${pagesDir}/a&b.vue`, children: [] },
       { name: 'a\\b', path: `/a${encodeURIComponent('\\')}b`, file: `${pagesDir}/a\\b.vue`, children: [] },
     ],
   },

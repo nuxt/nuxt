@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { genDynamicImport, genDynamicTypeImport, genObjectKey } from 'knitwork'
+import { genDynamicImport, genDynamicTypeImport, genObjectKey, genString } from 'knitwork'
 import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
 import type { ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
@@ -34,6 +34,7 @@ export default defineNuxtPlugin({
 
 export const componentsPluginTemplate: NuxtPluginTemplate = {
   filename: 'components.plugin.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const lazyGlobalComponents = new Set<string>()
     const syncGlobalComponents = new Set<string>()
@@ -71,6 +72,7 @@ export default defineNuxtPlugin({
 
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const componentNames = new Set<string>()
     for (const c of app.components) {
@@ -84,6 +86,7 @@ export const componentNamesTemplate: NuxtTemplate = {
 
 export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
+  dependsOn: [],
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
       return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)\nexport const providePageIslandDepth = () => {}'
@@ -217,6 +220,7 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 `
 export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
+  dependsOn: [],
   write: true,
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir, nuxt.options.experimental.typescriptPlugin)
@@ -235,8 +239,24 @@ export const componentNames: string[]
 
 export const componentsTypeTemplate = {
   filename: 'types/components.d.ts' as const,
+  dependsOn: [],
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, join(nuxt.options.buildDir, 'types'), nuxt.options.experimental.typescriptPlugin)
+    const globalComponentNames = new Set<string>()
+    const islandComponentNames = new Set<string>()
+    for (const component of app.components) {
+      if (component.global) {
+        globalComponentNames.add(component.pascalName)
+        globalComponentNames.add(`Lazy${component.pascalName}`)
+      }
+      if (nuxt.options.experimental.componentIslands && (component.island || (component.mode === 'server' && !app.components.some(c => c.pascalName === component.pascalName && c.mode === 'client')))) {
+        islandComponentNames.add(component.pascalName)
+      }
+    }
+    const literals = [
+      globalComponentNames.size ? `    componentName: ${[...globalComponentNames].map(name => genString(name)).join(' | ')}` : '',
+      islandComponentNames.size ? `    islandName: ${[...islandComponentNames].map(name => genString(name)).join(' | ')}` : '',
+    ].filter(Boolean)
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
@@ -249,7 +269,15 @@ ${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(met
 declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
-
+${literals.length
+      ? `
+declare module '#app' {
+  interface NuxtAppLiterals {
+${literals.join('\n')}
+  }
+}
+`
+      : ''}
 export {}
 `
   },
@@ -257,6 +285,7 @@ export {}
 
 export const componentsMetadataTemplate: NuxtTemplate = {
   filename: 'components.json',
+  dependsOn: [],
   write: true,
   getContents: ({ app }) => JSON.stringify(app.components, null, 2),
 }

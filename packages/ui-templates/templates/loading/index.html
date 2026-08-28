@@ -65,10 +65,12 @@
       if (typeof window.fetch === 'undefined') {
         setTimeout(() => window.location.reload(), 200)
       } else {
+        // Backs off so a slow build is not polled five times a second for its whole duration.
+        let delay = 200
         const check = async () => {
           try {
             const body = await window
-              .fetch(window.location.href)
+              .fetch(window.location.href, { headers: { accept: 'text/html' } })
               .then(r => r.text())
             if (!body.includes('__NUXT_LOADING__')) {
               return window
@@ -76,7 +78,8 @@
                 .reload()
             }
           } catch {}
-          setTimeout(check, 200)
+          setTimeout(check, delay)
+          delay = Math.min(Math.round(delay * 1.5), 1000)
         }
         check()
       }

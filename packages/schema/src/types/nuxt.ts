@@ -1,8 +1,8 @@
 import type { AsyncLocalStorage } from 'node:async_hooks'
-import type { Hookable } from 'hookable'
-import type { Ignore } from 'ignore'
+import type { NuxtHookRegistry } from './hookable.ts'
+import type { NuxtIgnoreMatcher } from './ignore.ts'
 import type { NuxtModule } from './module.ts'
-import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks.ts'
+import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, WatchEvent } from './hooks.ts'
 import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
@@ -29,6 +29,21 @@ export interface NuxtPlugin {
 
 type TemplateDefaultOptions = Record<string, any>
 
+/**
+ * A well-known input a template can declare it depends on:
+ *
+ * - `'pages'`: the contents of the files backing `app.pages`
+ * - `'plugins'`: the contents of the files listed in `app.plugins`
+ */
+export type NuxtTemplateDependency = 'pages' | 'plugins'
+
+/** A watched file event that may require regenerating templates. */
+export interface NuxtTemplateChange {
+  event: WatchEvent
+  /** absolute path of the file the event was emitted for */
+  path: string
+}
+
 export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   /** resolved output file path (generated) */
   dst?: string
@@ -43,6 +58,19 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   getContents?: (data: { nuxt: Nuxt, app: NuxtApp, options: Options }) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean
+  /**
+   * The watched inputs the output of this template can depend on, beyond `nuxt.options` and the
+   * resolved structure of the app (which files exist, and where).
+   *
+   * Set this to `[]` if the template never reads the contents of a watched file. In dev mode
+   * Nuxt then skips recompiling it when a file changes without any file being added or removed.
+   * List well-known keys (such as `'pages'` or `'plugins'`) if the template reads those sources,
+   * or pass a function to decide per change.
+   *
+   * A template that declares nothing is regenerated on every change, unless it has a `src`, in
+   * which case it is regenerated only when that source file changes.
+   */
+  dependsOn?: NuxtTemplateDependency[] | ((change: NuxtTemplateChange, ctx: { nuxt: Nuxt, app: NuxtApp, options: Options }) => boolean)
   /**
    * The source path of the template (to try resolving dependencies from).
    * @internal
@@ -96,8 +124,10 @@ export interface NuxtBuildOutputs {
   /** Module body re-exporting the SSR app entry. */
   serverEntry: () => string | Promise<string>
   /**
-   * Module body for the per-component SSR styles map. Defaults to
-   * `export default {}` when the build produces no inline styles.
+   * Module body for the per-component SSR styles map, plus an `inlinedCSS`
+   * named export mapping each emitted CSS file whose `<link>` may be dropped at
+   * render time to the groups of module IDs that inline its contents. Defaults
+   * to an empty map for both.
    */
   ssrStyles: () => string | Promise<string>
   /** Serialized client manifest for `vue-bundle-renderer`. */
@@ -114,7 +144,7 @@ export interface Nuxt {
   // Private fields.
   '__name': string
   '_version': string
-  '_ignore'?: Ignore
+  '_ignore'?: NuxtIgnoreMatcher
   '_dependencies'?: Set<string>
   '~runtimeDependencies'?: string[]
   '_debug'?: NuxtDebugContext
@@ -135,6 +165,26 @@ export interface Nuxt {
   '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
 
   /**
+   * Nitro majors recorded for server plugins registered via `addServerPlugin`,
+   * keyed by normalized specifier, resolved file path and alias-resolved path.
+   * Absent entries are nitro v2.
+   * @internal
+   */
+  '_serverPluginVersions'?: Map<string, 2 | 3>
+  /**
+   * Nitro majors recorded for server auto-import sources, scanned directories and
+   * server template ids. Absent entries are nitro v2.
+   * @internal
+   */
+  '_serverImportVersions'?: Map<string, 2 | 3>
+  /**
+   * Server registrations kit skipped because they target a newer nitro major than
+   * the host provides. Recorded for devtools and tests.
+   * @internal
+   */
+  '_skippedNitroRegistrations'?: Array<{ api: string, version: number, host: number | undefined }>
+
+  /**
    * The Node HTTP(S) server the dev server is listening on, captured from the
    * `listen` hook. Builders use it to attach their HMR websocket to the same
    * server (and therefore the same port and certificate) as the app.
@@ -149,7 +199,7 @@ export interface Nuxt {
 
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions
-  'hooks': Hookable<NuxtHooks>
+  'hooks': NuxtHookRegistry<NuxtHooks>
   'hook': Nuxt['hooks']['hook']
   'callHook': Nuxt['hooks']['callHook']
   'addHooks': Nuxt['hooks']['addHooks']

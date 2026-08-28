@@ -333,6 +333,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        serialize,
         middleware,
         ...fetchOptions
       } = merged
@@ -368,6 +369,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        serialize,
         middleware,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
       }
