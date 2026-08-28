@@ -1,12 +1,14 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, normalizeRoutes, relativizeToParent } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
 import type { InputFile } from 'unrouting'
+import fc from 'fast-check'
+import { joinURL, withoutTrailingSlash } from 'ufo'
 
 const mockNuxt = vi.hoisted(() => ({
   options: {
@@ -448,6 +450,57 @@ describe('pages:relativizeToParent', () => {
   ]
   it.each(tests)('should relativize %s + %s to %s', (parentFullPath, childPath, expected) => {
     expect(relativizeToParent(parentFullPath, childPath)).toBe(expected)
+  })
+
+  const segment = fc.constantFrom(
+    'a', 'b', 'foo', 'foo-bar', 'foobar', '测试', '%E6%B5%8B', 'a.b', '(group)',
+    ':id', ':id()', ':id?', ':id+', ':id*', ':id(\\d+)', ':slug()', ':slug?', ':pathMatch(.*)*',
+  )
+  const routePath = fc.array(segment, { maxLength: 4 }).map(segments => '/' + segments.join('/'))
+  const parentPath = fc.oneof(routePath, routePath.map(path => path === '/' ? path : path + '/'))
+  const canonicalize = (path: string) => withoutTrailingSlash(path.replace(/:(\w+)\(\)([+*?]?)/g, ':$1$2')) || '/'
+  const splitSegments = (path: string) => {
+    const segments = canonicalize(path).split('/')
+    return segments.at(-1) === '' ? segments.slice(0, -1) : segments
+  }
+
+  it('should return a remainder that rejoins with the parent to give the child path', () => {
+    fc.assert(fc.property(parentPath, routePath, (parentFullPath, childPath) => {
+      const remainder = relativizeToParent(parentFullPath, childPath)
+      fc.pre(remainder !== undefined)
+      expect(canonicalize(joinURL(parentFullPath, remainder!))).toBe(canonicalize(childPath))
+    }), { numRuns: 1000 })
+  })
+
+  it('should always relativize a child path that extends the parent path', () => {
+    fc.assert(fc.property(parentPath, fc.array(segment, { minLength: 1, maxLength: 3 }), (parentFullPath, extraSegments) => {
+      const childPath = joinURL(parentFullPath, extraSegments.join('/'))
+      expect(relativizeToParent(parentFullPath, childPath)).toBe(extraSegments.join('/'))
+    }), { numRuns: 1000 })
+  })
+
+  it('should only return undefined for a child path detached from the parent', () => {
+    fc.assert(fc.property(parentPath, routePath, (parentFullPath, childPath) => {
+      const parentSegments = splitSegments(parentFullPath)
+      const childSegments = splitSegments(childPath)
+      const extendsParent = parentSegments.every((segment, index) => segment === childSegments[index])
+      expect(relativizeToParent(parentFullPath, childPath) !== undefined).toBe(extendsParent)
+    }), { numRuns: 1000 })
+  })
+
+  it('should resolve every route path in a page tree to a normalized absolute path', () => {
+    const page: fc.Arbitrary<NuxtPage> = fc.letrec<{ page: NuxtPage }>(tie => ({
+      page: fc.record({
+        path: fc.oneof(segment, segment.map(s => '/' + s)),
+        children: fc.oneof(fc.constant(undefined), fc.array(tie('page'), { maxLength: 2 })),
+      }),
+    })).page
+    fc.assert(fc.property(page, (page) => {
+      for (const path of resolveRoutePaths(page)) {
+        expect(path.startsWith('/')).toBe(true)
+        expect(path).not.toContain('//')
+      }
+    }), { numRuns: 1000 })
   })
 })
 

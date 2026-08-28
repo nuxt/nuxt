@@ -242,6 +242,7 @@ catalogs:
     eslint-plugin-no-only-tests: 3.4.0
     eslint-plugin-perfectionist: 5.10.1
     eslint-typegen: 2.3.1
+    fast-check: 4.9.0
     h3: 2.0.1-rc.22 # intentionally pinned to match nitro's dependency
     h3-next: 'npm:h3@2.0.1-rc.22' # intentionally pinned to match nitro's dependency
     happy-dom: 20.11.6
