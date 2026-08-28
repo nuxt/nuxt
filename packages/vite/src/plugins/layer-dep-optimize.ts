@@ -1,41 +1,48 @@
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { join, normalize } from 'pathe'
-import { getLayerDirectories } from '@nuxt/kit'
 
-export function LayerDepOptimizePlugin (nuxt: Nuxt): Plugin | undefined {
-  if (!nuxt.options.dev) {
-    return
-  }
+import { installedLayerScanEntries, resolveOptimizeDepsInclude } from '../utils/layer-deps.ts'
+import { userOptimizeDepsInclude } from './optimize-deps-hint.ts'
 
-  // TODO: this may no longer be needed with most recent vite version
-  // Identify which layers will need to have an extra resolve step.
-  const layerDirs: string[] = []
-  const delimitedRootDir = nuxt.options.rootDir + '/'
-  for (const dirs of getLayerDirectories(nuxt)) {
-    if (dirs.app !== nuxt.options.srcDir && !dirs.app.startsWith(delimitedRootDir)) {
-      layerDirs.push(dirs.app)
-    }
-  }
+/**
+ * Pre-bundles dependencies of layers installed in `node_modules`, which Vite would
+ * otherwise serve raw.
+ *
+ * Runs on resolved environment config so `include` entries added by modules through
+ * `vite:extendConfig`, or by other plugins, are rewritten too.
+ */
+export function LayerDepOptimizePlugin (nuxt: Nuxt): Plugin {
+  return {
+    name: 'nuxt:optimize-layer-deps',
+    enforce: 'post',
 
-  if (layerDirs.length > 0) {
-    // Reverse so longest/most specific directories are searched first
-    const dirs = layerDirs.toSorted().reverse()
-    return {
-      name: 'nuxt:optimize-layer-deps',
-      enforce: 'pre',
-      resolveId: {
-        async handler (source, _importer) {
-          if (!_importer) { return }
-          const importer = normalize(_importer)
-          const layerIndex = dirs.findIndex(dir => importer.startsWith(dir))
-          // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
-          if (layerIndex !== -1) {
-            dirs.splice(layerIndex, 1)
-            await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
+    async configEnvironment (name, config) {
+      if (name !== 'client') { return }
+
+      const scanEntries = installedLayerScanEntries(nuxt)
+      if (!scanEntries.length) { return }
+
+      config.optimizeDeps ||= {}
+
+      const entries = config.optimizeDeps.entries
+      config.optimizeDeps.entries = [...typeof entries === 'string' ? [entries] : entries || [], ...scanEntries]
+
+      const include = config.optimizeDeps.include
+      if (include?.length) {
+        const resolved = await resolveOptimizeDepsInclude(nuxt, include)
+
+        // rewritten entries must stay attributable to the user in `NUXT_B7002`
+        const userInclude = userOptimizeDepsInclude.get(nuxt)
+        if (userInclude) {
+          for (const [index, entry] of include.entries()) {
+            if (resolved[index] !== entry && userInclude.includes(entry)) {
+              userInclude.push(resolved[index]!)
+            }
           }
-        },
-      },
-    }
+        }
+
+        config.optimizeDeps.include = resolved
+      }
+    },
   }
 }
