@@ -467,7 +467,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         if (values.handler !== currentData._hash?.handler) {
           warnings.push(`different handler`)
         }
-        for (const opt of ['transform', 'pick', 'getCachedData', 'serialize'] as const) {
+        for (const opt of ['transform', 'pick', 'getCachedData', 'serialize', 'middleware'] as const) {
           if (values[opt] !== currentData._hash![opt]) {
             warnings.push(`different \`${opt}\` option`)
           }
@@ -1087,6 +1087,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     pick: options.pick ? hashKey(options.pick) : undefined,
     getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
     serialize: String(options.serialize ?? true),
+    middleware: (options.middleware as Array<(...args: any[]) => any> | undefined)?.map(fn => hashFunction(fn)).join(',') || undefined,
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
