@@ -224,6 +224,7 @@ catalogs:
     eslint-plugin-no-only-tests: 3.4.0
     eslint-plugin-perfectionist: 5.10.1
     eslint-typegen: 2.3.1
+    fast-check: 4.9.0
     h3: 1.15.11
     happy-dom: 20.12.0
     html-validate: 11.10.0

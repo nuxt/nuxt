@@ -81,6 +81,7 @@
     "eslint-plugin-no-only-tests": "catalog:dev",
     "eslint-plugin-perfectionist": "catalog:dev",
     "eslint-typegen": "catalog:dev",
+    "fast-check": "catalog:dev",
     "get-port-please": "catalog:build",
     "h3": "catalog:dev",
     "happy-dom": "catalog:dev",
