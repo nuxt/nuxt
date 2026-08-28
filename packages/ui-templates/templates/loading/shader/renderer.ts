@@ -12,7 +12,9 @@ const WINTER_VERTICES = TERRAIN_VERTICES + SNOWFLAKES * 6
 const MAX_RENDER_WIDTH = 2688
 const MAX_PIXEL_RATIO = 1.75
 
-const FRAME_INTERVAL_MS = 16
+// 30fps: the scene is ambient dust behind a lockup, and halving the frame
+// rate halves what it takes from anything else competing for the GPU
+const FRAME_INTERVAL_MS = 33
 const POINTER_FOLLOW_SECONDS = 0.22
 const POINTER_HOLD_SECONDS = 0.35
 /** shockwaves per second while the lockup is hovered */

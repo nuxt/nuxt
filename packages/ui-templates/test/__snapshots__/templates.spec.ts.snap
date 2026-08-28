@@ -593,56 +593,14 @@ svg {
 .nuxt-version {
   color: var(--nuxt-accent);
 }
-.nuxt-progress {
+.nuxt-loader-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1;
-}
-.nuxt-progress-status {
-  margin: 0 0 14px;
-  text-align: center;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  color: var(--nuxt-dim);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.nuxt-progress[data-mode="determinate"] .nuxt-progress-status {
-  opacity: 1;
-}
-.nuxt-loader-bar {
   height: 2px;
-  overflow: hidden;
-  background: rgba(0, 220, 130, 0.16);
-  width: 100% !important;
-}
-.nuxt-loader-bar > span {
-  display: block;
-  height: 100%;
-  width: 32%;
   background: var(--nuxt-mint);
-  transform: translateX(-120%);
-  animation: nuxt-bar 1.8s ease-in-out infinite;
-}
-.nuxt-progress[data-mode="determinate"] .nuxt-loader-bar > span {
-  width: var(--nuxt-progress, 0);
-  transform: none;
-  animation: none;
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-@keyframes nuxt-bar {
-  0% {
-    transform: translateX(-120%);
-  }
-  to {
-    transform: translateX(360%);
-  }
 }
 .nuxt-season {
   position: fixed;
@@ -682,13 +640,6 @@ svg {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-@media (prefers-reduced-motion: reduce) {
-  .nuxt-loader-bar > span {
-    width: 100%;
-    transform: none;
-    animation: none;
-  }
-}
 @media (prefers-color-scheme: light) {
   :root {
     --nuxt-mist: rgba(2, 4, 32, 0.76);
@@ -701,9 +652,6 @@ svg {
   }
   .nuxt-wordmark {
     color: #020420;
-  }
-  .nuxt-loader-bar {
-    background: rgba(0, 220, 130, 0.22);
   }
 }
 "
@@ -751,14 +699,6 @@ svg {
   touch-action: none;
   opacity: 0;
   transition: opacity 0.4s ease;
-}
-@keyframes nuxt-bar {
-  0% {
-    transform: translateX(-120%);
-  }
-  to {
-    transform: translateX(360%);
-  }
 }
 @media (prefers-color-scheme: light) {
   :root {
