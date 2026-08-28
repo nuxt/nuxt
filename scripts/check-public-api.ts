@@ -103,6 +103,14 @@ const typeImportPatterns = [
 /** A bare import with no bindings, which still pulls in the package's augmentations. */
 const augmentationPatterns = [/^\s*import\s+["']([^"']+)["'];?$/gm]
 
+/**
+ * An interface whose base type collapsed onto its own name, which TypeScript rejects with
+ * `TS2310`. This happens when a file that augments a module through an import alias
+ * (`interface X extends _X {}`) is inlined into the bundle that declares `X`, and the alias is
+ * rewritten to the bare local name.
+ */
+const selfReferentialBase = /\binterface\s+(\w+)\s+extends\s+\1\s*[<{]/g
+
 const root = new URL('../', import.meta.url)
 
 function specifiersMatching (contents: string, patterns: RegExp[]) {
@@ -131,6 +139,16 @@ for (const [file, entrypoint] of Object.entries(entrypoints)) {
   const found = {
     types: specifiersMatching(contents, typeImportPatterns),
     augmentations: specifiersMatching(contents, augmentationPatterns),
+  }
+
+  const selfReferential = [...new Set([...contents.matchAll(selfReferentialBase)].map(match => match[1]!))].sort()
+  if (selfReferential.length) {
+    failed = true
+    console.error(`[check-public-api] ${file} declares interfaces that recursively reference themselves as a base type:`)
+    for (const name of selfReferential) {
+      console.error(`  - ${name}`)
+    }
+    console.error('Keep the augmenting file out of the bundle, or reference the base type in a way that survives inlining.')
   }
 
   for (const kind of ['types', 'augmentations'] as const) {

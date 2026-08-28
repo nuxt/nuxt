@@ -10,7 +10,7 @@ import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHoo
 import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, PageMeta } from '#app'
+import type { NuxtError, NuxtSSRContext, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -472,6 +472,13 @@ describe('runtimeConfig', () => {
     expectTypeOf(injectedConfig.privateConfig).toEqualTypeOf<string>()
     expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
     expectTypeOf(injectedConfig.unknown).toEqualTypeOf<unknown>()
+  })
+
+  it('reaches the payload and SSR context types', () => {
+    const payloadConfig = useNuxtApp().payload.config!
+    expectTypeOf(payloadConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
+    expectTypeOf(payloadConfig.public.testConfig).toEqualTypeOf<number>()
+    expectTypeOf<NonNullable<NuxtSSRContext['runtimeConfig']>['public']['ids']>().toEqualTypeOf<(1 | 2 | 3)[]>()
   })
 })
 
