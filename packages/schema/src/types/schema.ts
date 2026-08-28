@@ -1939,7 +1939,7 @@ export interface ConfigSchema {
      *
      * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
      */
-    typeCheck: boolean | 'build'
+    typeCheck: boolean | 'build' | 'dev'
 
     /**
      * Extend the generated tsconfig files with shared options.

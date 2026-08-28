@@ -11,7 +11,7 @@ export function TypeCheckPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:type-check',
     applyToEnvironment: environment => environment.name === 'client' && !environment.config.isProduction,
     apply: () => {
-      return !nuxt.options.test && nuxt.options.typescript.typeCheck === true
+      return !nuxt.options.test && (nuxt.options.typescript.typeCheck === true || nuxt.options.typescript.typeCheck === 'dev')
     },
     configResolved (config) {
       try {
