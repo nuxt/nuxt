@@ -1,28 +1,36 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, relativizeToParent } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, normalizeRoutes, relativizeToParent } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
-import type { NuxtPage } from 'nuxt/schema'
+import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
 import type { InputFile } from 'unrouting'
 
+const mockNuxt = vi.hoisted(() => ({
+  options: {
+    experimental: {
+      normalizePageNames: false,
+    },
+  },
+}))
 vi.mock('@nuxt/kit', async (original) => {
   const mod = await original<typeof import('@nuxt/kit')>()
   return {
     ...mod,
-    useNuxt: vi.fn(() => {
-      return {
-        options: {
-          experimental: {
-            normalizePageNames: false,
-          },
-        },
-      }
-    }),
+    useNuxt: vi.fn(() => mockNuxt),
   }
 })
+
+/** `augmentPages`, tied to the mocked nuxt instance the way `augmentAndResolve` ties it to a real one. */
+function augmentForNuxt (pages: NuxtPage[], vfs: Record<string, string>, ctx: Parameters<typeof augmentPages>[2] = {}) {
+  return augmentPages(pages, vfs, { nuxt: mockNuxt as unknown as Nuxt, ...ctx })
+}
+
+function dynamicMetaFor (page: NuxtPage) {
+  return getDynamicPageMeta(page, dynamicPageMetaCache(mockNuxt as unknown as Nuxt))
+}
 
 export function generateRoutesFromFiles (files: InputFile[], options: PagesContextOptions = {}): NuxtPage[] {
   if (!files.length) { return [] }
@@ -46,6 +54,18 @@ describe('pages:generateRoutesFromFiles', () => {
   const normalizedOverrideMetaResults: Record<string, any> = {}
 
   const enUSComparator = new Intl.Collator('en-US')
+  // dynamic keys are recorded per file rather than on the page, so surface them for `output`
+  function withDynamicMeta (routes: NuxtPage[]): Array<NuxtPage & { dynamic?: string[] }> {
+    return routes.map((route) => {
+      const dynamic = dynamicMetaFor(route)
+      return {
+        ...route,
+        ...dynamic.size ? { dynamic: [...dynamic] } : {},
+        ...route.children ? { children: withDynamicMeta(route.children) } : {},
+      }
+    })
+  }
+
   function sortRoutes (routes: NuxtPage[]) {
     for (const route of routes) {
       route.children &&= sortRoutes(route.children)
@@ -94,7 +114,7 @@ describe('pages:generateRoutesFromFiles', () => {
             }
           })
 
-          await augmentPages(result, vfs, { extraExtractionKeys: new Set(['extracted']) })
+          await augmentForNuxt(result, vfs, { extraExtractionKeys: new Set(['extracted']) })
         } catch (error: any) {
           expect(error.message).toEqual(test.error)
         }
@@ -103,7 +123,7 @@ describe('pages:generateRoutesFromFiles', () => {
       }
 
       if (result) {
-        expect.soft(sortRoutes(result)).toEqual(test.output ? sortRoutes(test.output) : undefined)
+        expect.soft(withDynamicMeta(sortRoutes(result))).toEqual(test.output ? sortRoutes(test.output) : undefined)
 
         normalizedResults[test.description] = normalizeRoutes(result, new Set(), {
           clientComponentRuntime: '<client-component-runtime>',
@@ -432,7 +452,6 @@ describe('pages:relativizeToParent', () => {
 })
 
 describe('page:extends', () => {
-  const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
   it('should preserve distinct metadata for multiple routes referencing the same file', async () => {
     const files: NuxtPage[] = [
       { path: 'home', file: `pages/index.vue` },
@@ -448,24 +467,26 @@ describe('page:extends', () => {
             </script>
           `]),
     ) as Record<string, string>
-    await augmentPages(files, vfs)
+    await augmentForNuxt(files, vfs)
     expect(files).toEqual([
       {
         path: 'home',
         file: `pages/index.vue`,
-        meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
       },
       {
         path: 'home1',
         file: `pages/index.vue`,
-        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: true },
+        meta: { test: true },
       },
       {
         path: 'home2',
         file: `pages/index.vue`,
-        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), snap: true },
+        meta: { snap: true },
       },
     ])
+    for (const file of files) {
+      expect(dynamicMetaFor(file)).toEqual(new Set(['meta']))
+    }
   })
 
   it('keeps an explicit route name/path when reusing a file with a `definePageMeta` name (#27358)', async () => {
@@ -480,7 +501,7 @@ describe('page:extends', () => {
         </script>
       `,
     }
-    await augmentPages(files, vfs)
+    await augmentForNuxt(files, vfs)
     // first route takes the file's name; the second keeps its own, else both are `test` -> dropped
     expect(files[0]!.name).toBe('test')
     expect(files[1]!.name).toBe('testExtend')
@@ -490,12 +511,10 @@ describe('page:extends', () => {
 
 const pagesDir = 'pages'
 const layerDir = 'layer/pages'
-const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
-
 export const pageTests: Array<{
   description: string
   files?: Array<{ path: string, template?: string, meta?: Record<string, any> }>
-  output?: NuxtPage[]
+  output?: Array<NuxtPage & { dynamic?: string[] }>
   it?: TestAPI
   normalized?: Record<string, any>[]
   error?: string
@@ -1033,7 +1052,7 @@ export const pageTests: Array<{
         name: 'index',
         path: '/',
         file: `${pagesDir}/index.vue`,
-        meta: { [DYNAMIC_META_KEY]: new Set(['name', 'alias', 'redirect', 'meta']) },
+        dynamic: ['name', 'alias', 'redirect', 'meta'],
         children: [],
       },
     ],
@@ -1063,7 +1082,7 @@ export const pageTests: Array<{
         alias: ['sweet-home'],
         redirect: '/',
         children: [],
-        meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
+        dynamic: ['meta'],
       },
     ],
   },
@@ -1186,7 +1205,8 @@ export const pageTests: Array<{
         path: '/page-with-meta',
         file: `${pagesDir}/page-with-meta.vue`,
         children: [],
-        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: 1, extracted: { foo: 'foo', bar: 'bar' } },
+        meta: { test: 1, extracted: { foo: 'foo', bar: 'bar' } },
+        dynamic: ['meta'],
       },
     ],
   },
