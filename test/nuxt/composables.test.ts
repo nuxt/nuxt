@@ -841,7 +841,6 @@ describe('routing utilities: `navigateTo`', () => {
       navigateTo('https://example.com', { open: {} })
       expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
     } finally {
-      config.app.baseURL = originalBaseURL
       open.mockRestore()
     }
   })
