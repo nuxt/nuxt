@@ -626,11 +626,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       }
 
       const asyncReturn: _AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)> = {
-        data: isKeyReactive
-          ? opts.deep
-            ? writableComputedRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>)
-            : writableShallowRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>)
-          : asyncData.data as Ref<ResT>,
+        data: writableComputedRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>, !opts.deep),
         pending: writableComputedRef(() => nuxtApp._asyncData[key.value]?.pending as Ref<boolean>),
         status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status as Ref<AsyncDataRequestStatus>),
         error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
@@ -679,8 +675,8 @@ export const useLazyAsyncData: UseAsyncData = (createUseAsyncData as unknown as 
   _functionName: 'useLazyAsyncData',
 })
 
-function writableComputedRef<T> (getter: () => Ref<T>): Ref<T> {
-  return computed({
+function writableComputedRef<T> (getter: () => Ref<T>, shallow = false): Ref<T> {
+  const forwardedRef = computed({
     get () {
       return getter()?.value as T
     },
@@ -691,29 +687,14 @@ function writableComputedRef<T> (getter: () => Ref<T>): Ref<T> {
       }
     },
   }) as unknown as Ref<T>
-}
 
-function writableShallowRef<T> (getter: () => Ref<T>): Ref<T> {
-  return new Proxy(shallowRef(), {
-    get (target, property, receiver) {
-      if (property === 'value') {
-        // Track the public shallow ref so `triggerRef` works on the wrapper.
-        void target.value
-        return getter()?.value as T
-      }
-      return Reflect.get(target, property, receiver)
-    },
-    set (target, property, value, receiver) {
-      if (property === 'value') {
-        const ref = getter()
-        if (ref) {
-          ref.value = value
-        }
-        return true
-      }
-      return Reflect.set(target, property, value, receiver)
-    },
-  }) as Ref<T>
+  if (shallow) {
+    // Give the forwarding ref the same reactivity depth as the ref it forwards to, so
+    // `isShallow()` reports correctly and `triggerRef()` on it forces watchers to re-run.
+    (forwardedRef as Ref<T> & { __v_isShallow?: boolean }).__v_isShallow = true
+  }
+
+  return forwardedRef
 }
 
 function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (() => any), fetcher: () => any): boolean {
