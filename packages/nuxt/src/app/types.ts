@@ -8,7 +8,7 @@ import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { H3Event, HTTPError } from '@nuxt/nitro-server/h3'
 import type { Hookable } from 'hookable'
-import type { RuntimeConfig } from 'nuxt/schema'
+import type { RuntimeConfig } from '@nuxt/schema'
 
 type HookResult = Promise<void> | void
 
