@@ -149,7 +149,7 @@ export type OpenWindowFeatures = {
   & XOR<{ top?: number }, { screenY?: number }>
 
 export type OpenOptions = {
-  target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
+  target?: '_blank' | '_parent' | '_self' | '_top' | (string & {})
   windowFeatures?: OpenWindowFeatures
 }
 

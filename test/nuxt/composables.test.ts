@@ -834,6 +834,15 @@ describe('routing utilities: `navigateTo`', () => {
       open.mockRestore()
     }
   })
+  it('navigateTo should default `open.target` to `_blank`', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      navigateTo('https://example.com', { open: {} })
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+    } finally {
+      open.mockRestore()
+    }
+  })
   it('reloadNuxtApp should disallow paths with data/script URLs', () => {
     const urls = [
       'javascript:alert("hi")',
