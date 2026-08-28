@@ -6,6 +6,7 @@ import { isPlainObject } from '@vue/shared'
 import { hashKey } from '../utils/hash'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
+import { useRequestFetch } from './ssr'
 import { dataDiagnostics } from '../diagnostics/data'
 import type { NuxtError } from './error'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
@@ -367,7 +368,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       }
 
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
-        const _$fetch: $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || $fetch
+        const _$fetch: $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || (import.meta.server ? useRequestFetch() : $fetch)
 
         const resolvedOptions = { signal, ..._fetchOptions } as Record<string, unknown>
         for (const key of MAYBE_REF_OR_GETTER_OPTION_KEYS) {
