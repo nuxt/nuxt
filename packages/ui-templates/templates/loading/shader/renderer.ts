@@ -8,6 +8,13 @@ const TERRAIN_VERTICES = COLS * ROWS * 6
 const SNOWFLAKES = 2200
 const WINTER_VERTICES = TERRAIN_VERTICES + SNOWFLAKES * 6
 
+/**
+ * A GPU that is blocklisted, virtualised or missing still yields a WebGL2
+ * context — backed by a software rasteriser. Rasterising this many particles on
+ * the CPU costs whole cores, so those renderers get the plain lockup instead.
+ */
+const SOFTWARE_RENDERERS = /swiftshader|llvmpipe|softpipe|software|basic render/i
+
 /** cap the backing store so huge displays don't pay for pixels nobody sees */
 const MAX_RENDER_WIDTH = 2688
 const MAX_PIXEL_RATIO = 1.75
@@ -320,6 +327,17 @@ export function createRenderer (
       powerPreference: 'low-power',
     })
     if (!context) { throw new Error('No WebGL2 context.') }
+
+    const debugInfo = context.getExtension('WEBGL_debug_renderer_info')
+    const name = String(
+      (debugInfo && context.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL))
+      || context.getParameter(context.RENDERER)
+      || '',
+    )
+    if (SOFTWARE_RENDERERS.test(name)) {
+      throw new Error(`Software renderer (${name}); falling back to the lockup.`)
+    }
+
     gl = context
 
     const vertex = compile(context, context.VERTEX_SHADER, vertexSource)
