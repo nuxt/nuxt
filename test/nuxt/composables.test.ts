@@ -855,6 +855,25 @@ describe('routing utilities: `navigateTo`', () => {
       open.mockRestore()
     }
   })
+  it('navigateTo should respect app.baseURL when opening internal routes', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    const config = useRuntimeConfig()
+    const originalBaseURL = config.app.baseURL
+    config.app.baseURL = '/docs/'
+    try {
+      navigateTo('/guide', { open: { target: '_blank' } })
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+
+      navigateTo({ path: '/guide' }, { open: { target: '_blank' } })
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+
+      navigateTo('https://example.com', { open: { target: '_blank' } })
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+    } finally {
+      config.app.baseURL = originalBaseURL
+      open.mockRestore()
+    }
+  })
   it('reloadNuxtApp should disallow paths with data/script URLs', () => {
     const urls = [
       'javascript:alert("hi")',
