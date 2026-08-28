@@ -8,14 +8,15 @@ import type { HookResult, RuntimeConfig, SharedAppConfig, TSReference } from 'nu
 /**
  * Per-channel toggles for `tracingChannel`. Extends Nitro's own
  * {@link TracingOptions} with a `nuxt` key for Nuxt-owned channels
- * (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). Channel names
+ * (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`,
+ * `nuxt.middleware`). Channel names
  * follow the [untracing](https://github.com/unjs/untracing) naming convention
  * (`{namespace}.{operation}`).
  *
  * @experimental Channel names, payload shapes, and option keys may change.
  */
 export interface NuxtTracingChannelOptions extends TracingOptions {
-  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). */
+  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`, `nuxt.middleware`). */
   nuxt?: boolean
 }
 

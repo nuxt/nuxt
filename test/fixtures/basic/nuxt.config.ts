@@ -8,6 +8,7 @@ import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   appId: 'nuxt-app-basic',
+  tracingChannel: true,
   extends: [
     './extends/node_modules/foo',
   ],

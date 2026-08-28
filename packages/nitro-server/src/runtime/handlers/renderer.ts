@@ -19,7 +19,7 @@ import { relative } from 'pathe'
 import '../context'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
-import { traceAsync } from '#app/internal/tracing'
+import { appendServerTimingHeader, traceAsync } from '#app/internal/tracing'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
 import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
@@ -151,6 +151,12 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(event)
 
+  const applyServerTiming = () => {
+    if (tracingChannelNuxt) {
+      appendServerTimingHeader(event.res.headers, ssrContext)
+    }
+  }
+
   ssrContext.head.push(appHead)
 
   if (ssrError) {
@@ -196,6 +202,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
     ssrContext.url = url + payloadURL.search
 
     if (import.meta.prerender && await payloadCache!.hasItem(ssrContext.url + '.json')) {
+      applyServerTiming()
       event.res.headers.set('content-type', 'application/json')
       const response = await payloadCache!.getItem(ssrContext.url + '.json') || undefined
       return new FastResponse(response?.body, response)
@@ -288,6 +295,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   if (appRenderedResult instanceof Promise) { await appRenderedResult }
 
   if (ssrContext['~renderResponse']) {
+    applyServerTiming()
     return returnRenderResponse(event, ssrContext['~renderResponse'])
   }
 
@@ -303,6 +311,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
       await payloadCache!.setItem(ssrContext.url + '.json', response)
     }
 
+    applyServerTiming()
     return new FastResponse(response.body, response)
   }
 
@@ -473,6 +482,7 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
+  applyServerTiming()
 
   return new FastResponse(renderHTMLDocument(htmlContext), event.res)
 }
@@ -488,6 +498,11 @@ async function renderStreamedResponse (ctx: {
   payloadURL: string | undefined
 }): Promise<ReadableStream<Uint8Array> | Response> {
   const { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
+  const applyServerTiming = () => {
+    if (tracingChannelNuxt) {
+      appendServerTimingHeader(event.res.headers, ssrContext)
+    }
+  }
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
   pushNoScriptsHints(ssrContext, NO_SCRIPTS)
@@ -595,6 +610,7 @@ async function renderStreamedResponse (ctx: {
       // Drop any preload `Link` header that targeted the streamed entry - the
       // redirect/response we are about to send does not need them.
       event.res.headers.delete('link')
+      applyServerTiming()
       return returnRenderResponse(event, ssrContext['~renderResponse'])
     }
     const r = ssrContext.nuxt?.hooks.callHook('app:error', error)
@@ -603,6 +619,7 @@ async function renderStreamedResponse (ctx: {
   }
   if (ssrContext['~renderResponse']) {
     event.res.headers.delete('link')
+    applyServerTiming()
     return returnRenderResponse(event, ssrContext['~renderResponse'])
   }
 
@@ -916,6 +933,7 @@ async function renderStreamedResponse (ctx: {
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
+  applyServerTiming()
 
   return new FastResponse(outputStream, event.res)
 }

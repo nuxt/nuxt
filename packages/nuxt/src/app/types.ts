@@ -198,6 +198,8 @@ export interface NuxtSSRContext extends SSRContext {
   ['~lazyHydratedModules']?: Set<string>
   /** @internal */
   ['~neverHydratedModules']?: Set<string>
+  /** @internal */
+  ['~serverTiming']?: Array<{ name: string, duration: number, description?: string }>
 }
 
 export interface NuxtIslandSlotResponse {

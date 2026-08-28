@@ -18,6 +18,7 @@ await setup({
   browser: true,
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
+    tracingChannel: true,
     hooks: {
       'modules:done' () {
         // TODO: investigate whether to upstream a fix to vite-plugin-vue or nuxt/test-utils
@@ -136,6 +137,14 @@ describe('route rules', () => {
 })
 
 describe('pages', () => {
+  it('emits Server-Timing entries for plugin and route middleware tracing', async () => {
+    const res = await fetch('/server-timing')
+    expect(res.status).toEqual(200)
+    const serverTiming = res.headers.get('server-timing') || ''
+    expect(serverTiming).toContain('nuxt.plugin.server-timing-test-plugin')
+    expect(serverTiming).toContain('nuxt.middleware.server-timing-test')
+  })
+
   it('exposes the current env name at runtime', async () => {
     const expectedEnvName = isDev ? 'development' : 'production'
     const { page } = await renderPage('/env-name')
