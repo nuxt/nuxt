@@ -2,7 +2,7 @@ import fs from 'node:fs'
 
 import { normalize, relative } from 'pathe'
 import { joinURL } from 'ufo'
-import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
+import { getLayerDirectories, resolveFiles, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
@@ -16,7 +16,7 @@ import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } fro
 
 import { getLoader } from '../core/utils/index.ts'
 import { linkToAlias, logger, offsetToPosition, toArray } from '../utils.ts'
-import type { NuxtPage } from 'nuxt/schema'
+import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
 // ---------------------------------------------------------------------------
 // PagesContext — persistent route tree for incremental dev-mode updates
@@ -148,6 +148,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
     extractSerializable: shouldExtractSerializablePageMeta(nuxt),
     fullyResolvedPaths: trackedFiles,
     originalPagePaths,
+    nuxt,
   }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
@@ -171,18 +172,25 @@ interface AugmentPagesContext {
   extraExtractionKeys?: Set<string>
   extractSerializable?: boolean
   originalPagePaths?: WeakMap<NuxtPage, string>
+  /** Owner of the dynamic page meta recorded during augmentation. */
+  nuxt?: Nuxt | null
 }
 
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
   ctx.augmentedPages ??= new Set()
+  const dynamicPageMeta = dynamicPageMetaCache(ctx.nuxt ?? tryUseNuxt())
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys, { extractSerializable: ctx.extractSerializable })
+      const dynamic = getDynamicMetaKeys(route.file, { extractSerializable: ctx.extractSerializable })
+      if (dynamic.size) {
+        dynamicPageMeta.set(normalize(route.file), dynamic)
+      } else {
+        dynamicPageMeta.delete(normalize(route.file))
+      }
       if (route.meta) {
-        const dynamic = [...getDynamicMeta(routeMeta.meta), ...getDynamicMeta(route.meta)]
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
-        addDynamicMeta(routeMeta.meta, dynamic)
       }
       if (route.rules) {
         routeMeta.rules = defu({}, routeMeta.rules, route.rules)
@@ -235,24 +243,45 @@ const PAGE_META_MACRO_NAMES = new Set(['definePageMeta', 'defineRouteRules'])
 // is what actually identifies calls.
 const HAS_PAGE_MACRO_RE = new RegExp(`\\b(?:${[...PAGE_META_MACRO_NAMES].join('|')})\\b`)
 export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
-/**
- * Marks which `definePageMeta` keys could not be statically extracted and must come from the
- * runtime macro module. A symbol keeps it out of `JSON.stringify`/`Object.keys` snapshots taken by
- * modules that observe `page.meta`, at the cost of being dropped by key-enumerating helpers
- * (`defu`, `klona`), so it is re-attached explicitly wherever meta is merged or cloned.
- */
-const DYNAMIC_META_KEY = Symbol.for('nuxt:dynamic-page-meta')
+const EMPTY_DYNAMIC_META: ReadonlySet<string> = new Set<string>()
 
-function getDynamicMeta (meta: Record<PropertyKey, any> | undefined): Set<string> {
-  const dynamic = meta?.[DYNAMIC_META_KEY] as Set<string> | undefined
-  return dynamic ?? new Set<string>()
+/**
+ * Which `definePageMeta` keys could not be statically extracted and must come from the runtime
+ * macro module, recorded per nuxt instance and keyed by page file.
+ *
+ * A page's dynamic keys are a pure function of its file, because extraction parses that file's
+ * contents and nothing else, and `page.file` is the one field that survives the page being
+ * rebuilt: modules in `pages:extend`/`pages:resolved` clone, merge and delete `page.meta` and
+ * replace the page objects wholesale (route localization emits a shallow copy per locale), while a
+ * page that loses its file loses its macro module too, which fails loudly instead of silently.
+ *
+ * Keyed by path with the latest extraction winning rather than by content, because
+ * `normalizeRoutes` has no contents to hash and augmentation always re-runs for a changed file
+ * before routes are generated, so a stale set cannot be observed. Scoped per instance because
+ * `extraPageMetaExtractionKeys` can differ between two instances sharing an absolute path.
+ */
+const dynamicPageMetaCaches = new WeakMap<object, Map<string, ReadonlySet<string>>>()
+// Used when pages are augmented outside of a nuxt instance, so that both sides agree on a cache.
+const detachedDynamicPageMeta = new Map<string, ReadonlySet<string>>()
+
+export function dynamicPageMetaCache (nuxt: Nuxt | null | undefined = tryUseNuxt()): Map<string, ReadonlySet<string>> {
+  if (!nuxt) {
+    return detachedDynamicPageMeta
+  }
+  let cache = dynamicPageMetaCaches.get(nuxt)
+  if (!cache) {
+    cache = new Map()
+    dynamicPageMetaCaches.set(nuxt, cache)
+  }
+  return cache
 }
 
-function addDynamicMeta (meta: Record<PropertyKey, any> | undefined, keys: Iterable<string>) {
-  const dynamic = new Set(keys)
-  if (meta && dynamic.size) {
-    meta[DYNAMIC_META_KEY] = dynamic
-  }
+/**
+ * Keys of `page` that `definePageMeta` sets at runtime rather than at build time. A page without a
+ * file has no macro module to defer to, so it never needs these and no fallback is required.
+ */
+export function getDynamicPageMeta (page: NuxtPage, cache = dynamicPageMetaCache()): ReadonlySet<string> {
+  return (page.file ? cache.get(normalize(page.file)) : undefined) ?? EMPTY_DYNAMIC_META
 }
 
 type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
@@ -374,19 +403,35 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
 const SERIALIZABLE_CACHE_SUFFIX = '\0serializable'
 const pageContentsCache: Record<string, string> = {}
 const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
+const dynamicMetaCache: Record<string, Set<string>> = {}
+
+// The extracted metadata differs between the two extraction modes, but the file contents do not.
+function getExtractCacheKey (absolutePath: string, options: ClassifyPageMetaOptions) {
+  return options.extractSerializable ? absolutePath + SERIALIZABLE_CACHE_SUFFIX : absolutePath
+}
+
+/**
+ * Keys a page file's `definePageMeta` call sets at runtime rather than at build time. Derived
+ * purely from file contents, so it is cached alongside the extracted metadata for that file.
+ */
+export function getDynamicMetaKeys (absolutePath: string, options: ClassifyPageMetaOptions = {}): ReadonlySet<string> {
+  return dynamicMetaCache[getExtractCacheKey(absolutePath, options)] ?? EMPTY_DYNAMIC_META
+}
+
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {
-  // The extracted metadata differs between the two extraction modes, but the file contents do not.
-  const cacheKey = options.extractSerializable ? absolutePath + SERIALIZABLE_CACHE_SUFFIX : absolutePath
+  const cacheKey = getExtractCacheKey(absolutePath, options)
 
   // set/update pageContentsCache, invalidate extractCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
     delete extractCache[absolutePath]
     delete extractCache[absolutePath + SERIALIZABLE_CACHE_SUFFIX]
+    delete dynamicMetaCache[absolutePath]
+    delete dynamicMetaCache[absolutePath + SERIALIZABLE_CACHE_SUFFIX]
   }
 
   if (cacheKey in extractCache && extractCache[cacheKey]) {
-    return cloneExtractedData(extractCache[cacheKey])
+    return klona(extractCache[cacheKey])
   }
 
   const loader = getLoader(absolutePath)
@@ -516,18 +561,11 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   }
 
   if (dynamicProperties.size) {
-    extractedData.meta ??= {}
-    addDynamicMeta(extractedData.meta, dynamicProperties)
+    dynamicMetaCache[cacheKey] = dynamicProperties
   }
 
   extractCache[cacheKey] = extractedData
-  return cloneExtractedData(extractedData)
-}
-
-function cloneExtractedData (data: Partial<Record<keyof NuxtPage, any>>) {
-  const cloned = klona(data)
-  addDynamicMeta(cloned.meta, getDynamicMeta(data.meta))
-  return cloned
+  return klona(extractedData)
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {
@@ -597,10 +635,11 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
 
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
   const nuxt = useNuxt()
+  const dynamicPageMeta = dynamicPageMetaCache(nuxt)
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const markedDynamic = getDynamicMeta(page.meta)
+      const markedDynamic = getDynamicPageMeta(page, dynamicPageMeta)
       const metaFiltered: Record<string, any> = {}
       let skipMeta = true
       for (const key in page.meta || {}) {
