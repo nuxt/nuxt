@@ -31,7 +31,7 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -56,6 +56,7 @@
     "nostics": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
+    "rou3": "catalog:build",
     "srvx": "catalog:nitro-runtime",
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",

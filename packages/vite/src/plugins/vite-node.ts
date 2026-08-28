@@ -9,9 +9,11 @@ import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { win32 as pathWin32 } from 'node:path'
 import { dirname, join, normalize } from 'pathe'
-import { bundlerDiagnostics, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import type { FetchResult } from 'vite-node'
+import type { Nitro } from 'nitro/types'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
@@ -185,7 +187,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
     }
   }
 
-  const nitro = useNitro()
+  const nitro = useNitro() as Nitro
 
   const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })

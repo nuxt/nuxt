@@ -4,7 +4,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isReferenceIdentifier, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
-import { pageDiagnostics } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { parseModule } from '../../core/utils/parse.ts'
 import { getStaticImports } from '../../core/utils/static-imports.ts'

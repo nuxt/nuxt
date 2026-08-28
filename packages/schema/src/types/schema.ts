@@ -8,12 +8,10 @@ import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
 import type { NuxtDotenvOptions, NuxtLayerSourceOptions } from './layers.ts'
 import type { CompatibilityDateSpec } from 'compatx'
-import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from '#app/types'
-import type { FetchOptions } from 'ofetch'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
@@ -38,6 +36,7 @@ import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
 import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
@@ -670,6 +669,18 @@ export interface ConfigSchema {
   buildDir: string
 
   /**
+   * Define the directory where generated types and `tsconfig.json` files will be placed.
+   *
+   * This defaults to your `buildDir`, and is separate from it so that the configurations
+   * referenced by your project `tsconfig.json` stay in place even when Nuxt builds
+   * elsewhere (as it does when building a project that has already been run in
+   * development).
+   *
+   * If a relative path is specified, it will be relative to your `rootDir`.
+   */
+  typesDir: string
+
+  /**
    * For multi-app projects, the unique id of the Nuxt application.
    *
    * Defaults to `nuxt-app`.
@@ -882,7 +893,7 @@ export interface ConfigSchema {
    * }
    * ```
    */
-  ignoreOptions: Options
+  ignoreOptions: NuxtIgnoreOptions
 
   /**
    * Any file in `pages/`, `layouts/`, `middleware/`, and `public/` directories will be ignored during the build process if its filename starts with the prefix specified by `ignorePrefix`. This is intended to prevent certain files from being processed or served in the built application. By default, the `ignorePrefix` is set to '-', ignoring any files starting with '-'.
@@ -1177,6 +1188,25 @@ export interface ConfigSchema {
     prerenderErrorPages: boolean | number[]
 
     /**
+     * Respond with an early 404 error for requests whose path cannot match any page route,
+     * without loading the Vue app, its plugins or middleware on the server.
+     *
+     * Page routes (including aliases) are converted to route patterns at build time and
+     * requests are checked against them before server-side rendering begins.
+     *
+     * This is opt-in as it can break apps that rely on runtime routing: pages added
+     * dynamically with `router.addRoute()` (on the server or the client), or route
+     * middleware that redirects unknown paths to existing ones. It also applies to
+     * `ssr: false` routes, which respond with a 404 error rather than the SPA shell when
+     * no page can match. The option is disabled automatically in development, when using
+     * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
+     * file may modify `routes`.
+     *
+     * @default false
+     */
+    early404: boolean
+
+    /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
      * @default false
@@ -1396,7 +1426,16 @@ export interface ConfigSchema {
         resetOnClear: boolean
       }
 
-      useFetch: Pick<FetchOptions, 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>
+      useFetch: {
+        /** Request timeout in milliseconds. */
+        timeout?: number
+        /** Number of times to retry a failed request, or `false` to disable retries. */
+        retry?: number | false
+        /** Delay between retries in milliseconds. */
+        retryDelay?: number | ((context: any) => number)
+        /** Response status codes that trigger a retry. */
+        retryStatusCodes?: number[]
+      }
     }
 
     /**
@@ -1423,6 +1462,19 @@ export interface ConfigSchema {
      * @default true
      */
     navigationRepaint: boolean
+
+    /**
+     * Transform top-level `await navigateTo()` calls in `<script setup>` into an early return
+     * from the compiled `setup()` function when the navigation succeeds.
+     *
+     * This stops execution of the rest of your setup code after a redirect, and renders
+     * a placeholder comment while the navigation proceeds, rather than continuing to run
+     * code (and potentially navigating again) after `navigateTo` has been called.
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     * @see [Nuxt Issue #23698](https://github.com/nuxt/nuxt/issues/23698)
+     */
+    navigateToEarlyReturn: boolean
 
     /**
      * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
@@ -1761,6 +1813,13 @@ export interface ConfigSchema {
    * @private
    */
   _majorVersion: number
+
+  /**
+   * The nitro major version the host Nuxt builds against, set before any module
+   * runs so `@nuxt/kit` version detection is reliable during module setup.
+   * @private
+   */
+  _nitroMajor: number
 
   /**
    *

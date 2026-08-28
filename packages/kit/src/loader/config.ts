@@ -13,10 +13,10 @@ import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm.ts'
-import { isLoaderError, loadJiti } from '../internal/jiti.ts'
+import { getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
-import { getAddDependencyCommand } from '../dependency.ts'
+import { ensureDependencyInstalled, getAddDependencyCommand } from '../dependency.ts'
 
 /**
  * A layer as it comes back from the underlying config loader, before its directory options have
@@ -73,6 +73,21 @@ export interface NuxtLayerResolverContext {
 export interface LoadNuxtConfigOptions {
   /** Directory to load `nuxt.config` from. @default process.cwd() */
   cwd?: string
+  /**
+   * Name of the config file to load, without an extension.
+   * @default 'nuxt.config'
+   */
+  configFile?: string
+  /**
+   * Name of the `.rc` file to load alongside the config file, or `false` to load none.
+   * @default '.nuxtrc'
+   */
+  rcFile?: string | false
+  /**
+   * Also load the user-level and workspace-level `.nuxtrc` files.
+   * @default true
+   */
+  globalRc?: boolean
   /**
    * Configuration applied above every layer, including the root project's own `nuxt.config`.
    * Excluded from the `rawConfig` snapshot passed to `onConfigResolved`.
@@ -205,6 +220,15 @@ async function assertRemoteLayerSupport (source: string, rootDir: string) {
   }
 }
 
+/**
+ * Whether a config load failed because `confbox` is not installed. It is an optional peer
+ * dependency, needed only to parse a `nuxt.config` written in yaml, toml, jsonc or json5.
+ */
+function isMissingConfbox (error: unknown): boolean {
+  const { code, message } = (error ?? {}) as { code?: unknown, message?: unknown }
+  return code === 'ERR_MODULE_NOT_FOUND' && typeof message === 'string' && message.includes(`'confbox`)
+}
+
 const merger = createDefu((obj, key, value) => {
   if (Array.isArray(obj[key]) && Array.isArray(value)) {
     obj[key] = obj[key].concat(value)
@@ -214,6 +238,7 @@ const merger = createDefu((obj, key, value) => {
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   const rootCwd = resolve(opts.cwd || process.cwd())
+  const configFileName = opts.configFile || 'nuxt.config'
 
   // Automatically detect and import layers from `~~/layers/` directory
   const localLayers = (await glob('layers/*', {
@@ -248,16 +273,34 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // `layers/` and also listed in `extends`) to avoid merging them twice (#34667)
   const seenLayerDirs = new Set<string>()
 
-  // Import config files with the runtime's own loader, falling back to jiti only for files it
-  // cannot load. This stands in for the equivalent fallback inside `c12` so that `jiti` is looked
+  // Import config files with the runtime's own loader, falling back to jiti for anything it will
+  // not load. This stands in for the equivalent fallback inside `c12` so that `jiti` is looked
   // for in the project as well as alongside `@nuxt/kit`, and so that a missing `jiti` is reported
   // with an install command. Resolved once per load, so a project without `jiti` is asked at most
   // once however many layers it has.
   let jitiPromise: Promise<Jiti | undefined> | undefined
+  // Looking for jiti can mean offering to install it, so that is reserved for a failure jiti is
+  // expected to fix; an ordinary mistake in a config file must never lead to a dependency prompt
+  const getJiti = async (install: boolean) => {
+    jitiPromise ??= loadJiti({ rootDir: rootCwd, install }).then(mod => mod?.createJiti(join(rootCwd, configFileName), {
+      interopDefault: true,
+      moduleCache: false,
+      extensions: [...CONFIG_EXTENSIONS],
+    }))
+    const jiti = await jitiPromise
+    // a lookup that was not allowed to install says nothing about one that is
+    if (!jiti && !install) {
+      jitiPromise = undefined
+    }
+    return jiti
+  }
   // Set once the runtime has turned a config file down. Every later layer in the same load is
   // likely to be written the same way, so go straight to jiti rather than paying a failed import
   // for each one
   let jitiImporter: ((id: string) => Promise<unknown>) | undefined
+  // Reported once `future.compatibilityVersion` is known, since that is part of deciding whether
+  // loading through jiti is worth mentioning at all
+  const jitiFallbacks: Array<{ filePath: string, error: string }> = []
 
   const importConfigFile = async (id: string) => {
     if (jitiImporter) {
@@ -270,37 +313,52 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     try {
       return await import(url.href)
     } catch (error) {
-      // A config file that threw while it was running has already had whatever effect it had, and
-      // jiti would only run it a second time and report its own error in place of the author's
-      if (!isLoaderError(error)) {
-        throw error
-      }
-      jitiPromise ??= loadJiti({ rootDir: rootCwd }).then(mod => mod?.createJiti(join(rootCwd, 'nuxt.config'), {
-        interopDefault: true,
-        moduleCache: false,
-        extensions: [...CONFIG_EXTENSIONS],
-      }))
-      const jiti = await jitiPromise
+      const missingGlobal = getMissingCjsGlobal(error)
+      // Whether jiti is the answer, or the file simply has a bug that a second loader will repeat
+      const jitiCanHelp = isLoaderError(error) || !!missingGlobal
+      // A config file is evaluated for its default export, so any failure is worth a second attempt
+      const jiti = await getJiti(jitiCanHelp)
       if (!jiti) {
-        throw configDiagnostics.NUXT_B5017({
+        if (!jitiCanHelp) {
+          throw error
+        }
+        const diagnostic = missingGlobal ? configDiagnostics.NUXT_B5021 : configDiagnostics.NUXT_B5017
+        throw diagnostic({
           filePath: id,
           error: error instanceof Error ? error.message : String(error),
           installCommand: await getAddDependencyCommand('jiti', rootCwd, { dev: true }),
           cause: error,
         })
       }
-      jitiImporter = id => jiti.import(id)
-      return jitiImporter(id)
+
+      let loaded: unknown
+      try {
+        loaded = await jiti.import(id)
+      } catch (jitiError) {
+        // jiti's error is only the better one where jiti was expected to get further; a repeat of
+        // the same failure keeps the native error and its untransformed stack
+        const repeated = missingGlobal && getMissingCjsGlobal(jitiError) === missingGlobal
+        throw jitiCanHelp && !repeated ? jitiError : error
+      }
+
+      jitiFallbacks.push({
+        filePath: id,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      if (isLoaderError(error)) {
+        jitiImporter = id => jiti.import(id)
+      }
+      return loaded
     }
   }
 
-  const resolved = await withDefineNuxtConfig(
+  const loadRootConfig = () => withDefineNuxtConfig(
     () => loadConfig<NuxtConfig>({
       name: 'nuxt',
-      configFile: 'nuxt.config',
-      rcFile: '.nuxtrc',
+      configFile: configFileName,
+      rcFile: opts.rcFile ?? '.nuxtrc',
       extend: { extendKey: ['theme', '_extends', 'extends'] },
-      globalRc: true,
+      globalRc: opts.globalRc ?? true,
       merger: merger as (...sources: Array<NuxtConfig | null | undefined>) => NuxtConfig,
       cwd: opts.cwd,
       overrides: opts.overrides,
@@ -346,7 +404,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
           const layer = await loadConfig<NuxtConfig>({
             cwd: aliased,
             name: 'nuxt',
-            configFile: 'nuxt.config',
+            configFile: configFileName,
             rcFile: false,
             extend: false,
             // Reuse the current load's importer so a nested layer is not loaded through a
@@ -360,6 +418,24 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       },
     }),
   )
+
+  const resolved = await loadRootConfig().catch(async (error) => {
+    if (!isMissingConfbox(error)) {
+      throw error
+    }
+    if (!await ensureDependencyInstalled('confbox', { rootDir: rootCwd, from: import.meta.url })) {
+      throw configDiagnostics.NUXT_B5022({
+        installCommand: await getAddDependencyCommand('confbox', rootCwd, { dev: true }),
+        cause: error,
+      })
+    }
+    // The abandoned load already recorded the layers it reached, and a layer it has seen resolves
+    // to an empty config on the way past
+    seenLayerDirs.clear()
+    extendsLocalLayerOrder.length = 0
+    return loadRootConfig()
+  })
+
   const { configFile, layers = [], cwd, meta } = resolved
   // Clone with `klona` rather than `klona/full`: jiti-imported JSON/CJS modules in user config
   // carry a non-enumerable, self-referential `default` interop property, which `klona/full`
@@ -393,6 +469,15 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
+
+  // the project `tsconfig.json` references the generated configurations by path, so they
+  // have to keep being written where the project expects them even when we build
+  // elsewhere. A `buildDir` supplied as an override (as test utilities do) is not what the
+  // project references, so prefer the value the project configured for itself.
+  nuxtConfig.typesDir ||= opts.overrides?.buildDir
+    ? layers.find(l => l.config?.buildDir && l.config.buildDir !== opts.overrides?.buildDir)?.config?.buildDir || defaultBuildDir
+    : nuxtConfig.buildDir || defaultBuildDir
+
   if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
     nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
   }
@@ -465,6 +550,12 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   const options = await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+
+  for (const fallback of jitiFallbacks) {
+    if (shouldReportJitiFallbackOnce(fallback.filePath, options.rootDir, options.future.compatibilityVersion)) {
+      configDiagnostics.NUXT_B5023(fallback)
+    }
+  }
 
   if (opts.onConfigResolved) {
     await opts.onConfigResolved({

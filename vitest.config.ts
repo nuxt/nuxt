@@ -2,7 +2,7 @@ import process from 'node:process'
 import { resolve } from 'pathe'
 import { defineVitestProject as _defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
-import { isCI, isWindows } from 'std-env'
+import { isCI, isWindows, provider } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 import type { NuxtConfig } from 'nuxt/schema'
@@ -110,9 +110,16 @@ const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nux
 
 export default defineConfig({
   test: {
+    // required for the flakiness.io reporter to record test locations
+    includeTaskLocation: isCI,
     onConsoleLog (log) {
       if (log.includes('<Suspense> is an experimental feature')) { return false }
     },
+    reporters: [
+      'default',
+      ...provider === 'github_actions' ? ['github-actions' as const] : [],
+      ['@flakiness/vitest', { flakinessProject: 'nuxt/nuxt' }],
+    ],
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },

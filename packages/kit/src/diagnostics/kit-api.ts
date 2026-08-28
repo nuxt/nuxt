@@ -109,14 +109,29 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
       docs: false,
     },
+    NUXT_B8021: {
+      why: 'The deprecated `requireModule` helper needs `jiti`, which is an optional peer dependency and is not installed.',
+      fix: 'Use `importModule` instead, which loads the file with the runtime\'s own loader. If the calling code cannot be made async, add `jiti` to your project.',
+      docs: false,
+    },
     NUXT_B8022: {
       why: (p: { specifiers: string }) => `Scanning a module for its export names needs a parser (\`${p.specifiers}\`), and neither could be loaded.`,
       fix: 'Add `oxc-parser` to your project; every supported version of Nuxt already ships a package that can be used here.',
       docs: false,
     },
-    NUXT_B8021: {
-      why: 'The deprecated `requireModule` helper needs `jiti`, which is an optional peer dependency and is not installed.',
-      fix: 'Use `importModule` instead, which loads the file with the runtime\'s own loader. If the calling code cannot be made async, add `jiti` to your project.',
+    NUXT_B8023: {
+      why: (p: { module: string, error: string }) => `The module \`${p.module}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
+      fix: 'Loading it natively is faster, as jiti has to transform the module first. Report it to the module author if the module is not your own.',
+      docs: false,
+    },
+    NUXT_B8024: {
+      why: (p: { api: string, version: number, host: number }) => `A \`${p.api}\` registration written for nitro v${p.version} was skipped because this project uses nitro v${p.host}.`,
+      fix: 'Provide a variant compatible with the current nitro version, or gate the registration with `hasNitroVersion()`. Report it to the module author if the module is not your own.',
+      docs: false,
+    },
+    NUXT_B8025: {
+      why: (p: { api: string }) => `The \`handler\` passed to \`${p.api}\` is a per-nitro-version map, but only the whole registration can be versioned.`,
+      fix: (p: { api: string }) => `Pass the variants as the registration itself, for example \`${p.api}({ 2: { route, handler }, 3: { route, handler } })\`.`,
       docs: false,
     },
   },

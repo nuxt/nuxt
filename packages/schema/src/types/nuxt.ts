@@ -1,6 +1,6 @@
 import type { AsyncLocalStorage } from 'node:async_hooks'
-import type { Hookable } from 'hookable'
-import type { Ignore } from 'ignore'
+import type { NuxtHookRegistry } from './hookable.ts'
+import type { NuxtIgnoreMatcher } from './ignore.ts'
 import type { NuxtModule } from './module.ts'
 import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, WatchEvent } from './hooks.ts'
 import type { Component } from './components.ts'
@@ -144,7 +144,7 @@ export interface Nuxt {
   // Private fields.
   '__name': string
   '_version': string
-  '_ignore'?: Ignore
+  '_ignore'?: NuxtIgnoreMatcher
   '_dependencies'?: Set<string>
   '~runtimeDependencies'?: string[]
   '_debug'?: NuxtDebugContext
@@ -165,6 +165,26 @@ export interface Nuxt {
   '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
 
   /**
+   * Nitro majors recorded for server plugins registered via `addServerPlugin`,
+   * keyed by normalized specifier, resolved file path and alias-resolved path.
+   * Absent entries are nitro v2.
+   * @internal
+   */
+  '_serverPluginVersions'?: Map<string, 2 | 3>
+  /**
+   * Nitro majors recorded for server auto-import sources, scanned directories and
+   * server template ids. Absent entries are nitro v2.
+   * @internal
+   */
+  '_serverImportVersions'?: Map<string, 2 | 3>
+  /**
+   * Server registrations kit skipped because they target a newer nitro major than
+   * the host provides. Recorded for devtools and tests.
+   * @internal
+   */
+  '_skippedNitroRegistrations'?: Array<{ api: string, version: number, host: number | undefined }>
+
+  /**
    * The Node HTTP(S) server the dev server is listening on, captured from the
    * `listen` hook. Builders use it to attach their HMR websocket to the same
    * server (and therefore the same port and certificate) as the app.
@@ -179,7 +199,7 @@ export interface Nuxt {
 
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions
-  'hooks': Hookable<NuxtHooks>
+  'hooks': NuxtHookRegistry<NuxtHooks>
   'hook': Nuxt['hooks']['hook']
   'callHook': Nuxt['hooks']['callHook']
   'addHooks': Nuxt['hooks']['addHooks']

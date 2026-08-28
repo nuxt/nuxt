@@ -1,3 +1,4 @@
+import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
 import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
@@ -164,17 +165,25 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
 
       devServer = viteServer
 
-      // Vite's internal handlers for `@vite/client`, `@vite/env` and
-      // `@react-refresh` live at the root of the dev server, but Nuxt serves
-      // them under `buildAssetsDir`. Without this rewrite they 404 (or get
-      // misrouted to the SSR pipeline based on `sec-fetch-dest`), so we drop
-      // the prefix before Vite's own middlewares run.
+      // Nitro's dev middleware claims any request it does not recognise as an
+      // asset, and without `sec-fetch-dest`, it recognises assets by file extension,
+      // but extension-less Vite URLs such as `/_nuxt/@id/__x00__plugin-vue:export-helper`
+      // need to be routed to Vite. Setting `_nitroHandled` here is a stopgap
+      // until Nitro's own exemption for Vite-internal prefixes is base-aware.
+      // TODO: drop `_nitroHandled` and narrow `VITE_INTERNAL_RE` back to the
+      // root-served handlers once we require a Nitro version including
+      // https://github.com/nitrojs/nitro/pull/4540
       const buildAssetsDir = nuxt.options.app.buildAssetsDir
-      const VITE_ASSET_PREFIX_RE = new RegExp(`^${escapeRE(buildAssetsDir.replace(/\/+$/, ''))}\\/(@vite\\/(?:client|env)|@react-refresh)(?:\\?|$|\\/)`)
-      viteServer.middlewares.use((req, _res, next) => {
-        if (!req.url) { return next() }
-        const match = req.url.match(VITE_ASSET_PREFIX_RE)
-        if (match) {
+      const buildAssetsPrefix = escapeRE(buildAssetsDir.replace(/\/+$/, ''))
+      const VITE_INTERNAL_RE = new RegExp(`^${buildAssetsPrefix}\\/@[^/?#]`)
+      // `@vite/client`, `@vite/env` and `@react-refresh` are served from the
+      // root of the dev server rather than from under Vite's base, so they also
+      // need the prefix dropped before Vite's own middlewares run.
+      const VITE_ROOT_ASSET_RE = new RegExp(`^${buildAssetsPrefix}\\/(@vite\\/(?:client|env)|@react-refresh)(?:\\?|$|\\/)`)
+      viteServer.middlewares.use((req: IncomingMessage & { _nitroHandled?: boolean }, _res, next) => {
+        if (!req.url || !VITE_INTERNAL_RE.test(req.url)) { return next() }
+        req._nitroHandled = true
+        if (VITE_ROOT_ASSET_RE.test(req.url)) {
           req.url = '/' + req.url.slice(buildAssetsDir.length).replace(/^\/+/, '')
         }
         next()

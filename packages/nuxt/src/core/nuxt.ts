@@ -4,10 +4,12 @@ import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
+import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, configDiagnostics, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { configDiagnostics, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -51,6 +53,7 @@ import { NuxtPerfProfiler } from './perf.ts'
 import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
+import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
@@ -431,6 +434,11 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   nuxt.hook('modules:done', () => {
+    // Transform initial composable call within `<script setup>` to preserve context
+    if (nuxt.options.experimental.asyncContext) {
+      addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
+    }
+
     const helperModule = resolveModulePath('unctx', { from: import.meta.url, try: true }) ?? 'unctx'
     // Add unctx transform
     addBuildPlugin(UnctxTransformPlugin({
@@ -458,41 +466,42 @@ async function initNuxt (nuxt: Nuxt) {
       const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
       const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
       const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
-      const sharedProtectionConfig = {
-        cwd: nuxt.options.rootDir,
-        trace: true,
+      const trace = nuxt.options.dev ? true : 'lazy' as const
+      const sharedMatcher = {
         include: sharedPatterns,
         patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
       }
-      addBuildPlugin({
-        vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
-        webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
-        rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
-      }, { server: false, prepend: true })
-
-      // Add import protection
-      const nuxtProtectionConfig = {
-        cwd: nuxt.options.rootDir,
-        trace: true,
+      const nuxtAppMatcher = {
         // Exclude top-level resolutions by plugins
         exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
         patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
       }
       addBuildPlugin({
-        webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
-        rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
+        webpack: () => ImpoundPlugin.webpack({ cwd: nuxt.options.rootDir, trace, ...sharedMatcher }),
+        rspack: () => ImpoundPlugin.rspack({ cwd: nuxt.options.rootDir, trace, ...sharedMatcher }),
+      }, { server: false, prepend: true })
+
+      // Add import protection
+      addBuildPlugin({
+        webpack: () => ImpoundPlugin.webpack({ cwd: nuxt.options.rootDir, trace, ...nuxtAppMatcher }),
+        rspack: () => ImpoundPlugin.rspack({ cwd: nuxt.options.rootDir, trace, ...nuxtAppMatcher }),
       })
 
       // Register Vite import protection plugins with split enforce:
       // - The main impound plugin (resolveId) needs prepend to run before Vite's resolver
       // - The impound:trace plugin (transform) should run after SFC compilation so
       //   es-module-lexer can parse the compiled JS and produce accurate code snippets
+      // Both matchers share a single plugin instance so eager tracing parses each module once.
       for (const envOptions of [
         { client: false } as const,
         { server: false } as const,
       ]) {
         const error = envOptions.client === false ? false : true
-        const vitePlugins = [ImpoundPlugin.vite({ ...nuxtProtectionConfig, error, ...(error === false && { warn: 'once' as const }) })].flat()
+        const matcherOptions = { error, ...(error === false && { warn: 'once' as const }) }
+        const matchers = envOptions.client === false
+          ? [{ ...nuxtAppMatcher, ...matcherOptions }]
+          : [{ ...sharedMatcher, ...matcherOptions }, { ...nuxtAppMatcher, ...matcherOptions }]
+        const vitePlugins = [ImpoundPlugin.vite({ cwd: nuxt.options.rootDir, trace, matchers })].flat()
           .map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` }))
         const mainPlugins = vitePlugins.filter(p => !p.name.includes('trace'))
         const tracePlugins = vitePlugins.filter(p => p.name.includes('trace'))
@@ -525,11 +534,6 @@ async function initNuxt (nuxt: Nuxt) {
 
     // add plugin to make warnings less verbose in dev mode
     addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
-  }
-
-  // Transform initial composable call within `<script setup>` to preserve context
-  if (nuxt.options.experimental.asyncContext) {
-    addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -723,6 +727,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   await installModules(modules, resolvedModulePaths, nuxt)
 
+  // Transform top-level `await navigateTo()` in `<script setup>` into an early return.
+  // Registered after modules so its `post` transform runs after auto-import injection.
+  if (nuxt.options.experimental.navigateToEarlyReturn) {
+    addBuildPlugin(NavigateToEarlyReturnPlugin())
+  }
+
   if (nuxt.options.experimental.debugModuleMutation) {
     stripDebugProxies(nuxt.options)
   }
@@ -812,7 +822,7 @@ async function initNuxt (nuxt: Nuxt) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/vapor-interop.client'))
     } else {
       nuxt.options.vue.vapor = false
-      logger.warn('`vue.vapor` requires vue `3.6.0` or later; vapor mode has been disabled.')
+      configDiagnostics.NUXT_B5024()
     }
   }
 
@@ -1067,7 +1077,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       && nuxt.options.debug.hooks
       && (nuxt.options.debug.hooks === true || nuxt.options.debug.hooks.server)
     ) {
-      createDebugger(nuxt.hooks, { tag: 'nuxt' })
+      createDebugger(nuxt.hooks as Hookable<NuxtHooks>, { tag: 'nuxt' })
     }
   })
 
@@ -1261,7 +1271,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     if (RELATIVE_CSS_ENTRY_RE.test(entry)) {
       const absolute = resolve(nuxt.options.rootDir, entry)
       const asAlias = '~/' + relative(nuxt.options.srcDir, absolute)
-      logger.warn(`\`css\` entries are resolved as module ids, not relative to \`nuxt.config\`. Replace \`${entry}\` with ${existsSync(absolute) ? `\`${link(absolute, { formatter: () => asAlias })}\`` : 'an aliased or absolute path'}.`)
+      configDiagnostics.NUXT_B5025({ entry, replacement: existsSync(absolute) ? `\`${link(absolute, { formatter: () => asAlias })}\`` : 'an aliased or absolute path' })
       continue
     }
 
@@ -1269,7 +1279,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     // be resolved by builder-specific aliases, so neither can be checked here
     const resolved = resolveAlias(entry, nuxt.options.alias)
     if (isAbsolute(resolved) && !resolved.startsWith(nuxt.options.buildDir) && !existsSync(resolved)) {
-      logger.warn(`\`css\` entry \`${entry}\` could not be found${resolved === entry ? '' : ` (resolved to \`${linkToAlias(resolved, nuxt)}\`)`}.`)
+      configDiagnostics.NUXT_B5026({ entry, resolved: resolved === entry ? undefined : linkToAlias(resolved, nuxt) })
     }
   }
 }
