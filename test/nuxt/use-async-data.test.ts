@@ -1,12 +1,12 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { flushPromises } from '@vue/test-utils'
-import { Transition } from 'vue'
+import { Transition, isShallow, triggerRef, watch } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
@@ -77,6 +77,40 @@ describe('useAsyncData', () => {
     expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
+  })
+
+  it('should expose shallow data as a shallow ref', async () => {
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve({ nested: { value: 'test' } }), { deep: false })
+
+    expect(isShallow(data)).toBe(true)
+  })
+
+  it('should expose shallow data as a shallow ref with a reactive key', async () => {
+    const key = shallowRef(`${uniqueKey}-a`)
+    const { data } = await useAsyncData(key, () => Promise.resolve({ nested: { value: key.value } }), { deep: false })
+    const onChange = vi.fn()
+    const stop = watch(data, onChange)
+    onTestFinished(stop)
+
+    expect(isShallow(data)).toBe(true)
+    expect(data.value.nested.value).toBe(`${uniqueKey}-a`)
+
+    data.value.nested.value = 'mutated'
+    await nextTick()
+    expect(onChange).not.toHaveBeenCalled()
+
+    triggerRef(data)
+    await nextTick()
+    expect(onChange).toHaveBeenCalledOnce()
+
+    data.value = { nested: { value: 'assigned' } }
+    expect(data.value.nested.value).toBe('assigned')
+
+    key.value = `${uniqueKey}-b`
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value.nested.value).toBe(`${uniqueKey}-b`)
   })
 
   it('should throw TypeError when key is empty', () => {
