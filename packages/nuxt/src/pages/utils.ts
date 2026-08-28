@@ -183,7 +183,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys, { extractSerializable: ctx.extractSerializable })
-      const dynamic = getDynamicMetaKeys(route.file, { extractSerializable: ctx.extractSerializable })
+      const dynamic = getDynamicMetaKeys(route.file, ctx.extraExtractionKeys, { extractSerializable: ctx.extractSerializable })
       if (dynamic.size) {
         dynamicPageMeta.set(normalize(route.file), dynamic)
       } else {
@@ -400,44 +400,54 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
   return isExtractionKey ? { kind: 'dynamic', key } : { kind: 'runtime' }
 }
 
-const SERIALIZABLE_CACHE_SUFFIX = '\0serializable'
 const pageContentsCache: Record<string, string> = {}
-const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-const dynamicMetaCache: Record<string, Set<string>> = {}
+// Keyed by file path, then by extraction variant. Two nuxt instances in one process can extract
+// the same absolute path with different `extraPageMetaExtractionKeys` or a different serializable
+// mode, and get legitimately different results from identical contents, so the variant has to be
+// part of the key while invalidation stays per file.
+const extractCache = new Map<string, Map<string, Partial<Record<keyof NuxtPage, any>>>>()
+const dynamicMetaCache = new Map<string, Map<string, ReadonlySet<string>>>()
 
-// The extracted metadata differs between the two extraction modes, but the file contents do not.
-function getExtractCacheKey (absolutePath: string, options: ClassifyPageMetaOptions) {
-  return options.extractSerializable ? absolutePath + SERIALIZABLE_CACHE_SUFFIX : absolutePath
+function getExtractVariant (extraExtractionKeys: Set<string>, options: ClassifyPageMetaOptions) {
+  return `${options.extractSerializable ? 'serializable' : 'raw'}\0${[...extraExtractionKeys].sort().join(',')}`
+}
+
+function cacheVariant<T> (cache: Map<string, Map<string, T>>, absolutePath: string) {
+  let variants = cache.get(absolutePath)
+  if (!variants) {
+    variants = new Map()
+    cache.set(absolutePath, variants)
+  }
+  return variants
 }
 
 /**
  * Keys a page file's `definePageMeta` call sets at runtime rather than at build time. Derived
  * purely from file contents, so it is cached alongside the extracted metadata for that file.
  */
-export function getDynamicMetaKeys (absolutePath: string, options: ClassifyPageMetaOptions = {}): ReadonlySet<string> {
-  return dynamicMetaCache[getExtractCacheKey(absolutePath, options)] ?? EMPTY_DYNAMIC_META
+export function getDynamicMetaKeys (absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): ReadonlySet<string> {
+  return dynamicMetaCache.get(absolutePath)?.get(getExtractVariant(extraExtractionKeys, options)) ?? EMPTY_DYNAMIC_META
 }
 
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {
-  const cacheKey = getExtractCacheKey(absolutePath, options)
+  const variant = getExtractVariant(extraExtractionKeys, options)
 
   // set/update pageContentsCache, invalidate extractCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
-    delete extractCache[absolutePath]
-    delete extractCache[absolutePath + SERIALIZABLE_CACHE_SUFFIX]
-    delete dynamicMetaCache[absolutePath]
-    delete dynamicMetaCache[absolutePath + SERIALIZABLE_CACHE_SUFFIX]
+    extractCache.delete(absolutePath)
+    dynamicMetaCache.delete(absolutePath)
   }
 
-  if (cacheKey in extractCache && extractCache[cacheKey]) {
-    return klona(extractCache[cacheKey])
+  const cached = extractCache.get(absolutePath)?.get(variant)
+  if (cached) {
+    return klona(cached)
   }
 
   const loader = getLoader(absolutePath)
   const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
   if (!scriptBlocks) {
-    extractCache[cacheKey] = {}
+    cacheVariant(extractCache, absolutePath).set(variant, {})
     return {}
   }
 
@@ -561,10 +571,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   }
 
   if (dynamicProperties.size) {
-    dynamicMetaCache[cacheKey] = dynamicProperties
+    cacheVariant(dynamicMetaCache, absolutePath).set(variant, dynamicProperties)
   }
 
-  extractCache[cacheKey] = extractedData
+  cacheVariant(extractCache, absolutePath).set(variant, extractedData)
   return klona(extractedData)
 }
 

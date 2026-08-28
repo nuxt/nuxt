@@ -24,7 +24,7 @@ function augmentForNuxt (pages: NuxtPage[], vfs: Record<string, string>, ctx: Pa
  */
 function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys?: Set<string>, options: { extractSerializable?: boolean } = {}) {
   const meta = _getRouteMeta(contents, absolutePath, extraExtractionKeys, options)
-  const dynamic = getDynamicMetaKeys(absolutePath, options)
+  const dynamic = getDynamicMetaKeys(absolutePath, extraExtractionKeys, options)
   return dynamic.size ? { ...meta, dynamic } : meta
 }
 
@@ -191,6 +191,15 @@ definePageMeta({ name: 'bar' })
     expect(meta === _getRouteMeta(fileContents, '/app/pages/other.vue')).toBeFalsy()
     expect(meta === _getRouteMeta('<template><div>Hi</div></template>' + fileContents, filePath)).toBeFalsy()
     _klona.mockReset()
+  })
+
+  it('should key the extraction cache on the extra extraction keys', () => {
+    const sfc = `<script setup>definePageMeta({ middleware: someRef })</script>`
+    const path = '/app/pages/extra-keys.vue'
+    // whether `middleware` is an extra extraction key decides if the route field or the whole meta
+    // object has to come from the macro module, so it cannot share a cache entry
+    expect(getRouteMeta(sfc, path, new Set(['middleware']))).toEqual({ dynamic: new Set(['meta']) })
+    expect(getRouteMeta(sfc, path, new Set())).toEqual({ dynamic: new Set(['middleware']) })
   })
 
   it('should not share state between page metadata', () => {
@@ -792,6 +801,12 @@ describe('normalizeRoutes', () => {
     const page = await augment(withExtraKeys, new Set(['middleware']))
     expect(getDynamicPageMeta(page, dynamicPageMetaCache(withExtraKeys))).toEqual(new Set(['meta']))
     expect(getDynamicPageMeta(page, dynamicPageMetaCache(withoutExtraKeys))).toEqual(new Set())
+
+    // the same file, extracted by an instance that does not treat `middleware` as an extra key,
+    // marks the route field itself rather than the whole meta object
+    await augment(withoutExtraKeys, new Set())
+    expect(getDynamicPageMeta(page, dynamicPageMetaCache(withoutExtraKeys))).toEqual(new Set(['middleware']))
+    expect(getDynamicPageMeta(page, dynamicPageMetaCache(withExtraKeys))).toEqual(new Set(['meta']))
 
     const routesFor = (nuxt: Nuxt) => {
       vi.mocked(useNuxt).mockReturnValueOnce(nuxt)
