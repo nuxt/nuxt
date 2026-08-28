@@ -12,6 +12,8 @@ import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 import { dataDiagnostics } from '../diagnostics/data'
+import { attachAddonExtensions, runAddonSetups, wrapPromiseMethod } from './addons'
+import type { AsyncDataAddonSetup, MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataAddon } from './addons'
 
 import { neverHydratedSymbol } from './lazy-hydration'
 
@@ -21,7 +23,13 @@ export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output | Promise<Output>
 
-export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
+export interface AsyncDataHandlerContext {
+  signal: AbortSignal
+}
+
+export type AsyncDataMiddleware<ResT = unknown> = (next: () => Promise<ResT>, ctx: AsyncDataHandlerContext) => Promise<ResT>
+
+export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, ctx: AsyncDataHandlerContext) => Promise<ResT>
 
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
@@ -109,6 +117,13 @@ interface BaseAsyncDataOptions<
    * @default true
    */
   serialize?: boolean
+  /**
+   * AsyncData middleware wrapping the handler execution.
+   * Middleware is executed in the order of the array, with the first entry being the outermost wrapper.
+   *
+   * Call `next()` to continue the chain, or throw an error to abort.
+   */
+  middleware?: AsyncDataMiddleware<NoInfer<ResT>>[]
 }
 
 export interface AsyncDataOptions<
@@ -179,6 +194,8 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
+export type AugmentedAsyncData<Data, Error, Ext> = _AsyncData<Data, Error> & Ext & Promise<_AsyncData<Data, Error> & Ext>
+
 // Type of the public-facing `useAsyncData` returned by the factory below.
 // Expressed as a callable interface so we can spell out all eight overloads
 // without losing them in an inline function expression: oxc's isolated
@@ -187,61 +204,73 @@ type NuxtErrorFor<NuxtErrorDataT> = NuxtErrorDataT extends Error | NuxtError ? N
 type FactoryDataT<FDataT, ResT> = [unknown] extends [FDataT] ? ResT : FDataT
 type FactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
 type FactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
-export interface UseAsyncData<FResT = unknown, FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined> {
+export interface UseAsyncData<FResT = unknown, FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined, FAddonOpts = {}, FAddonExt = {}> {
   // Auto-key, opts with transform, default = undefined
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     handler: AsyncDataHandler<ResT>,
-    opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+    opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined, FAddonExt>
   // Auto-key, opts with transform, default = DataT
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, DataT>>(
     handler: AsyncDataHandler<ResT>,
-    opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+    opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined, FAddonExt>
   // Auto-key, plain opts, default = undefined
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     handler: AsyncDataHandler<ResT>,
-    opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+    opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined, FAddonExt>
   // Auto-key, plain opts, default = DataT
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, DataT>>(
     handler: AsyncDataHandler<ResT>,
-    opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+    opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined, FAddonExt>
   // Explicit key, opts with transform, default = undefined
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     key: MaybeRefOrGetter<string>,
     handler: AsyncDataHandler<ResT>,
-    opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+    opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined, FAddonExt>
   // Explicit key, opts with transform, default = DataT
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, DataT>>(
     key: MaybeRefOrGetter<string>,
     handler: AsyncDataHandler<ResT>,
-    opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+    opts: AsyncDataOptionsWithTransform<ResT, DataT, PickKeys, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined, FAddonExt>
   // Explicit key, plain opts, default = undefined
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     key: MaybeRefOrGetter<string>,
     handler: AsyncDataHandler<ResT>,
-    opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+    opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined, FAddonExt>
   // Explicit key, plain opts, default = DataT
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, DataT>>(
     key: MaybeRefOrGetter<string>,
     handler: AsyncDataHandler<ResT>,
-    opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
-  ): AsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined>
+    opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, FactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, NuxtErrorFor<NuxtErrorDataT> | undefined, FAddonExt>
 }
+
+export type CreateUseAsyncDataOptions<
+  FResT,
+  FDataT = FResT,
+  FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+  FDefaultT = undefined,
+  FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = [],
+> = Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>> & { addons?: FAddons }
 
 export interface CreateUseAsyncData {
-  <FResT, FDataT = FResT, FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>, FDefaultT = undefined>(
+  <FResT, FDataT = FResT, FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>, FDefaultT = undefined, const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = []>(
     options?:
-      | Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>
-      | ((callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>),
-  ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
+      | CreateUseAsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT, FAddons>
+      | ((callerOptions: AsyncDataOptions<unknown>) => CreateUseAsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT, FAddons>),
+  ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 }
 
+/**
+ * A factory function to create a custom `useAsyncData` composable with pre-defined default options.
+ * @since 4.4.0
+ */
 export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory<CreateUseAsyncData>({
   name: 'createUseAsyncData',
   factory<
@@ -249,10 +278,11 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
     FDataT = FResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
     FDefaultT = undefined,
+    const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = [],
   >(options:
-    Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>
-    | ((callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>) = {},
-  ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT> {
+    CreateUseAsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT, FAddons>
+    | ((callerOptions: AsyncDataOptions<unknown>) => CreateUseAsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT, FAddons>) = {},
+  ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>> {
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
      * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
@@ -362,7 +392,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
       // eslint-disable-next-line prefer-const
-      let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+      let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT> & { _externalSetups?: AsyncDataAddonSetup<any>[] }]
       let keyChanging = false
       /** True if key is a Ref or getter; false for static string. When false, key watcher is skipped. */
       const isKeyReactive = isRef(_key) || typeof _key === 'function'
@@ -381,7 +411,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       // Setup nuxt instance payload
       const nuxtApp = useNuxtApp()
 
-      const factoryOptions = shouldFactoryOptionsOverride ? options(opts as any) : options
+      const { addons, ...factoryOptions } = shouldFactoryOptionsOverride ? options(opts as any) : options
       // assign factory defaults
       if (!shouldFactoryOptionsOverride) {
         for (const key in factoryOptions) {
@@ -415,6 +445,18 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         }
       }
 
+      let setups = opts._externalSetups
+      if (addons?.length) {
+        const factorySetups = runAddonSetups(addons, opts).setups
+        if (factorySetups) {
+          if (setups) {
+            setups.push(...factorySetups)
+          } else {
+            setups = factorySetups
+          }
+        }
+      }
+
       // check and warn if different defaults/fetcher are provided
       const currentData = nuxtApp._asyncData[key.value]
       if (import.meta.dev && currentData) {
@@ -423,7 +465,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         if (values.handler !== currentData._hash?.handler) {
           warnings.push(`different handler`)
         }
-        for (const opt of ['transform', 'pick', 'getCachedData', 'serialize'] as const) {
+        for (const opt of ['transform', 'pick', 'getCachedData', 'serialize', 'middleware'] as const) {
           if (values[opt] !== currentData._hash![opt]) {
             warnings.push(`different \`${opt}\` option`)
           }
@@ -651,19 +693,24 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         },
       }
 
+      const promiseWrappers = setups?.length ? attachAddonExtensions(setups, asyncReturn) : undefined
+
       // Allow directly awaiting on asyncData
       const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
-      Object.assign(asyncDataPromise, asyncReturn)
+      // `await` bypasses `then` overridden on a native promise, so addon wrappers only
+      // take effect on a plain thenable
+      const awaitable = (promiseWrappers ? {} : asyncDataPromise) as typeof asyncDataPromise
+      Object.assign(awaitable, asyncReturn)
       // Allow destructuring without losing promise methods
-      Object.defineProperties(asyncDataPromise, {
-        then: { enumerable: true, value: asyncDataPromise.then.bind(asyncDataPromise) },
-        catch: { enumerable: true, value: asyncDataPromise.catch.bind(asyncDataPromise) },
-        finally: { enumerable: true, value: asyncDataPromise.finally.bind(asyncDataPromise) },
+      Object.defineProperties(awaitable, {
+        then: { enumerable: true, value: wrapPromiseMethod(asyncDataPromise.then.bind(asyncDataPromise), promiseWrappers?.then) },
+        catch: { enumerable: true, value: wrapPromiseMethod(Promise.prototype.catch.bind(awaitable), promiseWrappers?.catch) },
+        finally: { enumerable: true, value: wrapPromiseMethod(Promise.prototype.finally.bind(awaitable), promiseWrappers?.finally) },
       })
-      return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
+      return awaitable as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
     }
 
-    return useAsyncData as unknown as UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
+    return useAsyncData as unknown as UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
   },
 })
 
@@ -899,7 +946,16 @@ function buildAsyncData<
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
             }, { once: true, signal: cleanupController.signal })
 
-            return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
+            const ctx: AsyncDataHandlerContext = { signal: mergedSignal }
+            let run = () => Promise.resolve(handler(nuxtApp, ctx))
+            if (options.middleware?.length) {
+              for (let i = options.middleware.length - 1; i >= 0; i--) {
+                const middleware = options.middleware[i]!
+                const next = run
+                run = () => Promise.resolve(middleware(next, ctx))
+              }
+            }
+            return run().then(resolve, reject)
           } catch (err) {
             reject(err)
           }
@@ -1022,6 +1078,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     pick: options.pick ? hashKey(options.pick) : undefined,
     getCachedData: options.getCachedData ? hashFunction(options.getCachedData as (...args: any[]) => any) : undefined,
     serialize: String(options.serialize ?? true),
+    middleware: (options.middleware as Array<(...args: any[]) => any> | undefined)?.map(fn => hashFunction(fn)).join(',') || undefined,
   }
 }
 function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {

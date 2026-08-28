@@ -1,6 +1,8 @@
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
 export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataRequestStatus } from './asyncData'
+export { defineUseFetchAddon, defineUseAsyncDataAddon } from './addons'
+export type { UseFetchAddon, UseAsyncDataAddon, UseFetchAddonOptions, UseAsyncDataAddonOptions } from './addons'
 export { useHydration } from './hydrate'
 export { callOnce } from './once'
 export { useState, clearNuxtState } from './state'
