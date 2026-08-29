@@ -1,9 +1,8 @@
 import { toRef } from 'vue'
-import type { HTTPError } from '@nuxt/nitro-server/h3'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import type { NuxtApp, NuxtPayload } from '../nuxt'
-import type { NuxtError as _NuxtErrorContract } from '../types'
+import type { NuxtErrorJSON, NuxtError as _NuxtErrorContract } from '../types'
 import { isBotUserAgent } from '../utils'
 import { sanitizeStatusCode, sanitizeStatusMessage } from '../utils/http-status'
 import { useRouter } from './router'
@@ -166,7 +165,7 @@ export class NuxtError<DataT = unknown> extends Error implements _NuxtErrorContr
     return this.statusText
   }
 
-  toJSON (): ReturnType<HTTPError<DataT>['toJSON']> {
+  toJSON (): NuxtErrorJSON {
     const unhandled = this.unhandled
     return {
       status: this.status,

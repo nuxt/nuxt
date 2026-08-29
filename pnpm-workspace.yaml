@@ -111,7 +111,7 @@ catalogs:
   # webpack/rspack pipeline
   webpack:
     '@nuxt/friendly-errors-webpack-plugin': ^2.6.0
-    '@rsbuild/core': ~2.2.0
+    '@rsbuild/core': ~2.2.1
     css-loader: ^7.1.4
     css-minimizer-webpack-plugin: ^8.0.0
     esbuild-loader: ^4.5.0
@@ -125,8 +125,8 @@ catalogs:
     time-fix-plugin: ^2.0.7
     ts-checker-rspack-plugin: ^1.6.1
     url-loader: ^4.1.1
-    webpack: ^5.109.2
-    webpack-bundle-analyzer: ^5.3.1
+    webpack: ^5.110.1
+    webpack-bundle-analyzer: ^5.3.2
     webpack-dev-middleware: ^8.1.1
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
@@ -135,14 +135,14 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260828-075646-f02938d
+    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260829-080244-f02938d
     '@nuxt/devtools': ^4.0.0-alpha.15
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.42
     autoprefixer: ^10.5.4
     c12: 4.0.0-beta.5
     chokidar: ^5.0.0
-    clickable-path: ^0.0.1
+    clickable-path: ^0.1.0
     compatx: ^0.2.0
     confbox: ^0.2.4
     consola: ^3.4.2
@@ -258,7 +258,7 @@ catalogs:
     pkg-pr-new: 0.0.88
     playwright-core: 1.62.1
     prettier: 3.9.6
-    rollup: 4.63.0
+    rollup: 4.63.1
     rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
     svgo: 4.1.0

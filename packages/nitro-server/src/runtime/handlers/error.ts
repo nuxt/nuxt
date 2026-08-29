@@ -6,6 +6,7 @@ import { serverFetch } from 'nitro'
 
 import type { SSRErrorInput } from '../utils/error'
 import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
+import { withBaseURL } from '../utils/base'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -61,7 +62,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // HTML response (via SSR)
   const res = !isRenderingError && await serverFetch(
-    withQuery('/__nuxt_error', { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
+    withQuery(withBaseURL('/__nuxt_error'), { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
     {
       headers: event.req.headers,
       redirect: 'manual',
