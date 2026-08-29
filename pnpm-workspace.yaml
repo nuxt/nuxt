@@ -125,8 +125,8 @@ catalogs:
     time-fix-plugin: ^2.0.7
     ts-checker-rspack-plugin: ^1.6.1
     url-loader: ^4.1.1
-    webpack: ^5.109.2
-    webpack-bundle-analyzer: ^5.3.1
+    webpack: ^5.110.1
+    webpack-bundle-analyzer: ^5.3.2
     webpack-dev-middleware: ^8.1.1
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
