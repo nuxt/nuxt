@@ -86,6 +86,7 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
+        "@nuxt/nitro-server",
         "@nuxt/telemetry",
         "@nuxt/vite-builder"
       ]

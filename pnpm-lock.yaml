@@ -1440,6 +1440,9 @@ importers:
       h3:
         specifier: catalog:dev
         version: 1.15.11
+      h3-next:
+        specifier: npm:h3@2.0.1-rc.26
+        version: h3@2.0.1-rc.26(crossws@0.4.10(srvx@0.12.5))
       mini-css-extract-plugin:
         specifier: catalog:webpack
         version: 2.10.2(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))

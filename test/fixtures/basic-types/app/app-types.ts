@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
-import type { H3Event } from 'h3'
+import type { H3Error, H3Event } from 'h3'
 import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
 import type { $Fetch, NitroFetchRequest, NitroRouteRules } from 'nitropack/types'
 
@@ -10,11 +10,11 @@ import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHoo
 import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, NuxtSSRContext, PageMeta } from '#app'
+import type { NuxtError, NuxtSSRContext, PageMeta, RequestEvent } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
-import { prefetchComponents, preloadComponents, useRouter } from '#imports'
+import { prefetchComponents, preloadComponents, useRequestEvent, useRouter } from '#imports'
 
 type DefaultAsyncDataErrorValue = undefined
 type DefaultAsyncDataValue = undefined
@@ -994,5 +994,17 @@ describe('error typing', () => {
     const error = useError()
     expectTypeOf(error.value?.fatal).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(error.value?.__nuxt_error).toEqualTypeOf<true | undefined>()
+  })
+
+  it('stays structurally compatible with the error h3 constructs during SSR', () => {
+    expectTypeOf<H3Error>().toExtend<NuxtError>()
+  })
+})
+
+describe('request event typing', () => {
+  it('resolves the event to the one contributed by `@nuxt/nitro-server`', () => {
+    expectTypeOf(useRequestEvent()).toEqualTypeOf<H3Event | undefined>()
+    expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
+    expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
   })
 })
