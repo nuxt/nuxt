@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 
-import type { RuntimeValue, SharedAppConfig, UpperSnakeCase } from 'nuxt/schema'
+import type { NuxtOptions, RuntimeValue, SharedAppConfig, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
 import { defineNuxtConfig } from 'nuxt/config'
 
@@ -117,6 +117,11 @@ describe('app config', () => {
     expectTypeOf<SharedAppConfig['fromNuxtConfig']>().toEqualTypeOf<boolean>()
     expectTypeOf<SharedAppConfig['userConfig']>().toEqualTypeOf<123 | 456 | undefined>()
     expectTypeOf<SharedAppConfig['fromLayer']>().toEqualTypeOf<unknown>()
+  })
+
+  it('types `nuxt.options.appConfig` with the shared app config', () => {
+    expectTypeOf<NuxtOptions['appConfig']>().toEqualTypeOf<SharedAppConfig>()
+    expectTypeOf<NuxtOptions['appConfig']['fromNuxtConfig']>().toEqualTypeOf<boolean>()
   })
 })
 
