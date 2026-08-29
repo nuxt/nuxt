@@ -4,9 +4,7 @@ export default withMatrix({
   css: ['~/global.css'],
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   experimental: {
-    componentIslands: {
-      selectiveClient: 'deep',
-    },
+    componentIslands: 'vue-onigiri',
     runtimeBaseURL: true,
   },
   nitro: {

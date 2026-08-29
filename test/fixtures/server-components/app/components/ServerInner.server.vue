@@ -1,7 +1,7 @@
 <template>
   <div class="server-inner-counter">
     <Counter
-      v-load-client
+      nuxt-client
       :multiplier="1"
     />
   </div>
