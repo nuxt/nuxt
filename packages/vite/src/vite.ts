@@ -140,6 +140,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           clientInclude: 'auto',
           serverInclude: ['auto', '/pages/**/*.vue'],
           extraEntries: onigiriExtraEntries,
+          componentIdGenerator: 'filepath-source',
          }),
       ]
 
