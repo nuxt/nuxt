@@ -90,21 +90,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const isIgnored = createIsIgnored(nuxt)
   const serverEntry = nuxt.options.ssr ? entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
 
-  const vscPlugin: Plugin = {
-    name: 'nuxt:virtual-vsc',
-    resolveId: {
-      order: 'pre',
-      handler (id) {
-        if (id.startsWith('virtual:vsc:')) {
-          return id.slice('virtual:vsc:'.length)
-        }
-        if (id.startsWith('/@id/virtual:vsc:')) {
-          return id.slice('/@id/virtual:vsc:'.length)
-        }
-      },
-    },
-  }
-
   const onigiriComponentImports = new Map<string, { path: string, export?: string }>()
   const ingestComponents = (components: Iterable<{ pascalName?: string, filePath?: string, export?: string, _raw?: boolean }>) => {
     for (const c of components) {
@@ -134,14 +119,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const onigiriVitePlugins: Plugin[] = !onigiriEnabled
     ? []
     : [
-        vscPlugin,
         ...onigiriPlugins({
           additionalImports: () => onigiriComponentImports,
           clientInclude: 'auto',
           serverInclude: ['auto', '/pages/**/*.vue'],
           extraEntries: onigiriExtraEntries,
           componentIdGenerator: 'filepath-source',
-         }),
+        }),
       ]
 
   // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/build.ts#L464-L478
