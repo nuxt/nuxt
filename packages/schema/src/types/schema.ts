@@ -1721,6 +1721,9 @@ export interface ConfigSchema {
     /**
      * Whether to add a middleware to handle changes of base URL at runtime (has a performance overhead)
      *
+     * A base URL set in `app.baseURL` is applied when the app is built, at no runtime cost; this
+     * option is only needed to serve the app under a base URL set at runtime.
+     *
      * This option only has effect when using Nitro v3+.
      * @default false
      */
