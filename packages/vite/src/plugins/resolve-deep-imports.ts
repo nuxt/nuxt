@@ -1,7 +1,8 @@
 import { resolveModulePath } from 'exsolve'
 import { normalize, resolve } from 'pathe'
 import type { Environment, Plugin } from 'vite'
-import { directoryToURL, logger, parseNodeModulePath, resolveAlias } from '@nuxt/kit'
+import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
+import { parseNodeModulePath } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
 

@@ -1,7 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { resolveModulePath } from 'exsolve'
-import { dirname } from 'pathe'
-import { resolvePackageJSON } from 'pkg-types'
+import { resolvePackageDir } from './internal/package-json.ts'
 import { directoryToURL } from './internal/esm.ts'
 
 const TYPE_RESOLVE_OPTIONS = {
@@ -71,14 +70,14 @@ function resolveRoot (basePkg: string, from: Array<string | URL>): Promise<strin
   if (rootCache.has(cacheKey)) {
     return rootCache.get(cacheKey)!
   }
-  const promise = (async () => {
+  const promise = Promise.resolve().then(() => {
     try {
       const r = resolveModulePath(basePkg, { from, ...TYPE_RESOLVE_OPTIONS })
-      return dirname(await resolvePackageJSON(r))
+      return resolvePackageDir(r)
     } catch {
       return undefined
     }
-  })()
+  })
   rootCache.set(cacheKey, promise)
   return promise
 }

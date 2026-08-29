@@ -20,8 +20,8 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
   const publicFiles = ['/public.svg', '/css-only-public-asset.svg']
   const isPublicFile = (base = '/', file: string) => {
     if (isWebpack) {
-      // TODO: webpack does not yet support dynamic static paths
-      expect(publicFiles).toContain(file)
+      // TODO: webpack does not yet apply the base URL to public assets referenced from templates
+      expect(publicFiles).toContain(file.startsWith(base) ? file.replace(base, '/') : file)
       return true
     }
 
@@ -37,6 +37,15 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
       if (url.startsWith('data:')) { continue }
       expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
     }
+  })
+
+  it('should keep url() wrappers in inlined styles', async () => {
+    const html: string = await $fetch<string>('/inline-url')
+    const inlinedStyles = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g), m => m[1]!).join('\n')
+
+    expect(inlinedStyles).toMatch(/\.inline-public-asset\s*\{\s*background-image:\s*url\(['"]?\/public\.svg['"]?\)/)
+    expect(inlinedStyles).toMatch(/\.inline-build-asset\s*\{\s*background-image:\s*url\([^)]*logo[^)]*\.svg\)/)
+    expect(inlinedStyles).toMatch(/src:\s*url\(['"]?\/css-only-public-asset\.svg['"]?\)\s*format\(/)
   })
 
   // https://github.com/nuxt/nuxt/issues/14766
@@ -89,6 +98,19 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     expect(await $fetch<string>('/foo/url')).toContain('path: /url')
   })
 
+  // remove `.fails` when webpack applies the base URL to public assets referenced from templates
+  it.skipIf(!isWebpack).fails('should apply base URL to public assets referenced from templates', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '/foo/',
+      },
+    })
+
+    const html = await $fetch<string>('/foo/assets')
+    const sources = Array.from(html.matchAll(/<img[^>]+src="([^"]+)"/g), m => m[1]!)
+    expect(sources).toContain('/foo/public.svg')
+  })
+
   it('should allow setting relative baseURL', async () => {
     await startServer({
       env: {
@@ -103,6 +125,20 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
       expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
+  })
+
+  // https://github.com/nuxt/nuxt/issues/36133
+  it.skipIf(isWebpack)('should apply base URL to public assets referenced from inlined SFC styles', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '/foo/',
+      },
+    })
+
+    const html = await $fetch<string>('/foo/inline-styles')
+    const inlineStyles = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g), m => m[1]!).join('\n')
+    expect(inlineStyles).toContain('url(/foo/public.svg)')
+    expect(inlineStyles).not.toContain('url(/public.svg)')
   })
 
   it('should use baseURL when redirecting', async () => {

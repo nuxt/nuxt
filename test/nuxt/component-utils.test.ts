@@ -1,8 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { getFragmentHTML } from '../../packages/nuxt/src/app/components/utils'
 
 describe('getFragmentHTML', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('walks large fragments without overflowing the call stack', () => {
     const fragment = document.createDocumentFragment()
     const start = document.createComment('[')
@@ -38,5 +42,25 @@ describe('getFragmentHTML', () => {
     expect(getFragmentHTML(start, true)).toEqual([
       '<div>before<span data-island-slot="default"></span>after</div>',
     ])
+  })
+
+  // cloning a live `<img>` starts a second load of its `src`
+  it('does not clone live nodes', () => {
+    const cloneNode = vi.spyOn(Node.prototype, 'cloneNode')
+
+    const fragment = document.createDocumentFragment()
+    const start = document.createComment('[')
+    const withSlot = document.createElement('div')
+    const withoutSlot = document.createElement('div')
+
+    withSlot.innerHTML = '<img src="/island-asset.svg"><span data-island-slot="default">slot content</span>'
+    withoutSlot.innerHTML = '<img src="/island-asset.svg">'
+    fragment.append(start, withSlot, withoutSlot, document.createComment(']'))
+
+    expect(getFragmentHTML(start, true)).toEqual([
+      '<div><img src="/island-asset.svg"><span data-island-slot="default"></span></div>',
+      '<div><img src="/island-asset.svg"></div>',
+    ])
+    expect(cloneNode).not.toHaveBeenCalled()
   })
 })

@@ -697,11 +697,10 @@ describe('denial-of-service protections', () => {
   })
 
   it('rejects a deeply nested island body before hashing', async () => {
-    const props = '['.repeat(500) + ']'.repeat(500)
     const res = await fetch('/__nuxt_island/PureComponent_deadbeef.json', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ props }),
+      body: `{"props":${'['.repeat(500)}${']'.repeat(500)}}`,
     })
     expect(res.status).toBe(400)
   })
@@ -812,6 +811,31 @@ describe('page-island middleware', () => {
     expect(res.status).toBe(400)
     const body = await res.text()
     expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
+  })
+})
+
+describe('island request headers', () => {
+  it('forwards the page request headers to the island subrequest', async () => {
+    const html = await $fetch<string>('/island-headers', {
+      headers: {
+        cookie: 'session=alice',
+        authorization: 'Bearer alice-token',
+      },
+    })
+
+    expect(html).toContain('<span id="page-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-authorization">Bearer alice-token</span>')
+  })
+
+  it('does not forward headers from a different request', async () => {
+    const html = await $fetch<string>('/island-headers', { headers: { cookie: 'session=bob' } })
+    expect(html).toContain('<span id="island-cookie">session=bob</span>')
+    expect(html).toContain('<span id="island-authorization">none</span>')
+
+    const anonymous = await $fetch<string>('/island-headers')
+    expect(anonymous).toContain('<span id="island-cookie">none</span>')
+    expect(anonymous).toContain('<span id="island-authorization">none</span>')
   })
 })
 

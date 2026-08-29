@@ -41,6 +41,10 @@ await navigateTo({
 </script>
 ```
 
+::note
+Calling `navigateTo` does not stop execution of the rest of your `<script setup>` code. If you want a successful navigation to return early from `setup()`, enable [`experimental.navigateToEarlyReturn`](/docs/4.x/guide/going-further/experimental-features#navigatetoearlyreturn).
+::
+
 ### Within Route Middleware
 
 ```ts
