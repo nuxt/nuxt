@@ -14,10 +14,23 @@ import { getUserTrace } from '../utils'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
+/**
+ * Augmented by Nuxt when `experimental.early404` is enabled, to remove router methods
+ * that are incompatible with it from the router returned by `useRouter`. Dynamically
+ * added routes cannot be known at build time, so requests to them would incorrectly
+ * receive an early 404 response.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface Early404IncompatibleRouterMethods {}
+
+type NuxtUseRouter = keyof Early404IncompatibleRouterMethods extends never
+  ? typeof _useRouter
+  : () => Router & { [K in keyof Early404IncompatibleRouterMethods & keyof Router]: never }
+
 /** @since 3.0.0 */
-export const useRouter: typeof _useRouter = () => {
+export const useRouter: NuxtUseRouter = (() => {
   return useNuxtApp()?.$router as unknown as Router
-}
+}) as unknown as NuxtUseRouter
 
 /**
  * Whether the current effect scope is (a descendant of) the component instance's scope.
@@ -136,7 +149,7 @@ export type OpenWindowFeatures = {
   & XOR<{ top?: number }, { screenY?: number }>
 
 export type OpenOptions = {
-  target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
+  target?: '_blank' | '_parent' | '_self' | '_top' | (string & {})
   windowFeatures?: OpenWindowFeatures
 }
 
@@ -181,6 +194,7 @@ function encodeForHtmlAttr (value: string): string {
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   to ||= '/'
 
+  const isPathForm = typeof to === 'string' || 'path' in to
   const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
@@ -189,6 +203,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (protocol && isScriptProtocol(protocol)) {
       throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
+
+    // route objects with a `name` are already resolved against the router base by `router.resolve`
+    const isInternal = isPathForm && !hasProtocol(toPath, { acceptRelative: true }) && !toPath.startsWith('#')
+    const openPath = isInternal ? joinURL(useRuntimeConfig().app.baseURL, toPath) : toPath
 
     const { target = '_blank', windowFeatures = {} } = options.open
 
@@ -199,7 +217,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       }
     }
 
-    open(toPath, target, features.join(', '))
+    open(openPath, target, features.join(', '))
     return Promise.resolve()
   }
 
@@ -301,6 +319,34 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   // `/café` match vue-router's encoded route records.
   const encodedTo = typeof to === 'string' ? encodeRoutePath(to) : to
   return options?.replace ? router.replace(encodedTo) : router.push(encodedTo)
+}
+
+/**
+ * Produces the render function returned from `setup()` when
+ * `experimental.navigateToEarlyReturn` short-circuits after a successful navigation.
+ *
+ * The returned function renders a placeholder comment both as a client render function
+ * and as an inline `ssrRender` (where it is called with a `push` function). On the server
+ * it is also assigned to `instance.ssrRender`, because the server renderer prefers the
+ * component's compiled `ssrRender` over a render function returned from `setup()`, and the
+ * compiled template must not run against the empty setup state left by the early return.
+ * @internal
+ */
+export function _navigateToEarlyReturn () {
+  const render = (_ctx?: unknown, push?: unknown) => {
+    if (typeof push === 'function') {
+      push('<!---->')
+      return
+    }
+    return null
+  }
+  if (import.meta.server) {
+    const instance = getCurrentInstance() as (ComponentInternalInstance & { ssrRender?: typeof render }) | null
+    if (instance) {
+      instance.ssrRender = render
+    }
+  }
+  return render
 }
 
 /**

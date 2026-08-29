@@ -51,13 +51,16 @@ export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRou
 export type { NitroCompatibilityVersion, NitroVersionOptions, NitroVersionedInput } from './nitro.ts'
 export { createNitroHelpers } from './nitro-helpers.ts'
 export type { NitroHelpers } from './nitro-helpers.ts'
-export type { Nitro, NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3, NitroRouteConfig } from './nitro-types.ts'
+export type { NitroInstance, NitroInstanceOptions } from '@nuxt/schema'
+export type { NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3, NitroHandlerMethod, NitroRouteConfig } from './nitro-types.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
 export type { ResolveTypePathsOptions } from './types.ts'
 export { recoverThrottledChanges } from './watch.ts'
 export type { RecoverableWatcher } from './watch.ts'
 export { logger, useLogger } from './logger.ts'
+export { useTerminal } from './terminal.ts'
+export type { NuxtTerminal, NuxtTerminalNotice, NuxtTerminalNotification, NuxtTerminalTask } from './terminal.ts'
 export type { NuxtLogFn, NuxtLogInput, NuxtLogLevel, NuxtLogObject, NuxtLogReporter, NuxtLogType, NuxtLogger, NuxtLoggerOptions, NuxtPromptOptions } from './logger.ts'
 
 // Dependencies

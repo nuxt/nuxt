@@ -2,37 +2,114 @@ name: release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
+      - 4.x
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - 4.x
+  # merged release PRs, publish reruns, and prereleases all arrive here
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: 'Cut a prerelease instead of a normal release, e.g. `beta`, `rc`, or `0`'
+        required: false
+        default: ''
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
+env:
+  PACKAGES: |
+    packages/*
+    !packages/nuxi
+    !packages/test-utils
+    !packages/ui-templates
+    docs
+
 jobs:
-  release:
-    concurrency:
-      group: release
-    permissions:
-      contents: write
-      id-token: write
+  # open or update a draft release PR from conventional commits
+  pr:
+    if: |
+      github.repository_owner == 'nuxt'
+      && (
+        github.event_name == 'push'
+        || (github.event_name == 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/'))
+      )
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: danielroe/uppt/pr@09882a5a0a1a20a0e802613a77ad59fcb1c1611c # v0.6.9
         with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: voidzero-dev/setup-vp@313600b80b104eadebb9111787d37a2e83e014ca # v1.17.0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base-branch: ${{ github.ref_name }}
+          packages: ${{ env.PACKAGES }}
+          # `main` stays on the v5 prerelease line until it graduates
+          prerelease: ${{ inputs.prerelease || (github.ref_name == 'main' && '0' || '') }}
+
+  # release PR merged: tag it, cut a GitHub release, dispatch the publish run
+  release:
+    if: |
+      github.event_name == 'pull_request'
+      && github.event.pull_request.merged == true
+      && startsWith(github.event.pull_request.head.ref, 'release/v')
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.repository_owner == 'nuxt'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    concurrency:
+      group: release-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: danielroe/uppt/release@09882a5a0a1a20a0e802613a77ad59fcb1c1611c # v0.6.9
         with:
-          node-version: latest
-          registry-url: "https://registry.npmjs.org/"
-          cache: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          packages: ${{ env.PACKAGES }}
 
-      - name: Prepare
-        run: vp run dev:prepare
+  # the chained dispatch lands here on the vX.Y.Z tag; build the tarballs
+  pack:
+    if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    concurrency:
+      group: pack-${{ github.ref }}
+      cancel-in-progress: false
+    permissions: {}
+    outputs:
+      files: ${{ steps.pack.outputs.files }}
+    steps:
+      - id: pack
+        uses: danielroe/uppt/pack@09882a5a0a1a20a0e802613a77ad59fcb1c1611c # v0.6.9
+        with:
+          packages: ${{ env.PACKAGES }}
 
-      - name: 🛠 Build and release project
-        run: node scripts/release.ts
-        env:
-          TAG: ${{ startsWith(github.ref_name, 'v3.') && '3x' || startsWith(github.ref_name, 'v4.') && 'latest,4x' || startsWith(github.ref_name, 'v5.') && '5x' || 'latest' }}
+  # stage the prebuilt tarballs to npm via OIDC
+  publish:
+    if: |
+      github.event_name == 'workflow_dispatch'
+      && startsWith(github.ref, 'refs/tags/v')
+      && needs.pack.outputs.files != '[]'
+    needs: pack
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    concurrency:
+      group: publish-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      id-token: write
+    environment: npm
+    steps:
+      # v5 is still a prerelease line, so it takes `5x` rather than `latest`
+      - uses: danielroe/uppt/publish@09882a5a0a1a20a0e802613a77ad59fcb1c1611c # v0.6.9
+        with:
+          files: ${{ needs.pack.outputs.files }}
+          npm-tag: ${{ startsWith(github.ref_name, 'v5.') && '5x' || '' }}

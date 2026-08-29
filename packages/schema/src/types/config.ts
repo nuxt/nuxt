@@ -169,7 +169,11 @@ export interface CustomAppConfig {
   [key: string]: unknown
 }
 
-export interface AppConfigInput extends CustomAppConfig {
+/**
+ * User-authored `app.config.ts` input.
+ */
+export interface AppConfigInput {
+  [key: string]: unknown
   /** @deprecated reserved */
   private?: never
   /** @deprecated reserved */
@@ -195,6 +199,11 @@ export interface NuxtAppConfig {
 }
 
 export interface AppConfig {
+  [key: string]: unknown
+}
+
+/** App config available in shared and server contexts, excluding user `app.config` files. */
+export interface SharedAppConfig {
   [key: string]: unknown
 }
 

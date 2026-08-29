@@ -1,9 +1,9 @@
 /// <reference path="./internal.d.ts" />
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp, TracingOptions } from 'nitro/types'
+import type { InternalApi, Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { AppConfig, HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
+import type { HookResult, RuntimeConfig, SharedAppConfig, TSReference } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`. Extends Nitro's own
@@ -60,6 +60,19 @@ declare module 'nitro/types' {
 type _NitroOnlyRuntimeConfig = Omit<NonNullable<NitroRuntimeConfig['nitro']>, 'envPrefix'> & { envPrefix: string }
 
 declare module '@nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
+  interface ServerTypes {
+    event: H3Event
+  }
+
+  // Nitro writes the routes it has scanned into its own `InternalApi`; extending it here hands
+  // those response types to Nuxt's typed `$fetch` without the app layer importing nitro types.
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerRoutes extends InternalApi {}
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -178,6 +191,19 @@ declare module '@nuxt/schema' {
 }
 
 declare module 'nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
+  interface ServerTypes {
+    event: H3Event
+  }
+
+  // Nitro writes the routes it has scanned into its own `InternalApi`; extending it here hands
+  // those response types to Nuxt's typed `$fetch` without the app layer importing nitro types.
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerRoutes extends InternalApi {}
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -296,7 +322,7 @@ declare module 'nuxt/schema' {
 }
 
 export interface NuxtRequestContext {
-  'appConfig'?: AppConfig
+  'appConfig'?: SharedAppConfig
   'noSSR'?: boolean
   /** @internal */
   '~internal'?: boolean

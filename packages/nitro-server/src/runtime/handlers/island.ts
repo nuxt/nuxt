@@ -1,7 +1,8 @@
 import { useNitroHooks } from 'nitro/app'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
-import { H3Event, HTTPError, getQuery } from 'nitro/h3'
+import { HTTPError, getQuery } from 'nitro/h3'
+import type { H3Event } from 'nitro/h3'
 import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
@@ -14,6 +15,7 @@ import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
+import { createEvent, urlHash } from '../utils/base'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
@@ -43,7 +45,7 @@ const inFlightIslands: Map<string, Promise<IslandRenderResult>> | null = import.
 
 export default {
   async fetch (request: Request): Promise<Response> {
-    const event = new H3Event(request)
+    const event = createEvent(request)
     try {
       event.res.headers.set('content-type', 'application/json;charset=utf-8')
       event.res.headers.set('x-powered-by', 'Nuxt')
@@ -100,7 +102,7 @@ function prerenderIsland (event: H3Event, islandPath: string): Promise<IslandRen
     if (!('raw' in result)) {
       await islandCache!.setItem(islandPath, result)
       // without the props entry, a later request for the bare path hashes empty props and is rejected
-      await islandPropCache!.setItem(islandPath, islandPath + event.url.search + event.url.hash)
+      await islandPropCache!.setItem(islandPath, islandPath + event.url.search + urlHash(event.url))
     }
     return result
   }).finally(() => {
@@ -262,7 +264,7 @@ async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext
 }
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
-  let url = event.url.pathname + event.url.search + event.url.hash
+  let url = event.url.pathname + event.url.search + urlHash(event.url)
   const islandPath = event.url.pathname
   if (import.meta.prerender && await islandPropCache!.hasItem(islandPath)) {
     // for prerender, the original request URL (with query) is rehydrated from cache

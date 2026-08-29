@@ -35,7 +35,7 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
@@ -669,6 +669,18 @@ export interface ConfigSchema {
   buildDir: string
 
   /**
+   * Define the directory where generated types and `tsconfig.json` files will be placed.
+   *
+   * This defaults to your `buildDir`, and is separate from it so that the configurations
+   * referenced by your project `tsconfig.json` stay in place even when Nuxt builds
+   * elsewhere (as it does when building a project that has already been run in
+   * development).
+   *
+   * If a relative path is specified, it will be relative to your `rootDir`.
+   */
+  typesDir: string
+
+  /**
    * For multi-app projects, the unique id of the Nuxt application.
    *
    * Defaults to `nuxt-app`.
@@ -981,8 +993,11 @@ export interface ConfigSchema {
    * Additional app configuration
    *
    * For programmatic usage and type support, you can directly provide app config with this option. It will be merged with `app.config` file as default value.
+   *
+   * This holds only the inline app config: values from user `app.config` files are resolved at build
+   * time and are not present here, so it is typed as `SharedAppConfig` rather than `AppConfig`.
    */
-  appConfig: AppConfig
+  appConfig: SharedAppConfig
 
   devServer: {
   /**
@@ -1174,6 +1189,25 @@ export interface ConfigSchema {
      * @default false
      */
     prerenderErrorPages: boolean | number[]
+
+    /**
+     * Respond with an early 404 error for requests whose path cannot match any page route,
+     * without loading the Vue app, its plugins or middleware on the server.
+     *
+     * Page routes (including aliases) are converted to route patterns at build time and
+     * requests are checked against them before server-side rendering begins.
+     *
+     * This is opt-in as it can break apps that rely on runtime routing: pages added
+     * dynamically with `router.addRoute()` (on the server or the client), or route
+     * middleware that redirects unknown paths to existing ones. It also applies to
+     * `ssr: false` routes, which respond with a 404 error rather than the SPA shell when
+     * no page can match. The option is disabled automatically in development, when using
+     * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
+     * file may modify `routes`.
+     *
+     * @default false
+     */
+    early404: boolean
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
@@ -1435,6 +1469,19 @@ export interface ConfigSchema {
     navigationRepaint: boolean
 
     /**
+     * Transform top-level `await navigateTo()` calls in `<script setup>` into an early return
+     * from the compiled `setup()` function when the navigation succeeds.
+     *
+     * This stops execution of the rest of your setup code after a redirect, and renders
+     * a placeholder comment while the navigation proceeds, rather than continuing to run
+     * code (and potentially navigating again) after `navigateTo` has been called.
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     * @see [Nuxt Issue #23698](https://github.com/nuxt/nuxt/issues/23698)
+     */
+    navigateToEarlyReturn: boolean
+
+    /**
      * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
      *
      * This only works for source files within `srcDir` and `serverDir` for the Vue/Nitro parts of your app.
@@ -1678,6 +1725,9 @@ export interface ConfigSchema {
     typescriptPlugin: boolean
     /**
      * Whether to add a middleware to handle changes of base URL at runtime (has a performance overhead)
+     *
+     * A base URL set in `app.baseURL` is applied when the app is built, at no runtime cost; this
+     * option is only needed to serve the app under a base URL set at runtime.
      *
      * This option only has effect when using Nitro v3+.
      * @default false

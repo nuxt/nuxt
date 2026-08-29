@@ -6,6 +6,7 @@ import { serverFetch } from 'nitro'
 
 import type { SSRErrorInput } from '../utils/error'
 import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
+import { withBaseURL } from '../utils/base'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -15,6 +16,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // return Nitro response + our headers for redirects and JSON responses
   const status = error.status || 500
   const headers = new Headers(error.headers)
+  appendVary(headers, 'accept, sec-fetch-mode')
   if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
     const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [
@@ -60,7 +62,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // HTML response (via SSR)
   const res = !isRenderingError && await serverFetch(
-    withQuery('/__nuxt_error', { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
+    withQuery(withBaseURL('/__nuxt_error'), { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
     {
       headers: event.req.headers,
       redirect: 'manual',
@@ -117,7 +119,9 @@ const IGNORED_ERROR_HEADERS = new Set(['content-type', 'content-security-policy'
 function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>, setCookies: Set<string>, ignore?: Set<string>): Headers {
   for (const [name, value] of overrides) {
     if (ignore?.has(name)) { continue }
-    if (name === 'set-cookie') {
+    if (name === 'vary') {
+      appendVary(target, value)
+    } else if (name === 'set-cookie') {
       if (!setCookies.has(value)) {
         setCookies.add(value)
         target.append(name, value)
@@ -127,6 +131,36 @@ function mergeHeaders (target: Headers, overrides: Headers | [string, string][] 
     }
   }
   return target
+}
+
+/**
+ * Add `value`'s tokens to the `vary` header, keeping any already present. `*`
+ * absorbs everything else, since it means the response varies on all headers.
+ */
+function appendVary (headers: Headers, value: string): void {
+  const incoming = parseVary(value)
+  if (!incoming.length) {
+    return
+  }
+  const existing = parseVary(headers.get('vary'))
+  if (existing.includes('*')) {
+    return
+  }
+  if (incoming.includes('*')) {
+    headers.set('vary', '*')
+    return
+  }
+  const merged = existing.slice()
+  for (const token of incoming) {
+    if (!merged.includes(token)) {
+      merged.push(token)
+    }
+  }
+  headers.set('vary', merged.join(', '))
+}
+
+function parseVary (value: string | null): string[] {
+  return value ? value.split(',').map(token => token.trim().toLowerCase()).filter(Boolean) : []
 }
 
 function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {

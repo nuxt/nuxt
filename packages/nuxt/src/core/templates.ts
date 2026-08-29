@@ -455,14 +455,16 @@ export const clientConfigTemplate: NuxtTemplate = {
 
 const APP_CONFIG_MERGE_TYPES = `type IsAny<T> = 0 extends 1 & T ? true : false
 
+type IsMergeable<T> = T extends readonly any[] | ((...args: any[]) => any) ? false : T extends Record<string, any> ? true : false
+
 type MergedAppConfig<Resolved extends Record<string, unknown>, Custom extends Record<string, unknown>> = {
   [K in keyof (Resolved & Custom)]: K extends keyof Custom
     ? unknown extends Custom[K]
       ? Resolved[K]
       : IsAny<Custom[K]> extends true
         ? Resolved[K]
-        : Custom[K] extends Record<string, any>
-            ? Resolved[K] extends Record<string, any>
+        : IsMergeable<Custom[K]> extends true
+            ? IsMergeable<Resolved[K]> extends true
               ? MergedAppConfig<Resolved[K], Custom[K]>
               : Exclude<Custom[K], undefined>
             : Exclude<Custom[K], undefined>
@@ -502,6 +504,12 @@ declare module '@nuxt/schema' {
 // This declaration must not import user `app.config` files: their import graph
 // can rely on app auto-imports, which do not exist in the shared, node and
 // server programs (https://github.com/nuxt/nuxt/issues/34140).
+//
+// It augments `SharedAppConfig` rather than `AppConfig` so that it cannot conflict with
+// the app-context declaration of `AppConfig`. A program that loads both (a single-project
+// `tsconfig.json` covering app and node files, for example) would otherwise merge two
+// incompatible declarations of one interface, and `skipLibCheck` makes TypeScript silently
+// keep whichever was loaded first (https://github.com/nuxt/nuxt/issues/35996).
 export const sharedAppConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/shared-app.config.d.ts',
   dependsOn: [],
@@ -513,10 +521,10 @@ declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 ${APP_CONFIG_MERGE_TYPES}
 
 declare module 'nuxt/schema' {
-  interface AppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
+  interface SharedAppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
 }
 declare module '@nuxt/schema' {
-  interface AppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
+  interface SharedAppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
 }
 `
   },
@@ -647,7 +655,7 @@ export const dollarFetchTypeTemplate: NuxtTemplate = {
   filename: 'fetch.d.ts',
   dependsOn: [],
   getContents () {
-    return 'export declare const $fetch: import(\'nitro/types\').$Fetch\n'
+    return 'export declare const $fetch: import(\'nuxt/app\').TypedFetch\n'
   },
 }
 

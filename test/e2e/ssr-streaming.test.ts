@@ -308,7 +308,7 @@ test.describe('SSR Streaming', () => {
     const html = await res.text()
 
     // Bootstrap queue carries the nonce
-    expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__=\{_q:\[\]/)
+    expect(html).toMatch(/<script nonce="test-csp-nonce">[^<]*window\.__unhead__=\{_q:\[\]/)
     // Streamed head-push chunks carry the nonce
     expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\.push/)
 

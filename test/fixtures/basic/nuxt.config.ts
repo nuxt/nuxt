@@ -175,6 +175,10 @@ export default withMatrix({
         dir: './custom-public',
         baseURL: '/custom',
       },
+      {
+        dir: '~~/custom-public',
+        baseURL: '/aliased',
+      },
     ],
     
     routeRules: {

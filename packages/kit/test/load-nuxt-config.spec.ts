@@ -186,6 +186,31 @@ describe('loadNuxtConfig', () => {
     })
   })
 
+  it('should keep typesDir at the default build directory when the build directory is relocated', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-types-dir-'))
+    await mkdir(join(tempDir, '.nuxt'), { recursive: true })
+
+    try {
+      const config = await loadNuxtConfig({ cwd: tempDir, overrides: { dev: false } })
+      expect(config.buildDir).toBe(join(tempDir, 'node_modules/.cache/nuxt/.nuxt'))
+      expect(config.typesDir).toBe(join(tempDir, '.nuxt'))
+    } finally {
+      await rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('should default typesDir to a custom build directory', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-types-dir-'))
+    await writeFile(join(tempDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({ buildDir: \'build\' })\n')
+
+    try {
+      const config = await loadNuxtConfig({ cwd: tempDir })
+      expect(config.typesDir).toBe(join(tempDir, 'build'))
+    } finally {
+      await rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
   it('should preserve and resolve a custom env name', async () => {
     const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
     const config = await loadNuxtConfig({ cwd, envName: 'staging' })

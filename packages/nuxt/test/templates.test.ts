@@ -7,7 +7,7 @@ import { resolve } from 'pathe'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigTemplate, publicPathTemplate } from '../src/core/templates.ts'
+import { appConfigTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -36,6 +36,17 @@ describe('appConfigTemplate', () => {
     const resolved = match![1]!
     expect(resolve(resolved)).toBe(resolved)
     expect(existsSync(resolved)).toBe(true)
+  })
+})
+
+describe('sharedAppConfigDeclarationTemplate', () => {
+  it('augments only the shared app config', async () => {
+    const contents = await sharedAppConfigDeclarationTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+
+    for (const schema of ['nuxt/schema', '@nuxt/schema']) {
+      expect(contents).toContain(`declare module '${schema}' {\n  interface SharedAppConfig extends`)
+    }
+    expect(contents).not.toContain('interface AppConfig extends')
   })
 })
 

@@ -1,9 +1,12 @@
 /**
- * Minimal structural types for the nitro majors supported by Nuxt.
+ * Minimal structural types for the inputs accepted by this package's nitro utilities, covering
+ * the nitro majors supported by Nuxt.
  *
- * These are inlined (rather than imported from `nitropack`/`nitro`) so that
- * `@nuxt/kit` does not depend on either package being installed and can be
- * used unchanged whichever nitro major the host Nuxt provides.
+ * These are inlined (rather than imported from `nitropack`/`nitro`) so that `@nuxt/kit` does not
+ * depend on either package being installed, and so its utilities accept the same registrations
+ * whichever nitro major the host Nuxt provides. The type of a running nitro instance is a
+ * different matter: that one comes from `@nuxt/schema`, where the configured `server.builder`
+ * contributes it.
  */
 
 type MaybeArray<T> = T | T[]
@@ -145,57 +148,4 @@ export interface NitroRouteConfig {
   basicAuth?: Record<string, any> | false
   /** Additional route options, including framework-specific route rules. */
   [key: string]: any
-}
-
-export interface NitroOptions {
-  handlers: NitroEventHandler[]
-  devHandlers: NitroDevEventHandler[]
-  runtimeConfig: Record<string, any>
-  plugins: string[]
-  alias: Record<string, string>
-  virtual: Record<string, any>
-  publicAssets: Array<Record<string, any>>
-  prerender: Record<string, any>
-  output: Record<string, any>
-  storage?: Record<string, any>
-  devStorage?: Record<string, any>
-  static?: boolean
-  node?: boolean
-  baseURL?: string
-  preset?: string
-}
-
-export interface Nitro {
-  meta: {
-    version: string
-    majorVersion: number
-  }
-  options: NitroOptions
-  scannedHandlers: NitroEventHandler[]
-  vfs: Record<string, string> | Map<string, { render: () => string | Promise<string> }>
-  hooks: {
-    hook: (...args: any[]) => () => void
-    hookOnce: (...args: any[]) => () => void
-    callHook: (...args: any[]) => void | Promise<any>
-    addHooks: (...args: any[]) => () => void
-    removeHook: (...args: any[]) => void
-  }
-  logger: {
-    log: (...args: any[]) => void
-    info: (...args: any[]) => void
-    warn: (...args: any[]) => void
-    error: (...args: any[]) => void
-  } & Record<string, any>
-  /** Only available on nitro v3. */
-  fetch?: (input: Request) => Response | Promise<Response>
-  /** Only available on nitro v3. */
-  routing?: {
-    sync: () => void
-    routeRules: { routes: Array<{ route: string, data: Record<string, any> }> }
-  } & Record<string, any>
-  /** Only available on nitro v2. */
-  storage?: unknown
-  unimport?: unknown
-  updateConfig: (config: Record<string, any>) => void | Promise<void>
-  close: () => Promise<void>
 }

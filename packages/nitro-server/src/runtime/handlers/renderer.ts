@@ -2,7 +2,8 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import { renderToWebStream } from 'vue/server-renderer'
 import type { ServerRequest } from 'nitro/types'
-import { H3Event, HTTPError, getQuery, writeEarlyHints } from 'nitro/h3'
+import { HTTPError, getQuery, writeEarlyHints } from 'nitro/h3'
+import type { H3Event } from 'nitro/h3'
 import { FastResponse } from 'srvx'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
@@ -27,18 +28,20 @@ import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '..
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { patchDevClientCss } from '../utils/renderer/dev-css'
 import { createInlinedCSSFilter } from '../utils/renderer/inlined-css'
+import { throwIfUnmatchedPagePath } from '../utils/renderer/early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
 import { extractCspNonce } from '../utils/renderer/csp-nonce'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import entryIds from 'nuxt/entry-ids'
 import { entryFileName } from 'nuxt/entry-chunk'
 import { iifeChunkFileName } from '#internal/streaming-iife-chunk.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../utils/paths'
+import { createEvent, withBaseURL } from '../utils/base'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -65,7 +68,7 @@ const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
 
 export default {
   fetch (request: ServerRequest) {
-    const event = new H3Event(request)
+    const event = createEvent(request)
 
     if (componentIslands && event.url.pathname.startsWith('/__nuxt_island/')) {
       return import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(request))
@@ -161,10 +164,18 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
   }
 
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
-  const routeOptions = getRouteRules(event.req.method, event.url.pathname).routeRules || {}
+  // nitro registers route rules under the base URL, which `createEvent` has removed
+  const routeOptions = getRouteRules(event.req.method, withBaseURL(event.url.pathname)).routeRules || {}
 
   if (!routeOptions?.ssr) {
     ssrContext.noSSR = true
+  }
+
+  // Fail fast for paths that cannot match any page route, before the app (and
+  // its plugins and middleware) is loaded. Skipped when prerendering SPA shell
+  // fallbacks (`/index.html`, `/200.html`), which are not page routes.
+  if (NUXT_EARLY_404 && !ssrError && !(import.meta.prerender && ssrContext.noSSR)) {
+    throwIfUnmatchedPagePath(event, routeOptions)
   }
 
   // Whether we are prerendering route or using ISR/SWR caching
