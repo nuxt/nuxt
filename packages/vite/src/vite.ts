@@ -262,10 +262,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
-        // Under onigiri, scope ids must be NODE_ENV-independent and identical to the
-        // ids vue-onigiri derives for the serialized island AST, or scoped styles stop
-        // matching. `isProduction` cannot express this: plugin-vue's `configResolved`
-        // overwrites it with the NODE_ENV-derived `config.isProduction`.
         vuePlugin(onigiriEnabled
           ? {
               ...viteConfig.vue,
