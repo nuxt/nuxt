@@ -3,12 +3,13 @@ import type { Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
 import type { $Fetch, NitroFetchRequest } from 'nitro/types'
+import type { H3Event, HTTPError } from 'nitro/h3'
 import { $fetch } from '#build/fetch'
 import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
 import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, NuxtSSRContext, PageMeta } from '#app'
+import type { NuxtError, NuxtSSRContext, PageMeta, RequestEvent } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -999,5 +1000,17 @@ describe('error typing', () => {
     const error = useError()
     expectTypeOf(error.value?.fatal).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(error.value?.__nuxt_error).toEqualTypeOf<true | undefined>()
+  })
+
+  it('stays structurally compatible with the error h3 reads during SSR', () => {
+    expectTypeOf<NuxtError>().toExtend<HTTPError>()
+  })
+})
+
+describe('request event typing', () => {
+  it('resolves the event to the one contributed by `@nuxt/nitro-server`', () => {
+    expectTypeOf(useRequestEvent()).toEqualTypeOf<H3Event | undefined>()
+    expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
+    expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
   })
 })
