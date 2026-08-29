@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
@@ -249,8 +250,25 @@ const DEFERRED_NAMED_EXPORTS: Partial<Record<keyof NuxtBuildOutputs, readonly st
   ssrStyles: ['inlinedCSS'],
 }
 
-function sentinel (specifier: string, name?: string): string {
-  return `__NUXT_BUILD_OUTPUT__${specifier.replace(/\W/g, '_')}${name ? `__${name}` : ''}__`
+/**
+ * Sentinels carry a per-build random tag so that they cannot collide with a
+ * string that appears in application code: substitution rewrites every
+ * occurrence it finds and fails the build on any it cannot resolve, so a
+ * guessable token would let user code be silently rewritten or break the build.
+ */
+function createSentinels () {
+  const tag = randomBytes(8).toString('hex')
+  return {
+    sentinel: (specifier: string, name?: string) => `__NUXT_BUILD_OUTPUT_${tag}__${specifier.replace(/\W/g, '_')}${name ? `__${name}` : ''}__`,
+    /**
+     * Matches a sentinel string literal in an emitted chunk. The quote
+     * character is captured rather than assumed: the chunk has already been
+     * through the minifier by the time substitution runs, and minifiers are
+     * free to re-quote string literals (oxc emits backticks).
+     */
+    literalRE: new RegExp(`(["'\`])(__NUXT_BUILD_OUTPUT_${tag}__\\w+__)\\1`, 'g'),
+    anyRE: new RegExp(`__NUXT_BUILD_OUTPUT_${tag}__\\w+__`),
+  }
 }
 
 const NAMED_EXPORT_RE = /\nexport const (\w+) = /
@@ -287,6 +305,8 @@ async function getDeferredExpressions (nuxt: Nuxt, key: keyof NuxtBuildOutputs):
  * so it picks up values finalised after the ssr env has bundled.
  */
 function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
+  const { sentinel, literalRE, anyRE } = createSentinels()
+
   return {
     name: 'nuxt:build-outputs',
     applyToEnvironment: env => env.name === 'ssr',
@@ -345,21 +365,24 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         for (const file of Object.values(bundle)) {
           if (file.type !== 'chunk') { continue }
           let s: MagicString | undefined
-          for (const [token, expression] of replacements) {
-            for (const quote of ['"', '\''] as const) {
-              const literal = quote + token + quote
-              const index = file.code.indexOf(literal)
-              if (index === -1) { continue }
-              s ??= new MagicString(file.code)
-              s.overwrite(index, index + literal.length, expression)
+          for (const match of file.code.matchAll(literalRE)) {
+            const expression = replacements.get(match[2]!)
+            if (!expression) {
+              throw new Error(`[nuxt] Unknown build output placeholder \`${match[2]}\` in \`${file.fileName}\`.`)
             }
+            s ??= new MagicString(file.code)
+            s.overwrite(match.index, match.index + match[0].length, expression)
           }
-          if (!s) { continue }
-          if (sourcemap && file.map) {
-            const editMap = s.generateMap({ hires: true, source: file.fileName })
-            file.map = remapping([editMap as any, file.map as any], () => null) as unknown as typeof file.map
+          if (s) {
+            if (sourcemap && file.map) {
+              const editMap = s.generateMap({ hires: true, source: file.fileName })
+              file.map = remapping([editMap as any, file.map as any], () => null) as unknown as typeof file.map
+            }
+            file.code = s.toString()
           }
-          file.code = s.toString()
+          if (anyRE.test(file.code)) {
+            throw new Error(`[nuxt] Failed to substitute build output placeholder in \`${file.fileName}\`. This is a bug in Nuxt; please report it.`)
+          }
         }
       },
     },
