@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtBuildOutputs, NuxtOptions } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { hash } from 'ohash'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
@@ -101,6 +101,34 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
+
+  for (const asset of [...nuxt.options.nitro.publicAssets || [], ...nuxt.options.nitro.serverAssets || []]) {
+    if (asset?.dir) {
+      asset.dir = resolveAlias(asset.dir, nuxt.options.alias)
+    }
+  }
+
+  // nitropack v2 resolves asset dirs against `srcDir`, which Nuxt sets to `serverDir`, so a
+  // `public/video` written against the project root would silently resolve to `server/public/video`
+  const nitroSrcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nuxt.options.nitro.srcDir || nuxt.options.serverDir)
+  for (const asset of [...nuxt.options.nitro.publicAssets || [], ...nuxt.options.nitro.serverAssets || []]) {
+    if (!asset?.dir || isAbsolute(asset.dir)) {
+      continue
+    }
+    if (!existsSync(resolve(nitroSrcDir, asset.dir))) {
+      const rootRelative = resolve(nuxt.options.rootDir, asset.dir)
+      if (existsSync(rootRelative)) {
+        asset.dir = rootRelative
+      }
+    }
+  }
+
+  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
+  for (const asset of nuxt.options.nitro.publicAssets || []) {
+    if (asset?.dir && !existsSync(resolve(nitroSrcDir, asset.dir))) {
+      bundlerDiagnostics.NUXT_B7023({ dir: resolve(nitroSrcDir, asset.dir), baseURL: joinURL('/', asset.baseURL || '/', '**') })
+    }
+  }
 
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
