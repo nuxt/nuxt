@@ -53,7 +53,7 @@
     "vite-node": "catalog:vite",
     "vite-plugin-checker": "catalog:vite",
     "vue-bundle-renderer": "catalog:build",
-    "vue-onigiri": "^0.6.0"
+    "vue-onigiri": "^0.6.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "catalog:dev",

@@ -60,7 +60,7 @@ minimumReleaseAgeExclude:
   - oxc-walker@1.1.1
   - vue
   - '@vue/*'
-  - vue-onigiri@0.6.0
+  - vue-onigiri
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)

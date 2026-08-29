@@ -130,7 +130,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     onigiriExtraEntries[path] = path
   }
 
-  const onigiriVitePlugins: Plugin[] = nuxt.options.experimental.componentIslands !== 'vue-onigiri'
+  const onigiriEnabled = nuxt.options.experimental.componentIslands === 'vue-onigiri'
+  const onigiriVitePlugins: Plugin[] = !onigiriEnabled
     ? []
     : [
         vscPlugin,
@@ -139,7 +140,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           clientInclude: 'auto',
           serverInclude: ['auto', '/pages/**/*.vue'],
           extraEntries: onigiriExtraEntries,
-        }),
+         }),
       ]
 
   // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/build.ts#L464-L478
@@ -260,7 +261,19 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
-        vuePlugin(viteConfig.vue),
+        // Under onigiri, scope ids must be NODE_ENV-independent and identical to the
+        // ids vue-onigiri derives for the serialized island AST, or scoped styles stop
+        // matching. `isProduction` cannot express this: plugin-vue's `configResolved`
+        // overwrites it with the NODE_ENV-derived `config.isProduction`.
+        vuePlugin(onigiriEnabled
+          ? {
+              ...viteConfig.vue,
+              features: {
+                ...viteConfig.vue?.features,
+                componentIdGenerator: 'filepath-source',
+              },
+            }
+          : viteConfig.vue),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
         ...onigiriVitePlugins,
         ClientManifestPlugin(nuxt),

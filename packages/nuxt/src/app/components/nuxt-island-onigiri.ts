@@ -3,7 +3,7 @@ import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMount
 import { debounce } from 'perfect-debounce'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
-import { joinURL } from 'ufo'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- runtime deserializer is the point of this component
 import { renderOnigiri } from 'vue-onigiri/runtime/deserialize'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
@@ -12,11 +12,9 @@ import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
 
-import { remoteComponentIslands } from '#build/nuxt.config.mjs'
 import { $fetch } from '#build/fetch'
 
 const pKey = '_islandPromises'
-
 
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
@@ -97,7 +95,12 @@ const NuxtIsland = defineComponent({
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
 
-      if (!force && nuxtApp.payload.data[key]?.ast) { return nuxtApp.payload.data[key] }
+      if (!force) {
+        // The payload reviver stores its in-flight fetch of a prerendered island at this
+        // key, so a plain property check would miss it and fetch the island a second time.
+        const cached = await nuxtApp.payload.data[key]
+        if (cached?.ast) { return cached }
+      }
 
       const url = `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {

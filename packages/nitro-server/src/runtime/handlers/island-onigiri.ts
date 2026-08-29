@@ -8,8 +8,10 @@ import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
 import { serializeApp } from 'vue-onigiri/runtime/serialize'
 import { defineComponent, getCurrentInstance, h } from 'vue'
+import type { Component } from 'vue'
 import { filterIslandProps, getIslandHash } from '#app/island-hash'
-import { findUnsafeIslandPropKey } from '#app/island-props'
+import { findReservedRootIslandPropKey, findUnsafeIslandPropKey } from '#app/island-props'
+import { renderDiagnostics } from '#app/diagnostics/render'
 import { MAX_ISLAND_BODY_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
@@ -156,16 +158,39 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   // `serializeApp` produces the island's AST (not the wrapping app
   // shell). Resolved via the build-time `components.islands.mjs` map.
   const islands = await getIslands()
+  if (!Object.hasOwn(islands.islandComponents, islandContext.name)) {
+    throw new HTTPError({
+      status: 404,
+      statusText: `Island component not found: ${islandContext.name}`,
+    })
+  }
+  const islandComponent = islands.islandComponents[islandContext.name] as Component
+
+  const loader = (islandComponent as { __asyncLoader?: () => Promise<Component> }).__asyncLoader
+  const reservedKey = findReservedRootIslandPropKey(islandContext.props, loader ? await loader() : islandComponent)
+  if (reservedKey) {
+    // The detail goes to the server console; the response carries a fixed reason so it
+    // cannot be used to probe which islands declare which props.
+    if (import.meta.dev) {
+      renderDiagnostics.NUXT_E4018({ name: islandContext.name, key: reservedKey })
+    }
+    throw new HTTPError({ status: 400, statusText: 'Invalid island request props' })
+  }
+
   const rootComponent = islandContext.name.startsWith(PAGE_ISLAND_PREFIX)
     ? createPageIslandRoot(islandContext.name, islands)
-    : islands.islandComponents[islandContext.name]
+    : islandComponent
 
-  const app = await createSSRApp(ssrContext, { rootComponent })
-
-  const ast = await (tracingChannelNuxt
-    ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => app.runWithContext(() => serializeApp(app, undefined, ssrContext)))
-    : app.runWithContext(() => serializeApp(app, undefined, ssrContext))
-  ).catch(async (err: unknown) => {
+  let renderError: unknown
+  const ast = await (async () => {
+    // `createSSRApp` runs plugins (and so router middleware), which can abort the render
+    // the same way the serializer can, so it shares the `skipping render` catch below.
+    const app = await createSSRApp(ssrContext, { rootComponent })
+    app.config.errorHandler ||= (error) => { renderError ||= error }
+    return tracingChannelNuxt
+      ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => app.runWithContext(() => serializeApp(app, undefined, ssrContext)))
+      : app.runWithContext(() => serializeApp(app, undefined, ssrContext))
+  })().catch(async (err: unknown) => {
     if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
       return undefined
     }
@@ -186,6 +211,13 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   // Handle errors
   if (ssrContext.payload?.error) {
     throw ssrContext.payload.error
+  }
+  if (renderError) {
+    if (import.meta.dev) {
+      renderDiagnostics.NUXT_E4015({ name: islandContext.name, cause: renderError })
+    }
+    await ssrContext.nuxt?.hooks.callHook('app:error', renderError)
+    throw renderError
   }
 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
@@ -242,16 +274,12 @@ const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 // Read a non-GET island body, refusing oversized or deeply nested input before the JSON
 // parse and hash run on it.
 async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext> {
-  const contentLength = Number(event.req.headers.get('content-length'))
-  if (contentLength > MAX_ISLAND_BODY_BYTES) {
-    throw new HTTPError({ status: 413, statusText: 'Island request body too large' })
-  }
+  let overflowed = Number(event.req.headers.get('content-length')) > MAX_ISLAND_BODY_BYTES
 
   // Stream with a running byte count rather than buffering: a chunked request carries no
   // `content-length`, so the header check alone can't bound an unbounded body.
   let received = 0
   let raw = ''
-  let overflowed = false
   if (event.req.body) {
     const decoder = new TextDecoder()
     // Read through a reader rather than `for await`: async iteration of a `ReadableStream` is
@@ -262,10 +290,7 @@ async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext
         const { done, value } = await reader.read()
         if (done) { break }
         received += value.byteLength
-        if (received > MAX_ISLAND_BODY_BYTES) {
-          // Stop buffering (memory stays bounded) but keep draining so the request is fully
-          // consumed: bailing out mid-upload resets the socket and poisons connection reuse
-          // for the next request on the same keep-alive connection.
+        if (overflowed || received > MAX_ISLAND_BODY_BYTES) {
           overflowed = true
           continue
         }
