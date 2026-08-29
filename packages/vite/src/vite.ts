@@ -12,9 +12,8 @@ import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 
-import { onigiriCompilerPlugin, onigiriManifestPlugin } from 'vue-onigiri'
+import { onigiriPlugins } from 'vue-onigiri'
 import type { Plugin } from 'vite'
-import type { Plugin as RollupPlugin } from 'rollup'
 import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
@@ -124,10 +123,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     onigiriComponentImports.clear()
     ingestComponents(components)
   })
-  // module on demand, and in a build the manifest loaders point at the emitted chunks.
-  const onigiriCompilerOptions = {
-    additionalImports: () => onigiriComponentImports,
-  } 
   const onigiriExtraEntries: Record<string, string> = {}
   for (const [, entry] of onigiriComponentImports) {
     const path = entry?.path
@@ -135,12 +130,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     onigiriExtraEntries[path] = path
   }
 
-  const onigiriPlugins: Plugin[] = nuxt.options.experimental.componentIslands !== 'vue-onigiri'
+  const onigiriVitePlugins: Plugin[] = nuxt.options.experimental.componentIslands !== 'vue-onigiri'
     ? []
     : [
         vscPlugin,
-        onigiriCompilerPlugin(onigiriCompilerOptions),
-        onigiriManifestPlugin({
+        ...onigiriPlugins({
+          additionalImports: () => onigiriComponentImports,
           clientInclude: 'auto',
           serverInclude: ['auto', '/pages/**/*.vue'],
           extraEntries: onigiriExtraEntries,
@@ -267,7 +262,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveExternalsPlugin(nuxt),
         vuePlugin(viteConfig.vue),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
-        ...onigiriPlugins,
+        ...onigiriVitePlugins,
         ClientManifestPlugin(nuxt),
         // After ClientManifestPlugin so its dev `clientManifest` override wins.
         ViteNodePlugin(nuxt),
@@ -321,8 +316,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     },
   )
 
- 
- 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
   if (!nuxt.options.dev) {
