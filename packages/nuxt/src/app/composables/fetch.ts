@@ -310,6 +310,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        fetchPolicy,
         serialize,
         ...fetchOptions
       } = {
@@ -344,6 +345,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         dedupe,
         timeout,
         enabled,
+        fetchPolicy,
         serialize,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
       }
