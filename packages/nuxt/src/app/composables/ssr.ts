@@ -1,6 +1,6 @@
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import type { $Fetch, H3Event$Fetch } from 'nitropack/types'
+import type { TypedFetch } from '../types/fetch'
 import type { RequestEvent } from '@nuxt/schema'
 import { $fetch as _$fetch } from '#build/fetch'
 
@@ -10,7 +10,7 @@ import { toArray } from '../utils'
 import { appDiagnostics } from '../diagnostics/core'
 import { useHead } from './head'
 
-const $fetch = _$fetch as $Fetch
+const $fetch = _$fetch as TypedFetch
 
 /** The request event, as declared by the configured `server.builder` (`H3Event` under `@nuxt/nitro-server`). */
 export type { RequestEvent } from '@nuxt/schema'
@@ -49,12 +49,11 @@ export function useRequestHeader (header: string): string | null | undefined {
 }
 
 /** @since 3.2.0 */
-export function useRequestFetch (): H3Event$Fetch | $Fetch {
+export function useRequestFetch (): TypedFetch {
   if (import.meta.client) {
     return $fetch
   }
-  // Fallback cast keeps this expression a single `H3Event$Fetch`: unioning two route-mapped fetch types here blows the recursion limit under nitropack v2's typed-route matcher.
-  return useRequestEvent()?.$fetch || ($fetch as unknown as H3Event$Fetch)
+  return (useRequestEvent()?.$fetch as unknown as TypedFetch | undefined) || $fetch
 }
 
 /** @since 3.0.0 */
