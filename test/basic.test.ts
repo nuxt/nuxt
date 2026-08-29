@@ -8,7 +8,7 @@ import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/tes
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, isDev, isRenderingJson, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
+import { asyncContext, isDev, isRenderingJson, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 await setup({
@@ -1993,6 +1993,21 @@ describe.skipIf(!runsOnceInMatrix)('public directories', () => {
 
     const greek = await $fetch<string>('/Ελληνικά.html')
     expect(greek).toContain('Ελληνικά')
+  })
+})
+
+// runs in dev as well as built, as nitro serves `publicAssets` via separate code paths in each
+describe.skipIf(!runsOncePerEnvInMatrix)('nitro publicAssets dirs', () => {
+  it('should serve assets from a relative `nitro.publicAssets` dir', async () => {
+    const res = await fetch('/custom/file.svg')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('image/svg')
+  })
+
+  it('should serve assets from an aliased `nitro.publicAssets` dir', async () => {
+    const res = await fetch('/aliased/file.svg')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('image/svg')
   })
 })
 
