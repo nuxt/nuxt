@@ -836,6 +836,23 @@ describe('nuxt composables', () => {
     const cookies = res.headers.get('set-cookie')
     expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
+  it('reads cookies written earlier in the same request on the server', async () => {
+    const res = await fetch('/cookies-read-after-write')
+    const html = await res.text()
+    expect(html).toContain('<div id="from-plugin">true</div>')
+    expect(html).toContain('<div id="written">written</div>')
+    expect(html).toContain('<div id="from-default">from-default</div>')
+    expect(html).toContain('<div id="deleted">empty</div>')
+    expect(html).toContain('<div id="after-readonly">empty</div>')
+    expect(html).toContain('<div id="from-h3">h3-value</div>')
+    expect(html).toContain('<div id="h3-then-deleted">empty</div>')
+
+    const setCookies = res.headers.getSetCookie()
+    expect(setCookies.filter(c => c.startsWith('set-via-h3-then-deleted='))).toEqual([
+      expect.stringContaining('set-via-h3-then-deleted=; Max-Age=0'),
+    ])
+  })
+
   it('does not write a readonly cookie with a default value, on server or client', async () => {
     const res = await fetch('/cookies')
     expect(res.headers.get('set-cookie')).not.toContain('readonly-with-default')
