@@ -5,15 +5,23 @@ import { join } from 'pathe'
 import { createServer } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 
-import { installedLayerScanEntries, resolveOptimizeDepsInclude } from '../src/utils/layer-deps.ts'
-import { LayerDepOptimizePlugin } from '../src/plugins/layer-dep-optimize.ts'
+import { installedScanEntries, resolveOptimizeDepsInclude } from '../src/utils/optimize-deps.ts'
+import { OptimizeDepsPlugin } from '../src/plugins/optimize-deps.ts'
 import { userOptimizeDepsInclude } from '../src/plugins/optimize-deps-hint.ts'
 
 const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-optimize-deps-'))
 const srcDir = join(rootDir, 'app/')
 const layerRoot = join(rootDir, 'node_modules/installed-layer/')
 const layerSrcDir = join(layerRoot, 'app/')
+const moduleRuntime = join(rootDir, 'node_modules/installed-module/runtime/')
 const entry = join(srcDir, 'entry.mjs')
+
+const registered = {
+  plugins: [{ src: join(moduleRuntime, 'plugin.mjs') }],
+  components: [{ filePath: join(moduleRuntime, 'Component.vue') }],
+  middleware: [{ path: join(moduleRuntime, 'middleware.mjs') }],
+  layouts: { installed: { file: join(moduleRuntime, 'layout.vue') } },
+}
 
 async function writePackage (dir: string, name: string, contents: string, main = 'index.mjs') {
   await mkdir(dir, { recursive: true })
@@ -33,10 +41,20 @@ await writePackage(join(layerRoot, 'node_modules/hoisted-dep'), 'hoisted-dep', '
 await writePackage(join(layerSrcDir, 'node_modules/nested-pkg'), 'nested-pkg', 'import x from \'hoisted-dep\'\nexport default x\n')
 await writePackage(join(rootDir, 'node_modules/root-dep'), 'root-dep', 'export default 1\n')
 
+await mkdir(moduleRuntime, { recursive: true })
+await writeFile(join(moduleRuntime, 'plugin.mjs'), 'import x from \'plugin-dep\'\nexport default x\n')
+await writeFile(join(moduleRuntime, 'Component.vue'), '<script setup>\nimport x from \'component-dep\'\n</script>\n')
+await writeFile(join(moduleRuntime, 'middleware.mjs'), 'import x from \'middleware-dep\'\nexport default x\n')
+await writeFile(join(moduleRuntime, 'layout.vue'), '<script setup>\nimport x from \'layout-dep\'\n</script>\n')
+for (const dep of ['plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep']) {
+  await writePackage(join(rootDir, 'node_modules', dep), dep, 'export default 1\n')
+}
+
 afterAll(() => rm(rootDir, { recursive: true, force: true }))
 
-function createNuxt (layerDirs: Array<{ app: string, root: string }> = []) {
+function createNuxt (layerDirs: Array<{ app: string, root: string }> = [], apps: Record<string, any> = { default: { components: [], plugins: [], middleware: [], layouts: {} } }) {
   return {
+    apps,
     options: {
       rootDir,
       srcDir,
@@ -73,38 +91,67 @@ async function optimizedDeps (options: { entries?: string[], include?: string[] 
   return deps
 }
 
-describe('installedLayerScanEntries', () => {
+describe('installedScanEntries', () => {
   it('should not scan layers that are part of the project', () => {
     const nuxt = createNuxt([{ app: join(rootDir, 'layers/local/app/'), root: join(rootDir, 'layers/local/') }])
 
-    expect(installedLayerScanEntries(nuxt)).toEqual([])
+    expect(installedScanEntries(nuxt)).toEqual([])
   })
 
   it('should pre-bundle dependencies only reachable through an installed layer', async () => {
     await expect(optimizedDeps({})).resolves.toEqual([])
 
-    const entries = [entry, ...installedLayerScanEntries(createNuxt([installedLayer]))]
+    const entries = [entry, ...installedScanEntries(createNuxt([installedLayer]))]
 
     await expect(optimizedDeps({ entries })).resolves.toContain('layer-dep')
   })
 
+  it('should scan app files that modules register from within node_modules', async () => {
+    const nuxt = createNuxt([], { default: registered })
+
+    const entries = installedScanEntries(nuxt)
+
+    expect(entries.toSorted()).toEqual([
+      registered.components[0]!.filePath,
+      registered.layouts.installed.file,
+      registered.middleware[0]!.path,
+      registered.plugins[0]!.src,
+    ].toSorted())
+    await expect(optimizedDeps({ entries: [entry, ...entries] })).resolves.toEqual(
+      expect.arrayContaining(['plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep']),
+    )
+  })
+
+  it('should not scan app files that are part of the project', () => {
+    const nuxt = createNuxt([], {
+      default: {
+        components: [{ filePath: join(srcDir, 'components/Local.vue') }],
+        plugins: [{ src: join(srcDir, 'plugins/local.mjs') }],
+        middleware: [{ path: join(srcDir, 'middleware/local.mjs') }],
+        layouts: { local: { file: join(srcDir, 'layouts/local.vue') } },
+      },
+    })
+
+    expect(installedScanEntries(nuxt)).toEqual([])
+  })
+
   it('should not scan dependencies nested within the layer', async () => {
-    const entries = installedLayerScanEntries(createNuxt([installedLayer]))
+    const entries = installedScanEntries(createNuxt([installedLayer]))
 
     await expect(optimizedDeps({ entries: [entry, ...entries.filter(e => !e.startsWith('!'))] })).resolves.toContain('hoisted-dep')
     await expect(optimizedDeps({ entries: [entry, ...entries] })).resolves.not.toContain('hoisted-dep')
   })
 })
 
-describe('LayerDepOptimizePlugin', () => {
+describe('OptimizeDepsPlugin', () => {
   async function configureEnvironment (nuxt: Nuxt, name: string, config: Record<string, any>) {
-    const plugin = LayerDepOptimizePlugin(nuxt)
+    const plugin = OptimizeDepsPlugin(nuxt)
     await (plugin.configEnvironment as any).call(null, name, config, {})
     return config
   }
 
   it('should keep its plugin name', () => {
-    expect(LayerDepOptimizePlugin(createNuxt()).name).toBe('nuxt:optimize-layer-deps')
+    expect(OptimizeDepsPlugin(createNuxt()).name).toBe('nuxt:optimize-deps')
   })
 
   it('should rewrite include entries added after nuxt has built its config', async () => {
@@ -113,7 +160,7 @@ describe('LayerDepOptimizePlugin', () => {
     await configureEnvironment(createNuxt([installedLayer]), 'client', config)
 
     expect(config.optimizeDeps.include).toEqual(['installed-layer > layer-dep'])
-    expect(config.optimizeDeps.entries).toEqual([entry, ...installedLayerScanEntries(createNuxt([installedLayer]))])
+    expect(config.optimizeDeps.entries).toEqual([entry, ...installedScanEntries(createNuxt([installedLayer]))])
   })
 
   it('should leave the server environment alone', async () => {

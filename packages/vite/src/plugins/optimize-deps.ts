@@ -1,25 +1,25 @@
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 
-import { installedLayerScanEntries, resolveOptimizeDepsInclude } from '../utils/layer-deps.ts'
+import { installedScanEntries, resolveOptimizeDepsInclude } from '../utils/optimize-deps.ts'
 import { userOptimizeDepsInclude } from './optimize-deps-hint.ts'
 
 /**
- * Pre-bundles dependencies of layers installed in `node_modules`, which Vite would
+ * Pre-bundles dependencies of app code installed in `node_modules`, which Vite would
  * otherwise serve raw.
  *
  * Runs on resolved environment config so `include` entries added by modules through
  * `vite:extendConfig`, or by other plugins, are rewritten too.
  */
-export function LayerDepOptimizePlugin (nuxt: Nuxt): Plugin {
+export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
   return {
-    name: 'nuxt:optimize-layer-deps',
+    name: 'nuxt:optimize-deps',
     enforce: 'post',
 
     async configEnvironment (name, config) {
       if (name !== 'client') { return }
 
-      const scanEntries = installedLayerScanEntries(nuxt)
+      const scanEntries = installedScanEntries(nuxt)
       if (!scanEntries.length) { return }
 
       config.optimizeDeps ||= {}
