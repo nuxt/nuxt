@@ -655,7 +655,7 @@ export const dollarFetchTypeTemplate: NuxtTemplate = {
   filename: 'fetch.d.ts',
   dependsOn: [],
   getContents () {
-    return 'export declare const $fetch: import(\'nitro/types\').$Fetch\n'
+    return 'export declare const $fetch: import(\'nuxt/app\').TypedFetch\n'
   },
 }
 

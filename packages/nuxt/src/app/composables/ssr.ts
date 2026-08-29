@@ -1,6 +1,6 @@
-import type { H3Event } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import type { $Fetch } from 'nitro/types'
+import type { TypedFetch } from '../types/fetch'
+import type { RequestEvent } from '@nuxt/schema'
 import type { $Fetch as OFetch } from 'ofetch'
 import { $fetch } from '#build/fetch'
 
@@ -10,8 +10,11 @@ import { toArray } from '../utils'
 import { appDiagnostics } from '../diagnostics/core'
 import { useHead } from './head'
 
+/** The request event, as declared by the configured `server.builder` (`H3Event` under `@nuxt/nitro-server`). */
+export type { RequestEvent } from '@nuxt/schema'
+
 /** @since 3.0.0 */
-export function useRequestEvent (nuxtApp?: NuxtApp): H3Event | undefined {
+export function useRequestEvent (nuxtApp?: NuxtApp): RequestEvent | undefined {
   if (import.meta.client) { return }
   nuxtApp ||= useNuxtApp()
   return nuxtApp.ssrContext?.event
@@ -70,9 +73,9 @@ const UNFORWARDED_HEADERS = new Set([
   'upgrade',
 ])
 
-const requestFetchers = new WeakMap<H3Event, $Fetch>()
+const requestFetchers = new WeakMap<RequestEvent, TypedFetch>()
 
-function createRequestFetch (event: H3Event): $Fetch {
+function createRequestFetch (event: RequestEvent): TypedFetch {
   const base = $fetch as unknown as OFetch
   // the wrapper is installed as the underlying `fetch` rather than as an `onRequest` hook or
   // default headers, so that neither user-provided hooks nor absolute URLs can bypass the check
@@ -89,14 +92,14 @@ function createRequestFetch (event: H3Event): $Fetch {
       }
       return base.native(request, options)
     },
-  }) as unknown as $Fetch
+  }) as unknown as TypedFetch
 }
 
 /** @since 3.2.0 */
-export function useRequestFetch (): $Fetch {
-  if (import.meta.client) { return $fetch as $Fetch }
+export function useRequestFetch (): TypedFetch {
+  if (import.meta.client) { return $fetch as TypedFetch }
   const event = useRequestEvent()
-  if (!event) { return $fetch as $Fetch }
+  if (!event) { return $fetch as TypedFetch }
   let fetcher = requestFetchers.get(event)
   if (!fetcher) {
     fetcher = createRequestFetch(event)
@@ -106,10 +109,10 @@ export function useRequestFetch (): $Fetch {
 }
 
 /** @since 3.0.0 */
-export function setResponseStatus (event: H3Event, code?: number, message?: string): void
+export function setResponseStatus (event: RequestEvent, code?: number, message?: string): void
 /** @deprecated Pass `event` as first option. */
 export function setResponseStatus (code: number, message?: string): void
-export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: number | string, arg3?: string): void {
+export function setResponseStatus (arg1: RequestEvent | number | undefined, arg2?: number | string, arg3?: string): void {
   if (import.meta.client) { return }
   if (arg1 && typeof arg1 !== 'number') {
     arg1.res.status = arg2 as number | undefined
