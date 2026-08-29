@@ -35,7 +35,7 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
@@ -993,8 +993,11 @@ export interface ConfigSchema {
    * Additional app configuration
    *
    * For programmatic usage and type support, you can directly provide app config with this option. It will be merged with `app.config` file as default value.
+   *
+   * This holds only the inline app config: values from user `app.config` files are resolved at build
+   * time and are not present here, so it is typed as `SharedAppConfig` rather than `AppConfig`.
    */
-  appConfig: AppConfig
+  appConfig: SharedAppConfig
 
   devServer: {
   /**
