@@ -1,5 +1,5 @@
 import { computed, getCurrentInstance, ref } from 'vue'
-import type { $Fetch } from 'nitro/types'
+import type { TypedFetch } from '../types/fetch'
 import type { RequestEvent } from '@nuxt/schema'
 import type { $Fetch as OFetch } from 'ofetch'
 import { $fetch } from '#build/fetch'
@@ -73,9 +73,9 @@ const UNFORWARDED_HEADERS = new Set([
   'upgrade',
 ])
 
-const requestFetchers = new WeakMap<RequestEvent, $Fetch>()
+const requestFetchers = new WeakMap<RequestEvent, TypedFetch>()
 
-function createRequestFetch (event: RequestEvent): $Fetch {
+function createRequestFetch (event: RequestEvent): TypedFetch {
   const base = $fetch as unknown as OFetch
   // the wrapper is installed as the underlying `fetch` rather than as an `onRequest` hook or
   // default headers, so that neither user-provided hooks nor absolute URLs can bypass the check
@@ -92,14 +92,14 @@ function createRequestFetch (event: RequestEvent): $Fetch {
       }
       return base.native(request, options)
     },
-  }) as unknown as $Fetch
+  }) as unknown as TypedFetch
 }
 
 /** @since 3.2.0 */
-export function useRequestFetch (): $Fetch {
-  if (import.meta.client) { return $fetch as $Fetch }
+export function useRequestFetch (): TypedFetch {
+  if (import.meta.client) { return $fetch as TypedFetch }
   const event = useRequestEvent()
-  if (!event) { return $fetch as $Fetch }
+  if (!event) { return $fetch as TypedFetch }
   let fetcher = requestFetchers.get(event)
   if (!fetcher) {
     fetcher = createRequestFetch(event)

@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
-import type { $Fetch, NitroFetchRequest } from 'nitro/types'
+import type { TypedFetch, TypedFetchRequest } from 'nuxt/app'
 import type { H3Event, HTTPError } from 'nitro/h3'
 import { $fetch } from '#build/fetch'
 import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
@@ -19,6 +19,17 @@ type DefaultAsyncDataErrorValue = undefined
 type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
+
+declare module '@nuxt/schema' {
+  interface ServerRoutes {
+    '/api/registered': { get: { registered: true } }
+    '/api/registered-post': { post: { created: true } }
+    '/api/registered/:id': { default: number }
+    '/api/scored/:id': { get: 'param' }
+    '/api/scored/static': { get: 'static' }
+    '/api/catch-all/**': { get: 'catchAll' }
+  }
+}
 
 declare module 'nuxt/app' {
   interface NuxtLayouts {
@@ -57,8 +68,36 @@ describe('API routes', () => {
   it('types the auto-imported $fetch with nitro routes', () => {
     // https://github.com/nuxt/nuxt/pull/35582 regression: `$fetch` was typed as
     // ofetch's plain `$fetch`, returning `Promise<any>` for every request
-    expectTypeOf($fetch).toEqualTypeOf<$Fetch<unknown, NitroFetchRequest>>()
+    expectTypeOf($fetch).toEqualTypeOf<TypedFetch<unknown, TypedFetchRequest>>()
     expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
+  })
+
+  it('types responses of routes registered in `ServerRoutes`', () => {
+    expectTypeOf($fetch('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
+    expectTypeOf($fetch('/api/registered', { method: 'GET' })).toEqualTypeOf<Promise<{ registered: true }>>()
+    expectTypeOf($fetch('/api/registered-post', { method: 'post' })).toEqualTypeOf<Promise<{ created: true }>>()
+    expectTypeOf($fetch(`/api/registered/${String(Math.random())}`)).toEqualTypeOf<Promise<number>>()
+    // @ts-expect-error the route is only registered for `post`
+    $fetch('/api/registered-post', { method: 'get' })
+  })
+
+  it('prefers the most specific registered route pattern', () => {
+    expectTypeOf($fetch('/api/scored/static')).toEqualTypeOf<Promise<'static'>>()
+    expectTypeOf($fetch(`/api/scored/${String(Math.random())}`)).toEqualTypeOf<Promise<'param' | 'static'>>()
+    expectTypeOf($fetch('/api/catch-all/nested/path')).toEqualTypeOf<Promise<'catchAll'>>()
+  })
+
+  it('falls back to `unknown` for unregistered requests', () => {
+    expectTypeOf($fetch('/api/unregistered')).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch('/api/unregistered', { method: 'PATCH' })).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch<TestResponse>('/api/unregistered')).toEqualTypeOf<Promise<TestResponse>>()
+  })
+
+  it('types responses of registered routes through `useFetch`', () => {
+    expectTypeOf(useFetch('/api/registered').data).toEqualTypeOf<Ref<{ registered: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/registered-post', { method: 'post' }).data).toEqualTypeOf<Ref<{ created: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/registered', { pick: ['registered'] }).data).toEqualTypeOf<Ref<{ registered: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useRequestFetch()('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
   })
 
   // TODO: https://github.com/nitrojs/nitro/issues/2758

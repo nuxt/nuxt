@@ -10,6 +10,31 @@
 export interface ServerTypes {}
 
 /**
+ * Extension point through which the configured `server.builder` contributes the response types
+ * of the routes its runtime serves.
+ *
+ * Keys are route patterns (as written by the server runtime, so they may contain `:param` and
+ * `**` segments) and values map a lowercased HTTP method - or `default`, for handlers that
+ * answer every method - to the type that route resolves to.
+ *
+ * `@nuxt/nitro-server` declares the routes Nitro has scanned here, and Nuxt references its
+ * declarations from the generated `.nuxt` types. Declaring routes where they are scanned keeps
+ * `$fetch` and `useFetch` typing accurate without the app layer depending on a particular
+ * server runtime.
+ *
+ * @example
+ * ```ts
+ * declare module '@nuxt/schema' {
+ *   interface ServerRoutes {
+ *     '/api/hello': { get: { message: string } }
+ *   }
+ * }
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ServerRoutes {}
+
+/**
  * Fallback request event shape, described in web standards only. Used when no server builder
  * has contributed an event type.
  */
