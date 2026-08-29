@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { publicPathTemplate } from '../src/core/templates.ts'
+import { publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -27,6 +27,17 @@ function makeNuxt (overrides: Partial<Nuxt['options']> = {}, serverBuild?: Parti
 function makeApp (configs: string[] = []): NuxtApp {
   return { configs } as unknown as NuxtApp
 }
+
+describe('sharedAppConfigDeclarationTemplate', () => {
+  it('augments only the shared app config', async () => {
+    const contents = await sharedAppConfigDeclarationTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+
+    for (const schema of ['nuxt/schema', '@nuxt/schema']) {
+      expect(contents).toContain(`declare module '${schema}' {\n  interface SharedAppConfig extends`)
+    }
+    expect(contents).not.toContain('interface AppConfig extends')
+  })
+})
 
 describe('publicPathTemplate', () => {
   it('imports `useRuntimeConfig` from the bare `nitropack/runtime` specifier in production builds', async () => {

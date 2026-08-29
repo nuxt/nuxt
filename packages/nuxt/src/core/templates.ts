@@ -510,6 +510,12 @@ declare module '@nuxt/schema' {
 // This declaration must not import user `app.config` files: their import graph
 // can rely on app auto-imports, which do not exist in the shared, node and
 // server programs (https://github.com/nuxt/nuxt/issues/34140).
+//
+// It augments `SharedAppConfig` rather than `AppConfig` so that it cannot conflict with
+// the app-context declaration of `AppConfig`. A program that loads both (a single-project
+// `tsconfig.json` covering app and node files, for example) would otherwise merge two
+// incompatible declarations of one interface, and `skipLibCheck` makes TypeScript silently
+// keep whichever was loaded first (https://github.com/nuxt/nuxt/issues/35996).
 export const sharedAppConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/shared-app.config.d.ts',
   dependsOn: [],
@@ -521,10 +527,10 @@ declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 ${APP_CONFIG_MERGE_TYPES}
 
 declare module 'nuxt/schema' {
-  interface AppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
+  interface SharedAppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
 }
 declare module '@nuxt/schema' {
-  interface AppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
+  interface SharedAppConfig extends MergedAppConfig<typeof inlineConfig, CustomAppConfig> { }
 }
 `
   },

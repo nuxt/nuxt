@@ -345,7 +345,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       // These are safe to use in the shared context.
       const handCraftedDeclarations = `
   const useRuntimeConfig: (event?: import('h3').H3Event) => import('nuxt/schema').RuntimeConfig
-  const useAppConfig: () => import('nuxt/schema').AppConfig
+  const useAppConfig: () => import('nuxt/schema').SharedAppConfig
   const defineAppConfig: <C extends import('nuxt/schema').AppConfigInput>(config: C) => C
   const createError: typeof import('h3')['createError']
   const setResponseStatus: typeof import('h3')['setResponseStatus']`
