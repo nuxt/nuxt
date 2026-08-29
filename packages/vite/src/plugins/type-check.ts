@@ -2,6 +2,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Nuxt } from '@nuxt/schema'
 import type { Plugin } from 'vite'
 import { resolveClientEntry } from '../utils/config.ts'
+import { shouldTypeCheck } from '../utils/type-check.ts'
 
 const QUERY_RE = /\?.+$/
 
@@ -11,7 +12,7 @@ export function TypeCheckPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:type-check',
     applyToEnvironment: environment => environment.name === 'client' && !environment.config.isProduction,
     apply: () => {
-      return !nuxt.options.test && nuxt.options.typescript.typeCheck === true
+      return !nuxt.options.test && shouldTypeCheck(nuxt.options.typescript.typeCheck, true)
     },
     configResolved (config) {
       try {

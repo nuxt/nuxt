@@ -1,9 +1,10 @@
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 import { readTSConfig, resolveTSConfig } from 'pkg-types'
+import { shouldTypeCheck } from '../utils/type-check.ts'
 
 export async function VitePluginCheckerPlugin (nuxt: Nuxt, environment?: string): Promise<Array<Plugin | undefined> | undefined> {
-  if (!nuxt.options.test && (nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev))) {
+  if (!nuxt.options.test && shouldTypeCheck(nuxt.options.typescript.typeCheck, nuxt.options.dev)) {
     const [checker, tsconfigPath] = await Promise.all([
       import('vite-plugin-checker').then(r => r.default),
       resolveTSConfig(nuxt.options.rootDir),
