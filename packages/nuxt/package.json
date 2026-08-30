@@ -90,6 +90,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "catalog:build",
     "@nuxt/vite-builder": "workspace:*",
+    "@nuxt/vite-server": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
     "@vue/shared": "catalog:app-runtime",
     "chokidar": "catalog:build",

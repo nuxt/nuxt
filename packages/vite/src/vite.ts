@@ -5,7 +5,7 @@ import { createBuilder, createServer, mergeConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, useNitro } from '@nuxt/kit'
+import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, tryUseNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
 import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
@@ -54,8 +54,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt.options.modulesDir.push(distDir)
 
   // Register Nitro plugin to fix SSR error stacktraces in dev mode
-  if (nuxt.options.dev) {
-    const nitro = useNitro()
+  const nitro = nuxt.options.dev ? tryUseNitro() : undefined
+  if (nitro) {
     nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
     nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
@@ -417,10 +417,11 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   }
 
   // we hook to avoid blocking nitro's build, and do not await crawl so we don't block the dev server
-  if (nuxt.options.experimental.nitroViteEnvironment) {
-    nuxt.hooks.hookOnce('build:done', () => { void run() })
+  const nitro = nuxt.options.experimental.nitroViteEnvironment ? undefined : tryUseNitro()
+  if (nitro) {
+    nitro.hooks.hookOnce('compiled', () => { void run() })
   } else {
-    useNitro().hooks.hookOnce('compiled', () => { void run() })
+    nuxt.hooks.hookOnce('build:done', () => { void run() })
   }
 }
 

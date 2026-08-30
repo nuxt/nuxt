@@ -3,6 +3,7 @@ import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { describe, expect, it } from 'vitest'
 import { loadNuxt } from '../src/index.ts'
+import { routeRulesTemplate } from '../src/core/templates.ts'
 
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 
@@ -16,8 +17,7 @@ async function getRouteRulesTemplate (sensitive: boolean) {
     },
   })
   try {
-    const template = nuxt.options.build.templates.find(t => t.filename === 'route-rules.mjs')!
-    return await template.getContents!({ nuxt, app: undefined!, options: template.options })
+    return await routeRulesTemplate.getContents!({ nuxt, app: undefined!, options: routeRulesTemplate.options! })
   } finally {
     await nuxt.close()
   }
