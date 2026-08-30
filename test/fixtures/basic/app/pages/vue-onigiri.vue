@@ -19,7 +19,7 @@ const count = ref(0)
       <NuxtIsland
         name="PureComponent"
         :props="islandProps"
-      /> 
+      />
     </div>
     <button
       id="increase-pure-component"
@@ -28,7 +28,6 @@ const count = ref(0)
       Increase
     </button>
     <hr>
- 
   </div>
 </template>
 

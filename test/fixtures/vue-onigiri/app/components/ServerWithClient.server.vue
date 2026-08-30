@@ -16,7 +16,7 @@
       The component below is not a slot but declared as interactive
 
       <Counter
-    v-load-client
+        v-load-client
         :multiplier="1"
       />
     </div>

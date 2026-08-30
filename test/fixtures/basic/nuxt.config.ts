@@ -7,9 +7,6 @@ import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
-  devtools: {
-    enabled: true,
-  },
   appId: 'nuxt-app-basic',
   extends: [
     './extends/node_modules/foo',
@@ -180,7 +177,6 @@ export default withMatrix({
         baseURL: '/aliased',
       },
     ],
-    
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/route-rules/spa-async-data': { ssr: false },
@@ -211,7 +207,6 @@ export default withMatrix({
         '/404.html',
       ],
     },
-    minify: false
   },
   vite: {
     $client: {
@@ -222,9 +217,7 @@ export default withMatrix({
     logLevel: 'silent',
     build: {
       assetsInlineLimit: 100, // keep SVG as assets URL
-      minify: false
     },
-
   },
   postcss: {
     plugins: {

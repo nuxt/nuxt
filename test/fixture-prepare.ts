@@ -6,12 +6,14 @@ import { exec } from 'tinyexec'
 
 export const fixturesDir = fileURLToPath(new URL('./fixtures', import.meta.url))
 
-export function getFixtureDirs () {
-  return glob(['*'], {
+export async function getFixtureDirs () {
+  const dirs = await glob(['*'], {
     onlyDirectories: true,
     cwd: fixturesDir,
     absolute: true,
   })
+  // tooling can leave stray directories next to the fixtures
+  return dirs.filter(dir => existsSync(`${dir}/package.json`))
 }
 
 async function prepareFixture (dir: string, retries = 2) {
