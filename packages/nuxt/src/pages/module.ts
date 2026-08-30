@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
@@ -499,8 +499,8 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = useNitro() as Nitro
-      if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
+      const nitro = tryUseNitro() as Nitro | undefined
+      if (nitro && (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -689,9 +689,9 @@ export default defineNuxtModule({
 
     // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
     nuxt.hook('pages:extend', (routes) => {
-      const nitro = useNitro() as Nitro
+      const nitro = tryUseNitro() as Nitro | undefined
       let resolvedRoutes: string[]
-      for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
+      for (const [path, rule] of Object.entries(nitro?.options.routeRules ?? {})) {
         if (!rule.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path

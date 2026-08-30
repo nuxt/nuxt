@@ -1035,6 +1035,9 @@ importers:
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
+      '@nuxt/vite-server':
+        specifier: workspace:*
+        version: link:../vite-server
       '@types/node':
         specifier: '>=18.12.0'
         version: 24.13.3
@@ -1664,6 +1667,49 @@ importers:
         specifier: 3.5.42
         version: 3.5.42(typescript@6.0.3)
 
+  packages/vite-server:
+    dependencies:
+      '@nuxt/kit':
+        specifier: workspace:*
+        version: link:../kit
+      clickable-path:
+        specifier: catalog:build
+        version: 0.1.0
+      defu:
+        specifier: catalog:build
+        version: 6.1.7
+      exsolve:
+        specifier: catalog:build
+        version: 1.1.1
+      mocked-exports:
+        specifier: catalog:build
+        version: 0.1.1
+      nuxt:
+        specifier: workspace:*
+        version: link:../nuxt
+      pathe:
+        specifier: catalog:build
+        version: 2.0.3
+      srvx:
+        specifier: catalog:nitro-runtime
+        version: 0.12.5
+      ufo:
+        specifier: catalog:build
+        version: 1.6.4
+    devDependencies:
+      '@nuxt/schema':
+        specifier: workspace:*
+        version: link:../schema
+      tsdown:
+        specifier: catalog:dev
+        version: 0.22.14(@arethetypeswrong/core@0.18.5)(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(typescript@6.0.3)(vue-tsc@3.3.11(typescript@6.0.3))
+      vite:
+        specifier: 8.2.2
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)
+      vitest:
+        specifier: catalog:dev
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.11)(happy-dom@20.12.0)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
+
   packages/webpack:
     dependencies:
       '@nuxt/friendly-errors-webpack-plugin':
@@ -2076,6 +2122,12 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/vapor:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/vite-server-spa:
     dependencies:
       nuxt:
         specifier: workspace:*

@@ -5,7 +5,7 @@ import { createBuilder, createServer, mergeConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, useNitro } from '@nuxt/kit'
+import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, tryUseNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import vuePlugin from '@vitejs/plugin-vue'
@@ -54,8 +54,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt.options.modulesDir.push(distDir)
 
   // Register Nitro plugin to fix SSR error stacktraces in dev mode
-  if (nuxt.options.dev) {
-    const nitro = useNitro()
+  const nitro = nuxt.options.dev ? tryUseNitro() : undefined
+  if (nitro) {
     nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
     nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
@@ -129,6 +129,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 // run serially to preserve the order of client, server builds
                 const environments = Object.values(builder.environments)
                 for (const environment of environments) {
+                  // a server builder may bring its own orchestration and build environments
+                  // from its own `buildApp` hook, which is ordered `pre` and so runs first
+                  if (environment.isBuilt) { continue }
                   logger.restoreAll()
                   nuxt._perf?.startPhase(`vite:${environment.name}`)
                   await builder.build(environment)
@@ -338,7 +341,8 @@ async function handleSerialBuilds (nuxt: Nuxt, ctx: ViteBuildContext) {
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     if (nuxt.options.vite.warmupEntry !== false) {
       // Don't delay nitro build for warmup
-      useNitro().hooks.hookOnce('compiled', () => {
+      // serial builds only run when nitro drives the build, so there is always an instance here
+      tryUseNitro()?.hooks.hookOnce('compiled', () => {
         const environment = (env.isServer ? server.environments.ssr : server.environments.client) as vite.DevEnvironment
         warmupViteServer(environment, [ctx.entry], {
           root: server.config.root,
@@ -423,7 +427,12 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   }
 
   // we hook to avoid blocking nitro's build, and do not await crawl so we don't block the dev server
-  useNitro().hooks.hookOnce('compiled', () => { void run() })
+  const nitro = nuxt.options.experimental.viteEnvironmentApi ? undefined : tryUseNitro()
+  if (nitro) {
+    nitro.hooks.hookOnce('compiled', () => { void run() })
+  } else {
+    nuxt.hooks.hookOnce('build:done', () => { void run() })
+  }
 }
 
 async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {

@@ -9,7 +9,7 @@ import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
-import { configDiagnostics, installModules } from '@nuxt/kit/internal'
+import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -92,6 +92,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
       entryChunkName: () => 'export const entryFileName = undefined',
       entryIds: () => 'export default []',
     },
+    serverBuild: createServerBuild(options),
     runWithContext: fn => runWithNuxtContext(nuxt, fn),
     options,
   }

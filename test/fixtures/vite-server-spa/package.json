@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-vite-server-spa",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  }
+}
