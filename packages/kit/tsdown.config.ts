@@ -23,6 +23,7 @@ export default defineConfig({
       'dotenv',
       'jiti',
       '@nuxt/schema',
+      '@nuxt/schema/internal',
       /^rolldown(\/|$)/,
       'oxc-parser',
       'mlly',

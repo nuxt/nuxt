@@ -1877,9 +1877,12 @@ export interface ConfigSchema {
 
   /**
    * Configuration for Nuxt's server builder.
+   *
+   * `'nitro'` and `'vite'` are shorthands for `'@nuxt/nitro-server'` (a full server
+   * runtime) and `'@nuxt/vite-server'` (a static, client-only SPA).
    */
   server: {
-    builder?: '@nuxt/nitro-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+    builder?: '@nuxt/nitro-server' | '@nuxt/vite-server' | 'nitro' | 'vite' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
   }
 
   postcss: {

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { useNitro } from '@nuxt/kit'
+import { tryUseNitro } from '@nuxt/kit'
 import { joinURL, withLeadingSlash, withTrailingSlash } from 'ufo'
 import { dirname, relative } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
@@ -121,10 +121,10 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
 
 const PUBLIC_ASSETS_RE = /[?#].*$/
 export function useResolveFromPublicAssets () {
-  const nitro = useNitro()
+  const nitro = tryUseNitro()
 
   function resolveFromPublicAssets (id: string) {
-    for (const dir of nitro.options.publicAssets) {
+    for (const dir of nitro?.options.publicAssets || []) {
       if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
       const path = id.replace(PUBLIC_ASSETS_RE, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
       if (existsSync(path)) {

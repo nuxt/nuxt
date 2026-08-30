@@ -6,12 +6,12 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { join, relative, resolve } from 'pathe'
-import { joinURL, withTrailingSlash } from 'ufo'
+import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { createNitro, writeTypes } from 'nitro/builder'
-import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
+import type { Nitro, NitroConfig } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
@@ -32,7 +32,6 @@ import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
-import { decodeRoutePath } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -426,96 +425,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitroConfig.serverDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.serverDir as string)
   nitroConfig.ignore ||= []
   nitroConfig.ignore.push(...resolveIgnorePatterns(nitroConfig.serverDir))
-
-  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr', 'ssr', 'noScripts']
-
-  // Both matchers are compiled on every build, so collisions are reported once rather
-  // than once per compilation pass.
-  const warnedKeyCollisions = new Set<string>()
-
-  addTemplate({
-    filename: 'route-rules.mjs',
-    // `defineRouteRules` is extracted from page sources, so without it route rules come only
-    // from configuration
-    dependsOn: nuxt.options.experimental.inlineRouteRules ? ['pages'] : [],
-    getContents () {
-      if (!nuxt._nitro) {
-        return `export default () => ({})`
-      }
-      // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
-      // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
-      // folded lookup and silently lose its protections. `sensitive` can also come from
-      // `app/router.options.ts` (runtime-only), so emit both a decoded and a decoded+folded
-      // matcher and pick at runtime.
-      const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-      const sourceRouter = nuxt._nitro.routing.routeRules
-      const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(sourceRouter, nuxt._nitro!.options.baseURL, fold, (existing, route, key) => {
-        // Only the matcher that will actually be used at runtime should report collisions.
-        if (fold === caseSensitiveRouteRules || warnedKeyCollisions.has(key)) { return }
-        warnedKeyCollisions.add(key)
-        bundlerDiagnostics.NUXT_B7022({ existing, route, canFold: fold })
-      })
-      const compileOptions: NonNullable<Parameters<typeof sourceRouter.compileToString>[0]> = {
-        matchAll: true,
-        serialize (routeRules) {
-          return `{${Object.entries(routeRules)
-            .filter(([name, value]) => value !== undefined && validManifestKeys.includes(name))
-            .map(([name, value]) => {
-              if (name === 'redirect') {
-                const redirectOptions = value as NitroRouteRules['redirect']
-                value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions!.to
-              }
-              if (name === 'appMiddleware') {
-                const appMiddlewareOptions = value as NitroRouteRules['appMiddleware']
-                if (typeof appMiddlewareOptions === 'string') {
-                  value = { [appMiddlewareOptions]: true }
-                } else if (Array.isArray(appMiddlewareOptions)) {
-                  const normalizedRules: Record<string, boolean> = {}
-                  for (const middleware of appMiddlewareOptions) {
-                    normalizedRules[middleware] = true
-                  }
-                  value = normalizedRules
-                }
-              }
-              if (name === 'cache' || name === 'isr' || name === 'swr') {
-                name = 'payload'
-                value = Boolean(value)
-              }
-              return `${name}: ${JSON.stringify(value)}`
-            }).join(',')
-          }}`
-        },
-      }
-      const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
-      const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
-      const needsRouterOptions = foldedMatcher !== sensitiveMatcher || caseSensitiveRouteRules
-      return [
-        `import { defu } from 'defu'`,
-        needsRouterOptions ? `import routerOptions from '#build/router.options.mjs'` : ``,
-        needsRouterOptions ? `const sensitiveMatcher = ${sensitiveMatcher}` : ``,
-        needsRouterOptions
-          ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)
-          : `const foldedMatcher = ${foldedMatcher}`,
-        // `decodeRoutePath` has no free variables, so it can be inlined by source to keep
-        // the runtime lookup and the build-time key normalisation from drifting apart.
-        `const decodeRoutePath = ${decodeRoutePath.toString()}`,
-        // Decoding must precede case folding, or a percent-encoded non-ASCII character
-        // would never fold.
-        `const normalizePath = (path, fold) => {`,
-        `  if (typeof path !== 'string') { return path }`,
-        `  const decoded = decodeRoutePath(path)`,
-        `  return fold ? decoded.toLowerCase() : decoded`,
-        `}`,
-        needsRouterOptions
-          ? [
-              `export default (path) => routerOptions.sensitive`,
-              `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
-              `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
-            ].join('\n')
-          : `export default path => defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
-      ].filter(Boolean).join('\n')
-    },
-  })
 
   if (nuxt.options.experimental.payloadExtraction) {
     if (nuxt.options.dev) {
@@ -920,6 +829,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
+  setServerBuild({
+    name: 'nitro',
+    label: 'Nitro',
+    target: () => nitro.options.preset,
+    targetLabel: 'preset',
+    output: {
+      dir: () => withoutTrailingSlash(nitro.options.output.dir),
+      publicDir: () => withoutTrailingSlash(nitro.options.output.publicDir),
+    },
+    capabilities: { server: true, dev: true },
+    preview: { command: () => nitro.options.commands.preview },
+  }, nuxt)
   await nuxt.callHook('nitro:init', nitro)
 
   // Instrument Nitro rollup plugins for perf tracking
