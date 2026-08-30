@@ -303,7 +303,7 @@ test.describe('SSR Streaming', () => {
   // pushes) that bypass unhead. When a security module has stamped a nonce on
   // the head scripts, the renderer reuses it so a strict `script-src` policy
   // does not block them. The `/nonce` fixture plugin stamps `test-csp-nonce`.
-  test('a script nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
+  test('a useHead nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
     const res = await fetch('/nonce')
     const html = await res.text()
 
@@ -319,6 +319,20 @@ test.describe('SSR Streaming', () => {
       expect(html).toMatch(/<script nonce="test-csp-nonce" async src=/)
       // Route-level inline `<style>` carries the nonce too (strict `style-src`)
       expect(html).toMatch(/<style nonce="test-csp-nonce">[^<]*\.nonce-probe/)
+    }
+  })
+
+  test('a render:html nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
+    const res = await fetch('/nonce-by-hook')
+    const html = await res.text()
+
+    expect(html).toMatch(/<script nonce="nonce-by-hook">[^<]*window\.__unhead__=\{_q:\[\]/)
+    expect(html).toMatch(/<script nonce="nonce-by-hook">window\.__unhead__\.push/)
+    expect(html).toMatch(/<script[^>]*\snonce="nonce-by-hook"[^>]*>window\.__NUXT__=/)
+
+    if (!isDev) {
+      expect(html).toMatch(/<script nonce="nonce-by-hook" async src=/)
+      expect(html).toMatch(/<style nonce="nonce-by-hook">[^<]*\.nonce-probe/)
     }
   })
 

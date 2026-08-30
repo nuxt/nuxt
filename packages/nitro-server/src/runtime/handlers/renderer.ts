@@ -33,7 +33,7 @@ import { throwIfUnmatchedPagePath } from '../utils/renderer/early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
-import { extractCspNonce } from '../utils/renderer/csp-nonce'
+import { SCRIPT_WITHOUT_NONCE_RE, extractCspNonce } from '../utils/renderer/csp-nonce'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
@@ -662,12 +662,13 @@ async function renderStreamedResponse (ctx: {
 
   const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
 
+  // A `render:html` may rewrite the shellContext entries entirely,
+  // so patch any `<script>` that is missing a `nonce=` rather than assuming
+  // these are the exact bootstrap/IIFE strings assigned above.
   if (nonceAttr) {
-    const patch = (html: string) => html.replace(/<script(?![^>]*\snonce=)/g, `<script${nonceAttr}`)
-    const bsIdx = shellContext.head.indexOf(bootstrapScript)
-    if (bsIdx !== -1) { shellContext.head[bsIdx] = patch(shellContext.head[bsIdx] ?? '') }
-    const iifeIdx = shellContext.bodyPrepend.indexOf(iifeScript)
-    if (iifeIdx !== -1) { shellContext.bodyPrepend[iifeIdx] = patch(shellContext.bodyPrepend[iifeIdx] ?? '') }
+    const patch = (html: string) => html.replace(SCRIPT_WITHOUT_NONCE_RE, `<script${nonceAttr}`)
+    shellContext.head = shellContext.head.map(patch)
+    shellContext.bodyPrepend = shellContext.bodyPrepend.map(patch)
   }
 
   const shellHtml = '<!DOCTYPE html>'
