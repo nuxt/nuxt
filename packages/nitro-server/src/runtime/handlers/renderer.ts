@@ -648,12 +648,27 @@ async function renderStreamedResponse (ctx: {
 
   // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
   // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
-  // a strict `script-src 'nonce-…'` policy would block them. Scan the first
-  // shell head tag after `render:html` has run, so nonce-injecting
+  // a strict `script-src 'nonce-…'` policy would block them. Scan the shell
+  // head tags after `render:html` has run, so nonce-injecting
   // modules have already stamped their nonce; if none is
   // present the attribute is omitted and behaviour is unchanged.
-  const cspNonce = extractCspNonce(shellContext.head[0] || '')
+  let cspNonce: string | undefined
+
+  for (const html of shellContext.head) {
+    cspNonce ||= extractCspNonce(html)
+
+    if (cspNonce) { break }
+  }
+
   const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
+
+  if (nonceAttr) {
+    const patch = (html: string) => html.replace(/<script(?![^>]*\snonce=)/g, `<script${nonceAttr}`)
+    const bsIdx = shellContext.head.indexOf(bootstrapScript)
+    if (bsIdx !== -1) { shellContext.head[bsIdx] = patch(shellContext.head[bsIdx] ?? '') }
+    const iifeIdx = shellContext.bodyPrepend.indexOf(iifeScript)
+    if (iifeIdx !== -1) { shellContext.bodyPrepend[iifeIdx] = patch(shellContext.bodyPrepend[iifeIdx] ?? '') }
+  }
 
   const shellHtml = '<!DOCTYPE html>'
     + `<html${joinAttrs(shellContext.htmlAttrs)}>`
