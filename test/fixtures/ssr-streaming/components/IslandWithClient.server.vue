@@ -4,6 +4,6 @@
     data-testid="client-island"
   >
     <p>server-rendered island shell</p>
-    <IslandCounter v-load-client />
+    <IslandCounter nuxt-client />
   </div>
 </template>

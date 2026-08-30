@@ -27,14 +27,14 @@ function islandURL (name: string, opts: { props?: Record<string, any>, context?:
   if (opts.props) { query.props = serializedProps }
   return withQuery(`/__nuxt_island/${name}_${hashId}.json`, query)
 }
- 
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/vue-onigiri', import.meta.url)),
-    dev: isDev,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  }) 
+
+await setup({
+  rootDir: fileURLToPath(new URL('./fixtures/vue-onigiri', import.meta.url)),
+  dev: isDev,
+  server: true,
+  browser: true,
+  setupTimeout: (isWindows ? 360 : 120) * 1000,
+})
 
 describe('server components/islands', () => {
   it('/islands', async () => {

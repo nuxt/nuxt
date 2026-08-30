@@ -496,7 +496,7 @@ test.describe('SSR Streaming', () => {
     expect(consoleErrors, `console.error output: ${consoleErrors.join(' | ')}`).toEqual([])
   })
 
-  // Selective-client islands: a `v-load-client` component inside a server
+  // Selective-client islands: a `nuxt-client` component inside a server
   // component is teleported via the `uid;client` marker — a distinct path
   // from slot teleports. Streaming relocates it client-side, and it must
   // hydrate into a live, interactive component.

@@ -13,7 +13,5 @@ const doubled = computed(() => count.value * props.multiplier)
     <button @click="count += 1">
       Inc
     </button>
-
-    <slot />
   </div>
 </template>
