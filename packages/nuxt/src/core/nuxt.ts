@@ -319,12 +319,22 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   let serverBuilderReference: { path: string } | { types: string } | undefined
+  /**
+   * A server builder declares the augmentations it contributes (`ServerTypes`, `ServerRoutes`,
+   * `RuntimeConfig`, …) from an `./augments` subpath export, which is referenced on its own so
+   * the declarations reach the shared environment without pulling in the builder's own types.
+   * Builders without that export are referenced by package name.
+   */
   const getServerBuilderReference = () => {
     if (serverBuilderReference || typeof nuxt.options.server.builder !== 'string') {
       return serverBuilderReference
     }
-    serverBuilderReference = nuxt.options.server.builder === '@nuxt/nitro-server'
-      ? { path: resolveModulePath('@nuxt/nitro-server/augments', { from: import.meta.url }).replace(/\.mjs$/, '.d.mts') }
+    const augments = resolveModulePath(`${nuxt.options.server.builder}/augments`, {
+      from: [import.meta.url, directoryToURL(nuxt.options.rootDir)],
+      try: true,
+    })
+    serverBuilderReference = augments
+      ? { path: augments.replace(/\.mjs$/, '.d.mts') }
       : { types: nuxt.options.server.builder }
     return serverBuilderReference
   }
@@ -357,7 +367,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (serverBuilderReference) {
       opts.references.push(serverBuilderReference)
       opts.nodeReferences.push(serverBuilderReference)
-      if (nuxt.options.server.builder === '@nuxt/nitro-server') {
+      if ('path' in serverBuilderReference) {
         opts.sharedReferences.push(serverBuilderReference)
       }
     }
