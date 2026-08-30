@@ -97,7 +97,6 @@
     "pathe": "catalog:build",
     "pkg-pr-new": "catalog:dev",
     "playwright-core": "catalog:dev",
-    "rolldown-string": "catalog:vite",
     "rollup": "catalog:dev",
     "sherif": "catalog:dev",
     "srvx": "catalog:nitro-runtime",

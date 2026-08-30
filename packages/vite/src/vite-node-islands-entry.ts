@@ -3,7 +3,7 @@ import { viteNodeFetch } from '#vite-node'
 import runner from '#vite-node-runner'
 
 export default async function loadIslandComponents (): Promise<Record<string, unknown>> {
-  // eslint-disable-next-line nuxt/prefer-import-meta,@typescript-eslint/no-deprecated
+  // eslint-disable-next-line nuxt/prefer-import-meta
   process.server = true
   import.meta.server = true
 

@@ -216,16 +216,12 @@ const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 // Read a non-GET island body, refusing oversized or deeply nested input before the JSON
 // parse and hash run on it.
 async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext> {
-  const contentLength = Number(event.req.headers.get('content-length'))
-  if (contentLength > MAX_ISLAND_BODY_BYTES) {
-    throw new HTTPError({ status: 413, statusText: 'Island request body too large' })
-  }
+  let overflowed = Number(event.req.headers.get('content-length')) > MAX_ISLAND_BODY_BYTES
 
   // Stream with a running byte count rather than buffering: a chunked request carries no
   // `content-length`, so the header check alone can't bound an unbounded body.
   let received = 0
   let raw = ''
-  let overflowed = false
   if (event.req.body) {
     const decoder = new TextDecoder()
     // Read through a reader rather than `for await`: async iteration of a `ReadableStream` is
@@ -236,10 +232,8 @@ async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext
         const { done, value } = await reader.read()
         if (done) { break }
         received += value.byteLength
-        if (received > MAX_ISLAND_BODY_BYTES) {
-          // Stop buffering (memory stays bounded) but keep draining so the request is fully
-          // consumed: bailing out mid-upload resets the socket and poisons connection reuse
-          // for the next request on the same keep-alive connection.
+        if (overflowed || received > MAX_ISLAND_BODY_BYTES) {
+          // stop buffering but keep draining: rejecting mid-upload resets the socket
           overflowed = true
           continue
         }

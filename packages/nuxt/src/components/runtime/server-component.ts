@@ -10,8 +10,8 @@ import type { NuxtApp } from '#app/nuxt'
 import { getIslandHash } from '#app/island-hash'
 import type { NuxtIslandResponse } from '#app/types'
 import { $fetch } from '#build/fetch'
-import { payloadExtraction } from '#build/nuxt.config.mjs'
-import { onigiriEnabled } from '#build/nuxt.config.mjs'
+import { onigiriEnabled, payloadExtraction } from '#build/nuxt.config.mjs'
+
 interface ServerComponentProps {
   lazy?: boolean
 }

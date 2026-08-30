@@ -14,7 +14,6 @@ import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
 import { renderDiagnostics } from '../diagnostics/render'
 
-// @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 import { $fetch } from '#build/fetch'
 
@@ -265,7 +264,7 @@ const NuxtIsland = defineComponent({
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
 
-        ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
+        ssrHTML.value = (res.html ?? '').replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
         payloads.slots = res.slots || {}

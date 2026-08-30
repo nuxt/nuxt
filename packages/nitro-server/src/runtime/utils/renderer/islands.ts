@@ -1,5 +1,4 @@
-import type { NuxtIslandResponse, NuxtSSRContext } from 'nuxt/app'
-// @ts-expect-error virtual file
+import type { NuxtIslandResponse, NuxtSSRContext } from '#app/types'
 import { appRootTag } from '#internal/nuxt.config.mjs'
 
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)

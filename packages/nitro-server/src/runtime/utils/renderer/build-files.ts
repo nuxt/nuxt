@@ -28,13 +28,6 @@ export const APP_ROOT_CLOSE_TAG: string = `</${appRootTag}>`
 
 export const getServerEntry: () => Promise<Entry> = () => import('nuxt/entry').then(r => (r.default || r) as Entry)
 
-// In dev the virtual exports a `default` async function (vite-node
-// fetches the components.islands.mjs template fresh through Vite's
-// plugin chain). In production, Vite's SSR build emits the file
-// directly with `export const islandComponents`. Handle both shapes.
-// @ts-expect-error file will be produced after app build
-export const getComponentsIslands = () => import('#build/dist/server/components.islands.mjs').then(r => typeof r.default === 'function' ? r.default() : r)
-
 const getClientManifest: () => Promise<Manifest> = () => import('nuxt/manifest')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<Manifest>

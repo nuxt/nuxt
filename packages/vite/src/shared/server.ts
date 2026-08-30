@@ -56,7 +56,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       ssr: true,
       rolldownOptions: {
         input: {
-          server: serverEntry,
+          'server': serverEntry,
           'components.islands': resolve(nuxt.options.buildDir, 'components.islands'),
         },
         external: [

@@ -751,9 +751,6 @@ importers:
       playwright-core:
         specifier: catalog:dev
         version: 1.62.1
-      rolldown-string:
-        specifier: catalog:vite
-        version: 0.3.1(rolldown@1.2.6)
       rollup:
         specifier: catalog:dev
         version: 4.63.1

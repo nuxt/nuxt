@@ -18,7 +18,7 @@ import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
-import { getComponentsIslands, getSSRRenderer, getServerEntry } from '../utils/renderer/build-files'
+import { getSSRRenderer, getServerEntry } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { prerenderRenderingURLs } from '../utils/cache'
 import { useStorage } from 'nitro/storage'
@@ -26,6 +26,9 @@ import type { Storage } from 'unstorage'
 
 export const islandCache: Storage<NuxtIslandResponse> | null = import.meta.prerender ? useStorage<NuxtIslandResponse>('internal:nuxt:prerender:island') : null
 export const islandPropCache: Storage<string> | null = import.meta.prerender ? useStorage<string>('internal:nuxt:prerender:island-props') : null
+
+// @ts-expect-error file will be produced after app build
+const getComponentsIslands = () => import('#build/dist/server/components.islands.mjs').then(r => typeof r.default === 'function' ? r.default() : r)
 
 type IslandsModule = Awaited<ReturnType<typeof getComponentsIslands>>
 
