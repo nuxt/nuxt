@@ -1,8 +1,8 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { createIsIgnored, setBuildOutput, useNitro } from '@nuxt/kit'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { createIsIgnored, setBuildOutput } from '@nuxt/kit'
+import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
@@ -56,7 +56,7 @@ export async function getVueHash (nuxt: Nuxt) {
       await persistBuildOutputs(nuxt)
       await writeCache(nuxt.options.buildDir, nuxt.options.buildDir, cacheFile)
       if (cachesClientAssets && clientFiles.length) {
-        const publicDir = useNitro().options.output.publicDir
+        const publicDir = useServerBuild(nuxt).output.publicDir()
         await writeCache(publicDir, publicDir, clientCacheFile, clientFiles)
       }
 
@@ -104,7 +104,7 @@ export async function getVueHash (nuxt: Nuxt) {
         ...options.restore
           ? {
               async buildApp (builder) {
-                await restoreCacheFromFile(useNitro().options.output.publicDir, clientCacheFile)
+                await restoreCacheFromFile(useServerBuild(nuxt).output.publicDir(), clientCacheFile)
                 await restoreBuildOutputs(nuxt, CLIENT_BUILD_OUTPUT_KEYS)
                 const client = builder.environments.client
                 if (client) {
