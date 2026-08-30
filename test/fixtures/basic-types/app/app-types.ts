@@ -13,7 +13,8 @@ import type { NuxtError, NuxtSSRContext, PageMeta, RequestEvent } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
-import { prefetchComponents, preloadComponents, useRouter } from '#imports'
+import { getRouteRules, prefetchComponents, preloadComponents, useRequestEvent, useRouter } from '#imports'
+import type { LayoutKey } from '#build/types/nitro-layouts'
 
 type DefaultAsyncDataErrorValue = undefined
 type DefaultAsyncDataValue = undefined
@@ -1051,5 +1052,18 @@ describe('request event typing', () => {
     expectTypeOf(useRequestEvent()).toEqualTypeOf<H3Event | undefined>()
     expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
     expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
+  })
+})
+
+describe('route rules typing', () => {
+  it('resolves the rules contributed by `@nuxt/nitro-server`', () => {
+    const rules = getRouteRules(useRequestEvent()!)
+    expectTypeOf(rules.redirect).toEqualTypeOf<string | undefined>()
+    expectTypeOf(rules.prerender).toEqualTypeOf<boolean | undefined>()
+    expectTypeOf(rules.appMiddleware).toEqualTypeOf<Record<string, boolean> | undefined>()
+    expectTypeOf(rules.payload).toEqualTypeOf<boolean | undefined>()
+    expectTypeOf(rules.appLayout).toEqualTypeOf<LayoutKey | false | undefined>()
+    expectTypeOf(rules.swr).toBeAny()
+    expectTypeOf(rules.headers).toBeAny()
   })
 })

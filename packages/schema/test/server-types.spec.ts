@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { H3Event } from 'h3'
 
-import type { RequestEventFallback, ResolveRequestEvent } from '../src/types/server.ts'
+import type { AppRouteRulesBase, RequestEventFallback, ResolveAppRouteRules, ResolveRequestEvent } from '../src/types/server.ts'
 
 describe('fallback request event shape', () => {
   it('is satisfied by an event of a real server runtime', () => {
@@ -30,5 +30,28 @@ describe('`ServerTypes` registry', () => {
     interface Empty {}
 
     expectTypeOf<ResolveRequestEvent<Empty>>().toEqualTypeOf<RequestEventFallback>()
+  })
+})
+
+describe('app-facing route rules', () => {
+  it('resolves the rules contributed by a server builder alongside the app-facing ones', () => {
+    interface Contributed { routeRules: { swr?: number | boolean } }
+
+    expectTypeOf<ResolveAppRouteRules<Contributed>['swr']>().toEqualTypeOf<number | boolean | undefined>()
+    expectTypeOf<ResolveAppRouteRules<Contributed>['prerender']>().toEqualTypeOf<boolean | undefined>()
+  })
+
+  it('describes an app-facing rule as the app layer reads it, not as the builder declares it', () => {
+    interface Contributed { routeRules: { redirect?: { to: string, status: number } } }
+
+    expectTypeOf<ResolveAppRouteRules<Contributed>['redirect']>().toEqualTypeOf<string | undefined>()
+  })
+
+  it('falls back to the app-facing rules when a builder contributes none', () => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    interface Empty {}
+
+    expectTypeOf<ResolveAppRouteRules<Empty>>().toExtend<AppRouteRulesBase>()
+    expectTypeOf<AppRouteRulesBase>().toExtend<ResolveAppRouteRules<Empty>>()
   })
 })

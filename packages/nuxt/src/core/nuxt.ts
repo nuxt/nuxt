@@ -265,6 +265,13 @@ async function initNuxt (nuxt: Nuxt) {
         '    appLayout?: LayoutKey | false',
         '  }',
         '}',
+        ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+          `declare module '${module}' {`,
+          '  interface AppRouteRulesExtensions {',
+          '    appLayout?: LayoutKey | false',
+          '  }',
+          '}',
+        ]),
       ].join('\n')
     },
   }, { nuxt: true, nitro: true, node: true })
