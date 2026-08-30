@@ -12,8 +12,8 @@ import type { OnigiriPayload } from 'vue-onigiri/runtime/shared'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
- 
-import { isDev, isWebpack, } from './matrix'
+
+import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 const shouldRun = !isWebpack
@@ -26,7 +26,7 @@ function islandURL (name: string, opts: { props?: Record<string, any>, context?:
   if (opts.props) { query.props = serializedProps }
   return withQuery(`/__nuxt_island/${name}_${hashId}.json`, query)
 }
-if(shouldRun) {
+if (shouldRun) {
   await setup({
     rootDir: fileURLToPath(new URL('./fixtures/vue-onigiri', import.meta.url)),
     dev: isDev,
