@@ -5,7 +5,7 @@ const props = defineProps({
   str: String,
   obj: Object,
 })
-console.log(props)
+
 const hasRouter = useState('hasRouter', () => !!useRouter())
 </script>
 

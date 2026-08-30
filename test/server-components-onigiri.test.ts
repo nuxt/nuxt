@@ -12,12 +12,11 @@ import type { OnigiriPayload } from 'vue-onigiri/runtime/shared'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
-
-import { isDev, isWebpack, runsOncePerEnvInMatrix } from './matrix'
+ 
+import { isDev, isWebpack,   } from './matrix'
 import { renderPage } from './utils'
 
-// the onigiri fixture only builds under vite and does not vary along the context/manifest axes
-const shouldRun = runsOncePerEnvInMatrix
+const shouldRun = !isWebpack
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
@@ -27,7 +26,7 @@ function islandURL (name: string, opts: { props?: Record<string, any>, context?:
   if (opts.props) { query.props = serializedProps }
   return withQuery(`/__nuxt_island/${name}_${hashId}.json`, query)
 }
-
+if(shouldRun) {
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/vue-onigiri', import.meta.url)),
   dev: isDev,
@@ -35,8 +34,9 @@ await setup({
   browser: true,
   setupTimeout: (isWindows ? 360 : 120) * 1000,
 })
+}
 
-describe('server components/islands', () => {
+describe.runIf(shouldRun)('server components/islands', () => {
   it('/islands', async () => {
     const { page } = await renderPage('/islands')
     const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
@@ -266,7 +266,7 @@ describe('server components/islands', () => {
   })
 })
 
-describe('component islands', () => {
+describe.runif(shouldrun)('component islands', () => {
   it('renders components with route', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
@@ -457,7 +457,7 @@ describe('component islands', () => {
   })
 })
 
-describe('hash binding', () => {
+describe.runif(shouldrun)('hash binding', () => {
   it('accepts a request whose URL hash matches the props', async () => {
     const res = await fetch(islandURL('PureComponent', {
       props: { bool: false, number: 1, str: 's', obj: {} },
@@ -554,7 +554,7 @@ describe('hash binding', () => {
   })
 })
 
-describe('denial-of-service protections', () => {
+describe.runif(shouldrun)('denial-of-service protections', () => {
   it('rejects an oversized island body before hashing', async () => {
     const props = JSON.stringify(Object.fromEntries(Array.from({ length: 150_000 }, (_, i) => [`k${i}`, i])))
     expect(props.length).toBeGreaterThan(MAX_ISLAND_BODY_BYTES)
@@ -609,7 +609,7 @@ describe('denial-of-service protections', () => {
   })
 })
 
-describe('hash/render input alignment', () => {
+describe.runif(shouldrun)('hash/render input alignment', () => {
   // `data-v-*` props are stripped before both hashing and rendering, so adding only those
   // keys resolves to the same hash and an identical payload.
   it('ignores data-v-* props so the same hashId yields an identical payload', async () => {
@@ -629,7 +629,7 @@ describe('hash/render input alignment', () => {
   })
 })
 
-describe('reserved island prop keys', () => {
+describe.runif(shouldrun)('reserved island prop keys', () => {
   // Without `vue.runtimeCompiler` a `template` value is inert, so data that merely contains
   // that key (e.g. CMS content) must still render.
   it('allows a nested template key when the runtime compiler is disabled', async () => {
@@ -653,7 +653,7 @@ describe('reserved island prop keys', () => {
   })
 })
 
-describe('page-island middleware', () => {
+describe.runif(shouldrun)('page-island middleware', () => {
   it('runs page middleware and honours redirects for `page_*` islands', async () => {
     const res = await fetch(islandURL('page_gated-server-page', {
       context: { url: '/gated-server-page' },
@@ -753,7 +753,7 @@ describe.skipIf(!shouldRun || isDev || isWebpack)('regressions', () => {
   })
 })
 
-describe('onigiri rendering matrix', () => {
+describe.runif(shouldrun)('onigiri rendering matrix', () => {
   it('SSR renders multiple instances of the same island with their own props', async () => {
     const html = await $fetch<string>('/multi')
     expect(html).toContain('block:multi-a x2')
