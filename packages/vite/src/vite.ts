@@ -44,6 +44,7 @@ import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { PerfPlugin } from './plugins/perf.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -121,7 +122,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       },
       // `nitro/vite`'s plugin runs the build process, including prerendering + asset copying
-      ...nuxt.options.experimental.nitroViteEnvironment
+      ...!useServerBuild(nuxt).buildsSeparately
         ? {}
         : {
             builder: {
@@ -368,7 +369,7 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   }
 
   // we hook to avoid blocking nitro's build, and do not await crawl so we don't block the dev server
-  const nitro = nuxt.options.experimental.nitroViteEnvironment ? undefined : tryUseNitro()
+  const nitro = !useServerBuild(nuxt).buildsSeparately ? undefined : tryUseNitro()
   if (nitro) {
     nitro.hooks.hookOnce('compiled', () => { void run() })
   } else {

@@ -9,7 +9,7 @@ import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { setBuildOutput } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
 import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
@@ -28,7 +28,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   // captured in-memory from the client env's bundle under env-API
   let rawClientManifest: ViteClientManifest | undefined
 
-  const envApi = nuxt.options.experimental.nitroViteEnvironment
+  const envApi = !useServerBuild(nuxt).buildsSeparately
 
   let finalized: Promise<void> | undefined
   const finalize = () => (finalized ??= finalizeBuildManifest())

@@ -51,6 +51,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     output: { dir: () => outputDir, publicDir: () => publicDir },
     // TODO: report what actually claimed the server, once a target can declare itself
     capabilities: { server: nuxt.options.ssr !== false, dev: true },
+    buildsSeparately: false,
     // neither `nitro` nor `nitro/runtime-config` resolves in a build without nitro
     runtime: {
       fetch: resolve(distDir, 'runtime/fetch'),
@@ -58,10 +59,6 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     },
     preview: { staticDir: () => publicDir },
   }, nuxt)
-
-  // The env-API path is the only one that does not route the client build, the dev
-  // middleware and the client manifest through nitro's own pipeline.
-  nuxt.options.experimental.nitroViteEnvironment = true
 
   // There is no server to read runtime config from the environment, so the values known
   // at build time are serialised instead. Only `app` and `public` are included: this

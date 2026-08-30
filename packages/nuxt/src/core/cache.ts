@@ -46,7 +46,7 @@ export async function getVueHash (nuxt: Nuxt) {
 
   // When Nitro builds as a Vite environment the client bundle is written to
   // `output.publicDir`, outside `buildDir`, so it needs its own cache entry.
-  const cachesClientAssets = nuxt.options.experimental.nitroViteEnvironment
+  const cachesClientAssets = !useServerBuild(nuxt).buildsSeparately
   let clientFiles: string[] = []
 
   return {
