@@ -9,6 +9,7 @@ packages:
   - test/fixtures/*/_local-modules/*
 
 patchedDependencies:
+  '@vue/runtime-core@3.5.42': patches/@vue__runtime-core@3.5.42.patch
   nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
   # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
   nitropack@2.13.4: patches/nitropack@2.13.4.patch
