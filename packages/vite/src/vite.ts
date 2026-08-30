@@ -5,7 +5,7 @@ import { createBuilder, createServer, mergeConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, tryUseNitro, useNitro } from '@nuxt/kit'
+import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, tryUseNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
 import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
@@ -368,10 +368,11 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   }
 
   // we hook to avoid blocking nitro's build, and do not await crawl so we don't block the dev server
-  if (nuxt.options.experimental.nitroViteEnvironment) {
-    nuxt.hooks.hookOnce('build:done', () => { void run() })
+  const nitro = nuxt.options.experimental.nitroViteEnvironment ? undefined : tryUseNitro()
+  if (nitro) {
+    nitro.hooks.hookOnce('compiled', () => { void run() })
   } else {
-    useNitro().hooks.hookOnce('compiled', () => { void run() })
+    nuxt.hooks.hookOnce('build:done', () => { void run() })
   }
 }
 
