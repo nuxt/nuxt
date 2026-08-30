@@ -94,6 +94,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
 
+  for (const asset of [...nuxt.options.nitro.publicAssets || [], ...nuxt.options.nitro.serverAssets || []]) {
+    if (asset?.dir) {
+      asset.dir = resolveAlias(asset.dir, nuxt.options.alias)
+    }
+  }
+
+  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
+  for (const asset of nuxt.options.nitro.publicAssets || []) {
+    if (asset?.dir && !existsSync(resolve(nuxt.options.rootDir, asset.dir))) {
+      bundlerDiagnostics.NUXT_B7023({ dir: asset.dir, baseURL: joinURL('/', asset.baseURL || '/', '**') })
+    }
+  }
+
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
     nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
@@ -102,6 +115,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  // When the base URL is only known at runtime, the `base-url` middleware strips it from incoming
+  // requests, so nitro's routes must stay unprefixed for the internally re-dispatched request to
+  // match them.
+  const nitroBaseURL = nuxt.options.experimental.runtimeBaseURL ? '/' : nuxt.options.app.baseURL
   if (nuxt.options.experimental.runtimeBaseURL) {
     nuxt.options.serverHandlers.unshift({
       route: '',
@@ -205,7 +222,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     renderer: {
       handler: resolve(distDir, 'runtime/handlers/renderer'),
     },
-    baseURL: nuxt.options.app.baseURL,
+    baseURL: nitroBaseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
@@ -546,7 +563,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     nitroConfig.prerender ||= {}
     nitroConfig.prerender.ignore ||= []
-    nitroConfig.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, manifestPrefix))
+    nitroConfig.prerender.ignore.push(joinURL(nitroBaseURL, manifestPrefix))
 
     nitroConfig.publicAssets!.unshift(
       // build manifest

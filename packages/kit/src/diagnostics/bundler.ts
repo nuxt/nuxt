@@ -116,5 +116,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { canFold: boolean }) => `Disambiguate the keys${p.canFold ? ' or set `router.options.sensitive: true`' : ''}.`,
       docs: false,
     },
+    NUXT_B7023: {
+      why: (p: { dir: string, baseURL: string }) => `The \`nitro.publicAssets\` directory \`${p.dir}\` does not exist, so requests to \`${p.baseURL}\` will 404.`,
+      fix: 'Relative directories are resolved against your project root. Correct the `dir` or remove the entry.',
+      docs: false,
+    },
   },
 })
