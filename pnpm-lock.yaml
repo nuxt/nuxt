@@ -80,8 +80,8 @@ catalogs:
       specifier: ^0.5.10
       version: 0.5.10
     '@nuxt/cli':
-      specifier: npm:@nuxt/cli-nightly@^4.0.0-20260831-075234-8bcf1bc
-      version: 4.0.0-20260831-075234-8bcf1bc
+      specifier: npm:@nuxt/cli-nightly@^4.0.0-20260831-083430-8bcf1bc
+      version: 4.0.0-20260831-083430-8bcf1bc
     '@nuxt/devtools':
       specifier: ^4.0.0-alpha.15
       version: 4.0.0-alpha.15
@@ -624,7 +624,7 @@ importers:
         version: 1.9.2
       '@nuxt/cli':
         specifier: catalog:build
-        version: '@nuxt/cli-nightly@4.0.0-20260831-075234-8bcf1bc(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)'
+        version: '@nuxt/cli-nightly@4.0.0-20260831-083430-8bcf1bc(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)'
       '@nuxt/eslint-config':
         specifier: catalog:dev
         version: 1.17.0(@typescript-eslint/utils@8.67.0(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.5.42)(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -1033,7 +1033,7 @@ importers:
         version: 0.5.10(@rspack/core@2.2.1(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.6)(rollup@4.63.1)(vite@8.2.2)(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
       '@nuxt/cli':
         specifier: catalog:build
-        version: '@nuxt/cli-nightly@4.0.0-20260831-075234-8bcf1bc(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)'
+        version: '@nuxt/cli-nightly@4.0.0-20260831-083430-8bcf1bc(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)'
       '@nuxt/devtools':
         specifier: catalog:build
         version: 4.0.0-alpha.15(42dbc9c5a0aefdaac9725e5f0883f5bf)
@@ -3155,8 +3155,8 @@ packages:
     resolution: {integrity: sha512-llZkSzeTsimFx64U+ThT2xQM2uEce8GIQUYvxgbB6ZFvBhV2LP9LeJJb3HT+syG0uCFLsTCHjV9SfC0WNU1vtA==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@nuxt/cli-nightly@4.0.0-20260831-075234-8bcf1bc':
-    resolution: {integrity: sha512-D48bEDjBMWa4LieiNkJ8Kq4zl4vjBssaUT4qStbKOv9sKZLp7PIp4dXsEEsDu0sq5CllD+PKUPsEiHtrmEnb5g==}
+  '@nuxt/cli-nightly@4.0.0-20260831-083430-8bcf1bc':
+    resolution: {integrity: sha512-RG7ZwN0/WmdvcTHUSwPJtFs+4B5Cr42sOzmxZq9qdrZqf3rnMwxjm1fPv93rVWjOmMdgp4cPfdUNDlHnX70ydw==}
     engines: {node: ^22.19.0 || ^24.11.0 || >=26.0.0}
     hasBin: true
     peerDependencies:
@@ -5624,10 +5624,6 @@ packages:
   cli-table3@0.6.5:
     resolution: {integrity: sha512-+W/5efTR7y5HRD7gACw9yQjqMVvEMLBHmboM/kPWam+H+Hmyrgjh6YncVKK122YZkXrLudzTuAukUw9FnMf7IQ==}
     engines: {node: 10.* || >= 12.*}
-
-  clickable-path@0.0.1:
-    resolution: {integrity: sha512-PkJJGbxFRoWoxyYImJPPyd/RW+aVe0HQVBPhbp2KUaYZdpVNcIopUcE9UmCNAwdbj9frP5SzundqaePJF4ZWrw==}
-    engines: {node: '>=22.1.0'}
 
   clickable-path@0.1.0:
     resolution: {integrity: sha512-JRBIpDbw7S1vaEGvCXfm728cfchkUDtv4I2DjWMMm7IoEygxuFWhO6UQOrg+u61TPI13c/HsGG/RLwl3NBt+4w==}
@@ -11769,11 +11765,11 @@ snapshots:
     dependencies:
       which: 7.0.0
 
-  '@nuxt/cli-nightly@4.0.0-20260831-075234-8bcf1bc(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)':
+  '@nuxt/cli-nightly@4.0.0-20260831-083430-8bcf1bc(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)':
     dependencies:
       '@clack/prompts': 1.7.0
       args-tokenizer: 0.3.0
-      clickable-path: 0.0.1
+      clickable-path: 0.1.0
       confbox: 0.2.4
       consola: 3.4.2
       defu: 6.1.7
@@ -14273,8 +14269,6 @@ snapshots:
       string-width: 4.2.3
     optionalDependencies:
       '@colors/colors': 1.5.0
-
-  clickable-path@0.0.1: {}
 
   clickable-path@0.1.0: {}
 
