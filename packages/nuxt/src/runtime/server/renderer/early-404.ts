@@ -1,7 +1,8 @@
-import { HTTPError } from 'nitro/h3'
-import type { H3Event } from 'nitro/h3'
+import type { RequestEvent } from '@nuxt/schema'
 
-import { NUXT_PAGE_MATCHER } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_PAGE_MATCHER } from 'nuxt/renderer-config'
+import { serverRuntime } from './runtime'
+import type { RendererRouteRules } from './runtime'
 
 const TRAILING_SLASHES_RE = /\/+$/
 const PAYLOAD_SUFFIX = '/_payload.json'
@@ -38,14 +39,14 @@ function matchesPageRoute (pathname: string): boolean {
  * When a `cache` route rule covers the path, its `maxAge` is advertised on
  * GET/HEAD misses too, so CDNs can absorb repeat probes for unknown paths.
  */
-export function throwIfUnmatchedPagePath (event: H3Event, routeOptions: { cache?: { maxAge?: number } }): void {
+export function throwIfUnmatchedPagePath (event: RequestEvent, routeOptions: Pick<RendererRouteRules, 'cache'>): void {
   if (matchesPageRoute(event.url.pathname)) {
     return
   }
   const path = event.url.pathname + event.url.search
-  const maxAge = routeOptions.cache?.maxAge
+  const maxAge = routeOptions.cache ? routeOptions.cache.maxAge : undefined
   const cacheable = !!maxAge && maxAge > 0 && (event.req.method === 'GET' || event.req.method === 'HEAD')
-  throw new HTTPError({
+  throw serverRuntime.createError({
     status: 404,
     statusText: `Page not found: ${path}`,
     data: { path },

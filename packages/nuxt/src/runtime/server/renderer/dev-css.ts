@@ -1,8 +1,8 @@
-import type { H3Event } from 'nitro/h3'
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
+import type { RequestEvent } from '@nuxt/schema'
 
-import '../../context'
+import { getRequestState } from './runtime'
 
 /**
  * Patch the dev SSR manifest with the CSS modules a dev integration recorded
@@ -12,8 +12,8 @@ import '../../context'
  * in dev the SSR manifest has no per-request CSS, so we attach the modules
  * to the `@vite/client` entry, which `getRequestDependencies` always resolves.
  */
-export function patchDevClientCss (event: H3Event, rendererContext: RendererContext): void {
-  const css = event.context.nuxt?.['~devClientCss']
+export function patchDevClientCss (event: RequestEvent, rendererContext: RendererContext): void {
+  const css = getRequestState(event)?.['~devClientCss']
   if (!css?.length) { return }
 
   const current = rendererContext.manifest

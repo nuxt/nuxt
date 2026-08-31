@@ -44,7 +44,7 @@ describe('createServerAutoImports', () => {
     const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
     const autoImports = createServerAutoImports(
       mockNuxt(),
-      { autoImport: true, imports: [{ name: 'buildAssetsURL', from: resolve(import.meta.dirname, 'runtime/utils/paths.ts') }] },
+      { autoImport: true, imports: [{ name: 'withBaseURL', from: resolve(import.meta.dirname, 'runtime/utils/base.ts') }] },
       typesDir,
     )
 

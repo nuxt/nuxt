@@ -152,6 +152,34 @@ export default defineConfig({
         },
       })),
       {
+        // stands in for the defines and aliases a server builder applies in its own bundle
+        define: {
+          'import.meta.dev': 'false',
+          'import.meta.server': 'true',
+          'import.meta.client': 'false',
+          'import.meta.prerender': 'false',
+        },
+        resolve: {
+          alias: {
+            'nuxt/renderer-config': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer-config.mjs'),
+            'nuxt/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
+            'nuxt/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
+            'nuxt/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
+            'nuxt/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
+            'nuxt/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
+            'nuxt/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
+            '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
+          },
+        },
+        test: {
+          name: 'renderer',
+          include: ['test/renderer/*.test.ts'],
+          globalSetup: ['./test/renderer/prepare.ts'],
+          testTimeout: 60_000,
+          benchmark: { include: [] },
+        },
+      },
+      {
         test: {
           name: 'bundle',
           include: ['test/bundle.test.ts'],
@@ -192,7 +220,6 @@ export default defineConfig({
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
-            '#internal/nuxt/nitro-config.mjs': resolve('./test/mocks/nitro-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),

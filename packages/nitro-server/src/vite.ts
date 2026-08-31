@@ -14,7 +14,9 @@ import remapping from '@ampproject/remapping'
 import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
-import { NUXT_BUILD_OUTPUT_MAP, distDir, getServerReplacements } from './utils.ts'
+import { BUILD_OUTPUT_SPECIFIERS } from '@nuxt/kit/internal'
+
+import { distDir, getServerReplacements } from './utils.ts'
 
 const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
@@ -304,7 +306,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
     resolveId: {
       order: 'pre',
       handler (id) {
-        if (id in NUXT_BUILD_OUTPUT_MAP) {
+        if (id in BUILD_OUTPUT_SPECIFIERS) {
           return VIRTUAL_PREFIX + id
         }
       },
@@ -315,7 +317,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         if (!id.startsWith(VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(VIRTUAL_PREFIX.length)
 
-        const key = NUXT_BUILD_OUTPUT_MAP[specifier]
+        const key = BUILD_OUTPUT_SPECIFIERS[specifier]
         if (!key) { return }
 
         // In a production build, defer keys whose value is only final after the
@@ -343,7 +345,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         if (nuxt.options.dev || this.environment?.name !== 'ssr') { return }
 
         const replacements = new Map<string, string>()
-        for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
+        for (const [specifier, key] of Object.entries(BUILD_OUTPUT_SPECIFIERS)) {
           if (!DEFERRED_KEYS.has(key)) { continue }
           const expressions = await getDeferredExpressions(nuxt, key)
           replacements.set(sentinel(specifier), `(${expressions.get(undefined)})`)

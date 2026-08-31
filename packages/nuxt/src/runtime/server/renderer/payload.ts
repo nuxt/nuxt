@@ -2,11 +2,10 @@ import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
-import type { CachedResponse } from '../cache'
-import { serverDiagnostics } from '../../diagnostics'
+import type { CachedResponse } from './runtime'
+import { rendererDiagnostics } from './diagnostics'
 
-import { appId, multiApp } from '#internal/nuxt.config.mjs'
-import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_NO_SSR, appId, multiApp } from 'nuxt/renderer-config'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): CachedResponse {
   return {
@@ -85,7 +84,7 @@ function warnOnLargePayload (ssrContext: NuxtSSRContext, data: Partial<NuxtPaylo
     .slice(0, 5)
     .map(([key, keySize]) => `\`${key}\` (${formatPayloadSize(keySize)})`)
     .join('\n  - ')
-  serverDiagnostics.NUXT_E8006({ path: ssrContext.url, size: formatPayloadSize(size), keys: keys || undefined })
+  rendererDiagnostics.NUXT_E8006({ path: ssrContext.url, size: formatPayloadSize(size), keys: keys || undefined })
 }
 
 interface SplitPayload {

@@ -1,5 +1,5 @@
 import type { NuxtSSRContext } from '#app/types'
-import { serverDiagnostics } from '../../diagnostics'
+import { rendererDiagnostics } from './diagnostics'
 
 const SSR_CLIENT_TELEPORT_RE = /^uid=[^;]*;client=/
 
@@ -26,5 +26,5 @@ export function warnNoScriptsClientReliance (ssrContext: NuxtSSRContext, path: s
   const reasons = detectClientScriptReliance(ssrContext)
   if (!reasons.length) { return }
   warnedPaths.add(path)
-  serverDiagnostics.NUXT_E8007({ path, reasons: reasons.join('\n  - ') })
+  rendererDiagnostics.NUXT_E8007({ path, reasons: reasons.join('\n  - ') })
 }

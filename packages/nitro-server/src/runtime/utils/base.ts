@@ -1,6 +1,7 @@
 import { H3Event } from 'nitro/h3'
 import type { ServerRequest } from 'srvx'
 import { withoutTrailingSlash } from 'ufo'
+import { urlHash } from 'nuxt/renderer/url'
 
 /**
  * The base URL nitro registers its routes under, inlined at build time.
@@ -14,18 +15,6 @@ const BASE_URL = /* @__PURE__ */ (() => {
 })()
 
 const BASE_URL_PREFIX = BASE_URL + '/'
-
-/**
- * The fragment of a request URL, without paying for it when there is none.
- *
- * `srvx` builds the URL of an incoming request from its parts, leaving `hash` to be resolved by
- * parsing the whole URL. That parse is wasted work: a fragment is never sent over the wire, so it
- * can only appear on a URL we constructed ourselves (an internal `serverFetch`), and in that case
- * it is present in `href`, which is always cheap to read.
- */
-export function urlHash (url: URL): string {
-  return url.href.includes('#') ? url.hash : ''
-}
 
 /**
  * Copy a request URL with `base` removed from its path.
