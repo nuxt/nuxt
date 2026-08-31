@@ -122,7 +122,7 @@ catalogs:
     '@dxup/nuxt': ^0.5.10
     '@nuxt/cli': npm:@nuxt/cli-nightly@4.0.0-20260831-132907-8bcf1bc
     '@nuxt/devtools': ^3.4.2
-    '@nuxt/telemetry': ^2.8.0
+    '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.42
     autoprefixer: ^10.5.4
     c12: 4.0.0-beta.5
