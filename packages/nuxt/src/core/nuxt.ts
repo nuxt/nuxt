@@ -340,8 +340,9 @@ async function initNuxt (nuxt: Nuxt) {
       from: [import.meta.url, directoryToURL(nuxt.options.rootDir)],
       try: true,
     })
-    serverBuilderReference = augments
-      ? { path: augments.replace(/\.mjs$/, '.d.mts') }
+    const declaration = augments?.replace(JS_EXTENSION_RE, (_, modifier = '') => `.d.${modifier}ts`)
+    serverBuilderReference = declaration && existsSync(declaration)
+      ? { path: declaration }
       : { types: nuxt.options.server.builder }
     return serverBuilderReference
   }
@@ -1112,6 +1113,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
+const JS_EXTENSION_RE = /\.(m|c)?js$/
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
 
 function deduplicateArray<T = unknown> (maybeArray: T): T {
