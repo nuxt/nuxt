@@ -193,9 +193,29 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? router.resolve(initialURL)
       : router.currentRoute.value
 
-    // snapshot the starting route so a plugin that calls `navigateTo`
-    // during `applyPlugins` is not clobbered later on
-    const prePluginRoutePath = import.meta.client ? router.currentRoute.value.fullPath : ''
+    // Track non-aborted navigations during boot so the initial router.replace does not cancel one in flight.
+    let bootNavigationsInFlight = 0
+    let completedBootNavigation = false
+    let stopBootNavigationTracker: (() => void) | undefined
+    if (import.meta.client) {
+      const removeGuard = router.beforeEach(() => {
+        bootNavigationsInFlight++
+      })
+      const removeAfterEach = router.afterEach((_to, _from, failure) => {
+        bootNavigationsInFlight--
+        if (!failure) {
+          completedBootNavigation = true
+        }
+      })
+      const removeErrorHandler = router.onError(() => {
+        bootNavigationsInFlight--
+      })
+      stopBootNavigationTracker = () => {
+        removeGuard()
+        removeAfterEach()
+        removeErrorHandler()
+      }
+    }
 
     // Detect if we're hydrating a prerendered page that doesn't match the current URL
     // (for example, if the browser URL has different query params than the
@@ -357,16 +377,17 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
+      stopBootNavigationTracker?.()
       try {
         if ('name' in resolvedInitialRoute) {
           // clear the resolved route name so `router.replace` re-resolves it
           ;(resolvedInitialRoute as { name: unknown }).name = undefined
         }
 
-        // respect a plugin that navigated away during boot
-        const pluginNavigatedAway = import.meta.client && router.currentRoute.value.fullPath !== prePluginRoutePath
+        // respect a plugin or the user navigating away during boot
+        const navigatedDuringBoot = import.meta.client && (completedBootNavigation || bootNavigationsInFlight > 0)
 
-        if (pluginNavigatedAway) {
+        if (navigatedDuringBoot) {
           // we don't need to push the previous route
         } else if (hasDeferredRoute) {
           // Hydrate against the query-less prerendered route to avoid a mismatch, then restore the
