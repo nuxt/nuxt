@@ -33,7 +33,7 @@ import { compileRouterToString } from 'rou3/compiler'
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
-import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
+import { getH3ImportsPreset, v2ImportsPreset, withImportTypeShims } from './imports.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
 export type { NuxtTracingChannelOptions } from './augments.ts'
@@ -162,6 +162,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
   const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
 
+  const autoImports = nuxt.options.experimental.nitroAutoImports
+    ? withImportTypeShims([...v2ImportsPreset, await getH3ImportsPreset()], join(typesDir, 'types/nitro-import-shims'))
+    : { presets: [], writeShims: () => Promise.resolve() }
+
   // `nuxt.options.nitro.typescript.tsConfig` is a portal onto `typescript.serverTsConfig`,
   // so this baseline sits under whichever of the two the user set. `types`, `paths` and
   // `noEmit` are managed per-context and are not propagated from the global config.
@@ -192,12 +196,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
       dirs: [...importDirs],
-      presets: nuxt.options.experimental.nitroAutoImports
-        ? [
-            ...v2ImportsPreset,
-            await getH3ImportsPreset(),
-          ]
-        : [],
+      presets: autoImports.presets,
       imports: [
         {
           as: '__buildAssetsURL',
@@ -1076,6 +1075,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     // in the legacy dev path Nitro's own watcher writes these again once handlers have
     // been scanned, but the project `tsconfig.json` references `tsconfig.server.json`,
     // so it has to exist before anything resolves the references
+    await autoImports.writeShims()
     await writeTypes(nitro)
     // Exclude nitro output dir from typescript
     opts.tsConfig.exclude ||= []
