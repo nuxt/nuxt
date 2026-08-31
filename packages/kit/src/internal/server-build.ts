@@ -55,6 +55,7 @@ export function createServerBuild (options: NuxtOptions): NuxtServerBuild {
     name: typeof options.server?.builder === 'string' ? options.server.builder : 'custom',
     buildsSeparately: !options.experimental?.nitroViteEnvironment,
     output: {
+      root: () => options.rootDir,
       dir: () => resolve(options.rootDir, outputDir()),
       publicDir: () => resolve(options.rootDir, options.nitro?.output?.publicDir || join(outputDir(), 'public')),
     },
