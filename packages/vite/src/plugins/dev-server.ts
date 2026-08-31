@@ -7,6 +7,7 @@ import type { H3Event as H3V1Event } from 'h3'
 import { tryUseNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
   let useViteCors = false
@@ -67,7 +68,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
     async configureServer (viteServer) {
       await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
 
-      if (nuxt.options.experimental.nitroViteEnvironment) {
+      if (!useServerBuild(nuxt).buildsSeparately) {
         return
       }
 
