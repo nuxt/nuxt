@@ -83,8 +83,8 @@ catalogs:
       specifier: ^3.4.2
       version: 3.4.2
     '@nuxt/telemetry':
-      specifier: ^2.8.0
-      version: 2.8.0
+      specifier: ^2.9.1
+      version: 2.9.1
     '@vue/shared':
       specifier: ^3.5.42
       version: 3.5.42
@@ -1031,7 +1031,7 @@ importers:
         version: link:../schema
       '@nuxt/telemetry':
         specifier: catalog:build
-        version: 2.8.0(@nuxt/kit@packages+kit)
+        version: 2.9.1(@nuxt/kit@packages+kit)
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
@@ -3112,8 +3112,8 @@ packages:
       posthog-js:
         optional: true
 
-  '@nuxt/telemetry@2.8.0':
-    resolution: {integrity: sha512-zAwXY24KYvpLTmiV+osagd2EHkfs5IF+7oDZYTQoit5r0kPlwaCNlzHp5I/wUAWT4LBw6lG8gZ6bWidAdv/erQ==}
+  '@nuxt/telemetry@2.9.1':
+    resolution: {integrity: sha512-WYQs6GvebU278YXhbGlLA8pUO3ox+juHAiKCB3SEH0lq2PDRwX465tHRtpVIqsHv+lGK/n99FC7qqyBt9+p3oQ==}
     engines: {node: '>=18.12.0'}
     hasBin: true
     peerDependencies:
@@ -11532,12 +11532,11 @@ snapshots:
       - vue
       - webpack
 
-  '@nuxt/telemetry@2.8.0(@nuxt/kit@packages+kit)':
+  '@nuxt/telemetry@2.9.1(@nuxt/kit@packages+kit)':
     dependencies:
       '@nuxt/kit': link:packages/kit
       citty: 0.2.2
       consola: 3.4.2
-      ofetch: 2.0.0-alpha.3
       rc9: 3.0.1
       std-env: 4.2.0
 
