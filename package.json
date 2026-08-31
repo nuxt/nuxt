@@ -73,7 +73,7 @@
     "autoprefixer": "10.5.4",
     "case-police": "catalog:dev",
     "consola": "catalog:build",
-    "cssnano": "9.0.0",
+    "cssnano": "9.0.1",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
     "eslint": "catalog:dev",
