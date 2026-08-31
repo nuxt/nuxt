@@ -7,7 +7,7 @@ import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
 import { distDir } from './dirs.ts'
-import { setupDevServer } from './dev.ts'
+import { DevServerListenerPlugin, setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { writeStaticOutput } from './output.ts'
 
@@ -79,7 +79,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   // Registered at the root rather than through `addVitePlugin`, which scopes plugins to
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
-  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt))
+  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), DevServerListenerPlugin(nuxt))
 
   if (!nuxt.options.dev) {
     // the document is a real HTML build input, so vite links the entry chunk, injects its
