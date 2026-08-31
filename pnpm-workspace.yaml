@@ -120,7 +120,7 @@ catalogs:
     webpackbar: ^7.0.0
   build:
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': npm:@nuxt/cli-nightly@4.0.0-20260831-075234-8bcf1bc
+    '@nuxt/cli': npm:@nuxt/cli-nightly@4.0.0-20260831-083430-8bcf1bc
     '@nuxt/devtools': ^3.4.2
     '@nuxt/telemetry': ^2.8.0
     '@vue/shared': ^3.5.42
