@@ -104,6 +104,14 @@ export function bundle (nuxt: Nuxt): Promise<void> {
       client.build.outDir = publicDir
     }
 
+    // an input that is not a set of named inputs replaces the document rather than adding
+    // to it, and takes the app entry with it, so it is reported and replaced too
+    const input = client.build.rolldownOptions.input
+    if (typeof input !== 'object' || Array.isArray(input)) {
+      bundlerDiagnostics.NUXT_B7025({ input: JSON.stringify(input) })
+      client.build.rolldownOptions.input = { index: documentPath(nuxt) }
+    }
+
     nuxt.options.vite.$client = client
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }

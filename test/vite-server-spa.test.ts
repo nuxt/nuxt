@@ -134,9 +134,9 @@ describe.skipIf(!runsOnceInMatrix)('server environment', () => {
   })
 })
 
-describe.skipIf(!runsOnceInMatrix)('configured client output directory', () => {
-  const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-client-outdir')
-  const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-client-outdir')
+describe.skipIf(!runsOnceInMatrix)('overridden client build options', () => {
+  const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-client-overrides')
+  const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-client-overrides')
   const configuredDir = join(rootDir, 'node_modules/.cache/nuxt/.client-outdir-override')
 
   beforeAll(async () => {
@@ -147,7 +147,14 @@ describe.skipIf(!runsOnceInMatrix)('configured client output directory', () => {
       overrides: {
         buildDir,
         nitro: { output: { dir: outputDir } },
-        vite: { $client: { build: { outDir: configuredDir } } },
+        vite: {
+          $client: {
+            build: {
+              outDir: configuredDir,
+              rolldownOptions: { input: join(rootDir, 'app/app.vue') },
+            },
+          },
+        },
       },
     })
     try {
@@ -160,5 +167,12 @@ describe.skipIf(!runsOnceInMatrix)('configured client output directory', () => {
   it('writes the client build to the public directory of the output', async () => {
     expect(await readFile(join(outputDir, 'public/index.html'), 'utf-8')).toContain('<div id="__nuxt">')
     expect(existsSync(configuredDir)).toBe(false)
+  })
+
+  it('keeps the document and the app entry as build inputs', async () => {
+    const html = await readFile(join(outputDir, 'public/index.html'), 'utf-8')
+
+    expect(html).toMatch(/<script type="module"[^>]* src="\.\/_nuxt\/[^"]+\.js">/)
+    expect(html).toContain('"#entry"')
   })
 })
