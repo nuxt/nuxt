@@ -529,8 +529,8 @@ catalogs:
       specifier: ~2.2.1
       version: 2.2.1
     css-loader:
-      specifier: ^7.1.4
-      version: 7.1.4
+      specifier: ^7.1.5
+      version: 7.1.5
     css-minimizer-webpack-plugin:
       specifier: ^8.0.0
       version: 8.0.0
@@ -1268,7 +1268,7 @@ importers:
         version: 10.5.4(postcss@8.5.26)
       css-loader:
         specifier: catalog:webpack
-        version: 7.1.4(@rspack/core@2.2.1(@swc/helpers@0.5.23))(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
+        version: 7.1.5(@rspack/core@2.2.1(@swc/helpers@0.5.23))(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
       css-minimizer-webpack-plugin:
         specifier: catalog:webpack
         version: 8.0.0(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
@@ -1740,7 +1740,7 @@ importers:
         version: 10.5.4(postcss@8.5.26)
       css-loader:
         specifier: catalog:webpack
-        version: 7.1.4(@rspack/core@2.2.1(@swc/helpers@0.5.23))(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
+        version: 7.1.5(@rspack/core@2.2.1(@swc/helpers@0.5.23))(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
       css-minimizer-webpack-plugin:
         specifier: catalog:webpack
         version: 8.0.0(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
@@ -5802,8 +5802,8 @@ packages:
     peerDependencies:
       postcss: ^8.0.9
 
-  css-loader@7.1.4:
-    resolution: {integrity: sha512-vv3J9tlOl04WjiMvHQI/9tmIrCxVrj6PFbHemBB1iihpeRbi/I4h033eoFIhwxBBqLhI0KYFS7yvynBFhIZfTw==}
+  css-loader@7.1.5:
+    resolution: {integrity: sha512-Q7iAfQkU2twNBryKX/vGAlE+GAmkF7quhSzAGNK8fBimxk3+tqg245rH52UPb9dioBolBc8rP0ihmHBaDTJQBA==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@rspack/core': 0.x || ^1.0.0 || ^2.0.0-0
@@ -14422,7 +14422,7 @@ snapshots:
     dependencies:
       postcss: 8.5.26
 
-  css-loader@7.1.4(@rspack/core@2.2.1(@swc/helpers@0.5.23))(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26)):
+  css-loader@7.1.5(@rspack/core@2.2.1(@swc/helpers@0.5.23))(webpack@5.110.1(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26)):
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.26)
       postcss: 8.5.26

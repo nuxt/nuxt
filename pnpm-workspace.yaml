@@ -112,7 +112,7 @@ catalogs:
   webpack:
     '@nuxt/friendly-errors-webpack-plugin': ^2.6.0
     '@rsbuild/core': ~2.2.1
-    css-loader: ^7.1.4
+    css-loader: ^7.1.5
     css-minimizer-webpack-plugin: ^8.0.0
     esbuild-loader: ^4.5.0
     file-loader: ^6.2.0
