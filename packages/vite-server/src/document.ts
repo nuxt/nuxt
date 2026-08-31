@@ -97,7 +97,7 @@ export function BuildEnvironmentsPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:vite-server:build-environments',
     apply: 'build',
     buildApp: {
-      order: 'pre',
+      order: 'post',
       async handler (builder) {
         const ssr = builder.environments.ssr
         if (ssr && nuxt.options.ssr === false) {

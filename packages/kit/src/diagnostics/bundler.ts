@@ -121,5 +121,15 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Relative `dir` values are tried against your server directory and then your project root, and this one exists in neither. Point `dir` at an existing directory, using an absolute path or a Nuxt alias (such as `~~/public/video`) if it lives elsewhere.',
       docs: false,
     },
+    NUXT_B7024: {
+      why: (p: { outDir: string, publicDir: string }) => `The client build output directory is set to \`${p.outDir}\`, but the server builder writes the client build to \`${p.publicDir}\`, so the override is ignored.`,
+      fix: 'Remove the `vite.$client.build.outDir` override from your `nuxt.config`, and set `nitro.output.publicDir` to move the whole public output instead.',
+      docs: false,
+    },
+    NUXT_B7025: {
+      why: (p: { input: string }) => `The client build input is set to \`${p.input}\`, which cannot carry the document the server builder emits, so the override is ignored.`,
+      fix: 'Pass an object to `vite.$client.build.rolldownOptions.input` if you need additional inputs, or add an `index.html` at the root of your app directory to take over the document itself.',
+      docs: false,
+    },
   },
 })
