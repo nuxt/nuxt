@@ -227,7 +227,7 @@ catalogs:
     fast-check: 4.9.0
     h3: 1.15.11
     happy-dom: 20.12.0
-    html-validate: 11.10.0
+    html-validate: 11.11.0
     htmlnano: 3.4.0
     installed-check: 11.0.0
     knip: 6.33.0
