@@ -10,16 +10,18 @@ import { publicDirs } from './output.ts'
 /**
  * Vite runs in middleware mode, so it creates no HTTP server of its own and leaves
  * `server.httpServer` null. Nuxt does listen, and its middlewares are served from that
- * listener, so it is exposes it Vite so other plugins can attach to it.
+ * listener, so the listener is exposed to Vite for other plugins to attach to.
  */
 export function DevServerListenerPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:vite-server:dev-listener',
-    // before any plugin that reads the server while configuring itself
     enforce: 'pre',
     apply: 'serve',
-    configureServer (server) {
-      server.httpServer ||= nuxt._devServerListener ?? null
+    configureServer: {
+      order: 'pre',
+      handler (server) {
+        server.httpServer ||= nuxt._devServerListener ?? null
+      },
     },
   }
 }
