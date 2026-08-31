@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
-import { readFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { readFile, rm } from 'node:fs/promises'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { buildNuxt, loadNuxt } from '@nuxt/kit'
@@ -130,5 +131,34 @@ describe.skipIf(!runsOnceInMatrix)('server environment', () => {
 
   it('still emits a client document', async () => {
     expect(await readFile(join(outputDir, 'public/index.html'), 'utf-8')).toContain('<div id="__nuxt">')
+  })
+})
+
+describe.skipIf(!runsOnceInMatrix)('configured client output directory', () => {
+  const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-client-outdir')
+  const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-client-outdir')
+  const configuredDir = join(rootDir, 'node_modules/.cache/nuxt/.client-outdir-override')
+
+  beforeAll(async () => {
+    await rm(configuredDir, { recursive: true, force: true })
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        buildDir,
+        nitro: { output: { dir: outputDir } },
+        vite: { $client: { build: { outDir: configuredDir } } },
+      },
+    })
+    try {
+      await buildNuxt(nuxt)
+    } finally {
+      await nuxt.close()
+    }
+  }, 240 * 1000)
+
+  it('writes the client build to the public directory of the output', async () => {
+    expect(await readFile(join(outputDir, 'public/index.html'), 'utf-8')).toContain('<div id="__nuxt">')
+    expect(existsSync(configuredDir)).toBe(false)
   })
 })

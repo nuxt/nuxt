@@ -121,5 +121,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Relative directories are resolved against your project root. Correct the `dir` or remove the entry.',
       docs: false,
     },
+    NUXT_B7024: {
+      why: (p: { outDir: string, publicDir: string }) => `The client build output directory is set to \`${p.outDir}\`, but the server builder writes the client build to \`${p.publicDir}\`, so the override is ignored.`,
+      fix: 'Remove the `vite.$client.build.outDir` override from your `nuxt.config`, and set `nitro.output.publicDir` to move the whole public output instead.',
+      docs: false,
+    },
   },
 })

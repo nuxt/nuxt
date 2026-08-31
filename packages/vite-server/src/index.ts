@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
 import { addTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
-import { setServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
@@ -88,13 +88,23 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     //
     // the client build writes straight into the public directory of the output, so that a
     // target reading the client environment's `outDir` finds the deployable assets there
-    nuxt.options.vite.$client = defu(nuxt.options.vite.$client, {
+    const client = defu(nuxt.options.vite.$client, {
       build: {
         outDir: publicDir,
         emptyOutDir: true,
         rolldownOptions: { input: { index: documentPath(nuxt) } },
       },
     })
+
+    // the client output directory belongs to the build rather than to the project: it is
+    // the directory `output.publicDir()` reports and the one the output is finished in
+    // place from, so a configured value is reported and replaced rather than merged
+    if (resolve(nuxt.options.rootDir, client.build.outDir) !== publicDir) {
+      bundlerDiagnostics.NUXT_B7024({ outDir: client.build.outDir, publicDir })
+      client.build.outDir = publicDir
+    }
+
+    nuxt.options.vite.$client = client
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }
 
