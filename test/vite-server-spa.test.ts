@@ -112,9 +112,10 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
 
 describe.skipIf(!runsOnceInMatrix)('server environment', () => {
   const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-ssr')
+  const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-ssr')
 
   beforeAll(async () => {
-    const nuxt = await loadNuxt({ cwd: rootDir, ready: true, overrides: { ssr: true, buildDir } })
+    const nuxt = await loadNuxt({ cwd: rootDir, ready: true, overrides: { ssr: true, buildDir, nitro: { output: { dir: outputDir } } } })
     try {
       await buildNuxt(nuxt)
     } finally {
@@ -128,6 +129,6 @@ describe.skipIf(!runsOnceInMatrix)('server environment', () => {
   })
 
   it('still emits a client document', async () => {
-    expect(await readFile(join(buildDir, 'dist/client/index.html'), 'utf-8')).toContain('<div id="__nuxt">')
+    expect(await readFile(join(outputDir, 'public/index.html'), 'utf-8')).toContain('<div id="__nuxt">')
   })
 })

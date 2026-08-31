@@ -85,8 +85,15 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     // the document is a real HTML build input, so vite links the entry chunk, injects its
     // stylesheets and module preloads, and runs the `transformIndexHtml` hook of every
     // configured plugin over it
+    //
+    // the client build writes straight into the public directory of the output, so that a
+    // target reading the client environment's `outDir` finds the deployable assets there
     nuxt.options.vite.$client = defu(nuxt.options.vite.$client, {
-      build: { rolldownOptions: { input: { index: documentPath(nuxt) } } },
+      build: {
+        outDir: publicDir,
+        emptyOutDir: true,
+        rolldownOptions: { input: { index: documentPath(nuxt) } },
+      },
     })
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }
