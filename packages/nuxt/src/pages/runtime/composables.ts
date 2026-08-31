@@ -1,10 +1,11 @@
 import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, inject } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitro/types'
 import type { NuxtError } from '#app/composables/error'
 import { isInComponentSetup, useNuxtApp } from '#app/nuxt'
+import { PageRouteSymbol } from '#app/components/injections'
 import { appDiagnostics } from '../../app/diagnostics/core'
 import type { SerializableValue } from './utils'
 
@@ -80,7 +81,9 @@ export const definePageMeta = (meta: PageMeta): void => {
       if (!component && isInComponentSetup(useNuxtApp())) {
         return
       }
-      const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
+      // The injected route used for rendering may lag behind the live route during hydration.
+      const injectedRoute = component ? inject(PageRouteSymbol, null) : null
+      const isRouteComponent = component && [injectedRoute, useRoute()].some(route => route?.matched.some(p => Object.values(p.components || {}).includes(component)))
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
       if (isRouteComponent || isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {
         // don't warn if it's being used in a route component (or server page)
