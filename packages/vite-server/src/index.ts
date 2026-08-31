@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
-import { addTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
+import { addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
 import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
@@ -31,8 +31,19 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   }
 
   const outputDir = resolve(nuxt.options.rootDir, nuxt.options.nitro.output?.dir || '.output')
+
+  // a deploy target resolves its own configuration file, and the paths written inside it,
+  // from vite's root, and writes its artifact to the `build.outDir` the environments this
+  // builder does not configure inherit; both of Nuxt's defaults for those are inside `srcDir`
+  if (nuxt.options.vite.root === nuxt.options.srcDir) {
+    nuxt.options.vite.root = nuxt.options.rootDir
+  }
+  nuxt.options.vite.build ||= {}
+  nuxt.options.vite.build.outDir ||= outputDir
+
   const publicDir = resolve(outputDir, 'public')
   const ssr = nuxt.options.ssr !== false
+  const handler = ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined
 
   setServerBuild({
     name: 'vite',
@@ -45,7 +56,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
       fetch: resolve(distDir, 'runtime/fetch'),
       runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
       // the emitted entry, which only exists once a build has run
-      handler: ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined,
+      handler,
     },
     preview: ssr
       ? { command: () => 'node ./server/index.mjs' }
@@ -53,6 +64,10 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   }, nuxt)
 
   const server = ssr ? setupSSR(nuxt, outputDir) : undefined
+
+  if (server) {
+    addServerEntryAlias(nuxt, server.handler)
+  }
 
   warnExperimental(nuxt, { ssr, unsupported: server?.unsupported ?? [] })
 
@@ -119,6 +134,30 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   }
 
   return Promise.resolve()
+}
+
+/**
+ * Resolves `#server-entry` to the render as a module for a deploy target's own environment
+ * to build, so that the app is compiled with that target's export conditions and nothing
+ * spells a path inside the build directory.
+ *
+ * In development it resolves to a stub answering every request with a 503: the dev server
+ * serves the app there, and a target rendering would render from a second module graph.
+ */
+function addServerEntryAlias (nuxt: Nuxt, entry: string): void {
+  nuxt.options.alias['#server-entry'] = nuxt.options.dev ? resolve(distDir, 'runtime/dev-handler') : entry
+
+  addTypeTemplate({
+    filename: 'types/server-entry.d.ts',
+    getContents: () => [
+      `declare module '#server-entry' {`,
+      `  export const fetch: (request: Request) => Promise<Response>`,
+      `  const handler: { fetch: typeof fetch }`,
+      `  export default handler`,
+      `}`,
+      '',
+    ].join('\n'),
+  }, { nuxt: true, node: true, shared: true })
 }
 
 function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: string[] }) {

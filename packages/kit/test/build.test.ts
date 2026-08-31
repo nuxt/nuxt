@@ -60,6 +60,27 @@ describe('addVitePlugin', () => {
     expect(await appliesTo(serverOnly!, 'nitro')).toBe(false)
   })
 
+  it('should scope server plugins to the app server environments the server builder names', async () => {
+    const withAppServerEnvironment = () => {
+      const nuxt = createMockNuxt(true)
+      nuxt._appServerEnvironments = new Set(['worker'])
+      return nuxt
+    }
+
+    const [isomorphic] = await addPlugins(withAppServerEnvironment(), [{ name: 'a' }])
+    expect(await appliesTo(isomorphic!, 'worker')).toBe(true)
+    expect(await appliesTo(isomorphic!, 'ssr')).toBe(true)
+    expect(await appliesTo(isomorphic!, 'nitro')).toBe(false)
+
+    const [serverOnly] = await addPlugins(withAppServerEnvironment(), [{ name: 'b' }], { client: false })
+    expect(await appliesTo(serverOnly!, 'worker')).toBe(true)
+    expect(await appliesTo(serverOnly!, 'nitro')).toBe(false)
+
+    const [clientOnly] = await addPlugins(withAppServerEnvironment(), [{ name: 'c' }], { server: false })
+    expect(await appliesTo(clientOnly!, 'worker')).toBe(false)
+    expect(await appliesTo(clientOnly!, 'client')).toBe(true)
+  })
+
   it('should respect a plugin own applyToEnvironment within the allowed environments', async () => {
     const plugins = await addPlugins(createMockNuxt(true), [
       { name: 'ssr-only', applyToEnvironment: env => env.name === 'ssr' },
