@@ -246,7 +246,7 @@ catalogs:
     h3: 2.0.1-rc.22 # intentionally pinned to match nitro's dependency
     h3-next: 'npm:h3@2.0.1-rc.22' # intentionally pinned to match nitro's dependency
     happy-dom: 20.12.0
-    html-validate: 11.10.0
+    html-validate: 11.11.0
     htmlnano: 3.4.0
     installed-check: 11.0.0
     knip: 6.33.0
