@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
-import type { TypedFetch, TypedFetchRequest } from 'nuxt/app'
+import type { DynamicParam, Endpoint, HTTPMethod, TypedFetch, TypedFetchRequest } from 'nuxt/app'
 import type { H3Event, HTTPError } from 'nitro/h3'
 import { $fetch } from '#build/fetch'
 import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
@@ -21,14 +21,29 @@ type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
 
+// modules and users can contribute routes the server builder did not scan
 declare module '@nuxt/schema' {
   interface ServerRoutes {
-    '/api/registered': { get: { registered: true } }
-    '/api/registered-post': { post: { created: true } }
-    '/api/registered/:id': { default: number }
-    '/api/scored/:id': { get: 'param' }
-    '/api/scored/static': { get: 'static' }
-    '/api/catch-all/**': { get: 'catchAll' }
+    '/api/augmented': {
+      [Endpoint]: { GET: { response: { augmented: true } }, POST: { response: { created: true } } }
+      [DynamicParam]: { [Endpoint]: Record<HTTPMethod, { response: number }> }
+    }
+    '/api/augmented-mixed': {
+      [Endpoint]: {
+        GET: { response: { augmented: true } }
+        POST: { response: { created: true }, body: { title: string } }
+      }
+    }
+    '/api/augmented-request': {
+      [Endpoint]: {
+        POST: {
+          response: { created: true }
+          body: { title: string }
+          query: { page: string }
+          headers: { 'x-token': string }
+        }
+      }
+    }
   }
 }
 
@@ -69,140 +84,145 @@ describe('API routes', () => {
   it('types the auto-imported $fetch with nitro routes', () => {
     // https://github.com/nuxt/nuxt/pull/35582 regression: `$fetch` was typed as
     // ofetch's plain `$fetch`, returning `Promise<any>` for every request
-    expectTypeOf($fetch).toEqualTypeOf<TypedFetch<unknown, TypedFetchRequest>>()
-    expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch).toEqualTypeOf<TypedFetch>()
+    expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
   })
 
-  it('types responses of routes registered in `ServerRoutes`', () => {
-    expectTypeOf($fetch('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
-    expectTypeOf($fetch('/api/registered', { method: 'GET' })).toEqualTypeOf<Promise<{ registered: true }>>()
-    expectTypeOf($fetch('/api/registered-post', { method: 'post' })).toEqualTypeOf<Promise<{ created: true }>>()
-    expectTypeOf($fetch(`/api/registered/${String(Math.random())}`)).toEqualTypeOf<Promise<number>>()
-    // @ts-expect-error the route is only registered for `post`
-    $fetch('/api/registered-post', { method: 'get' })
+  it('types responses of routes contributed by augmentation', () => {
+    expectTypeOf($fetch('/api/augmented')).toEqualTypeOf<Promise<{ augmented: true }>>()
+    expectTypeOf($fetch('/api/augmented', { method: 'GET' })).toEqualTypeOf<Promise<{ augmented: true }>>()
+    expectTypeOf($fetch('/api/augmented', { method: 'post' })).toEqualTypeOf<Promise<{ created: true }>>()
+    // a concrete segment resolves through the augmented parameter
+    expectTypeOf($fetch('/api/augmented/anything')).toEqualTypeOf<Promise<number>>()
+    // a segment known only at runtime does not, where the route is contributed by augmentation: the
+    // emitted path union covers generated routes only, so the request falls to the signature that
+    // validates the path, and intersecting the validator onto the parameter stops a template
+    // literal from inferring as one. Concrete paths to augmented routes and template paths to
+    // generated routes both work; only the two together do not.
+    expectTypeOf($fetch(`/api/augmented/${String(Math.random())}`)).toEqualTypeOf<Promise<unknown>>()
   })
 
-  it('prefers the most specific registered route pattern', () => {
-    expectTypeOf($fetch('/api/scored/static')).toEqualTypeOf<Promise<'static'>>()
-    expectTypeOf($fetch(`/api/scored/${String(Math.random())}`)).toEqualTypeOf<Promise<'param' | 'static'>>()
-    expectTypeOf($fetch('/api/catch-all/nested/path')).toEqualTypeOf<Promise<'catchAll'>>()
+  it('registers scanned routes, including those from layers and modules', () => {
+    // responses are asserted separately: a handler's own type is `any` in this program until
+    // nitro's generated auto-imports resolve, which would make a response assertion vacuous
+    expectTypeOf<'/api/hello'>().toExtend<TypedFetchRequest>()
+    expectTypeOf<'/api/hey'>().toExtend<TypedFetchRequest>()
+    expectTypeOf<'/api/posts/static'>().toExtend<TypedFetchRequest>()
+    expectTypeOf<'/api/foo'>().toExtend<TypedFetchRequest>()
+    expectTypeOf<'/auto-registered-module'>().toExtend<TypedFetchRequest>()
   })
 
-  it('falls back to `unknown` for unregistered requests', () => {
-    expectTypeOf($fetch('/api/unregistered')).toEqualTypeOf<Promise<unknown>>()
-    expectTypeOf($fetch('/api/unregistered', { method: 'PATCH' })).toEqualTypeOf<Promise<unknown>>()
+  it('rejects requests to unregistered routes', () => {
+    // @ts-expect-error no GET route matches '/api/unregistered'
+    $fetch('/api/unregistered')
+    // @ts-expect-error no PATCH route matches '/api/unregistered'
+    $fetch('/api/unregistered', { method: 'PATCH' })
+    // naming the response type turns inference off for the request, so the path is passed through
     expectTypeOf($fetch<TestResponse>('/api/unregistered')).toEqualTypeOf<Promise<TestResponse>>()
   })
 
-  it('types responses of registered routes through `useFetch`', () => {
-    expectTypeOf(useFetch('/api/registered').data).toEqualTypeOf<Ref<{ registered: true } | DefaultAsyncDataValue>>()
-    expectTypeOf(useFetch('/api/registered-post', { method: 'post' }).data).toEqualTypeOf<Ref<{ created: true } | DefaultAsyncDataValue>>()
-    expectTypeOf(useFetch('/api/registered', { pick: ['registered'] }).data).toEqualTypeOf<Ref<{ registered: true } | DefaultAsyncDataValue>>()
-    expectTypeOf(useRequestFetch()('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
+  it('types responses of augmented routes through `useFetch`', () => {
+    expectTypeOf(useFetch('/api/augmented').data).toEqualTypeOf<Ref<{ augmented: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/augmented', { method: 'post' }).data).toEqualTypeOf<Ref<{ created: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/augmented', { pick: ['augmented'] }).data).toEqualTypeOf<Ref<{ augmented: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useRequestFetch()('/api/augmented')).toEqualTypeOf<Promise<{ augmented: true }>>()
   })
 
-  // TODO: https://github.com/nitrojs/nitro/issues/2758
   it('generates types for routes', () => {
-    // expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
-    // // registered in extends
-    // expectTypeOf($fetch('/api/foo')).toEqualTypeOf<Promise<string>>()
-    // // registered in module
-    // expectTypeOf($fetch('/auto-registered-module')).toEqualTypeOf<Promise<string>>()
-    // expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
-    // expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
-    // expectTypeOf($fetch('/api/hey', { method: 'post' })).toEqualTypeOf<Promise<{ method: 'post' }>>()
-    // // @ts-expect-error not a valid method
-    // expectTypeOf($fetch('/api/hey', { method: 'patch ' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
-    // expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
-    // expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
-    // expectTypeOf($fetch<TestResponse>('/test')).toEqualTypeOf<Promise<TestResponse>>()
+    expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+    // registered in extends
+    expectTypeOf($fetch('/api/foo')).toEqualTypeOf<Promise<string>>()
+    // registered in module
+    expectTypeOf($fetch('/auto-registered-module')).toEqualTypeOf<Promise<string>>()
+    expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'post' })).toEqualTypeOf<Promise<{ method: 'post' }>>()
+    // @ts-expect-error not a valid method
+    expectTypeOf($fetch('/api/hey', { method: 'patch' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
+    expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+    expectTypeOf($fetch<TestResponse>('/api/hello')).toEqualTypeOf<Promise<TestResponse>>()
   })
 
-  // TODO: https://github.com/nitrojs/nitro/issues/2758
   it('works with useRequestFetch', () => {
-    // const $fetch = useRequestFetch()
-    // expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
-    // // registered in extends
-    // expectTypeOf($fetch('/api/foo')).toEqualTypeOf<Promise<string>>()
-    // // registered in module
-    // expectTypeOf($fetch('/auto-registered-module')).toEqualTypeOf<Promise<string>>()
-    // expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
-    // expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
-    // expectTypeOf($fetch('/api/hey', { method: 'post' })).toEqualTypeOf<Promise<{ method: 'post' }>>()
-    // // @ts-expect-error not a valid method
-    // expectTypeOf($fetch('/api/hey', { method: 'patch ' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
-    // expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
-    // expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
-    // expectTypeOf($fetch<TestResponse>('/test')).toEqualTypeOf<Promise<TestResponse>>()
+    const $fetch = useRequestFetch()
+    expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+    // registered in extends
+    expectTypeOf($fetch('/api/foo')).toEqualTypeOf<Promise<string>>()
+    // registered in module
+    expectTypeOf($fetch('/auto-registered-module')).toEqualTypeOf<Promise<string>>()
+    expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'post' })).toEqualTypeOf<Promise<{ method: 'post' }>>()
+    // @ts-expect-error not a valid method
+    expectTypeOf($fetch('/api/hey', { method: 'patch' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
+    expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+    expectTypeOf($fetch<TestResponse>('/api/hello')).toEqualTypeOf<Promise<TestResponse>>()
   })
 
-  // TODO: https://github.com/nitrojs/nitro/issues/2758
   it('works with useAsyncData', () => {
-    // expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    // expectTypeOf(useAsyncData('api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useAsyncData('api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useAsyncData('api-union', () => $fetch('/api/union')).data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useAsyncData('api-union-with-pick', () => $fetch('/api/union'), { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useAsyncData('api-other', () => $fetch('/api/other')).data).toEqualTypeOf<Ref<unknown>>()
-    expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/test')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData('api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData('api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData('api-union', () => $fetch('/api/union')).data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData('api-union-with-pick', () => $fetch('/api/union'), { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
-    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
     // backwards compatibility
-    expectTypeOf(useAsyncData<any, Error>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | DefaultAsyncDataErrorValue>>()
-    expectTypeOf(useAsyncData<any, NuxtError<string>>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useAsyncData<any, Error>('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<Error | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useAsyncData<any, NuxtError<string>>('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
 
-    // TODO: https://github.com/nitrojs/nitro/issues/2758
-    // expectTypeOf(useLazyAsyncData('lazy-api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyAsyncData('lazy-api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyAsyncData('lazy-api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyAsyncData('lazy-api-union', () => $fetch('/api/union')).data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyAsyncData('lazy-api-union-with-pick', () => $fetch('/api/union'), { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyAsyncData('lazy-api-other', () => $fetch('/api/other')).data).toEqualTypeOf<Ref<unknown>>()
-    expectTypeOf(useLazyAsyncData<TestResponse>('lazy-api-generics', () => $fetch('/test')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-union', () => $fetch('/api/union')).data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-union-with-pick', () => $fetch('/api/union'), { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData<TestResponse>('lazy-api-generics', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useLazyAsyncData('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
-    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
   })
 
-  // TODO: https://github.com/nitrojs/nitro/issues/2758
   it('works with useFetch', () => {
-    // expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    // expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useFetch('/api/hey', { method: 'get' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useFetch('/api/hey', { method: 'POST' }).data).toEqualTypeOf<Ref<{ method: 'post' } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useFetch('/api/hey', { method: 'post' }).data).toEqualTypeOf<Ref<{ method: 'post' } | DefaultAsyncDataValue>>()
-    // // @ts-expect-error not a valid method
-    // useFetch('/api/hey', { method: 'PATCH' })
-    // expectTypeOf(useFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useFetch('/api/union').data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
-    expectTypeOf(useFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
-    // TODO: https://github.com/nitrojs/nitro/issues/2758
+    expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'get' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'POST' }).data).toEqualTypeOf<Ref<{ method: 'post' } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'post' }).data).toEqualTypeOf<Ref<{ method: 'post' } | DefaultAsyncDataValue>>()
+    // @ts-expect-error not a valid method
+    useFetch('/api/hey', { method: 'PATCH' })
+    expectTypeOf(useFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/union').data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     // https://github.com/nuxt/nuxt/issues/22488 — dynamic + static handlers on the same prefix
-    // const dynamicId = String(Math.random())
-    // expectTypeOf(useFetch(`/api/posts/${dynamicId}`).data).toEqualTypeOf<Ref<number | string | DefaultAsyncDataValue>>()
-    // expectTypeOf(useFetch('/api/posts/static').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    // expectTypeOf($fetch(`/api/posts/${dynamicId}`)).toEqualTypeOf<Promise<number | string>>()
-    expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
-    expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
+    const dynamicId = String(Math.random())
+    expectTypeOf(useFetch(`/api/posts/${dynamicId}`).data).toEqualTypeOf<Ref<number | string | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/posts/static').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf($fetch(`/api/posts/${dynamicId}`)).toEqualTypeOf<Promise<number | string>>()
+    expectTypeOf(useFetch<TestResponse>('/api/hello').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch<TestResponse>('/api/hello', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
     // https://github.com/nuxt/nuxt/issues/22753
-    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
-    expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useFetch('/api/hello').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useFetch<any, string>('/api/hello').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
 
-    // TODO: https://github.com/nitrojs/nitro/issues/2758
-    // expectTypeOf(useLazyFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyFetch('/api/union').data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
-    // expectTypeOf(useLazyFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
-    expectTypeOf(useLazyFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
-    expectTypeOf(useLazyFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch('/api/union').data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch<TestResponse>('/api/hello').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
-    expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyFetch('/api/hello').error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyFetch<any, string>('/api/hello').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
   })
 
   it('works with useFetch and generic type', () => {
@@ -223,27 +243,24 @@ describe('API routes', () => {
     const state = reactive({ name: 'a' })
 
     for (const useFn of [useFetch, useLazyFetch]) {
-      useFn('/x', {
+      useFn('/api/hello', {
         method,
         baseURL: base,
         query: { q: search },
-        params: { q: search },
         headers: { 'x-test': search },
         body: state,
       })
-      useFn('/x', {
+      useFn('/api/hello', {
         method: computed(() => method.value),
         baseURL: computed(() => base.value),
         query: computed(() => ({ q: search.value })),
-        params: computed(() => ({ q: search.value })),
         headers: computed(() => ({ 'x-test': search.value })),
         body: computed(() => ({ ...state })),
       })
-      useFn('/x', {
+      useFn('/api/hello', {
         method: () => method.value,
         baseURL: () => base.value,
         query: () => ({ q: search.value }),
-        params: () => ({ q: search.value }),
         headers: () => ({ 'x-test': search.value }),
         body: () => ({ ...state }),
       })
@@ -253,6 +270,112 @@ describe('API routes', () => {
     useFetch('/x', { method: 123 })
     // @ts-expect-error wrong shape: getter must return a method
     useFetch('/x', { method: () => 123 })
+  })
+})
+
+describe('API route request shapes', () => {
+  type IsAny<T> = 0 extends 1 & T ? true : false
+  type OptionsFor<R extends string, M extends import('nuxt/app').AnyServerRouteMethod = 'get'> = import('nuxt/app').TypedFetchOptions<R, M>
+
+  type AugmentedBody = NonNullable<OptionsFor<'/api/augmented-request', 'post'>['body']>
+  type AugmentedQuery = NonNullable<OptionsFor<'/api/augmented-request', 'post'>['query']>
+  type AugmentedHeaders = NonNullable<OptionsFor<'/api/augmented-request', 'post'>['headers']>
+
+  it('types the body a route declares', () => {
+    expectTypeOf<IsAny<AugmentedBody>>().toEqualTypeOf<false>()
+    expectTypeOf<{ title: string }>().toExtend<AugmentedBody>()
+
+    $fetch('/api/augmented-request', { method: 'post', body: { title: 'a' } })
+    $fetch('/api/augmented-request', { method: 'POST', body: { title: 'a' } })
+
+    // @ts-expect-error `title` is not a number
+    $fetch('/api/augmented-request', { method: 'post', body: { title: 1 } })
+    // @ts-expect-error `title` is missing
+    $fetch('/api/augmented-request', { method: 'post', body: {} })
+    // @ts-expect-error a declared body cannot be sent as a raw string
+    $fetch('/api/augmented-request', { method: 'post', body: 'nope' })
+    // @ts-expect-error the route declares a body, so it cannot be omitted
+    $fetch('/api/augmented-request', { method: 'post' })
+  })
+
+  it('types the query and headers a route declares', () => {
+    expectTypeOf<IsAny<AugmentedQuery>>().toEqualTypeOf<false>()
+    expectTypeOf<IsAny<AugmentedHeaders>>().toEqualTypeOf<false>()
+
+    $fetch('/api/augmented-request', {
+      method: 'post',
+      body: { title: 'a' },
+      query: { page: '2' },
+      headers: { 'x-token': 'a', 'x-extra': 'b' },
+    })
+
+    // @ts-expect-error `page` is not a number
+    $fetch('/api/augmented-request', { method: 'post', body: { title: 'a' }, query: { page: 2 } })
+    // @ts-expect-error `x-token` is not a number
+    $fetch('/api/augmented-request', { method: 'post', body: { title: 'a' }, headers: { 'x-token': 2 } })
+  })
+
+  it('types the body a route declares through `useFetch`', () => {
+    const title = ref('a')
+
+    expectTypeOf(useFetch('/api/augmented-request', { method: 'post', body: { title: 'a' } }).data).toEqualTypeOf<Ref<{ created: true } | DefaultAsyncDataValue>>()
+    useFetch('/api/augmented-request', { method: 'post', body: ref({ title: 'a' }) })
+    useFetch('/api/augmented-request', { method: 'post', body: () => ({ title: 'a' }) })
+    useFetch('/api/augmented-request', { method: 'post', body: { title } })
+    useLazyFetch('/api/augmented-request', { method: 'post', body: { title: 'a' } })
+
+    // @ts-expect-error `title` is not a number
+    useFetch('/api/augmented-request', { method: 'post', body: { title: 1 } })
+    // @ts-expect-error `title` is not a number, even behind a getter
+    useFetch('/api/augmented-request', { method: 'post', body: () => ({ title: 1 }) })
+
+    // @ts-expect-error the route declares a body, so it cannot be omitted
+    useFetch('/api/augmented-request', { method: 'post' })
+    // @ts-expect-error the route declares a body, so it cannot be omitted
+    useLazyFetch('/api/augmented-request', { method: 'post' })
+  })
+
+  it('leaves a route as permissive as ofetch where any of its methods declares nothing', () => {
+    // the options are checked against every method the route registers, so one that declares no
+    // body is enough for the option to keep accepting anything
+    $fetch('/api/augmented-mixed', { method: 'post', body: { title: 'a' } })
+    // narrowed by the method the call passes: POST declares a body, so it is typed and required
+    // @ts-expect-error POST declares `{ title: string }`
+    $fetch('/api/augmented-mixed', { method: 'post', body: 'a raw string' })
+    // @ts-expect-error POST declares a body, so it cannot be omitted
+    $fetch('/api/augmented-mixed', { method: 'post' })
+    $fetch('/api/augmented-mixed', { method: 'post', body: { title: 'a' } })
+    // GET declares nothing, so it stays as permissive as ofetch
+    $fetch('/api/augmented-mixed', { body: 'a raw string' })
+  })
+
+  it('leaves routes that validate nothing as permissive as ofetch', () => {
+    $fetch('/api/hello', { body: { anything: true }, query: { page: 2 }, headers: { 'x-foo': 'bar' } })
+    $fetch('/api/hey', { method: 'post', body: 'a raw string' })
+    $fetch('/api/hey', { method: 'post', body: new FormData() })
+    $fetch('/api/hello', { method: 'PATCH', body: { anything: true } })
+    $fetch<TestResponse>('/api/hello', { method: 'post', body: { anything: true } })
+    useFetch('/api/hey', { method: 'post', body: { anything: true } })
+  })
+
+  it('types the body a validating handler declares', () => {
+    type ValidatedBody = NonNullable<OptionsFor<'/api/validated', 'post'>['body']>
+    expectTypeOf<IsAny<ValidatedBody>>().toEqualTypeOf<false>()
+    expectTypeOf<{ title: string, count: number }>().toExtend<ValidatedBody>()
+
+    $fetch('/api/validated', { method: 'post', body: { title: 'a', count: 1 } })
+    useFetch('/api/validated', { method: 'post', body: { title: 'a', count: 1 } })
+    // @ts-expect-error `count` is not a string
+    $fetch('/api/validated', { method: 'post', body: { title: 'a', count: 'one' } })
+    // @ts-expect-error the route declares a body, so it cannot be omitted
+    $fetch('/api/validated', { method: 'post' })
+    // @ts-expect-error the route declares a body, so it cannot be omitted
+    useFetch('/api/validated', { method: 'post' })
+
+    // `defineValidatedHandler` returns a handler whose type drops the query it validated and
+    // exposes validated headers only as a `Headers` instance, so neither can be read back from it.
+    // Enable once https://github.com/h3js/h3/pull/1538 ships.
+    $fetch('/api/validated', { method: 'post', body: { title: 'a', count: 1 }, query: { page: 2 }, headers: { 'x-anything': 'b' } })
   })
 })
 
@@ -653,8 +776,8 @@ describe('composables', () => {
     expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => ref(500) }).data).toEqualTypeOf<Ref<string | number>>()
     expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => 500 }).data).toEqualTypeOf<Ref<string | number>>()
 
-    expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<unknown>>()
-    expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useFetch('/api/hello', { default: () => ref(500) }).data).toEqualTypeOf<Ref<string | number>>()
+    expectTypeOf(useFetch('/api/hello', { default: () => 500 }).data).toEqualTypeOf<Ref<string | number>>()
   })
 
   it('enforces readonly cookies', () => {
@@ -664,33 +787,33 @@ describe('composables', () => {
 
   it('correct types when using ResT type-assertion with default function', () => {
     // @ts-expect-error default type should match generic type
-    useFetch<string>('/test', { default: () => 0 })
+    useFetch<string>('/api/hello', { default: () => 0 })
     // @ts-expect-error default type should match generic type
-    useLazyFetch<string>('/test', { default: () => 0 })
+    useLazyFetch<string>('/api/hello', { default: () => 0 })
     // @ts-expect-error default type should match generic type
-    useAsyncData<string>(() => $fetch('/test'), { default: () => 0 })
+    useAsyncData<string>(() => $fetch('/api/hello'), { default: () => 0 })
     // @ts-expect-error default type should match generic type
-    useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 0 })
+    useLazyAsyncData<string>(() => $fetch('/api/hello'), { default: () => 0 })
 
-    expectTypeOf(useFetch<string>('/test', { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
-    expectTypeOf(useLazyFetch<string>('/test', { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
-    expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
-    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useFetch<string>('/api/hello', { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyFetch<string>('/api/hello', { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncData<string>(() => $fetch('/api/hello'), { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/api/hello'), { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
 
     // transform must match the explicit generic because of typescript limitations microsoft/TypeScript#14400
-    expectTypeOf(useFetch<string>('/test', { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    expectTypeOf(useLazyFetch<string>('/test', { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch<string>('/api/hello', { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch<string>('/api/hello', { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData<string>(() => $fetch('/api/hello'), { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/api/hello'), { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useFetch<string>('/test', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
-    expectTypeOf(useLazyFetch<string>('/test', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
-    expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
-    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useFetch<string>('/api/hello', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyFetch<string>('/api/hello', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncData<string>(() => $fetch('/api/hello'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/api/hello'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
   })
 
   it('supports asynchronous transform', () => {
-    const { data } = useAsyncData('test', () => $fetch('/test') as Promise<{ foo: 'bar' }>, {
+    const { data } = useAsyncData('test', () => $fetch('/api/hello') as Promise<{ foo: 'bar' }>, {
       async transform (data) {
         await Promise.resolve()
         return data.foo
@@ -704,7 +827,7 @@ describe('composables', () => {
     const dynamicStringUrl = 'https://example.com/api'
     expectTypeOf(useFetch(dynamicStringUrl).data).toEqualTypeOf<Ref<unknown>>()
 
-    // TODO: https://github.com/nitrojs/nitro/issues/2758
+    // TODO: as above, blocked on handler return types resolving in this program
     // request param should infer string literal type / show auto-complete hint base on server routes, ex: '/api/hello'
     // expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     // expectTypeOf(useLazyFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
@@ -743,7 +866,7 @@ describe('composables', () => {
     expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{ bar: number } | { bar: number }>>()
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
-      // TODO: https://github.com/nitrojs/nitro/issues/2758
+      // TODO: as above, blocked on handler return types resolving in this program
     // expectTypeOf(useFetch('/api/hey', { default: () => 1, transform: v => v.foo }).data).toEqualTypeOf<Ref<string | number>>()
     // expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string>>()
   })

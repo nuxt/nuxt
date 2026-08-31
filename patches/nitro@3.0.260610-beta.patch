@@ -1,8 +1,20 @@
 diff --git a/dist/_build/common.mjs b/dist/_build/common.mjs
-index 76694ff062bae1ef5f6d548ae80b53dcfd8362ef..dbcec7dd4403102031410d3c7660a30d89774aa5 100644
+index 76694ff062bae1ef5f6d548ae80b53dcfd8362ef..16209a4fb70a67f1fb00d8d98ee93d700eb0da0d 100644
 --- a/dist/_build/common.mjs
 +++ b/dist/_build/common.mjs
-@@ -28221,6 +28221,10 @@ function sourcemapMinify() {
+@@ -20813,7 +20813,10 @@ async function writeTypes(nitro) {
+ 					if (!dir || !name) path = resolvedPath;
+ 					else {
+ 						const subpath = await lookupNodeModuleSubpath(resolvedPath);
+-						path = subpath && subpath !== "./" ? join$2(dir, name, subpath) : resolvedPath;
++						// an exports subpath only resolves as a bare specifier: reattaching it to the
++						// package directory names a file that does not exist, so the generated
++						// declaration silently resolves to `any` under `skipLibCheck`
++						path = subpath && subpath !== "./" ? join$2(name, subpath) : resolvedPath;
+ 					}
+ 				}
+ 			}
+@@ -28221,6 +28224,10 @@ function sourcemapMinify() {
  const HELPER_ID = "virtual:nitro-raw-helpers";
  const RESOLVED_PREFIX = "virtual:nitro:raw:";
  const PREFIX = "raw:";
@@ -13,7 +25,7 @@ index 76694ff062bae1ef5f6d548ae80b53dcfd8362ef..dbcec7dd4403102031410d3c7660a30d
  function raw() {
  	return {
  		name: "nitro:raw",
-@@ -28232,7 +28236,7 @@ function raw() {
+@@ -28232,7 +28239,7 @@ function raw() {
  				if (id.startsWith(PREFIX)) {
  					const resolvedId = (await this.resolve(id.slice(4), importer, resolveOpts))?.id;
  					if (!resolvedId) return null;
@@ -22,7 +34,7 @@ index 76694ff062bae1ef5f6d548ae80b53dcfd8362ef..dbcec7dd4403102031410d3c7660a30d
  				}
  			}
  		},
-@@ -28241,15 +28245,18 @@ function raw() {
+@@ -28241,15 +28248,18 @@ function raw() {
  			filter: { id: [new RegExp(`^${HELPER_ID}$`), new RegExp(`^${RESOLVED_PREFIX}`)] },
  			handler(id) {
  				if (id === HELPER_ID) return getHelpers();

@@ -1,5 +1,5 @@
 import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { TypedFetch, TypedFetchRequest, TypedServerResponse, AvailableServerRouteMethod as _AvailableServerRouteMethod } from '../types/fetch'
+import type { AcceptedMethod, AnyServerRouteMethod, EffectiveBaseURL, RequiredFetchBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedRouteArgs, ValidTypedFetchPath } from '../types/fetch'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { isPlainObject } from '@vue/shared'
@@ -16,31 +16,38 @@ import { $fetch as _$fetch } from '#build/fetch'
 
 const $fetch = _$fetch as TypedFetch
 
-// support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
-type AvailableRouterMethod<R extends TypedFetchRequest> = _AvailableServerRouteMethod<R> | Uppercase<_AvailableServerRouteMethod<R>>
+// both cases are accepted at a call site, and a parameter constrained to one cannot infer the
+// other, detail: https://github.com/nuxt/nuxt/issues/22313
 
-export type FetchResult<ReqT extends TypedFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedServerResponse<ReqT, unknown, Lowercase<M>>
+export type FetchResult<ReqT, M extends AnyServerRouteMethod> = TypedServerResponse<ReqT, unknown, M>
 
 type ComputedOptions<T extends Record<string, any>> = {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | MaybeRefOrGetter<T[K]>
 }
 
-interface NuxtFetchOptions<R extends TypedFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>, DataT = any> extends Omit<FetchOptions<_ResponseType, DataT>, 'cache'> {
-  method?: M
-  cache?: FetchOptions<_ResponseType, DataT>['cache'] | false
-}
+type NuxtFetchOptions<R, M extends AnyServerRouteMethod = 'get', DataT = any, B extends string = string> =
+  & Omit<FetchOptions<_ResponseType, DataT>, 'baseURL' | 'cache' | 'method' | 'body' | 'query' | 'params' | 'headers'>
+  & {
+    // the base is part of the path the request is made to, so it is inferred here and resolved
+    // against the route set along with the request
+    baseURL?: B
+    method?: AcceptedMethod<R, M>
+    cache?: FetchOptions<_ResponseType, DataT>['cache'] | false
+  }
+  & TypedRequestShape<R, M>
 
-type ComputedFetchOptions<R extends TypedFetchRequest, M extends AvailableRouterMethod<R>, DataT = any> = ComputedOptions<NuxtFetchOptions<R, M, DataT>>
+type ComputedFetchOptions<R, M extends AnyServerRouteMethod, DataT = any, B extends string = string> = ComputedOptions<NuxtFetchOptions<R, M, DataT, B>>
 
 export interface UseFetchOptions<
   ResT,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
-  R extends TypedFetchRequest = string & {},
-  M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
-> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'timeout'> {
+  R extends string = string,
+  M extends AnyServerRouteMethod = 'get',
+  B extends string = string,
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT, B>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
   $fetch?: TypedFetch
   watch?: MultiWatchSources | false
@@ -51,26 +58,24 @@ export interface UseFetchOptionsWithTransform<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
-  R extends TypedFetchRequest = string & {},
-  M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
-> extends Omit<UseFetchOptions<ResT, DataT, PickKeys, DefaultT, R, M>, 'transform'> {
+  R extends string = string,
+  M extends AnyServerRouteMethod = 'get',
+  B extends string = string,
+> extends Omit<UseFetchOptions<ResT, DataT, PickKeys, DefaultT, R, M, B>, 'transform'> {
   transform: _Transform<ResT, DataT>
 }
 
-const MAYBE_REF_OR_GETTER_OPTION_KEYS = ['method', 'baseURL', 'query', 'params', 'body', 'headers'] as const
+const MAYBE_REF_OR_GETTER_OPTION_KEYS = ['method', 'baseURL', 'query', 'body', 'headers'] as const
 
-function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
+function generateOptionSegments (opts: Record<string, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
   ]
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  for (const _obj of [opts.query || opts.params]) {
-    const obj = toValue(_obj)
-    if (!obj) { continue }
-
+  const query = toValue<Record<string, any> | undefined>(opts.query)
+  if (query) {
     const unwrapped: Record<string, string> = {}
-    for (const [key, value] of Object.entries(obj)) {
+    for (const [key, value] of Object.entries(query)) {
       unwrapped[toValue(key)] = toValue(value)
     }
     segments.push(unwrapped)
@@ -109,76 +114,249 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
 type FetchFactoryDataT<FDataT, _ResT> = [unknown] extends [FDataT] ? _ResT : FDataT
 type FetchFactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
 type FetchFactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
-export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined> {
+export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined, FBaseURL extends string = ''> {
+  // the registered paths come first: an editor takes string-literal completions from the first
+  // applicable signature. Their request parameter is left un-intersected, because intersecting a
+  // validator onto it stops a template literal argument from inferring as one; a path the route set
+  // does not answer with this method is turned away by the trailing `UnmatchedRouteArgs` instead,
+  // which drops these signatures and leaves the call to the validating ones below.
   // Auto-key, opts with transform, default = undefined
   <
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchRequest = TypedFetchRequest,
-    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+    ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
   // Auto-key, opts with transform, default = DataT
   <
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchRequest = TypedFetchRequest,
-    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+    ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
   // Auto-key, default = undefined
   <
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchRequest = TypedFetchRequest,
-    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = FetchFactoryDataT<FDataT, _ResT>,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+    ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
   ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
   // Auto-key, default = DataT
   <
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchRequest = TypedFetchRequest,
-    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = FetchFactoryDataT<FDataT, _ResT>,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+    ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
   ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
   // Explicit auto-key as positional arg
   <
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchRequest = TypedFetchRequest,
-    const Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
     PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
     DefaultT = undefined,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    arg1?: string | (UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>),
+    arg2?: string,
+    ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // the same five for a path known only at runtime, carrying the validator so an unregistered
+  // path is named, and picking up the query strings and trailing slashes a constraint cannot express
+  // Auto-key, opts with transform, default = undefined
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends TypedFetchPathInput = TypedFetchPathInput,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
+  >(
+    request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Auto-key, opts with transform, default = DataT
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends TypedFetchPathInput = TypedFetchPathInput,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
+  >(
+    request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Auto-key, default = undefined
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends TypedFetchPathInput = TypedFetchPathInput,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
+    DataT = FetchFactoryDataT<FDataT, _ResT>,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
+  >(
+    request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  // Auto-key, default = DataT
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends TypedFetchPathInput = TypedFetchPathInput,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
+    DataT = FetchFactoryDataT<FDataT, _ResT>,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
+  >(
+    request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  // Explicit auto-key as positional arg
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends TypedFetchPathInput = TypedFetchPathInput,
+    // `'get'` only while `ResT` is being inferred. Naming any type argument turns inference off for
+    // every later one, so a flat default would leave `Method` at `'get'` and reject the method the
+    // call passed. Widening it once `ResT` is named costs nothing, because at that point the method
+    // no longer decides what comes back.
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
+    // route set is asked - the response, the request shapes, whether the path resolves at all -
+    // is asked of that rather than of the path as written
+    const BaseURL extends string = '',
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
+    _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = undefined,
+  >(
+    request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
+    arg1?: string | (UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>),
     arg2?: string,
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 }
@@ -187,16 +365,20 @@ export interface CreateUseFetch {
   <
     FResT = void,
     FReqT extends TypedFetchRequest = TypedFetchRequest,
-    const FMethod extends AvailableRouterMethod<FReqT> = FResT extends void ? 'get' extends AvailableRouterMethod<FReqT> ? 'get' : AvailableRouterMethod<FReqT> : AvailableRouterMethod<FReqT>,
+    const FMethod extends AnyServerRouteMethod = 'get',
+    // a `baseURL` the factory sets applies to every call the composable it returns makes, so it is
+    // carried on the returned type and resolved there. A base passed at the call site wins, as it
+    // does at runtime
+    const FBaseURL extends string = '',
     F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
     FDefaultT = undefined,
   >(
     options?:
-      | Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
-      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>),
-  ): UseFetch<FDataT, FPickKeys, FDefaultT>
+      | Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod, FBaseURL>>
+      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod, FBaseURL>>),
+  ): UseFetch<FDataT, FPickKeys, FDefaultT, FBaseURL>
 }
 
 /**
@@ -208,14 +390,14 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
   factory<
     FResT = void,
     FReqT extends TypedFetchRequest = TypedFetchRequest,
-    const FMethod extends AvailableRouterMethod<FReqT> = FResT extends void ? 'get' extends AvailableRouterMethod<FReqT> ? 'get' : AvailableRouterMethod<FReqT> : AvailableRouterMethod<FReqT>,
+    const FMethod extends AnyServerRouteMethod = 'get',
     F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
     FDefaultT = undefined,
   >(options:
-      Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
-      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>) = {},
+      Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod>>
+      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod>>) = {},
   ): UseFetch<FDataT, FPickKeys, FDefaultT> {
     /**
      * Fetch data from an API endpoint with an SSR-friendly composable.
@@ -228,66 +410,66 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       ResT = void,
       ErrorT = NuxtError<unknown>,
       ReqT extends TypedFetchRequest = TypedFetchRequest,
-      Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+      Method extends AnyServerRouteMethod = ResT extends void ? 'get' extends AnyServerRouteMethod ? 'get' : AnyServerRouteMethod : AnyServerRouteMethod,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = _ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
       DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+      opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT & string, Method>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
       ErrorT = NuxtError<unknown>,
       ReqT extends TypedFetchRequest = TypedFetchRequest,
-      Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+      Method extends AnyServerRouteMethod = ResT extends void ? 'get' extends AnyServerRouteMethod ? 'get' : AnyServerRouteMethod : AnyServerRouteMethod,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = _ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
       DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+      opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, ReqT & string, Method>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
       ErrorT = NuxtError<unknown>,
       ReqT extends TypedFetchRequest = TypedFetchRequest,
-      Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+      Method extends AnyServerRouteMethod = ResT extends void ? 'get' extends AnyServerRouteMethod ? 'get' : AnyServerRouteMethod : AnyServerRouteMethod,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = [unknown] extends [FDataT] ? _ResT : FDataT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
       DefaultT = [undefined] extends [FDefaultT] ? undefined : FDefaultT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT & string, Method>,
     ): AsyncData<PickFrom<DataT, [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
       ErrorT = NuxtError<unknown>,
       ReqT extends TypedFetchRequest = TypedFetchRequest,
-      Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+      Method extends AnyServerRouteMethod = ResT extends void ? 'get' extends AnyServerRouteMethod ? 'get' : AnyServerRouteMethod : AnyServerRouteMethod,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = [unknown] extends [FDataT] ? _ResT : FDataT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
       DefaultT = [undefined] extends [FDefaultT] ? DataT : FDefaultT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT & string, Method>,
     ): AsyncData<PickFrom<DataT, [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
       ErrorT = NuxtError<unknown>,
       ReqT extends TypedFetchRequest = TypedFetchRequest,
-      Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+      Method extends AnyServerRouteMethod = ResT extends void ? 'get' extends AnyServerRouteMethod ? 'get' : AnyServerRouteMethod : AnyServerRouteMethod,
       _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
       DataT = _ResT,
       PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
       DefaultT = undefined,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+      arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT & string, Method>,
       arg2?: string,
     ) {
       const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
@@ -368,7 +550,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
       }
 
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
-        const _$fetch: TypedFetch<unknown, TypedFetchRequest> = fetchOptions.$fetch || (import.meta.server ? useRequestFetch() : $fetch)
+        const _$fetch: TypedFetch = fetchOptions.$fetch || (import.meta.server ? useRequestFetch() : $fetch)
 
         const resolvedOptions = { signal, ..._fetchOptions } as Record<string, unknown>
         for (const key of MAYBE_REF_OR_GETTER_OPTION_KEYS) {
@@ -377,7 +559,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
           }
         }
 
-        return _$fetch(_request.value, resolvedOptions as any) as Promise<_ResT>
+        return (_$fetch as (r: unknown, o: unknown) => Promise<_ResT>)(_request.value, resolvedOptions)
       }, _asyncDataOptions)
 
       return asyncData
@@ -395,4 +577,4 @@ export const useLazyFetch: UseFetch = (createUseFetch as unknown as { __nuxt_fac
   _functionName: 'useLazyFetch',
 }) as ReturnType<typeof createUseFetch>
 
-export type { TypedFetch, TypedFetch as $Fetch, TypedFetchRequest, TypedServerResponse } from '../types/fetch'
+export type { AnyServerRouteMethod, AvailableServerRouteMethod, ServerRouteMethod, ServerRouteMethods, TypedFetch, TypedFetch as $Fetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from '../types/fetch'

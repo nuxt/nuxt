@@ -57,10 +57,6 @@ describe('useFetch', () => {
     await useFetch('/api/test', { query: { id: '3' } }, '')
     /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { query: { id: ref('3') } }, '')
-    /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { params: { id: '3' } }, '')
-    /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { params: { id: ref('3') } }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
 
@@ -185,7 +181,7 @@ describe('useFetch', () => {
     const searchTerm = ref('')
 
     const { data } = await useFetch('/api/watchable-fetch', {
-      params: { q: searchTerm },
+      query: { q: searchTerm },
     })
 
     for (const value of [undefined, 'pre', 'post', 'sync'] as const) {

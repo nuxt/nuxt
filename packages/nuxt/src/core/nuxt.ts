@@ -8,7 +8,8 @@ import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext, tryUseNitro } from '@nuxt/kit'
+import { compileRoutes } from 'fetchdts/compiler'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext, tryUseNitro } from '@nuxt/kit'
 import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -42,6 +43,7 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
+import { buildServerRoutes, collectPageRoutes, collectServerRoutes, resolveServerRoutes } from './utils/server-routes.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
@@ -249,6 +251,55 @@ async function initNuxt (nuxt: Nuxt) {
         return nuxt.callHook('restart', { hard: true })
       }
     }
+  })
+
+  // The compiler emits the route tree, an exact-match table for the fully static paths, the path
+  // union as source and accessors specialised to this route set. It is a module rather than an
+  // ambient declaration because the accessors are type aliases, which cannot be reached through
+  // interface augmentation; the app layer imports them from `#build/server-routes`.
+  addTemplate({
+    filename: 'server-routes.d.ts',
+    // the routes come from the server builder's own scan rather than from anything the template
+    // system watches, so nothing but a page change can affect the output - and only where pages are
+    // part of the schema
+    dependsOn: nuxt.options.experimental.strictRouteTypes === 'isomorphic' ? ['pages'] : [],
+    getContents: async ({ app, nuxt }) => {
+      // handler specifiers are relative to the emitted file, which sits at the root of the build
+      // directory rather than in `types/`
+      const emittedFrom = nuxt.options.buildDir
+      const { routes, requestTypes } = await resolveServerRoutes(nuxt)
+      const extractors = [requestTypes?.body, requestTypes?.query, requestTypes?.headers].filter(Boolean)
+
+      // under `'isomorphic'` the pages the Vue router serves are part of the route set: nitro does
+      // not know about the renderer, so a page's path is otherwise invisible and would be rejected
+      const pages = nuxt.options.experimental.strictRouteTypes === 'isomorphic'
+        ? buildServerRoutes(collectServerRoutes(collectPageRoutes(app.pages || [])), emittedFrom)
+            .map(route => ({ ...route, metadata: { GET: { responseType: 'string' } } }))
+        : []
+
+      return [
+        compileRoutes([{ routes: [...buildServerRoutes(routes, emittedFrom, requestTypes), ...pages] }], {
+          name: 'GeneratedServerRoutes',
+          // `fetchdts` is not a dependency of user projects, so its vocabulary is named through the
+          // re-exports in `nuxt/app` instead
+          moduleSpecifier: 'nuxt/app',
+          // the accessors resolve against the interface an app can augment, so a route added by
+          // hand is found by the walk behind the exact-match table rather than being invisible
+          resolveAgainst: 'ServerRoutes',
+          imports: [
+            'import type { ServerRoutes } from \'@nuxt/schema\'',
+            'import type { Serialize } from \'nuxt/app\'',
+            ...extractors.length && requestTypes ? [`import type { ${extractors.sort().join(', ')} } from '${requestTypes.module}'`] : [],
+          ],
+        }).code,
+        'declare module \'@nuxt/schema\' {',
+        '  interface ServerRoutes extends GeneratedServerRoutes {}',
+        '}',
+        // whether an unrecognised path is an error is a build-time decision, so the resolved answer
+        // is emitted rather than the app layer branching on a type-level flag
+        `export type StrictFetchPaths = ${nuxt.options.experimental.strictRouteTypes !== false}`,
+      ].join('\n')
+    },
   })
 
   addTypeTemplate({

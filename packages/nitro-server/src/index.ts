@@ -4,7 +4,7 @@ import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import type { Nuxt, NuxtOptions, ServerRouteSegment } from '@nuxt/schema'
 import { join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
@@ -27,7 +27,7 @@ import { setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
-import { addRoute as addRou3Route, createRouter as createRou3Router } from 'rou3'
+import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -39,6 +39,9 @@ import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 export type { NuxtTracingChannelOptions } from './augments.ts'
 
 type NitroTSConfig = NonNullable<NonNullable<NitroConfig['typescript']>['tsConfig']>
+
+/** Subpath the request-shape extractors are imported from in generated declarations. */
+const REQUEST_TYPES_MODULE = '@nuxt/nitro-server/request-types'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -1023,6 +1026,44 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  // Nitro discovers file-based handlers by scanning, so they are only visible to Nuxt's typed
+  // `$fetch` if reported here. Patterns are resolved through rou3, the router that will serve the
+  // request, so the generated types and the routing cannot disagree about what a route matches.
+  nuxt.hook('server:routes', (routes, context) => {
+    context.requestTypes = {
+      module: REQUEST_TYPES_MODULE,
+      body: 'RequestBodyOf',
+      query: 'RequestQueryOf',
+      headers: 'RequestHeadersOf',
+    }
+
+    for (const handler of [...nitro.scannedHandlers, ...nitro.options.handlers]) {
+      if (!handler.route) { continue }
+      // an optional parameter matches with and without the segment, so it resolves to two routes
+      for (const nodeKey of routeNodeKeys(handler.route)) {
+        routes.push({
+          segments: toRouteSegments(nodeKey),
+          route: handler.route,
+          method: handler.method,
+          handler: handler.handler,
+          middleware: handler.middleware,
+        })
+      }
+    }
+  })
+
+  // In dev, nitro rescans its handlers on a debounce, while Nuxt regenerates templates as soon as
+  // the watch event fires - so the route types can be written from a handler list that is one edit
+  // stale. `types:extend` runs immediately after each rescan, which is the point at which the list
+  // is current, so regenerate them again from here.
+  if (nuxt.options.dev) {
+    nitro.hooks.hook('types:extend', async () => {
+      await nuxt.callHook('builder:generateApp', {
+        filter: template => template.filename === 'server-routes.d.ts',
+      })
+    })
+  }
+
   // ensure Nitro types only apply to server directory and not the whole root directory
   nitro.hooks.hook('types:extend', (types) => {
     types.tsConfig ||= {}
@@ -1041,6 +1082,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.tsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.tsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
     opts.references.push({ path: resolve(nuxt.options.rootDir, nitroConfig.typescript!.generatedTypesDir!, 'nitro.d.ts') })
+
+    // the generated route types import the request-shape extractors by package name, which the app
+    // program cannot resolve on its own: this package is a dependency of `nuxt`, not of the project
+    opts.tsConfig.compilerOptions ||= {}
+    opts.tsConfig.compilerOptions.paths ||= {}
+    opts.tsConfig.compilerOptions.paths[REQUEST_TYPES_MODULE] = [resolve(distDir, 'request-types')]
 
     // ensure aliases shared between nuxt + nitro are included in shared tsconfig
     opts.sharedTsConfig.compilerOptions ||= {}
@@ -1147,4 +1194,33 @@ function compilePageMatcher (patterns: string[]): string {
     addRou3Route(router, '', pattern, 1)
   }
   return compileRouterToString(router, 'NUXT_PAGE_MATCHER')
+}
+
+/**
+ * Splits a rou3 node key, in which `*` marks a single matched segment and `**` the remaining
+ * ones, into the segments Nuxt emits types from. Consecutive static parts are kept together so
+ * the generated tree stays shallow.
+ */
+function toRouteSegments (nodeKey: string): ServerRouteSegment[] {
+  const segments: ServerRouteSegment[] = []
+  let staticValue = ''
+
+  for (const part of nodeKey.split('/')) {
+    if (!part) { continue }
+    if (part !== '*' && part !== '**') {
+      staticValue += `/${part}`
+      continue
+    }
+    if (staticValue) {
+      segments.push({ type: 'static', value: staticValue })
+      staticValue = ''
+    }
+    segments.push(part === '*' ? { type: 'dynamic' } : { type: 'wildcard' })
+  }
+
+  if (staticValue) {
+    segments.push({ type: 'static', value: staticValue })
+  }
+
+  return segments.length ? segments : [{ type: 'static', value: '/' }]
 }

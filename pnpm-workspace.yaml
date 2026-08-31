@@ -50,6 +50,7 @@ minimumReleaseAgeExclude:
   - vue
   - '@vue/*'
   - '@flakiness/vitest@1.9.2'
+  - fetchdts@0.2.0
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
@@ -153,6 +154,7 @@ catalogs:
     errx: ^0.1.2
     escape-string-regexp: ^5.0.0
     exsolve: ^1.1.1
+    fetchdts: ^0.2.0
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
     giget: ^3.3.1
