@@ -164,6 +164,28 @@ test.describe('navigation during initial hydration', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
+  test('a cross-layout navigation that finishes during boot hydrates the payload layout', async ({ page }) => {
+    // the SSR DOM is the other layout while the completed navigation's target uses
+    // the default layout: the first render must hydrate against the payload layout
+    // and swap afterwards, or it claims the other layout's DOM as the default one
+    await page.goto('/slow-other-layout?bootgate', { waitUntil: 'domcontentloaded' })
+    await page.waitForFunction(() => typeof window.__releaseBoot === 'function')
+
+    await page.evaluate(() => { (window.useNuxtApp?.().$router as Router).push('/') })
+    await page.waitForFunction(() => (window.useNuxtApp?.().$router as Router).currentRoute.value.path === '/')
+    await page.evaluate(() => window.__releaseBoot?.())
+
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
+    await expect(page.getByTestId('index-title')).toBeVisible()
+    await expect(page.getByTestId('default-layout')).toHaveCount(1)
+    await expect(page.getByTestId('other-layout')).not.toBeAttached()
+    await expect(page.getByTestId('slow-other-title')).not.toBeAttached()
+    await expect(page.getByTestId('hydration-blocker')).not.toBeAttached()
+    await expect(() => page.evaluate(() => window.useNuxtApp?.().isHydrating)).toBeWithPolling(false)
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
   test('programmatic navigation before hydration completes renders the target page', async ({ page }) => {
     await gotoMidHydration(page, '/slow')
 

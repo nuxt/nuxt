@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Suspense, createSSRApp, defineComponent, h, nextTick, ref } from 'vue'
+import { Fragment, Suspense, createSSRApp, defineComponent, h, nextTick, ref } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { flushPromises } from '@vue/test-utils'
 
@@ -244,6 +244,138 @@ describe('suspense hydration interrupt', () => {
     expect(el.innerHTML).toContain('page c')
     expect(el.innerHTML).not.toContain('page a')
     expect(el.innerHTML).not.toContain('page b')
+
+    client.app.unmount()
+    el.remove()
+  })
+
+  it('applies a fragment child insertion in a hydrating suspense', async () => {
+    // a same-root-type update while hydrating used to patch against the detached
+    // hiddenContainer with anchors from the live SSR DOM, throwing on insertBefore
+    const createListApp = (gate: () => Promise<unknown>, onRootResolve?: () => void) => {
+      const items = ref(['one', 'two'])
+      const AsyncChild = defineComponent({
+        name: 'AsyncChild',
+        async setup () {
+          await gate()
+          return () => h('div', 'async child ready')
+        },
+      })
+      const Page = defineComponent({
+        name: 'Page',
+        setup: () => () => h(Suspense, { suspensible: true }, {
+          default: () => h(Fragment, [...items.value.map(i => h('div', { key: i }, i)), h(AsyncChild)]),
+        }),
+      })
+      const Root = defineComponent({
+        name: 'Root',
+        setup: () => () => h(Suspense, { onResolve: onRootResolve }, { default: () => h(Page) }),
+      })
+      return { app: createSSRApp(Root), items }
+    }
+
+    const ssr = createListApp(() => Promise.resolve())
+    const html = await renderToString(ssr.app)
+    expect(html).toContain('two')
+
+    const el = document.createElement('div')
+    el.innerHTML = html
+    document.body.appendChild(el)
+
+    let releaseGate: () => void
+    const gate = new Promise<void>((resolve) => { releaseGate = resolve })
+    let rootResolved = false
+    const client = createListApp(() => gate, () => { rootResolved = true })
+    const errorHandler = vi.fn()
+    client.app.config.errorHandler = errorHandler
+    client.app.mount(el)
+
+    await nextTick()
+    expect(rootResolved).toBe(false)
+
+    // insert a keyed child while the boundary is still hydrating
+    client.items.value = ['one', 'two', 'three']
+    await flushPromises()
+
+    expect(errorHandler).not.toHaveBeenCalled()
+    expect(el.innerHTML).toContain('three')
+    // the in-place patch must not prematurely resolve the still-hydrating boundary
+    expect(rootResolved).toBe(false)
+
+    releaseGate!()
+    await flushPromises()
+    expect(rootResolved).toBe(true)
+    expect(el.innerHTML).toContain('three')
+    expect(el.innerHTML).toContain('async child ready')
+
+    client.app.unmount()
+    el.remove()
+  })
+
+  it('survives a prop update to an unresolved async slot root during hydration', async () => {
+    // the async pre-render path replaces instance.vnode without carrying `el` over,
+    // which used to skip the branch's teardown when it was toggled right after
+    const createDirectApp = (gate: () => Promise<unknown>) => {
+      const route = ref('a')
+      const tick = ref(0)
+      const PageA = defineComponent({
+        name: 'PageA',
+        props: { tick: { type: Number, default: 0 } },
+        async setup () {
+          await gate()
+          return () => h('div', [h('h1', 'page a')])
+        },
+      })
+      const PageB = defineComponent({
+        name: 'PageB',
+        setup: () => () => h('div', [h('h1', 'page b')]),
+      })
+      const Page = defineComponent({
+        name: 'Page',
+        setup: () => () => h(Suspense, { suspensible: true }, {
+          default: () => route.value === 'a' ? h(PageA, { key: 'a', tick: tick.value }) : h(PageB, { key: 'b' }),
+        }),
+      })
+      const Root = defineComponent({
+        name: 'Root',
+        setup: () => () => h(Suspense, {}, { default: () => h(Page) }),
+      })
+      return { app: createSSRApp(Root), route, tick }
+    }
+
+    const ssr = createDirectApp(() => Promise.resolve())
+    const html = await renderToString(ssr.app)
+    expect(html).toContain('page a')
+
+    const el = document.createElement('div')
+    el.innerHTML = html
+    document.body.appendChild(el)
+
+    let releaseGate: () => void
+    const gate = new Promise<void>((resolve) => { releaseGate = resolve })
+    const client = createDirectApp(() => gate)
+    const errorHandler = vi.fn()
+    client.app.config.errorHandler = errorHandler
+    client.app.mount(el)
+
+    await nextTick()
+    expect(el.innerHTML).toContain('page a')
+
+    // prop patch to the still-unresolved async root, then a branch toggle
+    client.tick.value++
+    await flushPromises()
+    client.route.value = 'b'
+    await flushPromises()
+
+    expect(errorHandler).not.toHaveBeenCalled()
+    expect(el.innerHTML).toContain('page b')
+    expect(el.innerHTML).not.toContain('page a')
+
+    // resolving the abandoned async setup must not resurrect the old branch
+    releaseGate!()
+    await flushPromises()
+    expect(el.innerHTML).toContain('page b')
+    expect(el.innerHTML).not.toContain('page a')
 
     client.app.unmount()
     el.remove()
