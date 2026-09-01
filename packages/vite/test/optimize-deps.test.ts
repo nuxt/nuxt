@@ -81,6 +81,9 @@ await mkdir(join(v3LayerRoot, 'server/api'), { recursive: true })
 await mkdir(join(v3LayerRoot, 'modules'), { recursive: true })
 await mkdir(join(v3LayerRoot, 'public'), { recursive: true })
 await writeFile(join(v3LayerRoot, 'components/V3.vue'), '<script setup>\nimport x from \'v3-client-dep\'\n</script>\n')
+await writeFile(join(v3LayerRoot, 'nuxt.config.ts'), 'import x from \'v3-config-dep\'\nexport default { x }\n')
+await writeFile(join(v3LayerRoot, 'eslint.config.js'), 'import x from \'v3-config-dep\'\nexport default [x]\n')
+await writeFile(join(v3LayerRoot, 'app.config.ts'), 'import x from \'v3-app-config-dep\'\nexport default { x }\n')
 await writeFile(join(v3LayerRoot, 'server/api/route.mjs'), 'import x from \'v3-server-dep\'\nexport default x\n')
 await writeFile(join(v3LayerRoot, 'modules/build.mjs'), 'import x from \'v3-module-dep\'\nexport default x\n')
 await writeFile(join(v3LayerRoot, 'public/widget.mjs'), 'import x from \'v3-public-dep\'\nexport default x\n')
@@ -93,7 +96,7 @@ await writeFile(join(moduleRuntime, 'Component.vue'), '<script setup>\nimport x 
 await writeFile(join(moduleRuntime, 'middleware.mjs'), 'import x from \'middleware-dep\'\nexport default x\n')
 await writeFile(join(moduleRuntime, 'extensionless.mjs'), 'import x from \'extensionless-dep\'\nexport default x\n')
 await writeFile(join(moduleRuntime, 'layout.vue'), '<script setup>\nimport x from \'layout-dep\'\n</script>\n')
-for (const dep of ['plugin-dep', 'component-dep', 'server-component-dep', 'server-plugin-dep', 'server-page-dep', 'middleware-dep', 'layout-dep', 'extensionless-dep', 'paren-layer-dep', 'v3-client-dep', 'v3-server-dep', 'v3-module-dep', 'v3-public-dep']) {
+for (const dep of ['plugin-dep', 'component-dep', 'server-component-dep', 'server-plugin-dep', 'server-page-dep', 'middleware-dep', 'layout-dep', 'extensionless-dep', 'paren-layer-dep', 'v3-client-dep', 'v3-server-dep', 'v3-module-dep', 'v3-public-dep', 'v3-config-dep', 'v3-app-config-dep']) {
   await writePackage(join(rootDir, 'node_modules', dep), dep, 'export default 1\n')
 }
 
@@ -223,6 +226,7 @@ describe('installedScanEntries', () => {
     expect(installedScanEntries(nuxt)).toEqual([
       join(layerSrcDir, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'),
       '!' + join(layerSrcDir, '**/node_modules/**'),
+      '!' + join(layerSrcDir, '!(app).config.{vue,js,jsx,mjs,ts,tsx,mts}'),
       '!' + join(layerSrcDir, '**/*.server.{vue,js,jsx,mjs,ts,tsx,mts}'),
     ])
   })
@@ -272,7 +276,7 @@ describe('installedScanEntries', () => {
     expect(installedScanEntries(nuxt)).toEqual(['C:/project/node_modules/installed-module/runtime/plugin.mjs'])
   })
 
-  it('should not scan the server, module and public directories of a v3-style layer', async () => {
+  it('should not scan the config, server, module and public files of a v3-style layer', async () => {
     const nuxt = createNuxt([v3Layer])
 
     const entries = installedScanEntries(nuxt)
@@ -280,6 +284,7 @@ describe('installedScanEntries', () => {
     expect(entries).toEqual([
       join(v3LayerRoot, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'),
       '!' + join(v3LayerRoot, '**/node_modules/**'),
+      '!' + join(v3LayerRoot, '!(app).config.{vue,js,jsx,mjs,ts,tsx,mts}'),
       '!' + join(v3LayerRoot, 'server/**'),
       '!' + join(v3LayerRoot, 'modules/**'),
       '!' + join(v3LayerRoot, 'public/**'),
@@ -291,6 +296,8 @@ describe('installedScanEntries', () => {
     expect(deps).not.toContain('v3-server-dep')
     expect(deps).not.toContain('v3-module-dep')
     expect(deps).not.toContain('v3-public-dep')
+    expect(deps).not.toContain('v3-config-dep')
+    expect(deps).toContain('v3-app-config-dep')
   })
 
   it('should scan installed layers whose path contains parentheses', async () => {
