@@ -13,10 +13,10 @@ import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { isDev, isWebpack } from './matrix'
+import { isDev, isWebpack, runsOncePerEnvInMatrix } from './matrix'
 import { renderPage } from './utils'
 
-const shouldRun = !isWebpack
+const shouldRun = runsOncePerEnvInMatrix
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
@@ -688,7 +688,7 @@ describe.runIf(shouldRun)('page-island middleware', () => {
   })
 })
 
-describe.skipIf(!shouldRun || isDev || isWebpack)('regressions', () => {
+describe.skipIf(!shouldRun || isDev)('regressions', () => {
   // https://github.com/nuxt/nuxt/issues/26527 — fixed under vue-onigiri since 0.6.0
   it('renders <Counter v-load-client /> when nested two levels deep in server components', async () => {
     const { page } = await renderPage('/nested-nuxt-client')
