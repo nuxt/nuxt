@@ -1,5 +1,5 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
-import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
+import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onBeforeUnmount, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
@@ -76,11 +76,17 @@ export default defineComponent({
     context.expose({ layoutRef })
 
     const done = nuxtApp.deferHydration()
-    if (import.meta.client && nuxtApp.isHydrating) {
-      const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      const removeGuard = useRouter().beforeEach(() => {
-        removeErrorHook()
-        removeGuard()
+    if (import.meta.client) {
+      if (nuxtApp.isHydrating) {
+        const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
+        const removeGuard = useRouter().beforeEach(() => {
+          removeErrorHook()
+          removeGuard()
+        })
+      }
+      onBeforeUnmount(() => {
+        // Ensure hydration completes if unmounted before Suspense resolves
+        done()
       })
     }
 
