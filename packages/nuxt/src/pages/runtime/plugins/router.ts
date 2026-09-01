@@ -383,13 +383,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     nuxtApp.hooks.hookOnce('app:created', async () => {
       stopBootNavigationTracker?.()
       try {
-        if ('name' in resolvedInitialRoute) {
-          // clear the resolved route name so `router.replace` re-resolves it
-          ;(resolvedInitialRoute as { name: unknown }).name = undefined
-        }
-
         // respect a plugin or the user navigating away during boot
         const navigatedDuringBoot = import.meta.client && (completedBootNavigation || pendingBootNavigation !== null)
+
+        // clear the resolved route name so `router.replace` re-resolves it only when replacing.
+        if (!navigatedDuringBoot && 'name' in resolvedInitialRoute) {
+          ;(resolvedInitialRoute as { name: unknown }).name = undefined
+        }
 
         if (navigatedDuringBoot) {
           // we don't need to push the previous route
