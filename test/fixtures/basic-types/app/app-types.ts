@@ -996,6 +996,50 @@ describe('composables', () => {
     expectTypeOf(r4.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
   })
 
+  it('resolves a client against the route set it declares', () => {
+    interface Pet { id: number, name: string }
+
+    /** The shape a generator would emit for a third-party API - here written by hand. */
+    interface PetStore {
+      '/pets': {
+        [Endpoint]: {
+          GET: { response: Pet[], query: { limit?: number } }
+          POST: { response: Pet, body: { name: string } }
+        }
+        [DynamicParam]: {
+          [Endpoint]: { GET: { response: Pet } }
+        }
+      }
+    }
+
+    const useApi = createUseFetch({ baseURL: 'https://api.example.com', routes: {} as PetStore })
+
+    // the declared paths are the ones the API documents, matched as written: the base is transport
+    expectTypeOf(useApi('/pets').data).toEqualTypeOf<Ref<Pet[] | DefaultAsyncDataValue>>()
+    expectTypeOf(useApi('/pets/42').data).toEqualTypeOf<Ref<Pet | DefaultAsyncDataValue>>()
+    expectTypeOf(useApi('/pets', { method: 'post', body: { name: 'Rex' } }).data).toEqualTypeOf<Ref<Pet | DefaultAsyncDataValue>>()
+    expectTypeOf(useApi('/pets', { query: { limit: 2 } }).data).toEqualTypeOf<Ref<Pet[] | DefaultAsyncDataValue>>()
+    expectTypeOf(useApi('/pets', { transform: pets => pets.length }).data).toEqualTypeOf<Ref<number | DefaultAsyncDataValue>>()
+
+    // @ts-expect-error no GET route matches '/pats'
+    useApi('/pats')
+    // @ts-expect-error the app's own routes are not this client's
+    useApi('/api/hello')
+    // @ts-expect-error no PUT route matches '/pets'
+    useApi('/pets', { method: 'put' })
+    // @ts-expect-error the declared route validates a body, so it cannot be omitted
+    useApi('/pets', { method: 'post' })
+    // @ts-expect-error `name` is not a number
+    useApi('/pets', { method: 'post', body: { name: 42 } })
+
+    // a path built at runtime resolves to `unknown`, as it does against the app's own routes
+    const runtime: string = '/pets'
+    expectTypeOf(useApi(runtime).data).toEqualTypeOf<Ref<unknown>>()
+
+    // and the app's own composable is unaffected by a client declaring its own set
+    expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
+
   it('propagates factory `default` / `pick` types through createUseAsyncData / createUseFetch (#35128)', () => {
     interface Foo { a: number, b: string }
 

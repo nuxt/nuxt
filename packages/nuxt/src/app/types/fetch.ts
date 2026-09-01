@@ -1,5 +1,5 @@
 import type { FetchOptions, FetchRequest, FetchResponse } from 'ofetch'
-import type { AnyHTTPMethod, LooseTypedHeaders } from 'fetchdts'
+import type { AnyHTTPMethod, LooseTypedHeaders, TypedFetchErrorBody, TypedFetchPath, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, ValidFetchInput } from 'fetchdts'
 import type { ErrorBody, Methods, Path, RequestBody, RequestHeaders, RequestQuery, Requires, Response, StrictFetchPaths, ValidInput } from '#build/server-routes'
 
 /** A lowercased HTTP method a server route can be registered for. */
@@ -225,6 +225,73 @@ export type TypedFetchOptions<Request, Method extends AnyServerRouteMethod = 'ge
   & { method?: AcceptedMethod<Request, Method> }
   & TypedRequestShape<Request, Method>
   & RequiredRequestBody<Request, Method>
+
+/**
+ * A request accepted by a client built for the route set `Schema` describes: one of its paths, a
+ * path known only at runtime, or any non-string request `fetch` accepts.
+ *
+ * The paths are read out of the route set so an editor completes them. `string & {}` keeps a literal
+ * from widening while still admitting a path built at runtime, which resolves to `unknown` as it
+ * does against the app's own routes.
+ */
+export type DeclaredFetchRequest<Schema> = TypedFetchPath<Schema> | (string & {}) | Exclude<FetchRequest, string>
+
+/**
+ * The types below mirror those above for a route set a client declares rather than the one the app's
+ * own server serves. They are a separate family rather than a `Schema` parameter on each of the
+ * types above, because a parameter means every program would always instantiate the generic accessors.
+ */
+
+/** As {@link ValidTypedFetchPath}, resolved against a declared route set. */
+export type ValidDeclaredFetchPath<Schema, Request, Method extends AnyServerRouteMethod> =
+  StrictFetchPaths extends false
+    ? unknown
+    : string extends Request
+      ? unknown
+      : Request extends string
+        ? Request extends `${string}://${string}`
+          ? unknown
+          : ValidFetchInput<Schema, Request, Uppercase<Method>>
+        : unknown
+
+/** As {@link UnmatchedRouteArgs}, resolved against a declared route set. */
+export type UnmatchedDeclaredRouteArgs<Schema, Request, Method extends AnyServerRouteMethod> =
+  unknown extends ValidDeclaredFetchPath<Schema, Request, Method>
+    ? []
+    : [unmatched: ValidDeclaredFetchPath<Schema, Request, Method>]
+
+/** As {@link TypedServerResponse}, resolved against a declared route set. */
+export type DeclaredServerResponse<Schema, Request, Default = unknown, Method extends AnyServerRouteMethod = 'get'> =
+  Default extends string | boolean | number | null | void | object
+    ? Default
+    : TypedFetchResponseBody<Schema, Request, Uppercase<Method>> extends infer Resolved
+      ? [Resolved] extends [never] ? Default : Resolved
+      : Default
+
+/** As {@link TypedServerError}, resolved against a declared route set. */
+export type DeclaredServerError<Schema, Request, Method extends AnyServerRouteMethod = 'get'> =
+  TypedFetchErrorBody<Schema, Request, Uppercase<Method>>
+
+/** As {@link TypedRequestShape}, resolved against a declared route set. */
+export type DeclaredRequestShape<Schema, Request, Method extends AnyServerRouteMethod> = {
+  body?: Declared<TypedFetchRequestBody<Schema, Request, Uppercase<Method>, never>, FetchOptions['body']>
+  query?: Declared<TypedFetchRequestQuery<Schema, Request, Uppercase<Method>, never>, FetchOptions['query']>
+  headers?: DeclaredHeaders<TypedFetchRequestHeaders<Schema, Request, Uppercase<Method>, never>>
+}
+
+/** @internal */
+type RequiresDeclaredBody<Schema, Request, Method extends AnyServerRouteMethod> =
+  [TypedFetchRequestBody<Schema, Request, Uppercase<Method>, never>] extends [never]
+    ? false
+    : TypedFetchRequires<Schema, Request, Uppercase<Method>, 'body'>
+
+/** As {@link RequiredFetchBody}, resolved against a declared route set. */
+export type RequiredDeclaredBody<Schema, Request, Method extends AnyServerRouteMethod> =
+  RequiresDeclaredBody<Schema, Request, Method> extends true ? { body: unknown } : unknown
+
+/** As {@link AcceptedMethod}, resolved against a declared route set. */
+export type AcceptedDeclaredMethod<Schema, Request, Method extends AnyServerRouteMethod> =
+  unknown extends ValidDeclaredFetchPath<Schema, Request, Method> ? Method : never
 
 /**
  * A `fetch` implementation whose responses are typed from the routes the server serves.

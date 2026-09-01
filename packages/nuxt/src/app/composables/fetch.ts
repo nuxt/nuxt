@@ -1,5 +1,5 @@
 import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { AcceptedMethod, AnyServerRouteMethod, EffectiveBaseURL, RequiredFetchBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedRouteArgs, ValidTypedFetchPath } from '../types/fetch'
+import type { AcceptedDeclaredMethod, AcceptedMethod, AnyServerRouteMethod, DeclaredFetchRequest, DeclaredRequestShape, DeclaredServerResponse, EffectiveBaseURL, RequiredDeclaredBody, RequiredFetchBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedDeclaredRouteArgs, UnmatchedRouteArgs, ValidDeclaredFetchPath, ValidTypedFetchPath } from '../types/fetch'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { isPlainObject } from '@vue/shared'
@@ -361,7 +361,171 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
   ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 }
 
+/** The response a request to `ReqT` resolves to, against a route set a client declares. */
+export type DeclaredFetchResult<Schema, ReqT, M extends AnyServerRouteMethod> = DeclaredServerResponse<Schema, ReqT, unknown, M>
+
+type DeclaredFetchOptionsBase<Schema, R, M extends AnyServerRouteMethod = 'get', DataT = any> =
+  & Omit<FetchOptions<_ResponseType, DataT>, 'cache' | 'method' | 'body' | 'query' | 'params' | 'headers'>
+  & {
+    method?: AcceptedDeclaredMethod<Schema, R, M>
+    cache?: FetchOptions<_ResponseType, DataT>['cache'] | false
+  }
+  & DeclaredRequestShape<Schema, R, M>
+
+/**
+ * As {@link UseFetchOptions}, for a client that declared the route set it serves.
+ *
+ * `baseURL` stays ofetch's own: the declared paths are the ones the API documents, so they are
+ * matched as written and the base is transport rather than part of the route.
+ */
+export interface DeclaredUseFetchOptions<
+  Schema,
+  ResT,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = undefined,
+  R = string,
+  M extends AnyServerRouteMethod = 'get',
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedOptions<DeclaredFetchOptionsBase<Schema, R, M, DataT>>, 'timeout'> {
+  key?: MaybeRefOrGetter<string>
+  $fetch?: TypedFetch
+  watch?: MultiWatchSources | false
+  /**
+   * The routes this client serves, read as a type only.
+   *
+   * Pass `{} as MyRoutes` - by hand, or an interface a generator emitted from an OpenAPI document -
+   * and every request the composable makes is resolved against that route set instead of the app's
+   * own. The value is dropped before the request is made.
+   */
+  routes?: Schema
+}
+
+export interface DeclaredUseFetchOptionsWithTransform<
+  Schema,
+  ResT,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = undefined,
+  R = string,
+  M extends AnyServerRouteMethod = 'get',
+> extends Omit<DeclaredUseFetchOptions<Schema, ResT, DataT, PickKeys, DefaultT, R, M>, 'transform'> {
+  transform: _Transform<ResT, DataT>
+}
+
+/**
+ * The composable {@link createUseFetch} returns for a client that declared its own route set.
+ *
+ * The same shapes as {@link UseFetch}, resolved against `Schema`. A path outside that set is turned
+ * away by the trailing `UnmatchedDeclaredRouteArgs`, exactly as an unregistered path is for the
+ * app's own routes.
+ */
+export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined> {
+  // Auto-key, opts with transform, default = undefined
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends DeclaredFetchRequest<Schema> = DeclaredFetchRequest<Schema>,
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    _ResT = ResT extends void ? DeclaredFetchResult<Schema, ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts: DeclaredUseFetchOptionsWithTransform<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>,
+    ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Auto-key, opts with transform, default = DataT
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends DeclaredFetchRequest<Schema> = DeclaredFetchRequest<Schema>,
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    _ResT = ResT extends void ? DeclaredFetchResult<Schema, ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts: DeclaredUseFetchOptionsWithTransform<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>,
+    ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Auto-key, default = undefined
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends DeclaredFetchRequest<Schema> = DeclaredFetchRequest<Schema>,
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    _ResT = ResT extends void ? DeclaredFetchResult<Schema, ReqT, Method> : ResT,
+    DataT = FetchFactoryDataT<FDataT, _ResT>,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts?: DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>,
+    ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
+  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  // Auto-key, default = DataT
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends DeclaredFetchRequest<Schema> = DeclaredFetchRequest<Schema>,
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    _ResT = ResT extends void ? DeclaredFetchResult<Schema, ReqT, Method> : ResT,
+    DataT = FetchFactoryDataT<FDataT, _ResT>,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts?: DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>,
+    ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
+  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  // Explicit auto-key as positional arg
+  <
+    ResT = void,
+    ErrorT = NuxtError<unknown>,
+    ReqT extends DeclaredFetchRequest<Schema> = DeclaredFetchRequest<Schema>,
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    _ResT = ResT extends void ? DeclaredFetchResult<Schema, ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = undefined,
+  >(
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    arg1?: string | (DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>),
+    arg2?: string,
+    ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  // Last, and only applicable where the path does not resolve, so a call the signatures above turned
+  // away is reported as the path and method that matched nothing rather than as the argument count
+  // their trailing tuple asked for. The guard keeps it out of the way of a resolving call, which
+  // this signature would otherwise answer with looser options than the route declares
+  <
+    ReqT extends string,
+    const Method extends AnyServerRouteMethod = 'get',
+  >(
+    request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidDeclaredFetchPath<Schema, ReqT, Method>,
+    opts?: { method?: Method },
+    key?: string,
+    ...resolves: unknown extends ValidDeclaredFetchPath<Schema, ReqT, Method> ? [never] : []
+  ): AsyncData<unknown, NuxtError<unknown> | undefined>
+}
+
 export interface CreateUseFetch {
+  // a client for another API: `routes` is required here, so this signature is only reached by a call
+  // that declares one, and every other call resolves against the app's own routes as before
+  <
+    FSchema,
+    FResT = void,
+    FReqT extends DeclaredFetchRequest<FSchema> = DeclaredFetchRequest<FSchema>,
+    const FMethod extends AnyServerRouteMethod = 'get',
+    F_ResT = FResT extends void ? DeclaredFetchResult<FSchema, FReqT, FMethod> : FResT,
+    FDataT = F_ResT,
+    FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+    FDefaultT = undefined,
+  >(
+    options: Partial<DeclaredUseFetchOptions<FSchema, F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>> & { routes: FSchema },
+  ): DeclaredUseFetch<FSchema, FDataT, FPickKeys, FDefaultT>
   <
     FResT = void,
     FReqT extends TypedFetchRequest = TypedFetchRequest,
