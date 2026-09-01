@@ -126,7 +126,7 @@ catalogs:
     time-fix-plugin: ^2.0.7
     ts-checker-rspack-plugin: ^1.6.1
     url-loader: ^4.1.1
-    webpack: ^5.110.1
+    webpack: ^5.110.2
     webpack-bundle-analyzer: ^5.3.2
     webpack-dev-middleware: ^8.1.1
     webpack-hot-middleware: ^2.26.1
@@ -136,9 +136,9 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260829-200936-84e7673
+    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260831-132907-8bcf1bc
     '@nuxt/devtools': ^4.0.0-alpha.15
-    '@nuxt/telemetry': ^2.8.0
+    '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.42
     autoprefixer: ^10.5.4
     c12: 4.0.0-beta.5
@@ -157,7 +157,7 @@ catalogs:
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
     giget: ^3.3.1
-    ignore: ^7.0.6
+    ignore: ^7.0.7
     impound: ^1.2.0
     jiti: ^2.7.0
     js-tokens: ^10.0.0
@@ -247,7 +247,7 @@ catalogs:
     h3: 2.0.1-rc.22 # intentionally pinned to match nitro's dependency
     h3-next: 'npm:h3@2.0.1-rc.22' # intentionally pinned to match nitro's dependency
     happy-dom: 20.12.0
-    html-validate: 11.10.0
+    html-validate: 11.11.0
     htmlnano: 3.4.0
     installed-check: 11.0.0
     knip: 6.33.0
