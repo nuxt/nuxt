@@ -82,12 +82,15 @@ export default defineComponent({
         removeGuard()
       })
 
-      // If hydration is deferred, use the payload route to match the SSR DOM before switching to the current route.
+      // If hydration is deferred, use the payload route if navigation has moved past it to match the SSR DOM before switching to the current route.
       if (nuxtApp.payload.serverRendered && nuxtApp.payload.path) {
-        frozenHydrationRoute = shallowRef(router.resolve(nuxtApp.payload.path) as RouteLocationNormalizedLoaded)
-        nextTick(() => {
-          frozenHydrationRoute!.value = undefined
-        })
+        const payloadRoute = router.resolve(nuxtApp.payload.path) as RouteLocationNormalizedLoaded
+        if (payloadRoute.fullPath !== router.currentRoute.value.fullPath) {
+          frozenHydrationRoute = shallowRef(payloadRoute)
+          nextTick(() => {
+            frozenHydrationRoute!.value = undefined
+          })
+        }
       }
     }
     if (import.meta.client && props.pageKey) {
