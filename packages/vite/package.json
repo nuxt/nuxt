@@ -46,6 +46,7 @@
     "rolldown-string": "catalog:vite",
     "seroval": "catalog:build",
     "std-env": "catalog:build",
+    "tinyglobby": "catalog:build",
     "ufo": "catalog:build",
     "unenv": "catalog:build",
     "vite": "catalog:vite",

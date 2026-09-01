@@ -1,10 +1,15 @@
-import { isAbsolute, join } from 'pathe'
+import { existsSync, realpathSync } from 'node:fs'
+import { dirname, isAbsolute, join, normalize } from 'pathe'
+import { withTrailingSlash } from 'ufo'
 import { resolveModulePath } from 'exsolve'
-import { readPackageJSON } from 'pkg-types'
+import { escapePath } from 'tinyglobby'
 import { getLayerDirectories } from '@nuxt/kit'
+import { parseNodeModulePath } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 
 const NODE_MODULES = '/node_modules/'
+const SCAN_EXTENSIONS = '{vue,js,jsx,mjs,ts,tsx,mts}'
+const SERVER_FILE_RE = /\.server\.(?:vue|js|jsx|mjs|ts|tsx|mts)$/
 
 /**
  * Scanner entries for app code that lives in `node_modules`, such as an installed layer
@@ -12,28 +17,48 @@ const NODE_MODULES = '/node_modules/'
  *
  * Vite does not pre-bundle a bare import whose importer is in `node_modules`, so without
  * these its dependencies are served raw, breaking if they are CJS-only.
+ *
+ * Vite matches every entry with picomatch, so paths are escaped: a package manager can
+ * install into a directory whose name contains glob characters, as pnpm does.
  */
 export function installedScanEntries (nuxt: Nuxt): string[] {
   const entries = new Set<string>()
+  const apps = Object.values(nuxt.apps)
+  const serverFiles = apps.flatMap(app => [
+    ...app.components.filter(c => c.mode === 'server').map(c => c.filePath),
+    ...app.plugins.filter(p => p.mode === 'server').map(p => p.src),
+  ]).map(normalize)
+  const pages = apps.flatMap(app => app.pages || [])
+  for (const page of pages) {
+    pages.push(...page.children || [])
+    if (page.mode !== 'server') { continue }
+    if (page.file) { serverFiles.push(normalize(page.file)) }
+    serverFiles.push(...Object.values(page.components || {}).map(normalize))
+  }
 
-  for (const dirs of getLayerDirectories(nuxt)) {
-    if (dirs.app !== nuxt.options.srcDir && dirs.app.includes(NODE_MODULES)) {
-      entries.add(join(dirs.app, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'))
-      // scanning the layer's own dependency tree is unnecessary and slow
-      entries.add('!' + join(dirs.app, '**/node_modules/**'))
+  for (const dirs of getLayerDirectories(nuxt).slice(1)) {
+    const app = withTrailingSlash(normalize(dirs.app))
+    if (!app.includes(NODE_MODULES)) { continue }
+    const dir = escapePath(app)
+    entries.add(`${dir}**/*.${SCAN_EXTENSIONS}`)
+    // scanning the layer's own dependency tree is unnecessary and slow
+    entries.add(`!${dir}**/node_modules/**`)
+    entries.add(`!${dir}**/*.server.${SCAN_EXTENSIONS}`)
+    for (const file of serverFiles) {
+      if (file.startsWith(app)) { entries.add('!' + escapePath(file)) }
     }
   }
 
-  for (const app of Object.values(nuxt.apps)) {
+  for (const app of apps) {
     const files = [
-      ...app.components.map(c => c.filePath),
-      ...app.plugins.map(p => p.src),
+      ...app.components.filter(c => c.mode !== 'server').map(c => c.filePath),
+      ...app.plugins.filter(p => p.mode !== 'server').map(p => p.src),
       ...app.middleware.map(m => m.path),
       ...Object.values(app.layouts || {}).map(l => l.file),
-    ]
+    ].map(normalize)
     for (const file of files) {
-      if (file.includes(NODE_MODULES)) {
-        entries.add(file)
+      if (file.includes(NODE_MODULES) && !SERVER_FILE_RE.test(file)) {
+        entries.add(escapePath(file))
       }
     }
   }
@@ -41,35 +66,107 @@ export function installedScanEntries (nuxt: Nuxt): string[] {
   return [...entries]
 }
 
-function isResolvableFrom (id: string, dir: string) {
-  return !!resolveModulePath(id, { from: dir, try: true, extensions: ['.mjs', '.js', '.cjs', '.json'] })
+function packageName (entry: string) {
+  const segments = entry.split('/')
+  return entry.startsWith('@') ? segments.slice(0, 2).join('/') : segments[0]!
 }
 
 /**
- * Rewrites `optimizeDeps.include` entries that only resolve from an installed layer into
- * Vite's nested `parent > dep` form, resolved relative to the parent package rather than
- * the project root.
+ * Creates a cached resolver for Vite's nested dependency syntax. The layer graph and
+ * package resolutions are shared across every include list for one Vite environment.
  */
-export async function resolveOptimizeDepsInclude (nuxt: Nuxt, include: string[]): Promise<string[]> {
-  const layers: Array<{ name: string, root: string }> = []
-  for (const dirs of getLayerDirectories(nuxt)) {
-    if (dirs.root === nuxt.options.rootDir + '/' || !dirs.root.includes(NODE_MODULES)) { continue }
-    const name = await readPackageJSON(dirs.root).then(pkg => pkg.name).catch(() => undefined)
-    if (name) { layers.push({ name, root: dirs.root }) }
+export function createOptimizeDepsIncludeResolver (nuxt: Nuxt, options: { preserveSymlinks?: boolean } = {}) {
+  const rootDir = normalize(nuxt.options.rootDir)
+  const realPathCache = new Map<string, string>()
+  const packageRootCache = new Map<string, string | undefined>()
+
+  function realPath (path: string) {
+    const normalized = normalize(path)
+    const cached = realPathCache.get(normalized)
+    if (cached) { return cached }
+    const resolved = normalize(realpathSync(normalized))
+    realPathCache.set(normalized, resolved)
+    return resolved
   }
 
-  if (!layers.length) { return include }
+  function resolvePackageRoot (name: string, from: string) {
+    let directory = normalize(from)
+    const key = `${directory}\0${name}`
+    if (packageRootCache.has(key)) { return packageRootCache.get(key) }
 
-  return include.map((entry) => {
-    if (entry.includes('>') || entry.startsWith('.') || isAbsolute(entry)) { return entry }
-    if (isResolvableFrom(entry, nuxt.options.rootDir + '/')) { return entry }
-
-    for (const layer of layers) {
-      if (isResolvableFrom(entry, layer.root)) {
-        return `${layer.name} > ${entry}`
+    while (true) {
+      const candidate = join(directory, 'node_modules', name)
+      if (existsSync(candidate)) {
+        const resolved = normalize(candidate)
+        packageRootCache.set(key, resolved)
+        return resolved
       }
+      const parent = dirname(directory)
+      if (parent === directory) {
+        packageRootCache.set(key, undefined)
+        return
+      }
+      directory = parent
+    }
+  }
+
+  function isResolvable (id: string, from: string) {
+    return !!resolveModulePath(id, { from, try: true, extensions: ['.mjs', '.js', '.cjs', '.json'] })
+  }
+
+  function dependencyIdentity (root: string) {
+    return options.preserveSymlinks ? root : realPath(root)
+  }
+
+  const layers: Array<{ name: string, root: string, identity: string }> = []
+  for (const dirs of getLayerDirectories(nuxt).slice(1)) {
+    // Vite needs the installed alias, which can differ from the package manifest name.
+    const { dir, name } = parseNodeModulePath(dirs.root)
+    if (!dir || !name || !existsSync(dir + name)) { continue }
+    layers.push({ name, root: normalize(dirs.root), identity: realPath(dir + name) })
+  }
+
+  // Walk out from the project so every layer keeps the full chain Vite resolves it through.
+  const layerChains = new Map<string, string[]>()
+  const queue: Array<{ root: string, chain: string[] }> = [{ root: rootDir, chain: [] }]
+  for (const { root, chain } of queue) {
+    for (const layer of layers) {
+      if (layerChains.has(layer.root)) { continue }
+      const packageRoot = resolvePackageRoot(layer.name, root)
+      if (!packageRoot || realPath(packageRoot) !== layer.identity) { continue }
+      const layerChain = [...chain, layer.name]
+      layerChains.set(layer.root, layerChain)
+      queue.push({ root: layer.root, chain: layerChain })
+    }
+  }
+
+  if (!layerChains.size) { return (include: string[]) => include }
+
+  const entryCache = new Map<string, string[]>()
+  function resolveEntry (entry: string): string[] {
+    const cached = entryCache.get(entry)
+    if (cached) { return cached }
+    if (entry.includes('>') || entry.startsWith('.') || isAbsolute(entry)) { return [entry] }
+
+    const resolvedEntries = new Map<string, string>()
+    const name = packageName(entry)
+    const rootPackage = resolvePackageRoot(name, rootDir)
+    if (rootPackage && isResolvable(entry, rootDir)) {
+      resolvedEntries.set(dependencyIdentity(rootPackage), entry)
     }
 
-    return entry
-  })
+    for (const [root, chain] of layerChains) {
+      const packageRoot = resolvePackageRoot(name, root)
+      if (!packageRoot) { continue }
+      const identity = dependencyIdentity(packageRoot)
+      if (resolvedEntries.has(identity) || !isResolvable(entry, root)) { continue }
+      resolvedEntries.set(identity, `${chain.join(' > ')} > ${entry}`)
+    }
+
+    const entries = resolvedEntries.size ? [...resolvedEntries.values()] : [entry]
+    entryCache.set(entry, entries)
+    return entries
+  }
+
+  return (include: string[]) => include.flatMap(resolveEntry)
 }
