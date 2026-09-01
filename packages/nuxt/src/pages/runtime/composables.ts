@@ -82,8 +82,9 @@ export const definePageMeta = (meta: PageMeta): void => {
         return
       }
       // The injected route used for rendering may lag behind the live route during hydration.
-      const injectedRoute = component ? inject(PageRouteSymbol, null) : null
-      const isRouteComponent = component && [injectedRoute, useRoute()].some(route => route?.matched.some(p => Object.values(p.components || {}).includes(component)))
+      const isRouteComponent = component && [inject(PageRouteSymbol, null), useRoute()].some(route =>
+        route?.matched.some(p => Object.values(p.components || {}).includes(component)),
+      )
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
       if (isRouteComponent || isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {
         // don't warn if it's being used in a route component (or server page)

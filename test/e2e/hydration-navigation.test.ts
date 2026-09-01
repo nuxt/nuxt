@@ -10,10 +10,10 @@ import { expect, test } from './test-utils'
  * must interrupt hydration and render the target route immediately, instead
  * of updating the URL while the DOM stays stuck on the old SSR content.
  *
- * The underlying fix lives in the patched `@vue/runtime-core`
- * (the `@vue/runtime-core` patch in `patches/`): a nested suspensible
- * `<Suspense>` used to silently drop patches while the root suspense was
- * still unresolved, which is always the case during hydration.
+ * The underlying fix lives in the `@vue/runtime-core` patch in `patches/`:
+ * a nested suspensible `<Suspense>` used to silently drop patches while the
+ * root suspense was still unresolved, which is always the case during
+ * hydration.
  */
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/hydration-navigation', import.meta.url))
@@ -38,7 +38,7 @@ test.use({
  */
 function seedHistoryEntries (page: Page, path: string) {
   return page.addInitScript((current) => {
-    if (location.pathname === current && !(history.state && history.state.current)) {
+    if (location.pathname === current && !history.state?.current) {
       history.replaceState({ back: null, current: '/', forward: current, position: 0, replaced: true, scroll: null }, '', '/')
       history.pushState({ back: '/', current, forward: null, position: 1, replaced: false, scroll: null }, '', current)
     }
@@ -48,7 +48,7 @@ function seedHistoryEntries (page: Page, path: string) {
 async function gotoMidHydration (page: Page, path: string) {
   await page.goto(path, { waitUntil: 'domcontentloaded' })
   // the app has booted (`$router` means the router plugin has run), but
-  // hydration is suspended by <HydrationBlocker>
+  // hydration is suspended on the `__releaseHydration` test gate
   await page.waitForFunction(() => !!window.useNuxtApp?.().$router && window.useNuxtApp?.().isHydrating === true)
 }
 

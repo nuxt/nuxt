@@ -1,4 +1,4 @@
-import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, ShallowRef, VNode } from 'vue'
+import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
@@ -55,7 +55,7 @@ export default defineComponent({
     const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     // use the payload layout during deferred hydration to match the SSR DOM.
-    let frozenHydrationLayout: ShallowRef<ReturnType<typeof resolveLayoutName> | undefined> | undefined
+    const frozenHydrationLayout = shallowRef<ReturnType<typeof resolveLayoutName>>()
     if (import.meta.client && nuxtApp.isHydrating && shouldUseEagerRoute && nuxtApp.payload.serverRendered && nuxtApp.payload.path) {
       const router = useRouter()
       const { fullPath, path, meta } = router.resolve(nuxtApp.payload.path)
@@ -63,16 +63,16 @@ export default defineComponent({
       if (fullPath !== router.currentRoute.value.fullPath) {
         const initialLayout = nuxtApp.payload.state._layout as typeof meta.layout
         // resolved meta does not auto-unwrap ref layouts.
-        frozenHydrationLayout = shallowRef(resolveLayoutName({ path, meta: { ...meta, layout: initialLayout ?? unref(meta.layout) } }, props.name))
+        frozenHydrationLayout.value = resolveLayoutName({ path, meta: { ...meta, layout: initialLayout ?? unref(meta.layout) } }, props.name)
         nextTick(() => {
-          frozenHydrationLayout!.value = undefined
+          frozenHydrationLayout.value = undefined
         })
       }
     }
 
     const layout = computed(() => {
       type LayoutName = keyof NuxtLayouts | false | 'default'
-      let layout = (frozenHydrationLayout?.value ?? resolveLayoutName(route, props.name)) as LayoutName
+      let layout = (frozenHydrationLayout.value ?? resolveLayoutName(route, props.name)) as LayoutName
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
           renderDiagnostics.NUXT_E4001({ layout, available: Object.keys(layouts).join(', ') || 'none' })
