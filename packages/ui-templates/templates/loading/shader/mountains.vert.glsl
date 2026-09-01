@@ -11,7 +11,7 @@
 //   · per-particle drift and shimmer
 //   · slow luminosity waves crossing the field
 //   · a ripple radiating from the lockup
-//   · a shockwave while the pointer is over the lockup, phase driven by the CPU
+//   · overlapping shockwaves fired by clicking the lockup
 precision highp float;
 
 uniform vec2 uLogoCentre;
@@ -19,8 +19,10 @@ uniform vec2 uLogoScale;
 uniform vec2 uResolution;
 /** pointer position in canvas space, smoothed */
 uniform vec2 uPointer;
-/** x: shockwave phase 0..1, y: 1 while a wave is travelling */
-uniform vec2 uWave;
+/** shockwave phases 0..1; negative entries are inactive */
+uniform float uWave[8];
+/** subtle pointer-enter wave phase; negative while inactive */
+uniform float uHoverWave;
 /** x: seconds, y: pointer presence 0..1 */
 uniform vec2 uMisc;
 /** x: winter 0..1 — snow on the peaks and falling flakes; y: 1 in light mode */
@@ -38,9 +40,7 @@ const vec3 SNOW = vec3(0.88, 1.0, 0.96);
 // coverage, and the renderer blends it over the page instead of adding it to
 // the dark. Alpha rather than subtraction, so a crest that many particles
 // land on settles on the brand green instead of running away to black.
-const vec3 INK_SOFT = vec3(0.6588235, 0.7882353, 0.7294118);
-const vec3 INK_DEEP = vec3(0.0, 0.8627451, 0.5098039);
-const vec3 FLAKE_INK = vec3(0.5215687, 0.6039216, 0.6588235);
+const vec3 INK = vec3(0.0);
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 
 // grid of particles
@@ -81,6 +81,15 @@ float noise2 (vec2 p) {
   float c = hash21(i + vec2(0.0, 1.0));
   float d = hash21(i + vec2(1.0, 1.0));
   return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float shockwave (float phase, float dist) {
+  if (phase < 0.0) { return 0.0; }
+  float radius = phase * 1.7;
+  float width = 0.09 + phase * 0.20;
+  return exp(-((dist - radius) * (dist - radius)) / (width * width))
+    * (1.0 - smoothstep(0.55, 1.0, phase))
+    * smoothstep(0.0, 0.04, phase);
 }
 
 // `shape` flattens the relief on narrow screens. A summit covers the same
@@ -149,9 +158,8 @@ void main () {
 
     gl_Position = vec4(pos + offset * sizePx * 2.0 / resolution, 0.5, 1.0);
     vLocal = offset;
-    // white flakes cannot show on paper, so in light mode they are drawn as the
-    // cool grey a flake reads as against a bright sky
-    vTint = light > 0.5 ? vec4(FLAKE_INK, amount * 1.6) : vec4(SNOW * amount, 1.0);
+    // white flakes cannot show on paper, so light mode draws them as ink
+    vTint = light > 0.5 ? vec4(INK, amount * 1.6) : vec4(SNOW * amount, 1.0);
     return;
   }
 
@@ -218,15 +226,13 @@ void main () {
     * (1.0 - smoothstep(0.55, 0.95, ripplePhase))
     * smoothstep(0.0, 0.05, ripplePhase);
 
-  // shockwave from hovering the lockup; phase comes from the CPU so a wave
-  // always finishes travelling once fired
-  float hoverPhase = uWave.x;
-  float hoverRadius = hoverPhase * 1.7;
-  float hoverWidth = 0.09 + hoverPhase * 0.20;
-  float shock = exp(-((dist - hoverRadius) * (dist - hoverRadius)) / (hoverWidth * hoverWidth))
-    * (1.0 - smoothstep(0.55, 1.0, hoverPhase))
-    * smoothstep(0.0, 0.04, hoverPhase)
-    * uWave.y;
+  // Every click has an independent phase, so its ring keeps travelling even
+  // when another click starts a new one.
+  float shock = 0.0;
+  for (int i = 0; i < 8; i++) {
+    shock += shockwave(uWave[i], dist);
+  }
+  shock += shockwave(uHoverWave, dist) * 0.25;
 
   float fog = exp(-(z - Z_NEAR) * 0.075) * smoothstep(1.0, 0.86, v);
   float nearFade = smoothstep(Z_NEAR, 2.6, z);
@@ -274,8 +280,7 @@ void main () {
     // lifted, since faint dust that reads fine against black all but vanishes
     // against white
     float coverage = pow(clamp(dot(tint, LUMA) * 2.2, 0.0, 1.0), 0.8) * (1.0 - winter * snow * 0.6);
-    vec3 ink = mix(INK_SOFT, INK_DEEP, clamp(crest * 1.15 + snow * 0.3, 0.0, 1.0));
-    vTint = vec4(ink, coverage * (1.0 - occluded) * clearing);
+    vTint = vec4(INK, coverage * (1.0 - occluded) * clearing);
   } else {
     vTint = vec4(tint * (1.0 - occluded) * clearing, 1.0);
   }

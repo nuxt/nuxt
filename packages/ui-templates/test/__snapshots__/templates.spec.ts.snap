@@ -538,7 +538,10 @@ svg {
   align-items: flex-end;
   gap: calc(0.16667 * var(--nuxt-logo));
   color: inherit;
-  text-decoration: none;
+  cursor: pointer;
+  background: 0 0;
+  border: 0;
+  padding: 0;
   display: flex;
   position: relative;
 }
@@ -559,10 +562,6 @@ svg {
   width: calc(1.5 * var(--nuxt-logo));
   height: calc(0.5 * var(--nuxt-logo));
   color: #fff;
-  transition: color 0.2s;
-}
-.nuxt-lockup:hover .nuxt-wordmark {
-  color: var(--nuxt-mist);
 }
 .nuxt-corners {
   z-index: 1;
@@ -582,7 +581,7 @@ svg {
   right: 0;
 }
 .nuxt-home {
-  color: var(--nuxt-dim);
+  color: var(--nuxt-accent);
   pointer-events: auto;
   text-decoration: none;
   transition: color 0.2s;
@@ -595,12 +594,14 @@ svg {
 }
 .nuxt-loader-bar {
   z-index: 1;
+  width: var(--nuxt-progress, 4%);
   background: var(--nuxt-mint);
   height: 2px;
+  transition: width 0.3s;
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0;
+  right: auto;
 }
 .nuxt-season {
   z-index: 1;
