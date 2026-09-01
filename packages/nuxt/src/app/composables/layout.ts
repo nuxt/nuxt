@@ -1,6 +1,6 @@
 import type { ComputedRef } from 'vue'
 import { computed, inject, unref } from 'vue'
-import type { NitroRouteRules } from 'nitro/types'
+import type { AppRouteRules } from '@nuxt/schema'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
@@ -10,8 +10,8 @@ import { useRoute } from './router'
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
 // hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
-function routeRulesMatcher (path: string): NitroRouteRules {
-  return (_routeRulesMatcher as (path: string) => NitroRouteRules)(path)
+function routeRulesMatcher (path: string): AppRouteRules {
+  return (_routeRulesMatcher as (path: string) => AppRouteRules)(path)
 }
 
 export type LayoutName = keyof NuxtLayouts | 'default' | false

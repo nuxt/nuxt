@@ -906,7 +906,7 @@ export function isSerializable (node: ESTree.Node): { value?: any, serializable:
       if (!serializable) {
         return { serializable: false }
       }
-      value[key] = propertyValue
+      Object.defineProperty(value, key, { value: propertyValue, enumerable: true, writable: true, configurable: true })
     }
     return { value, serializable: true }
   }
@@ -943,6 +943,22 @@ export function routerOptionsMayModifyRoutes (code: string, filename: string): b
 }
 
 /**
+ * Whether a route can be normalised to the same form as an incoming request path.
+ * A path carrying a `%` that is not a valid escape sequence cannot be decoded, and is
+ * matched in its raw form on both sides: the pattern keeps the authored characters while
+ * the request keeps the encoding the client sent, so the two can never meet.
+ */
+function isDecodable (route: string): boolean {
+  if (!route.includes('%')) { return true }
+  try {
+    decodeURI(route)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
  * Collect a rou3 pattern for every path a page can be reached by: its canonical
  * path, each alias, and the whole subtree below it. Returns `undefined` when any
  * path cannot be converted, so callers can fall back to matching everything;
@@ -963,6 +979,11 @@ export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] =
       }
     }
     for (const route of routes) {
+      if (!isDecodable(route)) {
+        onUnconvertible?.(route)
+        failed = true
+        continue
+      }
       const { patterns: converted } = vueRouterToRou3(route, { collapse: true })
       if (!converted.length) {
         onUnconvertible?.(route)

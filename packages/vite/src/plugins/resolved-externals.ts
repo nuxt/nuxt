@@ -2,6 +2,7 @@ import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import escapeStringRegexp from 'escape-string-regexp'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
   let external: Set<string> = new Set()
@@ -18,7 +19,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     applyToEnvironment (environment) {
-      if (nuxt.options.dev || environment.name !== 'ssr' || nuxt.options.experimental.nitroViteEnvironment) {
+      if (nuxt.options.dev || environment.name !== 'ssr' || !useServerBuild(nuxt).buildsSeparately) {
         return false
       }
       return {

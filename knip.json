@@ -55,6 +55,11 @@
         "@babel/plugin-syntax-typescript"
       ]
     },
+    "packages/vite-server": {
+      "ignoreDependencies": [
+        "mocked-exports"
+      ]
+    },
     "packages/vite": {
       "entry": [
         "src/fix-stacktrace.ts"
@@ -89,8 +94,10 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
+        "@nuxt/nitro-server",
         "@nuxt/telemetry",
-        "@nuxt/vite-builder"
+        "@nuxt/vite-builder",
+        "@nuxt/vite-server"
       ]
     },
     "packages/ui-templates": {

@@ -15,15 +15,15 @@ declare module '#build/css.mjs'
 declare module '#build/error-component.mjs'
 
 declare module '#build/fetch' {
-  const $fetch: import('nitro/types').$Fetch
+  const $fetch: import('./app/types/fetch').TypedFetch
   export { $fetch }
 }
 declare module '#build/fetch.client.mjs' {
-  const $fetch: import('nitro/types').$Fetch
+  const $fetch: import('./app/types/fetch').TypedFetch
   export { $fetch }
 }
 declare module '#build/fetch.server.mjs' {
-  const $fetch: import('nitro/types').$Fetch
+  const $fetch: import('./app/types/fetch').TypedFetch
   export { $fetch }
 }
 declare module '#build/fetch-setup'

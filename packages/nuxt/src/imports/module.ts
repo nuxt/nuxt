@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, tryUseNitro, updateTemplates, useNuxt } from '@nuxt/kit'
 import { headDiagnostics } from '@nuxt/kit/internal'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
@@ -297,11 +297,11 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       if (!options.autoImport) {
         return GENERATED_BY_COMMENT + AUTO_IMPORTS_DISABLED_COMMENT
       }
-      const nitro = useNitro() as Nitro
+      const nitro = tryUseNitro() as Nitro | undefined
 
       const nuxtImports = await ctx.getImports()
 
-      const nitroImports = await nitro.unimport?.getImports() ?? []
+      const nitroImports = await nitro?.unimport?.getImports() ?? []
       const nitroImportsByName = new Map<string, Import>(nitroImports.map(i => [i.as || i.name, i]))
 
       const sharedImports: Import[] = []
@@ -324,7 +324,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       // These are safe to use in the shared context.
       const handCraftedDeclarations = `
   const useRuntimeConfig: () => import('nuxt/schema').RuntimeConfig
-  const useAppConfig: () => import('nuxt/schema').AppConfig
+  const useAppConfig: () => import('nuxt/schema').SharedAppConfig
   const defineAppConfig: <C extends import('nuxt/schema').AppConfigInput>(config: C) => C
   const createError: typeof import('h3')['createError']
   const setResponseStatus: typeof import('h3')['setResponseStatus']`
