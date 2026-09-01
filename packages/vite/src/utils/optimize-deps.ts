@@ -39,7 +39,7 @@ export function installedScanEntries (nuxt: Nuxt): string[] {
 
   for (const dirs of getLayerDirectories(nuxt)) {
     if (dirs.root === projectRoot) { continue }
-    const app = withTrailingSlash(normalize(dirs.app))
+    const app = withTrailingSlash(dirs.app)
     if (!app.includes(NODE_MODULES)) { continue }
     const dir = escapePath(app)
     entries.add(`${dir}**/*.${SCAN_EXTENSIONS}`)
@@ -47,7 +47,7 @@ export function installedScanEntries (nuxt: Nuxt): string[] {
     entries.add(`!${dir}**/node_modules/**`)
     // a v3 layer has `srcDir === rootDir`, so its server and build-time code sits under the glob
     for (const excluded of [dirs.server, dirs.modules, dirs.public]) {
-      const path = withTrailingSlash(normalize(excluded))
+      const path = withTrailingSlash(excluded)
       if (path !== app && path.startsWith(app) && existsSync(path)) {
         entries.add(`!${escapePath(path)}**`)
       }

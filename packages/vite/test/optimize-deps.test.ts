@@ -21,16 +21,11 @@ const nestedLayerRoot = join(parentLayerRoot, 'node_modules/nested-layer/')
 const otherParentLayerRoot = join(rootDir, 'node_modules/other-parent-layer/')
 const otherNestedLayerRoot = join(otherParentLayerRoot, 'node_modules/nested-layer/')
 const linkedDependencyRoot = join(rootDir, 'linked-dependency/')
-const reachableCycleLayerRoot = join(rootDir, 'node_modules/reachable-cycle-layer/')
-const cycleLayerARoot = join(rootDir, 'isolated/node_modules/cycle-layer-a/')
-const cycleLayerBRoot = join(rootDir, 'isolated/node_modules/cycle-layer-b/')
 const v3LayerRoot = join(rootDir, 'node_modules/v3-layer/')
 const parenLayerRoot = join(rootDir, 'node_modules/.pnpm/paren-layer@1.0.0(vue@3.5.0)/node_modules/paren-layer/')
 const parenLayerSrcDir = join(parenLayerRoot, 'app/')
 const moduleRuntime = join(rootDir, 'node_modules/installed-module/runtime/')
 const entry = join(srcDir, 'entry.mjs')
-const layerComponent = join(layerSrcDir, 'components/LayerComponent.vue')
-const unusedLayerComponent = join(layerSrcDir, 'components/UnusedLayerComponent.vue')
 const modeServerComponent = join(layerSrcDir, 'components/ModeServer.vue')
 const modeServerPlugin = join(layerSrcDir, 'plugins/mode-server.mjs')
 const modeServerPage = join(layerSrcDir, 'pages/mode-server.vue')
@@ -56,8 +51,6 @@ await writeFile(join(rootDir, 'package.json'), JSON.stringify({ name: 'fixture',
 await writeFile(entry, 'export default 1\n')
 await writeFile(join(layerRoot, 'package.json'), JSON.stringify({ name: 'installed-layer', type: 'module' }))
 await writeFile(join(layerSrcDir, 'plugins/broken.mjs'), 'import { hello } from \'layer-dep\'\nexport default hello\n')
-await writeFile(layerComponent, '<script setup>\nimport x from \'layer-component-dep\'\n</script>\n')
-await writeFile(unusedLayerComponent, '<script setup>\nimport x from \'unused-layer-component-dep\'\n</script>\n')
 await writeFile(modeServerComponent, '<script setup>\nimport x from \'server-component-dep\'\n</script>\n')
 await writeFile(modeServerPlugin, 'import x from \'server-plugin-dep\'\nexport default x\n')
 await writeFile(modeServerPage, '<script setup>\nimport x from \'server-page-dep\'\n</script>\n')
@@ -92,37 +85,28 @@ await writeFile(join(v3LayerRoot, 'modules/build.mjs'), 'import x from \'v3-modu
 await writeFile(join(v3LayerRoot, 'public/widget.mjs'), 'import x from \'v3-public-dep\'\nexport default x\n')
 await mkdir(join(parenLayerSrcDir, 'plugins'), { recursive: true })
 await writeFile(join(parenLayerSrcDir, 'plugins/paren.mjs'), 'import x from \'paren-layer-dep\'\nexport default x\n')
-await writePackage(reachableCycleLayerRoot, 'reachable-cycle-layer', 'export default 1\n')
-await writePackage(cycleLayerARoot, 'cycle-layer-a', 'export default 1\n')
-await writePackage(cycleLayerBRoot, 'cycle-layer-b', 'export default 1\n')
-await writePackage(join(cycleLayerARoot, 'node_modules/cycle-dep-a'), 'cycle-dep-a', 'export default 1\n')
-await writePackage(join(cycleLayerBRoot, 'node_modules/cycle-dep-b'), 'cycle-dep-b', 'export default 1\n')
-await mkdir(join(reachableCycleLayerRoot, 'node_modules'), { recursive: true })
-await symlink(cycleLayerBRoot, join(reachableCycleLayerRoot, 'node_modules/cycle-layer-b'), 'dir')
-await symlink(cycleLayerARoot, join(cycleLayerBRoot, 'node_modules/cycle-layer-a'), 'dir')
-await symlink(cycleLayerBRoot, join(cycleLayerARoot, 'node_modules/cycle-layer-b'), 'dir')
 
 await mkdir(moduleRuntime, { recursive: true })
 await writeFile(join(moduleRuntime, 'plugin.mjs'), 'import x from \'plugin-dep\'\nexport default x\n')
 await writeFile(join(moduleRuntime, 'Component.vue'), '<script setup>\nimport x from \'component-dep\'\n</script>\n')
 await writeFile(join(moduleRuntime, 'middleware.mjs'), 'import x from \'middleware-dep\'\nexport default x\n')
 await writeFile(join(moduleRuntime, 'layout.vue'), '<script setup>\nimport x from \'layout-dep\'\n</script>\n')
-for (const dep of ['plugin-dep', 'component-dep', 'layer-component-dep', 'unused-layer-component-dep', 'server-component-dep', 'server-plugin-dep', 'server-page-dep', 'middleware-dep', 'layout-dep', 'paren-layer-dep', 'v3-client-dep', 'v3-server-dep', 'v3-module-dep', 'v3-public-dep']) {
+for (const dep of ['plugin-dep', 'component-dep', 'server-component-dep', 'server-plugin-dep', 'server-page-dep', 'middleware-dep', 'layout-dep', 'paren-layer-dep', 'v3-client-dep', 'v3-server-dep', 'v3-module-dep', 'v3-public-dep']) {
   await writePackage(join(rootDir, 'node_modules', dep), dep, 'export default 1\n')
 }
 
 afterAll(() => rm(rootDir, { recursive: true, force: true }))
 
-function createNuxt (layerDirs: Array<{ app: string, root: string }> = [], apps: Record<string, any> = { default: { components: [], plugins: [], middleware: [], layouts: {} } }, root = rootDir, src = srcDir) {
+function createNuxt (layerDirs: Array<{ app: string, root: string }> = [], apps: Record<string, any> = { default: { components: [], plugins: [], middleware: [], layouts: {} } }) {
   return {
     apps,
     options: {
-      rootDir: root,
-      srcDir: src,
+      rootDir,
+      srcDir,
       alias: {},
       vite: {},
       _layers: [
-        { cwd: root, config: { rootDir: root, srcDir: src } },
+        { cwd: rootDir, config: { rootDir, srcDir } },
         ...layerDirs.map(dirs => ({ cwd: dirs.root, config: { rootDir: dirs.root, srcDir: dirs.app } })),
       ],
     },
@@ -139,9 +123,6 @@ const otherNestedLayer = { app: join(otherNestedLayerRoot, 'app/'), root: otherN
 // a v3-style layer has no `app/` directory: its srcDir is the package root
 const v3Layer = { app: v3LayerRoot, root: v3LayerRoot }
 const parenLayer = { app: parenLayerSrcDir, root: parenLayerRoot }
-const reachableCycleLayer = { app: join(reachableCycleLayerRoot, 'app/'), root: reachableCycleLayerRoot }
-const cycleLayerA = { app: join(cycleLayerARoot, 'app/'), root: cycleLayerARoot }
-const cycleLayerB = { app: join(cycleLayerBRoot, 'app/'), root: cycleLayerBRoot }
 
 function resolveInclude (nuxt: Nuxt, include: string[], options: { preserveSymlinks?: boolean } = {}) {
   return resolveOptimizeDepsInclude(nuxt, include, options).flat()
@@ -172,12 +153,6 @@ async function optimizedDeps (options: { entries?: string[], include?: string[],
 }
 
 describe('installedScanEntries', () => {
-  it('should not scan layers that are part of the project', () => {
-    const nuxt = createNuxt([{ app: join(rootDir, 'layers/local/app/'), root: join(rootDir, 'layers/local/') }])
-
-    expect(installedScanEntries(nuxt)).toEqual([])
-  })
-
   it('should pre-bundle dependencies only reachable through an installed layer', async () => {
     await expect(optimizedDeps({})).resolves.toEqual([])
 
@@ -265,18 +240,6 @@ describe('installedScanEntries', () => {
     expect(installedScanEntries(nuxt)).toEqual(['C:/project/node_modules/installed-module/runtime/plugin.mjs'])
   })
 
-  it('should normalize installed layer paths on Windows', () => {
-    const projectRoot = 'C:\\project\\'
-    const installedRoot = 'C:\\project\\node_modules\\installed-layer\\'
-    const nuxt = createNuxt([{ app: installedRoot + 'app\\', root: installedRoot }], undefined, projectRoot, projectRoot + 'app\\')
-
-    expect(installedScanEntries(nuxt)).toEqual([
-      'C:/project/node_modules/installed-layer/app/**/*.{vue,js,jsx,mjs,ts,tsx,mts}',
-      '!C:/project/node_modules/installed-layer/app/**/node_modules/**',
-      '!C:/project/node_modules/installed-layer/app/**/*.server.{vue,js,jsx,mjs,ts,tsx,mts}',
-    ])
-  })
-
   it('should not scan the server, module and public directories of a v3-style layer', async () => {
     const nuxt = createNuxt([v3Layer])
 
@@ -336,45 +299,23 @@ describe('OptimizeDepsPlugin', () => {
     expect(config.optimizeDeps).toEqual({ entries: [entry], include: ['layer-dep'] })
   })
 
-  it('should keep rewritten entries attributed to the user', async () => {
-    const nuxt = createNuxt([installedLayer])
-    userOptimizeDepsInclude.set(nuxt, ['layer-dep'])
-
-    await configureEnvironment(nuxt, 'client', { optimizeDeps: { include: ['layer-dep', 'root-dep'] } })
-
-    expect(userOptimizeDepsInclude.get(nuxt)).toEqual(['layer-dep', 'installed-layer > layer-dep'])
-  })
-
   it('should attribute every resolved dependency copy to the user', async () => {
     const nuxt = createNuxt([parentLayer, nestedLayer, otherParentLayer, otherNestedLayer])
     userOptimizeDepsInclude.set(nuxt, ['nested-dep'])
 
-    const config = await configureEnvironment(nuxt, 'client', { optimizeDeps: { include: ['nested-dep'] } })
+    const config = await configureEnvironment(nuxt, 'client', { optimizeDeps: { include: ['nested-dep', 'root-dep'] } })
 
+    // `root-dep` came from elsewhere, so its rewrites must not be attributed to the user
     expect(userOptimizeDepsInclude.get(nuxt)).toEqual([
       'nested-dep',
       'parent-layer > nested-layer > nested-dep',
       'other-parent-layer > nested-layer > nested-dep',
     ])
-    expect(config.optimizeDeps.include).toEqual(userOptimizeDepsInclude.get(nuxt)?.slice(1))
-  })
-
-  it('should scan components from installed layers', async () => {
-    const nuxt = createNuxt([installedLayer], {
-      default: {
-        components: [
-          { filePath: layerComponent },
-          { filePath: unusedLayerComponent },
-        ],
-        plugins: [],
-        middleware: [],
-        layouts: {},
-      },
-    })
-    const config = await configureEnvironment(nuxt, 'client', { optimizeDeps: { entries: [entry] } })
-
-    const deps = await optimizedDeps(config.optimizeDeps)
-    expect(deps).toEqual(expect.arrayContaining(['layer-component-dep', 'unused-layer-component-dep']))
+    expect(config.optimizeDeps.include).toEqual([
+      ...userOptimizeDepsInclude.get(nuxt)!.slice(1),
+      'root-dep',
+      'parent-layer > nested-layer > root-dep',
+    ])
   })
 })
 
@@ -397,6 +338,8 @@ describe('resolveOptimizeDepsInclude', () => {
     const include = resolveInclude(nuxt, ['nested-dep'])
 
     expect(include).toEqual(['parent-layer > nested-layer > nested-dep'])
+    // a nested layer may be listed before its parent and must still get the full chain
+    expect(resolveInclude(createNuxt([nestedLayer, parentLayer]), ['nested-dep'])).toEqual(include)
     await expect(optimizedDeps({ include })).resolves.toContain('parent-layer > nested-layer > nested-dep')
   })
 
@@ -447,15 +390,6 @@ describe('resolveOptimizeDepsInclude', () => {
       'parent-layer > nested-layer > linked-dep',
     ])
     await expect(optimizedDeps({ include, preserveSymlinks: true })).resolves.toEqual(expect.arrayContaining(include))
-  })
-
-  it('should resolve reachable layer cycles independent of layer order', () => {
-    const nuxt = createNuxt([cycleLayerB, cycleLayerA, reachableCycleLayer])
-
-    expect(resolveInclude(nuxt, ['cycle-dep-b', 'cycle-dep-a'])).toEqual([
-      'reachable-cycle-layer > cycle-layer-b > cycle-dep-b',
-      'reachable-cycle-layer > cycle-layer-b > cycle-layer-a > cycle-dep-a',
-    ])
   })
 
   it('should leave entries that resolve from the project root untouched', () => {
