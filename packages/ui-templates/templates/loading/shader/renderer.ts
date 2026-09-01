@@ -24,8 +24,10 @@ const MAX_PIXEL_RATIO = 1.75
 const FRAME_INTERVAL_MS = 33
 const POINTER_FOLLOW_SECONDS = 0.22
 const POINTER_HOLD_SECONDS = 0.35
-/** shockwaves per second while the lockup is hovered */
+/** shockwaves per second after the lockup is clicked */
 const WAVE_RATE = 0.55
+/** enough slots for rapid clicks while earlier waves are still travelling */
+const MAX_WAVES = 8
 
 export type Renderer = {
   ready: Promise<void>
@@ -88,9 +90,8 @@ export function createRenderer (
   let pointer: Point | undefined
   let smoothed: Point = [0.5, 0.5]
   let pointerHold = 0
-  let overLockup = false
-  let wavePhase = 0
-  let waveAlive = 0
+  const wavePhases = new Float32Array(MAX_WAVES).fill(-1)
+  let hoverWavePhase = -1
 
   let lastTime = 0
   let lastRender = -Infinity
@@ -110,7 +111,7 @@ export function createRenderer (
   let light = lightQuery.matches ? 1 : 0
   let winter = isWinter() ? 1 : 0
 
-  type Uniforms = Record<'uLogoCentre' | 'uLogoScale' | 'uResolution' | 'uPointer' | 'uWave' | 'uMisc' | 'uSeason' | 'uLight', WebGLUniformLocation | null>
+  type Uniforms = Record<'uLogoCentre' | 'uLogoScale' | 'uResolution' | 'uPointer' | 'uWave' | 'uHoverWave' | 'uMisc' | 'uSeason' | 'uLight', WebGLUniformLocation | null>
   let uniforms: Uniforms | undefined
 
   /**
@@ -193,10 +194,21 @@ export function createRenderer (
   }
   const handlePointerLeave = () => {
     pointer = undefined
-    overLockup = false
   }
-  const handleLockupEnter = () => { overLockup = true }
-  const handleLockupLeave = () => { overLockup = false }
+  const handleLockupClick = () => {
+    let slot = wavePhases.findIndex(phase => phase < 0)
+    if (slot < 0) {
+      // If every slot is occupied, replace the wave closest to finishing.
+      slot = wavePhases.indexOf(Math.max(...wavePhases))
+    }
+    wavePhases[slot] = 0
+    redraw()
+  }
+  const handleLockupEnter = (event: PointerEvent) => {
+    if (event.pointerType === 'touch') { return }
+    hoverWavePhase = 0
+    redraw()
+  }
   // A lost context clears the drawing buffer, so the canvas would be left as a
   // blank rectangle over the page. Drop it and fall back to the plain lockup.
   const handleContextLost = (event: Event) => {
@@ -217,7 +229,6 @@ export function createRenderer (
       // the last frame's timestamp is the moment the clock stopped
       pausedAt = lastFrame
       pointer = undefined
-      overLockup = false
       if (rafId) { cancelAnimationFrame(rafId) }
       rafId = 0
       return
@@ -250,23 +261,23 @@ export function createRenderer (
     smoothed = follow(smoothed, pointer ?? smoothed, dt, POINTER_FOLLOW_SECONDS)
     pointerHold += ((pointer ? 1 : 0) - pointerHold) * (1 - Math.exp(-dt / POINTER_HOLD_SECONDS))
 
-    // a wave, once fired, always completes its travel
-    if (overLockup) {
-      waveAlive = 1
-      wavePhase = (wavePhase + dt * WAVE_RATE) % 1
-    } else if (waveAlive > 0) {
-      wavePhase += dt * WAVE_RATE
-      if (wavePhase >= 1) {
-        wavePhase = 0
-        waveAlive = 0
-      }
+    // Each click gets its own wave, so rapid clicks produce overlapping rings.
+    for (let i = 0; i < wavePhases.length; i++) {
+      if (wavePhases[i]! < 0) { continue }
+      wavePhases[i]! += dt * WAVE_RATE
+      if (wavePhases[i]! >= 1) { wavePhases[i] = -1 }
+    }
+    if (hoverWavePhase >= 0) {
+      hoverWavePhase += dt * WAVE_RATE
+      if (hoverWavePhase >= 1) { hoverWavePhase = -1 }
     }
 
     gl.uniform2f(uniforms.uLogoCentre, logoCentre[0], logoCentre[1])
     gl.uniform2f(uniforms.uLogoScale, logoScale[0], logoScale[1])
     gl.uniform2f(uniforms.uResolution, width, height)
     gl.uniform2f(uniforms.uPointer, smoothed[0], smoothed[1])
-    gl.uniform2f(uniforms.uWave, wavePhase, waveAlive)
+    gl.uniform1fv(uniforms.uWave, wavePhases)
+    gl.uniform1f(uniforms.uHoverWave, hoverWavePhase)
     gl.uniform2f(uniforms.uMisc, time, pointerHold)
     gl.uniform2f(uniforms.uSeason, winter, light)
     gl.uniform1f(uniforms.uLight, light)
@@ -296,8 +307,8 @@ export function createRenderer (
     observer?.disconnect()
     window.removeEventListener('pointermove', handlePointerMove)
     document.documentElement.removeEventListener('pointerleave', handlePointerLeave)
+    lockup?.removeEventListener('click', handleLockupClick)
     lockup?.removeEventListener('pointerenter', handleLockupEnter)
-    lockup?.removeEventListener('pointerleave', handleLockupLeave)
     lightQuery.removeEventListener('change', handleThemeChange)
     canvas.removeEventListener('webglcontextlost', handleContextLost)
     if (gl && program) { gl.deleteProgram(program) }
@@ -364,7 +375,8 @@ export function createRenderer (
       uLogoScale: at('uLogoScale'),
       uResolution: at('uResolution'),
       uPointer: at('uPointer'),
-      uWave: at('uWave'),
+      uWave: at('uWave[0]'),
+      uHoverWave: at('uHoverWave'),
       uMisc: at('uMisc'),
       uSeason: at('uSeason'),
       uLight: at('uLight'),
@@ -383,8 +395,8 @@ export function createRenderer (
     observer?.observe(slot)
     window.addEventListener('pointermove', handlePointerMove)
     document.documentElement.addEventListener('pointerleave', handlePointerLeave)
+    lockup?.addEventListener('click', handleLockupClick)
     lockup?.addEventListener('pointerenter', handleLockupEnter)
-    lockup?.addEventListener('pointerleave', handleLockupLeave)
     lightQuery.addEventListener('change', handleThemeChange)
     canvas.addEventListener('webglcontextlost', handleContextLost)
     rafId ||= requestAnimationFrame(frame)
