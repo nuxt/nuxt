@@ -52,6 +52,8 @@
     "@codspeed/core": "catalog:dev",
     "@codspeed/vitest-plugin": "catalog:dev",
     "@eslint/markdown": "catalog:dev",
+    "@flakiness/playwright": "catalog:dev",
+    "@flakiness/vitest": "catalog:dev",
     "@nuxt/cli": "catalog:build",
     "@nuxt/eslint-config": "catalog:dev",
     "@nuxt/kit": "workspace:*",
@@ -70,9 +72,8 @@
     "acorn": "catalog:dev",
     "autoprefixer": "10.5.4",
     "case-police": "catalog:dev",
-    "changelogen": "catalog:dev",
     "consola": "catalog:build",
-    "cssnano": "8.0.5",
+    "cssnano": "9.0.1",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
     "eslint": "catalog:dev",
@@ -80,6 +81,7 @@
     "eslint-plugin-no-only-tests": "catalog:dev",
     "eslint-plugin-perfectionist": "catalog:dev",
     "eslint-typegen": "catalog:dev",
+    "fast-check": "catalog:dev",
     "get-port-please": "catalog:build",
     "h3": "catalog:dev",
     "happy-dom": "catalog:dev",
@@ -88,6 +90,7 @@
     "knip": "catalog:dev",
     "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
+    "nitro": "catalog:nitro-runtime",
     "nitropack": "2.13.4",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "catalog:dev",
@@ -113,6 +116,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.21.0",
+  "packageManager": "pnpm@11.24.0",
   "version": ""
 }

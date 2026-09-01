@@ -1,25 +1,37 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
-import type { H3Event } from 'h3'
+import type { H3Error, H3Event } from 'h3'
 import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
-import type { $Fetch, NitroFetchRequest, NitroRouteRules } from 'nitropack/types'
+import type { NitroRouteRules } from 'nitropack/types'
 
+import type { TypedFetch, TypedFetchRequest } from 'nuxt/app'
 import { $fetch } from '#build/fetch'
-import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
-import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
+import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
+import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, PageMeta } from '#app'
+import type { NuxtError, NuxtSSRContext, PageMeta, RequestEvent } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
-import { prefetchComponents, preloadComponents, useRouter } from '#imports'
+import { prefetchComponents, preloadComponents, useRequestEvent, useRouter } from '#imports'
 
 type DefaultAsyncDataErrorValue = undefined
 type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
+
+declare module '@nuxt/schema' {
+  interface ServerRoutes {
+    '/api/registered': { get: { registered: true } }
+    '/api/registered-post': { post: { created: true } }
+    '/api/registered/:id': { default: number }
+    '/api/scored/:id': { get: 'param' }
+    '/api/scored/static': { get: 'static' }
+    '/api/catch-all/**': { get: 'catchAll' }
+  }
+}
 
 declare module 'nuxt/app' {
   interface NuxtLayouts {
@@ -58,8 +70,36 @@ describe('API routes', () => {
   it('types the auto-imported $fetch with nitro routes', () => {
     // https://github.com/nuxt/nuxt/pull/35582 regression: `$fetch` was typed as
     // ofetch's plain `$fetch`, returning `Promise<any>` for every request
-    expectTypeOf($fetch).toEqualTypeOf<$Fetch<unknown, NitroFetchRequest>>()
+    expectTypeOf($fetch).toEqualTypeOf<TypedFetch<unknown, TypedFetchRequest>>()
     expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
+  })
+
+  it('types responses of routes registered in `ServerRoutes`', () => {
+    expectTypeOf($fetch('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
+    expectTypeOf($fetch('/api/registered', { method: 'GET' })).toEqualTypeOf<Promise<{ registered: true }>>()
+    expectTypeOf($fetch('/api/registered-post', { method: 'post' })).toEqualTypeOf<Promise<{ created: true }>>()
+    expectTypeOf($fetch(`/api/registered/${String(Math.random())}`)).toEqualTypeOf<Promise<number>>()
+    // @ts-expect-error the route is only registered for `post`
+    $fetch('/api/registered-post', { method: 'get' })
+  })
+
+  it('prefers the most specific registered route pattern', () => {
+    expectTypeOf($fetch('/api/scored/static')).toEqualTypeOf<Promise<'static'>>()
+    expectTypeOf($fetch(`/api/scored/${String(Math.random())}`)).toEqualTypeOf<Promise<'param' | 'static'>>()
+    expectTypeOf($fetch('/api/catch-all/nested/path')).toEqualTypeOf<Promise<'catchAll'>>()
+  })
+
+  it('falls back to `unknown` for unregistered requests', () => {
+    expectTypeOf($fetch('/api/unregistered')).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch('/api/unregistered', { method: 'PATCH' })).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch<TestResponse>('/api/unregistered')).toEqualTypeOf<Promise<TestResponse>>()
+  })
+
+  it('types responses of registered routes through `useFetch`', () => {
+    expectTypeOf(useFetch('/api/registered').data).toEqualTypeOf<Ref<{ registered: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/registered-post', { method: 'post' }).data).toEqualTypeOf<Ref<{ created: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/registered', { pick: ['registered'] }).data).toEqualTypeOf<Ref<{ registered: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useRequestFetch()('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
   })
 
   it('generates types for routes', () => {
@@ -473,6 +513,13 @@ describe('runtimeConfig', () => {
     expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
     expectTypeOf(injectedConfig.unknown).toEqualTypeOf<unknown>()
   })
+
+  it('reaches the payload and SSR context types', () => {
+    const payloadConfig = useNuxtApp().payload.config!
+    expectTypeOf(payloadConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
+    expectTypeOf(payloadConfig.public.testConfig).toEqualTypeOf<number>()
+    expectTypeOf<NonNullable<NuxtSSRContext['runtimeConfig']>['public']['ids']>().toEqualTypeOf<(1 | 2 | 3)[]>()
+  })
 })
 
 describe('head', () => {
@@ -872,9 +919,30 @@ describe('app config', () => {
       someThing?: {
         value?: string | false
       }
+      themed: {
+        colors: { primary: string, neutral: string }
+        slots: { root: string, body: string }
+        variants: string[]
+        format: (value: string) => string
+      }
       [key: string]: unknown
     }
     expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
+  })
+  it('does not recurse into function and array values', () => {
+    expectTypeOf<AppConfig['themed']['format']>().toEqualTypeOf<(value: string) => string>()
+    expectTypeOf<AppConfig['themed']['variants']>().toEqualTypeOf<string[]>()
+  })
+  it('accepts partial overrides of module-provided app config', () => {
+    expectTypeOf<AppConfigInput['themed']>().toEqualTypeOf<{
+      colors?: { primary?: string, neutral?: string }
+      slots?: { root?: string, body?: string }
+      variants?: string[]
+      format?: (value: string) => string
+    } | undefined>()
+  })
+  it('resolves the same input type through `nuxt/schema` and `@nuxt/schema`', () => {
+    expectTypeOf<AppConfigInputFromNuxt['themed']>().toEqualTypeOf<AppConfigInput['themed']>()
   })
 })
 
@@ -966,5 +1034,17 @@ describe('error typing', () => {
     const error = useError()
     expectTypeOf(error.value?.fatal).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(error.value?.__nuxt_error).toEqualTypeOf<true | undefined>()
+  })
+
+  it('stays structurally compatible with the error h3 constructs during SSR', () => {
+    expectTypeOf<H3Error>().toExtend<NuxtError>()
+  })
+})
+
+describe('request event typing', () => {
+  it('resolves the event to the one contributed by `@nuxt/nitro-server`', () => {
+    expectTypeOf(useRequestEvent()).toEqualTypeOf<H3Event | undefined>()
+    expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
+    expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
   })
 })

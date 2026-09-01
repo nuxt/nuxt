@@ -2,7 +2,7 @@ import process from 'node:process'
 import { addDependency, addDependencyCommand, detectPackageManager } from 'nypm'
 import { resolveModulePath } from 'exsolve'
 import { hasTTY, isCI, provider } from 'std-env'
-import { logger } from './logger.ts'
+import { useTerminal } from './terminal.ts'
 import { tryUseNuxt } from './context.ts'
 import { buildDiagnostics } from './diagnostics/build.ts'
 import { configDiagnostics } from './diagnostics/config.ts'
@@ -59,12 +59,14 @@ export async function ensureDependencyInstalled (names: string | string[], optio
     return Array.isArray(names) ? missing : false
   }
 
+  const terminal = useTerminal()
+
   if (options.prompt === true || (options.prompt !== false && !isStackblitz)) {
-    if (!hasTTY) {
+    if (!hasTTY && !terminal.interactive) {
       return Array.isArray(names) ? missing : false
     }
 
-    const shouldInstall = await logger.prompt(`Do you want to install ${formattedNames}?`, {
+    const shouldInstall = await terminal.prompt(`Do you want to install ${formattedNames}?`, {
       type: 'confirm',
       initial: true,
     })
@@ -77,16 +79,17 @@ export async function ensureDependencyInstalled (names: string | string[], optio
     return Array.isArray(names) ? missing : false
   }
 
-  logger.start(`Installing ${formattedNames}...`)
+  const task = terminal.startTask(`Installing ${formattedNames}...`)
   try {
     await addDependency(missing, {
       dev: true,
       cwd: rootDir,
       silent: true,
     })
-    logger.success(`Installed ${formattedNames}`)
+    task.stop(`Installed ${formattedNames}`)
     return true
   } catch (err) {
+    task.stop(undefined, 'failure')
     buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(missing, rootDir, { dev: true }), cause: err })
     return Array.isArray(names) ? missing : false
   }

@@ -13,6 +13,7 @@ import type { Component, ComponentsOptions } from './components.ts'
 import type { NuxtImport, NuxtImportPreset, NuxtImportPresetSource } from './imports.ts'
 import type { NuxtManifest } from './manifest.ts'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt.ts'
+import type { ModuleMeta } from './module.ts'
 
 export type HookResult = Promise<void> | void
 
@@ -78,6 +79,14 @@ export type NuxtLayout = {
 export interface ImportPresetWithDeprecation extends NuxtImportPreset {
 }
 
+export interface ModuleInstallInfo {
+  /** A human-readable name for the module: `meta.name` where available, otherwise the package name, a path relative to `rootDir`, or the function name */
+  name: string
+  meta: ModuleMeta
+  /** The resolved path of the module on disk, where it is not an inline function */
+  path?: string
+}
+
 export interface GenerateAppOptions {
   filter?: (template: ResolvedNuxtTemplate<any>) => boolean
 }
@@ -139,6 +148,26 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'modules:done': () => HookResult
+  /**
+   * Called immediately before each individual module is set up.
+   * @param module Information about the module about to be set up
+   * @returns Promise
+   */
+  'module:before': (module: ModuleInstallInfo) => HookResult
+  /**
+   * Called immediately after each individual module has been set up.
+   * @param module Information about the module that was set up, including how long it took
+   * @returns Promise
+   */
+  'module:done': (module: ModuleInstallInfo & {
+    /** The module entry path, if it could be resolved */
+    entryPath?: string
+    /**
+     * Timings for the module, in milliseconds. `setup` is how long the module took to set up; a module may report
+     * additional keys of its own. This is the same object recorded in `_installedModules`.
+     */
+    timings: { setup: number } & Record<string, number | undefined>
+  }) => HookResult
 
   /**
    * Called after resolving the `app` instance.

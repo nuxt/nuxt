@@ -1,10 +1,12 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, tryUseNitro, updateTemplates, useNuxt } from '@nuxt/kit'
 import { headDiagnostics } from '@nuxt/kit/internal'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
+import type { Nitro } from 'nitropack/types'
+import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
 
 import { isDirectory, linkToAlias, logger } from '../utils.ts'
@@ -42,12 +44,12 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     polyfills: true,
   }),
   setup (options, nuxt) {
-    // TODO: fix sharing of defaults between invocations of modules
-    const presets: InlinePreset[] = JSON.parse(JSON.stringify(options.presets))
-
-    if (options.polyfills) {
-      presets.push(...appCompatPresets)
-    }
+    // `defaultPresets`/`appCompatPresets` are module-level constants, so clone them before
+    // `imports:sources` subscribers get a chance to mutate them for this invocation only
+    const presets = klona([
+      ...options.presets ?? [],
+      ...options.polyfills ? appCompatPresets : [],
+    ]) as InlinePreset[]
 
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
@@ -295,11 +297,11 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       if (!options.autoImport) {
         return GENERATED_BY_COMMENT + AUTO_IMPORTS_DISABLED_COMMENT
       }
-      const nitro = useNitro()
+      const nitro = tryUseNitro() as Nitro | undefined
 
       const nuxtImports = await ctx.getImports()
 
-      const nitroImports = await nitro.unimport?.getImports() ?? []
+      const nitroImports = await nitro?.unimport?.getImports() ?? []
       const nitroImportsByName = new Map<string, Import>(nitroImports.map(i => [i.as || i.name, i]))
 
       const sharedImports: Import[] = []

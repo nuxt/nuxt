@@ -1,12 +1,12 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { flushPromises } from '@vue/test-utils'
-import { Transition } from 'vue'
+import { Transition, isShallow, triggerRef, watch } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
@@ -77,6 +77,40 @@ describe('useAsyncData', () => {
     expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
+  })
+
+  it('should expose shallow data as a shallow ref', async () => {
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve({ nested: { value: 'test' } }), { deep: false })
+
+    expect(isShallow(data)).toBe(true)
+  })
+
+  it('should expose shallow data as a shallow ref with a reactive key', async () => {
+    const key = shallowRef(`${uniqueKey}-a`)
+    const { data } = await useAsyncData(key, () => Promise.resolve({ nested: { value: key.value } }), { deep: false })
+    const onChange = vi.fn()
+    const stop = watch(data, onChange)
+    onTestFinished(stop)
+
+    expect(isShallow(data)).toBe(true)
+    expect(data.value.nested.value).toBe(`${uniqueKey}-a`)
+
+    data.value.nested.value = 'mutated'
+    await nextTick()
+    expect(onChange).not.toHaveBeenCalled()
+
+    triggerRef(data)
+    await nextTick()
+    expect(onChange).toHaveBeenCalledOnce()
+
+    data.value = { nested: { value: 'assigned' } }
+    expect(data.value.nested.value).toBe('assigned')
+
+    key.value = `${uniqueKey}-b`
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value.nested.value).toBe(`${uniqueKey}-b`)
   })
 
   it('should throw TypeError when key is empty', () => {
@@ -1015,6 +1049,104 @@ describe('useAsyncData', () => {
     expect(data.value).toBe('server-renderered')
     expect(status.value).toBe('success')
     useNuxtApp().isHydrating = false
+  })
+
+  // https://github.com/nuxt/nuxt/issues/36111
+  describe('hydration', () => {
+    let previousHydrating: boolean
+    let previousServerRendered: boolean
+
+    beforeEach(() => {
+      const nuxtApp = useNuxtApp()
+      previousHydrating = nuxtApp.isHydrating!
+      previousServerRendered = nuxtApp.payload.serverRendered!
+      nuxtApp.isHydrating = true
+      nuxtApp.payload.serverRendered = true
+    })
+
+    afterEach(() => {
+      const nuxtApp = useNuxtApp()
+      nuxtApp.isHydrating = previousHydrating
+      nuxtApp.payload.serverRendered = previousServerRendered
+    })
+
+    /** Records what an `await useAsyncData()` within component setup sees at first synchronous use. */
+    async function mountAwaitingAsyncData (...args: any[]) {
+      const observed: { status?: string, data?: unknown } = {}
+      const wrapper = await mountSuspended(defineComponent({
+        async setup () {
+          const { data, status } = await useAsyncData(...args as [any])
+          observed.status = status.value
+          observed.data = data.value
+          return () => h('div')
+        },
+      }))
+      return { wrapper, observed }
+    }
+
+    it('should reuse the payload without fetching when the server rendered the key', async () => {
+      useNuxtApp().payload.data[uniqueKey] = 'server'
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn)
+
+      expect(observed).toMatchObject({ status: 'success', data: 'server' })
+      expect(promiseFn).not.toHaveBeenCalled()
+      wrapper.unmount()
+    })
+
+    it('should reuse a cached value without fetching when there is no payload entry', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+      const getCachedData = vi.fn(() => 'cached')
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn, { getCachedData })
+
+      expect(observed).toMatchObject({ status: 'success', data: 'cached' })
+      expect(promiseFn).not.toHaveBeenCalled()
+      wrapper.unmount()
+    })
+
+    it('should fetch before resolving when there is no payload entry for the key', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn)
+
+      expect(observed).toMatchObject({ status: 'success', data: 'client' })
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+    })
+
+    it('should fetch before resolving when a default is set but there is no payload entry for the key', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn, { default: () => null })
+
+      expect(observed).toMatchObject({ status: 'success', data: 'client' })
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+    })
+
+    it('should still defer the fetch to mount for `server: false`', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn, { server: false })
+
+      expect(observed).toMatchObject({ status: 'idle', data: undefined })
+      await flushPromises()
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+    })
+
+    it('should still defer the fetch to mount for `lazy: true`', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn, { lazy: true })
+
+      expect(observed).toMatchObject({ status: 'idle', data: undefined })
+      await flushPromises()
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+    })
   })
 
   it('should retain the old data when a computed key changes', async () => {

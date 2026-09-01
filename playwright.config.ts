@@ -46,7 +46,10 @@ export default defineConfig<E2eConfigOptions>({
   forbidOnly: !!isCI,
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['@flakiness/playwright', { flakinessProject: 'nuxt/nuxt' }],
+  ],
   projects: [
     {
       name: 'setup fixtures',
@@ -71,6 +74,8 @@ export default defineConfig<E2eConfigOptions>({
           defaults: {
             nuxt: {
               dev: entry.isDev,
+              setupTimeout: (isWindows ? 360 : 120) * 1000,
+              serverStartTimeout: (isWindows ? 300 : 120) * 1000,
               nuxtConfig: {
                 builder: entry.builder,
                 devtools: { enabled: false },

@@ -169,7 +169,11 @@ export interface CustomAppConfig {
   [key: string]: unknown
 }
 
-export interface AppConfigInput extends CustomAppConfig {
+/**
+ * User-authored `app.config.ts` input.
+ */
+export interface AppConfigInput {
+  [key: string]: unknown
   /** @deprecated reserved */
   private?: never
   /** @deprecated reserved */

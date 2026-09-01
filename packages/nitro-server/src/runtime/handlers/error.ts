@@ -1,6 +1,7 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack/types'
-import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import { appendResponseHeader, getRequestHeaders, getResponseHeader, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import type { H3Event } from 'h3'
 import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
@@ -19,6 +20,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const status = (error as any).status || error.statusCode || 500
   if (status === 404 && defaultRes.status === 302) {
     setResponseHeaders(event, defaultRes.headers)
+    appendVary(event, 'accept, sec-fetch-mode')
     setResponseStatus(event, defaultRes.status, defaultRes.statusText)
     return send(event, JSON.stringify(defaultRes.body, null, 2))
   }
@@ -45,6 +47,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   delete defaultRes.headers['content-security-policy'] // this would disable JS execution in the error page
 
   setResponseHeaders(event, defaultRes.headers)
+  appendVary(event, 'accept, sec-fetch-mode')
 
   // Access request headers
   const reqHeaders = getRequestHeaders(event)
@@ -97,6 +100,38 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   return send(event, html)
+}
+
+/**
+ * Add `value`'s tokens to the response `vary` header, keeping any already
+ * present. `*` absorbs everything else, since it means the response varies on
+ * all headers.
+ */
+function appendVary (event: H3Event, value: string): void {
+  const incoming = parseVary(value)
+  if (!incoming.length) {
+    return
+  }
+  const existing = parseVary(getResponseHeader(event, 'vary'))
+  if (existing.includes('*')) {
+    return
+  }
+  if (incoming.includes('*')) {
+    setResponseHeader(event, 'vary', '*')
+    return
+  }
+  const merged = existing.slice()
+  for (const token of incoming) {
+    if (!merged.includes(token)) {
+      merged.push(token)
+    }
+  }
+  setResponseHeader(event, 'vary', merged.join(', '))
+}
+
+function parseVary (value: number | string | string[] | undefined): string[] {
+  const tokens = Array.isArray(value) ? value : typeof value === 'string' ? value.split(',') : []
+  return tokens.map(token => token.trim().toLowerCase()).filter(Boolean)
 }
 
 function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {

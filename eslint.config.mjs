@@ -30,6 +30,7 @@ export default createConfigForNuxt({
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
         'packages/nitro-server/src/runtime/templates/error-*',
         'packages/nitro-server/src/templates/spa-loading-icon.ts',
+        'packages/vite-server/src/templates/spa-loading-icon.ts',
         'packages/schema/src/templates/loading.ts',
         'packages/kit/test/types-fixture/**',
       ],
@@ -226,6 +227,19 @@ export default createConfigForNuxt({
           js: 'always',
           ts: 'always',
           vue: 'always',
+        }],
+      },
+    },
+    {
+      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rspack}/src/**'],
+      // vite-node* files execute inside the nitro dev process rather than the
+      // Nuxt build process, so nostics catalogs do not apply there.
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**', '**/*.{spec,test}.{js,mjs,ts,mts}', 'packages/vite/src/vite-node*.ts'],
+      name: 'local/requires/nostics-diagnostics',
+      rules: {
+        'no-restricted-syntax': ['error', {
+          message: 'Use a nostics diagnostic (see packages/kit/src/diagnostics/) instead of logger/console for build-time warnings and errors.',
+          selector: 'CallExpression[callee.object.name=/^(logger|console)$/][callee.property.name=/^(warn|error)$/]',
         }],
       },
     },

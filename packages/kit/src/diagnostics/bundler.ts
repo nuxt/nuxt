@@ -111,5 +111,15 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check that no Vite plugin removes or renames the client build manifest in a `generateBundle`/`writeBundle` hook. If this happens with no such plugin, please report it at https://github.com/nuxt/nuxt/issues.',
       docs: false,
     },
+    NUXT_B7022: {
+      why: (p: { existing: string, route: string }) => `Route rules for \`${p.existing}\` and \`${p.route}\` resolve to the same path; \`${p.route}\` takes precedence.`,
+      fix: (p: { canFold: boolean }) => `Disambiguate the keys${p.canFold ? ' or set `router.options.sensitive: true`' : ''}.`,
+      docs: false,
+    },
+    NUXT_B7023: {
+      why: (p: { dir: string, baseURL: string }) => `A configured \`nitro.publicAssets\` directory does not exist: \`${p.dir}\`. Requests to \`${p.baseURL}\` will return a 404.`,
+      fix: 'Relative `dir` values are tried against your server directory and then your project root, and this one exists in neither. Point `dir` at an existing directory, using an absolute path or a Nuxt alias (such as `~~/public/video`) if it lives elsewhere.',
+      docs: false,
+    },
   },
 })

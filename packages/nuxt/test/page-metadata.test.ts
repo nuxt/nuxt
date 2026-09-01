@@ -2,29 +2,45 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import { pageDiagnostics } from '@nuxt/kit/internal'
+import { defu } from 'defu'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
+import { useNuxt } from '@nuxt/kit'
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
-import { augmentPages, defaultExtractionKeys, getRouteMeta, normalizeRoutes, shouldExtractSerializablePageMeta } from '../src/pages/utils.ts'
-import type { NuxtPage } from '../schema.ts'
+import { getRouteMeta as _getRouteMeta, augmentPages, defaultExtractionKeys, dynamicPageMetaCache, getDynamicMetaKeys, getDynamicPageMeta, normalizeRoutes, shouldExtractSerializablePageMeta } from '../src/pages/utils.ts'
+import type { Nuxt, NuxtPage } from '../schema.ts'
 
 const filePath = '/app/pages/index.vue'
 
+/** `augmentPages`, tied to the mocked nuxt instance the way `augmentAndResolve` ties it to a real one. */
+function augmentForNuxt (pages: NuxtPage[], vfs: Record<string, string>, ctx: Parameters<typeof augmentPages>[2] = {}) {
+  return augmentPages(pages, vfs, { nuxt: mockNuxt as unknown as Nuxt, ...ctx })
+}
+
+/**
+ * Extracted metadata, plus the keys the file leaves to the runtime macro module (which are no
+ * longer part of the extracted object).
+ */
+function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys?: Set<string>, options: { extractSerializable?: boolean } = {}) {
+  const meta = _getRouteMeta(contents, absolutePath, extraExtractionKeys, options)
+  const dynamic = getDynamicMetaKeys(absolutePath, extraExtractionKeys, options)
+  return dynamic.size ? { ...meta, dynamic } : meta
+}
+
 vi.mock('klona', { spy: true })
+const mockNuxt = vi.hoisted(() => ({
+  options: {
+    experimental: {
+      normalizePageNames: false,
+    },
+  },
+}))
 vi.mock('@nuxt/kit', async (original) => {
   const mod = await original<typeof import('@nuxt/kit')>()
   return {
     ...mod,
-    useNuxt: vi.fn(() => {
-      return {
-        options: {
-          experimental: {
-            normalizePageNames: false,
-          },
-        },
-      }
-    }),
+    useNuxt: vi.fn(() => mockNuxt),
   }
 })
 describe('page metadata', () => {
@@ -48,9 +64,7 @@ definePageMeta({
 </script>`, filePath)
 
     expect(meta).toStrictEqual({
-      meta: {
-        [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']),
-      },
+      dynamic: new Set(['meta']),
     })
   })
 
@@ -172,17 +186,26 @@ definePageMeta({ name: 'bar' })
     const _klona = klona as unknown as MockedFunction<typeof klona>
     _klona.mockImplementation(obj => obj)
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
-    const meta = getRouteMeta(fileContents, filePath)
-    expect(meta === getRouteMeta(fileContents, filePath)).toBeTruthy()
-    expect(meta === getRouteMeta(fileContents, '/app/pages/other.vue')).toBeFalsy()
-    expect(meta === getRouteMeta('<template><div>Hi</div></template>' + fileContents, filePath)).toBeFalsy()
+    const meta = _getRouteMeta(fileContents, filePath)
+    expect(meta === _getRouteMeta(fileContents, filePath)).toBeTruthy()
+    expect(meta === _getRouteMeta(fileContents, '/app/pages/other.vue')).toBeFalsy()
+    expect(meta === _getRouteMeta('<template><div>Hi</div></template>' + fileContents, filePath)).toBeFalsy()
     _klona.mockReset()
+  })
+
+  it('should key the extraction cache on the extra extraction keys', () => {
+    const sfc = `<script setup>definePageMeta({ middleware: someRef })</script>`
+    const path = '/app/pages/extra-keys.vue'
+    // whether `middleware` is an extra extraction key decides if the route field or the whole meta
+    // object has to come from the macro module, so it cannot share a cache entry
+    expect(getRouteMeta(sfc, path, new Set(['middleware']))).toEqual({ dynamic: new Set(['meta']) })
+    expect(getRouteMeta(sfc, path, new Set())).toEqual({ dynamic: new Set(['middleware']) })
   })
 
   it('should not share state between page metadata', () => {
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
-    const meta = getRouteMeta(fileContents, filePath)
-    expect(meta === getRouteMeta(fileContents, filePath)).toBeFalsy()
+    const meta = _getRouteMeta(fileContents, filePath)
+    expect(meta === _getRouteMeta(fileContents, filePath)).toBeFalsy()
   })
 
   it('should extract serialisable metadata', () => {
@@ -212,11 +235,9 @@ definePageMeta({ name: 'bar' })
         "alias": [
           "/alias",
         ],
-        "meta": {
-          Symbol(nuxt:dynamic-page-meta): Set {
-            "middleware",
-            "meta",
-          },
+        "dynamic": Set {
+          "middleware",
+          "meta",
         },
         "name": "some-custom-name",
         "path": "/some-custom-path",
@@ -294,10 +315,8 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
-        "meta": {
-          Symbol(nuxt:dynamic-page-meta): Set {
-            "redirect",
-          },
+        "dynamic": Set {
+          "redirect",
         },
       }
     `)
@@ -327,11 +346,9 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
-        "meta": {
-          Symbol(nuxt:dynamic-page-meta): Set {
-            "middleware",
-            "meta",
-          },
+        "dynamic": Set {
+          "middleware",
+          "meta",
         },
         "name": "some-custom-name",
         "path": "/some-custom-path",
@@ -356,10 +373,8 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
-        "meta": {
-          Symbol(nuxt:dynamic-page-meta): Set {
-            "middleware",
-          },
+        "dynamic": Set {
+          "middleware",
         },
         "name": "some-custom-name",
         "path": "/some-custom-path",
@@ -380,10 +395,8 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
-        "meta": {
-          Symbol(nuxt:dynamic-page-meta): Set {
-            "meta",
-          },
+        "dynamic": Set {
+          "meta",
         },
       }
     `)
@@ -440,10 +453,8 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
-        "meta": {
-          Symbol(nuxt:dynamic-page-meta): Set {
-            "meta",
-          },
+        "dynamic": Set {
+          "meta",
         },
       }
     `)
@@ -460,10 +471,8 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
-        "meta": {
-          Symbol(nuxt:dynamic-page-meta): Set {
-            "meta",
-          },
+        "dynamic": Set {
+          "meta",
         },
       }
     `)
@@ -479,10 +488,8 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
-        "meta": {
-          Symbol(nuxt:dynamic-page-meta): Set {
-            "meta",
-          },
+        "dynamic": Set {
+          "meta",
         },
       }
     `)
@@ -601,9 +608,10 @@ describe('shouldExtractSerializablePageMeta', () => {
 })
 
 describe('normalizeRoutes', () => {
-  it('should produce valid route objects when used with extracted meta', () => {
+  it('should produce valid route objects when used with extracted meta', async () => {
     const page: NuxtPage = { path: '/', file: filePath }
-    Object.assign(page, getRouteMeta(`
+    await augmentForNuxt([page], {
+      [filePath]: `
       <script setup>
       definePageMeta({
         name: 'some-custom-name',
@@ -618,7 +626,8 @@ describe('normalizeRoutes', () => {
         },
       })
       </script>
-      `, filePath))
+      `,
+    }, { fullyResolvedPaths: new Set([filePath]) })
 
     page.meta ||= {}
     page.meta.layout = 'test'
@@ -647,16 +656,18 @@ describe('normalizeRoutes', () => {
     `)
   })
 
-  it('should not import the macro module when all metadata was extracted', () => {
+  it('should not import the macro module when all metadata was extracted', async () => {
     const page: NuxtPage = { path: '/', file: filePath }
-    Object.assign(page, getRouteMeta(`
+    await augmentForNuxt([page], {
+      [filePath]: `
       <script setup>
       definePageMeta({
         name: 'some-custom-name',
         alias: ['/some-alias'],
       })
       </script>
-      `, filePath))
+      `,
+    }, { fullyResolvedPaths: new Set([filePath]) })
 
     const { routes, imports } = normalizeRoutes([page], new Set(), {
       clientComponentRuntime: '<client-component-runtime>',
@@ -693,7 +704,7 @@ describe('normalizeRoutes', () => {
       { path: '/', file: filePath },
       { path: '/duplicate', file: filePath },
     ]
-    await augmentPages(pages, vfs, { fullyResolvedPaths: new Set([filePath]) })
+    await augmentForNuxt(pages, vfs, { fullyResolvedPaths: new Set([filePath]) })
 
     const { routes, imports } = normalizeRoutes(pages, new Set(), {
       clientComponentRuntime: '<client-component-runtime>',
@@ -719,15 +730,17 @@ describe('normalizeRoutes', () => {
     `)
   })
 
-  it('should import the macro module when metadata is not statically analysable', () => {
+  it('should import the macro module when metadata is not statically analysable', async () => {
     const page: NuxtPage = { path: '/', name: 'index', file: filePath }
-    Object.assign(page, getRouteMeta(`
+    await augmentForNuxt([page], {
+      [filePath]: `
       <script setup>
       definePageMeta({
         layout: 'custom',
       })
       </script>
-      `, filePath))
+      `,
+    }, { fullyResolvedPaths: new Set([filePath]) })
 
     const { imports } = normalizeRoutes([page], new Set(), {
       clientComponentRuntime: '<client-component-runtime>',
@@ -737,6 +750,77 @@ describe('normalizeRoutes', () => {
     expect(imports).toEqual(new Set([
       'import { default as indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta } from "/app/pages/index.vue?macro=true";',
     ]))
+  })
+
+  it.each([
+    // a module adding and then stripping its own meta key, dropping `page.meta` once it is empty
+    (page: NuxtPage) => {
+      page.meta = defu({ fromModule: {} }, klona(page.meta))
+      delete page.meta.fromModule
+      if (Object.keys(page.meta).length === 0) {
+        delete page.meta
+      }
+      return [page]
+    },
+    // route localization: page objects are replaced by one shallow copy per locale, then the
+    // module strips its own meta and drops `page.meta` once nothing of its own is left
+    (page: NuxtPage) => ['en', 'fr'].map((locale) => {
+      const localized: NuxtPage = { ...page, path: `/${locale}`, meta: { ...page.meta, i18n: {} } }
+      delete localized.meta!.i18n
+      if (Object.keys(localized.meta!).length === 0) {
+        delete localized.meta
+      }
+      return localized
+    }),
+  ])('should keep dynamic keys when a module rewrites pages (case %#)', async (rewritePages) => {
+    const page: NuxtPage = { path: '/', file: filePath }
+    await augmentForNuxt([page], {
+      [filePath]: `<script setup>definePageMeta({ name: ref('some-custom-name'), layout: 'custom' })</script>`,
+    }, { fullyResolvedPaths: new Set([filePath]) })
+
+    const { routes } = normalizeRoutes(rewritePages(page), new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(routes).toContain('?.name ?? undefined')
+  })
+
+  it('should not share dynamic keys between nuxt instances', async () => {
+    const sfc = `<script setup>definePageMeta({ middleware: someRef })</script>`
+    // `middleware` is an extraction key for one instance only, so the two disagree about the key
+    const withExtraKeys = { options: { experimental: { normalizePageNames: false } } } as unknown as Nuxt
+    const withoutExtraKeys = { options: { experimental: { normalizePageNames: false } } } as unknown as Nuxt
+
+    const augment = async (nuxt: Nuxt, extraExtractionKeys: Set<string>) => {
+      const page: NuxtPage = { path: '/', file: filePath }
+      await augmentPages([page], { [filePath]: sfc }, { nuxt, extraExtractionKeys, fullyResolvedPaths: new Set([filePath]) })
+      return page
+    }
+
+    const page = await augment(withExtraKeys, new Set(['middleware']))
+    expect(getDynamicPageMeta(page, dynamicPageMetaCache(withExtraKeys))).toEqual(new Set(['meta']))
+    expect(getDynamicPageMeta(page, dynamicPageMetaCache(withoutExtraKeys))).toEqual(new Set())
+
+    // the same file, extracted by an instance that does not treat `middleware` as an extra key,
+    // marks the route field itself rather than the whole meta object
+    await augment(withoutExtraKeys, new Set())
+    expect(getDynamicPageMeta(page, dynamicPageMetaCache(withoutExtraKeys))).toEqual(new Set(['middleware']))
+    expect(getDynamicPageMeta(page, dynamicPageMetaCache(withExtraKeys))).toEqual(new Set(['meta']))
+
+    const routesFor = (nuxt: Nuxt) => {
+      vi.mocked(useNuxt).mockReturnValueOnce(nuxt)
+      return normalizeRoutes([page], new Set(), {
+        clientComponentRuntime: '<client-component-runtime>',
+        serverComponentRuntime: '<server-component-runtime>',
+        overrideMeta: true,
+      }).routes
+    }
+
+    // the instance that extracted the file defers `meta` to the macro module; the other one has
+    // no record of the page and would drop it
+    expect(routesFor(withExtraKeys)).toContain('meta:')
+    expect(routesFor(withoutExtraKeys)).not.toContain('meta:')
   })
 
   it('should produce valid route objects when used without extracted meta', () => {
@@ -1344,6 +1428,7 @@ definePageMeta({
   describe('strip extracted metadata', () => {
     it.each([
       {
+        description: 'when it is the last key, with a trailing comma and an inline closing brace',
         input: `
 <script setup>
 definePageMeta({
@@ -1353,6 +1438,7 @@ definePageMeta({
       `,
       },
       {
+        description: 'when it is the first key and another key follows on the same line',
         input: `
 <script setup>
 definePageMeta({
@@ -1361,6 +1447,7 @@ definePageMeta({
       `,
       },
       {
+        description: 'when it is the only key, with a trailing comma',
         input: `
 <script setup>
 definePageMeta({
@@ -1370,6 +1457,7 @@ definePageMeta({
       `,
       },
       {
+        description: 'when it is the only key, without a trailing comma',
         input: `
 <script setup>
 definePageMeta({
@@ -1378,7 +1466,7 @@ definePageMeta({
 </script>
       `,
       },
-    ])(`should strip extracted metadata from the script block`, ({ input }) => {
+    ])(`should strip extracted metadata from the script block $description`, ({ input }) => {
       const res = compileScript(parse(input).descriptor, { id: 'component.vue' })
       const result = transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code
       expect.soft(result).not.contain('extracted')
@@ -1408,7 +1496,7 @@ definePageMeta({ [name]: 'some-title' })
       `
       expect(macroModule(sfc, extractionKeys)).toContain('[name]: \'some-title\'')
       expect(getRouteMeta(sfc, '/app/pages/computed.vue')).toEqual({
-        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
+        dynamic: new Set(['meta']),
       })
     })
 
@@ -1422,7 +1510,7 @@ definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
       expect(macro).toContain('layout: \'admin\'')
       expect(macro).toContain('layoutProps: { collapsed: true }')
       expect(getRouteMeta(sfc, '/app/pages/layout.vue', new Set(['layout']))).toEqual({
-        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
+        dynamic: new Set(['meta']),
       })
     })
 
@@ -1455,7 +1543,7 @@ definePageMeta(meta)
       `
       expect(macroModule(sfc, extractionKeys)).toContain('const __nuxt_page_meta = meta')
       expect(getRouteMeta(sfc, '/app/pages/variable.vue')).toEqual({
-        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
+        dynamic: new Set(['meta']),
       })
     })
 
@@ -1470,7 +1558,7 @@ definePageMeta({ layout: { ...shared, props: { collapsed: true } } })
       expect(macro).toContain('...shared')
       expect(macro).not.toContain('layoutProps')
       expect(getRouteMeta(sfc, '/app/pages/layout-spread.vue')).toEqual({
-        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
+        dynamic: new Set(['meta']),
       })
     })
 
@@ -1494,7 +1582,7 @@ definePageMeta({ get name () { return 'from-getter' } })
       `
       expect(macroModule(sfc, extractionKeys)).toContain('from-getter')
       expect(getRouteMeta(sfc, '/app/pages/getter.vue')).toEqual({
-        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
+        dynamic: new Set(['meta']),
       })
     })
   })
@@ -1534,7 +1622,8 @@ definePageMeta({ title: 'hello', validate: () => true })
 </script>
       `
       expect(extract(sfc)).toEqual({
-        meta: { title: 'hello', [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
+        meta: { title: 'hello' },
+        dynamic: new Set(['meta']),
       })
       expect(macroModule(sfc)).toContain('validate')
     })
@@ -1546,7 +1635,7 @@ definePageMeta({ path: ref('/dynamic') })
 </script>
       `
       expect(extract(sfc)).toEqual({
-        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['path']) },
+        dynamic: new Set(['path']),
       })
       expect(macroModule(sfc)).toContain('ref(\'/dynamic\')')
     })
@@ -1568,7 +1657,7 @@ definePageMeta({ title: 'first', title: 'last' })
       const path = '/app/pages/cache-key.vue'
       expect(getRouteMeta(sfc, path, new Set(), options)).toEqual({ meta: { title: 'hello' } })
       expect(getRouteMeta(sfc, path)).toEqual({
-        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
+        dynamic: new Set(['meta']),
       })
     })
 
@@ -1580,7 +1669,7 @@ definePageMeta({ title: 'first', title: 'last' })
       const updated = `<script setup lang="ts">definePageMeta({ title: 'goodbye' })</script>`
       expect(getRouteMeta(updated, path, new Set(), options)).toEqual({ meta: { title: 'goodbye' } })
       expect(getRouteMeta(updated, path)).toEqual({
-        meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) },
+        dynamic: new Set(['meta']),
       })
     })
 
@@ -1645,7 +1734,7 @@ definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } as const 
 definePageMeta({ layout: { props: { collapsed: true } } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ dynamic: new Set(['meta']) })
         const macro = macroModule(sfc)
         expect(macro).toContain('layoutProps: { collapsed: true }')
         expect(macro).not.toContain('layout:')
@@ -1657,7 +1746,7 @@ definePageMeta({ layout: { props: { collapsed: true } } })
 definePageMeta({ layout: {} })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ dynamic: new Set(['meta']) })
       })
 
       it('should leave a non-serializable layout name to the macro module', () => {
@@ -1667,7 +1756,7 @@ const layoutName = 'admin'
 definePageMeta({ layout: { name: layoutName } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ dynamic: new Set(['meta']) })
         expect(macroModule(sfc)).toContain('layout: layoutName')
       })
 
@@ -1677,7 +1766,7 @@ definePageMeta({ layout: { name: layoutName } })
 definePageMeta({ layout: { name: 'admin', props: { onClick: () => {} } } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ dynamic: new Set(['meta']) })
         const macro = macroModule(sfc)
         expect(macro).toContain('layout: \'admin\'')
         expect(macro).toContain('layoutProps: { onClick: () => {} }')
@@ -1690,7 +1779,7 @@ const shared = { name: 'admin' }
 definePageMeta({ layout: { ...shared } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ dynamic: new Set(['meta']) })
         expect(macroModule(sfc)).toContain('...shared')
       })
 
@@ -1700,7 +1789,7 @@ definePageMeta({ layout: { ...shared } })
 definePageMeta({ layout: { name: 'admin', other: 1 } })
 </script>
         `
-        expect(extract(sfc)).toEqual({ meta: { [Symbol.for('nuxt:dynamic-page-meta')]: new Set(['meta']) } })
+        expect(extract(sfc)).toEqual({ dynamic: new Set(['meta']) })
         expect(macroModule(sfc)).toContain('other: 1')
       })
 
@@ -1729,9 +1818,10 @@ definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
       })
     })
 
-    it('should not import the macro module when every key is serializable', () => {
+    it('should not import the macro module when every key is serializable', async () => {
       const page: NuxtPage = { path: '/', file: filePath }
-      Object.assign(page, getRouteMeta(`
+      await augmentForNuxt([page], {
+        [filePath]: `
       <script setup>
       definePageMeta({
         name: 'some-custom-name',
@@ -1739,7 +1829,8 @@ definePageMeta({ layout: { name: 'admin', props: { collapsed: true } } })
         title: 'hello',
       })
       </script>
-      `, filePath, new Set(), options))
+      `,
+      }, { fullyResolvedPaths: new Set([filePath]), extractSerializable: true })
 
       const { routes, imports } = normalizeRoutes([page], new Set(), {
         clientComponentRuntime: '<client-component-runtime>',

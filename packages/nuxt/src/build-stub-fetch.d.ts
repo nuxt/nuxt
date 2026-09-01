@@ -3,4 +3,4 @@
  * `tsconfig.build.json` while emitting this package's declarations. Matches
  * the `dollarFetchTypeTemplate` in `./core/templates.ts`.
  */
-export declare const $fetch: import('nitropack/types').$Fetch
+export declare const $fetch: import('./app/types/fetch').TypedFetch

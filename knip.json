@@ -48,9 +48,15 @@
       ],
       "ignoreDependencies": [
         "mocked-exports",
+        "ohash",
         "vue-devtools-stub",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
+      ]
+    },
+    "packages/vite-server": {
+      "ignoreDependencies": [
+        "mocked-exports"
       ]
     },
     "packages/vite": {
@@ -86,8 +92,10 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
+        "@nuxt/nitro-server",
         "@nuxt/telemetry",
-        "@nuxt/vite-builder"
+        "@nuxt/vite-builder",
+        "@nuxt/vite-server"
       ]
     },
     "packages/ui-templates": {

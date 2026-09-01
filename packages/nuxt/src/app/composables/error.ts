@@ -1,9 +1,9 @@
-import type { H3Error } from '@nuxt/nitro-server/h3'
 import { createError as createH3Error } from '@nuxt/nitro-server/h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import type { NuxtApp, NuxtPayload } from '../nuxt'
+import type { NuxtErrorJSON } from '../types'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
 import { appDiagnostics } from '../diagnostics/core'
@@ -14,17 +14,27 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error' as const
 /* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
-// #34138 - `Omit` breaks the Error inheritance chain, causing `@typescript-eslint/only-throw-error` to fail
-// Adding `Error` explicitly restores throwability. TODO: remove `Error` in Nuxt 5 when `Omit` is no longer needed
-export interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'>, Error {
+/**
+ * The members are declared here rather than inherited from h3's `H3Error`, but
+ * must stay structurally compatible with it: that is what h3 and Nitro read off
+ * errors thrown during SSR.
+ */
+export interface NuxtError<DataT = unknown> extends Error {
   readonly __nuxt_error?: true
   error?: true
+  /** Whether the error is fatal. */
+  fatal: boolean
+  /** Whether the error was not handled by the application. */
+  unhandled: boolean
+  /** Additional data attached to the error JSON body under `data`. */
+  data?: DataT
   status?: number
   statusText?: string
   /** @deprecated Use `status` */
-  statusCode?: H3Error<DataT>['statusCode']
+  statusCode?: number
   /** @deprecated Use `statusText` */
-  statusMessage?: H3Error<DataT>['statusMessage']
+  statusMessage?: string
+  toJSON (): NuxtErrorJSON<DataT>
 }
 
 /** @since 3.0.0 */

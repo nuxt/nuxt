@@ -212,6 +212,30 @@ describe('loadNuxt', () => {
     await nuxt.close()
   })
 
+  it('allows modules to enable `experimental.asyncContext`', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        experimental: { asyncContext: false },
+        modules: [
+          (_options, nuxt) => {
+            nuxt.options.experimental.asyncContext = true
+          },
+        ],
+      },
+    })
+
+    const config = { environments: { ssr: {}, client: {} }, plugins: [] as Array<{ name?: string }> }
+    await nuxt.callHook('vite:extend', { config } as any)
+    const pluginNames = config.plugins.flat().map(p => p?.name)
+
+    expect(pluginNames).toContain('nuxt:vue-async-context')
+    expect((nuxt as any)._nitro?.options.experimental?.asyncContext).toBe(true)
+
+    await nuxt.close()
+  })
+
   it.each([
     {
       compatibilityVersion: 4,
@@ -251,7 +275,7 @@ describe('loadNuxt', () => {
     const aliasPath = compilerOptions.paths?.['#probe/base-url']?.[0]
     await nuxt.close()
 
-    expect(aliasPath).toBe(resolve(nuxt.options.buildDir, expectedAlias))
+    expect(aliasPath).toBe(resolve(nuxt.options.typesDir, expectedAlias))
     expect(Reflect.get(compilerOptions, 'baseUrl')).toBe(expectedBaseUrl)
   })
 
