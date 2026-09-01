@@ -8,7 +8,7 @@ import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext, tryUseNitro } from '@nuxt/kit'
 import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -320,7 +320,12 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
   if (nuxt.options.dev) {
-    nuxt.hook('nitro:build:before', nitro => applyNitroTypePaths(nitro.options))
+    nuxt.hook('prepare:types', async () => {
+      const nitro = tryUseNitro()
+      if (nitro) {
+        await applyNitroTypePaths(nitro.options)
+      }
+    })
   } else {
     nuxt.hook('nitro:config', applyNitroTypePaths)
   }
