@@ -555,6 +555,46 @@ describe('page metadata macro position', () => {
     expect(warn).not.toHaveBeenCalled()
   })
 
+  it('should not warn when a macro is called at the top level of an Options API `setup()`', () => {
+    getRouteMeta(`
+    <script>
+    export default {
+      setup () {
+        definePageMeta({ middleware: ['authenticated'] })
+      },
+    }
+    </script>
+    `, '/app/pages/options-api.vue')
+
+    getRouteMeta(`
+    <script lang="ts">
+    export default defineComponent({
+      async setup () {
+        definePageMeta({ middleware: ['authenticated'] })
+      },
+    })
+    </script>
+    `, '/app/pages/define-component.vue')
+
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('should warn when a macro is called conditionally inside an Options API `setup()`', () => {
+    getRouteMeta(`
+    <script>
+    export default {
+      setup () {
+        if (condition) {
+          definePageMeta({ middleware: ['authenticated'] })
+        }
+      },
+    }
+    </script>
+    `, '/app/pages/options-api-conditional.vue')
+
+    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: expect.stringMatching(/app\/pages\/options-api-conditional\.vue:6:11$/) })
+  })
+
   it('should warn when a macro is called conditionally', () => {
     getRouteMeta(`
     <script setup>
