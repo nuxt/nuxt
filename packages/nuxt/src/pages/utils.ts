@@ -327,7 +327,7 @@ function findOptionsApiSetupBody (program: ESTree.Program): Array<ESTree.Node> |
     if (declaration?.type !== 'ObjectExpression') { return }
 
     for (const property of declaration.properties) {
-      if (property.type !== 'Property' || property.computed) { continue }
+      if (property.type !== 'Property' || property.computed || property.kind !== 'init') { continue }
       const key = property.key.type === 'Identifier' ? property.key.name : property.key.type === 'Literal' ? property.key.value : undefined
       if (key !== 'setup') { continue }
       const value = property.value
