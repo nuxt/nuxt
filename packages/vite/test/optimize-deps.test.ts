@@ -24,6 +24,7 @@ const linkedDependencyRoot = join(rootDir, 'linked-dependency/')
 const reachableCycleLayerRoot = join(rootDir, 'node_modules/reachable-cycle-layer/')
 const cycleLayerARoot = join(rootDir, 'isolated/node_modules/cycle-layer-a/')
 const cycleLayerBRoot = join(rootDir, 'isolated/node_modules/cycle-layer-b/')
+const v3LayerRoot = join(rootDir, 'node_modules/v3-layer/')
 const parenLayerRoot = join(rootDir, 'node_modules/.pnpm/paren-layer@1.0.0(vue@3.5.0)/node_modules/paren-layer/')
 const parenLayerSrcDir = join(parenLayerRoot, 'app/')
 const moduleRuntime = join(rootDir, 'node_modules/installed-module/runtime/')
@@ -81,6 +82,14 @@ await writePackage(join(otherNestedLayerRoot, 'node_modules/nested-dep'), 'neste
 await writePackage(linkedDependencyRoot, 'linked-dep', 'export default 1\n')
 await symlink(linkedDependencyRoot, join(rootDir, 'node_modules/linked-dep'), 'dir')
 await symlink(linkedDependencyRoot, join(nestedLayerRoot, 'node_modules/linked-dep'), 'dir')
+await mkdir(join(v3LayerRoot, 'components'), { recursive: true })
+await mkdir(join(v3LayerRoot, 'server/api'), { recursive: true })
+await mkdir(join(v3LayerRoot, 'modules'), { recursive: true })
+await mkdir(join(v3LayerRoot, 'public'), { recursive: true })
+await writeFile(join(v3LayerRoot, 'components/V3.vue'), '<script setup>\nimport x from \'v3-client-dep\'\n</script>\n')
+await writeFile(join(v3LayerRoot, 'server/api/route.mjs'), 'import x from \'v3-server-dep\'\nexport default x\n')
+await writeFile(join(v3LayerRoot, 'modules/build.mjs'), 'import x from \'v3-module-dep\'\nexport default x\n')
+await writeFile(join(v3LayerRoot, 'public/widget.mjs'), 'import x from \'v3-public-dep\'\nexport default x\n')
 await mkdir(join(parenLayerSrcDir, 'plugins'), { recursive: true })
 await writeFile(join(parenLayerSrcDir, 'plugins/paren.mjs'), 'import x from \'paren-layer-dep\'\nexport default x\n')
 await writePackage(reachableCycleLayerRoot, 'reachable-cycle-layer', 'export default 1\n')
@@ -98,7 +107,7 @@ await writeFile(join(moduleRuntime, 'plugin.mjs'), 'import x from \'plugin-dep\'
 await writeFile(join(moduleRuntime, 'Component.vue'), '<script setup>\nimport x from \'component-dep\'\n</script>\n')
 await writeFile(join(moduleRuntime, 'middleware.mjs'), 'import x from \'middleware-dep\'\nexport default x\n')
 await writeFile(join(moduleRuntime, 'layout.vue'), '<script setup>\nimport x from \'layout-dep\'\n</script>\n')
-for (const dep of ['plugin-dep', 'component-dep', 'layer-component-dep', 'unused-layer-component-dep', 'server-component-dep', 'server-plugin-dep', 'server-page-dep', 'middleware-dep', 'layout-dep', 'paren-layer-dep']) {
+for (const dep of ['plugin-dep', 'component-dep', 'layer-component-dep', 'unused-layer-component-dep', 'server-component-dep', 'server-plugin-dep', 'server-page-dep', 'middleware-dep', 'layout-dep', 'paren-layer-dep', 'v3-client-dep', 'v3-server-dep', 'v3-module-dep', 'v3-public-dep']) {
   await writePackage(join(rootDir, 'node_modules', dep), dep, 'export default 1\n')
 }
 
@@ -127,6 +136,8 @@ const parentLayer = { app: join(parentLayerRoot, 'app/'), root: parentLayerRoot 
 const nestedLayer = { app: join(nestedLayerRoot, 'app/'), root: nestedLayerRoot }
 const otherParentLayer = { app: join(otherParentLayerRoot, 'app/'), root: otherParentLayerRoot }
 const otherNestedLayer = { app: join(otherNestedLayerRoot, 'app/'), root: otherNestedLayerRoot }
+// a v3-style layer has no `app/` directory: its srcDir is the package root
+const v3Layer = { app: v3LayerRoot, root: v3LayerRoot }
 const parenLayer = { app: parenLayerSrcDir, root: parenLayerRoot }
 const reachableCycleLayer = { app: join(reachableCycleLayerRoot, 'app/'), root: reachableCycleLayerRoot }
 const cycleLayerA = { app: join(cycleLayerARoot, 'app/'), root: cycleLayerARoot }
@@ -264,6 +275,27 @@ describe('installedScanEntries', () => {
       '!C:/project/node_modules/installed-layer/app/**/node_modules/**',
       '!C:/project/node_modules/installed-layer/app/**/*.server.{vue,js,jsx,mjs,ts,tsx,mts}',
     ])
+  })
+
+  it('should not scan the server, module and public directories of a v3-style layer', async () => {
+    const nuxt = createNuxt([v3Layer])
+
+    const entries = installedScanEntries(nuxt)
+
+    expect(entries).toEqual([
+      join(v3LayerRoot, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'),
+      '!' + join(v3LayerRoot, '**/node_modules/**'),
+      '!' + join(v3LayerRoot, 'server/**'),
+      '!' + join(v3LayerRoot, 'modules/**'),
+      '!' + join(v3LayerRoot, 'public/**'),
+      '!' + join(v3LayerRoot, '**/*.server.{vue,js,jsx,mjs,ts,tsx,mts}'),
+    ])
+
+    const deps = await optimizedDeps({ entries: [entry, ...entries] })
+    expect(deps).toContain('v3-client-dep')
+    expect(deps).not.toContain('v3-server-dep')
+    expect(deps).not.toContain('v3-module-dep')
+    expect(deps).not.toContain('v3-public-dep')
   })
 
   it('should scan installed layers whose path contains glob characters', async () => {

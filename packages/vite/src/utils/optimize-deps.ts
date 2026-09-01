@@ -43,6 +43,13 @@ export function installedScanEntries (nuxt: Nuxt): string[] {
     entries.add(`${dir}**/*.${SCAN_EXTENSIONS}`)
     // scanning the layer's own dependency tree is unnecessary and slow
     entries.add(`!${dir}**/node_modules/**`)
+    // a v3 layer has `srcDir === rootDir`, so its server and build-time code sits under the glob
+    for (const excluded of [dirs.server, dirs.modules, dirs.public]) {
+      const path = withTrailingSlash(normalize(excluded))
+      if (path !== app && path.startsWith(app) && existsSync(path)) {
+        entries.add(`!${escapePath(path)}**`)
+      }
+    }
     entries.add(`!${dir}**/*.server.${SCAN_EXTENSIONS}`)
     for (const file of serverFiles) {
       if (file.startsWith(app)) { entries.add('!' + escapePath(file)) }
