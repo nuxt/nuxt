@@ -638,6 +638,14 @@ async function initNuxt (nuxt: Nuxt) {
     meta: getBuiltinComponentMeta('ClientOnly'),
   })
 
+  // Add <ServerOnly>
+  addComponent({
+    name: 'ServerOnly',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/server-only.server'),
+    mode: 'server',
+  })
+
   // Add <DevOnly>
   addComponent({
     name: 'DevOnly',
