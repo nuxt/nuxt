@@ -594,7 +594,7 @@ overrides:
   vue: 3.5.42
 
 patchedDependencies:
-  '@vue/runtime-core@3.5.42': 26ad4a13b92ac5231da246dd61d1ddc0810ef5b122ad4fda209ce48765706d56
+  '@vue/runtime-core@3.5.42': b6b22d85dff556d3ae5b94a77eb043a3a3c0f9dd408f3aa2e035d49a3b2fe453
   nitro@3.0.260610-beta: 3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39
   nitropack@2.13.4: 14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8
 
@@ -13629,7 +13629,7 @@ snapshots:
     dependencies:
       '@vue/shared': 3.5.42
 
-  '@vue/runtime-core@3.5.42(patch_hash=26ad4a13b92ac5231da246dd61d1ddc0810ef5b122ad4fda209ce48765706d56)':
+  '@vue/runtime-core@3.5.42(patch_hash=b6b22d85dff556d3ae5b94a77eb043a3a3c0f9dd408f3aa2e035d49a3b2fe453)':
     dependencies:
       '@vue/reactivity': 3.5.42
       '@vue/shared': 3.5.42
@@ -13637,7 +13637,7 @@ snapshots:
   '@vue/runtime-dom@3.5.42':
     dependencies:
       '@vue/reactivity': 3.5.42
-      '@vue/runtime-core': 3.5.42(patch_hash=26ad4a13b92ac5231da246dd61d1ddc0810ef5b122ad4fda209ce48765706d56)
+      '@vue/runtime-core': 3.5.42(patch_hash=b6b22d85dff556d3ae5b94a77eb043a3a3c0f9dd408f3aa2e035d49a3b2fe453)
       '@vue/shared': 3.5.42
       csstype: 3.2.3
 
