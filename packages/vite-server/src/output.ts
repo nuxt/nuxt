@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, readFile, rm, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'pathe'
 import { getLayerDirectories, logger } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
@@ -13,25 +13,21 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 const SPA_FALLBACK_FILES = ['index.html', '200.html', '404.html']
 
 export async function writeStaticOutput (nuxt: Nuxt, publicDir: string): Promise<void> {
-  const clientDir = resolve(nuxt.options.buildDir, 'dist/client')
-  const document = resolve(clientDir, 'index.html')
+  const document = resolve(publicDir, 'index.html')
 
   if (!existsSync(document)) {
     throw new Error(`[nuxt:vite-server] Expected \`${document}\` to exist. Did the client build run?`)
   }
 
   const html = await readFile(document, 'utf-8')
-  await rm(resolve(clientDir, 'manifest.json'), { force: true })
+  await rm(resolve(publicDir, 'manifest.json'), { force: true })
 
-  await mkdir(publicDir, { recursive: true })
-
+  // copied after the build, which writes into this directory and empties it first
   for (const dirs of getLayerDirectories(nuxt)) {
     if (existsSync(dirs.public)) {
       await cp(dirs.public, publicDir, { recursive: true })
     }
   }
-
-  await cp(clientDir, publicDir, { recursive: true })
 
   for (const file of SPA_FALLBACK_FILES) {
     await writeFile(join(publicDir, file), html, 'utf-8')

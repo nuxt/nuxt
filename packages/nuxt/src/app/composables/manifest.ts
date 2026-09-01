@@ -1,5 +1,4 @@
-import type { RequestEvent } from '@nuxt/schema'
-import type { NitroRouteRules } from 'nitro/types'
+import type { AppRouteRules, RequestEvent } from '@nuxt/schema'
 import { useRuntimeConfig } from '../nuxt'
 import { manifestDiagnostics } from '../diagnostics/manifest'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -7,8 +6,8 @@ import { buildAssetsURL } from '#internal/nuxt/paths'
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
 // hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
-function routeRulesMatcher (path: string): NitroRouteRules {
-  return (_routeRulesMatcher as (path: string) => NitroRouteRules)(path)
+function routeRulesMatcher (path: string): AppRouteRules {
+  return (_routeRulesMatcher as (path: string) => AppRouteRules)(path)
 }
 
 export interface NuxtAppManifestMeta {
@@ -71,7 +70,7 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 }
 
 /** @since 3.7.4 */
-export function getRouteRules (event: RequestEvent): NitroRouteRules
+export function getRouteRules (event: RequestEvent): AppRouteRules
 export function getRouteRules (options: { path: string }): Record<string, any>
 /** @deprecated use `getRouteRules({ path })` instead */
 export function getRouteRules (url: string): Record<string, any>

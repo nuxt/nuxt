@@ -338,13 +338,13 @@ describe('component islands', () => {
             "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
             "props": [
               {
-                "t": 0,
-              },
-              {
                 "t": 1,
               },
               {
                 "t": 2,
+              },
+              {
+                "t": 3,
               },
             ],
           },

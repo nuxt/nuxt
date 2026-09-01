@@ -150,6 +150,16 @@ export interface NuxtBuildOutputs {
  * @internal
  */
 export interface NuxtServerBuildOutput {
+  /**
+   * Absolute path to the root of the project the build belongs to, without a trailing
+   * slash: where a deploy target's own configuration file lives and what the paths in it
+   * are written relative to.
+   *
+   * This is the project root rather than a bundler's notion of a root, which need not be
+   * the same directory: Nuxt points Vite's `root` at `srcDir`, so a target resolving its
+   * configuration from there looks in the wrong place.
+   */
+  root: () => string
   /** Absolute path to the build output directory, without a trailing slash. */
   dir: () => string
   /**
@@ -223,6 +233,13 @@ export interface NuxtServerBuild {
   target?: () => string | undefined
   /** What to call the `target` axis when printing it, such as `preset`. */
   targetLabel?: string
+  /**
+   * Whether the server build is a pass of its own, run by the server builder, rather than
+   * an environment of the app builder's build. A builder that builds separately also hosts
+   * the dev server, and reads the client manifest from disk rather than from the app
+   * builder's own build.
+   */
+  buildsSeparately: boolean
   output: NuxtServerBuildOutput
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime

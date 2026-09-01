@@ -1,5 +1,5 @@
 /// <reference path="./internal.d.ts" />
-import type { InternalApi, Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp, TracingOptions } from 'nitro/types'
+import type { InternalApi, Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRouteRules, NitroRuntimeConfig, NitroRuntimeConfigApp, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
@@ -66,6 +66,7 @@ declare module '@nuxt/schema' {
 
   interface ServerTypes {
     event: H3Event
+    routeRules: NitroRouteRules
   }
 
   // Nitro writes the routes it has scanned into its own `InternalApi`; extending it here hands
@@ -197,6 +198,7 @@ declare module 'nuxt/schema' {
 
   interface ServerTypes {
     event: H3Event
+    routeRules: NitroRouteRules
   }
 
   // Nitro writes the routes it has scanned into its own `InternalApi`; extending it here hands

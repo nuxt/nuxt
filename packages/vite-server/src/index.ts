@@ -1,13 +1,13 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
 import { addTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
-import { setServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
 import { distDir } from './dirs.ts'
-import { setupDevServer } from './dev.ts'
+import { DevServerListenerPlugin, setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { writeStaticOutput } from './output.ts'
 
@@ -51,6 +51,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     output: { dir: () => outputDir, publicDir: () => publicDir },
     // TODO: report what actually claimed the server, once a target can declare itself
     capabilities: { server: nuxt.options.ssr !== false, dev: true },
+    buildsSeparately: false,
     // neither `nitro` nor `nitro/runtime-config` resolves in a build without nitro
     runtime: {
       fetch: resolve(distDir, 'runtime/fetch'),
@@ -58,10 +59,6 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     },
     preview: { staticDir: () => publicDir },
   }, nuxt)
-
-  // The env-API path is the only one that does not route the client build, the dev
-  // middleware and the client manifest through nitro's own pipeline.
-  nuxt.options.experimental.nitroViteEnvironment = true
 
   // There is no server to read runtime config from the environment, so the values known
   // at build time are serialised instead. Only `app` and `public` are included: this
@@ -82,15 +79,40 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   // Registered at the root rather than through `addVitePlugin`, which scopes plugins to
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
-  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt))
+  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), DevServerListenerPlugin(nuxt))
 
   if (!nuxt.options.dev) {
     // the document is a real HTML build input, so vite links the entry chunk, injects its
     // stylesheets and module preloads, and runs the `transformIndexHtml` hook of every
     // configured plugin over it
-    nuxt.options.vite.$client = defu(nuxt.options.vite.$client, {
-      build: { rolldownOptions: { input: { index: documentPath(nuxt) } } },
+    //
+    // the client build writes straight into the public directory of the output, so that a
+    // target reading the client environment's `outDir` finds the deployable assets there
+    const client = defu(nuxt.options.vite.$client, {
+      build: {
+        outDir: publicDir,
+        emptyOutDir: true,
+        rolldownOptions: { input: { index: documentPath(nuxt) } },
+      },
     })
+
+    // the client output directory belongs to the build rather than to the project: it is
+    // the directory `output.publicDir()` reports and the one the output is finished in
+    // place from, so a configured value is reported and replaced rather than merged
+    if (resolve(nuxt.options.rootDir, client.build.outDir) !== publicDir) {
+      bundlerDiagnostics.NUXT_B7024({ outDir: client.build.outDir, publicDir })
+      client.build.outDir = publicDir
+    }
+
+    // an input that is not a set of named inputs replaces the document rather than adding
+    // to it, and takes the app entry with it, so it is reported and replaced too
+    const input = client.build.rolldownOptions.input
+    if (typeof input !== 'object' || Array.isArray(input)) {
+      bundlerDiagnostics.NUXT_B7025({ input: JSON.stringify(input) })
+      client.build.rolldownOptions.input = { index: documentPath(nuxt) }
+    }
+
+    nuxt.options.vite.$client = client
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }
 

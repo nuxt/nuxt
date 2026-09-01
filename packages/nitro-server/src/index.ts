@@ -839,6 +839,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       publicDir: () => withoutTrailingSlash(nitro.options.output.publicDir),
     },
     capabilities: { server: true, dev: true },
+    buildsSeparately: !nuxt.options.experimental.nitroViteEnvironment,
     preview: { command: () => nitro.options.commands.preview },
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)

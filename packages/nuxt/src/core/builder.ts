@@ -3,7 +3,7 @@ import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
 import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt, writeTypes } from '@nuxt/kit'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -93,14 +93,14 @@ export async function build (nuxt: Nuxt): Promise<void> {
     const { restoreCache, collectCache, clientCachePlugin } = await getVueHash(nuxt)
     const hit = await restoreCache()
 
-    if (hit && !nuxt.options.experimental.nitroViteEnvironment) {
+    if (hit && useServerBuild(nuxt).buildsSeparately) {
       // `@nuxt/nitro-server` builds nitro from `build:done` in the legacy path
       await nuxt.callHook('build:done')
       await nuxt.callHook('close', nuxt)
       return
     }
 
-    if (nuxt.options.experimental.nitroViteEnvironment) {
+    if (!useServerBuild(nuxt).buildsSeparately) {
       // nitro only builds as part of the vite build, so a cache hit still has
       // to run it. The plugin is registered at the root rather than with
       // `addVitePlugin`, which in this path scopes plugins to the client and
