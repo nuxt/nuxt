@@ -58,6 +58,9 @@ export function installedScanEntries (nuxt: Nuxt): string[] {
     }
   }
 
+  // the build directory is often inside `node_modules`, and its templates are generated
+  // app code Vite already reaches through the entry
+  const buildDir = withTrailingSlash(nuxt.options.buildDir)
   for (const app of apps) {
     const files = [
       ...app.components.filter(c => c.mode !== 'server').map(c => c.filePath),
@@ -66,7 +69,7 @@ export function installedScanEntries (nuxt: Nuxt): string[] {
       ...Object.values(app.layouts || {}).map(l => l.file),
     ].map(normalize)
     for (const file of files) {
-      if (file.includes(NODE_MODULES) && !SERVER_FILE_RE.test(file)) {
+      if (file.includes(NODE_MODULES) && !file.startsWith(buildDir) && !SERVER_FILE_RE.test(file)) {
         entries.add(escapePath(file))
       }
     }

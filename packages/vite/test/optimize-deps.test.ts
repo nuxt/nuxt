@@ -24,6 +24,7 @@ const linkedDependencyRoot = join(rootDir, 'linked-dependency/')
 const v3LayerRoot = join(rootDir, 'node_modules/v3-layer/')
 const parenLayerRoot = join(rootDir, 'Nuxt Projects (old)/node_modules/paren-layer/')
 const parenLayerSrcDir = join(parenLayerRoot, 'app/')
+const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt/')
 const moduleRuntime = join(rootDir, 'node_modules/installed-module/runtime/')
 const entry = join(srcDir, 'entry.mjs')
 const modeServerComponent = join(layerSrcDir, 'components/ModeServer.vue')
@@ -103,6 +104,7 @@ function createNuxt (layerDirs: Array<{ app: string, root: string }> = [], apps:
     options: {
       rootDir,
       srcDir,
+      buildDir,
       alias: {},
       vite: {},
       _layers: [
@@ -175,6 +177,19 @@ describe('installedScanEntries', () => {
     await expect(optimizedDeps({ entries: [entry, ...entries] })).resolves.toEqual(
       expect.arrayContaining(['plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep']),
     )
+  })
+
+  it('should not scan generated files from a build directory inside node_modules', () => {
+    const nuxt = createNuxt([], {
+      default: {
+        components: [],
+        plugins: [{ src: join(buildDir, 'components.plugin.mjs') }],
+        middleware: [],
+        layouts: {},
+      },
+    })
+
+    expect(installedScanEntries(nuxt)).toEqual([])
   })
 
   it('should not scan client-inaccessible app files', () => {
