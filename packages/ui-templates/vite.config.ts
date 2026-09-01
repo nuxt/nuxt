@@ -16,8 +16,8 @@ const r = (...path: string[]) => resolve(rootDir, ...path)
 export default defineConfig({
   build: {
     outDir: process.env.OUTPUT_DIR || 'dist',
-    // the templates are served as standalone strings, so the script has to be
-    // self-contained: a preload polyfill chunk would 404 at runtime
+    // the templates are inlined as classic scripts and every `<link>` is
+    // stripped when rendering, so there is nothing for the polyfill to preload
     modulePreload: { polyfill: false },
     rolldownOptions: {
       input: {
