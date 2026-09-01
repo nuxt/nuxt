@@ -91,8 +91,9 @@ await mkdir(moduleRuntime, { recursive: true })
 await writeFile(join(moduleRuntime, 'plugin.mjs'), 'import x from \'plugin-dep\'\nexport default x\n')
 await writeFile(join(moduleRuntime, 'Component.vue'), '<script setup>\nimport x from \'component-dep\'\n</script>\n')
 await writeFile(join(moduleRuntime, 'middleware.mjs'), 'import x from \'middleware-dep\'\nexport default x\n')
+await writeFile(join(moduleRuntime, 'extensionless.mjs'), 'import x from \'extensionless-dep\'\nexport default x\n')
 await writeFile(join(moduleRuntime, 'layout.vue'), '<script setup>\nimport x from \'layout-dep\'\n</script>\n')
-for (const dep of ['plugin-dep', 'component-dep', 'server-component-dep', 'server-plugin-dep', 'server-page-dep', 'middleware-dep', 'layout-dep', 'paren-layer-dep', 'v3-client-dep', 'v3-server-dep', 'v3-module-dep', 'v3-public-dep']) {
+for (const dep of ['plugin-dep', 'component-dep', 'server-component-dep', 'server-plugin-dep', 'server-page-dep', 'middleware-dep', 'layout-dep', 'extensionless-dep', 'paren-layer-dep', 'v3-client-dep', 'v3-server-dep', 'v3-module-dep', 'v3-public-dep']) {
   await writePackage(join(rootDir, 'node_modules', dep), dep, 'export default 1\n')
 }
 
@@ -177,6 +178,22 @@ describe('installedScanEntries', () => {
     await expect(optimizedDeps({ entries: [entry, ...entries] })).resolves.toEqual(
       expect.arrayContaining(['plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep']),
     )
+  })
+
+  it('should scan app files that are registered without an extension', async () => {
+    const nuxt = createNuxt([], {
+      default: {
+        components: [],
+        plugins: [],
+        middleware: [{ path: join(moduleRuntime, 'extensionless') }],
+        layouts: {},
+      },
+    })
+
+    const entries = installedScanEntries(nuxt)
+
+    expect(entries).toEqual([join(moduleRuntime, 'extensionless.{vue,js,jsx,mjs,ts,tsx,mts}')])
+    await expect(optimizedDeps({ entries: [entry, ...entries] })).resolves.toContain('extensionless-dep')
   })
 
   it('should not scan generated files from a build directory inside node_modules', () => {

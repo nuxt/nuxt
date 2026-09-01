@@ -10,6 +10,7 @@ import type { Nuxt } from '@nuxt/schema'
 const NODE_MODULES = '/node_modules/'
 const SCAN_EXTENSIONS = '{vue,js,jsx,mjs,ts,tsx,mts}'
 const SERVER_FILE_RE = /\.server\.(?:vue|js|jsx|mjs|ts|tsx|mts)$/
+const SCAN_FILE_RE = /\.(?:vue|js|jsx|mjs|ts|tsx|mts)$/
 
 /**
  * Scanner entries for app code that lives in `node_modules`, such as an installed layer
@@ -69,9 +70,9 @@ export function installedScanEntries (nuxt: Nuxt): string[] {
       ...Object.values(app.layouts || {}).map(l => l.file),
     ].map(normalize)
     for (const file of files) {
-      if (file.includes(NODE_MODULES) && !file.startsWith(buildDir) && !SERVER_FILE_RE.test(file)) {
-        entries.add(escapePath(file))
-      }
+      if (!file.includes(NODE_MODULES) || file.startsWith(buildDir) || SERVER_FILE_RE.test(file)) { continue }
+      // Nuxt registers some app files without an extension, and Vite drops an entry that does not exist
+      entries.add(escapePath(file) + (SCAN_FILE_RE.test(file) ? '' : `.${SCAN_EXTENSIONS}`))
     }
   }
 
