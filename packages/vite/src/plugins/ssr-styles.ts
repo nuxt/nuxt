@@ -13,6 +13,7 @@ import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { withInlineQuery } from '../utils/inline-styles.ts'
 import { resolveClientEntry } from '../utils/config.ts'
 import escapeStringRegexp from 'escape-string-regexp'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 const QUERY_RE = /\?.+$/
@@ -49,7 +50,7 @@ function wrapStringGenerateScopedName (
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
 
-  const envApi = nuxt.options.experimental.nitroViteEnvironment
+  const envApi = !useServerBuild(nuxt).buildsSeparately
 
   const chunksWithInlinedCSS = new Set<string>()
   // Client module graph (ids and importers with any query stripped), used to

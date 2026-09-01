@@ -116,5 +116,20 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { canFold: boolean }) => `Disambiguate the keys${p.canFold ? ' or set `router.options.sensitive: true`' : ''}.`,
       docs: false,
     },
+    NUXT_B7023: {
+      why: (p: { dir: string, baseURL: string }) => `The \`nitro.publicAssets\` directory \`${p.dir}\` does not exist, so requests to \`${p.baseURL}\` will 404.`,
+      fix: 'Relative directories are resolved against your project root. Correct the `dir` or remove the entry.',
+      docs: false,
+    },
+    NUXT_B7024: {
+      why: (p: { outDir: string, publicDir: string }) => `The client build output directory is set to \`${p.outDir}\`, but the server builder writes the client build to \`${p.publicDir}\`, so the override is ignored.`,
+      fix: 'Remove the `vite.$client.build.outDir` override from your `nuxt.config`, and set `nitro.output.publicDir` to move the whole public output instead.',
+      docs: false,
+    },
+    NUXT_B7025: {
+      why: (p: { input: string }) => `The client build input is set to \`${p.input}\`, which cannot carry the document the server builder emits, so the override is ignored.`,
+      fix: 'Pass an object to `vite.$client.build.rolldownOptions.input` if you need additional inputs, or add an `index.html` at the root of your app directory to take over the document itself.',
+      docs: false,
+    },
   },
 })

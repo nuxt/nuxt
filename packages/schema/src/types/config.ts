@@ -202,6 +202,11 @@ export interface AppConfig {
   [key: string]: unknown
 }
 
+/** App config available in shared and server contexts, excluding user `app.config` files. */
+export interface SharedAppConfig {
+  [key: string]: unknown
+}
+
 export interface ViewTransitionOptions {
   enabled: boolean | 'always'
   types?: string[]

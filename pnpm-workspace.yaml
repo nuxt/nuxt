@@ -112,22 +112,22 @@ catalogs:
   # webpack/rspack pipeline
   webpack:
     '@nuxt/friendly-errors-webpack-plugin': ^2.6.0
-    '@rsbuild/core': ~2.2.0
-    css-loader: ^7.1.4
+    '@rsbuild/core': ~2.2.1
+    css-loader: ^7.1.5
     css-minimizer-webpack-plugin: ^8.0.0
     esbuild-loader: ^4.5.0
     file-loader: ^6.2.0
     fork-ts-checker-webpack-plugin: ^9.1.0
     hash-sum: ^2.0.0
-    memfs: ^4.68.1
+    memfs: ^4.68.2
     mini-css-extract-plugin: ^2.10.2
     pug-plain-loader: ^1.1.0
     raw-loader: ^4.0.2
     time-fix-plugin: ^2.0.7
     ts-checker-rspack-plugin: ^1.6.1
     url-loader: ^4.1.1
-    webpack: ^5.109.2
-    webpack-bundle-analyzer: ^5.3.1
+    webpack: ^5.110.2
+    webpack-bundle-analyzer: ^5.3.2
     webpack-dev-middleware: ^8.1.1
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
@@ -136,18 +136,18 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260828-075646-f02938d
+    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260831-132907-8bcf1bc
     '@nuxt/devtools': ^4.0.0-alpha.15
-    '@nuxt/telemetry': ^2.8.0
+    '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.42
     autoprefixer: ^10.5.4
     c12: 4.0.0-beta.5
     chokidar: ^5.0.0
-    clickable-path: ^0.0.1
+    clickable-path: ^0.1.0
     compatx: ^0.2.0
     confbox: ^0.2.4
     consola: ^3.4.2
-    cssnano: ^8.0.10
+    cssnano: ^9.0.1
     defu: ^6.1.7
     destr: ^2.0.5
     dotenv: ^17.4.2
@@ -157,7 +157,7 @@ catalogs:
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
     giget: ^3.3.1
-    ignore: ^7.0.6
+    ignore: ^7.0.7
     impound: ^1.2.0
     jiti: ^2.7.0
     js-tokens: ^10.0.0
@@ -246,11 +246,11 @@ catalogs:
     fast-check: 4.9.0
     h3: 2.0.1-rc.22 # intentionally pinned to match nitro's dependency
     h3-next: 'npm:h3@2.0.1-rc.22' # intentionally pinned to match nitro's dependency
-    happy-dom: 20.11.12
-    html-validate: 11.10.0
+    happy-dom: 20.12.0
+    html-validate: 11.11.0
     htmlnano: 3.4.0
     installed-check: 11.0.0
-    knip: 6.32.3
+    knip: 6.33.0
     magic-regexp: 0.11.0
     markdownlint-cli: 0.49.1
     nitropack: 2.13.4
@@ -259,7 +259,7 @@ catalogs:
     pkg-pr-new: 0.0.88
     playwright-core: 1.62.1
     prettier: 3.9.6
-    rollup: 4.63.0
+    rollup: 4.63.1
     rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
     svgo: 4.1.0
