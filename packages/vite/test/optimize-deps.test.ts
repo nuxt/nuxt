@@ -5,7 +5,7 @@ import { join } from 'pathe'
 import { type Plugin, createServer } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 
-import { createOptimizeDepsIncludeResolver, installedScanEntries } from '../src/utils/optimize-deps.ts'
+import { installedScanEntries, resolveOptimizeDepsInclude } from '../src/utils/optimize-deps.ts'
 import { OptimizeDepsPlugin } from '../src/plugins/optimize-deps.ts'
 import { userOptimizeDepsInclude } from '../src/plugins/optimize-deps-hint.ts'
 
@@ -143,8 +143,8 @@ const reachableCycleLayer = { app: join(reachableCycleLayerRoot, 'app/'), root: 
 const cycleLayerA = { app: join(cycleLayerARoot, 'app/'), root: cycleLayerARoot }
 const cycleLayerB = { app: join(cycleLayerBRoot, 'app/'), root: cycleLayerBRoot }
 
-function resolveOptimizeDepsInclude (nuxt: Nuxt, include: string[], options: { preserveSymlinks?: boolean } = {}) {
-  return createOptimizeDepsIncludeResolver(nuxt, options)(include)
+function resolveInclude (nuxt: Nuxt, include: string[], options: { preserveSymlinks?: boolean } = {}) {
+  return resolveOptimizeDepsInclude(nuxt, include, options).flat()
 }
 
 async function optimizedDeps (options: { entries?: string[], include?: string[], plugins?: Plugin[], preserveSymlinks?: boolean }) {
@@ -378,23 +378,23 @@ describe('OptimizeDepsPlugin', () => {
   })
 })
 
-describe('createOptimizeDepsIncludeResolver', () => {
+describe('resolveOptimizeDepsInclude', () => {
   it('should rewrite entries that only resolve from an installed layer', () => {
     const nuxt = createNuxt([installedLayer])
 
-    expect(resolveOptimizeDepsInclude(nuxt, ['layer-dep'])).toEqual(['installed-layer > layer-dep'])
+    expect(resolveInclude(nuxt, ['layer-dep'])).toEqual(['installed-layer > layer-dep'])
   })
 
   it('should rewrite packages without a manifest that resolve from an installed layer', () => {
     const nuxt = createNuxt([installedLayer])
 
-    expect(resolveOptimizeDepsInclude(nuxt, ['manifestless-dep'])).toEqual(['installed-layer > manifestless-dep'])
+    expect(resolveInclude(nuxt, ['manifestless-dep'])).toEqual(['installed-layer > manifestless-dep'])
   })
 
   it('should preserve the full package chain for nested installed layers', async () => {
     const nuxt = createNuxt([parentLayer, nestedLayer])
 
-    const include = resolveOptimizeDepsInclude(nuxt, ['nested-dep'])
+    const include = resolveInclude(nuxt, ['nested-dep'])
 
     expect(include).toEqual(['parent-layer > nested-layer > nested-dep'])
     await expect(optimizedDeps({ include })).resolves.toContain('parent-layer > nested-layer > nested-dep')
@@ -403,19 +403,19 @@ describe('createOptimizeDepsIncludeResolver', () => {
   it('should resolve a layer rooted within an installed package', () => {
     const nuxt = createNuxt([subpathLayer])
 
-    expect(resolveOptimizeDepsInclude(nuxt, ['subpath-dep'])).toEqual(['subpath-layer > subpath-dep'])
+    expect(resolveInclude(nuxt, ['subpath-dep'])).toEqual(['subpath-layer > subpath-dep'])
   })
 
   it('should use the installed alias as the parent package name', () => {
     const nuxt = createNuxt([aliasedLayer])
 
-    expect(resolveOptimizeDepsInclude(nuxt, ['aliased-dep'])).toEqual(['aliased-layer > aliased-dep'])
+    expect(resolveInclude(nuxt, ['aliased-dep'])).toEqual(['aliased-layer > aliased-dep'])
   })
 
   it('should preserve separate dependency copies from different parent layers', async () => {
     const nuxt = createNuxt([parentLayer, nestedLayer, otherParentLayer, otherNestedLayer])
 
-    const include = resolveOptimizeDepsInclude(nuxt, ['nested-dep'])
+    const include = resolveInclude(nuxt, ['nested-dep'])
 
     expect(include).toEqual([
       'parent-layer > nested-layer > nested-dep',
@@ -427,7 +427,7 @@ describe('createOptimizeDepsIncludeResolver', () => {
   it('should preserve separate dependency copies from the project and a nested layer', async () => {
     const nuxt = createNuxt([parentLayer, nestedLayer])
 
-    const include = resolveOptimizeDepsInclude(nuxt, ['root-dep'])
+    const include = resolveInclude(nuxt, ['root-dep'])
 
     expect(include).toEqual([
       'root-dep',
@@ -439,9 +439,9 @@ describe('createOptimizeDepsIncludeResolver', () => {
   it('should follow Vite symlink identity when deduplicating dependency copies', async () => {
     const nuxt = createNuxt([parentLayer, nestedLayer])
 
-    expect(resolveOptimizeDepsInclude(nuxt, ['linked-dep'])).toEqual(['linked-dep'])
+    expect(resolveInclude(nuxt, ['linked-dep'])).toEqual(['linked-dep'])
 
-    const include = resolveOptimizeDepsInclude(nuxt, ['linked-dep'], { preserveSymlinks: true })
+    const include = resolveInclude(nuxt, ['linked-dep'], { preserveSymlinks: true })
     expect(include).toEqual([
       'linked-dep',
       'parent-layer > nested-layer > linked-dep',
@@ -452,7 +452,7 @@ describe('createOptimizeDepsIncludeResolver', () => {
   it('should resolve reachable layer cycles independent of layer order', () => {
     const nuxt = createNuxt([cycleLayerB, cycleLayerA, reachableCycleLayer])
 
-    expect(resolveOptimizeDepsInclude(nuxt, ['cycle-dep-b', 'cycle-dep-a'])).toEqual([
+    expect(resolveInclude(nuxt, ['cycle-dep-b', 'cycle-dep-a'])).toEqual([
       'reachable-cycle-layer > cycle-layer-b > cycle-dep-b',
       'reachable-cycle-layer > cycle-layer-b > cycle-layer-a > cycle-dep-a',
     ])
@@ -461,19 +461,19 @@ describe('createOptimizeDepsIncludeResolver', () => {
   it('should leave entries that resolve from the project root untouched', () => {
     const nuxt = createNuxt([installedLayer])
 
-    expect(resolveOptimizeDepsInclude(nuxt, ['root-dep'])).toEqual(['root-dep'])
+    expect(resolveInclude(nuxt, ['root-dep'])).toEqual(['root-dep'])
   })
 
   it('should leave unresolvable, nested and path entries untouched', () => {
     const nuxt = createNuxt([installedLayer])
     const include = ['does-not-exist', 'some-pkg > layer-dep', './local-file.js', join(rootDir, 'absolute.js')]
 
-    expect(resolveOptimizeDepsInclude(nuxt, include)).toEqual(include)
+    expect(resolveInclude(nuxt, include)).toEqual(include)
   })
 
   it('should not rewrite anything when there are no installed layers', () => {
     const nuxt = createNuxt([{ app: join(rootDir, 'layers/local/app/'), root: join(rootDir, 'layers/local/') }])
 
-    expect(resolveOptimizeDepsInclude(nuxt, ['layer-dep'])).toEqual(['layer-dep'])
+    expect(resolveInclude(nuxt, ['layer-dep'])).toEqual(['layer-dep'])
   })
 })
