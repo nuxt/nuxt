@@ -61,7 +61,7 @@ export default defineComponent({
       const { fullPath, path, meta } = router.resolve(nuxtApp.payload.path)
       // only freeze if navigation has moved past the payload route.
       if (fullPath !== router.currentRoute.value.fullPath) {
-        const initialLayout = nuxtApp.payload.state._layout as string | false | undefined
+        const initialLayout = nuxtApp.payload.state._layout as typeof meta.layout
         // resolved meta does not auto-unwrap ref layouts.
         frozenHydrationLayout = shallowRef(resolveLayoutName({ path, meta: { ...meta, layout: initialLayout ?? unref(meta.layout) } }, props.name))
         nextTick(() => {
