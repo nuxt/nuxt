@@ -18,8 +18,8 @@ const SERVER_FILE_RE = /\.server\.(?:vue|js|jsx|mjs|ts|tsx|mts)$/
  * Vite does not pre-bundle a bare import whose importer is in `node_modules`, so without
  * these its dependencies are served raw, breaking if they are CJS-only.
  *
- * Vite matches every entry with picomatch, so paths are escaped: a package manager can
- * install into a directory whose name contains glob characters, as pnpm does.
+ * Vite matches every entry with picomatch, so paths are escaped. A project directory may
+ * contain parentheses, which picomatch reads as an extglob group and then matches nothing.
  */
 export function installedScanEntries (nuxt: Nuxt): string[] {
   const entries = new Set<string>()

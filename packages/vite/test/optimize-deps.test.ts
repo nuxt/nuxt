@@ -22,7 +22,7 @@ const otherParentLayerRoot = join(rootDir, 'node_modules/other-parent-layer/')
 const otherNestedLayerRoot = join(otherParentLayerRoot, 'node_modules/nested-layer/')
 const linkedDependencyRoot = join(rootDir, 'linked-dependency/')
 const v3LayerRoot = join(rootDir, 'node_modules/v3-layer/')
-const parenLayerRoot = join(rootDir, 'node_modules/.pnpm/paren-layer@1.0.0(vue@3.5.0)/node_modules/paren-layer/')
+const parenLayerRoot = join(rootDir, 'Nuxt Projects (old)/node_modules/paren-layer/')
 const parenLayerSrcDir = join(parenLayerRoot, 'app/')
 const moduleRuntime = join(rootDir, 'node_modules/installed-module/runtime/')
 const entry = join(srcDir, 'entry.mjs')
@@ -261,7 +261,7 @@ describe('installedScanEntries', () => {
     expect(deps).not.toContain('v3-public-dep')
   })
 
-  it('should scan installed layers whose path contains glob characters', async () => {
+  it('should scan installed layers whose path contains parentheses', async () => {
     const entries = installedScanEntries(createNuxt([parenLayer]))
 
     await expect(optimizedDeps({ entries: [entry, ...entries] })).resolves.toContain('paren-layer-dep')
