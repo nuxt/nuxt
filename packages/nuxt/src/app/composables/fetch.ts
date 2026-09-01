@@ -500,6 +500,13 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         ...(typeof options === 'function' ? factoryOptions : {}),
       }
 
+      if ('params' in fetchOptions) {
+        delete (fetchOptions as { params?: unknown }).params
+        if (import.meta.dev) {
+          dataDiagnostics.NUXT_E3010()
+        }
+      }
+
       const _request = computed(() => toValue(request))
 
       const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))

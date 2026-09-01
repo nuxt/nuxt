@@ -60,6 +60,21 @@ describe('useFetch', () => {
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
 
+  it('drops `params` rather than sending a value the key does not cover', async () => {
+    const requested: string[] = []
+    registerEndpoint('/api/params-dropped', defineEventHandler((event) => {
+      requested.push(event.url.search)
+      return { ok: true }
+    }))
+
+    /* @ts-expect-error `params` is no longer an option */
+    await useFetch('/api/params-dropped', { key: 'params-a', params: { id: '1' } })
+    /* @ts-expect-error `params` is no longer an option */
+    await useFetch('/api/params-dropped', { key: 'params-b', params: { id: '2' } })
+
+    expect(requested).toStrictEqual(['', ''])
+  })
+
   it('does not write resolved data to the payload with `serialize: false`', async () => {
     const nuxtApp = useNuxtApp()
     const { data } = await useFetch('/api/test', { key: 'serialize-false', serialize: false })
