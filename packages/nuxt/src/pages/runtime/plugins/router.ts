@@ -1,6 +1,6 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
-import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedGeneric, RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
@@ -194,21 +194,25 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       : router.currentRoute.value
 
     // Track non-aborted navigations during boot so the initial router.replace does not cancel one in flight.
-    let bootNavigationsInFlight = 0
+    let pendingBootNavigation: RouteLocationNormalizedGeneric | null = null
     let completedBootNavigation = false
     let stopBootNavigationTracker: (() => void) | undefined
     if (import.meta.client) {
-      const removeGuard = router.beforeEach(() => {
-        bootNavigationsInFlight++
+      const removeGuard = router.beforeEach((to) => {
+        pendingBootNavigation = to
       })
-      const removeAfterEach = router.afterEach((_to, _from, failure) => {
-        bootNavigationsInFlight--
+      const removeAfterEach = router.afterEach((to, _from, failure) => {
+        if (pendingBootNavigation === to) {
+          pendingBootNavigation = null
+        }
         if (!failure) {
           completedBootNavigation = true
         }
       })
-      const removeErrorHandler = router.onError(() => {
-        bootNavigationsInFlight--
+      const removeErrorHandler = router.onError((_error, to) => {
+        if (pendingBootNavigation === to) {
+          pendingBootNavigation = null
+        }
       })
       stopBootNavigationTracker = () => {
         removeGuard()
@@ -385,7 +389,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
 
         // respect a plugin or the user navigating away during boot
-        const navigatedDuringBoot = import.meta.client && (completedBootNavigation || bootNavigationsInFlight > 0)
+        const navigatedDuringBoot = import.meta.client && (completedBootNavigation || pendingBootNavigation !== null)
 
         if (navigatedDuringBoot) {
           // we don't need to push the previous route
