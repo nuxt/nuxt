@@ -198,6 +198,21 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   const topLevelTestPaths = ['test', 'tests']
     .filter(dir => existsSync(resolve(dirs.root, dir)))
     .map(dir => join(relativeRootDir, `${dir}/**/*`))
+  // Keep Nuxt-specific tests in the nuxt context only. Exclude
+  // test/nuxt and tests/nuxt from the node globs before they are
+  // spread into tsconfig.node.json; all other test files remain included.
+  const nuxtTestExcludeForNode = [
+    join(relativeRootDir, 'test/nuxt/**/*'),
+    join(relativeRootDir, 'tests/nuxt/**/*'),
+  ]
+  // Explicitly filter before spreading (broad globs like test/**/* would
+  // otherwise also match test/nuxt/**/*). The filtered list preserves
+  // inclusion of all other test files; nuxt context stays responsible
+  // for the excluded tests and nodeExclude handles the actual tsconfig
+  // exclusion (see _generateTypes).
+  const filteredTopLevelTestPaths = topLevelTestPaths.filter(p => !nuxtTestExcludeForNode.includes(p))
+  // filteredTopLevelTestPaths is spread below (excludes test/nuxt and tests/nuxt)
+  // but broad globs like test/**/* still require nodeExclude handling in _generateTypes
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
@@ -213,7 +228,7 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `layers/*/modules/*/runtime/server/**/*`),
     ],
     node: [
-      ...topLevelTestPaths,
+      ...filteredTopLevelTestPaths,
       join(relativeModulesDir, `*.*`),
       join(relativeRootDir, `nuxt.config.*`),
       join(relativeRootDir, `.config/nuxt.*`),
@@ -353,6 +368,14 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
         sharedInclude.add(path)
       }
     }
+  }
+
+  // Ensure Nuxt-specific tests remain in nuxt context only.
+  // Top-level `test/**/*` / `tests/**/*` are in nodeInclude, but
+  // test/nuxt and tests/nuxt must be excluded from tsconfig.node.json
+  // before spreading; preserve all other test files.
+  for (const p of [join(relativeWithDot(typesDir, nuxt.options.rootDir), 'test/nuxt/**/*'), join(relativeWithDot(typesDir, nuxt.options.rootDir), 'tests/nuxt/**/*')]) {
+    nodeExclude.add(p)
   }
 
   const moduleEntryPaths: string[] = []
