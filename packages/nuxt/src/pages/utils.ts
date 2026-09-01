@@ -301,6 +301,43 @@ function unwrapStaticExpression (node: ESTree.Node | undefined): ESTree.Node | u
   return current
 }
 
+function collectStatementCalls (body: Array<ESTree.Node>, into: Set<ESTree.Node>) {
+  for (const statement of body) {
+    if (statement.type !== 'ExpressionStatement') { continue }
+    const expression = unwrapStaticExpression(statement.expression)
+    if (expression?.type === 'CallExpression') {
+      into.add(expression)
+    }
+  }
+}
+
+/**
+ * The body of the `setup()` option of an Options API default export, if the module has one.
+ */
+function findOptionsApiSetupBody (program: ESTree.Program): Array<ESTree.Node> | undefined {
+  for (const statement of program.body) {
+    if (statement.type !== 'ExportDefaultDeclaration') { continue }
+
+    let declaration = unwrapStaticExpression(statement.declaration as ESTree.Node)
+    // `export default defineComponent({ ... })` and friends
+    if (declaration?.type === 'CallExpression') {
+      declaration = unwrapStaticExpression(declaration.arguments[0])
+    }
+    if (declaration?.type !== 'ObjectExpression') { return }
+
+    for (const property of declaration.properties) {
+      if (property.type !== 'Property' || property.computed || property.kind !== 'init') { continue }
+      const key = property.key.type === 'Identifier' ? property.key.name : property.key.type === 'Literal' ? property.key.value : undefined
+      if (key !== 'setup') { continue }
+      const value = property.value
+      if ((value.type === 'FunctionExpression' || value.type === 'ArrowFunctionExpression') && value.body?.type === 'BlockStatement') {
+        return value.body.body
+      }
+    }
+    return
+  }
+}
+
 /**
  * The keys of `definePageMeta` whose values are read at build time, given the user's
  * `experimental.extraPageMetaExtractionKeys`.
@@ -470,12 +507,12 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     })
 
     const topLevelCalls = new Set<ESTree.Node>()
-    for (const statement of program.body) {
-      if (statement.type !== 'ExpressionStatement') { continue }
-      const expression = unwrapStaticExpression(statement.expression)
-      if (expression?.type === 'CallExpression') {
-        topLevelCalls.add(expression)
-      }
+    collectStatementCalls(program.body, topLevelCalls)
+    // A page written without `<script setup>` has no other place to call the macros than the top
+    // level of its `setup()`, so a call there is as unconditional as a top-level one.
+    const setupBody = findOptionsApiSetupBody(program)
+    if (setupBody) {
+      collectStatementCalls(setupBody, topLevelCalls)
     }
 
     const extractedMacros = new Set<string>()
