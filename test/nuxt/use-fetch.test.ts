@@ -75,6 +75,18 @@ describe('useFetch', () => {
     expect(requested).toStrictEqual(['', ''])
   })
 
+  it('drops `routes`, which describes the route set for the types only', async () => {
+    const seen: string[] = []
+    registerEndpoint('/api/routes-dropped', defineEventHandler((event) => {
+      seen.push(event.url.search)
+      return { ok: true }
+    }))
+
+    await useFetch('/api/routes-dropped', { key: 'routes-a', routes: {} as { '/x': never } })
+
+    expect(seen).toStrictEqual([''])
+  })
+
   it('does not write resolved data to the payload with `serialize: false`', async () => {
     const nuxtApp = useNuxtApp()
     const { data } = await useFetch('/api/test', { key: 'serialize-false', serialize: false })
