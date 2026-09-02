@@ -18,6 +18,9 @@
       ],
       "h3": [
         "./dist/h3.d.mts"
+      ],
+      "request-types": [
+        "./dist/request-types.d.mts"
       ]
     }
   },
@@ -25,6 +28,7 @@
     ".": "./src/index.ts",
     "./augments": "./src/augments.ts",
     "./h3": "./src/h3.ts",
+    "./request-types": "./src/request-types.ts",
     "./package.json": "./package.json"
   },
   "files": [
@@ -102,6 +106,7 @@
       ".": "./dist/index.mjs",
       "./augments": "./dist/augments.mjs",
       "./h3": "./dist/h3.mjs",
+      "./request-types": "./dist/request-types.mjs",
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"
