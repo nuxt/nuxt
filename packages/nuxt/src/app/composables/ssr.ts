@@ -1,7 +1,7 @@
-import type { H3Event } from '@nuxt/nitro-server/h3'
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import type { $Fetch, H3Event$Fetch } from 'nitropack/types'
+import type { TypedFetch } from '../types/fetch'
+import type { RequestEvent } from '@nuxt/schema'
 import { $fetch as _$fetch } from '#build/fetch'
 
 import type { NuxtApp } from '../nuxt'
@@ -10,10 +10,13 @@ import { toArray } from '../utils'
 import { appDiagnostics } from '../diagnostics/core'
 import { useHead } from './head'
 
-const $fetch = _$fetch as $Fetch
+const $fetch = _$fetch as TypedFetch
+
+/** The request event, as declared by the configured `server.builder` (`H3Event` under `@nuxt/nitro-server`). */
+export type { RequestEvent } from '@nuxt/schema'
 
 /** @since 3.0.0 */
-export function useRequestEvent (nuxtApp?: NuxtApp): H3Event | undefined {
+export function useRequestEvent (nuxtApp?: NuxtApp): RequestEvent | undefined {
   if (import.meta.client) { return }
   nuxtApp ||= useNuxtApp()
   return nuxtApp.ssrContext?.event
@@ -46,19 +49,18 @@ export function useRequestHeader (header: string): string | null | undefined {
 }
 
 /** @since 3.2.0 */
-export function useRequestFetch (): H3Event$Fetch | $Fetch {
+export function useRequestFetch (): TypedFetch {
   if (import.meta.client) {
     return $fetch
   }
-  // Fallback cast keeps this expression a single `H3Event$Fetch`: unioning two route-mapped fetch types here blows the recursion limit under nitropack v2's typed-route matcher.
-  return useRequestEvent()?.$fetch || ($fetch as unknown as H3Event$Fetch)
+  return (useRequestEvent()?.$fetch as unknown as TypedFetch | undefined) || $fetch
 }
 
 /** @since 3.0.0 */
-export function setResponseStatus (event: H3Event, code?: number, message?: string): void
+export function setResponseStatus (event: RequestEvent, code?: number, message?: string): void
 /** @deprecated Pass `event` as first option. */
 export function setResponseStatus (code: number, message?: string): void
-export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: number | string, arg3?: string): void {
+export function setResponseStatus (arg1: RequestEvent | number | undefined, arg2?: number | string, arg3?: string): void {
   if (import.meta.client) { return }
   if (arg1 && typeof arg1 !== 'number') {
     return _setResponseStatus(arg1, arg2 as number | undefined, arg3)

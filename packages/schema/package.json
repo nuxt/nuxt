@@ -11,10 +11,18 @@
   "license": "MIT",
   "type": "module",
   "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "internal": [
+        "./dist/internal.d.mts"
+      ]
+    }
+  },
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
     "./builder-env": "./src/builder-env.ts",
+    "./internal": "./src/internal.ts",
     "./package.json": "./package.json"
   },
   "files": [
@@ -52,6 +60,7 @@
     "esbuild": "catalog:dev",
     "esbuild-loader": "catalog:webpack",
     "h3": "catalog:dev",
+    "h3-next": "npm:h3@2.0.1-rc.26",
     "mini-css-extract-plugin": "catalog:webpack",
     "ofetch": "catalog:app-runtime",
     "oxc-transform": "catalog:dev",
@@ -77,6 +86,7 @@
     "exports": {
       ".": "./dist/index.mjs",
       "./builder-env": "./dist/builder-env.mjs",
+      "./internal": "./dist/internal.mjs",
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"

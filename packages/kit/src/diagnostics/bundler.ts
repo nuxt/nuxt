@@ -116,5 +116,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { canFold: boolean }) => `Disambiguate the keys${p.canFold ? ' or set `router.options.sensitive: true`' : ''}.`,
       docs: false,
     },
+    NUXT_B7023: {
+      why: (p: { dir: string, baseURL: string }) => `A configured \`nitro.publicAssets\` directory does not exist: \`${p.dir}\`. Requests to \`${p.baseURL}\` will return a 404.`,
+      fix: 'Relative `dir` values are tried against your server directory and then your project root, and this one exists in neither. Point `dir` at an existing directory, using an absolute path or a Nuxt alias (such as `~~/public/video`) if it lives elsewhere.',
+      docs: false,
+    },
   },
 })

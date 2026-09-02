@@ -140,6 +140,93 @@ export interface NuxtBuildOutputs {
   entryIds: () => string | Promise<string>
 }
 
+/**
+ * Where the configured server builder writes its output.
+ *
+ * Every path is a function rather than a string because a builder may only know its
+ * paths once it has initialised: Nitro's output directory depends on the resolved
+ * preset, and can still move afterwards. Call these from a hook that runs after `ready`.
+ *
+ * @internal
+ */
+export interface NuxtServerBuildOutput {
+  /** Absolute path to the build output directory, without a trailing slash. */
+  dir: () => string
+  /**
+   * Absolute path to the directory of deployable static assets within the output,
+   * without a trailing slash.
+   */
+  publicDir: () => string
+}
+
+/**
+ * What a server builder can do, so consumers need not infer it from its name.
+ *
+ * @internal
+ */
+export interface NuxtServerBuildCapabilities {
+  /** Whether the build produces a server runtime. `false` for a static-only build. */
+  server: boolean
+  /** Whether the builder provides a dev server on `nuxt.server`. */
+  dev: boolean
+}
+
+/**
+ * Module specifiers the server build resolves its runtime from. A server builder that is
+ * not backed by Nitro points these at its own implementations.
+ *
+ * @internal
+ */
+export interface NuxtServerBuildRuntime {
+  /** Exports `useRuntimeConfig`. */
+  runtimeConfig: string
+}
+
+/**
+ * How to preview the build output locally.
+ *
+ * @internal
+ */
+export interface NuxtServerBuildPreview {
+  /** Shell command that starts the built server, when there is one to start. */
+  command?: () => string | undefined
+  /** Directory to serve statically when there is no server to start. */
+  staticDir?: () => string
+}
+
+/**
+ * A description of the build the configured `server.builder` produces, for consumers
+ * (the Nuxt CLI, deployment tooling) that need to know what was built and where without
+ * reaching for a Nitro instance.
+ *
+ * **Experimental and not public API.** The shape is exported from `@nuxt/schema/internal`
+ * and read and written with the `useServerBuild()` / `setServerBuild()` helpers from
+ * `@nuxt/kit/internal`, and will change without a major release while the second server
+ * builder (`@nuxt/vite-server`) is being built out.
+ *
+ * @internal
+ */
+export interface NuxtServerBuild {
+  /**
+   * Stable identifier for the builder implementation, such as `nitro` or `vite`.
+   * Defaults to the configured `server.builder` specifier.
+   */
+  name: string
+  /** Human-readable name of the builder, for CLI output. Defaults to `name`. */
+  label?: string
+  /**
+   * Deploy target within the builder: a Nitro preset, or a Vite deploy target. Read on
+   * access, as a builder may resolve it during its own initialisation.
+   */
+  target?: () => string | undefined
+  /** What to call the `target` axis when printing it, such as `preset`. */
+  targetLabel?: string
+  output: NuxtServerBuildOutput
+  capabilities: NuxtServerBuildCapabilities
+  runtime: NuxtServerBuildRuntime
+  preview?: NuxtServerBuildPreview
+}
+
 export interface Nuxt {
   // Private fields.
   '__name': string
@@ -216,4 +303,11 @@ export interface Nuxt {
   'apps': Record<string, NuxtApp>
 
   'buildOutputs': NuxtBuildOutputs
+
+  /**
+   * A description of the build the configured server builder produces.
+   *
+   * @internal
+   */
+  'serverBuild': NuxtServerBuild
 }

@@ -73,7 +73,7 @@
     "autoprefixer": "10.5.4",
     "case-police": "catalog:dev",
     "consola": "catalog:build",
-    "cssnano": "8.0.8",
+    "cssnano": "9.0.1",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
     "eslint": "catalog:dev",
@@ -81,6 +81,7 @@
     "eslint-plugin-no-only-tests": "catalog:dev",
     "eslint-plugin-perfectionist": "catalog:dev",
     "eslint-typegen": "catalog:dev",
+    "fast-check": "catalog:dev",
     "get-port-please": "catalog:build",
     "h3": "catalog:dev",
     "happy-dom": "catalog:dev",
@@ -115,6 +116,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@11.24.0",
   "version": ""
 }

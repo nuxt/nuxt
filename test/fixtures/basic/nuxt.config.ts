@@ -168,8 +168,12 @@ export default withMatrix({
   nitro: {
     publicAssets: [
       {
-        dir: '../custom-public',
+        dir: './custom-public',
         baseURL: '/custom',
+      },
+      {
+        dir: '~~/custom-public',
+        baseURL: '/aliased',
       },
     ],
     esbuild: {

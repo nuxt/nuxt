@@ -9,7 +9,7 @@ import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { win32 as pathWin32 } from 'node:path'
 import { dirname, join, normalize } from 'pathe'
-import { resolvePath, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { resolvePath, setBuildOutput, tryUseNitro, tryUseNuxt } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import type { FetchResult } from 'vite-node'
@@ -167,6 +167,13 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
     return
   }
 
+  // the bridge externalises modules in nitro's rollup config and serves them to its
+  // runtime, so there is nothing to bridge when the server builder is not nitro-backed
+  const nitro = tryUseNitro() as Nitro | undefined
+  if (!nitro) {
+    return
+  }
+
   let socketServer: net.Server | undefined
   const { socketPath, parentDir } = generateSocketPath()
   const { invalidates, markInvalidate, markInvalidates } = useInvalidates()
@@ -186,8 +193,6 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
       }
     }
   }
-
-  const nitro = useNitro() as Nitro
 
   const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
