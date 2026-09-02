@@ -63,6 +63,18 @@ export default defineResolvers({
     },
   },
   experimental: {
+    routeTypedFetch: {
+      $resolve: async (val, get) => typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5,
+    },
+    strictRouteTypes: {
+      // there is nothing for this to constrain while requests are typed from nitro's `InternalApi`
+      async $resolve (val, get) {
+        if (!(await get('experimental.routeTypedFetch'))) {
+          return false
+        }
+        return val === 'isomorphic' || typeof val === 'boolean' ? val : false
+      },
+    },
     runtimeBaseURL: false,
     decorators: false,
     asyncEntry: {

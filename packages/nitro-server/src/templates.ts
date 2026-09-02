@@ -1,5 +1,34 @@
-import type { NuxtTemplate, TSReference } from 'nuxt/schema'
+import type { NuxtTemplate, NuxtTypeTemplate, TSReference } from 'nuxt/schema'
 import { isAbsolute, join, relative } from 'pathe'
+
+/**
+ * Hands the response types nitro scanned into its own `InternalApi` to Nuxt's typed `$fetch`.
+ *
+ * Emitted rather than declared in this package's own augments, because with
+ * `experimental.routeTypedFetch` requests are typed from the generated route set instead, and a
+ * route described both ways on one interface is an error.
+ */
+export const nitroInternalApiTemplate: NuxtTypeTemplate = {
+  filename: 'types/nitro-internal-api.d.ts',
+  dependsOn: [],
+  getContents ({ nuxt }) {
+    if (nuxt.options.experimental.routeTypedFetch) {
+      return 'export {}\n'
+    }
+    return /* typescript */`
+import type { InternalApi } from 'nitropack/types'
+
+declare module '@nuxt/schema' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerRoutes extends InternalApi {}
+}
+declare module 'nuxt/schema' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerRoutes extends InternalApi {}
+}
+`
+  },
+}
 
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',

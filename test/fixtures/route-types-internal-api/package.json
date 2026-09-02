@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-route-types-internal-api",
+  "scripts": {
+    "build": "nuxt build",
+    "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "vitest": "catalog:dev"
+  },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  }
+}

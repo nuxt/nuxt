@@ -5,7 +5,7 @@ import type { H3Error, H3Event } from 'h3'
 import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
 import type { NitroRouteRules } from 'nitropack/types'
 
-import type { TypedFetch, TypedFetchRequest } from 'nuxt/app'
+import type { TypedFetch } from 'nuxt/app'
 import { $fetch } from '#build/fetch'
 import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
 import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
@@ -70,7 +70,7 @@ describe('API routes', () => {
   it('types the auto-imported $fetch with nitro routes', () => {
     // https://github.com/nuxt/nuxt/pull/35582 regression: `$fetch` was typed as
     // ofetch's plain `$fetch`, returning `Promise<any>` for every request
-    expectTypeOf($fetch).toEqualTypeOf<TypedFetch<unknown, TypedFetchRequest>>()
+    expectTypeOf($fetch).toEqualTypeOf<TypedFetch>()
     expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
   })
 

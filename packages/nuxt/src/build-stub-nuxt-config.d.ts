@@ -10,6 +10,7 @@ declare const anyValue: any
 
 export {
   anyValue as alwaysRunFetchOnKeyChange,
+  anyValue as routeTypedFetch,
   anyValue as appBaseURL,
   anyValue as appHead,
   anyValue as appId,

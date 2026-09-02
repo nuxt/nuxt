@@ -1103,6 +1103,47 @@ export interface ConfigSchema {
 
   experimental: {
     /**
+     * Type `$fetch` and `useFetch` from the routes the server builder reports, rather than from the
+     * responses nitro contributes to `ServerRoutes` through its `InternalApi` interface.
+     *
+     * The generated route set carries the request shapes a handler validates as well as its
+     * response, typed as it arrives over the wire, so a resolving call is typed more tightly than
+     * before and `params` is no longer accepted. That is a breaking change, so it is opt-in until
+     * `future.compatibilityVersion: 5`, which enables it.
+     *
+     * Available so that either typing can be selected explicitly while both are supported. It is
+     * temporary: from Nuxt 5 the generated route set is the only source and the option is gone.
+     *
+     * @default false (`true` when `future.compatibilityVersion` is `5` or higher)
+     */
+    routeTypedFetch: boolean
+
+    /**
+     * Type requests to routes the server serves, rejecting a path no route answers.
+     *
+     * Requires `experimental.routeTypedFetch`, which `future.compatibilityVersion: 5` enables.
+     * While requests are typed from nitro's `InternalApi` there is nothing for this to constrain,
+     * and the setting is resolved to `false`.
+     *
+     * Nuxt types `$fetch` and `useFetch` from the routes your server builder will serve, so a
+     * request is typed by the handler that answers it. By default an unrecognised path is still
+     * accepted and resolves to `unknown`, because Nuxt cannot see every way a request may be
+     * answered: nitro middleware, a `routeRules` proxy or a catch-all handler can answer anything.
+     *
+     * - `false` - a path Nuxt does not recognise is accepted and resolves to `unknown`.
+     * - `true` - only routes the server builder reports are accepted. A typo is an error naming the
+     *   path and method that matched nothing.
+     * - `'isomorphic'` - as `true`, and pages are included as `GET` routes returning `string`, so
+     *   `$fetch('/about')` is typed by the route the Vue router serves rather than rejected.
+     *
+     * Set this only where your routing is enumerable. An app with a catch-all page under
+     * `'isomorphic'` matches every path, which is correct but means the setting constrains nothing.
+     *
+     * @default false
+     */
+    strictRouteTypes: boolean | 'isomorphic'
+
+    /**
      * Enable to use experimental decorators in Nuxt and Nitro.
      *
      * @default false
