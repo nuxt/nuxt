@@ -93,69 +93,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
 
     let ctx: Unimport
-    const viteServers = new Set<any>()
-
-    // Track all Vite servers (client + SSR)
-    nuxt.hook('vite:serverCreated', (server) => {
-      viteServers.add(server)
-    })
-
-    // Vite plugin to detect and handle export type changes BEFORE HMR
-    nuxt.hook('vite:configResolved', (viteConfig) => {
-      if (!viteConfig.plugins) { return }
-      viteConfig.plugins.push({
-        name: 'nuxt:composables-hmr',
-        handleHotUpdate: async (hmrContext) => {
-          // Only handle composable files
-          if (!composablesDirs.some(dir => hmrContext.file.startsWith(dir + '/'))) {
-            return
-          }
-
-          // Get current imports to compare
-          const currentImports = await ctx.getImports()
-          const oldImports = currentImports.filter(i => i.from === hmrContext.file)
-
-          // Scan the updated file
-          const newImports = await scanDirExports([hmrContext.file], {
-            fileFilter: file => !isIgnored(file),
-          })
-
-          // Check if export type changed (default ↔ named)
-          let exportTypeChanged = false
-          for (const newImport of newImports) {
-            const oldImport = oldImports.find(i => (i.as || i.name) === (newImport.as || newImport.name))
-            if (oldImport && oldImport.name !== newImport.name) {
-              exportTypeChanged = true
-              break
-            }
-          }
-
-          if (exportTypeChanged) {
-            // Invalidate module cache recursively in all Vite servers (client + SSR)
-            for (const server of viteServers) {
-              const visited = new Set()
-              const invalidateRecursively = (mod: any) => {
-                if (!mod || visited.has(mod)) { return }
-                visited.add(mod)
-                mod.importers.forEach((importer: any) => invalidateRecursively(importer))
-                server.moduleGraph.invalidateModule(mod)
-              }
-
-              const modules = server.moduleGraph.getModulesByFile(hmrContext.file)
-              if (modules) {
-                modules.forEach((mod: any) => invalidateRecursively(mod))
-              }
-            }
-
-            // Trigger full reload - the changed export type cannot be handled with HMR
-            hmrContext.server.ws.send({ type: 'full-reload', path: '*' })
-            return []
-          }
-
-          return
-        },
-      })
-    })
 
     // initialise unimport only after all modules
     // have had a chance to register their hooks
@@ -197,6 +134,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       },
       options,
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      refreshImports: file => refreshImports(file),
     }))
 
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
@@ -248,6 +186,16 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       })
     }
 
+    /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
+    let pendingRegeneration: Promise<void> | undefined
+    function refreshImports (path: string) {
+      if (!options.scan || !composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
+        return
+      }
+      pendingRegeneration ||= regenerateImports().finally(() => { pendingRegeneration = undefined })
+      return pendingRegeneration
+    }
+
     nuxt.hook('modules:done', () => regenerateImports())
 
     // Generate types
@@ -258,10 +206,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // Watch composables/ directory
     nuxt.hook('builder:watch', async (_, relativePath) => {
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      if (options.scan && composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
-        await regenerateImports()
-      }
+      await refreshImports(resolve(nuxt.options.srcDir, relativePath))
     })
 
     // Watch for template generation
