@@ -12,6 +12,7 @@ import type { OnigiriPayload } from 'vue-onigiri/runtime/shared'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
+import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 
 import { isDev, isWebpack, runsOncePerEnvInMatrix } from './matrix'
 import { renderPage } from './utils'
@@ -626,6 +627,20 @@ describe.runIf(shouldRun)('hash/render input alignment', () => {
 
     expect(JSON.stringify(withScopeMarkers.ast)).not.toContain('data-v-abc123')
     expect(withScopeMarkers.ast).toEqual(plain.ast)
+  })
+
+  it('bounds plain and slot v-for over a large-integer prop', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 10_000_000 } }))
+    const html = await renderIslandAst(result.ast)
+    expect(html.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
+    expect(html.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
+  })
+
+  it('renders a small v-for prop unchanged', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 3 } }))
+    const html = await renderIslandAst(result.ast)
+    expect(html.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
+    expect(html.match(/class="slot-item"/g)?.length ?? 0).toBe(3)
   })
 })
 
