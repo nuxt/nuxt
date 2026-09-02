@@ -164,6 +164,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // separately-tracked `chunksWithInlinedCSS` being populated yet.
     for (const [id, { cssIds, files, inBundle }] of Object.entries(cssMap)) {
       if (!inBundle || !files.length) { continue }
+      // island-only CSS is not inlined on regular page renders, so its link must remain
+      if (islandExtractedIds.has(id)) { continue }
       chunksWithInlinedCSS.add(id)
       if (!cssIds) { continue }
       for (const cssId of cssIds) {
@@ -253,6 +255,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   )
   const islandPaths = new Set(islands.map(c => c.filePath))
 
+  // server-side importers (query stripped) of each module
+  const ssrImporters = new Map<string, Set<string>>()
+
+  // CSS sources extracted only because they are reachable from an island
+  const islandExtractedIds = new Set<string>()
+
+  // modules whose island reachability was still unknown when they were transformed
+  const deferredExtractions = new Map<string, string>()
+
   // Server pages (.server.vue) are not in the components list but still need
   // their CSS extracted for inline delivery via the island handler.
   const flattenPages = (pages?: NuxtPage[]): NuxtPage[] =>
@@ -262,6 +273,149 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const serverPagePaths = new Set(serverPages.map(({ file }) => file!))
 
   let entry: string
+
+  const isIslandModule = (path: string) => islandPaths.has(path) || serverPagePaths.has(path)
+
+  /**
+   * Whether a module is reachable from an island. An island's CSS is only ever delivered
+   * inline in its response: there is no stylesheet link to fall back to, and a server-only
+   * component's CSS is absent from the client build entirely.
+   */
+  const isIslandDescendant = (path: string) => {
+    const seen = new Set<string>()
+    const queue = [path]
+    while (queue.length) {
+      const current = queue.shift()!
+      if (seen.has(current)) { continue }
+      seen.add(current)
+      for (const importer of ssrImporters.get(current) ?? []) {
+        if (isIslandModule(importer)) { return true }
+        queue.push(importer)
+      }
+    }
+    return false
+  }
+
+  /**
+   * Emit inline-style chunks for a module of the server build and record them in `cssMap`,
+   * so the renderer can deliver its CSS as `<style>` tags.
+   */
+  async function extractInlineStyles (ctx: Rollup.PluginContext, id: string, code: string, mayDefer = false): Promise<void> {
+    const { pathname, search } = parseModuleId(id)
+
+    if (!(id in clientCSSMap) && !isIslandModule(pathname) && !isVue(pathname)) { return }
+
+    if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
+
+    const isEntryModule = pathname === entry
+
+    let islandExtracted = false
+    if (!isEntryModule && !isIslandModule(pathname)) {
+      if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) {
+        if (!isIslandDescendant(pathname)) {
+          // a module shared with a normal page is transformed on first import, which can
+          // precede the parse of an island that also imports it, so retry once the whole
+          // server module graph is known
+          if (mayDefer) {
+            deferredExtractions.set(id, code)
+          }
+          return
+        }
+        islandExtracted = true
+      }
+    }
+
+    if (isEntryModule && options.shouldInline === false) { return }
+
+    const relativeId = relativeToSrcDir(stripQuery(id))
+    if (islandExtracted) {
+      islandExtractedIds.add(relativeId)
+    }
+    const idMap = cssMap[relativeId] ||= { files: [] }
+    const idCssIds = idMap.cssIds ||= new Set()
+
+    const emittedIds = new Set<string>()
+    let chunkNamePrefix = chunkNamePrefixes.get(relativeId)
+    if (chunkNamePrefix === undefined) {
+      const baseName = filename(id) || 'styles'
+      chunkNamePrefix = baseName
+      for (let i = 2; usedChunkNamePrefixes.has(chunkNamePrefix); i++) {
+        chunkNamePrefix = `${baseName}-${i}`
+      }
+      usedChunkNamePrefixes.add(chunkNamePrefix)
+      chunkNamePrefixes.set(relativeId, chunkNamePrefix)
+    }
+
+    let styleCtr = 0
+    const ids = clientCSSMap[id] || []
+    for (const file of ids) {
+      if (isEntryModule && typeof options.shouldInline === 'function' && !options.shouldInline(file)) { continue }
+      if (emittedIds.has(file)) { continue }
+      const fileInline = withInlineQuery(file)
+      const resolved = await ctx.resolve(file) ?? await ctx.resolve(file, id)
+      const res = await ctx.resolve(fileInline) ?? await ctx.resolve(fileInline, id)
+      if (!resolved || !res) {
+        if (!warnCache.has(file)) {
+          warnCache.add(file)
+          ctx.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
+        }
+        continue
+      }
+      emittedIds.add(file)
+      idCssIds.add(stripQuery(resolved.id))
+
+      // Reuse ref from a previous emission of the same file to avoid rolldown
+      // returning incorrect refs when the same chunk ID is emitted multiple times
+      const resolvedInlineId = res.id
+      let ref = emittedFileRefs[resolvedInlineId]
+      if (!ref) {
+        ref = ctx.emitFile({
+          type: 'chunk',
+          name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
+          id: fileInline,
+        })
+        emittedFileRefs[resolvedInlineId] = ref
+      }
+
+      idMap.files.push(ref)
+    }
+
+    // a `.vue` id can still carry CSS as its module contents (`?type=style&lang.css`)
+    if (!SUPPORTED_FILES_RE.test(pathname) || STYLE_QUERY_RE.test(search) || isCSS(search)) { return }
+
+    for (const specifier of getStaticImportSpecifiers(ctx.parse(code))) {
+      if (!IS_CSS_RE.test(specifier) && !STYLE_QUERY_RE.test(specifier)) { continue }
+
+      const resolved = await ctx.resolve(specifier, id)
+      if (!resolved) { continue }
+      const resolvedIdInline = withInlineQuery(resolved.id)
+      const res = await ctx.resolve(resolvedIdInline)
+      if (!res) {
+        if (!warnCache.has(resolved.id)) {
+          warnCache.add(resolved.id)
+          ctx.warn(`[nuxt] Cannot extract styles for \`${specifier}\`. Its styles will not be inlined when server-rendering.`)
+        }
+        continue
+      }
+
+      if (emittedIds.has(resolved.id)) { continue }
+      idCssIds.add(stripQuery(resolved.id))
+
+      // Reuse ref from a previous emission of the same file
+      const resolvedInlineId = res.id
+      let ref = emittedFileRefs[resolvedInlineId]
+      if (!ref) {
+        ref = ctx.emitFile({
+          type: 'chunk',
+          name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
+          id: resolvedIdInline,
+        })
+        emittedFileRefs[resolvedInlineId] = ref
+      }
+
+      idMap.files.push(ref)
+    }
+  }
 
   return {
     name: 'ssr-styles',
@@ -422,6 +576,23 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             ].join('\n'), nuxt)
           }
         },
+        async buildEnd () {
+          if (environment.name !== 'ssr') { return }
+          const deferred = [...deferredExtractions]
+          deferredExtractions.clear()
+          await Promise.all(deferred.map(([id, code]) => extractInlineStyles(this, id, code)))
+        },
+        moduleParsed (info) {
+          if (environment.name !== 'ssr') { return }
+          const importerId = stripQuery(info.id)
+          for (const imported of [...info.importedIds, ...info.dynamicallyImportedIds]) {
+            const id = stripQuery(imported)
+            if (id === importerId) { continue }
+            const importers = ssrImporters.get(id) ?? new Set()
+            ssrImporters.set(id, importers)
+            importers.add(importerId)
+          }
+        },
         renderChunk (_code, chunk) {
           const isEntry = chunk.facadeModuleId === entry
           if (isEntry) {
@@ -498,105 +669,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               return
             }
 
-            const { pathname, search } = parseModuleId(id)
-
-            if (!(id in clientCSSMap) && !islandPaths.has(pathname) && !serverPagePaths.has(pathname) && !isVue(pathname)) { return }
-
-            if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
-
-            const isEntryModule = pathname === entry
-
-            if (!isEntryModule && !islandPaths.has(pathname) && !serverPagePaths.has(pathname)) {
-              if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
-            }
-
-            if (isEntryModule && options.shouldInline === false) { return }
-
-            const relativeId = relativeToSrcDir(stripQuery(id))
-            const idMap = cssMap[relativeId] ||= { files: [] }
-            const idCssIds = idMap.cssIds ||= new Set()
-
-            const emittedIds = new Set<string>()
-            let chunkNamePrefix = chunkNamePrefixes.get(relativeId)
-            if (chunkNamePrefix === undefined) {
-              const baseName = filename(id) || 'styles'
-              chunkNamePrefix = baseName
-              for (let i = 2; usedChunkNamePrefixes.has(chunkNamePrefix); i++) {
-                chunkNamePrefix = `${baseName}-${i}`
-              }
-              usedChunkNamePrefixes.add(chunkNamePrefix)
-              chunkNamePrefixes.set(relativeId, chunkNamePrefix)
-            }
-
-            let styleCtr = 0
-            const ids = clientCSSMap[id] || []
-            for (const file of ids) {
-              if (isEntryModule && typeof options.shouldInline === 'function' && !options.shouldInline(file)) { continue }
-              if (emittedIds.has(file)) { continue }
-              const fileInline = withInlineQuery(file)
-              const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-              const res = await this.resolve(fileInline) ?? await this.resolve(fileInline, id)
-              if (!resolved || !res) {
-                if (!warnCache.has(file)) {
-                  warnCache.add(file)
-                  this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
-                }
-                continue
-              }
-              emittedIds.add(file)
-              idCssIds.add(stripQuery(resolved.id))
-
-              // Reuse ref from a previous emission of the same file to avoid rolldown
-              // returning incorrect refs when the same chunk ID is emitted multiple times
-              const resolvedInlineId = res.id
-              let ref = emittedFileRefs[resolvedInlineId]
-              if (!ref) {
-                ref = this.emitFile({
-                  type: 'chunk',
-                  name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
-                  id: fileInline,
-                })
-                emittedFileRefs[resolvedInlineId] = ref
-              }
-
-              idMap.files.push(ref)
-            }
-
-            // a `.vue` id can still carry CSS as its module contents (`?type=style&lang.css`)
-            if (!SUPPORTED_FILES_RE.test(pathname) || STYLE_QUERY_RE.test(search) || isCSS(search)) { return }
-
-            for (const specifier of getStaticImportSpecifiers(this.parse(code))) {
-              if (!IS_CSS_RE.test(specifier) && !STYLE_QUERY_RE.test(specifier)) { continue }
-
-              const resolved = await this.resolve(specifier, id)
-              if (!resolved) { continue }
-              const resolvedIdInline = withInlineQuery(resolved.id)
-              const res = await this.resolve(resolvedIdInline)
-              if (!res) {
-                if (!warnCache.has(resolved.id)) {
-                  warnCache.add(resolved.id)
-                  this.warn(`[nuxt] Cannot extract styles for \`${specifier}\`. Its styles will not be inlined when server-rendering.`)
-                }
-                continue
-              }
-
-              if (emittedIds.has(resolved.id)) { continue }
-              idCssIds.add(stripQuery(resolved.id))
-
-              // Reuse ref from a previous emission of the same file
-              const resolvedInlineId = res.id
-              let ref = emittedFileRefs[resolvedInlineId]
-              if (!ref) {
-                ref = this.emitFile({
-                  type: 'chunk',
-                  name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
-                  id: resolvedIdInline,
-                })
-                emittedFileRefs[resolvedInlineId] = ref
-              }
-
-              idMap.files.push(ref)
-            }
+            await extractInlineStyles(this, id, code, true)
           },
         },
       }
