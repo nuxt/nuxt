@@ -32,20 +32,23 @@ const dependencies = Object.fromEntries(['fetchdts', 'ofetch'].map((name) => {
 }))
 
 /** A mix weighted the way an app's routes are: mostly static, some parameterised. */
-function routeSet (count: number): Route[] {
+function routeSet (count: number) {
   const routes: Route[] = []
-  const paths: string[] = []
+  /** What a call site writes to reach each route, and the response it must resolve to. */
+  const sites: Array<{ path: string, response: string }> = []
+
   for (let i = 0; i < count; i++) {
     const segments: Route['segments'] = [{ type: 'static', value: '/api' }, { type: 'static', value: `/group${i % 8}` }, { type: 'static', value: `/route${i}` }]
     const dynamic = i % 5 === 0
     if (dynamic) { segments.push({ type: 'dynamic' }) }
     routes.push({ segments, metadata: { GET: { responseType: `{ id: ${i} }` } } })
-    paths.push(`/api/group${i % 8}/route${i}${dynamic ? '/abc' : ''}`)
+    sites.push({ path: `/api/group${i % 8}/route${i}${dynamic ? '/abc' : ''}`, response: `{ id: ${i} }` })
   }
-  return routes.map((route, i) => ({ ...route, route: paths[i] }))
+
+  return { routes, sites }
 }
 
-function program (routes: Route[], calls: number) {
+function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number) {
   rmSync(workspace, { recursive: true, force: true })
   mkdirSync(workspace, { recursive: true })
 
@@ -55,18 +58,20 @@ function program (routes: Route[], calls: number) {
     'export type StrictFetchPaths = true',
   ].join('\n'))
 
-  const sites = routes.slice(0, calls).map((route, i) => [
-    `const r${i} = await $fetch('${route.route}')`,
-    `exact<typeof r${i}, { id: ${routes.indexOf(route)} }>()`,
+  const callSites = sites.slice(0, calls).map((site, i) => [
+    `const r${i} = await $fetch('${site.path}')`,
+    `exact<typeof r${i}, ${site.response}>()`,
   ].join('\n'))
 
   writeFileSync(join(workspace, 'calls.ts'), [
     `import type { TypedFetch } from '${typesModule}'`,
     'type Exact<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false',
-    'declare function exact<A, B> (): Exact<A, B> extends true ? void : never',
+    // the mismatch has to be an argument the call cannot supply: a `never` *return* type is not an
+    // error at the call site, so an assertion written that way checks nothing
+    'declare function exact<A, B> (...mismatch: Exact<A, B> extends true ? [] : [never]): void',
     'declare const $fetch: TypedFetch',
     'export async function calls () {',
-    ...sites,
+    ...callSites,
     '}',
   ].join('\n'))
 
@@ -92,24 +97,21 @@ function program (routes: Route[], calls: number) {
   return instantiations
 }
 
-/** The cost of the call sites alone, with the program they sit in measured away. */
-function perCall (routeCount: number, calls: number) {
-  const routes = routeSet(routeCount)
-  return (program(routes, calls) - program(routes, 0)) / calls
-}
-
 describe('the cost of resolving a typed `$fetch` call', () => {
-  it('stays flat as the route set grows', () => {
-    const small = perCall(50, 25)
-    const large = perCall(500, 25)
+  it('does not grow with the route set, and stays within budget per call site', () => {
+    const calls = 25
+    const small = routeSet(50)
+    const large = routeSet(500)
 
-    // an exact-match table is what keeps this flat; a walk over the route tree would not be
-    expect(large / small).toBeLessThan(1.5)
-  }, 120_000)
+    const perCallSmall = (program(small, calls) - program(small, 0)) / calls
+    const perCallLarge = (program(large, calls) - program(large, 0)) / calls
 
-  it('stays within budget per call site', () => {
-    // measured at ~490 with the types as merged. The ceiling catches a doubling rather than drift,
-    // so that a TypeScript upgrade moving the number by a few per cent does not fail the build
-    expect(perCall(200, 25)).toBeLessThan(1000)
-  }, 120_000)
+    // an exact-match table for the fully static paths is what keeps this flat; a walk over the
+    // route tree would not, and is how the implementation this replaced ran out of instantiations
+    expect(perCallLarge / perCallSmall).toBeLessThan(1.5)
+
+    // ~534 as merged. The ceiling catches a doubling rather than drift, so that a TypeScript
+    // upgrade moving the number by a few per cent does not fail the build
+    expect(perCallLarge).toBeLessThan(1000)
+  }, 300_000)
 })
