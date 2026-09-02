@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import { refreshNuxtData } from '#app/composables/asyncData'
 import { NuxtPage } from '#components'
 import { flushPromises } from '@vue/test-utils'
+import type { NuxtApp } from '#app/nuxt'
 
 registerEndpoint('/api/hello', defineEventHandler(() => 'Hello API'))
 
@@ -368,7 +369,27 @@ describe('defineNuxtComponent', () => {
     )
   })
 
-  it.todo('should support head option')
+  it('should support head option', async () => {
+    const component = defineNuxtComponent({
+      head: { title: 'options api head' },
+      render: () => h('div', 'hello'),
+    })
 
-  it.todo('should support head as function')
+    const wrapper = await mountSuspended(component)
+    await vi.waitFor(() => expect(document.title).toBe('options api head'))
+
+    wrapper.unmount()
+  })
+
+  it('should support head as function', async () => {
+    const component = defineNuxtComponent({
+      head: (nuxtApp: NuxtApp) => ({ title: `head for app ${nuxtApp._id}` }),
+      render: () => h('div', 'hello'),
+    })
+
+    const wrapper = await mountSuspended(component)
+    await vi.waitFor(() => expect(document.title).toBe(`head for app ${useNuxtApp()._id}`))
+
+    wrapper.unmount()
+  })
 })
