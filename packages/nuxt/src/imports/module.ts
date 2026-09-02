@@ -188,11 +188,24 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
     let pendingRegeneration: Promise<void> | undefined
+    let staleScan = false
     function refreshImports (path: string) {
       if (!options.scan || !composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
         return
       }
-      pendingRegeneration ||= regenerateImports().finally(() => { pendingRegeneration = undefined })
+      if (pendingRegeneration) {
+        // a change may land after the in-flight scan has already read the directory,
+        // so schedule a single extra pass rather than resolving with stale imports
+        staleScan = true
+        return pendingRegeneration
+      }
+      pendingRegeneration = (async () => {
+        staleScan = false
+        await regenerateImports()
+        if (staleScan) {
+          await regenerateImports()
+        }
+      })().finally(() => { pendingRegeneration = undefined })
       return pendingRegeneration
     }
 
