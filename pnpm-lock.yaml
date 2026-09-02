@@ -133,6 +133,9 @@ catalogs:
     exsolve:
       specifier: ^1.1.1
       version: 1.1.1
+    fetchdts:
+      specifier: ^0.2.0
+      version: 0.2.0
     generic-names:
       specifier: ^4.0.0
       version: 4.0.0
@@ -595,7 +598,7 @@ overrides:
 
 patchedDependencies:
   '@vue/runtime-core@3.5.42': 722c3bfce6beeee5cf5f6425eb5dce79649aed5ab7c62b4b04118e7733310ec0
-  nitro@3.0.260610-beta: 3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39
+  nitro@3.0.260610-beta: 4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1
   nitropack@2.13.4: 14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8
 
 importers:
@@ -730,7 +733,7 @@ importers:
         version: 0.49.1(supports-color@10.2.2)
       nitro:
         specifier: catalog:nitro-runtime
-        version: 3.0.260610-beta(patch_hash=3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2)
+        version: 3.0.260610-beta(patch_hash=4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2)
       nitropack:
         specifier: catalog:dev
         version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.2.1(@swc/helpers@0.5.23))(oxc-parser@0.147.0)(rolldown@1.2.6)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.2)(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
@@ -961,7 +964,7 @@ importers:
         version: 0.1.1
       nitro:
         specifier: catalog:nitro-runtime
-        version: 3.0.260610-beta(patch_hash=3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2)
+        version: 3.0.260610-beta(patch_hash=4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2)
       nostics:
         specifier: catalog:app-runtime
         version: 1.2.0
@@ -1037,7 +1040,7 @@ importers:
         version: '@nuxt/cli-nightly@4.0.0-20260831-132907-8bcf1bc(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)'
       '@nuxt/devtools':
         specifier: catalog:build
-        version: 4.0.0-alpha.15(cf49ed61c1f81c7e447ec1262e24374c)
+        version: 4.0.0-alpha.15(dca71f15dd96710cf83fe2ff1ebc5503)
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -1095,6 +1098,9 @@ importers:
       exsolve:
         specifier: catalog:build
         version: 1.1.1
+      fetchdts:
+        specifier: catalog:build
+        version: 0.2.0
       fnv1a-64:
         specifier: catalog:app-runtime
         version: 0.1.2
@@ -2080,6 +2086,18 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/route-scroll:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/route-types-isomorphic:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/route-types-permissive:
     dependencies:
       nuxt:
         specifier: workspace:*
@@ -6526,6 +6544,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fetchdts@0.2.0:
+    resolution: {integrity: sha512-PJb4ZTGT2/wK78RmVrxZITStWabhZlKBsL52VOgq+c7clEkdHdEB+0rtzrXCbZJqeYJj+IwNWYqB5/G6vouA6A==}
 
   fflate@0.8.3:
     resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
@@ -11817,22 +11838,22 @@ snapshots:
       execa: 8.0.1
       vite: 8.2.2(@types/node@24.13.3)(@vitejs/devtools@0.5.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)
 
-  '@nuxt/devtools-kit@4.0.0-alpha.15(@nuxt/kit@packages+kit)(nitro@3.0.260610-beta(patch_hash=3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2))(nitropack@2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.2.1(@swc/helpers@0.5.23))(oxc-parser@0.147.0)(rolldown@1.2.6)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.2)(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26)))(vite@8.2.2)':
+  '@nuxt/devtools-kit@4.0.0-alpha.15(@nuxt/kit@packages+kit)(nitro@3.0.260610-beta(patch_hash=4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2))(nitropack@2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.2.1(@swc/helpers@0.5.23))(oxc-parser@0.147.0)(rolldown@1.2.6)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.2)(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26)))(vite@8.2.2)':
     dependencies:
       '@nuxt/kit': link:packages/kit
       nostics: 1.2.0
       tinyexec: 1.3.0
       vite: 8.2.2(@types/node@24.13.3)(@vitejs/devtools@0.5.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)
     optionalDependencies:
-      nitro: 3.0.260610-beta(patch_hash=3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2)
+      nitro: 3.0.260610-beta(patch_hash=4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2)
       nitropack: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.2.1(@swc/helpers@0.5.23))(oxc-parser@0.147.0)(rolldown@1.2.6)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.2)(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
 
-  '@nuxt/devtools@4.0.0-alpha.15(cf49ed61c1f81c7e447ec1262e24374c)':
+  '@nuxt/devtools@4.0.0-alpha.15(dca71f15dd96710cf83fe2ff1ebc5503)':
     dependencies:
       '@devframes/hub': 0.9.5(crossws@0.4.10(srvx@0.11.22))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22))
       '@devframes/plugin-code-server': 0.9.5(@devframes/hub-ui@0.9.5(@devframes/hub@0.9.5(crossws@0.4.10(srvx@0.11.22))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22)))(@devframes/json-render@0.9.5(@devframes/hub@0.9.5(crossws@0.4.10(srvx@0.11.22))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22)))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22)))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22)))(@devframes/hub@0.9.5(crossws@0.4.10(srvx@0.11.22))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22)))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22))(vite@8.2.2)
       '@devframes/plugin-data-inspector': 0.9.5(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22))(vite@8.2.2)
-      '@nuxt/devtools-kit': 4.0.0-alpha.15(@nuxt/kit@packages+kit)(nitro@3.0.260610-beta(patch_hash=3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2))(nitropack@2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.2.1(@swc/helpers@0.5.23))(oxc-parser@0.147.0)(rolldown@1.2.6)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.2)(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26)))(vite@8.2.2)
+      '@nuxt/devtools-kit': 4.0.0-alpha.15(@nuxt/kit@packages+kit)(nitro@3.0.260610-beta(patch_hash=4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2))(nitropack@2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.2.1(@swc/helpers@0.5.23))(oxc-parser@0.147.0)(rolldown@1.2.6)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.2)(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26)))(vite@8.2.2)
       '@nuxt/kit': link:packages/kit
       '@vitejs/devtools': 0.5.2(@devframes/json-render@0.9.5(@devframes/hub@0.9.5(crossws@0.4.10(srvx@0.11.22))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22)))(devframe@0.9.5(cac@7.0.0)(srvx@0.11.22)))(crossws@0.4.10(srvx@0.11.22))(srvx@0.11.22)(vite@8.2.2)
       '@vitejs/devtools-kit': 0.5.2(cac@7.0.0)(crossws@0.4.10(srvx@0.11.22))(srvx@0.11.22)(vite@8.2.2)
@@ -11854,7 +11875,7 @@ snapshots:
       vite: 8.2.2(@types/node@24.13.3)(@vitejs/devtools@0.5.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)
       vite-plugin-vue-tracer: 1.5.0(vite@8.2.2)(vue@3.5.42(typescript@6.0.3))
     optionalDependencies:
-      nitro: 3.0.260610-beta(patch_hash=3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2)
+      nitro: 3.0.260610-beta(patch_hash=4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2)
       nitropack: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@parcel/watcher@2.6.0)(@rspack/core@2.2.1(@swc/helpers@0.5.23))(oxc-parser@0.147.0)(rolldown@1.2.6)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.2)(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -15241,6 +15262,8 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.7
 
+  fetchdts@0.2.0: {}
+
   fflate@0.8.3: {}
 
   file-entry-cache@8.0.0:
@@ -16899,7 +16922,7 @@ snapshots:
 
   nf3@0.3.23: {}
 
-  nitro@3.0.260610-beta(patch_hash=3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2):
+  nitro@3.0.260610-beta(patch_hash=4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.63.1)(vite@8.2.2):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.10(srvx@0.11.22)
