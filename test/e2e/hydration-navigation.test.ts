@@ -53,7 +53,7 @@ async function gotoMidHydration (page: Page, path: string) {
 }
 
 test.describe('navigation during initial hydration', () => {
-  test('browser back before hydration completes renders the previous page', async ({ page }) => {
+  test('browser back before hydration completes renders the previous page, and forward returns to it', async ({ page }) => {
     await seedHistoryEntries(page, '/slow')
     await gotoMidHydration(page, '/slow')
     await expect(page.getByTestId('slow-title')).toBeVisible()
@@ -73,6 +73,13 @@ test.describe('navigation during initial hydration', () => {
     await page.evaluate(() => window.__releaseHydration?.())
     await expect(page.getByTestId('index-title')).toBeVisible()
     await expect(page.getByTestId('slow-title')).not.toBeAttached()
+
+    // the interrupted page renders cleanly when it is navigated to again
+    await page.goForward()
+    await page.waitForFunction(() => location.pathname === '/slow')
+    await expect(page.getByTestId('slow-title')).toBeVisible()
+    await expect(page.getByTestId('index-title')).not.toBeAttached()
+    await expect(page.getByTestId('default-layout')).toHaveCount(1)
 
     expect(page).toHaveNoErrorsOrWarnings()
   })
@@ -142,32 +149,12 @@ test.describe('navigation during initial hydration', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  test('a navigation that finishes during boot does not corrupt the first render', async ({ page }) => {
-    // same held boot window, but this time the navigation *completes* before
-    // the app mounts, so `<NuxtPage>`'s first render sees `/` while the SSR
-    // DOM on the page is still `/slow`: it has to hydrate against the route it
-    // was rendered with and swap afterwards, or it claims the wrong nodes
-    await page.goto('/slow?bootgate', { waitUntil: 'domcontentloaded' })
-    await page.waitForFunction(() => typeof window.__releaseBoot === 'function')
-
-    await page.evaluate(() => { (window.useNuxtApp?.().$router as Router).push('/') })
-    await page.waitForFunction(() => (window.useNuxtApp?.().$router as Router).currentRoute.value.path === '/')
-    await page.evaluate(() => window.__releaseBoot?.())
-
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
-    await expect(page.getByTestId('index-title')).toBeVisible()
-    await expect(page.getByTestId('slow-title')).not.toBeAttached()
-    await expect(page.getByTestId('hydration-blocker')).not.toBeAttached()
-    await expect(page.getByTestId('default-layout')).toHaveCount(1)
-    await expect(() => page.evaluate(() => window.useNuxtApp?.().isHydrating)).toBeWithPolling(false)
-
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
   test('a cross-layout navigation that finishes during boot hydrates the payload layout', async ({ page }) => {
-    // the SSR DOM is the other layout while the completed navigation's target uses
-    // the default layout: the first render must hydrate against the payload layout
-    // and swap afterwards, or it claims the other layout's DOM as the default one
+    // same held boot window, but this time the navigation *completes* before the
+    // app mounts, so the first render sees `/` in the default layout while the SSR
+    // DOM on the page is still `/slow-other-layout` in the other layout: it has to
+    // hydrate against the route and layout it was rendered with and swap
+    // afterwards, or it claims the other layout's DOM as the default one
     await page.goto('/slow-other-layout?bootgate', { waitUntil: 'domcontentloaded' })
     await page.waitForFunction(() => typeof window.__releaseBoot === 'function')
 
@@ -181,21 +168,6 @@ test.describe('navigation during initial hydration', () => {
     await expect(page.getByTestId('other-layout')).not.toBeAttached()
     await expect(page.getByTestId('slow-other-title')).not.toBeAttached()
     await expect(page.getByTestId('hydration-blocker')).not.toBeAttached()
-    await expect(() => page.evaluate(() => window.useNuxtApp?.().isHydrating)).toBeWithPolling(false)
-
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
-  test('programmatic navigation before hydration completes renders the target page', async ({ page }) => {
-    await gotoMidHydration(page, '/slow')
-
-    await page.evaluate(() => { (window.useNuxtApp?.().$router as Router).push('/') })
-
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
-    await expect(page.getByTestId('index-title')).toBeVisible()
-    await expect(page.getByTestId('slow-title')).not.toBeAttached()
-    await expect(page.getByTestId('default-layout')).toHaveCount(1)
-
     await expect(() => page.evaluate(() => window.useNuxtApp?.().isHydrating)).toBeWithPolling(false)
 
     expect(page).toHaveNoErrorsOrWarnings()
@@ -220,40 +192,16 @@ test.describe('navigation during initial hydration', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  test('second navigation while the first async target is still pending', async ({ page }) => {
-    await gotoMidHydration(page, '/slow')
-
-    // first navigation pends on the async target, so the page suspense is no
-    // longer hydrating but the root suspense still is
-    await page.evaluate(() => { (window.useNuxtApp?.().$router as Router).push('/async-target') })
-    await page.waitForFunction(() => location.pathname === '/async-target')
-    await expect(page.getByTestId('slow-title')).toBeVisible()
-
-    // the second navigation must still be applied
-    await page.evaluate(() => { (window.useNuxtApp?.().$router as Router).push('/') })
-
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
-    await expect(page.getByTestId('index-title')).toBeVisible()
-    await expect(page.getByTestId('slow-title')).not.toBeAttached()
-    await expect(page.getByTestId('default-layout')).toHaveCount(1)
-    await expect(() => page.evaluate(() => window.useNuxtApp?.().isHydrating)).toBeWithPolling(false)
-
-    // resolving the abandoned async target must not resurrect it
-    await page.evaluate(() => window.__releaseTarget?.())
-    await expect(page.getByTestId('index-title')).toBeVisible()
-    await expect(page.getByTestId('async-target-title')).not.toBeAttached()
-
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
   test('second navigation after a pending cross-layout target', async ({ page }) => {
     await gotoMidHydration(page, '/slow')
 
-    // first navigation pends on an async page in another layout
+    // the first navigation pends on an async page in another layout, so the page
+    // suspense is no longer hydrating but the root suspense still is
     await page.evaluate(() => { (window.useNuxtApp?.().$router as Router).push('/async-target-other') })
     await page.waitForFunction(() => location.pathname === '/async-target-other')
     await expect(page.getByTestId('slow-title')).toBeVisible()
 
+    // the second navigation must still be applied
     await page.evaluate(() => { (window.useNuxtApp?.().$router as Router).push('/') })
 
     await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
@@ -266,28 +214,6 @@ test.describe('navigation during initial hydration', () => {
     await page.evaluate(() => window.__releaseTarget?.())
     await expect(page.getByTestId('index-title')).toBeVisible()
     await expect(page.getByTestId('async-target-other-title')).not.toBeAttached()
-
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
-  test('forward after an interrupted hydration renders the slow page cleanly', async ({ page }) => {
-    await seedHistoryEntries(page, '/slow')
-    await gotoMidHydration(page, '/slow')
-
-    await page.goBack()
-    await expect(page.getByTestId('index-title')).toBeVisible()
-
-    await page.goForward()
-    await page.waitForFunction(() => location.pathname === '/slow')
-    // the slow page suspends again on client-side navigation; the index page
-    // stays visible until it resolves
-    await expect(page.getByTestId('index-title')).toBeVisible()
-
-    await page.evaluate(() => window.__releaseHydration?.())
-
-    await expect(page.getByTestId('slow-title')).toBeVisible()
-    await expect(page.getByTestId('index-title')).not.toBeAttached()
-    await expect(page.getByTestId('default-layout')).toHaveCount(1)
 
     expect(page).toHaveNoErrorsOrWarnings()
   })

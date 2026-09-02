@@ -27,9 +27,9 @@ function createApp (opts: {
   /**
    * when true, the root component tracks the route too, so the swap patches
    * through the root suspense's own same-root-type path instead of patching
-   * the nested suspense directly - this exercises the `suspense.pendingBranch`
-   * guard on the resolve call in `patchSuspense` (without it, the nested
-   * resolve propagating to the root mid-patch makes the root resolve twice)
+   * the nested suspense directly - this exercises the sentinel dep
+   * `patchSuspense` holds around that patch (without it, the nested resolve
+   * propagating to the root mid-patch makes the root resolve twice)
    */
   rootReadsRoute?: boolean
 }) {
@@ -96,9 +96,15 @@ function createApp (opts: {
 }
 
 describe('suspense hydration interrupt', () => {
-  it('applies a branch swap in a nested suspensible suspense during hydration', async () => {
+  // `false` patches the nested suspense directly, as the update `<RouterView>`
+  // triggers does; `true` re-patches the root suspense same-root-type and
+  // descends into the nested one from there
+  it.each([
+    ['a nested suspensible suspense', false],
+    ['the root suspense', true],
+  ])('applies a branch swap that patches through %s during hydration', async (_target, rootReadsRoute) => {
     // server render (the async child resolves immediately there)
-    const ssr = createApp({ gate: () => Promise.resolve() })
+    const ssr = createApp({ gate: () => Promise.resolve(), rootReadsRoute })
     const html = await renderToString(ssr.app)
     expect(html).toContain('page a')
 
@@ -109,17 +115,22 @@ describe('suspense hydration interrupt', () => {
     // client hydration, with the async child suspended until we release it
     let releaseGate: () => void
     const gate = new Promise<void>((resolve) => { releaseGate = resolve })
-    let rootResolved = false
+    let rootResolveCount = 0
     let nestedResolved = false
     const client = createApp({
       gate: () => gate,
-      onRootResolve: () => { rootResolved = true },
+      rootReadsRoute,
+      onRootResolve: () => { rootResolveCount++ },
       onNestedResolve: () => { nestedResolved = true },
     })
+    // the double-resolve the sentinel dep guards against surfaces as an unhandled
+    // error inside the scheduler flush, not as a failed DOM assertion
+    const errorHandler = vi.fn()
+    client.app.config.errorHandler = errorHandler
     client.app.mount(el)
 
     await nextTick()
-    expect(rootResolved).toBe(false)
+    expect(rootResolveCount).toBe(0)
     expect(el.innerHTML).toContain('page a')
 
     // swap the branch while hydration is still pending
@@ -130,55 +141,9 @@ describe('suspense hydration interrupt', () => {
     expect(el.innerHTML).toContain('page b')
     expect(el.innerHTML).not.toContain('page a')
     expect(nestedResolved).toBe(true)
-    expect(rootResolved).toBe(true)
-
-    // resolving the abandoned async setup must not resurrect the old branch
-    releaseGate!()
-    await flushPromises()
-    expect(el.innerHTML).toContain('page b')
-    expect(el.innerHTML).not.toContain('page a')
-
-    client.app.unmount()
-    el.remove()
-  })
-
-  it('applies a branch swap that patches through the root suspense during hydration', async () => {
-    const ssr = createApp({ gate: () => Promise.resolve(), rootReadsRoute: true })
-    const html = await renderToString(ssr.app)
-    expect(html).toContain('page a')
-
-    const el = document.createElement('div')
-    el.innerHTML = html
-    document.body.appendChild(el)
-
-    let releaseGate: () => void
-    const gate = new Promise<void>((resolve) => { releaseGate = resolve })
-    let rootResolveCount = 0
-    let nestedResolved = false
-    const client = createApp({
-      gate: () => gate,
-      rootReadsRoute: true,
-      onRootResolve: () => { rootResolveCount++ },
-      onNestedResolve: () => { nestedResolved = true },
-    })
-    // the double-resolve this guards against surfaces as an unhandled error
-    // inside the scheduler flush, not as a failed DOM assertion
-    const errorHandler = vi.fn()
-    client.app.config.errorHandler = errorHandler
-    client.app.mount(el)
-
-    await nextTick()
-    expect(rootResolveCount).toBe(0)
-    expect(el.innerHTML).toContain('page a')
-
-    client.route.value = 'b'
-    await flushPromises()
-
-    expect(el.innerHTML).toContain('page b')
-    expect(el.innerHTML).not.toContain('page a')
-    expect(nestedResolved).toBe(true)
     expect(rootResolveCount).toBe(1)
 
+    // resolving the abandoned async setup must not resurrect the old branch
     releaseGate!()
     await flushPromises()
     expect(el.innerHTML).toContain('page b')
