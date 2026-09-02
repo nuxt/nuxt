@@ -1,8 +1,8 @@
 diff --git a/dist/runtime-core.cjs.js b/dist/runtime-core.cjs.js
-index 08899205dfe52109b460e9b8fc9847eb5b3241f7..506ce8c294cd74187945e4a93cc49d5b3b12d562 100644
+index 08899205dfe52109b460e9b8fc9847eb5b3241f7..a06558584860de90a54822d8b006238491f175d5 100644
 --- a/dist/runtime-core.cjs.js
 +++ b/dist/runtime-core.cjs.js
-@@ -2064,7 +2064,7 @@ function createHydrationFunctions(rendererInternals) {
+@@ -2064,13 +2064,13 @@ function createHydrationFunctions(rendererInternals) {
              getContainerType(container),
              optimized
            );
@@ -11,6 +11,13 @@ index 08899205dfe52109b460e9b8fc9847eb5b3241f7..506ce8c294cd74187945e4a93cc49d5b
              let subTree;
              if (isFragmentStart) {
                subTree = createVNode(Static);
+               subTree.anchor = nextNode ? nextNode.previousSibling : container.lastChild;
+             } else {
+-              subTree = node.nodeType === 3 ? createTextVNode("") : createVNode("div");
++              subTree = node.nodeType === 3 ? createTextVNode("") : createVNode(node.nodeType === 8 ? Comment : "div");
+             }
+             subTree.el = node;
+             vnode.component.subTree = subTree;
 @@ -6117,6 +6117,7 @@ function baseCreateRenderer(options, createHydrationFns) {
      const instance = n2.component = n1.component;
      if (shouldUpdateComponent(n1, n2, optimized)) {
@@ -19,16 +26,17 @@ index 08899205dfe52109b460e9b8fc9847eb5b3241f7..506ce8c294cd74187945e4a93cc49d5b
          {
            pushWarningContext(n2);
          }
-@@ -6843,6 +6844,8 @@ function baseCreateRenderer(options, createHydrationFns) {
+@@ -6843,6 +6844,9 @@ function baseCreateRenderer(options, createHydrationFns) {
      if (job) {
        job.flags |= 8;
        unmount(subTree, instance, parentSuspense, doRemove);
 +    } else if (instance.vnode.el && subTree) {
++      subTree.transition = instance.vnode.transition;
 +      unmount(subTree, instance, parentSuspense, doRemove);
      }
      if (um) {
        queuePostRenderEffect(um, parentSuspense);
-@@ -7057,7 +7060,7 @@ const SuspenseImpl = {
+@@ -7057,7 +7061,7 @@ const SuspenseImpl = {
          rendererInternals
        );
      } else {
@@ -37,7 +45,11 @@ index 08899205dfe52109b460e9b8fc9847eb5b3241f7..506ce8c294cd74187945e4a93cc49d5b
          n2.suspense = n1.suspense;
          n2.suspense.vnode = n2;
          n2.el = n1.el;
-@@ -7146,7 +7149,7 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+@@ -7143,10 +7147,11 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+   if (pendingBranch) {
+     suspense.pendingBranch = newBranch;
+     if (isSameVNodeType(pendingBranch, newBranch)) {
++      suspense.deps++;
        patch(
          pendingBranch,
          newBranch,
@@ -46,23 +58,32 @@ index 08899205dfe52109b460e9b8fc9847eb5b3241f7..506ce8c294cd74187945e4a93cc49d5b
          null,
          parentComponent,
          suspense,
-@@ -7154,9 +7157,9 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+@@ -7154,6 +7159,7 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
          slotScopeIds,
          optimized
        );
--      if (suspense.deps <= 0) {
-+      if (suspense.deps <= 0 && suspense.pendingBranch) {
++      suspense.deps--;
+       if (suspense.deps <= 0) {
          suspense.resolve();
--      } else if (isInFallback) {
-+      } else if (isInFallback && suspense.pendingBranch) {
-         if (!isHydrating && !suspense.isFallbackMountPending) {
-           patch(
-             activeBranch,
+       } else if (isInFallback) {
+@@ -7492,6 +7498,12 @@ function createSuspenseBoundary(vnode, parentSuspense, parentComponent, containe
+           return;
+         }
+         unsetCurrentInstance();
++        if (hydratedEl && !parentNode(hydratedEl)) {
++          if (isInPendingSuspense && --suspense.deps === 0) {
++            suspense.resolve();
++          }
++          return;
++        }
+         instance.asyncResolved = true;
+         const { vnode: vnode2 } = instance;
+         {
 diff --git a/dist/runtime-core.cjs.prod.js b/dist/runtime-core.cjs.prod.js
-index 8b2db9c0e26d3d18bf71bbf0922b61c555018708..cc500bc458e8269d9bcc5ee0459a06197389910a 100644
+index 8b2db9c0e26d3d18bf71bbf0922b61c555018708..5f87104a5a841c5584973249689c19475b41e2e3 100644
 --- a/dist/runtime-core.cjs.prod.js
 +++ b/dist/runtime-core.cjs.prod.js
-@@ -1545,7 +1545,7 @@ function createHydrationFunctions(rendererInternals) {
+@@ -1545,13 +1545,13 @@ function createHydrationFunctions(rendererInternals) {
              getContainerType(container),
              optimized
            );
@@ -71,6 +92,13 @@ index 8b2db9c0e26d3d18bf71bbf0922b61c555018708..cc500bc458e8269d9bcc5ee0459a0619
              let subTree;
              if (isFragmentStart) {
                subTree = createVNode(Static);
+               subTree.anchor = nextNode ? nextNode.previousSibling : container.lastChild;
+             } else {
+-              subTree = node.nodeType === 3 ? createTextVNode("") : createVNode("div");
++              subTree = node.nodeType === 3 ? createTextVNode("") : createVNode(node.nodeType === 8 ? Comment : "div");
+             }
+             subTree.el = node;
+             vnode.component.subTree = subTree;
 @@ -4690,6 +4690,7 @@ function baseCreateRenderer(options, createHydrationFns) {
      const instance = n2.component = n1.component;
      if (shouldUpdateComponent(n1, n2, optimized)) {
@@ -79,16 +107,17 @@ index 8b2db9c0e26d3d18bf71bbf0922b61c555018708..cc500bc458e8269d9bcc5ee0459a0619
          updateComponentPreRender(instance, n2, optimized);
          return;
        } else {
-@@ -5340,6 +5341,8 @@ function baseCreateRenderer(options, createHydrationFns) {
+@@ -5340,6 +5341,9 @@ function baseCreateRenderer(options, createHydrationFns) {
      if (job) {
        job.flags |= 8;
        unmount(subTree, instance, parentSuspense, doRemove);
 +    } else if (instance.vnode.el && subTree) {
++      subTree.transition = instance.vnode.transition;
 +      unmount(subTree, instance, parentSuspense, doRemove);
      }
      if (um) {
        queuePostRenderEffect(um, parentSuspense);
-@@ -5548,7 +5551,7 @@ const SuspenseImpl = {
+@@ -5548,7 +5552,7 @@ const SuspenseImpl = {
          rendererInternals
        );
      } else {
@@ -97,7 +126,11 @@ index 8b2db9c0e26d3d18bf71bbf0922b61c555018708..cc500bc458e8269d9bcc5ee0459a0619
          n2.suspense = n1.suspense;
          n2.suspense.vnode = n2;
          n2.el = n1.el;
-@@ -5637,7 +5640,7 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+@@ -5634,10 +5638,11 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+   if (pendingBranch) {
+     suspense.pendingBranch = newBranch;
+     if (isSameVNodeType(pendingBranch, newBranch)) {
++      suspense.deps++;
        patch(
          pendingBranch,
          newBranch,
@@ -106,23 +139,32 @@ index 8b2db9c0e26d3d18bf71bbf0922b61c555018708..cc500bc458e8269d9bcc5ee0459a0619
          null,
          parentComponent,
          suspense,
-@@ -5645,9 +5648,9 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+@@ -5645,6 +5650,7 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
          slotScopeIds,
          optimized
        );
--      if (suspense.deps <= 0) {
-+      if (suspense.deps <= 0 && suspense.pendingBranch) {
++      suspense.deps--;
+       if (suspense.deps <= 0) {
          suspense.resolve();
--      } else if (isInFallback) {
-+      } else if (isInFallback && suspense.pendingBranch) {
-         if (!isHydrating && !suspense.isFallbackMountPending) {
-           patch(
-             activeBranch,
+       } else if (isInFallback) {
+@@ -5961,6 +5967,12 @@ function createSuspenseBoundary(vnode, parentSuspense, parentComponent, containe
+           return;
+         }
+         unsetCurrentInstance();
++        if (hydratedEl && !parentNode(hydratedEl)) {
++          if (isInPendingSuspense && --suspense.deps === 0) {
++            suspense.resolve();
++          }
++          return;
++        }
+         instance.asyncResolved = true;
+         const { vnode: vnode2 } = instance;
+         handleSetupResult(instance, asyncSetupResult, false);
 diff --git a/dist/runtime-core.esm-bundler.js b/dist/runtime-core.esm-bundler.js
-index f0905f8afe50421feed03b208b19afb26e4bbb73..27a4ccbe98a2f30fccfd37cc0c879ed62aed984b 100644
+index f0905f8afe50421feed03b208b19afb26e4bbb73..ac316d996263fccacbfaa9ac02d97c386ef1b844 100644
 --- a/dist/runtime-core.esm-bundler.js
 +++ b/dist/runtime-core.esm-bundler.js
-@@ -2068,7 +2068,7 @@ function createHydrationFunctions(rendererInternals) {
+@@ -2068,13 +2068,13 @@ function createHydrationFunctions(rendererInternals) {
              getContainerType(container),
              optimized
            );
@@ -131,6 +173,13 @@ index f0905f8afe50421feed03b208b19afb26e4bbb73..27a4ccbe98a2f30fccfd37cc0c879ed6
              let subTree;
              if (isFragmentStart) {
                subTree = createVNode(Static);
+               subTree.anchor = nextNode ? nextNode.previousSibling : container.lastChild;
+             } else {
+-              subTree = node.nodeType === 3 ? createTextVNode("") : createVNode("div");
++              subTree = node.nodeType === 3 ? createTextVNode("") : createVNode(node.nodeType === 8 ? Comment : "div");
+             }
+             subTree.el = node;
+             vnode.component.subTree = subTree;
 @@ -6178,6 +6178,7 @@ function baseCreateRenderer(options, createHydrationFns) {
      const instance = n2.component = n1.component;
      if (shouldUpdateComponent(n1, n2, optimized)) {
@@ -139,16 +188,17 @@ index f0905f8afe50421feed03b208b19afb26e4bbb73..27a4ccbe98a2f30fccfd37cc0c879ed6
          if (!!(process.env.NODE_ENV !== "production")) {
            pushWarningContext(n2);
          }
-@@ -6904,6 +6905,8 @@ function baseCreateRenderer(options, createHydrationFns) {
+@@ -6904,6 +6905,9 @@ function baseCreateRenderer(options, createHydrationFns) {
      if (job) {
        job.flags |= 8;
        unmount(subTree, instance, parentSuspense, doRemove);
 +    } else if (instance.vnode.el && subTree) {
++      subTree.transition = instance.vnode.transition;
 +      unmount(subTree, instance, parentSuspense, doRemove);
      }
      if (um) {
        queuePostRenderEffect(um, parentSuspense);
-@@ -7118,7 +7121,7 @@ const SuspenseImpl = {
+@@ -7118,7 +7122,7 @@ const SuspenseImpl = {
          rendererInternals
        );
      } else {
@@ -157,7 +207,11 @@ index f0905f8afe50421feed03b208b19afb26e4bbb73..27a4ccbe98a2f30fccfd37cc0c879ed6
          n2.suspense = n1.suspense;
          n2.suspense.vnode = n2;
          n2.el = n1.el;
-@@ -7207,7 +7210,7 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+@@ -7204,10 +7208,11 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+   if (pendingBranch) {
+     suspense.pendingBranch = newBranch;
+     if (isSameVNodeType(pendingBranch, newBranch)) {
++      suspense.deps++;
        patch(
          pendingBranch,
          newBranch,
@@ -166,15 +220,24 @@ index f0905f8afe50421feed03b208b19afb26e4bbb73..27a4ccbe98a2f30fccfd37cc0c879ed6
          null,
          parentComponent,
          suspense,
-@@ -7215,9 +7218,9 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
+@@ -7215,6 +7220,7 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, namespace, sl
          slotScopeIds,
          optimized
        );
--      if (suspense.deps <= 0) {
-+      if (suspense.deps <= 0 && suspense.pendingBranch) {
++      suspense.deps--;
+       if (suspense.deps <= 0) {
          suspense.resolve();
--      } else if (isInFallback) {
-+      } else if (isInFallback && suspense.pendingBranch) {
-         if (!isHydrating && !suspense.isFallbackMountPending) {
-           patch(
-             activeBranch,
+       } else if (isInFallback) {
+@@ -7553,6 +7559,12 @@ function createSuspenseBoundary(vnode, parentSuspense, parentComponent, containe
+           return;
+         }
+         unsetCurrentInstance();
++        if (hydratedEl && !parentNode(hydratedEl)) {
++          if (isInPendingSuspense && --suspense.deps === 0) {
++            suspense.resolve();
++          }
++          return;
++        }
+         instance.asyncResolved = true;
+         const { vnode: vnode2 } = instance;
+         if (!!(process.env.NODE_ENV !== "production")) {

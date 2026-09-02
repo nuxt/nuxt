@@ -594,7 +594,7 @@ overrides:
   vue: 3.5.42
 
 patchedDependencies:
-  '@vue/runtime-core@3.5.42': b6b22d85dff556d3ae5b94a77eb043a3a3c0f9dd408f3aa2e035d49a3b2fe453
+  '@vue/runtime-core@3.5.42': 722c3bfce6beeee5cf5f6425eb5dce79649aed5ab7c62b4b04118e7733310ec0
   nitro@3.0.260610-beta: 3211111ca49ebe57bec06a9428f9129ea95059745bc08a4df231b5e35f6e0a39
   nitropack@2.13.4: 14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8
 
