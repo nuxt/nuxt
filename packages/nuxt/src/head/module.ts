@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL, headDiagnostics } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
+import { headDiagnostics } from '@nuxt/kit/internal'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { Unhead } from '@unhead/vue/vite'
@@ -102,6 +103,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     addTemplate({
       filename: 'unhead-options.mjs',
+      dependsOn: [],
       getContents () {
         const isV5 = nuxt.options.future.compatibilityVersion >= 5
 
@@ -140,6 +142,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     addTemplate({
       filename: 'unhead.config.mjs',
+      dependsOn: [],
       getContents () {
         return [
           `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,

@@ -101,5 +101,35 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Externalize dependencies in the server build (`externals`) for better build performance.',
       docs: false,
     },
+    NUXT_B7020: {
+      why: 'The client build manifest is disabled, but Nuxt requires it to render the correct assets for each route.',
+      fix: 'Remove any `build.manifest: false` override from your `nuxt.config` `vite` options or from a Vite plugin `config`/`configEnvironment` hook.',
+      docs: false,
+    },
+    NUXT_B7021: {
+      why: (p: { manifestFile: string }) => `The client build manifest was expected at \`${p.manifestFile}\` but was not emitted by the client build.`,
+      fix: 'Check that no Vite plugin removes or renames the client build manifest in a `generateBundle`/`writeBundle` hook. If this happens with no such plugin, please report it at https://github.com/nuxt/nuxt/issues.',
+      docs: false,
+    },
+    NUXT_B7022: {
+      why: (p: { existing: string, route: string }) => `Route rules for \`${p.existing}\` and \`${p.route}\` resolve to the same path; \`${p.route}\` takes precedence.`,
+      fix: (p: { canFold: boolean }) => `Disambiguate the keys${p.canFold ? ' or set `router.options.sensitive: true`' : ''}.`,
+      docs: false,
+    },
+    NUXT_B7023: {
+      why: (p: { dir: string, baseURL: string }) => `The \`nitro.publicAssets\` directory \`${p.dir}\` does not exist, so requests to \`${p.baseURL}\` will 404.`,
+      fix: 'Relative directories are resolved against your project root. Correct the `dir` or remove the entry.',
+      docs: false,
+    },
+    NUXT_B7024: {
+      why: (p: { outDir: string, publicDir: string }) => `The client build output directory is set to \`${p.outDir}\`, but the server builder writes the client build to \`${p.publicDir}\`, so the override is ignored.`,
+      fix: 'Remove the `vite.$client.build.outDir` override from your `nuxt.config`, and set `nitro.output.publicDir` to move the whole public output instead.',
+      docs: false,
+    },
+    NUXT_B7025: {
+      why: (p: { input: string }) => `The client build input is set to \`${p.input}\`, which cannot carry the document the server builder emits, so the override is ignored.`,
+      fix: 'Pass an object to `vite.$client.build.rolldownOptions.input` if you need additional inputs, or add an `index.html` at the root of your app directory to take over the document itself.',
+      docs: false,
+    },
   },
 })

@@ -1,6 +1,8 @@
+import { randomBytes } from 'node:crypto'
+import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { EnvironmentModuleGraph, Plugin as VitePlugin } from 'vite'
+import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
@@ -85,11 +87,16 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   addVitePlugin(NuxtBuildOutputsPlugin(nuxt))
   addVitePlugin(NitroVirtualBridge(nitro))
 
+  // `nitro/vite` calls `build:before` before it derives its bundler config,
+  // which is where the legacy path calls `nitro:build:before`: consumers use it
+  // to adjust nitro options and to collect the build cache.
+  nitro.hooks.hook('build:before', () => nuxt.callHook('nitro:build:before', nitro))
+
   // In dev, feed the CSS the ssr graph has loaded to `@nuxt/nitro-server`'s
   // `dev-client-css` middleware. `devClientCssPlugin` (registered at the root,
   // not via `addVitePlugin`, so its `configureServer` hook runs in the main
-  // process) pushes the derived set to the ssr module-runner worker over the
-  // env hot channel whenever the graph gains a CSS module. The worker caches
+  // process) pushes the derived set to the module-runner workers over their
+  // env hot channels whenever the graph gains a CSS module. The worker caches
   // the latest set and serves it, unioned with the globally-registered CSS.
   if (nuxt.options.dev) {
     nuxt.options.vite.plugins ||= []
@@ -144,20 +151,40 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }))
 
   if (nuxt.options.dev) {
+    let devServer: ViteDevServer | undefined
+
+    // TODO: fix upstream in nitro
+    nitro.hooks.hook('rollup:reload', () => {
+      const env = devServer?.environments.nitro
+      if (!env) { return }
+      env.moduleGraph.invalidateAll()
+      env.hot.send({ type: 'full-reload' })
+    })
+
     nuxt.hook('vite:serverCreated', (viteServer, { isServer }) => {
       if (!isServer) { return }
 
-      // Vite's internal handlers for `@vite/client`, `@vite/env` and
-      // `@react-refresh` live at the root of the dev server, but Nuxt serves
-      // them under `buildAssetsDir`. Without this rewrite they 404 (or get
-      // misrouted to the SSR pipeline based on `sec-fetch-dest`), so we drop
-      // the prefix before Vite's own middlewares run.
+      devServer = viteServer
+
+      // Nitro's dev middleware claims any request it does not recognise as an
+      // asset, and without `sec-fetch-dest`, it recognises assets by file extension,
+      // but extension-less Vite URLs such as `/_nuxt/@id/__x00__plugin-vue:export-helper`
+      // need to be routed to Vite. Setting `_nitroHandled` here is a stopgap
+      // until Nitro's own exemption for Vite-internal prefixes is base-aware.
+      // TODO: drop `_nitroHandled` and narrow `VITE_INTERNAL_RE` back to the
+      // root-served handlers once we require a Nitro version including
+      // https://github.com/nitrojs/nitro/pull/4540
       const buildAssetsDir = nuxt.options.app.buildAssetsDir
-      const VITE_ASSET_PREFIX_RE = new RegExp(`^${escapeRE(buildAssetsDir.replace(/\/+$/, ''))}\\/(@vite\\/(?:client|env)|@react-refresh)(?:\\?|$|\\/)`)
-      viteServer.middlewares.use((req, _res, next) => {
-        if (!req.url) { return next() }
-        const match = req.url.match(VITE_ASSET_PREFIX_RE)
-        if (match) {
+      const buildAssetsPrefix = escapeRE(buildAssetsDir.replace(/\/+$/, ''))
+      const VITE_INTERNAL_RE = new RegExp(`^${buildAssetsPrefix}\\/@[^/?#]`)
+      // `@vite/client`, `@vite/env` and `@react-refresh` are served from the
+      // root of the dev server rather than from under Vite's base, so they also
+      // need the prefix dropped before Vite's own middlewares run.
+      const VITE_ROOT_ASSET_RE = new RegExp(`^${buildAssetsPrefix}\\/(@vite\\/(?:client|env)|@react-refresh)(?:\\?|$|\\/)`)
+      viteServer.middlewares.use((req: IncomingMessage & { _nitroHandled?: boolean }, _res, next) => {
+        if (!req.url || !VITE_INTERNAL_RE.test(req.url)) { return next() }
+        req._nitroHandled = true
+        if (VITE_ROOT_ASSET_RE.test(req.url)) {
           req.url = '/' + req.url.slice(buildAssetsDir.length).replace(/^\/+/, '')
         }
         next()
@@ -198,8 +225,11 @@ const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
  * minifier nor Nitro's subsequent inline-and-minify pass can rename or
  * tree-shake it before the substitution runs. Because the sentinel sits in
  * expression position, deferred providers must produce a module body of
- * exactly the form `export default <expression>` (no other statements); the
- * substitution inlines the expression, parenthesised, in its place.
+ * exactly the form `export default <expression>`; the
+ * substitution inlines the expression, parenthesised, in its place. A provider
+ * may append `export const <name> = <expression>` statements for the named
+ * exports declared in `DEFERRED_NAMED_EXPORTS`; each gets its own sentinel and
+ * resolves to `undefined` when the provider omits it.
  *
  * `entryChunkName` is excluded: `StableEntryPlugin` finalises it in the client
  * env's `writeBundle`, which completes before the ssr env loads it.
@@ -211,17 +241,60 @@ const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
  */
 const DEFERRED_KEYS = new Set<keyof NuxtBuildOutputs>(['clientManifest', 'clientPrecomputed', 'entryIds', 'ssrStyles'])
 
-function sentinel (specifier: string): string {
-  return `__NUXT_BUILD_OUTPUT__${specifier.replace(/\W/g, '_')}__`
+/**
+ * Named exports a deferred build output provides in addition to its default
+ * export. Each one gets its own sentinel, and the provider must append an
+ * `export const <name> = <expression>` statement for it.
+ */
+const DEFERRED_NAMED_EXPORTS: Partial<Record<keyof NuxtBuildOutputs, readonly string[]>> = {
+  ssrStyles: ['inlinedCSS'],
 }
 
-async function getDeferredExpression (nuxt: Nuxt, key: keyof NuxtBuildOutputs): Promise<string> {
+/**
+ * Sentinels carry a per-build random tag so that they cannot collide with a
+ * string that appears in application code: substitution rewrites every
+ * occurrence it finds and fails the build on any it cannot resolve, so a
+ * guessable token would let user code be silently rewritten or break the build.
+ */
+function createSentinels () {
+  const tag = randomBytes(8).toString('hex')
+  return {
+    sentinel: (specifier: string, name?: string) => `__NUXT_BUILD_OUTPUT_${tag}__${specifier.replace(/\W/g, '_')}${name ? `__${name}` : ''}__`,
+    /**
+     * Matches a sentinel string literal in an emitted chunk. The quote
+     * character is captured rather than assumed: the chunk has already been
+     * through the minifier by the time substitution runs, and minifiers are
+     * free to re-quote string literals (oxc emits backticks).
+     */
+    literalRE: new RegExp(`(["'\`])(__NUXT_BUILD_OUTPUT_${tag}__\\w+__)\\1`, 'g'),
+    anyRE: new RegExp(`__NUXT_BUILD_OUTPUT_${tag}__\\w+__`),
+  }
+}
+
+const NAMED_EXPORT_RE = /\nexport const (\w+) = /
+
+/**
+ * Split a deferred provider's module body into the expression for its default
+ * export and one for each of its named exports.
+ */
+async function getDeferredExpressions (nuxt: Nuxt, key: keyof NuxtBuildOutputs): Promise<Map<string | undefined, string>> {
   const code = String(await nuxt.buildOutputs[key]() ?? 'export default {}')
   const body = code.trim().replace(/;$/, '')
   if (!body.startsWith('export default ')) {
     throw new Error(`[nuxt] Deferred build output \`${key}\` must be a module body of the form \`export default <expression>\`.`)
   }
-  return body.slice('export default '.length)
+
+  const expressions = new Map<string | undefined, string>()
+  let name: string | undefined
+  let rest = body.slice('export default '.length)
+  let match: RegExpMatchArray | null
+  while ((match = rest.match(NAMED_EXPORT_RE))) {
+    expressions.set(name, rest.slice(0, match.index).trim().replace(/;$/, ''))
+    name = match[1]
+    rest = rest.slice(match.index! + match[0].length)
+  }
+  expressions.set(name, rest.trim().replace(/;$/, ''))
+  return expressions
 }
 
 /**
@@ -232,12 +305,10 @@ async function getDeferredExpression (nuxt: Nuxt, key: keyof NuxtBuildOutputs): 
  * so it picks up values finalised after the ssr env has bundled.
  */
 function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
+  const { sentinel, literalRE, anyRE } = createSentinels()
+
   return {
     name: 'nuxt:build-outputs',
-    // `post` so the deferred substitution in `generateBundle` runs after
-    // `SSRStylesPlugin` (`enforce: 'pre'`) has emitted its styles and populated
-    // the data that `build:manifest` listeners consume.
-    enforce: 'post',
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
@@ -260,7 +331,11 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         // ssr env has bundled. They emit a sentinel here, substituted in
         // `generateBundle`.
         if (!nuxt.options.dev && DEFERRED_KEYS.has(key)) {
-          return { code: `export default ${JSON.stringify(sentinel(specifier))}`, map: null }
+          const statements = [`export default ${JSON.stringify(sentinel(specifier))}`]
+          for (const name of DEFERRED_NAMED_EXPORTS[key] ?? []) {
+            statements.push(`export const ${name} = ${JSON.stringify(sentinel(specifier, name))}`)
+          }
+          return { code: statements.join('\n'), map: null }
         }
 
         const code = await nuxt.buildOutputs[key]()
@@ -279,28 +354,35 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         const replacements = new Map<string, string>()
         for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
           if (!DEFERRED_KEYS.has(key)) { continue }
-          replacements.set(sentinel(specifier), `(${await getDeferredExpression(nuxt, key)})`)
+          const expressions = await getDeferredExpressions(nuxt, key)
+          replacements.set(sentinel(specifier), `(${expressions.get(undefined)})`)
+          for (const name of DEFERRED_NAMED_EXPORTS[key] ?? []) {
+            replacements.set(sentinel(specifier, name), `(${expressions.get(name) ?? 'undefined'})`)
+          }
         }
 
         const sourcemap = !!this.environment.config.build.sourcemap
         for (const file of Object.values(bundle)) {
           if (file.type !== 'chunk') { continue }
           let s: MagicString | undefined
-          for (const [token, expression] of replacements) {
-            for (const quote of ['"', '\''] as const) {
-              const literal = quote + token + quote
-              const index = file.code.indexOf(literal)
-              if (index === -1) { continue }
-              s ??= new MagicString(file.code)
-              s.overwrite(index, index + literal.length, expression)
+          for (const match of file.code.matchAll(literalRE)) {
+            const expression = replacements.get(match[2]!)
+            if (!expression) {
+              throw new Error(`[nuxt] Unknown build output placeholder \`${match[2]}\` in \`${file.fileName}\`.`)
             }
+            s ??= new MagicString(file.code)
+            s.overwrite(match.index, match.index + match[0].length, expression)
           }
-          if (!s) { continue }
-          if (sourcemap && file.map) {
-            const editMap = s.generateMap({ hires: true, source: file.fileName })
-            file.map = remapping([editMap as any, file.map as any], () => null) as unknown as typeof file.map
+          if (s) {
+            if (sourcemap && file.map) {
+              const editMap = s.generateMap({ hires: true, source: file.fileName })
+              file.map = remapping([editMap as any, file.map as any], () => null) as unknown as typeof file.map
+            }
+            file.code = s.toString()
           }
-          file.code = s.toString()
+          if (anyRE.test(file.code)) {
+            throw new Error(`[nuxt] Failed to substitute build output placeholder in \`${file.fileName}\`. This is a bug in Nuxt; please report it.`)
+          }
         }
       },
     },
@@ -308,18 +390,27 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
 }
 
 /**
- * Dev-only: push the CSS the ssr module graph has loaded to the ssr
- * module-runner worker over the env hot channel.
+ * Dev-only: push the CSS the ssr module graph has loaded to the module-runner
+ * workers over their env hot channels.
  */
 function DevClientCssPlugin (nuxt: Nuxt): VitePlugin {
   let push: (() => void) | undefined
   return {
     name: 'nuxt:dev-client-css',
     configureServer (server) {
-      const env = server.environments.ssr
-      if (!env) { return }
-      push = () => env.hot.send(DEV_CLIENT_CSS_EVENT, collectDevCss(nuxt, env.moduleGraph))
-      env.hot.on(DEV_CLIENT_CSS_SEED, push)
+      const ssr = server.environments.ssr
+      if (!ssr) { return }
+      // The CSS always comes from the ssr graph, but the virtual that consumes
+      // it is evaluated in whichever runner imports it: the `dev-client-css`
+      // middleware runs in the `nitro` environment while the renderer entry
+      // runs in `ssr`. Each environment has its own hot channel, so both have
+      // to be fed or the middleware never receives a set.
+      const targets = [ssr, server.environments.nitro].filter(env => !!env)
+      push = () => {
+        const css = collectDevCss(nuxt, ssr.moduleGraph)
+        for (const env of targets) { env.hot.send(DEV_CLIENT_CSS_EVENT, css) }
+      }
+      for (const env of targets) { env.hot.on(DEV_CLIENT_CSS_SEED, push) }
     },
     transform: {
       handler (_code, id) {

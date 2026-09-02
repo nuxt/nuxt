@@ -6,6 +6,17 @@ export interface NuxtCompatibility {
   nuxt?: string
 
   /**
+   * Required nitro version in semver format.
+   *
+   * Like `nuxt`, this is a requirement check only: the module is disabled when the host
+   * nitro does not satisfy the range. It does not change how the module's server
+   * registrations are versioned; pass `version` to kit helpers such as
+   * `addServerHandler` (or use `createNitroHelpers()`) for that.
+   * @example `>=2.0.0` or `^3.0.0`.
+   */
+  nitro?: string
+
+  /**
    * Mark a builder as incompatible, or require a particular version.
    *
    * @example

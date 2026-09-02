@@ -1,4 +1,4 @@
-import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
+import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 
 // Regression fixture for nuxt/nuxt#22966: an asset imported from both the app
 // and a web worker should be emitted once, not under two differently-named copies.

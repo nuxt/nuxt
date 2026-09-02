@@ -11,10 +11,18 @@
   "license": "MIT",
   "type": "module",
   "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "internal": [
+        "./dist/internal.d.mts"
+      ]
+    }
+  },
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
     "./builder-env": "./src/builder-env.ts",
+    "./internal": "./src/internal.ts",
     "./package.json": "./package.json"
   },
   "files": [
@@ -24,7 +32,7 @@
     "env.d.ts"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -47,7 +55,6 @@
     "@vue/compiler-sfc": "catalog:vue",
     "@vue/language-core": "catalog:dev",
     "autoprefixer": "catalog:build",
-    "c12": "catalog:build",
     "chokidar": "catalog:build",
     "compatx": "catalog:build",
     "css-minimizer-webpack-plugin": "catalog:webpack",
@@ -55,19 +62,17 @@
     "esbuild": "catalog:dev",
     "esbuild-loader": "catalog:webpack",
     "h3": "catalog:dev",
-    "hookable": "catalog:app-runtime",
-    "ignore": "catalog:build",
     "mini-css-extract-plugin": "catalog:webpack",
     "ofetch": "catalog:app-runtime",
     "oxc-transform": "catalog:dev",
     "postcss": "catalog:build",
     "rollup-plugin-visualizer": "catalog:dev",
-    "scule": "catalog:build",
     "tsdown": "catalog:dev",
     "unctx": "catalog:build",
     "unimport": "catalog:build",
     "untyped": "catalog:build",
     "vite": "catalog:vite",
+    "vitest": "catalog:dev",
     "vue": "catalog:app-runtime",
     "vue-bundle-renderer": "catalog:build",
     "vue-loader": "catalog:vue",
@@ -82,6 +87,7 @@
     "exports": {
       ".": "./dist/index.mjs",
       "./builder-env": "./dist/builder-env.mjs",
+      "./internal": "./dist/internal.mjs",
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"

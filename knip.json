@@ -4,6 +4,7 @@
     "duplicates": "off"
   },
   "ignoreExportsUsedInFile": true,
+  "tags": ["-knipignore"],
   "ignoreIssues": {
     "**/.nuxt/**": ["unlisted", "unresolved"]
   },
@@ -26,6 +27,7 @@
         "scripts/*",
         "test/*.ts",
         "test/e2e/*.ts",
+        "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
         "test/mocks/app-config.ts"
       ]
@@ -53,6 +55,11 @@
         "@babel/plugin-syntax-typescript"
       ]
     },
+    "packages/vite-server": {
+      "ignoreDependencies": [
+        "mocked-exports"
+      ]
+    },
     "packages/vite": {
       "entry": [
         "src/fix-stacktrace.ts"
@@ -69,6 +76,9 @@
     "packages/kit": {
       "entry": [
         "test/**/*-fixture/**/*.{js,ts,mjs,cjs,cts,mts,vue}"
+      ],
+      "ignoreDependencies": [
+        "confbox"
       ]
     },
     "packages/nuxt": {
@@ -84,8 +94,10 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
+        "@nuxt/nitro-server",
         "@nuxt/telemetry",
-        "@nuxt/vite-builder"
+        "@nuxt/vite-builder",
+        "@nuxt/vite-server"
       ]
     },
     "packages/ui-templates": {
@@ -127,14 +139,11 @@
         "file-loader",
         "h3",
         "h3-next",
-        "jiti",
         "knitwork",
         "memfs",
         "mini-css-extract-plugin",
-        "mlly",
         "ohash",
         "pathe",
-        "pify",
         "postcss",
         "postcss-import",
         "postcss-import-resolver",

@@ -1,4 +1,4 @@
-import { isNuxtPrepare, isWebpack, projectSuffix, withMatrix } from '../../matrix'
+import { isNuxtPrepare, isWebpack, projectSuffix, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),

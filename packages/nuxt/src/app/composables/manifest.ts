@@ -1,12 +1,14 @@
-import type { H3Event } from '@nuxt/nitro-server/h3'
-import type { NitroRouteRules } from 'nitro/types'
+import type { AppRouteRules, RequestEvent } from '@nuxt/schema'
 import { useRuntimeConfig } from '../nuxt'
 import { manifestDiagnostics } from '../diagnostics/manifest'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
-const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
+// hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
+function routeRulesMatcher (path: string): AppRouteRules {
+  return (_routeRulesMatcher as (path: string) => AppRouteRules)(path)
+}
 
 export interface NuxtAppManifestMeta {
   id: string
@@ -68,11 +70,11 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 }
 
 /** @since 3.7.4 */
-export function getRouteRules (event: H3Event): NitroRouteRules
+export function getRouteRules (event: RequestEvent): AppRouteRules
 export function getRouteRules (options: { path: string }): Record<string, any>
 /** @deprecated use `getRouteRules({ path })` instead */
 export function getRouteRules (url: string): Record<string, any>
-export function getRouteRules (arg: string | H3Event | { path: string }) {
+export function getRouteRules (arg: string | RequestEvent | { path: string }) {
   const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   try {
     return routeRulesMatcher(path)

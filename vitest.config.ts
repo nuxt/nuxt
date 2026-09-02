@@ -1,12 +1,25 @@
 import process from 'node:process'
 import { resolve } from 'pathe'
-import { defineVitestProject } from '@nuxt/test-utils/config'
+import { defineVitestProject as _defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
-import { isCI, isWindows } from 'std-env'
+import { isCI, isWindows, provider } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 import type { NuxtConfig } from 'nuxt/schema'
 import { defu } from 'defu'
+
+// TODO: fix upstream in nuxt/test-utils
+function defineVitestProject (config: Parameters<typeof _defineVitestProject>[0]) {
+  return _defineVitestProject(defu({
+    test: {
+      environmentOptions: {
+        nuxt: {
+          overrides: { experimental: { nitroViteEnvironment: false } } satisfies NuxtConfig,
+        },
+      },
+    },
+  }, config))
+}
 
 const commonSettings: NuxtConfig = {
   pages: true,
@@ -16,6 +29,14 @@ const commonSettings: NuxtConfig = {
     '/pre/test': { redirect: '/' },
     '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
+    // Decoded keys must match the percent-encoded path generated for a unicode page,
+    // including when a catch-all rule sets the same key, and when folding an
+    // encoded non-ASCII character is required to match.
+    '/测试': { redirect: '/unicode-target' },
+    '/unicode/**': { ssr: true },
+    '/unicode/测试': { ssr: false },
+    '/cafÉ': { redirect: '/accented-target' },
+    [`/pre-encoded/${encodeURIComponent('测试')}`]: { redirect: '/pre-encoded-target' },
   },
   experimental: {
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
@@ -89,9 +110,16 @@ const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nux
 
 export default defineConfig({
   test: {
+    // required for the flakiness.io reporter to record test locations
+    includeTaskLocation: isCI,
     onConsoleLog (log) {
       if (log.includes('<Suspense> is an experimental feature')) { return false }
     },
+    reporters: [
+      'default',
+      ...provider === 'github_actions' ? ['github-actions' as const] : [],
+      ['@flakiness/vitest', { flakinessProject: 'nuxt/nuxt' }],
+    ],
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },
@@ -121,10 +149,6 @@ export default defineConfig({
           retry: isCI ? 2 : 0,
           benchmark: { include: [] },
           env: fixtureProjectEnv(entry),
-          // TODO: fix upstream in nitro
-          // `nitro/vite` keeps `RunnerManager` in process-global state, so all but
-          // one concurrent worker gets a 503: 'Vite environment "nitro" is unavailable'
-          ...(entry.builder === 'nitro-vite' ? { fileParallelism: false } : {}),
         },
       })),
       {
@@ -139,8 +163,19 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          name: 'no-jiti',
+          include: ['test/no-jiti/*.test.ts'],
+          globalSetup: ['./test/setup-prepare.ts'],
+          setupFiles: ['./test/setup-env.ts'],
+          testTimeout: 300_000,
+          benchmark: { include: [] },
+        },
+      },
+      {
         define: {
           'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
+          'import.meta.server': '(globalThis.__TEST_SERVER__ ?? false)',
         },
         resolve: {
           alias: {

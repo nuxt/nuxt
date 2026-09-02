@@ -22,7 +22,7 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -41,14 +41,11 @@
     "file-loader": "catalog:webpack",
     "fork-ts-checker-webpack-plugin": "catalog:webpack",
     "hash-sum": "catalog:webpack",
-    "jiti": "catalog:build",
     "knitwork": "catalog:build",
     "memfs": "catalog:webpack",
     "mini-css-extract-plugin": "catalog:webpack",
-    "mlly": "catalog:build",
     "ohash": "catalog:build",
     "pathe": "catalog:build",
-    "pify": "catalog:webpack",
     "postcss": "catalog:build",
     "postcss-import": "catalog:build",
     "postcss-import-resolver": "catalog:build",

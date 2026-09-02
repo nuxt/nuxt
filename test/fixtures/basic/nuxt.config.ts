@@ -3,7 +3,7 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
-import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
+import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
@@ -157,6 +157,7 @@ export default withMatrix({
     decorators: true,
     typedPages: true,
     clientFallback: true,
+    prerenderErrorPages: true,
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
@@ -171,6 +172,10 @@ export default withMatrix({
         dir: './custom-public',
         baseURL: '/custom',
       },
+      {
+        dir: '~~/custom-public',
+        baseURL: '/aliased',
+      },
     ],
     routeRules: {
       '/route-rules/spa': { ssr: false },
@@ -178,6 +183,8 @@ export default withMatrix({
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
+      // Decoded key must still apply to the percent-encoded path generated for the page.
+      '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
       '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },
@@ -196,6 +203,8 @@ export default withMatrix({
         '/random/b',
         '/random/c',
         '/prefetch/server-components',
+        '/prerender/catchall/a/b',
+        '/404.html',
       ],
     },
   },

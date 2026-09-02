@@ -16,11 +16,14 @@
     "nuxt": "bin/nuxt.mjs"
   },
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "types": "./types.dev.d.ts",
+      "default": "./src/index.ts"
+    },
     "./config": {
       "types": "./config.d.ts",
       "import": "./config.js",
-      "require": "./config.cjs"
+      "require": "./config.js"
     },
     "./schema": "./schema.js",
     "./kit": "./kit.js",
@@ -74,7 +77,7 @@
     "schema.*"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -87,9 +90,11 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "catalog:build",
     "@nuxt/vite-builder": "workspace:*",
+    "@nuxt/vite-server": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
     "@vue/shared": "catalog:app-runtime",
     "chokidar": "catalog:build",
+    "clickable-path": "catalog:build",
     "compatx": "catalog:build",
     "consola": "catalog:app-runtime",
     "cookie-es": "catalog:app-runtime",
@@ -102,11 +107,9 @@
     "hookable": "catalog:app-runtime",
     "ignore": "catalog:build",
     "impound": "catalog:build",
-    "jiti": "catalog:build",
     "klona": "catalog:app-runtime",
     "knitwork": "catalog:build",
     "magic-string": "catalog:vite",
-    "mlly": "catalog:build",
     "nanotar": "catalog:build",
     "nostics": "catalog:app-runtime",
     "object-identity": "catalog:app-runtime",
@@ -118,7 +121,6 @@
     "perfect-debounce": "catalog:app-runtime",
     "picomatch": "catalog:build",
     "pkg-types": "catalog:build",
-    "rolldown": "catalog:vite",
     "rolldown-string": "catalog:vite",
     "scule": "catalog:build",
     "std-env": "catalog:build",
@@ -146,6 +148,8 @@
     "@vitejs/plugin-vue": "catalog:vue",
     "@vitejs/plugin-vue-jsx": "catalog:dev",
     "@vue/compiler-sfc": "catalog:vue",
+    "jiti": "catalog:build",
+    "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:vite",
@@ -155,13 +159,18 @@
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
-    "@types/node": ">=18.12.0"
+    "@types/node": ">=18.12.0",
+    "jiti": "^2.7.0",
+    "rolldown": "^1.1.5"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
       "optional": true
     },
     "@types/node": {
+      "optional": true
+    },
+    "jiti": {
       "optional": true
     }
   },

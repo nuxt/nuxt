@@ -1,6 +1,8 @@
 import type { H3Event } from 'nitro/h3'
 import { getDevClientCss } from '#internal/nuxt/dev-client-css'
 
+import '../../context'
+
 /**
  * Dev-only: record the CSS modules the builder has loaded for this request
  * into the request context, so the SSR renderer can emit the right stylesheet

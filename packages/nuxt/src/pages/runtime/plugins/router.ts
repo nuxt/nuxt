@@ -16,9 +16,13 @@ import { navigateTo } from '#app/composables/router'
 import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
 
 import _routes, { handleHotUpdate } from '#build/routes'
+import _routeRulesMatcher from '#build/route-rules.mjs'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
+
+// matches a trailing slash on the path only, leaving query and hash significant
+const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -200,7 +204,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       && nuxtApp.isHydrating
       && nuxtApp.payload.prerenderedAt
       && nuxtApp.payload.path
-      && initialURL !== nuxtApp.payload.path
+      && initialURL.replace(PATH_TRAILING_SLASH_RE, '') !== nuxtApp.payload.path.replace(PATH_TRAILING_SLASH_RE, '')
       && isSamePath(router.currentRoute.value.path, nuxtApp.payload.path)
 
     syncCurrentRoute()
@@ -216,6 +220,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       if (import.meta.client && !nuxtApp.isHydrating && to.fullPath !== createCurrentLocation(routerBase, window.location)) {
         history.push(to.fullPath)
       }
+    }
+
+    // Routes served under a `noScripts` route rule must be loaded as full
+    // documents: a client-side navigation would render them with (and keep
+    // alive) the JavaScript they are meant to be served without
+    if (import.meta.client) {
+      router.beforeEach((to) => {
+        if (nuxtApp.isHydrating) { return }
+        if ((_routeRulesMatcher(to.path) as { noScripts?: boolean }).noScripts) {
+          window.location.assign(router.resolve(to.fullPath).href)
+          return false
+        }
+      })
     }
 
     const initialLayout = nuxtApp.payload.state._layout

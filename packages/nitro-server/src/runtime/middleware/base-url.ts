@@ -1,5 +1,9 @@
 import { HTTPError, defineEventHandler } from 'nitro/h3'
 import { useRuntimeConfig } from 'nitro/runtime-config'
+
+import { urlHash } from '../utils/base'
+
+import '../context'
 import { serverFetch } from 'nitro'
 
 const config = useRuntimeConfig()
@@ -7,7 +11,9 @@ const baseURL = config.app.baseURL?.replace(/\/$/, '') || '/'
 const hasBaseURL = baseURL !== '/' && !/^\.(?:$|\/)/.test(baseURL)
 
 const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
-  if (!hasBaseURL) {
+  // Prerendered routes are requested (and written out) without the base URL, as the output is
+  // deployed at the base rather than served from it.
+  if (!hasBaseURL || import.meta.prerender) {
     return
   }
 
@@ -17,7 +23,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event
   }
 
   if (event.url.pathname === baseURL || event.url.pathname.startsWith(baseURL + '/')) {
-    const newURL = (event.url.pathname.slice(baseURL.length) || '/') + event.url.search + event.url.hash
+    const newURL = (event.url.pathname.slice(baseURL.length) || '/') + event.url.search + urlHash(event.url)
 
     return serverFetch(newURL, event.req, {
       nuxt: {

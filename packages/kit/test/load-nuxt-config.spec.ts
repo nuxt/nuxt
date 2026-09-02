@@ -131,6 +131,25 @@ describe('loadNuxtConfig', () => {
     }
   })
 
+  it('should support jiti-imported JSON modules in build-time config', async () => {
+    // jiti gives JSON imports a non-enumerable, self-referential `default` interop
+    // property; cloning the config must not recurse into it (#35729 regression)
+    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-json-config-'))
+    await writeFile(join(tempDir, 'tsconfig.base.json'), JSON.stringify({ compilerOptions: { strict: true } }))
+    await writeFile(join(tempDir, 'nuxt.config.ts'), `import tsConfig from './tsconfig.base.json'
+
+    export default defineNuxtConfig({
+      nitro: { typescript: { tsConfig } },
+    })\n`)
+
+    try {
+      const config = await loadNuxtConfig({ cwd: tempDir })
+      expect(config.nitro.typescript?.tsConfig?.compilerOptions?.strict).toBe(true)
+    } finally {
+      await rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
   describe('with .env file', () => {
     let tempDir: string
 
@@ -165,6 +184,31 @@ describe('loadNuxtConfig', () => {
       expect(config.devServer.port).toBe(3005)
       expect(config.devServer.host).toBe('0.0.0.0')
     })
+  })
+
+  it('should keep typesDir at the default build directory when the build directory is relocated', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-types-dir-'))
+    await mkdir(join(tempDir, '.nuxt'), { recursive: true })
+
+    try {
+      const config = await loadNuxtConfig({ cwd: tempDir, overrides: { dev: false } })
+      expect(config.buildDir).toBe(join(tempDir, 'node_modules/.cache/nuxt/.nuxt'))
+      expect(config.typesDir).toBe(join(tempDir, '.nuxt'))
+    } finally {
+      await rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('should default typesDir to a custom build directory', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-types-dir-'))
+    await writeFile(join(tempDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({ buildDir: \'build\' })\n')
+
+    try {
+      const config = await loadNuxtConfig({ cwd: tempDir })
+      expect(config.typesDir).toBe(join(tempDir, 'build'))
+    } finally {
+      await rm(tempDir, { recursive: true, force: true })
+    }
   })
 
   it('should preserve and resolve a custom env name', async () => {

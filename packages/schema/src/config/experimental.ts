@@ -1,3 +1,4 @@
+import { schemaDiagnostics } from '../diagnostics.ts'
 import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
@@ -109,6 +110,44 @@ export default defineResolvers({
         return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
       },
     },
+    /**
+     * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
+     *
+     * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.
+     * @type {boolean | number[]}
+     */
+    prerenderErrorPages: {
+      $resolve: (val) => {
+        if (!Array.isArray(val)) {
+          return !!val
+        }
+        return val.filter((status) => {
+          if (Number.isInteger(status) && status >= 400 && status <= 599) {
+            return true
+          }
+          schemaDiagnostics.NUXT_B5020({ status: String(status) })
+          return false
+        })
+      },
+    },
+
+    /**
+     * Respond with an early 404 error for requests whose path cannot match any page route,
+     * without loading the Vue app, its plugins or middleware on the server.
+     *
+     * Page routes (including aliases) are converted to route patterns at build time and
+     * requests are checked against them before server-side rendering begins.
+     *
+     * This is opt-in as it can break apps that rely on runtime routing: pages added
+     * dynamically with `router.addRoute()` (on the server or the client), or route
+     * middleware that redirects unknown paths to existing ones. It also applies to
+     * `ssr: false` routes, which respond with a 404 error rather than the SPA shell when
+     * no page can match. The option is disabled automatically in development, when using
+     * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
+     * file may modify `routes`.
+     */
+    early404: false,
+
     clientFallback: false,
     crossOriginPrefetch: false,
 
@@ -167,6 +206,11 @@ export default defineResolvers({
       },
     },
     extraPageMetaExtractionKeys: [],
+    extractSerializablePageMeta: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     sharedPrerenderData: {
       $resolve (val) {
         return typeof val === 'boolean' ? val : true
@@ -195,6 +239,11 @@ export default defineResolvers({
     },
     clientNodeCompat: false,
     navigationRepaint: true,
+    navigateToEarlyReturn: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     buildCache: false,
     normalizeComponentNames: {
       $resolve: (val) => {
@@ -249,8 +298,15 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+    // TODO: remove this option, including from the schema types, before Nuxt 5 is released
     parseErrorData: {
-      $resolve: (val) => {
+      $resolve: async (val, get) => {
+        if ((await get('future.compatibilityVersion')) >= 5) {
+          if (val === false) {
+            schemaDiagnostics.NUXT_B5016()
+          }
+          return true
+        }
         return typeof val === 'boolean' ? val : true
       },
     },
@@ -293,15 +349,17 @@ export default defineResolvers({
      */
     nitroViteEnvironment: {
       $resolve: async (val, get) => {
-        if (val !== true) {
+        if (val === false) {
           return false
         }
         const builder = await get('builder')
         if (builder !== 'vite' && (builder as string) !== '@nuxt/vite-builder') {
-          console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+          if (val === true) {
+            schemaDiagnostics.NUXT_B5027()
+          }
           return false
         }
-        return val
+        return true
       },
     },
     asyncCallHook: {
