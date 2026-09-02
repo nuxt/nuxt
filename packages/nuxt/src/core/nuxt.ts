@@ -6,7 +6,6 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
-import { compileRoutes } from 'fetchdts/compiler'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
@@ -44,7 +43,7 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
-import { buildServerRoutes, collectPageRoutes, collectServerRoutes, resolveServerRoutes } from './utils/server-routes.ts'
+import { buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRoutesModule, resolveServerRoutes } from './utils/server-routes.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
@@ -274,7 +273,6 @@ async function initNuxt (nuxt: Nuxt) {
       // the server serves before anything is typed from it.
       const typeFromRoutes = nuxt.options.experimental.routeTypedFetch
       const { routes, requestTypes } = await resolveServerRoutes(nuxt)
-      const extractors = [requestTypes?.body, requestTypes?.query, requestTypes?.headers].filter(Boolean)
 
       // under `'isomorphic'` the pages the Vue router serves are part of the route set: nitro does
       // not know about the renderer, so a page's path is otherwise invisible and would be rejected
@@ -283,32 +281,13 @@ async function initNuxt (nuxt: Nuxt) {
             .map(route => ({ ...route, metadata: { GET: { responseType: 'string' } } }))
         : []
 
-      return [
-        compileRoutes([{ routes: [...buildServerRoutes(routes, emittedFrom, requestTypes), ...pages] }], {
-          name: 'GeneratedServerRoutes',
-          // `fetchdts` is not a dependency of user projects, so its vocabulary is named through the
-          // re-exports in `nuxt/app` instead
-          moduleSpecifier: 'nuxt/app',
-          // the accessors resolve against the generated routes intersected with the interface an
-          // app can augment, so a route added by hand is found by the walk behind the exact-match
-          // table rather than being invisible. An intersection rather than an augmentation of
-          // `ServerRoutes`, because nitro already contributes its `InternalApi` routes there and
-          // the two describe a route differently: declaring both on one interface is an error,
-          // while intersecting them leaves the keys nitro contributed inert
-          resolveAgainst: 'AugmentedServerRoutes',
-          imports: [
-            'import type { ServerRoutes } from \'@nuxt/schema\'',
-            'import type { Serialize } from \'nuxt/app\'',
-            ...extractors.length && requestTypes ? [`import type { ${extractors.sort().join(', ')} } from '${requestTypes.module}'`] : [],
-            'type AugmentedServerRoutes = GeneratedServerRoutes & ServerRoutes',
-          ],
-        }).code,
-        // whether an unrecognised path is an error is a build-time decision, so the resolved answer
-        // is emitted rather than the app layer branching on a type-level flag
-        `export type StrictFetchPaths = ${typeFromRoutes && nuxt.options.experimental.strictRouteTypes !== false}`,
-        // which engine types `$fetch` and `useFetch`, resolved here for the same reason
-        `export type RouteTypesEngine = '${typeFromRoutes ? 'generated' : 'internal-api'}'`,
-      ].join('\n')
+      return emitServerRoutesModule({
+        routes: buildServerRoutes(routes, emittedFrom, requestTypes),
+        pages,
+        requestTypes,
+        strict: nuxt.options.experimental.strictRouteTypes !== false,
+        typeFromRoutes,
+      })
     },
   })
 

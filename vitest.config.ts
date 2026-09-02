@@ -155,6 +155,16 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'type-perf',
+          include: ['packages/nuxt/test/typed-fetch-budget.test.ts'],
+          // runs after the other projects rather than beside them
+          sequence: { groupOrder: 1 },
+          testTimeout: 300_000,
+          benchmark: { include: [] },
+        },
+      },
+      {
+        test: {
           name: 'no-jiti',
           include: ['test/no-jiti/*.test.ts'],
           globalSetup: ['./test/setup-prepare.ts'],
@@ -187,7 +197,7 @@ export default defineConfig({
           include: ['packages/**/*.{test,spec}.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-          exclude: [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
+          exclude: [...fixtureExclude, 'packages/nuxt/test/typed-fetch-budget.test.ts'],
         },
       },
       await defineVitestProject({

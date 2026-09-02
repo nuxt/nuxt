@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineEventHandler, readBody } from 'h3'
+import { defineEventHandler, getQuery, readBody } from 'h3'
 
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
@@ -62,6 +62,18 @@ describe('useFetch', () => {
     /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { params: { id: ref('3') } }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
+  })
+
+  it('drops `routes`, which describes the route set for the types only', async () => {
+    const seen: string[][] = []
+    registerEndpoint('/api/routes-dropped', defineEventHandler((event) => {
+      seen.push(Object.keys(getQuery(event)))
+      return { ok: true }
+    }))
+
+    await useFetch('/api/routes-dropped', { key: 'routes-a', routes: {} as { '/x': never } })
+
+    expect(seen).toStrictEqual([[]])
   })
 
   it('does not write resolved data to the payload with `serialize: false`', async () => {
