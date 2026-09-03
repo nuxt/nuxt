@@ -56,9 +56,9 @@ const float FOCAL = 1.3;
 const float HORIZON = 0.30;
 
 // the two summits that shape the skyline, in screen-x units
-const float PEAK1_X = -0.28;
+const float PEAK1_X = -0.40;
 const float PEAK1_H = 3.2;
-const float PEAK2_X = 0.62;
+const float PEAK2_X = 0.40;
 const float PEAK2_H = 2.2;
 
 const vec2 QUAD[6] = vec2[6](
@@ -125,10 +125,10 @@ void main () {
   float winter = uSeason.x;
   float light = uSeason.y;
 
-  // the lockup centre is needed by both the terrain and the flakes
+  // the icon centre is needed by both the terrain and the flakes
   float logoH = max(uLogoScale.y, 0.01);
   vec2 centre = vec2(
-    uLogoCentre.x * 2.0 - 1.0 + logoH * 2.5 / aspect,
+    uLogoCentre.x * 2.0 - 1.0,
     1.0 - 2.0 * uLogoCentre.y
   );
   vec2 offset = QUAD[corner];
@@ -148,9 +148,9 @@ void main () {
     float y = 1.2 - fract(r2 + t * (0.020 + r3 * 0.035)) * 2.5;
     vec2 pos = vec2(x, y);
 
-    // flakes thin out over the lockup so they never sit on the wordmark
+    // flakes thin out over the icon so they never sit on the mark
     vec2 toCentre = vec2((pos.x - centre.x) * aspect, pos.y - centre.y);
-    vec2 clear = abs(toCentre / vec2(logoH * 7.0, logoH * 3.2));
+    vec2 clear = abs(toCentre / vec2(logoH * 3.4, logoH * 2.8));
     float clearing = 0.25 + 0.75 * smoothstep(0.5, 1.2, pow(pow(clear.x, 3.0) + pow(clear.y, 3.0), 1.0 / 3.0));
     float twinkle = 0.75 + 0.25 * sin(t * (1.1 + r1 * 2.0) + r2 * 30.0);
     float sizePx = (0.55 + depth * 1.5) * (resolution.y / 900.0);
@@ -204,16 +204,14 @@ void main () {
     occluded = max(occluded, step(sy + 0.012, (hs - CAM_Y) / zs * FOCAL + HORIZON));
   }
 
-  // the lockup sits in a clearing so it always reads on plain ground. Its
-  // centre is right of the icon slot: the official mark is 128 units wide for a
-  // 48-unit icon, so the middle is 1.25 icon-heights along.
+  // the icon sits in a tight clearing so it always reads on plain ground.
+  // Waves and ripples are measured from this same point, so they leave the mark.
   vec2 toCentre = vec2((u - centre.x) * aspect, sy - centre.y);
   float dist = length(toCentre);
   // The clearing has to read as haze, not as a hole cut out of the scene, so it
-  // fades over a long distance and its edge is broken up by noise. A squircle
-  // rather than an ellipse: the lockup is a wide, short block, which an ellipse
-  // fits poorly.
-  vec2 clear = abs(toCentre / vec2(logoH * 8.0, logoH * 3.6));
+  // fades over a short distance and its edge is broken up by noise. A squircle
+  // around the icon, not the old icon+wordmark block.
+  vec2 clear = abs(toCentre / vec2(logoH * 3.6, logoH * 3.0));
   float clearEdge = pow(pow(clear.x, 3.0) + pow(clear.y, 3.0), 1.0 / 3.0)
     + (noise2(vec2(xw * 0.55, z * 0.55)) - 0.5) * 0.30;
   float clearing = smoothstep(0.46, 1.30, clearEdge);
