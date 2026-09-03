@@ -62,9 +62,6 @@
       ]
     },
     "packages/vite": {
-      "entry": [
-        "src/fix-stacktrace.ts"
-      ],
       "ignoreDependencies": [
         "mocked-exports",
         "nitropack",

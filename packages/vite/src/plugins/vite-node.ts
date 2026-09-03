@@ -23,6 +23,28 @@ import { toVirtualId } from '../utils/index.ts'
 import { collectDevCss } from '../utils/css.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 import type { ErrorPartial } from '../types.ts'
+import type { ViteNodeErrorData } from '../vite-node-runner.ts'
+
+/**
+ * Serialise a Vite transform failure for transport over the vite-node socket,
+ * keeping the metadata needed to render an exact location.
+ *
+ * @param error - The error thrown by `fetchModule`.
+ * @param moduleId - Module id that was being fetched.
+ */
+export function serializeViteNodeError (error: any, moduleId: string): ViteNodeErrorData {
+  const errorData: ViteNodeErrorData = {
+    code: 'VITE_ERROR',
+    id: moduleId,
+    stack: error.stack || '',
+    message: error.message || '',
+  }
+  if (error.frame) { errorData.frame = error.frame }
+  if (error.loc) { errorData.loc = { file: error.loc.file || error.id, line: error.loc.line, column: error.loc.column } }
+  if (error.plugin) { errorData.plugin = error.plugin }
+  if (error.pluginCode) { errorData.pluginCode = error.pluginCode }
+  return errorData
+}
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
@@ -192,8 +214,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
+  const sourceMapPluginPath = resolveModulePath('#ssr-sourcemap', { from: import.meta.url })
 
-  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath].map(p => pathToFileURL(p).href))
+  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath, sourceMapPluginPath].map(p => pathToFileURL(p).href))
   nitro.options.rollupConfig ||= {}
   const existingExternal = nitro.options.rollupConfig.external
   nitro.options.rollupConfig.external = (id, ...args) => {
@@ -216,6 +239,11 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const runnerCode = `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`
   nitro.options.virtual['#build/dist/server/runner.mjs'] = runnerCode
   nitro.options._config.virtual['#build/dist/server/runner.mjs'] = runnerCode
+
+  const sourceMapPluginCode = `export { default } from ${JSON.stringify(pathToFileURL(sourceMapPluginPath).href)}`
+  nitro.options.virtual['#internal/nitro/ssr-sourcemap'] = sourceMapPluginCode
+  nitro.options._config.virtual['#internal/nitro/ssr-sourcemap'] = sourceMapPluginCode
+  nitro.options.plugins.push('#internal/nitro/ssr-sourcemap')
 
   return {
     name: 'nuxt:vite-node-server',
@@ -396,13 +424,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
             }
             const response = await ssrServer.environments.ssr.fetchModule(request.payload.moduleId)
               .catch(async (err) => {
-                const errorData: Record<string, any> = {
-                  code: 'VITE_ERROR',
-                  id: request.payload.moduleId,
-                  stack: err.stack || '',
-                  message: err.message || '',
-                }
-                if (err.frame) { errorData.frame = err.frame }
+                const errorData = serializeViteNodeError(err, request.payload.moduleId)
 
                 if (!errorData.frame && err.code === 'PARSE_ERROR') {
                   try {
