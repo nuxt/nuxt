@@ -232,7 +232,7 @@ void main () {
   }
   shock += shockwave(uHoverWave, dist) * 0.25;
 
-  float fog = exp(-(z - Z_NEAR) * 0.075) * smoothstep(1.0, 0.86, v);
+  float fog = exp(-(z - Z_NEAR) * 0.075) * (1.0 - smoothstep(0.86, 1.0, v));
   float nearFade = smoothstep(Z_NEAR, 2.6, z);
   // in winter the snowline drops a long way and the caps turn properly white
   float snowline = 2.6 - winter * 1.7;
@@ -265,7 +265,7 @@ void main () {
   // the pointer stirs nearby dust
   vec2 pointer = vec2((uPointer.x - 0.5) * 2.0, (0.5 - uPointer.y) * 2.0);
   vec2 toPointer = vec2((u - pointer.x) * aspect, sy - pointer.y);
-  float excite = smoothstep(0.55, 0.0, length(toPointer)) * uMisc.y;
+  float excite = (1.0 - smoothstep(0.0, 0.55, length(toPointer))) * uMisc.y;
   vec2 push = normalize(toPointer + vec2(0.0001, 0.0)) * excite * (0.006 + 0.010 * rnd);
   tint *= 1.0 + excite * 1.3;
 

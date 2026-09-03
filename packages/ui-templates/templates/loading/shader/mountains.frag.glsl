@@ -8,7 +8,7 @@ uniform float uLight;
 out vec4 fragColor;
 
 void main () {
-  float falloff = smoothstep(1.0, 0.45, length(vLocal));
+  float falloff = 1.0 - smoothstep(0.45, 1.0, length(vLocal));
   if (uLight > 0.5) {
     // premultiplied, so it composites over the page and settles on the ink
     // colour however much dust lands on it
