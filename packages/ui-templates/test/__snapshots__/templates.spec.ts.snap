@@ -496,7 +496,7 @@ exports[`template > produces correct output for loading template 1`] = `
   --nuxt-mist: rgba(232, 255, 244, 0.88);
   --nuxt-dim: rgba(0, 220, 130, 0.55);
   --nuxt-accent: #00dc82;
-  --nuxt-logo: min(15vw, 99px);
+  --nuxt-logo: min(10vw, 68px);
 }
 *,
 :after,
@@ -537,8 +537,7 @@ svg {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: flex-end;
-  gap: calc(var(--nuxt-logo) / 6);
+  align-items: center;
   padding: 0;
   color: inherit;
   background: none;
@@ -557,11 +556,6 @@ svg {
 }
 .nuxt-logo-slot > svg > path {
   fill: currentColor;
-}
-.nuxt-wordmark {
-  width: calc(var(--nuxt-logo) * 1.5);
-  height: calc(var(--nuxt-logo) * 0.5);
-  color: #fff;
 }
 .nuxt-corners {
   position: fixed;
@@ -651,9 +645,6 @@ svg {
   html {
     background: #fff;
   }
-  .nuxt-wordmark {
-    color: #020420;
-  }
 }
 "
 `;
@@ -664,7 +655,7 @@ exports[`template > produces correct output for loading template 2`] = `
   --nuxt-mist: rgba(232, 255, 244, 0.88);
   --nuxt-dim: rgba(0, 220, 130, 0.55);
   --nuxt-accent: #00dc82;
-  --nuxt-logo: min(15vw, 99px);
+  --nuxt-logo: min(10vw, 68px);
 }
 *,
 :after,
