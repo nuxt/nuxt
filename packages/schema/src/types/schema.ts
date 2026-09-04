@@ -1106,6 +1106,27 @@ export interface ConfigSchema {
 
   experimental: {
     /**
+     * Type requests to routes the server serves, rejecting a path no route answers.
+     *
+     * Nuxt types `$fetch` and `useFetch` from the routes your server builder will serve, so a
+     * request is typed by the handler that answers it. By default an unrecognised path is still
+     * accepted and resolves to `unknown`, because Nuxt cannot see every way a request may be
+     * answered: nitro middleware, a `routeRules` proxy or a catch-all handler can answer anything.
+     *
+     * - `false` - a path Nuxt does not recognise is accepted and resolves to `unknown`.
+     * - `true` - only routes the server builder reports are accepted. A typo is an error naming the
+     *   path and method that matched nothing.
+     * - `'isomorphic'` - as `true`, and pages are included as `GET` routes returning `string`, so
+     *   `$fetch('/about')` is typed by the route the Vue router serves rather than rejected.
+     *
+     * Set this only where your routing is enumerable. An app with a catch-all page under
+     * `'isomorphic'` matches every path, which is correct but means the setting constrains nothing.
+     *
+     * @default false
+     */
+    strictRouteTypes: boolean | 'isomorphic'
+
+    /**
      * Enable to use experimental decorators in Nuxt and Nitro.
      *
      * @default false

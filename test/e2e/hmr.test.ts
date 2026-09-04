@@ -434,6 +434,28 @@ test.describe('vite-only HMR tests', () => {
     await expect(readMarker).toBeWithPolling('v2', { timeout: 30000 })
   })
 
+  // https://github.com/nuxt/nuxt/issues/33468
+  test('SSR picks up a changed export style in an auto-imported file', async ({ fetch }) => {
+    const composablePath = join(fixtureDir, 'app/composables/useHmrKey.ts')
+    const original = readFileSync(join(sourceDir, 'app/composables/useHmrKey.ts'), 'utf8')
+    writeFileSync(composablePath, original)
+
+    async function readKey () {
+      const res = await fetch('/auto-import-key')
+      const html = await res.text()
+      const match = html.match(/data-testid="key"[^>]*>([^<]+)</)
+      return match?.[1]?.trim()
+    }
+
+    await expect(readKey).toBeWithPolling('default-export')
+
+    // The default export becomes a named one, so the import injected into the page has to change
+    // from `default` to `useHmrKey` - the page kept the stale injection and SSR rendered a 500.
+    writeFileSync(composablePath, `export function useHmrKey () {\n  return 'named-export'\n}\n`)
+
+    await expect(readKey).toBeWithPolling('named-export', { timeout: 30000 })
+  })
+
   // https://github.com/nuxt/nuxt/issues/30169
   test('SSR re-evaluates virtual modules invalidated via handleHotUpdate', async ({ fetch }) => {
     const pagePath = join(fixtureDir, 'app/pages/virtual-module.vue')

@@ -96,6 +96,8 @@ export default withMatrix({
     typescriptBundlerResolution,
   },
   experimental: {
+    // this fixture asserts the fully typed surface, including that an unregistered path is rejected
+    strictRouteTypes: true,
     nitroAutoImports: true,
     typedPages: true,
     appManifest: true,
