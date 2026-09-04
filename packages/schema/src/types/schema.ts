@@ -1286,6 +1286,31 @@ export interface ConfigSchema {
     typedPages: boolean
 
     /**
+     * Hand a client-side navigation that matches no page route back to the browser when the
+     * path is one the server answers itself: a static file (anything under `public/`, or
+     * another `nitro.publicAssets` directory) or a `GET` server route. Any other path renders
+     * the 404 error page as before.
+     *
+     * This makes `<NuxtLink to="/brochure.pdf">` and `<NuxtLink to="/rss.xml">` behave on
+     * click the way they behave on a hard load.
+     *
+     * Enabling this ships a small Bloom filter of those paths to the client (around 9.6 bits
+     * per path, so about 1 kB gzipped for a site with 500 of them). Nothing can be read back
+     * out of it. Routes with a parameter go into a second filter as their shape, so
+     * `/og/hello` matches without `/og/[slug]` being described to the client, and an app with
+     * no such route ships neither that filter nor its lookup.
+     *
+     * Files written to a public asset directory during the build, after the client bundle is
+     * generated, are not in the filter and still render the error page on a client-side
+     * navigation, though they are still served on a hard load.
+     *
+     * This is enabled by default with compatibility version 5.
+     *
+     * @default false
+     */
+    serverPathFallback: boolean
+
+    /**
      * Use app manifests to respect route rules on client-side.
      *
      * @default true

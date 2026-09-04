@@ -2,7 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { isSamePath, withoutBase } from 'ufo'
+import { isSamePath, withBase, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
@@ -17,6 +17,7 @@ import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import _routeRulesMatcher from '#build/route-rules.mjs'
+import { mightBeServerPath, serverPathFallback } from '#build/server-path-filter.mjs'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
@@ -110,6 +111,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const initialURL = import.meta.server
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+
+    // The path in the address bar when this document loaded, for the reload guard below. Read
+    // from `window.location` rather than `initialURL`, which is the path the document was
+    // *rendered* for and can differ from the path it was served for.
+    const documentPath = import.meta.client && serverPathFallback ? withoutBase(window.location.pathname, routerBase) : ''
 
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
@@ -345,7 +351,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     router.afterEach((to) => {
       if (to.matched.length === 0 && !error.value) {
-        return nuxtApp.runWithContext(() => showError(createError({
+        const showNotFound = () => nuxtApp.runWithContext(() => showError(createError({
           status: 404,
           fatal: false,
           statusText: `Page not found: ${to.fullPath}`,
@@ -353,6 +359,42 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             path: to.fullPath,
           },
         })))
+
+        // Nothing in the app answers for this path, but the server may serve it as a static
+        // file, so load it as a document if the build-time filter says it is probably a public
+        // asset. Anything else renders the error page immediately.
+        //
+        // Reloading is only safe when this document was served for a *different* path: a host
+        // that answers unknown paths with an SPA fallback shell serves the app again, which
+        // matches no route again, so a second pass at the same path must render the error page
+        // rather than reload forever.
+        if (import.meta.client && serverPathFallback && !hashMode && !nuxtApp.isHydrating && !isSamePath(to.path, documentPath) && mightBeServerPath(to.path)) {
+          const href = withBase(to.fullPath, routerBase)
+          // The filter matches everything in dev, so ask the dev server what the path is
+          // rather than turning every unmatched navigation into a document load. The body is
+          // discarded, but the request has to be a `GET`: a `server/routes/*.get.ts` handler
+          // answers no other method.
+          if (import.meta.dev) {
+            fetch(href)
+              .then((res) => {
+                res.body?.cancel()
+                return res.ok && !res.headers.get('content-type')?.startsWith('text/html')
+              })
+              .catch(() => false)
+              .then((isFile) => {
+                if (router.currentRoute.value.fullPath !== to.fullPath) { return }
+                if (isFile) {
+                  window.location.assign(href)
+                } else {
+                  showNotFound()
+                }
+              })
+            return
+          }
+          window.location.assign(href)
+          return
+        }
+        return showNotFound()
       }
     })
 

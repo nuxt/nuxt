@@ -7,7 +7,7 @@ import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, 
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
-import type { Nitro, NitroRouteConfig } from 'nitro/types'
+import type { Nitro, NitroEventHandler, NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
@@ -19,6 +19,7 @@ import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
+import { collectPublicAssetPaths, collectServerRoutes, createServerPathFilter, renderServerPathFilterModule } from './server-path-filter.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
 import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../core/utils/route-rules.ts'
@@ -542,12 +543,14 @@ export default defineNuxtModule({
 
     const warnedConflicts = new Set<string>()
     let publicAssets: Nitro['options']['publicAssets'] = []
+    let serverHandlers: NitroEventHandler[] = []
     nuxt.hook('nitro:init', (nitro) => {
       const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
       publicAssets = nitro.options.publicAssets.filter((asset) => {
         const dir = resolve(asset.dir)
         return dir !== clientBuildDir && !dir.startsWith(clientBuildDir + '/')
       })
+      serverHandlers = [...nitro.scannedHandlers, ...nitro.options.handlers]
     })
 
     const warnPublicAssetConflicts = () => {
@@ -806,6 +809,31 @@ export default defineNuxtModule({
           overrideMeta: !!nuxt.options.experimental.scanPageMeta,
         })
         return ROUTES_HMR_CODE + [...imports, `export default ${routes}`].join('\n')
+      },
+    })
+
+    // A client-side navigation that matches no page route is handed back to the server when
+    // the path is (probably) one the server answers itself: a static file or a `GET` server
+    // route. In dev, files appear in `public/` long after this is generated, so the filter
+    // matches everything there and the app asks the dev server instead.
+    addTemplate({
+      filename: 'server-path-filter.mjs',
+      dependsOn: [],
+      getContents: () => {
+        if (!nuxt.options.experimental.serverPathFallback) {
+          return renderServerPathFilterModule(false)
+        }
+        if (nuxt.options.dev) {
+          return renderServerPathFilterModule(undefined)
+        }
+        const baseURL = nuxt.options.app.baseURL
+        const assetPaths = collectPublicAssetPaths(publicAssets, {
+          clientBuildDir: resolve(nuxt.options.buildDir, 'dist/client'),
+          buildAssetsDir: nuxt.options.app.buildAssetsDir,
+          baseURL,
+        })
+        const serverRoutes = collectServerRoutes(serverHandlers, { baseURL })
+        return renderServerPathFilterModule(createServerPathFilter([...assetPaths, ...serverRoutes.paths], serverRoutes.shapes))
       },
     })
 
