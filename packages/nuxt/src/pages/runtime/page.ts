@@ -1,4 +1,4 @@
-import { Fragment, Suspense, createCommentVNode, defineComponent, h, inject, isVNode, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { Fragment, Suspense, createCommentVNode, defineComponent, h, inject, isVNode, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
@@ -73,12 +73,25 @@ export default defineComponent({
     let pageStartPromise: ReturnType<typeof nuxtApp.callHook>
 
     let suspenseKey = 0
+    const frozenHydrationRoute = shallowRef<RouteLocationNormalizedLoaded>()
     if (import.meta.client && nuxtApp.isHydrating) {
+      const router = useRouter()
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      const removeGuard = useRouter().beforeEach(() => {
+      const removeGuard = router.beforeEach(() => {
         removeErrorHook()
         removeGuard()
       })
+
+      // If hydration is deferred, use the payload route if navigation has moved past it to match the SSR DOM before switching to the current route.
+      if (nuxtApp.payload.serverRendered && nuxtApp.payload.path) {
+        const payloadRoute = router.resolve(nuxtApp.payload.path) as RouteLocationNormalizedLoaded
+        if (payloadRoute.fullPath !== router.currentRoute.value.fullPath) {
+          frozenHydrationRoute.value = payloadRoute
+          nextTick(() => {
+            frozenHydrationRoute.value = undefined
+          })
+        }
+      }
     }
     if (import.meta.client && props.pageKey) {
       watch(() => props.pageKey, (next, prev) => {
@@ -105,7 +118,7 @@ export default defineComponent({
     }
 
     return () => {
-      return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
+      return h(RouterView, { name: props.name, route: props.route ?? frozenHydrationRoute.value, ...attrs }, {
         default: markStableSlot(import.meta.server
           ? (routeProps: RouterViewSlotProps) => {
               return h(Suspense, { suspensible: true }, {

@@ -597,6 +597,7 @@ overrides:
   vue: 3.5.42
 
 patchedDependencies:
+  '@vue/runtime-core@3.5.42': 722c3bfce6beeee5cf5f6425eb5dce79649aed5ab7c62b4b04118e7733310ec0
   nitro@3.0.260610-beta: 4d93fe9a47b6e168609a249b65390e329cab99e8a256f862e5a1eb2ea90598e1
   nitropack@2.13.4: 14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8
 
@@ -1999,6 +2000,16 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+
+  test/fixtures/hydration-navigation:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
 
   test/fixtures/inline-styles:
     dependencies:
@@ -13639,7 +13650,7 @@ snapshots:
     dependencies:
       '@vue/shared': 3.5.42
 
-  '@vue/runtime-core@3.5.42':
+  '@vue/runtime-core@3.5.42(patch_hash=b6b22d85dff556d3ae5b94a77eb043a3a3c0f9dd408f3aa2e035d49a3b2fe453)':
     dependencies:
       '@vue/reactivity': 3.5.42
       '@vue/shared': 3.5.42
@@ -13647,7 +13658,7 @@ snapshots:
   '@vue/runtime-dom@3.5.42':
     dependencies:
       '@vue/reactivity': 3.5.42
-      '@vue/runtime-core': 3.5.42
+      '@vue/runtime-core': 3.5.42(patch_hash=b6b22d85dff556d3ae5b94a77eb043a3a3c0f9dd408f3aa2e035d49a3b2fe453)
       '@vue/shared': 3.5.42
       csstype: 3.2.3
 
