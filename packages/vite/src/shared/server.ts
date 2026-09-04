@@ -24,6 +24,11 @@ export function ssr (nuxt: Nuxt) {
       '#app',
       /^nuxt(\/|$)/,
       /(nuxt|nuxt3|nuxt-nightly)\/(dist|src|app)/,
+      // vue-onigiri's runtime imports `virtual:onigiri/manifest` which
+      // only Vite's plugin chain can resolve. Marking it external
+      // would hand the import to Node, which doesn't understand the
+      // `virtual:` scheme and crashes at request time.
+      'vue-onigiri',
     ],
   }
 }
@@ -51,7 +56,10 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       outDir: resolve(nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rolldownOptions: {
-        input: { server: serverEntry },
+        input: {
+          'server': serverEntry,
+          'components.islands': resolve(nuxt.options.buildDir, 'components.islands'),
+        },
         external: [
           ...legacyExternals,
           sharedDirExternal,

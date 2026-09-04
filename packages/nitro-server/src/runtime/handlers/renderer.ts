@@ -27,10 +27,10 @@ import { payloadCache, prerenderRenderingURLs } from '../utils/cache'
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from '../utils/renderer/app'
 import { patchDevClientCss } from '../utils/renderer/dev-css'
-import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { createInlinedCSSFilter } from '../utils/renderer/inlined-css'
 import { throwIfUnmatchedPagePath } from '../utils/renderer/early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
+import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
 import { extractCspNonce } from '../utils/renderer/csp-nonce'
@@ -846,7 +846,8 @@ async function renderStreamedResponse (ctx: {
         // be stitched into the body string - it has already streamed. Emit them
         // as inert `<template>`s plus a relocation script that runs before the
         // deferred entry hydrates. Skipped under `NO_SCRIPTS` (the guard keeps
-        // island apps buffered in that case).
+        // island apps buffered in that case). No-op under the vue-onigiri
+        // implementation, which does not use island teleports.
         const islandTeleports = NO_SCRIPTS ? '' : renderStreamedIslandTeleports(ssrContext, nonceAttr)
 
         const closingHtml = APP_ROOT_CLOSE_TAG

@@ -796,6 +796,9 @@ importers:
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.11
+      vue-onigiri:
+        specifier: 0.6.1
+        version: 0.6.1(@vue/server-renderer@3.5.42)(vite@8.2.2)(vue@3.5.42(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.3.0(@rspack/core@2.2.1(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.42)(esbuild@0.28.2)(rolldown@1.2.6)(rollup@4.63.1)(vite@8.2.2)(vue@3.5.42(typescript@6.0.3))(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
@@ -1003,6 +1006,9 @@ importers:
       vue-devtools-stub:
         specifier: catalog:vue
         version: 0.1.0
+      vue-onigiri:
+        specifier: ^0.6.1
+        version: 0.6.1(@vue/server-renderer@3.5.42)(vite@8.2.2)(vue@3.5.42(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -1205,6 +1211,9 @@ importers:
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.11
+      vue-onigiri:
+        specifier: ^0.6.1
+        version: 0.6.1(@vue/server-renderer@3.5.42)(vite@8.2.2)(vue@3.5.42(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.3.0(@rspack/core@2.2.1(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.42)(esbuild@0.28.2)(rolldown@1.2.6)(rollup@4.63.1)(vite@8.2.2)(vue@3.5.42(typescript@6.0.3))(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
@@ -1640,6 +1649,9 @@ importers:
       vue-bundle-renderer:
         specifier: catalog:build
         version: 2.3.2
+      vue-onigiri:
+        specifier: ^0.6.1
+        version: 0.6.1(@vue/server-renderer@3.5.42)(vite@8.2.2)(vue@3.5.42(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -2175,6 +2187,12 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/vite-server-spa:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/vue-onigiri:
     dependencies:
       nuxt:
         specifier: workspace:*
@@ -10417,6 +10435,18 @@ packages:
       '@vue/compiler-sfc':
         optional: true
       vue:
+        optional: true
+
+  vue-onigiri@0.6.1:
+    resolution: {integrity: sha512-TKnm+xexXqhpbvkfIYPqmr8K4oKg5YwJkRoaKfVVNQha+ebXkoNrkWfoJsccEdff8QoUE5/9DPKtJ2mcPkRUJw==}
+    peerDependencies:
+      '@vue/server-renderer': ^3.5.0
+      vite: 8.2.2
+      vue: 3.5.42
+    peerDependenciesMeta:
+      '@vue/server-renderer':
+        optional: true
+      vite:
         optional: true
 
   vue-resize@2.0.0-alpha.1:
@@ -19581,6 +19611,19 @@ snapshots:
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.42
       vue: 3.5.42(typescript@6.0.3)
+
+  vue-onigiri@0.6.1(@vue/server-renderer@3.5.42)(vite@8.2.2)(vue@3.5.42(typescript@6.0.3)):
+    dependencies:
+      '@babel/parser': 7.29.8
+      '@vue/compiler-dom': 3.5.42
+      '@vue/compiler-sfc': 3.5.42
+      '@vue/shared': 3.5.42
+      knitwork: 1.3.0
+      magic-string: 0.30.21
+      vue: 3.5.42(typescript@6.0.3)
+    optionalDependencies:
+      '@vue/server-renderer': 3.5.42
+      vite: 8.2.2(@types/node@24.13.3)(@vitejs/devtools@0.5.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)
 
   vue-resize@2.0.0-alpha.1(vue@3.5.42(typescript@6.0.3)):
     dependencies:

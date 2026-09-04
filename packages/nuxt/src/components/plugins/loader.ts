@@ -44,7 +44,9 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
     transform: {
       filter: {
         id: {
-          include: [...include, ...VUE_SCRIPT_TEMPLATE_ID_FILTER, SX_RE],
+          // vue-onigiri virtual modules contain `_resolveComponent("Name")` calls
+          // that need the same auto-import rewrite as regular SFC templates.
+          include: [...include, ...VUE_SCRIPT_TEMPLATE_ID_FILTER, SX_RE, /^virtual:onigiri:/],
           exclude,
         },
       },

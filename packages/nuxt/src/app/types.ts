@@ -225,7 +225,8 @@ export interface NuxtIslandContext {
 
 export interface NuxtIslandResponse {
   id?: string
-  html: string
+  html?: string
+  ast?: any
   head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
