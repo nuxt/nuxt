@@ -10,7 +10,7 @@ import { componentNamesTemplate, componentsDeclarationTemplate, componentsIsland
 import { scanComponents } from './scan.ts'
 
 import { LoaderPlugin } from './plugins/loader.ts'
-import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
+import { ComponentsChunkPlugin, IslandsTransformPlugin, IslandsVForBoundPlugin } from './plugins/islands-transform.ts'
 import { TransformPlugin } from './plugins/transform.ts'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
@@ -248,6 +248,7 @@ export default defineNuxtModule<ComponentsOptions>({
     }
 
     if (nuxt.options.experimental.componentIslands) {
+      const onigiriIslands = nuxt.options.experimental.componentIslands === 'vue-onigiri'
       const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
 
       addVitePlugin({
@@ -281,9 +282,13 @@ export default defineNuxtModule<ComponentsOptions>({
         return paths
       }
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
+      if (onigiriIslands) {
+        addBuildPlugin(IslandsVForBoundPlugin({ getComponents, getServerPages }), { client: false, prepend: true })
+      } else {
+        addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
+      }
 
-      if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
+      if (!onigiriIslands && selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
         addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
       } else {
         addTemplate({

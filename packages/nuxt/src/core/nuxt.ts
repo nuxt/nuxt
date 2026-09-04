@@ -582,6 +582,10 @@ async function initNuxt (nuxt: Nuxt) {
   // Add <NuxtWelcome>
   // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
   const islandsConfig = nuxt.options.experimental.componentIslands
+  // vue-onigiri registers per-environment Vite plugins, which only the environment API can host.
+  if (islandsConfig === 'vue-onigiri' && !nuxt.options.experimental.viteEnvironmentApi) {
+    nuxt.options.experimental.viteEnvironmentApi = true
+  }
   if (nuxt.options.dev || !(typeof islandsConfig === 'object' && islandsConfig.selectiveClient === 'deep')) {
     addComponent({
       name: 'NuxtWelcome',
@@ -735,7 +739,7 @@ async function initNuxt (nuxt: Nuxt) {
     addComponent({
       name: 'NuxtIsland',
       priority: 10, // built-in that we do not expect the user to override
-      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
+      filePath: resolve(nuxt.options.appDir, nuxt.options.experimental.componentIslands === 'vue-onigiri' ? 'components/nuxt-island-onigiri' : 'components/nuxt-island'),
     })
   }
 

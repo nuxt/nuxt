@@ -186,7 +186,7 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
 
     const environmentName = options.server === false ? 'client' : 'ssr'
     const pluginName = plugin.map(p => p.name).join('|')
-    config.plugins.push({
+    config.plugins[options?.prepend ? 'unshift' : 'push']({
       name: `${pluginName}:wrapper`,
       enforce: options?.prepend ? 'pre' : 'post',
       applyToEnvironment (environment) {

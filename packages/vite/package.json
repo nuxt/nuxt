@@ -18,6 +18,7 @@
   "imports": {
     "#vite-node": "./src/vite-node.ts",
     "#vite-node-entry": "./src/vite-node-entry.ts",
+    "#vite-node-islands-entry": "./src/vite-node-islands-entry.ts",
     "#vite-node-runner": "./src/vite-node-runner.ts"
   },
   "files": [
@@ -56,7 +57,8 @@
     "vite": "^8.1.4",
     "vite-node": "^6.0.0",
     "vite-plugin-checker": "^0.14.4",
-    "vue-bundle-renderer": "^2.3.1"
+    "vue-bundle-renderer": "^2.3.1",
+    "vue-onigiri": "^0.6.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "8.0.2",
@@ -104,6 +106,7 @@
     "imports": {
       "#vite-node": "./dist/vite-node.mjs",
       "#vite-node-entry": "./dist/vite-node-entry.mjs",
+      "#vite-node-islands-entry": "./dist/vite-node-islands-entry.mjs",
       "#vite-node-runner": "./dist/vite-node-runner.mjs"
     },
     "types": "./dist/index.d.mts"

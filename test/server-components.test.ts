@@ -198,7 +198,7 @@ describe('component islands', () => {
   it('renders components with route', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
-    result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
+    result.html = result.html!.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
@@ -227,7 +227,7 @@ describe('component islands', () => {
 
     result.head.link ||= []
     result.head.style ||= []
-    result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
+    result.html = result.html!.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
     delete result.id
     expect(result).toMatchInlineSnapshot(`
       {
@@ -288,7 +288,7 @@ describe('component islands', () => {
     result.props = {}
     result.components = {}
     result.slots = {}
-    result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
+    result.html = result.html!.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
     delete result.id
 
     expect(result).toMatchInlineSnapshot(`
@@ -318,7 +318,7 @@ describe('component islands', () => {
       const { components } = result
       result.components = {}
       result.slots = {}
-      result.html = result.html.replace(/data-island-component="[^"]*"/g, 'data-island-component')
+      result.html = result.html!.replace(/data-island-component="[^"]*"/g, 'data-island-component')
 
       const teleportsEntries = Object.entries(components || {})
 
@@ -356,7 +356,7 @@ describe('component islands', () => {
         obj: { foo: 42, bar: false, me: 'hi' },
       },
     }))
-    result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
+    result.html = result.html!.replace(/ data-island-uid="[^"]*"/g, '')
 
     if (isDev) {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/server-components', import.meta.url)))
@@ -401,7 +401,7 @@ describe('component islands', () => {
       `)
     }
 
-    expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '').replace(/data-island-uid="[^"]"/g, '')).toMatchInlineSnapshot(`
+    expect(result.html!.replace(/data-v-\w+|"|<!--.*-->/g, '').replace(/data-island-uid="[^"]"/g, '')).toMatchInlineSnapshot(`
       "<div data-island-uid > Was router enabled: true <br > Props: <pre >{
         number: 3487,
         str: something,

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Component } from '@nuxt/schema'
-import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
+import { IslandsTransformPlugin, IslandsVForBoundPlugin } from '../src/components/plugins/islands-transform.ts'
 import { normalizeLineEndings } from './utils.ts'
 
 const getComponents = () => [{
@@ -537,5 +537,88 @@ import InteractiveButton from '~/components/InteractiveButton.vue'
       const result = await viteTransform(source, pageFile, true, () => [pageFile])
       expect(result).toContain('<NuxtTeleportIslandComponent :nuxt-client=')
     })
+  })
+})
+
+describe('islandVForBound - vue-onigiri islands', () => {
+  async function transform (source: string, id: string, getServerPages: () => string[] = () => []) {
+    const plugin = IslandsVForBoundPlugin({ getComponents, getServerPages }).raw({}, { framework: 'vite', versions: {} }) as {
+      transformInclude: (id: string) => boolean
+      transform: { handler: (code: string, id: string) => { code: string } | null | undefined }
+    }
+    if (!plugin.transformInclude(id)) { return null }
+    const result = await plugin.transform.handler(source, id)
+    return result ? (typeof result === 'string' ? result : result.code) : null
+  }
+
+  it('bounds plain element and slot v-for sources', async () => {
+    const result = await transform(`<template>
+  <div>
+    <span v-for="n in count" :key="n" />
+    <slot v-for="n in count" :key="n" name="loop" :n="n"><b /></slot>
+  </div>
+</template>
+<script setup lang="ts">
+defineProps<{ count: number }>()
+</script>
+`, 'hello.server.vue')
+    expect(result).toContain('<span v-for="n in nuxtVforBound(count)"')
+    expect(result).toContain('<slot v-for="n in nuxtVforBound(count)"')
+    expect(result).not.toContain('v-for="n in count"')
+    expect(result!.match(/vforBound as nuxtVforBound/g)).toHaveLength(1)
+  })
+
+  it('does not inject the teleport wrappers or their imports', async () => {
+    const result = await transform(`<template>
+  <div>
+    <slot v-for="n in count" :key="n" />
+    <Counter v-for="n in count" :key="n" nuxt-client />
+  </div>
+</template>
+<script setup lang="ts">
+defineProps<{ count: number }>()
+</script>
+`, 'hello.server.vue')
+    expect(result).toContain('<Counter v-for="n in nuxtVforBound(count)"')
+    expect(result).not.toContain('NuxtTeleport')
+    expect(result).not.toContain('__vforToArray')
+    expect(result).not.toContain('__mergeProps')
+  })
+
+  it('prepends a script setup block when the SFC has none', async () => {
+    const result = await transform(`<template>
+  <div v-for="n in count" :key="n" />
+</template>
+<script lang="ts">
+export default { props: { count: Number } }
+</script>
+`, 'hello.server.vue')
+    expect(result).toContain('<script setup lang="ts">\nimport { vforBound as nuxtVforBound } from \'#app/components/vfor\'</script>')
+    expect(result).toContain('v-for="n in nuxtVforBound(count)"')
+  })
+
+  it('leaves an island without v-for untouched', async () => {
+    const result = await transform(`<template>
+  <div><slot /></div>
+</template>
+`, 'hello.server.vue')
+    expect(result).toBeNull()
+  })
+
+  it('bounds v-for in server pages', async () => {
+    const pageFile = 'pages/index.server.vue'
+    const result = await transform(`<template>
+  <div v-for="n in count" :key="n" />
+</template>
+`, pageFile, () => [pageFile])
+    expect(result).toContain('v-for="n in nuxtVforBound(count)"')
+  })
+
+  it('skips non-island files', async () => {
+    const result = await transform(`<template>
+  <div v-for="n in count" :key="n" />
+</template>
+`, 'components/Regular.vue')
+    expect(result).toBeNull()
   })
 })

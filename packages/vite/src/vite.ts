@@ -11,6 +11,8 @@ import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
+import { onigiriPlugins } from 'vue-onigiri'
+import type { Plugin } from 'vite'
 
 import { buildClient } from './client.ts'
 import { buildServer } from './server.ts'
@@ -87,6 +89,45 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const isIgnored = createIsIgnored(nuxt)
   const serverEntry = nuxt.options.ssr ? entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
+
+  const onigiriComponentImports = new Map<string, { path: string, export?: string }>()
+  const ingestComponents = (components: Iterable<{ pascalName?: string, filePath?: string, export?: string, _raw?: boolean }>) => {
+    for (const c of components) {
+      if (!c.pascalName || !c.filePath) { continue }
+      if (c._raw) { continue }
+      onigiriComponentImports.set(c.pascalName, {
+        path: c.filePath.replaceAll('\\', '/'),
+        export: c.export,
+      })
+    }
+  }
+  for (const app of Object.values(nuxt.apps)) {
+    if (app.components) { ingestComponents(app.components) }
+  }
+  nuxt.hook('components:extend', (components) => {
+    onigiriComponentImports.clear()
+    ingestComponents(components)
+  })
+  const onigiriExtraEntries: Record<string, string> = {}
+  for (const [, entry] of onigiriComponentImports) {
+    const path = entry?.path
+    if (!path || path.startsWith('/') || path.startsWith('.') || /^[a-z]:[\\/]/i.test(path)) { continue }
+    onigiriExtraEntries[path] = path
+  }
+
+  const onigiriEnabled = nuxt.options.experimental.componentIslands === 'vue-onigiri'
+  const onigiriVitePlugins: Plugin[] = !onigiriEnabled
+    ? []
+    : [
+        ...onigiriPlugins({
+          additionalImports: () => onigiriComponentImports,
+          clientInclude: 'auto',
+          serverInclude: ['auto', '/pages/**/*.vue'],
+          extraEntries: onigiriExtraEntries,
+          componentIdGenerator: 'filepath-source',
+        }),
+      ]
+
   const config: vite.InlineConfig = mergeConfig(
     {
       base: nuxt.options.dev
@@ -195,8 +236,17 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveExternalsPlugin(nuxt),
         ...nuxt.options.experimental.viteEnvironmentApi
           ? [
-              vuePlugin(viteConfig.vue),
+              vuePlugin(onigiriEnabled
+                ? {
+                    ...viteConfig.vue,
+                    features: {
+                      ...viteConfig.vue?.features,
+                      componentIdGenerator: 'filepath-source',
+                    },
+                  }
+                : viteConfig.vue),
               viteJsxPlugin(viteConfig.vueJsx),
+              ...onigiriVitePlugins,
               ClientManifestPlugin(nuxt),
               // After ClientManifestPlugin so its dev `clientManifest` override wins.
               ViteNodePlugin(nuxt),

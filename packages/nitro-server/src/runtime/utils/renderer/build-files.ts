@@ -4,7 +4,7 @@ import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
 import { useRuntimeConfig } from 'nitropack/runtime'
-import type { App } from 'vue'
+import type { App, Component } from 'vue'
 import type { NuxtSSRContext } from '#app/types'
 
 import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
@@ -13,7 +13,9 @@ import { buildAssetsURL, publicAssetsURL } from '../paths'
 import { lazyCachedFunction } from './cache'
 import { serverDiagnostics } from '../../diagnostics'
 
-type Entry = (ssrContext: NuxtSSRContext) => Promise<App>
+// Mirrors the `Entry` type exported by `nuxt/app`'s entry: island handlers pass
+// `rootComponent` to render a sub-tree without mutating the shared `ssrContext`.
+type Entry = (ssrContext: NuxtSSRContext, options?: { rootComponent?: Component }) => Promise<App>
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -23,7 +25,7 @@ globalThis.__publicAssetsURL = publicAssetsURL
 export const APP_ROOT_OPEN_TAG: string = `<${appRootTag}${propsToString(appRootAttrs)}>`
 export const APP_ROOT_CLOSE_TAG: string = `</${appRootTag}>`
 
-const getServerEntry: () => Promise<Entry> = () => import('nuxt/entry').then(r => (r.default || r) as Entry)
+export const getServerEntry: () => Promise<Entry> = () => import('nuxt/entry').then(r => (r.default || r) as Entry)
 
 const getClientManifest: () => Promise<Manifest> = () => import('nuxt/manifest')
   .then(r => r.default || r)

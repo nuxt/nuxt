@@ -43,6 +43,7 @@ minimumReleaseAgeExclude:
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1
   - vue-bundle-renderer
+  - vue-onigiri
   # Renovate security update: undici@8.5.0
   - undici@8.5.0
   - unctx@3.0.0

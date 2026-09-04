@@ -44,7 +44,9 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
+      // vue-onigiri virtual modules contain `_resolveComponent("Name")` calls
+      // that need the same auto-import rewrite as regular SFC templates.
+      return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE) || id.startsWith('virtual:onigiri:')
     },
     transform (code, id, meta?: unknown) {
       const components = options.getComponents()

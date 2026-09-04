@@ -254,7 +254,7 @@ const NuxtIsland = defineComponent({
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
 
-        ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
+        ssrHTML.value = (res.html ?? '').replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
         payloads.slots = res.slots || {}

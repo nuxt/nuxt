@@ -103,7 +103,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   if (nuxt.options.experimental.componentIslands) {
-    const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
+    const islandHandlerPath = JSON.stringify(resolve(distDir, nuxt.options.experimental.componentIslands === 'vue-onigiri' ? 'runtime/handlers/island-onigiri' : 'runtime/handlers/island'))
     const h3Path = JSON.stringify(resolve(distDir, 'h3'))
     const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
 
