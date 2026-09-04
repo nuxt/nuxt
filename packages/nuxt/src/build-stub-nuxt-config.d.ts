@@ -46,7 +46,9 @@ export {
   anyValue as renderJsonPayloads,
   anyValue as selectiveClient,
   anyValue as spaLoadingTemplateOutside,
+  anyValue as stripNeverHydratedData,
   anyValue as tracingChannelNuxt,
   anyValue as useStateDefaults,
+  anyValue as vapor,
   anyValue as vueAppRootContainer,
 }

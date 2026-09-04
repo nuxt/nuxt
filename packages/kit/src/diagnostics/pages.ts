@@ -41,6 +41,11 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Use only JSON-serializable values (strings, numbers, booleans, arrays, plain objects) in `defineRouteRules()`.',
       docs: false,
     },
+    NUXT_B4007: {
+      why: (p: { fnName: string, file: string }) => `\`${p.fnName}\` is called conditionally or used as an expression in \`${p.file}\`, but it is a compiler macro that is extracted at build time and always applies.`,
+      fix: (p: { fnName: string }) => `Call \`${p.fnName}({ ... })\` once, as a statement at the top level of the \`<script setup>\` block.`,
+      docs: false,
+    },
     NUXT_B4008: {
       why: 'Server pages with `ssr: false` are not supported while component islands are auto-detected.',
       fix: 'Set `experimental.componentIslands` to `true`.',
@@ -74,6 +79,41 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B4014: {
       why: (p: { layoutName: string, existingPath: string, newPath: string }) => `Layout \`${p.layoutName}\` is already provided by \`${p.existingPath}\` and was not overridden with \`${p.newPath}\`.`,
       fix: 'Rename one of the layouts, or remove the duplicate layout registration.',
+      docs: false,
+    },
+    NUXT_B4015: {
+      why: (p: { asset: string, route: string, page?: string }) => `The public asset \`${p.asset}\` is served at \`${p.route}\` and overrides the page route${p.page ? ` defined in \`${p.page}\`` : ''}.`,
+      fix: 'Rename or move the public asset, change its public asset base URL, or remove the conflicting page.',
+      docs: false,
+    },
+    NUXT_B4016: {
+      why: (p: { path: string, detail: string }) => `Inline route rules for \`${p.path}\` cannot be represented exactly by Nitro route rules, so they were not applied: ${p.detail}.`,
+      fix: 'Define the affected route rules explicitly in `nitro.routeRules`.',
+      docs: false,
+    },
+    NUXT_B4017: {
+      why: (p: { path: string, pattern: string }) => `Inline route rules for \`${p.path}\` generated \`${p.pattern}\`, which is already used by another page.`,
+      fix: 'The later inline route rules override the earlier ones. Use distinct routes, or define the rules explicitly in `nitro.routeRules`.',
+      docs: false,
+    },
+    NUXT_B4018: {
+      why: (p: { paths: string[] }) => `Some page routes could not be analysed statically, so \`experimental.early404\` has been disabled: ${p.paths.map(path => `\`${path}\``).join(', ')}.`,
+      fix: 'Simplify the affected page paths, or disable `experimental.early404`.',
+      docs: false,
+    },
+    NUXT_B4019: {
+      why: 'A root-level catch-all page matches every path, so `experimental.early404` has no effect and has been disabled.',
+      fix: 'Remove the root-level catch-all page, or disable `experimental.early404`.',
+      docs: false,
+    },
+    NUXT_B4020: {
+      why: (p: { file: string }) => `The \`router.options\` file at \`${p.file}\` may modify \`routes\`, which cannot be reflected in the build-time route patterns, so \`experimental.early404\` has been disabled.`,
+      fix: 'Avoid modifying `routes` in `router.options`, or disable `experimental.early404`.',
+      docs: false,
+    },
+    NUXT_B4021: {
+      why: (p: { paths: string }) => `\`ssr: false\` and \`noScripts\` both apply to ${p.paths}, which leaves nothing to render the route: the server emits an empty shell and no client bundle is loaded to fill it.`,
+      fix: 'Remove one of the two rules.',
       docs: false,
     },
   },

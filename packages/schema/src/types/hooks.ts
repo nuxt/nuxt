@@ -2,8 +2,7 @@ import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
 import type { ViteDevServer } from 'vite'
-import type { Manifest } from 'vue-bundle-renderer'
-import type { Import, InlinePreset, Preset, Unimport } from 'unimport'
+import type { Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
@@ -11,7 +10,10 @@ import type { RawVueCompilerOptions } from '@vue/language-core'
 import type { ViteConfig } from './config.ts'
 import type { NuxtCompatibility, NuxtCompatibilityIssues } from './compatibility.ts'
 import type { Component, ComponentsOptions } from './components.ts'
+import type { NuxtImport, NuxtImportPreset, NuxtImportPresetSource } from './imports.ts'
+import type { NuxtManifest } from './manifest.ts'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt.ts'
+import type { ModuleMeta } from './module.ts'
 
 export type HookResult = Promise<void> | void
 
@@ -23,6 +25,10 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 // If the user does not have `@vue/language-core` installed, RawVueCompilerOptions will be typed as `any`,
 // thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if RawVueCompilerOptions is available.
 export type VueTSConfig = 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
+
+export interface NuxtPageMeta {
+  [key: PropertyKey]: unknown
+}
 
 export interface NuxtPage {
   name?: string
@@ -36,7 +42,7 @@ export interface NuxtPage {
    * option so multiple `<NuxtPage name="..." />` outlets can render.
    */
   components?: Record<string, string>
-  meta?: Record<string, any>
+  meta?: NuxtPageMeta
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
@@ -67,10 +73,18 @@ export type NuxtLayout = {
 }
 
 /**
- * @deprecated Use {@link InlinePreset}
+ * @deprecated Use {@link NuxtImportPreset}
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ImportPresetWithDeprecation extends InlinePreset {
+export interface ImportPresetWithDeprecation extends NuxtImportPreset {
+}
+
+export interface ModuleInstallInfo {
+  /** A human-readable name for the module: `meta.name` where available, otherwise the package name, a path relative to `rootDir`, or the function name */
+  name: string
+  meta: ModuleMeta
+  /** The resolved path of the module on disk, where it is not an inline function */
+  path?: string
 }
 
 export interface GenerateAppOptions {
@@ -134,6 +148,26 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'modules:done': () => HookResult
+  /**
+   * Called immediately before each individual module is set up.
+   * @param module Information about the module about to be set up
+   * @returns Promise
+   */
+  'module:before': (module: ModuleInstallInfo) => HookResult
+  /**
+   * Called immediately after each individual module has been set up.
+   * @param module Information about the module that was set up, including how long it took
+   * @returns Promise
+   */
+  'module:done': (module: ModuleInstallInfo & {
+    /** The module entry path, if it could be resolved */
+    entryPath?: string
+    /**
+     * Timings for the module, in milliseconds. `setup` is how long the module took to set up; a module may report
+     * additional keys of its own. This is the same object recorded in `_installedModules`.
+     */
+    timings: { setup: number } & Record<string, number | undefined>
+  }) => HookResult
 
   /**
    * Called after resolving the `app` instance.
@@ -169,7 +203,7 @@ export interface NuxtHooks {
    * @param manifest The manifest object to build
    * @returns Promise
    */
-  'build:manifest': (manifest: Manifest) => HookResult
+  'build:manifest': (manifest: NuxtManifest) => HookResult
 
   /**
    * Called when `nuxt analyze` is finished
@@ -225,13 +259,13 @@ export interface NuxtHooks {
    * @param presets Array containing presets objects
    * @returns Promise
    */
-  'imports:sources': (presets: Preset[]) => HookResult
+  'imports:sources': (presets: NuxtImportPresetSource[]) => HookResult
   /**
    * Called at setup allowing modules to extend imports.
    * @param imports Array containing the imports to extend
    * @returns Promise
    */
-  'imports:extend': (imports: Import[]) => HookResult
+  'imports:extend': (imports: NuxtImport[]) => HookResult
   /**
    * Called when the [unimport](https://github.com/unjs/unimport) context is created.
    * @param context The Unimport context

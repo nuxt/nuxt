@@ -1,5 +1,5 @@
-import { builder, withMatrix } from '../../matrix'
-import { virtualCounterPlugin } from './vite/virtual-counter-plugin'
+import { builder, withMatrix } from '../../matrix.ts'
+import { virtualCounterPlugin } from './vite/virtual-counter-plugin.ts'
 
 export default withMatrix({
   extends: ['../hmr-sibling-layer'],
@@ -11,5 +11,5 @@ export default withMatrix({
   // so exclude the page there rather than ship a bespoke scheme handler.
   ...builder === 'vite'
     ? { vite: { plugins: [virtualCounterPlugin()] } }
-    : { ignore: ['**/virtual-module.vue'] },
+    : { ignore: ['**/virtual-module.vue', '**/jsx.vue'] },
 })

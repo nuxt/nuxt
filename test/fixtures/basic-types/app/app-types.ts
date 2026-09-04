@@ -1,24 +1,37 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
-import type { H3Event } from 'h3'
+import type { H3Error, H3Event } from 'h3'
 import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
 import type { NitroRouteRules } from 'nitropack/types'
 
-import type { AppConfig, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
-import type { NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
+import type { TypedFetch, TypedFetchRequest } from 'nuxt/app'
+import { $fetch } from '#build/fetch'
+import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
+import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, PageMeta } from '#app'
+import type { NuxtError, NuxtSSRContext, PageMeta, RequestEvent } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
+import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
-import { useRouter } from '#imports'
+import { prefetchComponents, preloadComponents, useRequestEvent, useRouter } from '#imports'
 
 type DefaultAsyncDataErrorValue = undefined
 type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
+
+declare module '@nuxt/schema' {
+  interface ServerRoutes {
+    '/api/registered': { get: { registered: true } }
+    '/api/registered-post': { post: { created: true } }
+    '/api/registered/:id': { default: number }
+    '/api/scored/:id': { get: 'param' }
+    '/api/scored/static': { get: 'static' }
+    '/api/catch-all/**': { get: 'catchAll' }
+  }
+}
 
 declare module 'nuxt/app' {
   interface NuxtLayouts {
@@ -54,6 +67,41 @@ defineNuxtConfig({
 })
 
 describe('API routes', () => {
+  it('types the auto-imported $fetch with nitro routes', () => {
+    // https://github.com/nuxt/nuxt/pull/35582 regression: `$fetch` was typed as
+    // ofetch's plain `$fetch`, returning `Promise<any>` for every request
+    expectTypeOf($fetch).toEqualTypeOf<TypedFetch<unknown, TypedFetchRequest>>()
+    expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
+  })
+
+  it('types responses of routes registered in `ServerRoutes`', () => {
+    expectTypeOf($fetch('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
+    expectTypeOf($fetch('/api/registered', { method: 'GET' })).toEqualTypeOf<Promise<{ registered: true }>>()
+    expectTypeOf($fetch('/api/registered-post', { method: 'post' })).toEqualTypeOf<Promise<{ created: true }>>()
+    expectTypeOf($fetch(`/api/registered/${String(Math.random())}`)).toEqualTypeOf<Promise<number>>()
+    // @ts-expect-error the route is only registered for `post`
+    $fetch('/api/registered-post', { method: 'get' })
+  })
+
+  it('prefers the most specific registered route pattern', () => {
+    expectTypeOf($fetch('/api/scored/static')).toEqualTypeOf<Promise<'static'>>()
+    expectTypeOf($fetch(`/api/scored/${String(Math.random())}`)).toEqualTypeOf<Promise<'param' | 'static'>>()
+    expectTypeOf($fetch('/api/catch-all/nested/path')).toEqualTypeOf<Promise<'catchAll'>>()
+  })
+
+  it('falls back to `unknown` for unregistered requests', () => {
+    expectTypeOf($fetch('/api/unregistered')).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch('/api/unregistered', { method: 'PATCH' })).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch<TestResponse>('/api/unregistered')).toEqualTypeOf<Promise<TestResponse>>()
+  })
+
+  it('types responses of registered routes through `useFetch`', () => {
+    expectTypeOf(useFetch('/api/registered').data).toEqualTypeOf<Ref<{ registered: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/registered-post', { method: 'post' }).data).toEqualTypeOf<Ref<{ created: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/registered', { pick: ['registered'] }).data).toEqualTypeOf<Ref<{ registered: true } | DefaultAsyncDataValue>>()
+    expectTypeOf(useRequestFetch()('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
+  })
+
   it('generates types for routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
     // registered in extends
@@ -127,6 +175,11 @@ describe('API routes', () => {
     expectTypeOf(useFetch('/api/union').data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
+    // https://github.com/nuxt/nuxt/issues/22488 — dynamic + static handlers on the same prefix
+    const dynamicId = String(Math.random())
+    expectTypeOf(useFetch(`/api/posts/${dynamicId}`).data).toEqualTypeOf<Ref<number | string | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetch('/api/posts/static').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf($fetch(`/api/posts/${dynamicId}`)).toEqualTypeOf<Promise<number | string>>()
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
     expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
@@ -358,6 +411,30 @@ describe('typed router integration', () => {
     // doesn't throw an error when accessing properties of component
     const _props = NuxtLink.props
   })
+
+  it('types NuxtLink slot props', () => {
+    type DefaultSlotProps = Parameters<NonNullable<InstanceType<typeof NuxtLink<false>>['$slots']['default']>>[0]
+    expectTypeOf<DefaultSlotProps['href']>().toEqualTypeOf<string>()
+    expectTypeOf<DefaultSlotProps['isActive']>().toEqualTypeOf<boolean>()
+    // @ts-expect-error prefetch state is only exposed to `custom` links
+    expectTypeOf<DefaultSlotProps['prefetched']>().toEqualTypeOf<boolean>()
+
+    type CustomSlotProps = Parameters<NonNullable<InstanceType<typeof NuxtLink<true>>['$slots']['default']>>[0]
+    expectTypeOf<CustomSlotProps['href']>().toEqualTypeOf<string | null>()
+    expectTypeOf<CustomSlotProps['isActive']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['isExternal']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['prefetched']>().toEqualTypeOf<boolean>()
+    expectTypeOf<CustomSlotProps['route']>().toExtend<{ href: string } | undefined>()
+  })
+
+  // `vue-component-type-helpers` and Vue Language Tools both infer against a construct signature,
+  // and inference against a solely generic construct signature resolves to the empty fallback
+  it('exposes props and slots to structural component type inference', () => {
+    type Props<T> = T extends new (...args: any) => { $props: infer P } ? NonNullable<P> : Record<never, never>
+    type Slots<T> = T extends new (...args: any) => { $slots: infer S } ? NonNullable<S> : Record<never, never>
+    expectTypeOf<'to' | 'href' | 'custom'>().toExtend<keyof Props<typeof NuxtLink>>()
+    expectTypeOf<'default'>().toExtend<keyof Slots<typeof NuxtLink>>()
+  })
 })
 
 describe('layouts', () => {
@@ -435,6 +512,13 @@ describe('runtimeConfig', () => {
     expectTypeOf(injectedConfig.privateConfig).toEqualTypeOf<string>()
     expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
     expectTypeOf(injectedConfig.unknown).toEqualTypeOf<unknown>()
+  })
+
+  it('reaches the payload and SSR context types', () => {
+    const payloadConfig = useNuxtApp().payload.config!
+    expectTypeOf(payloadConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
+    expectTypeOf(payloadConfig.public.testConfig).toEqualTypeOf<number>()
+    expectTypeOf<NonNullable<NuxtSSRContext['runtimeConfig']>['public']['ids']>().toEqualTypeOf<(1 | 2 | 3)[]>()
   })
 })
 
@@ -535,6 +619,19 @@ describe('components', () => {
 
   it('include fallback slot in server components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
+  })
+
+  it('types preloadComponents/prefetchComponents against global component names', () => {
+    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
+    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
+    // @ts-expect-error not a global component
+    void preloadComponents('WithTypes')
+  })
+
+  it('types NuxtIsland name against island component names', () => {
+    h(NuxtIsland, { name: 'ServerComponent' })
+    // @ts-expect-error not an island component
+    h(NuxtIsland, { name: 'WithTypes' })
   })
 })
 
@@ -822,9 +919,30 @@ describe('app config', () => {
       someThing?: {
         value?: string | false
       }
+      themed: {
+        colors: { primary: string, neutral: string }
+        slots: { root: string, body: string }
+        variants: string[]
+        format: (value: string) => string
+      }
       [key: string]: unknown
     }
     expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
+  })
+  it('does not recurse into function and array values', () => {
+    expectTypeOf<AppConfig['themed']['format']>().toEqualTypeOf<(value: string) => string>()
+    expectTypeOf<AppConfig['themed']['variants']>().toEqualTypeOf<string[]>()
+  })
+  it('accepts partial overrides of module-provided app config', () => {
+    expectTypeOf<AppConfigInput['themed']>().toEqualTypeOf<{
+      colors?: { primary?: string, neutral?: string }
+      slots?: { root?: string, body?: string }
+      variants?: string[]
+      format?: (value: string) => string
+    } | undefined>()
+  })
+  it('resolves the same input type through `nuxt/schema` and `@nuxt/schema`', () => {
+    expectTypeOf<AppConfigInputFromNuxt['themed']>().toEqualTypeOf<AppConfigInput['themed']>()
   })
 })
 
@@ -916,5 +1034,17 @@ describe('error typing', () => {
     const error = useError()
     expectTypeOf(error.value?.fatal).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(error.value?.__nuxt_error).toEqualTypeOf<true | undefined>()
+  })
+
+  it('stays structurally compatible with the error h3 constructs during SSR', () => {
+    expectTypeOf<H3Error>().toExtend<NuxtError>()
+  })
+})
+
+describe('request event typing', () => {
+  it('resolves the event to the one contributed by `@nuxt/nitro-server`', () => {
+    expectTypeOf(useRequestEvent()).toEqualTypeOf<H3Event | undefined>()
+    expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
+    expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
   })
 })

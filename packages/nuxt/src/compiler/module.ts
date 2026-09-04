@@ -1,8 +1,9 @@
-import { addBuildPlugin, buildDiagnostics, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'
-import { DECLARATION_EXTENSIONS, isDirectorySync, normalizeExtension, toArray } from '../utils.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, linkToAlias, normalizeExtension, toArray } from '../utils.ts'
 import { createScanPluginContext, matchWithStringOrRegex } from './utils.ts'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin, scanFileForFactories } from './plugins/keyed-function-factories.ts'
@@ -126,11 +127,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              buildDiagnostics.NUXT_B1005({ plugin: plugin.name, file: filePath, cause: e })
+              buildDiagnostics.NUXT_B1005({ plugin: plugin.name, file: linkToAlias(filePath, nuxt), cause: e })
             }
           }))
         } catch (e) {
-          buildDiagnostics.NUXT_B1006({ file: filePath, cause: e })
+          buildDiagnostics.NUXT_B1006({ file: linkToAlias(filePath, nuxt), cause: e })
         }
       }
 

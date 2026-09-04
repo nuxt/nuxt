@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath } from '@nuxt/kit'
+import { logger, recoverThrottledChanges, resolvePath } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
@@ -11,6 +11,7 @@ import type { ViteBuildContext } from './vite.ts'
 import { createViteLogger } from './utils/logger.ts'
 import { writeManifest } from './manifest.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
+import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { ssr, ssrEnvironment } from './shared/server.ts'
 
@@ -43,6 +44,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     plugins: [
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
+      TemplateHMRPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'ssr'),
       {
         name: 'nuxt:server-hmr-port',
@@ -108,20 +110,15 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const ssrServer = await vite.createServer(serverConfig)
   ctx.ssrServer = ssrServer
 
+  const disposeWatchRecovery = recoverThrottledChanges(ssrServer.watcher)
+
   // Close server on exit
-  nuxt.hook('close', () => ssrServer.close())
+  nuxt.hook('close', () => {
+    disposeWatchRecovery()
+    return ssrServer.close()
+  })
 
   await nuxt.callHook('vite:serverCreated', ssrServer, { isClient: false, isServer: true })
-
-  // Invalidate virtual modules when templates are re-generated
-  nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
-    await Promise.all(changedTemplates.map(async (template) => {
-      for (const mod of ssrServer.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
-        ssrServer.moduleGraph.invalidateModule(mod)
-        await ssrServer.reloadModule(mod)
-      }
-    }))
-  })
 
   // Initialize plugins
   await ssrServer.pluginContainer.buildStart({})

@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/docs",
-  "version": "4.5.0",
+  "version": "4.5.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -10,6 +10,9 @@
   "description": "Documentation for Nuxt in raw markdown",
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "prepack": "node ../scripts/prepack.ts"
+  },
   "exports": {
     "./*": "./*"
   },

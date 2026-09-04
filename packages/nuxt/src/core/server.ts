@@ -1,4 +1,5 @@
-import { buildDiagnostics, directoryToURL, importModule } from '@nuxt/kit'
+import { directoryToURL, getAddDependencyCommand, importModule } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
@@ -19,11 +20,11 @@ export async function bundleServer (nuxt: Nuxt) {
 async function loadServerBuilder (nuxt: Nuxt, builder = '@nuxt/nitro-server'): Promise<NuxtBuilder> {
   try {
     // prefer our own dependency tree before walking up from rootDir
-    if (builder === '@nuxt/nitro-server') {
+    if (builder === '@nuxt/nitro-server' || builder === '@nuxt/vite-server') {
       return await import(builder)
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err) {
-    throw buildDiagnostics.NUXT_B1018({ builder, cause: err })
+    throw buildDiagnostics.NUXT_B1018({ builder, installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }), cause: err })
   }
 }

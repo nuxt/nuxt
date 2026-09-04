@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger } from '@nuxt/kit'
+import { logger, recoverThrottledChanges } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 
@@ -17,8 +17,20 @@ import { OptimizeDepsHintPlugin, optimizerCallbacks } from './plugins/optimize-d
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
+import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { clientEnvironment } from './shared/client.ts'
+
+const resolvedClientBuild = new WeakMap<Nuxt, { outDir: string, manifest: string | boolean | undefined }>()
+
+/**
+ * The client `build` options as resolved by Vite, including any overrides applied
+ * by a plugin `config`/`configEnvironment` hook. Available once the client build
+ * has started.
+ */
+export function getResolvedClientBuild (nuxt: Nuxt) {
+  return resolvedClientBuild.get(nuxt)
+}
 
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
@@ -44,8 +56,16 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       StableEntryPlugin(nuxt),
       AnalyzePlugin(nuxt),
       DevServerPlugin(nuxt),
+      TemplateHMRPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'client'),
       OptimizeDepsHintPlugin(nuxt),
+      {
+        name: 'nuxt:capture-client-build',
+        configResolved (config) {
+          const build = config.environments.client?.build ?? config.build
+          resolvedClientBuild.set(nuxt, { outDir: build.outDir, manifest: build.manifest })
+        },
+      },
     ],
     appType: 'custom',
     server: {
@@ -73,7 +93,11 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     // Dev
     const viteServer = await vite.createServer(clientConfig)
     ctx.clientServer = viteServer
-    nuxt.hook('close', () => viteServer.close())
+    const disposeWatchRecovery = recoverThrottledChanges(viteServer.watcher)
+    nuxt.hook('close', () => {
+      disposeWatchRecovery()
+      return viteServer.close()
+    })
     await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
   } else {
     // Build

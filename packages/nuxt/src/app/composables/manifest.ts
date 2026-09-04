@@ -1,7 +1,7 @@
-import type { H3Event } from '@nuxt/nitro-server/h3'
+import type { RequestEvent } from '@nuxt/schema'
 import type { $Fetch, NitroRouteRules } from 'nitropack/types'
 import { useRuntimeConfig } from '../nuxt'
-import { manifestDiagnostics } from '../diagnostics/manifest.ts'
+import { manifestDiagnostics } from '../diagnostics/manifest'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 import { $fetch as _$fetch } from '#build/fetch'
@@ -9,7 +9,10 @@ import _routeRulesMatcher from '#build/route-rules.mjs'
 
 const $fetch = _$fetch as $Fetch
 
-const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
+// hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
+function routeRulesMatcher (path: string): NitroRouteRules {
+  return (_routeRulesMatcher as (path: string) => NitroRouteRules)(path)
+}
 
 export interface NuxtAppManifestMeta {
   id: string
@@ -61,14 +64,17 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 }
 
 /** @since 3.7.4 */
-export function getRouteRules (event: H3Event): NitroRouteRules
+export function getRouteRules (event: RequestEvent): NitroRouteRules
 export function getRouteRules (options: { path: string }): Record<string, any>
 /** @deprecated use `getRouteRules({ path })` instead */
 export function getRouteRules (url: string): Record<string, any>
-export function getRouteRules (arg: string | H3Event | { path: string }) {
+export function getRouteRules (arg: string | RequestEvent | { path: string }) {
   const path = typeof arg === 'string' ? arg : arg.path
   try {
-    return routeRulesMatcher(path.toLowerCase())
+    // The compiled matcher case-folds the lookup path itself (unless routing is
+    // `sensitive`), so callers pass the path verbatim; folding here as well would
+    // force case-insensitive matching even when `sensitive: true` is configured.
+    return routeRulesMatcher(path)
   } catch (e) {
     manifestDiagnostics.NUXT_E5003({ path, cause: e })
     return {}

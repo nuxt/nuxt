@@ -29,3 +29,19 @@ describe('experimental.watcher default', () => {
     expect((result as unknown as NuxtOptions).experimental.watcher).toBe('parcel')
   })
 })
+
+describe('experimental.prerenderErrorPages', () => {
+  it('keeps client and server error status codes', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { experimental: { prerenderErrorPages: [404, 500] } })
+    expect((result as unknown as NuxtOptions).experimental.prerenderErrorPages).toEqual([404, 500])
+  })
+
+  it('drops status codes that cannot be error pages, and says so', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const result = await applyDefaults(NuxtConfigSchema, { experimental: { prerenderErrorPages: [200, 404.5, 404] } })
+
+    expect((result as unknown as NuxtOptions).experimental.prerenderErrorPages).toEqual([404])
+    expect(warn.mock.calls.map(call => String(call[0])).join('\n')).toContain('NUXT_B5020')
+    warn.mockRestore()
+  })
+})

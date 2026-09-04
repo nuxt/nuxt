@@ -1,7 +1,7 @@
 /// <reference path="./config-types.ts" />
 
 import { addTypeTemplate, installModule } from 'nuxt/kit'
-import { typescriptBundlerResolution, withMatrix } from '../../matrix'
+import { typescriptBundlerResolution, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   extends: [
@@ -66,6 +66,10 @@ export default withMatrix({
   },
   appConfig: {
     fromNuxtConfig: true,
+    themed: {
+      colors: { primary: 'blue', neutral: 'gray' },
+      slots: { root: '', body: '' },
+    },
     nested: {
       val: 1,
     },

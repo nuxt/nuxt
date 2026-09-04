@@ -1,17 +1,22 @@
+import { existsSync } from 'node:fs'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { buildDiagnostics, createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt, writeTypes } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
 import { isDirectory } from '../utils.ts'
-import { generateApp as _generateApp, createApp } from './app.ts'
+import { generateApp as _generateApp, createApp, invalidateAppStructure } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
+import { createChangedFileFilter } from './template-dependencies.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
+  await ensureGeneratedTsConfigs(nuxt)
+
   nuxt._perf?.startPhase('app:generate')
   const app = createApp(nuxt)
   nuxt.apps.default = app
@@ -45,30 +50,43 @@ export async function build (nuxt: Nuxt): Promise<void> {
         }
         watch(nuxt)
       }
-      nuxt.hook('builder:watch', async (event, relativePath) => {
-        // Unset mainComponent and errorComponent if app or error component is changed
-        if (event === 'add' || event === 'unlink') {
-          const path = resolve(nuxt.options.srcDir, relativePath)
-          for (const dirs of getLayerDirectories(nuxt)) {
-            const relativePath = relative(dirs.app, path)
-            if (/^app\./i.test(relativePath)) {
-              app.mainComponent = undefined
-              break
-            }
-            if (/^error\./i.test(relativePath)) {
-              app.errorComponent = undefined
-              break
-            }
+    }
+    nuxt.hook('builder:watch', async (event, relativePath) => {
+      if (event !== 'change') {
+        invalidateAppStructure(nuxt)
+      }
+
+      // Unset mainComponent and errorComponent if app or error component is changed
+      if (event === 'add' || event === 'unlink') {
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        for (const dirs of getLayerDirectories(nuxt)) {
+          const relativePath = relative(dirs.app, path)
+          if (/^app\./i.test(relativePath)) {
+            app.mainComponent = undefined
+            break
+          }
+          if (/^error\./i.test(relativePath)) {
+            app.errorComponent = undefined
+            break
           }
         }
+      }
 
-        // Recompile app templates
-        await track(() => generateApp())
-      })
-    }
+      // Recompile app templates
+      if (event === 'change' && app.templates.length) {
+        const filter = createChangedFileFilter(nuxt, app, resolve(nuxt.options.srcDir, relativePath))
+        if (!filter) { return }
+        await track(() => _generateApp(nuxt, app, { filter }))
+        return
+      }
+
+      await track(() => generateApp())
+    })
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
       if (options) { return track(() => _generateApp(nuxt, app, options)) }
+      // An unfiltered request is a request to rebuild everything, including scans
+      invalidateAppStructure(nuxt)
       return track(() => generateApp())
     })
   }
@@ -80,7 +98,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
       await nuxt.callHook('close', nuxt)
       return
     }
-    nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
+    nuxt.hooks.hookOnce('build:done', () => collectCache())
     nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
   }
 
@@ -118,6 +136,26 @@ export async function build (nuxt: Nuxt): Promise<void> {
   if (!nuxt.options.dev) {
     await nuxt.callHook('close', nuxt)
   }
+}
+
+const generatedTsConfigs = ['tsconfig.json', 'tsconfig.app.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json']
+
+/**
+ * The project `tsconfig.json` references the generated configurations. Tools that
+ * resolve them (such as tsconfck, which Vite uses to load compiler options) throw if
+ * a referenced project is missing and cache that failure for the lifetime of the
+ * process, so a bundler that starts before typegen has run keeps failing until it is
+ * restarted.
+ *
+ * Typegen normally runs before the build, so this only generates types when a
+ * referenced configuration is genuinely missing. A stub is not enough: whatever is on
+ * disk when the bundler first reads it is the configuration it uses for the rest of
+ * the session.
+ */
+async function ensureGeneratedTsConfigs (nuxt: Nuxt) {
+  if (nuxt.options._prepare) { return }
+  if (generatedTsConfigs.every(name => existsSync(join(nuxt.options.typesDir || nuxt.options.buildDir, name)))) { return }
+  await writeTypes(nuxt).catch(() => {})
 }
 
 const watchEvents: Record<EventType, 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'> = {
@@ -177,7 +215,12 @@ function createWatcher () {
     }
     nuxt.callHook('builder:watch', event, normalize(path))
   })
-  nuxt.hook('close', () => watcher?.close())
+
+  const disposeRecovery = recoverThrottledChanges(watcher)
+  nuxt.hook('close', () => {
+    disposeRecovery()
+    return watcher?.close()
+  })
 }
 
 function createGranularWatcher () {
@@ -197,6 +240,7 @@ function createGranularWatcher () {
     pending++
     const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, /[\\/]node_modules[\\/]/] })
     const watchers: Record<string, FSWatcher> = {}
+    const disposers = new Map<string, () => void>()
 
     watcher.on('all', (event, path) => {
       if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
@@ -208,6 +252,8 @@ function createGranularWatcher () {
       }
       if (event === 'unlinkDir' && path in watchers) {
         watchers[path]?.close()
+        disposers.get(path)?.()
+        disposers.delete(path)
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.has(path) && !(path in watchers) && !isIgnored(path)) {
@@ -218,9 +264,15 @@ function createGranularWatcher () {
           }
           nuxt.callHook('builder:watch', event, normalize(p))
         })
-        nuxt.hook('close', () => pathWatcher?.close())
+        const disposePathRecovery = recoverThrottledChanges(pathWatcher)
+        disposers.set(path, disposePathRecovery)
+        nuxt.hook('close', () => {
+          disposePathRecovery()
+          return pathWatcher?.close()
+        })
       }
     })
+    const disposeRecovery = recoverThrottledChanges(watcher)
     watcher.on('ready', () => {
       pending--
       if (nuxt.options.debug && nuxt.options.debug.watchers && !pending) {
@@ -228,7 +280,12 @@ function createGranularWatcher () {
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
     })
-    nuxt.hook('close', () => watcher?.close())
+    nuxt.hook('close', () => {
+      disposeRecovery()
+      for (const dispose of disposers.values()) { dispose() }
+      disposers.clear()
+      return watcher?.close()
+    })
   }
 }
 
@@ -242,7 +299,7 @@ async function createParcelWatcher () {
   try {
     ({ subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', { url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) }))
   } catch {
-    buildDiagnostics.NUXT_B1015()
+    buildDiagnostics.NUXT_B1015({ installCommand: await getAddDependencyCommand('@parcel/watcher', nuxt.options.rootDir, { dev: true }) })
     return false
   }
   try {
@@ -302,7 +359,7 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err: any) {
-    throw buildDiagnostics.NUXT_B1017({ builder, cause: err })
+    throw buildDiagnostics.NUXT_B1017({ builder, installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }), cause: err })
   }
 }
 

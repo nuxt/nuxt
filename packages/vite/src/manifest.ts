@@ -3,6 +3,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 
 import { relative, resolve } from 'pathe'
 import { setBuildOutput } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { normalizeViteManifest, precomputeDependencies } from 'vue-bundle-renderer'
@@ -10,6 +11,8 @@ import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Manifest as ViteClientManifest } from 'vite'
 import { serialize } from 'seroval'
 import type { ViteBuildContext } from './vite.ts'
+import { resolveClientManifestFile } from './utils/config.ts'
+import { getResolvedClientBuild } from './client.ts'
 
 export async function writeManifest (ctx: ViteBuildContext) {
   const { nuxt } = ctx
@@ -38,8 +41,11 @@ export async function writeManifest (ctx: ViteBuildContext) {
   const clientDist = resolve(nuxt.options.buildDir, 'dist/client')
   const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
 
-  const manifestFile = resolve(clientDist, 'manifest.json')
-  const clientManifest = nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
+  const clientBuild = getResolvedClientBuild(nuxt) ?? { outDir: clientDist, manifest: 'manifest.json' }
+  const manifestFile = nuxt.options.dev
+    ? ''
+    : resolve(clientBuild.outDir, resolveClientManifestFile(clientBuild.manifest))
+  const clientManifest = nuxt.options.dev ? devClientManifest : JSON.parse(readManifestFromDisk(manifestFile)) as ViteClientManifest
   const manifestEntries = Object.values(clientManifest)
 
   const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
@@ -80,5 +86,16 @@ export async function writeManifest (ctx: ViteBuildContext) {
     setBuildOutput('clientManifest', () => `export { default } from ${JSON.stringify(manifestPath)}`)
     setBuildOutput('clientPrecomputed', () => `export { default } from ${JSON.stringify(precomputedPath)}`)
     await rm(manifestFile, { force: true })
+  }
+}
+
+function readManifestFromDisk (manifestFile: string): string {
+  try {
+    return readFileSync(manifestFile, 'utf-8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw bundlerDiagnostics.NUXT_B7021({ manifestFile })
+    }
+    throw error
   }
 }

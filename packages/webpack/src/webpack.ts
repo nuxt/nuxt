@@ -1,4 +1,4 @@
-import pify from 'pify'
+import { promisify } from 'node:util'
 import type { H3Event as H3V1Event } from 'h3'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type webpackDevMiddleware from 'webpack-dev-middleware'
@@ -8,7 +8,8 @@ import { defu } from 'defu'
 import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
-import { bundlerDiagnostics, logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
+import { logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
@@ -19,7 +20,7 @@ import { isSameOriginRequest } from './utils/same-origin.ts'
 import { client, server } from './configs/index.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
-import { builder, createRsbuild, webpack } from '#builder'
+import { builder, createRsbuild, webpack } from './builder.ts'
 
 // TODO: Support plugins
 // const plugins: string[] = []
@@ -35,7 +36,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   /** Remove Nitro rollup plugin for handling dynamic imports from webpack chunks */
   if (!nuxt.options.dev) {
     const nitro = useNitro()
-    nitro.hooks.hook('rollup:before', (_nitro, config) => {
+    nitro.hooks.hook('rollup:before', (_nitro: unknown, config: { plugins?: unknown }) => {
       const plugins = config.plugins as InputPluginOption[]
 
       const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
@@ -216,32 +217,49 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
     bundlerDiagnostics.NUXT_B7017()
   }
 
-  await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares), { cors: () => true })
+  const buildAssetsPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
+  // `builds/` under the assets dir is a Nitro-served virtual route (app manifest), not a bundler asset.
+  const nitroBuildsPrefix = joinURL(buildAssetsPrefix, 'builds')
+  await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares, buildAssetsPrefix, nitroBuildsPrefix), { cors: () => true })
 
   await Promise.all(firstCompiles)
 }
 
-function rsbuildToH3Handler (middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void) {
-  return defineEventHandler(async (event) => {
+// h3 sentinel signalling that the response has already been written to the
+// raw node `res`; returning `undefined` instead would make h3 treat the
+// request as unhandled and fall through to the SSR catch-all handler.
+const kHandled = /* @__PURE__ */ Symbol.for('h3.handled')
+
+function rsbuildToH3Handler (middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void, buildAssetsPrefix: string, nitroBuildsPrefix: string) {
+  return defineEventHandler((event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
     if (!isSameOriginRequest(req)) {
       res!.statusCode = 403
       res!.end('Forbidden')
-      return
+      return kHandled
     }
-    await new Promise<void>((resolve) => {
+    return new Promise<typeof kHandled | undefined>((resolve) => {
       let settled = false
-      const done = () => {
+      const done = (result: typeof kHandled | undefined) => {
         if (!settled) {
           settled = true
-          resolve()
+          resolve(result)
         }
       }
       // Middlewares that serve a response end it without calling `next`, so also
       // settle when the response finishes; `next` means Nuxt should handle it.
-      res!.on('finish', done)
-      res!.on('close', done)
-      middlewares(req as IncomingMessage, res as ServerResponse, () => done())
+      res!.on('finish', () => done(kHandled))
+      res!.on('close', () => done(kHandled))
+      middlewares(req as IncomingMessage, res as ServerResponse, () => {
+        const url = req!.url
+        if (url && url.startsWith(buildAssetsPrefix) && !url.startsWith(nitroBuildsPrefix)) {
+          res!.statusCode = 404
+          res!.end()
+          done(kHandled)
+        } else {
+          done(undefined)
+        }
+      })
     })
   })
 }
@@ -262,8 +280,7 @@ async function createDevMiddleware (compiler: Compiler) {
     ...nuxt.options.webpack.devMiddleware,
   })
 
-  // @ts-expect-error need better types for `pify`
-  nuxt.hook('close', () => pify(devMiddleware.close.bind(devMiddleware))())
+  nuxt.hook('close', () => promisify(devMiddleware.close.bind(devMiddleware))())
 
   const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
   const hotMiddleware = webpackHotMiddleware(compiler, {
@@ -337,7 +354,7 @@ async function compile (compiler: Compiler) {
     const compilersWatching: Array<Watching | MultiWatching> = []
 
     nuxt.hook('close', async () => {
-      await Promise.all(compilersWatching.map(watching => watching && pify(watching.close.bind(watching))()))
+      await Promise.all(compilersWatching.map(watching => watching && promisify(watching.close.bind(watching))()))
     })
 
     // Client build
@@ -371,8 +388,10 @@ async function compile (compiler: Compiler) {
   if (stats.hasErrors()) {
     const formatted = stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true })
     const compilationErrors = stats.compilation?.errors ?? []
+    // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
     logger.error(formatted || '(no formatted errors emitted; see compilation errors below)')
     for (const err of compilationErrors) {
+      // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
       logger.error(err)
     }
     throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name!, cause: compilationErrors })

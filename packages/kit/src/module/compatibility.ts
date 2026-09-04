@@ -1,4 +1,4 @@
-import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
+import { satisfies } from 'verkit'
 import type { Nuxt, NuxtModule, NuxtOptions } from '@nuxt/schema'
 import { useNuxt } from '../context.ts'
 import { normalizeSemanticVersion } from '../compatibility.ts'

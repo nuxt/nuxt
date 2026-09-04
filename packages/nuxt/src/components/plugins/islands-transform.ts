@@ -1,5 +1,6 @@
 import type { Component } from '@nuxt/schema'
-import { componentDiagnostics } from '@nuxt/kit'
+import { componentDiagnostics } from '@nuxt/kit/internal'
+import { linkToAlias } from '../../utils.ts'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ELEMENT_NODE, parse, walk, walkSync } from 'ultrahtml'
@@ -23,27 +24,17 @@ interface ServerOnlyComponentTransformPluginOptions {
   selectiveClient?: boolean | 'deep'
 }
 
-const SCRIPT_RE = /<script[^>]*>/i
-const SCRIPT_RE_GLOBAL = /<script[^>]*>/gi
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
+const HAS_VFOR_RE = /\sv-for=/
 const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(?:="[^"]*")?/g
-const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport { vforBound as nuxtVforBound } from \'#app/components/vfor\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(?:="[^"]*")?/g
 const KEY_RE = /:?key="[^"]"/g
-
-function wrapWithVForDiv (code: string, vfor: string): string {
-  return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
-}
-
-const HAS_VFOR_RE = /\sv-for=/
-// No `__` prefix: vue-onigiri's setup bridge skips `__`-prefixed bindings, and in dev Vue's
-// render proxy hides `<script setup>` bindings, so that bridge is the only way to reach the helper.
-const VFOR_BOUND_IMPORT_CODE = '\nimport { vforBound as nuxtVforBound } from \'#app/components/vfor\''
 const V_FOR_ALIAS_RE = /\s+(in|of)\s+/
 const V_FOR_ATTR_RE = /(\sv-for=)(["'])([\s\S]*?)\2/
 
-// vue-onigiri compiles a `v-for` to Vue's `renderList`, which iterates a numeric source unbounded;
+// A plain `v-for` compiles to `ssrRenderList`, which iterates a numeric source unbounded;
 // wrap the source in `nuxtVforBound` to clamp attacker-supplied magnitudes before iteration.
 function boundVForExpression (expression: string): string {
   const match = V_FOR_ALIAS_RE.exec(expression)
@@ -55,6 +46,11 @@ function boundVForExpression (expression: string): string {
 
 function boundVForInTag (tag: string): string {
   return tag.replace(V_FOR_ATTR_RE, (_full, prefix, quote, expression) => `${prefix}${quote}${boundVForExpression(expression)}${quote}`)
+}
+
+function wrapWithVForDiv (code: string, vfor: string): string {
+  // `vfor` is already passed through `boundVForExpression` by the caller.
+  return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
 }
 
 interface ScriptBlock {
@@ -89,6 +85,10 @@ function injectSetupImports (s: ReturnType<typeof rolldownString>, code: string,
   const lang = scriptBlocks[0]?.attributes.lang
   s.prepend(`<script setup${lang ? ` lang="${lang}"` : ''}>` + importCode + '</script>')
 }
+
+// No `__` prefix: vue-onigiri's setup bridge skips `__`-prefixed bindings, and in dev Vue's
+// render proxy hides `<script setup>` bindings, so that bridge is the only way to reach the helper.
+const VFOR_BOUND_IMPORT_CODE = '\nimport { vforBound as nuxtVforBound } from \'#app/components/vfor\''
 
 /**
  * Clamps numeric `v-for` sources in island templates, and nothing else. Used when vue-onigiri
@@ -135,7 +135,7 @@ export const IslandsVForBoundPlugin = (options: Pick<ServerOnlyComponentTransfor
   },
 }))
 
-export const IslandsTransformPlugin =(options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
+export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
   const isVite = meta.framework === 'vite'
   return {
     name: 'nuxt:server-only-component-transform',
@@ -149,7 +149,8 @@ export const IslandsTransformPlugin =(options: ServerOnlyComponentTransformPlugi
     transform: {
       filter: {
         code: {
-          include: [HAS_SLOT_OR_CLIENT_RE],
+          // Include `v-for` so slotless islands still reach the handler to have it bounded.
+          include: [HAS_SLOT_OR_CLIENT_RE, HAS_VFOR_RE],
         },
       },
       async handler (code, id, transformMeta?: unknown) {
@@ -161,12 +162,23 @@ export const IslandsTransformPlugin =(options: ServerOnlyComponentTransformPlugi
         const { pathname } = parseModuleId(normalize(id))
         const isIsland = isIslandFile(pathname, options)
 
-        if (!SCRIPT_RE.test(code)) {
-          s.prepend('<script setup>' + IMPORT_CODE + '</script>')
+        // Bounding is island-only, so skip non-island files matched solely for their `v-for`
+        // rather than injecting unused island imports.
+        if (!HAS_SLOT_OR_CLIENT_RE.test(code) && !(isIsland && HAS_VFOR_RE.test(code))) {
+          return
+        }
+
+        // The injected helpers are referenced from the template, so they must be setup bindings:
+        // adding them to a plain `<script>` leaves them in module scope only and the template
+        // compiler resolves them off `_ctx` instead, which is `undefined` at render time.
+        const scriptBlocks = findScriptBlocks(code)
+        const setupBlock = scriptBlocks.find(({ attributes }) => 'setup' in attributes)
+        if (setupBlock) {
+          s.appendRight(setupBlock.contentStart, IMPORT_CODE)
         } else {
-          for (const match of code.matchAll(SCRIPT_RE_GLOBAL)) {
-            s.appendRight(match.index + match[0].length, IMPORT_CODE)
-          }
+          // `<script>` and `<script setup>` in one SFC must agree on `lang`.
+          const lang = scriptBlocks[0]?.attributes.lang
+          s.prepend(`<script setup${lang ? ` lang="${lang}"` : ''}>` + IMPORT_CODE + '</script>')
         }
 
         let hasNuxtClient = false
@@ -187,6 +199,8 @@ export const IslandsTransformPlugin =(options: ServerOnlyComponentTransformPlugi
               attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
             }
             const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+            // Bound the slot's own `v-for` source, separate from the (bounded) `:props` array.
+            attributes['v-for'] &&= boundVForExpression(attributes['v-for'])
             const bindings = getPropsToString(attributes)
             // add the wrapper
             s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
@@ -197,7 +211,7 @@ export const IslandsTransformPlugin =(options: ServerOnlyComponentTransformPlugi
               const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(KEY_RE, '')
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
             } else {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, boundVForInTag(code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, '')))
             }
 
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
@@ -209,6 +223,15 @@ export const IslandsTransformPlugin =(options: ServerOnlyComponentTransformPlugi
           }
 
           if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
+            if (isIsland && 'v-for' in node.attributes) {
+              const start = startingIndex + node.loc[0].start
+              const end = startingIndex + node.loc[0].end
+              const openTag = code.slice(start, end)
+              const bounded = boundVForInTag(openTag)
+              if (bounded !== openTag) {
+                s.overwrite(start, end, bounded)
+              }
+            }
             return
           }
 
@@ -226,6 +249,9 @@ export const IslandsTransformPlugin =(options: ServerOnlyComponentTransformPlugi
           if (wrapperAttributes) {
             startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
           }
+          if (isIsland && 'v-for' in attributes) {
+            startTag = boundVForInTag(startTag)
+          }
 
           s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
           s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
@@ -234,9 +260,9 @@ export const IslandsTransformPlugin =(options: ServerOnlyComponentTransformPlugi
 
         if (hasNuxtClient) {
           if (!options.selectiveClient) {
-            componentDiagnostics.NUXT_B3007({ file: id })
+            componentDiagnostics.NUXT_B3007({ file: linkToAlias(id) })
           } else if (!isVite) {
-            componentDiagnostics.NUXT_B3013({ file: id })
+            componentDiagnostics.NUXT_B3013({ file: linkToAlias(id) })
           }
         }
 
@@ -303,6 +329,7 @@ type ChunkPluginOptions = {
 
 const COMPONENT_CHUNK_ID = `#build/component-chunk`
 const COMPONENT_CHUNK_RESOLVED_ID = '\0nuxt-component-chunk'
+const COMPONENT_CHUNK_RESOLVED_ID_RE = /^\0nuxt-component-chunk$/
 
 export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => {
   const chunkIds = new Map<string, string>()
@@ -351,8 +378,11 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
           }
         },
       },
-      load (id) {
-        if (id === COMPONENT_CHUNK_RESOLVED_ID) {
+      load: {
+        filter: {
+          id: COMPONENT_CHUNK_RESOLVED_ID_RE,
+        },
+        handler () {
           if (options.dev) {
             const filePaths: Record<string, string> = {}
             for (const c of options.getComponents()) {
@@ -368,7 +398,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
             genObjectFromRawEntries(Array.from(paths.entries())
               .map(([name, id]) => [name, genString('/' + id)]))
           }`
-        }
+        },
       },
     },
   ]

@@ -8,7 +8,7 @@ import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError } from './composables/error'
-import { appDiagnostics } from './diagnostics/core.ts'
+import { appDiagnostics } from './diagnostics/core'
 
 import '#build/css'
 import plugins from '#build/plugins'

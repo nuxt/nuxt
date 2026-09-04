@@ -1,8 +1,14 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { genDynamicImport, genDynamicTypeImport, genObjectKey } from 'knitwork'
+import { genDynamicImport, genDynamicTypeImport, genObjectKey, genString } from 'knitwork'
 import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
-import type { NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import type { ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+
+type ResolvedComponentType = {
+  pascalName: string
+  type: string
+  meta?: ComponentMeta
+}
 
 type ImportMagicCommentsOptions = {
   chunkName: string
@@ -28,6 +34,7 @@ export default defineNuxtPlugin({
 
 export const componentsPluginTemplate: NuxtPluginTemplate = {
   filename: 'components.plugin.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const lazyGlobalComponents = new Set<string>()
     const syncGlobalComponents = new Set<string>()
@@ -65,6 +72,7 @@ export default defineNuxtPlugin({
 
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
+  dependsOn: [],
   getContents ({ app }) {
     const componentNames = new Set<string>()
     for (const c of app.components) {
@@ -78,6 +86,7 @@ export const componentNamesTemplate: NuxtTemplate = {
 
 export const componentsIslandsTemplate: NuxtTemplate = {
   filename: 'components.islands.mjs',
+  dependsOn: [],
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
       return 'export const islandComponents = Object.create(null)\nexport const pageIslandRoutes = Object.create(null)\nexport const providePageIslandDepth = () => {}'
@@ -133,9 +142,32 @@ export const componentsIslandsTemplate: NuxtTemplate = {
 }
 
 const NON_VUE_RE = /\b\.(?!vue)\w+$/g
+
+function escapeJsDocText (value: string) {
+  return value.replace(/\*\//g, '* /')
+}
+
+function renderComponentJsDoc (meta?: ComponentMeta, options: { indent?: string, lazyName?: string } = {}) {
+  if (!meta?.description && !meta?.docsUrl) {
+    return ''
+  }
+  const indent = options.indent || ''
+  const sections: string[] = []
+  if (options.lazyName) {
+    sections.push(`Lazy-loaded version of \`<${options.lazyName}>\`.`)
+  }
+  if (meta?.description) {
+    sections.push(escapeJsDocText(meta.description))
+  }
+  if (meta?.docsUrl) {
+    sections.push(`@see ${escapeJsDocText(meta.docsUrl)}`)
+  }
+  return `${indent}/**\n${indent} * ${sections.join(`\n${indent} *\n${indent} * `)}\n${indent} */\n`
+}
+
 function resolveComponentTypes (app: NuxtApp, baseDir: string, dynamic: boolean) {
   const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
-  const componentTypes: Array<[string, string]> = []
+  const componentTypes: ResolvedComponentType[] = []
   for (const c of app.components) {
     if (c.island) {
       continue
@@ -153,7 +185,7 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string, dynamic: boolean)
         type = `IslandComponent<${type}>`
       }
     }
-    componentTypes.push([c.pascalName, type])
+    componentTypes.push({ pascalName: c.pascalName, type, meta: c.meta })
   }
 
   return componentTypes
@@ -188,6 +220,7 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 `
 export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
+  dependsOn: [],
   write: true,
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir, nuxt.options.experimental.typescriptPlugin)
@@ -196,8 +229,8 @@ import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 
-${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: LazyComponent<${type}>`).join('\n')}
+${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(meta)}export const ${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(meta, { lazyName: pascalName })}export const Lazy${pascalName}: LazyComponent<${type}>`).join('\n')}
 
 export const componentNames: string[]
 `
@@ -206,21 +239,45 @@ export const componentNames: string[]
 
 export const componentsTypeTemplate = {
   filename: 'types/components.d.ts' as const,
+  dependsOn: [],
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, join(nuxt.options.buildDir, 'types'), nuxt.options.experimental.typescriptPlugin)
+    const globalComponentNames = new Set<string>()
+    const islandComponentNames = new Set<string>()
+    for (const component of app.components) {
+      if (component.global) {
+        globalComponentNames.add(component.pascalName)
+        globalComponentNames.add(`Lazy${component.pascalName}`)
+      }
+      if (nuxt.options.experimental.componentIslands && (component.island || (component.mode === 'server' && !app.components.some(c => c.pascalName === component.pascalName && c.mode === 'client')))) {
+        islandComponentNames.add(component.pascalName)
+      }
+    }
+    const literals = [
+      globalComponentNames.size ? `    componentName: ${[...globalComponentNames].map(name => genString(name)).join(' | ')}` : '',
+      islandComponentNames.size ? `    islandName: ${[...islandComponentNames].map(name => genString(name)).join(' | ')}` : '',
+    ].filter(Boolean)
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 interface _GlobalComponents {
-${componentTypes.map(([pascalName, type]) => `  ${genObjectKey(pascalName)}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `  ${genObjectKey(`Lazy${pascalName}`)}: LazyComponent<${type}>`).join('\n')}
+${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(meta, { indent: '  ' })}  ${genObjectKey(pascalName)}: ${type}`).join('\n')}
+${componentTypes.map(({ pascalName, type, meta }) => `${renderComponentJsDoc(meta, { indent: '  ', lazyName: pascalName })}  ${genObjectKey(`Lazy${pascalName}`)}: LazyComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
-
+${literals.length
+      ? `
+declare module '#app' {
+  interface NuxtAppLiterals {
+${literals.join('\n')}
+  }
+}
+`
+      : ''}
 export {}
 `
   },
@@ -228,6 +285,7 @@ export {}
 
 export const componentsMetadataTemplate: NuxtTemplate = {
   filename: 'components.json',
+  dependsOn: [],
   write: true,
   getContents: ({ app }) => JSON.stringify(app.components, null, 2),
 }

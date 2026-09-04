@@ -1,5 +1,5 @@
 /// <reference path="./internal.d.ts" />
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
+import type { InternalApi, Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
 import type { EventHandler, H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
@@ -19,6 +19,13 @@ export interface NuxtTracingChannelOptions {
   srvx?: boolean
   h3?: boolean
   unstorage?: boolean
+}
+
+declare global {
+  interface ImportMeta {
+    dev: boolean
+    test: boolean
+  }
 }
 
 declare module 'nitropack' {
@@ -100,6 +107,19 @@ declare module 'nitropack/types' {
 }
 
 declare module '@nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
+  interface ServerTypes {
+    event: H3Event
+  }
+
+  // Nitro writes the routes it has scanned into its own `InternalApi`; extending it here hands
+  // those response types to Nuxt's typed `$fetch` without the app layer importing nitro types.
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerRoutes extends InternalApi {}
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -217,6 +237,19 @@ declare module '@nuxt/schema' {
 }
 
 declare module 'nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
+  interface ServerTypes {
+    event: H3Event
+  }
+
+  // Nitro writes the routes it has scanned into its own `InternalApi`; extending it here hands
+  // those response types to Nuxt's typed `$fetch` without the app layer importing nitro types.
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerRoutes extends InternalApi {}
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.

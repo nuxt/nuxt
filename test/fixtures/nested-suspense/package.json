@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-nested-suspense",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:dev"
+  },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  }
+}

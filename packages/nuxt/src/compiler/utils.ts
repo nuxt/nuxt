@@ -1,6 +1,6 @@
-import { findStaticImports, parseStaticImport } from 'mlly'
-import type { ParsedStaticImport } from 'mlly'
 import { parseAndWalk, walk } from 'oxc-walker'
+import { getStaticImports, parseStaticImports } from '../core/utils/static-imports.ts'
+import type { ParsedStaticImport } from '../core/utils/static-imports.ts'
 import type { ScanPlugin } from './types.ts'
 import type { ParseResult } from 'rolldown/utils'
 
@@ -29,8 +29,9 @@ export function createScanPluginContext (code: string, filePath: string) {
         return parsedStaticImports
       }
 
-      const imports = findStaticImports(code)
-      parsedStaticImports = imports.map(i => parseStaticImport(i))
+      parsedStaticImports = parseResult
+        ? getStaticImports(code, parseResult.module.staticImports)
+        : parseStaticImports(code, filePath)
       return parsedStaticImports
     },
   }

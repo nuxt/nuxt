@@ -28,7 +28,7 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1004: {
       why: 'Failed to install dependencies.',
-      fix: (p: { packages: string }) => `Try installing manually with \`npm install ${p.packages}\`.`,
+      fix: (p: { installCommand: string }) => `Try installing manually with \`${p.installCommand}\`.`,
       docs: false,
     },
     NUXT_B1005: {
@@ -63,17 +63,17 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1011: {
       why: (p: { file: string }) => `Failed to read file \`${p.file}\`.`,
-      fix: 'Check that the file exists and is readable, or try clearing the build cache with `nuxi clean`.',
+      fix: 'Check that the file exists and is readable, or try clearing the build cache with `nuxt clean`.',
       docs: false,
     },
     NUXT_B1012: {
       why: (p: { path: string }) => `Skipping unsafe cache path: ${p.path}. This cache file has a path that escapes the project directory (possible path traversal).`,
-      fix: 'Delete the cache with `nuxi clean` and rebuild.',
+      fix: 'Delete the cache with `nuxt clean` and rebuild.',
       docs: false,
     },
     NUXT_B1013: {
       why: (p: { file: string }) => `Failed to restore cached file \`${p.file}\`.`,
-      fix: 'Try clearing the build cache with `nuxi clean` and rebuilding from scratch.',
+      fix: 'Try clearing the build cache with `nuxt clean` and rebuilding from scratch.',
       docs: false,
     },
     NUXT_B1014: {
@@ -83,7 +83,7 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1015: {
       why: 'Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.',
-      fix: 'Install `@parcel/watcher` for better performance: `npm install -D @parcel/watcher`.',
+      fix: (p: { installCommand: string }) => `Install \`@parcel/watcher\` for better performance: \`${p.installCommand}\`.`,
       docs: false,
     },
     NUXT_B1016: {
@@ -93,12 +93,12 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1017: {
       why: (p: { builder: string }) => `Loading \`${p.builder}\` builder failed.`,
-      fix: (p: { builder: string }) => `Run \`npm install ${p.builder}\` to install it.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
       docs: false,
     },
     NUXT_B1018: {
       why: (p: { builder: string }) => `Loading \`${p.builder}\` server builder failed.`,
-      fix: (p: { builder: string }) => `Run \`npm install ${p.builder}\` to install it.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
       docs: false,
     },
     NUXT_B1019: {
@@ -109,6 +109,11 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B1020: {
       why: '`experimental.watcher: "builder"` is set but the active builder does not implement `setupWatcher`. Falling back to the default file watcher.',
       fix: 'Remove `experimental.watcher` from your `nuxt.config`, or use a builder that supports its own watcher.',
+      docs: false,
+    },
+    NUXT_B1021: {
+      why: (p: { export: string }) => `Component export name \`${p.export}\` is not a valid JavaScript identifier.`,
+      fix: 'If you are a module author, ensure the `export` you register for a component is a valid identifier. Otherwise, please report this issue.',
       docs: false,
     },
   },

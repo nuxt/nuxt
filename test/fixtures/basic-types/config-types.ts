@@ -113,22 +113,10 @@ describe('head', () => {
 })
 
 describe('app config', () => {
-  it('merges app config as expected', () => {
-    interface ExpectedMergedAppConfig {
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-      nuxt: {}
-      fromLayer: boolean
-      fromNuxtConfig: boolean
-      nested: {
-        val: number
-      }
-      userConfig: 123 | 456
-      someThing?: {
-        value?: string | false
-      }
-      [key: string]: unknown
-    }
-    expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
+  it('types inline and schema app config but not app-context `app.config` files', () => {
+    expectTypeOf<AppConfig['fromNuxtConfig']>().toEqualTypeOf<boolean>()
+    expectTypeOf<AppConfig['userConfig']>().toEqualTypeOf<123 | 456 | undefined>()
+    expectTypeOf<AppConfig['fromLayer']>().toEqualTypeOf<unknown>()
   })
 })
 

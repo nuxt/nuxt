@@ -3,6 +3,7 @@ import { isAbsolute, join, relative } from 'pathe'
 
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',
+  dependsOn: [],
   async getContents ({ nuxt }) {
     const references = [] as TSReference[]
     const declarations = [] as string[]

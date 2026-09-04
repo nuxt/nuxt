@@ -1,5 +1,5 @@
 import type { ESTree } from 'rolldown/utils'
-import type { ParsedStaticImport } from 'mlly'
+import type { ParsedStaticImport } from './static-imports.ts'
 import { resolveAlias } from '@nuxt/kit'
 
 import { stripExtension } from '../../utils.ts'
@@ -46,19 +46,17 @@ export function processImports (imports: ParsedStaticImport[], alias: Record<str
     }
 
     if (i.defaultImport) {
-      // handle default import
-      const namespace = i.defaultImport
       const entry = namespaces.get(resolvedSpecifier)!
-      entry.namespaces.add(namespace)
+      entry.namespaces.add(i.defaultImport)
       directImports.set(i.defaultImport, {
         originalName: 'default',
         source: resolvedSpecifier,
       })
-    } else if (i.namespacedImport) {
-      // handle namespace import
-      const namespace = i.namespacedImport
+    }
+
+    if (i.namespacedImport) {
       const entry = namespaces.get(resolvedSpecifier)!
-      entry.namespaces.add(namespace)
+      entry.namespaces.add(i.namespacedImport)
     }
   }
 

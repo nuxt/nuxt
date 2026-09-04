@@ -6,10 +6,9 @@ import type { SerializableHead } from '@unhead/vue'
 import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { H3Error, H3Event } from '@nuxt/nitro-server/h3'
 import type { RenderResponse } from 'nitropack/types'
 import type { Hookable } from 'hookable'
-import type { RuntimeConfig } from 'nuxt/schema'
+import type { RequestEvent, RuntimeConfig } from '@nuxt/schema'
 
 type HookResult = Promise<void> | void
 
@@ -104,18 +103,48 @@ export interface NuxtServerApp {
  * which remains the canonical `NuxtError` type exported from `nuxt/app` /
  * `#app`. Duplicated here (rather than imported) so this leaf stays free of
  * the DOM-dependent module graph reachable from `./composables/error.ts`.
+ *
+ * The members are declared here rather than inherited from h3's `H3Error`,
+ * but must stay structurally compatible with it: that is what h3 and Nitro read
+ * off errors thrown during SSR.
  */
-// #34138 - `Omit` breaks the Error inheritance chain, causing `@typescript-eslint/only-throw-error` to fail
-// Adding `Error` explicitly restores throwability. TODO: remove `Error` in Nuxt 5 when `Omit` is no longer needed
-export interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'>, Error {
+export interface NuxtError<DataT = unknown> extends Error {
   readonly __nuxt_error?: true
   error?: true
+  /** Whether the error is fatal. */
+  fatal: boolean
+  /** Whether the error was not handled by the application. */
+  unhandled: boolean
+  /** Additional data attached to the error JSON body under `data`. */
+  data?: DataT
   status?: number
   statusText?: string
   /** @deprecated Use `status` */
-  statusCode?: H3Error<DataT>['statusCode']
+  statusCode?: number
   /** @deprecated Use `statusText` */
-  statusMessage?: H3Error<DataT>['statusMessage']
+  statusMessage?: string
+  toJSON (): NuxtErrorJSON<DataT>
+}
+
+/** JSON body serialized from a {@link NuxtError} when it is sent as an HTTP response. */
+export interface NuxtErrorJSON<DataT = unknown> {
+  message: string
+  statusCode: number
+  statusMessage?: string
+  data?: DataT
+}
+
+/**
+ * Serialized form of an error's `cause` chain, attached to the error page
+ * error in development. Error causes are serialized to their name, message,
+ * stack and nested cause; primitive causes are passed through as-is, and any
+ * other values are omitted.
+ */
+export type SerializedErrorCause = string | number | boolean | null | {
+  name: string
+  message: string
+  stack?: string
+  cause?: SerializedErrorCause
 }
 
 export interface NuxtPayload {
@@ -138,7 +167,7 @@ export interface NuxtPayload {
 
 export interface NuxtSSRContext extends SSRContext {
   url: string
-  event: H3Event
+  event: RequestEvent
   runtimeConfig: RuntimeConfig
   noSSR: boolean
   /** whether we are rendering an SSR error */
@@ -163,10 +192,13 @@ export interface NuxtSSRContext extends SSRContext {
   ['~preloadManifest']?: boolean
   /** @internal */
   ['~lazyHydratedModules']?: Set<string>
+  /** @internal */
+  ['~neverHydratedModules']?: Set<string>
 }
 
 export interface NuxtIslandSlotResponse {
   props: Array<unknown>
+  scopeId?: string
   fallback?: string
 }
 
@@ -175,6 +207,7 @@ export interface NuxtIslandClientResponse {
   props: unknown
   chunk: string
   slots?: Record<string, string>
+  uid?: string
 }
 
 export interface NuxtIslandContext {

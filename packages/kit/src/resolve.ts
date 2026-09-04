@@ -2,15 +2,16 @@ import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
-import { type GlobOptions, glob } from 'tinyglobby'
+import { glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
-import { parseNodeModulePath } from 'mlly'
 import { directoryToURL } from './internal/esm.ts'
+import { parseNodeModulePath } from './internal/node-module.ts'
 import { tryUseNuxt } from './context.ts'
 import { isIgnored } from './ignore.ts'
 import { type RequirePicked, toArray } from './utils.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from './constants.ts'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -195,7 +196,7 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
   // Use current nuxt options
   const nuxt = tryUseNuxt()
   const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
-  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
+  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : [...DEFAULT_JS_FILE_EXTENSIONS, '.json'])
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
@@ -275,7 +276,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
  * @param opts.ignore additional glob patterns to ignore
  * @returns sorted array of absolute file paths
  */
-export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}): Promise<string[]> {
+export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: string | readonly string[] } = {}): Promise<string[]> {
   const files: string[] = []
   for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true, ignore: opts.ignore })) {
     if (!isIgnored(p)) {

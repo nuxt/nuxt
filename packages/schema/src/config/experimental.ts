@@ -1,4 +1,5 @@
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
 
 export default defineResolvers({
   future: {
@@ -97,6 +98,16 @@ export default defineResolvers({
     restoreState: false,
     renderJsonPayloads: true,
     noVueServer: false,
+    /**
+     * Extract the data payloads of prerendered and ISR/SWR pages into `_payload.json` files that are reused during client-side navigation.
+     *
+     * - `'client'`: inline the payload in the HTML for the initial render and extract it to a `_payload.json` file for client-side navigation.
+     * - `true`: extract the payload to a `_payload.json` file for both the initial render and client-side navigation.
+     * - `false`: disable payload extraction entirely; the payload is always inlined in the HTML.
+     *
+     * Defaults to `true`, or `'client'` when `future.compatibilityVersion` is `5` or higher. It is forced to `false` when `ssr` is disabled.
+     * @see [Payload Extraction documentation](https://nuxt.com/docs/getting-started/prerendering#payload-extraction)
+     */
     payloadExtraction: {
       $resolve: async (val, get) => {
         if ((await get('ssr')) === false) { return false }
@@ -104,6 +115,44 @@ export default defineResolvers({
         return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
       },
     },
+    /**
+     * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
+     *
+     * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.
+     * @type {boolean | number[]}
+     */
+    prerenderErrorPages: {
+      $resolve: (val) => {
+        if (!Array.isArray(val)) {
+          return !!val
+        }
+        return val.filter((status) => {
+          if (Number.isInteger(status) && status >= 400 && status <= 599) {
+            return true
+          }
+          schemaDiagnostics.NUXT_B5020({ status: String(status) })
+          return false
+        })
+      },
+    },
+
+    /**
+     * Respond with an early 404 error for requests whose path cannot match any page route,
+     * without loading the Vue app, its plugins or middleware on the server.
+     *
+     * Page routes (including aliases) are converted to route patterns at build time and
+     * requests are checked against them before server-side rendering begins.
+     *
+     * This is opt-in as it can break apps that rely on runtime routing: pages added
+     * dynamically with `router.addRoute()` (on the server or the client), or route
+     * middleware that redirects unknown paths to existing ones. It also applies to
+     * `ssr: false` routes, which respond with a 404 error rather than the SPA shell when
+     * no page can match. The option is disabled automatically in development, when using
+     * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
+     * file may modify `routes`.
+     */
+    early404: false,
+
     clientFallback: false,
     crossOriginPrefetch: false,
 
@@ -126,7 +175,14 @@ export default defineResolvers({
       },
     },
     localLayerAliases: true,
-    typedPages: false,
+    typedPages: {
+      $resolve: async (val, get) => {
+        if (typeof val === 'boolean') {
+          return val
+        }
+        return (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
@@ -155,6 +211,11 @@ export default defineResolvers({
       },
     },
     extraPageMetaExtractionKeys: [],
+    extractSerializablePageMeta: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     sharedPrerenderData: {
       $resolve (val) {
         return typeof val === 'boolean' ? val : true
@@ -183,6 +244,11 @@ export default defineResolvers({
     },
     clientNodeCompat: false,
     navigationRepaint: true,
+    navigateToEarlyReturn: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     buildCache: false,
     normalizeComponentNames: {
       $resolve: (val) => {
@@ -231,6 +297,7 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    stripNeverHydratedData: false,
     alwaysRunFetchOnKeyChange: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false

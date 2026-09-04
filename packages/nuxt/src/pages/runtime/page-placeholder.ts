@@ -1,6 +1,6 @@
 import { defineComponent } from 'vue'
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
-import { renderDiagnostics } from '../../app/diagnostics/render.ts'
+import { renderDiagnostics } from '../../app/diagnostics/render'
 import { devPagesDir } from '#build/nuxt.config.mjs'
 
 type PagePlaceholderSlots = SlotsType<{

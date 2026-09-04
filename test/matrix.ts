@@ -24,6 +24,7 @@ export const projectSuffix = [
   process.env.TEST_ENV,
   process.env.TEST_CONTEXT,
   process.env.TEST_MANIFEST,
+  process.env.TEST_PAYLOAD,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER
@@ -41,6 +42,12 @@ export const runsOnceInMatrix = !isMatrixRun || (isCanonicalCombo && isBuilt)
  * built project.
  */
 export const runsOncePerEnvInMatrix = !isMatrixRun || isCanonicalCombo
+
+/**
+ * Like `runsOnceInMatrix` but keeps the builder axis: true in exactly one built project per
+ * builder. Use for builder-sensitive suites that do not depend on other matrix axes.
+ */
+export const runsOncePerBuilderInMatrix = !isMatrixRun || (isBuilt && !asyncContext && isTestingAppManifest)
 
 export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
 

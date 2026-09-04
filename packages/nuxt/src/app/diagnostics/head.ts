@@ -1,5 +1,5 @@
 import { defineDiagnostics, defineProdDiagnostics } from 'nostics'
-import { docsBase, prodReporters, reporters } from './_shared.ts'
+import { docsBase, prodReporters, reporters } from './_shared'
 
 /**
  * E6xxx
@@ -23,6 +23,11 @@ export const unheadDiagnostics = !import.meta.dev
         NUXT_E6003: {
           why: '`<Style>` received a non-string child in its default slot.',
           fix: 'Pass a single string to the `<Style>` default slot.',
+          docs: false,
+        },
+        NUXT_E6004: {
+          why: (p: { component: string }) => `\`<${p.component}>\` reads its text content from the slot VNodes, which a vapor slot does not expose.`,
+          fix: (p: { component: string }) => `Pass the \`<${p.component}>\` content as a string instead.`,
           docs: false,
         },
       },

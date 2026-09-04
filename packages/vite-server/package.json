@@ -1,0 +1,56 @@
+{
+  "name": "@nuxt/vite-server",
+  "version": "4.5.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/vite-server"
+  },
+  "description": "Experimental pure Vite server builder for Nuxt",
+  "homepage": "https://nuxt.com",
+  "license": "MIT",
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
+    "build": "tsdown",
+    "test:attw": "node ../../scripts/test-attw.ts"
+  },
+  "dependencies": {
+    "@nuxt/kit": "workspace:*",
+    "clickable-path": "catalog:build",
+    "defu": "catalog:build",
+    "exsolve": "catalog:build",
+    "mocked-exports": "catalog:build",
+    "pathe": "catalog:build",
+    "srvx": "catalog:nitro-runtime",
+    "ufo": "catalog:build"
+  },
+  "devDependencies": {
+    "@nuxt/schema": "workspace:*",
+    "tsdown": "catalog:dev",
+    "vite": "catalog:vite",
+    "vitest": "catalog:dev"
+  },
+  "peerDependencies": {
+    "nuxt": "workspace:^",
+    "vite": "catalog:vite"
+  },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./package.json": "./package.json"
+    },
+    "types": "./dist/index.d.mts"
+  }
+}

@@ -6,16 +6,15 @@ import { withTrailingSlash } from 'ufo'
 import { genArrayFromRaw, genObjectFromRawEntries } from 'knitwork'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveAlias, setBuildOutput, useNitro } from '@nuxt/kit'
-import { parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
+import { VUE_ID_RE, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
 
-import { getVueLoaderHash } from '#builder'
+import { getVueLoaderHash } from '../builder.ts'
 
 const CSS_URL_RE = /url\((['"]?)(\/[^)]+?)\1\)/g
 
-const isVueFile = (id: string) => /\.vue(?:\?|$)/.test(id)
 const isCSSLike = (name: string) => /\.(?:css|scss|sass|less|styl(?:us)?|postcss|pcss)(?:\?|$)/.test(name)
 
 function normalizePath (nuxt: Nuxt, id?: string | null): string | null {
@@ -51,7 +50,7 @@ function normalizeCSSContent (css: string) {
 
 // Reproduces the active Vue loader's scope id so styles extracted here match
 // the ids emitted by the server build. The loaders use different hash functions,
-// selected through #builder.
+// selected through the injected builder implementation.
 function getVueLoaderScopeId (filePath: string, source: string, rootContext: string) {
   const rawShortFilePath = relative(rootContext || process.cwd(), filePath).replace(/^(?:\.\.[/\\])+/, '')
   const shortFilePath = normalize(rawShortFilePath).replace(/\\/g, '/')
@@ -134,9 +133,9 @@ export class SSRStylesPlugin {
     return str.replace(/[`\\$]/g, m => m === '$' ? '\\$' : `\\${m}`)
   }
 
-  private isBuildAsset (url: string) {
+  private buildAssetPath (url: string) {
     const buildDir = withTrailingSlash(this.nuxt.options.app.buildAssetsDir || '/_nuxt/')
-    return url.startsWith(buildDir)
+    return url.startsWith(buildDir) ? url.slice(buildDir.length) : null
   }
 
   private isPublicAsset (url: string, nitro: ReturnType<typeof useNitro>) {
@@ -169,15 +168,18 @@ export class SSRStylesPlugin {
       const full = match[0]
       const rawUrl = match[2] || ''
       const stripped = rawUrl.replace(/[?#].*$/, '')
+      const quote = match[1] || ''
+      // build assets live within the public directory, so they must be matched first
+      const buildAssetPath = this.buildAssetPath(stripped)
 
-      if (this.isPublicAsset(stripped, nitro)) {
-        needsPublicAsset = true
-        changed = true
-        out += '${publicAssetsURL(' + JSON.stringify(rawUrl) + ')}'
-      } else if (this.isBuildAsset(stripped)) {
+      if (buildAssetPath) {
         needsBuildAsset = true
         changed = true
-        out += '${buildAssetsURL(' + JSON.stringify(rawUrl) + ')}'
+        out += `url(${quote}\${buildAssetsURL(${JSON.stringify(buildAssetPath + rawUrl.slice(stripped.length))})}${quote})`
+      } else if (this.isPublicAsset(stripped, nitro)) {
+        needsPublicAsset = true
+        changed = true
+        out += `url(${quote}\${publicAssetsURL(${JSON.stringify(rawUrl)})}${quote})`
       } else {
         out += this.escapeTemplateLiteral(full)
       }
@@ -299,7 +301,7 @@ export class SSRStylesPlugin {
       for (const module of compilation.modules) {
         const normal = module as NormalModule
         const resource = normal.resource
-        if (!resource || !isVueFile(resource)) { continue }
+        if (!resource || !VUE_ID_RE.test(resource)) { continue }
         const rel = normalizePath(this.nuxt, resource)
         if (!rel) { continue }
         if (collected.has(rel)) { continue }
@@ -345,7 +347,10 @@ export class SSRStylesPlugin {
 
       compilation.emitAsset('styles.mjs', new rawSource(stylesSource))
       const stylesPath = resolve(this.nuxt.options.buildDir, 'dist/server/styles.mjs')
-      setBuildOutput('ssrStyles', () => `export { default } from ${JSON.stringify(stylesPath)}`, this.nuxt)
+      setBuildOutput('ssrStyles', () => [
+        `export { default } from ${JSON.stringify(stylesPath)}`,
+        'export const inlinedCSS = {}',
+      ].join('\n'), this.nuxt)
 
       const entryIds = Array.from(this.chunksWithInlinedCSS).filter(id => entryModules.has(id))
       setBuildOutput('entryIds', () => `export default ${JSON.stringify(entryIds)}`, this.nuxt)

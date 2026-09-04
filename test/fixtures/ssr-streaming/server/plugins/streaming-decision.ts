@@ -1,4 +1,3 @@
-import { definePlugin as defineNitroPlugin } from 'nitro'
 import { getQuery } from 'h3'
 
 export default defineNitroPlugin((nitro) => {
