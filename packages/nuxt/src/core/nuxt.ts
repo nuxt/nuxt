@@ -8,7 +8,7 @@ import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext, tryUseNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -290,11 +290,11 @@ async function initNuxt (nuxt: Nuxt) {
     getContents: ({ app }) => {
       return [
         `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-        'declare module \'nitro/types\' {',
-        '  interface NitroRouteConfig {',
+        'declare module \'h3/rules\' {',
+        '  interface RouteRuleConfig {',
         '    appLayout?: LayoutKey | false',
         '  }',
-        '  interface NitroRouteRules {',
+        '  interface RouteRules {',
         '    appLayout?: LayoutKey | false',
         '  }',
         '}',
@@ -343,25 +343,10 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   nuxt['~runtimeDependencies'] = [...runtimeDependencies]
 
-  // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
+  // Set resolutions for types that might be obscured with shamefully-hoist=false, applied to
+  // each generated tsconfig from the `prepare:types` handler below.
   let paths: Record<string, [string]> | undefined
   let nodePaths: Record<string, [string]> | undefined
-  const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
-    paths ||= await resolveTypescriptPaths(nuxt)
-    nitroConfig.typescript = defu(nitroConfig.typescript, {
-      tsConfig: { compilerOptions: { paths: { ...paths } } },
-    })
-  }
-  if (nuxt.options.dev) {
-    nuxt.hook('prepare:types', async () => {
-      const nitro = tryUseNitro()
-      if (nitro) {
-        await applyNitroTypePaths(nitro.options)
-      }
-    })
-  } else {
-    nuxt.hook('nitro:config', applyNitroTypePaths)
-  }
 
   let serverBuilderReference: { path: string } | { types: string } | undefined
   /**
@@ -432,6 +417,8 @@ async function initNuxt (nuxt: Nuxt) {
     // required for the server builder's augmentations (referenced above)
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
+    // bundler-resolved, so it takes the same substitutions as the app
+    opts.serverTsConfig.compilerOptions = defu(opts.serverTsConfig.compilerOptions, { paths: { ...paths } })
 
     for (const dirs of layerDirs) {
       const declaration = join(dirs.root, 'index.d.ts')

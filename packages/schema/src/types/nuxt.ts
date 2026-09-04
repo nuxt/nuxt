@@ -6,6 +6,7 @@ import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, WatchEvent } from
 import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
+import type { Import } from 'unimport'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -240,6 +241,12 @@ export interface NuxtServerBuild {
    * builder's own build.
    */
   buildsSeparately: boolean
+  /**
+   * The auto-imports available in the server program, when the builder provides any. Read by
+   * the app layer to work out which of its own auto-imports also resolve on the server, so it
+   * can type the shared context without naming a particular server runtime.
+   */
+  imports?: () => Promise<Import[]>
   output: NuxtServerBuildOutput
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime

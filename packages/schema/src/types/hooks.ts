@@ -330,9 +330,11 @@ export interface NuxtHooks {
    * @param options.nodeReferences Array of Node TypeScript references
    * @param options.sharedTsConfig The shared TypeScript config object
    * @param options.sharedReferences Array of shared TypeScript references
+   * @param options.serverTsConfig The server TypeScript config object
+   * @param options.serverReferences Array of server TypeScript references
    * @returns Promise
    */
-  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig, nodeTsConfig: TSConfig, nodeReferences: TSReference[], sharedTsConfig: TSConfig, sharedReferences: TSReference[] }) => HookResult
+  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig, nodeTsConfig: TSConfig, nodeReferences: TSReference[], sharedTsConfig: TSConfig, sharedReferences: TSReference[], serverTsConfig: TSConfig, serverReferences: TSReference[] }) => HookResult
   /**
    * Called when the dev server is loading.
    * @param listenerServer The HTTP/HTTPS server object

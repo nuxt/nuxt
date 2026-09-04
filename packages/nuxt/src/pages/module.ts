@@ -7,7 +7,7 @@ import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, 
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
-import type { Nitro, NitroRouteConfig } from 'nitro/types'
+import type { Nitro, RouteRuleConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
@@ -77,8 +77,8 @@ export default defineNuxtModule({
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
-    let inlineRulesCache: Record<string, NitroRouteConfig> = {}
-    let updateRouteConfig: (inlineRules: Record<string, NitroRouteConfig>) => void | Promise<void>
+    let inlineRulesCache: Record<string, RouteRuleConfig> = {}
+    let updateRouteConfig: (inlineRules: Record<string, RouteRuleConfig>) => void | Promise<void>
     if (nuxt.options.experimental.inlineRouteRules) {
       nuxt.hook('nitro:init', (nitro) => {
         updateRouteConfig = async (inlineRules) => {
@@ -273,13 +273,8 @@ export default defineNuxtModule({
         filename: 'types/middleware.d.ts',
         dependsOn: [],
         getContents: () => [
-          'declare module \'nitro/types\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: string | string[] | Record<string, boolean>',
-          '  }',
-          '}',
-          'declare module \'nitro\' {',
-          '  interface NitroRouteConfig {',
+          'declare module \'h3/rules\' {',
+          '  interface RouteRuleConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
           '}',
@@ -878,13 +873,8 @@ export default defineNuxtModule({
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          'declare module \'nitro/types\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
-          '  }',
-          '}',
-          'declare module \'nitro\' {',
-          '  interface NitroRouteConfig {',
+          'declare module \'h3/rules\' {',
+          '  interface RouteRuleConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
           '}',

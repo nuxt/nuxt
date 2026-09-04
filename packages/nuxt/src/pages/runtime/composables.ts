@@ -2,7 +2,7 @@ import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
 import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
-import type { NitroRouteConfig } from 'nitro/types'
+import type { RouteRuleConfig } from 'nitro/types'
 import type { NuxtError } from '#app/composables/error'
 import { isInComponentSetup, useNuxtApp } from '#app/nuxt'
 import { appDiagnostics } from '../../app/diagnostics/core'
@@ -104,4 +104,4 @@ export const definePageMeta = (meta: PageMeta): void => {
  */
 /* @__NO_SIDE_EFFECTS__ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const defineRouteRules = (rules: NitroRouteConfig): void => {}
+export const defineRouteRules = (rules: RouteRuleConfig): void => {}

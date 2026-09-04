@@ -19,7 +19,7 @@ function cacheControlFor (path: string, method?: string, maxAge?: number) {
 }
 
 function errorFor (path: string, method?: string, maxAge?: number) {
-  const routeOptions = maxAge === undefined ? {} : { cache: { options: { maxAge } } }
+  const routeOptions = maxAge === undefined ? {} : { cache: { maxAge } }
   try {
     throwIfUnmatchedPagePath(event(path, method), routeOptions)
   } catch (error) {

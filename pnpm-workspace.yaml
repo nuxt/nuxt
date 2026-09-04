@@ -9,9 +9,9 @@ packages:
   - test/fixtures/*/_local-modules/*
 
 patchedDependencies:
-  nitro@3.0.260610-beta: patches/nitro@3.0.260610-beta.patch
   # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
   nitropack@2.13.4: patches/nitropack@2.13.4.patch
+  unimport@6.4.0: patches/unimport@6.4.0.patch
 
 publicHoistPattern:
   - '*-loader'
@@ -50,6 +50,19 @@ minimumReleaseAgeExclude:
   - vue
   - '@vue/*'
   - '@flakiness/vitest@1.9.2'
+  # nitro betas and the unjs/h3 packages they pin are released in lockstep
+  - nitro
+  - crossws
+  - db0
+  - env-runner
+  - h3
+  - nf3
+  - ocache
+  - rou3
+  - srvx
+  - unenv
+  - unstorage
+  - unwasm
   - fetchdts@0.2.0
 
 catalogs:
@@ -67,7 +80,7 @@ catalogs:
     klona: ^2.0.6
     nostics: ^1.2.0
     object-identity: ^0.2.3
-    ofetch: 2.0.0-alpha.3 # intentionally pinned to match nitro's dependency
+    ofetch: ^2.0.0-alpha.3
     ohash: ^2.0.12
     pathe: ^2.0.3
     perfect-debounce: ^2.1.0
@@ -83,9 +96,9 @@ catalogs:
   nitro-runtime:
     destr: ^2.0.5
     lru-cache: ^11.5.2
-    nitro: ^3.0.260610-beta
-    srvx: 0.11.22 # intentionally pinned to match nitro's dependency
-    unstorage: 2.0.0-alpha.7 # intentionally pinned to match nitro's dependency
+    nitro: ^3.0.260903-beta
+    srvx: ^1.0.3
+    unstorage: ^2.0.0-alpha.10
 
   # vue compiler/tooling
   vue:
@@ -191,8 +204,8 @@ catalogs:
     rou3: ^0.9.2
     unctx: ^3.0.1
     undici: ^8.10.0
-    unenv: 2.0.0-rc.24 # intentionally pinned to match nitro's dependency
-    unimport: ^6.4.0
+    unenv: ^2.0.0-rc.24
+    unimport: 6.4.0 # pinned: patched in patches/unimport@6.4.0.patch
     unplugin: ^3.3.0
     unrouting: ^0.2.3
     untyped: ^2.0.0
@@ -245,8 +258,8 @@ catalogs:
     eslint-plugin-perfectionist: 5.10.1
     eslint-typegen: 2.3.1
     fast-check: 4.9.0
-    h3: 2.0.1-rc.22 # intentionally pinned to match nitro's dependency
-    h3-next: 'npm:h3@2.0.1-rc.22' # intentionally pinned to match nitro's dependency
+    h3: ^2.0.1-rc.31
+    h3-next: 'npm:h3@^2.0.1-rc.31'
     happy-dom: 20.12.0
     html-validate: 11.11.0
     htmlnano: 3.4.0

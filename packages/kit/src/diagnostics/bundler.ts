@@ -131,5 +131,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Pass an object to `vite.$client.build.rolldownOptions.input` if you need additional inputs, or add an `index.html` at the root of your app directory to take over the document itself.',
       docs: false,
     },
+    NUXT_B7026: {
+      why: (p: { route: string }) => `The route rule for \`${p.route}\` sets \`redirect.statusCode\`, which the server builder no longer reads.`,
+      fix: 'Rename it to `redirect.status`. Nuxt has applied it as `status` for now.',
+      docs: false,
+    },
   },
 })

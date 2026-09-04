@@ -123,16 +123,6 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
     ].join('\n')
   }
 
-  // Per-env `buildStart`/`buildEnd` is what causes unimport's plugin-instance
-  // ctx to scan auto-import dirs at request time in dev. Without this, the
-  // nitro env's plugins (including `unimport`) never get their `buildStart`
-  // hook called, so `addServerImportsDir` entries never reach the transform
-  // pipeline. The flag is a no-op in build mode.
-  if (nuxt.options.dev) {
-    nuxt.options.vite.server ||= {}
-    nuxt.options.vite.server.perEnvironmentStartEndDuringDev = true
-  }
-
   nuxt.options.vite.plugins ||= []
   nuxt.options.vite.plugins.push(nitroPlugin({
     // reuse the Nitro instance we have created
