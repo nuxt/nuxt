@@ -1928,7 +1928,7 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should forward destination preload tags as prefetch hints on link prefetch', async () => {
+  it.skipIf(!isTestingAppManifest)('should preserve image preloads and downgrade other preload hints on link prefetch', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -1936,32 +1936,47 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     // prefetching should trigger loading its payload, which includes the
     // forwarded preload links registered via `useHead` on that page.
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => document.head.querySelector('link[rel="preload"][as="image"][fetchpriority="low"][href$="/public.svg"]')
+        && document.head.querySelector('link[rel="prefetch"][as="fetch"][href$="/ignore/public-asset"]'),
     )
 
-    // Confirm the rel was downgraded from preload to prefetch.
-    const preloadCount = await page.evaluate(
-      () => document.head.querySelectorAll('link[rel="preload"][href$="/public.svg"]').length,
-    )
-    expect(preloadCount).toBe(0)
+    const hints = await page.evaluate(() => Array.from(document.head.querySelectorAll('link'))
+      .filter(link => link.href.endsWith('/public.svg') || link.href.endsWith('/ignore/public-asset'))
+      .map(link => ({
+        as: link.as,
+        fetchpriority: link.getAttribute('fetchpriority'),
+        href: new URL(link.href).pathname,
+        rel: link.rel,
+      })))
+    expect(hints).toContainEqual({
+      as: 'image',
+      fetchpriority: 'low',
+      href: '/public.svg',
+      rel: 'preload',
+    })
+    expect(hints).toContainEqual({
+      as: 'fetch',
+      fetchpriority: null,
+      href: '/ignore/public-asset',
+      rel: 'prefetch',
+    })
 
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should evict forwarded prefetch hints for routes that are never visited', async () => {
+  it.skipIf(!isTestingAppManifest)('should evict forwarded resource hints for routes that are never visited', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+      () => Array.from(document.head.querySelectorAll('link'))
         .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
     )
 
     await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
     await page.waitForFunction(
-      () => !Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => !Array.from(document.head.querySelectorAll('link'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg') || (l as HTMLLinkElement).href.endsWith('/ignore/public-asset')),
     )
 
     await page.close()

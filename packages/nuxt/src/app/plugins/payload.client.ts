@@ -13,7 +13,7 @@ import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedDa
 
 // track the active head entry per path for forwarded preload hints
 interface ActiveHeadEntryLike { dispose: () => void }
-const forwardedPrefetchEntries = new Map<string, ActiveHeadEntryLike>()
+const forwardedHintEntries = new Map<string, ActiveHeadEntryLike>()
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:payload',
@@ -22,12 +22,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     const staticKeysToRemove = new Set<string>()
     const router = useRouter()
     if (prefetchPreloadTags) {
-      // drop forwarded `rel="prefetch" hints so they don't linger indefinitely.
+      // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
-        for (const entry of forwardedPrefetchEntries.values()) {
+        for (const entry of forwardedHintEntries.values()) {
           entry.dispose()
         }
-        forwardedPrefetchEntries.clear()
+        forwardedHintEntries.clear()
       })
     }
     router.beforeResolve(async (to, from) => {
@@ -62,15 +62,18 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         const payload = await loadPayload(url).catch(() => {
           stateDiagnostics.NUXT_E7003({ url })
         })
-        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(pathname)) {
+        if (head && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname)) {
           const entry = head.push({
             link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {
-              // downgrade preload (and modulepreload) to prefetch
+              if (link.as === 'image') {
+                return { ...link, fetchpriority: 'low' }
+              }
+              // Downgrade preload (and modulepreload) to prefetch.
               const { rel: _rel, ...rest } = link
               return { ...rest, rel: 'prefetch' }
             }),
           })
-          forwardedPrefetchEntries.set(pathname, entry)
+          forwardedHintEntries.set(pathname, entry)
         }
       })
       // `navigator.connection` (Network Information API) is widely supported in
