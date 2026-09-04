@@ -278,6 +278,7 @@ const vueTypesPreset = defineUnimportPreset({
     'Ref',
     'MaybeRef',
     'MaybeRefOrGetter',
+    'ShallowRef',
     'VNode',
     'WritableComputedRef',
   ],
