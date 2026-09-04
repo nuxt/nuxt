@@ -958,9 +958,6 @@ importers:
       magic-string:
         specifier: catalog:vite
         version: 1.2.3
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1

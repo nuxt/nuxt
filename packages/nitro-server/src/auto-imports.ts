@@ -4,7 +4,6 @@ import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { Import, InjectImportsOptions, Unimport } from 'unimport'
 import type { Nuxt } from '@nuxt/schema'
-import type { NitroConfig } from 'nitro/types'
 
 /** Options accepted on `nitro.imports`. */
 export interface ServerImportsOptions {
@@ -168,10 +167,6 @@ export function resolveServerImportDirs (nuxt: Nuxt): string[] {
   }
 
   return [...dirs]
-}
-
-export function isImportsDisabled (config: NitroConfig): boolean {
-  return config.imports === false
 }
 
 const RELATIVE_RE = /^\.{1,2}\//
