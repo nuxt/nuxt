@@ -4,6 +4,8 @@ title: Nuxt accessibility
 description: Best practices for accessibility in Nuxt apps.
 ---
 
+azerty
+
 Most of what makes an app accessible is not specific to Nuxt: color contrast, form semantics, and ARIA work the same here as in any Vue or plain HTML application, and the [resources](#useful-resources) at the end of this guide cover them well.
 
 What Nuxt does change is navigation. Once your app has hydrated, it routes on the client, so the document is never reloaded and the browser no longer announces a new page or resets focus for you. Nuxt ships with features that fill some of that gap, and a few conventions cover the rest. This guide outlines best practices for handling that.
