@@ -1937,11 +1937,11 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     // forwarded preload links registered via `useHead` on that page.
     await page.waitForFunction(
       () => document.head.querySelector('link[rel="preload"][as="image"][fetchpriority="low"][href$="/public.svg"]')
-        && document.head.querySelector('link[rel="prefetch"][as="fetch"][href$="/ignore/public-asset"]'),
+        && document.head.querySelector('link[rel="prefetch"][as="fetch"][href$="/prefetch-resource.txt"]'),
     )
 
     const hints = await page.evaluate(() => Array.from(document.head.querySelectorAll('link'))
-      .filter(link => link.href.endsWith('/public.svg') || link.href.endsWith('/ignore/public-asset'))
+      .filter(link => link.href.endsWith('/public.svg') || link.href.endsWith('/prefetch-resource.txt'))
       .map(link => ({
         as: link.as,
         fetchpriority: link.getAttribute('fetchpriority'),
@@ -1957,7 +1957,7 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     expect(hints).toContainEqual({
       as: 'fetch',
       fetchpriority: null,
-      href: '/ignore/public-asset',
+      href: '/prefetch-resource.txt',
       rel: 'prefetch',
     })
 
@@ -1976,7 +1976,7 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
     await page.waitForFunction(
       () => !Array.from(document.head.querySelectorAll('link'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg') || (l as HTMLLinkElement).href.endsWith('/ignore/public-asset')),
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg') || (l as HTMLLinkElement).href.endsWith('/prefetch-resource.txt')),
     )
 
     await page.close()

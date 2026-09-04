@@ -2,7 +2,7 @@
 useHead({
   link: [
     { rel: 'preload', as: 'image', href: '/public.svg' },
-    { rel: 'preload', as: 'fetch', href: '/ignore/public-asset' },
+    { rel: 'preload', as: 'fetch', href: '/prefetch-resource.txt' },
   ],
 })
 </script>
