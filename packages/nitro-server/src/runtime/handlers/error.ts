@@ -39,7 +39,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     ? (errorObject.message || 'Server Error')
     : (error.message || errorObject.message || 'Server Error')
   // we will be rendering this error internally so we can pass along the error.data safely
-  errorObject.data ||= error.data
+  if (!(error as any).unhandled) {
+    errorObject.data ||= error.data
+  }
   errorObject.statusText ||= (error as any).statusText || error.statusMessage
   const errorCause = import.meta.dev ? serializeErrorCause(error.cause) : undefined
 
