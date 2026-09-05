@@ -1936,7 +1936,7 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     // prefetching should trigger loading its payload, which includes the
     // forwarded preload links registered via `useHead` on that page.
     await page.waitForFunction(
-      () => document.head.querySelector('link[rel="preload"][as="image"][fetchpriority="low"][href$="/public.svg"]')
+      () => document.head.querySelector('link[rel="preload"][as="image"][href$="/public.svg"]')
         && document.head.querySelector('link[rel="prefetch"][as="fetch"][href$="/prefetch-resource.txt"]'),
     )
 
@@ -1950,7 +1950,7 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
       })))
     expect(hints).toContainEqual({
       as: 'image',
-      fetchpriority: 'low',
+      fetchpriority: null,
       href: '/public.svg',
       rel: 'preload',
     })

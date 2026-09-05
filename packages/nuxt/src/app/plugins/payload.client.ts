@@ -14,6 +14,8 @@ import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedDa
 // track the active head entry per path for forwarded preload hints
 interface ActiveHeadEntryLike { dispose: () => void }
 const forwardedHintEntries = new Map<string, ActiveHeadEntryLike>()
+// bumped on navigation, so payloads that resolve afterwards are discarded
+let hintGeneration = 0
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:payload',
@@ -24,6 +26,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     if (prefetchPreloadTags) {
       // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
+        hintGeneration++
         for (const entry of forwardedHintEntries.values()) {
           entry.dispose()
         }
@@ -56,17 +59,22 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       // Load payload into cache
       const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
+        const generation = hintGeneration
         const { hostname, pathname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
         const payload = await loadPayload(url).catch(() => {
           stateDiagnostics.NUXT_E7003({ url })
         })
-        if (head && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname)) {
+        if (head && generation === hintGeneration && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname)) {
           const entry = head.push({
             link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {
               if (link.as === 'image') {
-                return { ...link, fetchpriority: 'low' }
+                // `rel="prefetch"` has no request destination, so image hints stay as
+                // `rel="preload"`, with any `fetchpriority` dropped so that they
+                // cannot outrank the current page
+                const { fetchpriority: _fetchpriority, ...rest } = link
+                return rest
               }
               // Downgrade preload (and modulepreload) to prefetch.
               const { rel: _rel, ...rest } = link
