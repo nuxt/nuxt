@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { join } from 'pathe'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
+import { buildNuxt, loadNuxt, logger } from '@nuxt/kit'
 
 /** Build the fixture the standalone renderer test renders from. */
 export default async function setup (): Promise<void> {
@@ -11,5 +11,7 @@ export default async function setup (): Promise<void> {
     await buildNuxt(nuxt)
   } finally {
     await nuxt.close()
+    // the build leaves stdout wrapped by consola, which swallows the reporter's output
+    logger.restoreAll()
   }
 }

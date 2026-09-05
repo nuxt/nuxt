@@ -1,11 +1,8 @@
-import { fileURLToPath } from 'node:url'
-
 export default defineNuxtConfig({
-  modules: ['./modules/renderer-artifacts'],
   devtools: { enabled: false },
   app: {
     head: {
-      titleTemplate: '%s | nuxt',
+      title: 'Pure Vite SSR',
     },
   },
   runtimeConfig: {
@@ -16,6 +13,6 @@ export default defineNuxtConfig({
   sourcemap: false,
   compatibilityDate: 'latest',
   server: {
-    builder: fileURLToPath(new URL('./server-builder.ts', import.meta.url)),
+    builder: 'vite',
   },
 })

@@ -76,7 +76,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:client-manifest',
     // Finalised in the ssr env: its `closeBundle` for legacy, or lazily on the
-    // first `nuxt/manifest`/`nuxt/precomputed` provider read for env-API, by
+    // first `nuxt/internal/manifest`/`nuxt/internal/precomputed` provider read for env-API, by
     // which point the client build has flushed `manifest.json` to disk.
     applyToEnvironment: environment => environment.name === 'ssr' || environment.name === 'client',
     generateBundle: {
