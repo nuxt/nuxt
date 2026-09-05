@@ -767,6 +767,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     capabilities: { server: true, dev: true },
     buildsSeparately: !nuxt.options.experimental.nitroViteEnvironment,
     imports: () => autoImports.getImports(),
+    runtime: { fetch: 'nitro', runtimeConfig: 'nitro/runtime-config' },
     preview: { command: () => nitro.options.commands.preview },
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)

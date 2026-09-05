@@ -55,10 +55,12 @@ describe('sharedAppConfigDeclarationTemplate', () => {
 })
 
 describe('publicPathTemplate', () => {
-  it('falls back to nitro\'s runtime-config specifier when no server build is declared', async () => {
-    const contents = await publicPathTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+  it('falls back to the host nitro major\'s runtime-config specifier when no server build is declared', async () => {
+    const v3 = await publicPathTemplate.getContents!({ nuxt: makeNuxt({ _nitroMajor: 3 }), app: makeApp(), options: {} })
+    expect(v3).toMatch(/import \{ useRuntimeConfig \} from ['"]nitro\/runtime-config['"]/)
 
-    expect(contents).toMatch(/import \{ useRuntimeConfig \} from ['"]nitro\/runtime-config['"]/)
+    const v2 = await publicPathTemplate.getContents!({ nuxt: makeNuxt({ _nitroMajor: 2 }), app: makeApp(), options: {} })
+    expect(v2).toMatch(/import \{ useRuntimeConfig \} from ['"]nitropack\/runtime['"]/)
   })
 
   it('imports `useRuntimeConfig` from the specifier the server builder provides', async () => {
