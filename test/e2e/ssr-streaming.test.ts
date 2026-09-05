@@ -271,6 +271,29 @@ test.describe('SSR Streaming', () => {
     expect(html.trimEnd()).toMatch(/<\/body><\/html>$/)
   })
 
+  // A failure outside Vue (here a module's `render:html:chunk` hook
+  // throwing) reaches the renderer's catch as a raw Error, without the
+  // app-side normalisation Vue errors get. The payload script is the
+  // client's only path to the error page once the shell committed the
+  // status, so it must survive the error.
+  test('a non-Vue error mid-stream keeps the payload script', async ({ fetch }) => {
+    const res = await fetch('/chunk-error')
+    const html = await res.text()
+
+    expect(res.status).toBe(200)
+    expect(html).toContain('chunk error shell content')
+    expect(html).toMatch(/<script[^>]*id="__NUXT_DATA__"[^>]*>/)
+    expect(html).toContain('chunk hook failure')
+    expect(html.trimEnd()).toMatch(/<\/body><\/html>$/)
+  })
+
+  test('client renders the error page after a non-Vue mid-stream error', async ({ page, goto }) => {
+    await goto('/chunk-error')
+
+    await expect(page.locator('body')).toContainText('chunk hook failure')
+    await expect(page.locator('[data-testid="shell-text"]')).toHaveCount(0)
+  })
+
   test('client renders the error page after a mid-stream error', async ({ page, goto }) => {
     await goto('/error-during')
 
