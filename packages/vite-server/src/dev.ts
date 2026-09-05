@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
-import { serveStatic } from 'srvx/static'
+import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
 import type { Plugin, ViteDevServer } from 'vite'
 
 import { resolveDocument } from './document.ts'
@@ -32,7 +32,7 @@ export function setupDevServer (nuxt: Nuxt): void {
     viteServer = server as ViteDevServer
   })
 
-  const staticMiddleware = publicDirs(nuxt).map(dir => serveStatic({ dir }))
+  const staticMiddleware = publicDirs(nuxt).map(dir => createStaticMiddleware({ dir }))
 
   // the same document the client build takes as its HTML input, minus the build
   const shell = async (url: string) => {

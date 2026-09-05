@@ -38,12 +38,12 @@ function matchesPageRoute (pathname: string): boolean {
  * When a `cache` route rule covers the path, its `maxAge` is advertised on
  * GET/HEAD misses too, so CDNs can absorb repeat probes for unknown paths.
  */
-export function throwIfUnmatchedPagePath (event: H3Event, routeOptions: { cache?: { options?: { maxAge?: number } } }): void {
+export function throwIfUnmatchedPagePath (event: H3Event, routeOptions: { cache?: { maxAge?: number } }): void {
   if (matchesPageRoute(event.url.pathname)) {
     return
   }
   const path = event.url.pathname + event.url.search
-  const maxAge = routeOptions.cache?.options?.maxAge
+  const maxAge = routeOptions.cache?.maxAge
   const cacheable = !!maxAge && maxAge > 0 && (event.req.method === 'GET' || event.req.method === 'HEAD')
   throw new HTTPError({
     status: 404,
