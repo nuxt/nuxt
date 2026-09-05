@@ -4,18 +4,23 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+
+const secretKey = 'nuxt-runtime-secret-key-test-value'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
   server: true,
   browser: true,
+  env: {
+    NUXT_SECRET_KEY: secretKey,
+  },
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     hooks: {
@@ -29,6 +34,34 @@ await setup({
       },
     },
   },
+})
+
+describe('application secret', () => {
+  it('provides the application secret only in private runtime config', async () => {
+    expect(await $fetch('/api/runtime-config/secret-key')).toEqual({ secretKey })
+    expect(await $fetch<string>('/')).not.toContain(secretKey)
+
+    const page = await createPage('/')
+    try {
+      const config = await page.evaluate(() => window.useNuxtApp!().$config)
+      expect(config).toHaveProperty('public')
+      expect(config).not.toHaveProperty('secretKey')
+      expect(JSON.stringify(config)).not.toContain(secretKey)
+    } finally {
+      await page.close()
+    }
+  })
+
+  it.skipIf(isDev || !runsOncePerBuilderInMatrix).each([
+    undefined, '', '123', 'true', 'null', '4848e0', '"quoted-secret"', '{"key":"secret"}',
+  ])('preserves the runtime environment secret %j', async (value) => {
+    try {
+      await startServer({ env: { NUXT_SECRET_KEY: value, NITRO_SECRET_KEY: undefined } })
+      expect(await $fetch('/api/runtime-config/secret-key')).toEqual({ secretKey: value ?? '' })
+    } finally {
+      await startServer()
+    }
+  })
 })
 
 describe.skipIf(!runsOnceInMatrix)('server api', () => {
