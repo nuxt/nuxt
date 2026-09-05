@@ -1230,7 +1230,8 @@ describe('route rules typing', () => {
     expectTypeOf(rules.appMiddleware).toEqualTypeOf<Record<string, boolean> | undefined>()
     expectTypeOf(rules.payload).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(rules.appLayout).toEqualTypeOf<LayoutKey | false | undefined>()
-    expectTypeOf(rules.swr).toBeAny()
-    expectTypeOf(rules.headers).toBeAny()
+    // rules the app layer does not describe are read through the index signature
+    expectTypeOf(rules.swr).toBeUnknown()
+    expectTypeOf(rules.headers).toBeUnknown()
   })
 })

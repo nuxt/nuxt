@@ -1,12 +1,53 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { describe, expect, it, vi } from 'vitest'
+import { createHooks } from 'hookable'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
+import type { RuntimeNuxtHooks } from '#app/nuxt'
+import * as payload from '#app/composables/payload'
+import payloadPlugin from '#app/plugins/payload.client'
 
 describe('nuxt-link:prefetch', () => {
+  it('should prefetch a link payload after hydration when interacted with during hydration', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const wrapper = await mountSuspended(component, { props: { to: '/to', prefetchOn: 'interaction' } })
+    const nuxtApp = useNuxtApp()
+    const router = useRouter()
+    const originalHooks = nuxtApp.hooks
+    const isHydrating = nuxtApp.isHydrating
+    const loadPayload = vi.spyOn(payload, 'loadPayload').mockResolvedValue({ data: {} })
+    const beforeResolve = vi.spyOn(router, 'beforeResolve').mockReturnValue(() => {})
+    const afterEach = vi.spyOn(router, 'afterEach').mockReturnValue(() => {})
+
+    vi.useFakeTimers()
+    nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
+    nuxtApp.isHydrating = true
+
+    try {
+      await nuxtApp.runWithContext(() => payloadPlugin.setup!(nuxtApp))
+      await wrapper.find('a').trigger('pointerenter')
+
+      expect(loadPayload).not.toHaveBeenCalled()
+
+      nuxtApp.isHydrating = false
+      await nuxtApp.hooks.callHook('app:suspense:resolve')
+
+      expect(loadPayload).toHaveBeenCalledExactlyOnceWith('/to')
+    } finally {
+      wrapper.unmount()
+      nuxtApp.hooks = originalHooks
+      nuxtApp.isHydrating = isHydrating
+      loadPayload.mockRestore()
+      beforeResolve.mockRestore()
+      afterEach.mockRestore()
+      vi.clearAllTimers()
+      vi.useRealTimers()
+    }
+  })
+
   it('should prefetch on visibility by default', async () => {
     const component = defineNuxtLink(nuxtLinkDefaults)
 

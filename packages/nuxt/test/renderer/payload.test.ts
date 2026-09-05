@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { NuxtSSRContext } from 'nuxt/app'
 
-import { getPayloadKeySizes, renderPayloadJsonScript } from '../src/runtime/utils/renderer/payload.ts'
+import { getPayloadKeySizes, renderPayloadJsonScript } from '../../src/runtime/server/renderer/payload.ts'
 
 function ssrContext (url = '/') {
   return {

@@ -1,5 +1,5 @@
 import type { NuxtPage } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitro/types'
+import type { RouteRuleConfig } from 'nitro/types'
 
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import { isEqual } from 'ohash'
@@ -11,7 +11,7 @@ export function globRouteRulesFromPages (pages: NuxtPage[]) {
 
 function collectRouteRulesFromPages (
   pages: NuxtPage[],
-  paths: Record<string, NitroRouteConfig>,
+  paths: Record<string, RouteRuleConfig>,
   prefix: string,
 ) {
   for (const page of pages) {

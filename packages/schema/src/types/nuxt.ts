@@ -6,6 +6,7 @@ import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, WatchEvent } from
 import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
+import type { Import } from 'unimport'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -170,6 +171,27 @@ export interface NuxtServerBuildOutput {
 }
 
 /**
+ * Where the app builder leaves the artifacts a server build consumes, for a server builder
+ * that bundles or serves them from disk rather than through the `nuxt/*` module bodies of
+ * {@link NuxtBuildOutputs}.
+ *
+ * Paths are functions because the app builder may only know them once its configuration is
+ * resolved.
+ *
+ * @internal
+ */
+export interface NuxtServerBuildInput {
+  /** Absolute path to the SSR entry the app builder emits, the input of a server bundle. */
+  serverEntry: () => string
+  /** Absolute path to the directory the SSR build's chunks land in. */
+  serverDir: () => string
+  /** Absolute path to the directory the client build's assets land in. */
+  clientDir: () => string
+  /** Absolute path to the client manifest `vue-bundle-renderer` renders against. */
+  clientManifest: () => string
+}
+
+/**
  * What a server builder can do, so consumers need not infer it from its name.
  *
  * @internal
@@ -188,8 +210,11 @@ export interface NuxtServerBuildCapabilities {
  * @internal
  */
 export interface NuxtServerBuildRuntime {
-  /** Exports `fetch`, used to back `$fetch` on the server. */
-  fetch: string
+  /**
+   * Exports `fetch`, used to back `$fetch` on the server. Omitted by a runtime that installs
+   * its own `$fetch` on `globalThis` rather than exposing a module to import from.
+   */
+  fetch?: string
   /** Exports `useRuntimeConfig`. */
   runtimeConfig: string
 }
@@ -240,6 +265,13 @@ export interface NuxtServerBuild {
    * builder's own build.
    */
   buildsSeparately: boolean
+  /**
+   * The auto-imports available in the server program, when the builder provides any. Read by
+   * the app layer to work out which of its own auto-imports also resolve on the server, so it
+   * can type the shared context without naming a particular server runtime.
+   */
+  imports?: () => Promise<Import[]>
+  input: NuxtServerBuildInput
   output: NuxtServerBuildOutput
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime

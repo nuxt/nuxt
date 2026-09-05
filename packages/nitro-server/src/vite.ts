@@ -14,7 +14,9 @@ import remapping from '@ampproject/remapping'
 import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
-import { NUXT_BUILD_OUTPUT_MAP, distDir } from './utils.ts'
+import { BUILD_OUTPUT_SPECIFIERS } from '@nuxt/kit/internal'
+
+import { distDir, getServerReplacements } from './utils.ts'
 
 const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
@@ -86,6 +88,7 @@ function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string
 export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro): void {
   addVitePlugin(NuxtBuildOutputsPlugin(nuxt))
   addVitePlugin(NitroVirtualBridge(nitro))
+  addVitePlugin(NitroDefinePlugin(nuxt))
 
   // `nitro/vite` calls `build:before` before it derives its bundler config,
   // which is where the legacy path calls `nitro:build:before`: consumers use it
@@ -121,16 +124,6 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
       '  return [...new Set(store.css ?? globalCss)]',
       '}',
     ].join('\n')
-  }
-
-  // Per-env `buildStart`/`buildEnd` is what causes unimport's plugin-instance
-  // ctx to scan auto-import dirs at request time in dev. Without this, the
-  // nitro env's plugins (including `unimport`) never get their `buildStart`
-  // hook called, so `addServerImportsDir` entries never reach the transform
-  // pipeline. The flag is a no-op in build mode.
-  if (nuxt.options.dev) {
-    nuxt.options.vite.server ||= {}
-    nuxt.options.vite.server.perEnvironmentStartEndDuringDev = true
   }
 
   nuxt.options.vite.plugins ||= []
@@ -313,7 +306,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
     resolveId: {
       order: 'pre',
       handler (id) {
-        if (id in NUXT_BUILD_OUTPUT_MAP) {
+        if (id in BUILD_OUTPUT_SPECIFIERS) {
           return VIRTUAL_PREFIX + id
         }
       },
@@ -324,7 +317,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         if (!id.startsWith(VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(VIRTUAL_PREFIX.length)
 
-        const key = NUXT_BUILD_OUTPUT_MAP[specifier]
+        const key = BUILD_OUTPUT_SPECIFIERS[specifier]
         if (!key) { return }
 
         // In a production build, defer keys whose value is only final after the
@@ -352,7 +345,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         if (nuxt.options.dev || this.environment?.name !== 'ssr') { return }
 
         const replacements = new Map<string, string>()
-        for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
+        for (const [specifier, key] of Object.entries(BUILD_OUTPUT_SPECIFIERS)) {
           if (!DEFERRED_KEYS.has(key)) { continue }
           const expressions = await getDeferredExpressions(nuxt, key)
           replacements.set(sentinel(specifier), `(${expressions.get(undefined)})`)
@@ -417,6 +410,23 @@ function DevClientCssPlugin (nuxt: Nuxt): VitePlugin {
         if (this.environment.name === 'ssr' && IS_CSS_RE.test(id)) { push?.() }
       },
     },
+  }
+}
+
+/**
+ * Apply the server-only compile-time constants to the `nitro` environment as
+ * `define`, so they are substituted in dev as well as in a build.
+ */
+function NitroDefinePlugin (nuxt: Nuxt): VitePlugin {
+  return {
+    name: 'nuxt:nitro-define',
+    config: () => ({
+      environments: {
+        nitro: {
+          define: getServerReplacements(nuxt),
+        },
+      },
+    }),
   }
 }
 

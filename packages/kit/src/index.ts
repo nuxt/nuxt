@@ -52,7 +52,7 @@ export type { NitroCompatibilityVersion, NitroVersionOptions, NitroVersionedInpu
 export { createNitroHelpers } from './nitro-helpers.ts'
 export type { NitroHelpers } from './nitro-helpers.ts'
 export type { NitroInstance, NitroInstanceOptions } from '@nuxt/schema'
-export type { NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3, NitroHandlerMethod, NitroRouteConfig } from './nitro-types.ts'
+export type { NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3, NitroHandlerMethod, NitroRouteConfig, NitroRouteConfigV2, NitroRouteConfigV3 } from './nitro-types.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { packageName, resolveDeclarationPath, resolveTypePaths } from './types.ts'
 export type { ResolveTypePathsOptions } from './types.ts'

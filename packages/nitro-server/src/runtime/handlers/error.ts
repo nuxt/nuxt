@@ -40,8 +40,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   const errorObject = (defaultRes.body || {}) as SSRErrorInput
-  // we will be rendering this error internally so we pass along the error.data safely
-  errorObject.data ??= error.data
+  if (!error.unhandled) {
+    errorObject.data ??= error.data
+  }
   errorObject.url = event.req.url
   // `fatal` is Nuxt-only, so Nitro's error body does not carry it
   errorObject.fatal = (error as { fatal?: boolean }).fatal ?? false

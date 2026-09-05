@@ -109,10 +109,10 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       }
     })
 
-    onNuxtReady(() => {
-      // Load payload into cache
-      const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
-      nuxtApp.hooks.hook('link:prefetch', async (url) => {
+    // Load payload into cache
+    const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
+    nuxtApp.hooks.hook('link:prefetch', (url) => {
+      onNuxtReady(async () => {
         const generation = hintGeneration
         const { hostname, pathname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
@@ -127,6 +127,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           forwardedHintEntries.set(pathname, head.push({ link: links }))
         }
       })
+    })
+
+    onNuxtReady(() => {
       if (isAppManifestEnabled && (navigator as NavigatorWithConnection).connection?.effectiveType !== 'slow-2g') {
         setTimeout(getAppManifest, 1000)
       }

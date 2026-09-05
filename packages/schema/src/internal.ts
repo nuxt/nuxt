@@ -9,6 +9,7 @@
 export type {
   NuxtServerBuild,
   NuxtServerBuildCapabilities,
+  NuxtServerBuildInput,
   NuxtServerBuildOutput,
   NuxtServerBuildPreview,
   NuxtServerBuildRuntime,

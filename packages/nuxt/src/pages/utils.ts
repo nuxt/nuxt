@@ -320,7 +320,7 @@ function findOptionsApiSetupBody (program: ESTree.Program): Array<ESTree.Node> |
     if (statement.type !== 'ExportDefaultDeclaration') { continue }
 
     let declaration = unwrapStaticExpression(statement.declaration as ESTree.Node)
-    // `export default defineComponent({ ... })` and friends
+    // `export default defineComponent({ ... })`
     if (declaration?.type === 'CallExpression') {
       declaration = unwrapStaticExpression(declaration.arguments[0])
     }

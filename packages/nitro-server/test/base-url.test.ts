@@ -1,7 +1,9 @@
 import { FastURL } from 'srvx/node'
 import { describe, expect, it } from 'vitest'
 
-import { urlHash, withoutBaseURL } from '../src/runtime/utils/base.ts'
+import { urlHash } from 'nuxt/renderer/url'
+
+import { withoutBaseURL } from '../src/runtime/utils/base.ts'
 
 // `srvx` builds the URL of an incoming request from its parts on Node, and hands over the platform
 // `URL` on runtimes it has no fast path for (workerd, and anything using the generic adapter).
