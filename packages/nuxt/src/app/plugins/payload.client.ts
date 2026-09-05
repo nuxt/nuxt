@@ -52,10 +52,10 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       }
     })
 
-    onNuxtReady(() => {
-      // Load payload into cache
-      const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
-      nuxtApp.hooks.hook('link:prefetch', async (url) => {
+    // Load payload into cache
+    const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
+    nuxtApp.hooks.hook('link:prefetch', (url) => {
+      onNuxtReady(async () => {
         const { hostname, pathname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
@@ -73,6 +73,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           forwardedPrefetchEntries.set(pathname, entry)
         }
       })
+    })
+
+    onNuxtReady(() => {
       // `navigator.connection` (Network Information API) is widely supported in
       // browsers but not part of the standard TS DOM lib.
       if (isAppManifestEnabled && (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType !== 'slow-2g') {
