@@ -356,17 +356,19 @@ async function initNuxt (nuxt: Nuxt) {
    * Builders without that export are referenced by package name.
    */
   const getServerBuilderReference = () => {
-    if (serverBuilderReference || typeof nuxt.options.server.builder !== 'string') {
+    const builder = nuxt.options.server.builder
+    // only a package can have an `augments` subpath or be referenced by name
+    if (serverBuilderReference || typeof builder !== 'string' || isAbsolute(builder) || builder.startsWith('.')) {
       return serverBuilderReference
     }
-    const augments = resolveModulePath(`${nuxt.options.server.builder}/augments`, {
+    const augments = resolveModulePath(`${builder}/augments`, {
       from: [import.meta.url, directoryToURL(nuxt.options.rootDir)],
       try: true,
     })
     const declaration = augments?.replace(JS_EXTENSION_RE, (_, modifier = '') => `.d.${modifier}ts`)
     serverBuilderReference = declaration && existsSync(declaration)
       ? { path: declaration }
-      : { types: nuxt.options.server.builder }
+      : { types: builder }
     return serverBuilderReference
   }
 
