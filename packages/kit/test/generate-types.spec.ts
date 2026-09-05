@@ -95,6 +95,7 @@ describe('tsConfig generation', () => {
         "../../node_modules",
         "../dist",
         "../.data",
+        "../server/**/*",
         "../modules/*/runtime/server/**/*",
         "../layers/*/server/**/*",
         "../layers/*/modules/*/runtime/server/**/*",
@@ -391,11 +392,6 @@ describe('resolveLayerPaths', async () => {
           "../*.d.ts",
           "../layers/*/*.d.ts",
         ],
-        "nitro": [
-          "../custom-modules/*/runtime/server/**/*",
-          "../layers/*/server/**/*",
-          "../layers/*/modules/*/runtime/server/**/*",
-        ],
         "node": [
           "../custom-modules/*.*",
           "../nuxt.config.*",
@@ -412,6 +408,12 @@ describe('resolveLayerPaths', async () => {
           "../tests/nuxt/**/*",
           "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
+        ],
+        "server": [
+          "../server/**/*",
+          "../custom-modules/*/runtime/server/**/*",
+          "../layers/*/server/**/*",
+          "../layers/*/modules/*/runtime/server/**/*",
         ],
         "shared": [
           "../custom-shared/**/*",
