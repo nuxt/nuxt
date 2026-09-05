@@ -3,23 +3,18 @@ import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
-import { useRuntimeConfig } from 'nitro/runtime-config'
 import type { App } from 'vue'
 
 import type { NuxtSSRContext } from '#app/types'
 
-import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
-import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
-import { buildAssetsURL, publicAssetsURL } from '../paths'
+import { NUXT_NO_SSR, appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside, spaTemplate } from 'nuxt/renderer-config'
 import { lazyCachedFunction } from './cache'
-import { serverDiagnostics } from '../../diagnostics'
+import { rendererDiagnostics } from './diagnostics'
+import { serverRuntime } from './runtime'
 
 type Entry = (ssrContext: NuxtSSRContext) => Promise<App>
 
-// @ts-expect-error private property consumed by vite-generated url helpers
-globalThis.__buildAssetsURL = buildAssetsURL
-// @ts-expect-error private property consumed by vite-generated url helpers
-globalThis.__publicAssetsURL = publicAssetsURL
+const buildAssetsURL = (...path: string[]) => serverRuntime.buildAssetsURL(...path)
 
 export const APP_ROOT_OPEN_TAG: string = `<${appRootTag}${propsToString(appRootAttrs)}>`
 export const APP_ROOT_CLOSE_TAG: string = `</${appRootTag}>`
@@ -49,7 +44,7 @@ interface Renderer {
 export const getSSRRenderer: () => Promise<Renderer> = lazyCachedFunction(async (): Promise<Renderer> => {
   // Load server bundle
   const createSSRApp = await getServerEntry()
-  if (!createSSRApp) { throw serverDiagnostics.NUXT_E8004() }
+  if (!createSSRApp) { throw rendererDiagnostics.NUXT_E8004() }
 
   // Load precomputed dependencies
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
@@ -82,30 +77,19 @@ export const getSSRRenderer: () => Promise<Renderer> = lazyCachedFunction(async 
 const getSPARenderer = lazyCachedFunction(async (): Promise<Renderer> => {
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
 
-  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
-    .then((r) => {
-      if (spaLoadingTemplateOutside) {
-        const APP_SPA_LOADER_OPEN_TAG = `<${appSpaLoaderTag}${propsToString(appSpaLoaderAttrs)}>`
-        const APP_SPA_LOADER_CLOSE_TAG = `</${appSpaLoaderTag}>`
-        const appTemplate = APP_ROOT_OPEN_TAG + APP_ROOT_CLOSE_TAG
-        const loaderTemplate = r ? APP_SPA_LOADER_OPEN_TAG + r + APP_SPA_LOADER_CLOSE_TAG : ''
-        return appTemplate + loaderTemplate
-      } else {
-        return APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG
-      }
-    })
+  const template = renderSPATemplate()
 
   // Create SPA renderer and cache the result for all requests
   const renderer = createRenderer(() => () => {}, {
     precomputed,
     manifest: import.meta.dev ? await getClientManifest() : undefined,
-    renderToString: () => spaTemplate,
+    renderToString: () => template,
     buildAssetsURL,
   })
   const result = await renderer.renderToString({})
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
-    const config = useRuntimeConfig()
+    const config = serverRuntime.runtimeConfig()
     ssrContext.modules ||= new Set<string>()
     ssrContext.payload.serverRendered = false
     ssrContext.config = {
@@ -120,6 +104,17 @@ const getSPARenderer = lazyCachedFunction(async (): Promise<Renderer> => {
     renderToString,
   }
 })
+
+function renderSPATemplate () {
+  if (spaLoadingTemplateOutside) {
+    const APP_SPA_LOADER_OPEN_TAG = `<${appSpaLoaderTag}${propsToString(appSpaLoaderAttrs)}>`
+    const APP_SPA_LOADER_CLOSE_TAG = `</${appSpaLoaderTag}>`
+    const appTemplate = APP_ROOT_OPEN_TAG + APP_ROOT_CLOSE_TAG
+    const loaderTemplate = spaTemplate ? APP_SPA_LOADER_OPEN_TAG + spaTemplate + APP_SPA_LOADER_CLOSE_TAG : ''
+    return appTemplate + loaderTemplate
+  }
+  return APP_ROOT_OPEN_TAG + spaTemplate + APP_ROOT_CLOSE_TAG
+}
 
 export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
   return (NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()

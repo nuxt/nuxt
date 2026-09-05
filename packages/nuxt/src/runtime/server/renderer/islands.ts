@@ -1,5 +1,5 @@
 import type { NuxtIslandResponse, NuxtSSRContext } from '#app/types'
-import { appRootTag } from '#internal/nuxt.config.mjs'
+import { appRootTag } from 'nuxt/renderer-config'
 
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)
 
@@ -55,7 +55,7 @@ export function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIsland
   return response
 }
 
-export function getComponentSlotTeleport (clientUid: string, teleports: Record<string, string>): Record<string, string> {
+function getComponentSlotTeleport (clientUid: string, teleports: Record<string, string>): Record<string, string> {
   const entries = Object.entries(teleports)
   const slots: Record<string, string> = {}
 

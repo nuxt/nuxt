@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { extractCspNonce } from '../src/runtime/utils/renderer/csp-nonce.ts'
+import { extractCspNonce } from '../../src/runtime/server/renderer/csp-nonce.ts'
 
 describe('extractCspNonce', () => {
   it('extracts a nonce from a head script', () => {

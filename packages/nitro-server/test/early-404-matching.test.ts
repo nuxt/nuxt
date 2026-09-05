@@ -9,11 +9,21 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { collectRou3PagePatterns } from '../../nuxt/src/pages/utils.ts'
 import { normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
-import { throwIfUnmatchedPagePath } from '../src/runtime/utils/renderer/early-404.ts'
+import { throwIfUnmatchedPagePath } from '../../nuxt/src/runtime/server/renderer/early-404.ts'
+import { setServerRuntime } from '../../nuxt/src/runtime/server/renderer/runtime.ts'
+import type { NuxtRendererOptions } from '../../nuxt/src/runtime/server/renderer/runtime.ts'
+
+setServerRuntime({
+  createError: (init: { status: number, statusText?: string, data?: unknown, headers?: Record<string, string> }) => Object.assign(new Error(init.statusText), {
+    status: init.status,
+    data: init.data,
+    headers: init.headers ? new Headers(init.headers) : undefined,
+  }),
+} as unknown as NuxtRendererOptions)
 
 let matcher: ((method: string, path: string) => unknown) | undefined
 
-vi.mock('#internal/nuxt/nitro-config.mjs', () => ({
+vi.mock('nuxt/renderer-config', () => ({
   get NUXT_PAGE_MATCHER () {
     return matcher
   },

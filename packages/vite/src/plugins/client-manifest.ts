@@ -9,7 +9,7 @@ import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { setBuildOutput } from '@nuxt/kit'
-import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
 import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
@@ -99,6 +99,12 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
         const clientBuild = config.environments.client?.build ?? config.build
         manifestFileName = resolveClientManifestFile(clientBuild.manifest)
         manifestFile = resolve(clientBuild.outDir, manifestFileName)
+        setServerBuild({
+          input: {
+            clientDir: () => clientBuild.outDir,
+            clientManifest: () => manifestFile,
+          },
+        }, nuxt)
       }
     },
     async closeBundle () {

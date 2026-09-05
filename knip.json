@@ -34,7 +34,7 @@
     },
     "test/fixtures/*": {
       "entry": [
-        "**/*.{js,ts,tsx,mjs,vue}!"
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
       ],
       "paths": {
         "~~/*": ["./*"],

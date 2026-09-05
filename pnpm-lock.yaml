@@ -1208,6 +1208,9 @@ importers:
       vue:
         specifier: 3.5.42
         version: 3.5.42(typescript@6.0.3)
+      vue-bundle-renderer:
+        specifier: catalog:app-runtime
+        version: 2.3.2
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.11
@@ -1254,9 +1257,6 @@ importers:
       vitest:
         specifier: catalog:dev
         version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.11)(happy-dom@20.12.0)(vite@8.2.2)
-      vue-bundle-renderer:
-        specifier: catalog:build
-        version: 2.3.2
       vue-sfc-transformer:
         specifier: catalog:dev
         version: 0.2.5(@volar/typescript@2.4.28(typescript@6.0.3))(@vue/compiler-core@3.5.42)(@vue/language-core@3.3.11)(esbuild@0.28.2)(rolldown@1.2.6)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
@@ -2147,6 +2147,12 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+
+  test/fixtures/standalone-renderer:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/suspense:
     dependencies:

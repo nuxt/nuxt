@@ -13,8 +13,7 @@
       "#build/server-routes": ["./src/build-stub-server-routes.d.ts"],
       "#build/*": ["./src/build-stub-module.d.ts"],
       "#app-manifest": ["./src/build-stub-module.d.ts"],
-      "#internal/*": ["./src/build-stub-module.d.ts"],
-      "#spa-template": ["./src/build-stub-module.d.ts"]
+      "#internal/*": ["./src/build-stub-module.d.ts"]
     }
   },
   "include": ["src/**/*"]
