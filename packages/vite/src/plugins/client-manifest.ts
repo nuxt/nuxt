@@ -28,6 +28,8 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   // captured in-memory from the client env's bundle under env-API
   let rawClientManifest: ViteClientManifest | undefined
 
+  let clientBundleGenerated = false
+
   const envApi = !useServerBuild(nuxt).buildsSeparately
 
   let finalized: Promise<void> | undefined
@@ -76,11 +78,13 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     // Finalised in the ssr env: its `closeBundle` for legacy, or lazily on the
     // first `nuxt/manifest`/`nuxt/precomputed` provider read for env-API, by
     // which point the client build has flushed `manifest.json` to disk.
-    applyToEnvironment: environment => environment.name === 'ssr' || (envApi && environment.name === 'client'),
+    applyToEnvironment: environment => environment.name === 'ssr' || environment.name === 'client',
     generateBundle: {
       order: 'post',
       handler (_options, bundle) {
-        if (!envApi || nuxt.options.dev || this.environment?.name !== 'client') { return }
+        if (nuxt.options.dev || this.environment?.name !== 'client') { return }
+        clientBundleGenerated = true
+        if (!envApi) { return }
         const asset = bundle[manifestFileName]
         if (asset?.type === 'asset') {
           rawClientManifest = JSON.parse(asset.source.toString()) as ViteClientManifest
@@ -98,6 +102,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       }
     },
     async closeBundle () {
+      if (this.environment?.name !== 'ssr') { return }
       // In env-API mode finalisation is triggered lazily by the provider
       // (see `finalize`), since the ssr env reads the manifest before
       // `closeBundle` runs.
@@ -107,6 +112,12 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   }
 
   async function finalizeBuildManifest (): Promise<void> {
+    if (!nuxt.options.dev && !clientBundleGenerated) {
+      // The client build never produced a bundle (for example, a build aborted
+      // before it ran), so there is no manifest to finalise.
+      return
+    }
+
     // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
     const devClientManifest = buildDevClientManifest()
 
