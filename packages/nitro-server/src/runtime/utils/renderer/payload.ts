@@ -20,7 +20,7 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext): CachedRespon
   }
 }
 
-export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
+export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string, cspNonce?: string }): Script[] {
   const contents = opts.data ? encodeForwardSlashes(stringify(opts.data, opts.ssrContext['~payloadReducers'])) : ''
   if (import.meta.dev) {
     warnOnLargePayload(opts.ssrContext, opts.data, contents.length)
@@ -30,6 +30,7 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
     'innerHTML': contents,
     'data-nuxt-data': appId,
     'data-ssr': !(NUXT_NO_SSR || opts.ssrContext.noSSR),
+    'nonce': opts.cspNonce,
   }
   if (!multiApp) {
     payload.id = '__NUXT_DATA__'
@@ -41,6 +42,7 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
   return [
     payload,
     {
+      nonce: opts.cspNonce,
       innerHTML: multiApp
         ? `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={config:${config}}`
         : `window.__NUXT__={};window.__NUXT__.config=${config}`,

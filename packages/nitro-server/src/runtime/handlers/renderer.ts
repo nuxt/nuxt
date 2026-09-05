@@ -33,7 +33,7 @@ import { throwIfUnmatchedPagePath } from '../utils/renderer/early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from '../utils/renderer/islands'
 import { serverDiagnostics } from '../diagnostics'
 import { warnNoScriptsClientReliance } from '../utils/renderer/no-scripts'
-import { extractCspNonce } from '../utils/renderer/csp-nonce'
+import { SCRIPT_WITHOUT_NONCE_RE, extractCspNonce } from '../utils/renderer/csp-nonce'
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
@@ -610,26 +610,18 @@ async function renderStreamedResponse (ctx: {
   // by both the shell-prep section above and the just-completed plugin phase).
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
 
-  // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
-  // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
-  // a strict `script-src 'nonce-…'` policy would block them. Reuse whatever
-  // nonce a security module stamped onto the rendered head scripts; if none is
-  // present the attribute is omitted and behaviour is unchanged.
-  const cspNonce = extractCspNonce(headTags)
-  const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
-
   // 6. Build the HTML shell context and fire `render:html` with `streaming: true`.
   // Modules that mutate `htmlAttrs`/`head`/`bodyAttrs`/`bodyPrepend` see their
   // changes land in the shell. `body`/`bodyAppend` mutations are silently
   // dropped (the body is about to stream), and a dev warning is emitted if
   // either array is touched.
-  const bootstrapScript = NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce)
+  const bootstrapScript = NO_SCRIPTS ? '' : createBootstrapScript()
   let iifeScript = ''
   if (!NO_SCRIPTS) {
     if (!import.meta.dev && iifeChunkFileName) {
-      iifeScript = `<script async${nonceAttr} src="${buildAssetsURL(iifeChunkFileName)}"></script>`
+      iifeScript = `<script async src="${buildAssetsURL(iifeChunkFileName)}"></script>`
     } else {
-      iifeScript = `<script${nonceAttr}>${streamingIifeCode}</script>`
+      iifeScript = `<script>${streamingIifeCode}</script>`
     }
   }
   const shellContext: NuxtRenderHTMLContext = {
@@ -652,6 +644,31 @@ async function renderStreamedResponse (ctx: {
   } else {
     const r = nitroHooks.callHook('render:html', shellContext, { event, streaming: true })
     if (r instanceof Promise) { await r }
+  }
+
+  // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
+  // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
+  // a strict `script-src 'nonce-…'` policy would block them. Scan the shell
+  // head tags after `render:html` has run, so nonce-injecting
+  // modules have already stamped their nonce; if none is
+  // present the attribute is omitted and behaviour is unchanged.
+  let cspNonce: string | undefined
+
+  for (const html of shellContext.head) {
+    cspNonce ||= extractCspNonce(html)
+
+    if (cspNonce) { break }
+  }
+
+  const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
+
+  // A `render:html` may rewrite the shellContext entries entirely,
+  // so patch any `<script>` that is missing a `nonce=` rather than assuming
+  // these are the exact bootstrap/IIFE strings assigned above.
+  if (nonceAttr) {
+    const patch = (html: string) => html.replace(SCRIPT_WITHOUT_NONCE_RE, `<script${nonceAttr}`)
+    shellContext.head = shellContext.head.map(patch)
+    shellContext.bodyPrepend = shellContext.bodyPrepend.map(patch)
   }
 
   const shellHtml = '<!DOCTYPE html>'
@@ -817,8 +834,8 @@ async function renderStreamedResponse (ctx: {
         if (!NO_SCRIPTS) {
           ssrContext.head.push({
             script: _PAYLOAD_INLINE
-              ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
-              : renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL }),
+              ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload, cspNonce })
+              : renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL, cspNonce }),
           }, {
             tagPosition: 'bodyClose',
             tagPriority: 'high',
@@ -894,7 +911,7 @@ async function renderStreamedResponse (ctx: {
         try {
           if (!NO_SCRIPTS) {
             ssrContext.head.push({
-              script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload }),
+              script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload, cspNonce }),
             }, { tagPosition: 'bodyClose', tagPriority: 'high' })
             const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
             controller.enqueue(encoder.encode(tail.bodyTags))
