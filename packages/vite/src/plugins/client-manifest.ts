@@ -30,6 +30,8 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
    */
   const serverBundlesApp = !useServerBuild(nuxt).buildsSeparately
 
+  let clientBundleGenerated = false
+
   let finalized: Promise<void> | undefined
   const finalize = () => (finalized ??= finalizeBuildManifest())
 
@@ -71,7 +73,14 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:client-manifest',
     // needs to run after server build (or after client build if there is no server build)
-    applyToEnvironment: environment => environment.name === 'ssr',
+    applyToEnvironment: environment => environment.name === 'ssr' || environment.name === 'client',
+    generateBundle: {
+      order: 'post',
+      handler () {
+        if (nuxt.options.dev || this.environment?.name !== 'client') { return }
+        clientBundleGenerated = true
+      },
+    },
     configResolved (config) {
       clientEntry = resolveClientEntry(config)
       key = relative(config.root, clientEntry)
@@ -88,6 +97,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       }
     },
     async closeBundle () {
+      if (this.environment?.name !== 'ssr') { return }
       // Where the server build reads these outputs while it bundles, finalisation has
       // already been pulled by it (see `finalize`), and the manifest is gone from the
       // client output by now.
@@ -97,6 +107,12 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   }
 
   async function finalizeBuildManifest (): Promise<void> {
+    if (!nuxt.options.dev && !clientBundleGenerated) {
+      // The client build never produced a bundle (for example, a build aborted
+      // before it ran), so there is no manifest to finalise.
+      return
+    }
+
     const clientManifest = nuxt.options.dev ? buildDevClientManifest() : JSON.parse(readManifestFromDisk()) as ViteClientManifest
     const manifestEntries = Object.values(clientManifest)
 
