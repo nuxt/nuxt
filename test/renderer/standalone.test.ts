@@ -70,6 +70,13 @@ describe('renderer without a server builder', () => {
     expect(html).toContain('data-ssr="false" id="__NUXT_DATA__"')
   })
 
+  it('serves the client-only shell for a route carrying no ssr rule', async () => {
+    const { html } = await render('/', { getRouteRules: () => ({}) })
+
+    expect(html).toContain('<div id="__nuxt"></div>')
+    expect(html).toContain('data-ssr="false" id="__NUXT_DATA__"')
+  })
+
   it('calls the render hooks the runtime exposes', async () => {
     const calls: string[] = []
     const { html } = await render('/', {
@@ -90,8 +97,7 @@ describe('renderer without a server builder', () => {
 
   it('refuses an internal error route with the error the runtime constructs', async () => {
     const renderer = createNuxtRenderer(options)
-    const rendered = Promise.resolve().then(() => renderer.fetch(createEvent('/__nuxt_error')))
 
-    await expect(rendered).rejects.toMatchObject({ status: 404 })
+    await expect(renderer.fetch(createEvent('/__nuxt_error'))).rejects.toMatchObject({ status: 404 })
   })
 })

@@ -11,12 +11,17 @@ export interface CachedResponse {
 
 /** The route rules the renderer reads, as resolved by the server runtime for a request. */
 export interface RendererRouteRules {
+  /**
+   * Whether to server-render the route. A route is only server-rendered when this is
+   * present and truthy: `h3` resolves a `false` rule by removing it, so a runtime that
+   * matches rules with `h3` reports an opted-out route as one carrying no `ssr` rule.
+   */
   ssr?: boolean
   streaming?: boolean
   noScripts?: boolean
   prerender?: boolean
   redirect?: unknown
-  isr?: number | boolean
+  isr?: number | boolean | object
   cache?: false | { maxAge?: number }
 }
 
@@ -73,6 +78,9 @@ export interface NuxtRendererOptions {
 export const serverRuntime: NuxtRendererOptions = /* @__PURE__ */ {} as NuxtRendererOptions
 
 export function setServerRuntime (options: NuxtRendererOptions): void {
+  for (const key of Object.keys(serverRuntime)) {
+    Reflect.deleteProperty(serverRuntime, key)
+  }
   Object.assign(serverRuntime, options)
 }
 

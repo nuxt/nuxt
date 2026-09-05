@@ -70,10 +70,10 @@ function fetch (event: RequestEvent): Promise<Response> {
   const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
 
   if (isErrorRoute && !getRequestState(event)?.['~rendering-error'] /* allow internal fetch from the error handler */) {
-    throw runtime.createError({
+    return Promise.reject(runtime.createError({
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',
-    })
+    }))
   }
 
   const ssrError = isErrorRoute
@@ -144,7 +144,7 @@ async function renderRoute (event: RequestEvent, ssrError?: (NuxtPayload['error'
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
   const routeOptions = serverRuntime.getRouteRules(event)
 
-  if (!routeOptions?.ssr) {
+  if (!routeOptions.ssr) {
     ssrContext.noSSR = true
   }
 

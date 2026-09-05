@@ -24,8 +24,8 @@ export const rendererOptions: NuxtRendererOptions = {
   buildAssetsURL,
   publicAssetsURL,
   // nitro registers route rules under the base URL, which `createEvent` has removed
-  getRouteRules: event => (getRouteRules(event.req.method, withBaseURL(event.url.pathname)).routeRules || {}) as RendererRouteRules,
-  hooks: () => useNitroHooks() as unknown as RendererHooks,
+  getRouteRules: event => (getRouteRules(event.req.method, withBaseURL(event.url.pathname)).routeRules || {}) satisfies RendererRouteRules,
+  hooks: () => useNitroHooks() as RendererHooks,
   createResponse: (body, init) => new FastResponse(body, init),
   createError: init => new HTTPError(init),
   writeEarlyHints: (event, hints) => writeEarlyHints(event, hints),
