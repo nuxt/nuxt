@@ -793,17 +793,21 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
   const sharedDeclarationPath = resolve(typesDir, 'nuxt.shared.d.ts')
   const serverDeclarationPath = resolve(typesDir, 'nuxt.server.d.ts')
 
+  // nitro v2 writes a `tsconfig.server.json` of its own into the build directory, carrying the
+  // auto-import types it generates, so ours is only written where nothing else claims the name
+  const writesServerTsConfig = nuxt.options._nitroMajor !== 2
+
   await fsp.mkdir(typesDir, { recursive: true })
   await Promise.all([
     writeIfChanged(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
     writeIfChanged(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
     writeIfChanged(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
     writeIfChanged(sharedTsConfigPath, JSON.stringify(sharedTsConfig, null, 2)),
-    writeIfChanged(serverTsConfigPath, JSON.stringify(serverTsConfig, null, 2)),
+    writesServerTsConfig && writeIfChanged(serverTsConfigPath, JSON.stringify(serverTsConfig, null, 2)),
     writeIfChanged(declarationPath, declaration),
     writeIfChanged(nodeDeclarationPath, nodeDeclaration),
     writeIfChanged(sharedDeclarationPath, sharedDeclaration),
-    writeIfChanged(serverDeclarationPath, serverDeclaration),
+    writesServerTsConfig && writeIfChanged(serverDeclarationPath, serverDeclaration),
   ])
 }
 
