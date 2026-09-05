@@ -189,8 +189,11 @@ export interface NuxtServerBuildCapabilities {
  * @internal
  */
 export interface NuxtServerBuildRuntime {
-  /** Exports `fetch`, used to back `$fetch` on the server. */
-  fetch: string
+  /**
+   * Exports `fetch`, used to back `$fetch` on the server. Omitted by a runtime that installs
+   * its own `$fetch` on `globalThis` rather than exposing a module to import from.
+   */
+  fetch?: string
   /** Exports `useRuntimeConfig`. */
   runtimeConfig: string
 }

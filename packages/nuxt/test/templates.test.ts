@@ -7,7 +7,7 @@ import { resolve } from 'pathe'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -78,5 +78,31 @@ describe('publicPathTemplate', () => {
 
     expect(contents).not.toMatch(/runtime-config/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
+  })
+})
+
+describe('dollarFetchTemplate', () => {
+  it('backs `$fetch` with the `fetch` the server builder provides', async () => {
+    const contents = await dollarFetchTemplate.getContents!({
+      nuxt: makeNuxt({}, { runtime: { fetch: '/runtime/fetch.mjs', runtimeConfig: '/runtime/config.mjs' } }),
+      app: makeApp(),
+      options: {},
+    })
+
+    expect(contents).toMatch(/import \{ fetch \} from "\/runtime\/fetch\.mjs"/)
+    expect(contents).toMatch(/createFetch\(\{\s*fetch,/)
+  })
+
+  it('falls back to `ofetch` when the server runtime declares no `fetch` module', async () => {
+    const contents = await dollarFetchTemplate.getContents!({
+      nuxt: makeNuxt({}, { runtime: { runtimeConfig: 'nitropack/runtime' } }),
+      app: makeApp(),
+      options: {},
+    })
+
+    expect(contents).not.toMatch(/import \{ fetch \}/)
+    expect(contents).not.toMatch(/createFetch/)
+    expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from ['"]ofetch['"]/)
+    expect(contents).toMatch(/globalThis\.\$fetch = _\$fetch\.create\(\{\s*baseURL: baseURL\(\)/)
   })
 })

@@ -610,11 +610,25 @@ export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.server.mjs',
   dependsOn: [],
   getContents ({ nuxt }) {
+    // the runtime a server build executes in is the server builder's to provide; one that
+    // installs `$fetch` on `globalThis` itself declares no `fetch` module to import from
+    const fetchModule = useServerBuild(nuxt).runtime.fetch
+    if (!fetchModule) {
+      return [
+        'import { $fetch as _$fetch } from \'ofetch\'',
+        'import { baseURL } from \'#internal/nuxt/paths\'',
+        'if (!globalThis.$fetch) {',
+        '  globalThis.$fetch = _$fetch.create({',
+        '    baseURL: baseURL()',
+        '  })',
+        '}',
+        'export const $fetch = globalThis.$fetch',
+      ].join('\n')
+    }
     return [
       'import { createFetch } from \'ofetch\'',
       'import { baseURL } from \'#internal/nuxt/paths\'',
-      // the runtime a server build executes in is the server builder's to provide
-      `import { fetch } from ${JSON.stringify(useServerBuild(nuxt).runtime.fetch)}`,
+      `import { fetch } from ${JSON.stringify(fetchModule)}`,
       'if (!globalThis.$fetch) {',
       '  globalThis.$fetch = createFetch({',
       '    fetch,',
