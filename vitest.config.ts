@@ -169,6 +169,8 @@ export default defineConfig({
             'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
             'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
             '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
+            // provided by the server builder in a real build; the fixture writes them out
+            '#internal/nuxt/paths': resolve('./test/fixtures/standalone-renderer/.nuxt/paths.mjs'),
           },
         },
         test: {

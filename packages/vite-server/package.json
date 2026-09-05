@@ -28,6 +28,7 @@
     "clickable-path": "catalog:build",
     "defu": "catalog:build",
     "exsolve": "catalog:build",
+    "hookable": "catalog:app-runtime",
     "mocked-exports": "catalog:build",
     "pathe": "catalog:build",
     "srvx": "catalog:nitro-runtime",

@@ -1,8 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { pathToFileURL } from 'node:url'
 import { dirname, join } from 'pathe'
-import { defineNuxtModule } from '@nuxt/kit'
-import { SERVER_RUNTIME_VERSION, getServerRuntime, useServerBuild } from '@nuxt/kit/internal'
+import { addTemplate, defineNuxtModule } from '@nuxt/kit'
+import { SERVER_RUNTIME_VERSION, getServerRuntime } from '@nuxt/kit/internal'
 
 /**
  * Stands in for the wiring a non-nitro server builder does: it asks core what the renderer
@@ -17,14 +16,30 @@ export default defineNuxtModule({
       throw new Error(`[renderer-artifacts] unsupported server runtime contract v${serverRuntime.version}`)
     }
 
-    // the renderer config re-exports the head module's templates through `#build`
-    const headTemplates = new Set(['unhead-options.mjs', 'unhead.config.mjs'])
+    // templates the SSR bundle imports through `#build`, or that the renderer config
+    // re-exports, have to exist on disk for a build with no server runtime to resolve
+    const written = new Set(['unhead-options.mjs', 'unhead.config.mjs', 'paths.mjs'])
     nuxt.hook('app:templates', (app) => {
       for (const template of app.templates) {
-        if (headTemplates.has(template.filename)) {
+        if (written.has(template.filename)) {
           template.write = true
         }
       }
+    })
+
+    // the runtime the app build's own bundle expects from its server builder
+    addTemplate({
+      filename: 'standalone/fetch.mjs',
+      write: true,
+      getContents: () => 'export const fetch = (...args) => globalThis.fetch(...args)',
+    })
+    addTemplate({
+      filename: 'standalone/runtime-config.mjs',
+      write: true,
+      getContents: ({ nuxt }) => [
+        `const config = ${JSON.stringify({ app: nuxt.options.runtimeConfig.app, public: nuxt.options.runtimeConfig.public })}`,
+        'export const useRuntimeConfig = () => config',
+      ].join('\n'),
     })
 
     nuxt.hook('build:done', async () => {
@@ -33,12 +48,7 @@ export default defineNuxtModule({
       for (const [specifier, module] of Object.entries(serverRuntime.modules)) {
         const file = join(dir, specifier.replace('nuxt/internal/', '') + '.mjs')
         await mkdir(dirname(file), { recursive: true })
-        // `serverEntry`'s body is the app entry for a builder that bundles the ssr
-        // environment itself; nothing bundles here, so the built entry is imported instead
-        const code = module.output === 'serverEntry'
-          ? `export { default } from ${JSON.stringify(pathToFileURL(useServerBuild(nuxt).input.serverEntry()).href)}`
-          : await module.code()
-        await writeFile(file, code, 'utf-8')
+        await writeFile(file, await module.code(), 'utf-8')
       }
     })
   },
