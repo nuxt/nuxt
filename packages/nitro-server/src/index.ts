@@ -128,7 +128,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
   for (const asset of nuxt.options.nitro.publicAssets || []) {
     if (asset?.dir && !existsSync(resolve(nitroSrcDir, asset.dir))) {
-      bundlerDiagnostics.NUXT_B7023({ dir: resolve(nitroSrcDir, asset.dir), baseURL: joinURL('/', asset.baseURL || '/', '**') })
+      bundlerDiagnostics.NUXT_B7023({
+        dir: resolve(nitroSrcDir, asset.dir),
+        baseURL: joinURL('/', asset.baseURL || '/', '**'),
+        resolvedFrom: 'your server directory and then your project root',
+      })
     }
   }
 
