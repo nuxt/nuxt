@@ -133,8 +133,8 @@
          brand ink, since #00dc82 is too light to read on white at 11px. */
       @media (prefers-color-scheme: light) {
         :root {
-          --nuxt-mist: rgba(2, 4, 32, 0.76);
-          --nuxt-dim: rgba(2, 4, 32, 0.42);
+          --nuxt-mist: rgba(10, 10, 10, 0.76);
+          --nuxt-dim: rgba(10, 10, 10, 0.42);
           --nuxt-accent: #00a86a;
         }
         html, body { background: #fff; }
@@ -191,26 +191,29 @@
       }
     </script>
     <script>
-      if (typeof window.fetch === 'undefined') {
-        setTimeout(() => window.location.reload(), 200)
-      } else {
-        // Backs off so a slow build is not polled five times a second for its whole duration.
-        let delay = 200
-        const check = async () => {
-          try {
-            const body = await window
-              .fetch(window.location.href, { headers: { accept: 'text/html' } })
-              .then(r => r.text())
-            if (!body.includes('__NUXT_LOADING__')) {
-              return window
-                .location
-                .reload()
-            }
-          } catch {}
-          setTimeout(check, delay)
-          delay = Math.min(Math.round(delay * 1.5), 1000)
+      // The template preview grid embeds this page; polling would reload the iframe.
+      if (!window.frameElement) {
+        if (typeof window.fetch === 'undefined') {
+          setTimeout(() => window.location.reload(), 200)
+        } else {
+          // Backs off so a slow build is not polled five times a second for its whole duration.
+          let delay = 200
+          const check = async () => {
+            try {
+              const body = await window
+                .fetch(window.location.href, { headers: { accept: 'text/html' } })
+                .then(r => r.text())
+              if (!body.includes('__NUXT_LOADING__')) {
+                return window
+                  .location
+                  .reload()
+              }
+            } catch {}
+            setTimeout(check, delay)
+            delay = Math.min(Math.round(delay * 1.5), 1000)
+          }
+          check()
         }
-        check()
       }
     </script>
   </body>
