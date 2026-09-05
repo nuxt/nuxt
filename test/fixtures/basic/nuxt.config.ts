@@ -203,6 +203,7 @@ export default withMatrix({
         '/random/b',
         '/random/c',
         '/prefetch/server-components',
+        '/prefetch/many-hints',
         '/prerender/catchall/a/b',
         '/404.html',
       ],
