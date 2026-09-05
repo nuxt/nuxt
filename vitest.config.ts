@@ -174,7 +174,7 @@ export default defineConfig({
         test: {
           name: 'renderer',
           include: ['test/renderer/*.test.ts'],
-          globalSetup: ['./test/renderer/prepare.ts'],
+          globalSetup: ['./test/setup-renderer-prepare.ts'],
           testTimeout: 60_000,
           benchmark: { include: [] },
         },
