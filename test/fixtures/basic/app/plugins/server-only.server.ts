@@ -1,5 +1,6 @@
 export default defineNuxtPlugin({
   name: 'server-only-plugin',
+  parallel: true,
   setup () {
     const evt = useRequestEvent()
     if (evt) {

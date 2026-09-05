@@ -18,6 +18,9 @@ import type {
   Target,
 } from './types'
 import { useHead } from '#app/composables/head'
+import { isVaporSlot } from '#app/components/utils'
+import { unheadDiagnostics } from '../../app/diagnostics/head'
+import { vapor } from '#build/nuxt.config.mjs'
 
 interface HeadComponents {
   base?: UnheadBase | null
@@ -201,6 +204,9 @@ export const NoScript: DefineSetupFnComponent<GlobalProps & TagPositionPropsType
     const key = useVNodeStringKey()
     return () => {
       const noscript = normalizeProps(props, key) as Noscript
+      if (import.meta.dev && vapor && isVaporSlot(slots.default)) {
+        unheadDiagnostics.NUXT_E6004({ component: 'Noscript' })
+      }
       const slotVnodes = slots.default?.()
       const textContent: VNodeNormalizedChildren[] = []
       if (slotVnodes) {
@@ -211,7 +217,7 @@ export const NoScript: DefineSetupFnComponent<GlobalProps & TagPositionPropsType
         }
       }
       if (textContent.length > 0) {
-        noscript.innerHTML = textContent.join('')
+        noscript.textContent = textContent.join('')
       }
       input.noscript![idx] = noscript
       update()
@@ -333,11 +339,14 @@ export const Title: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComp
       update()
     })
     return () => {
+      if (import.meta.dev && vapor && isVaporSlot(slots.default)) {
+        unheadDiagnostics.NUXT_E6004({ component: 'Title' })
+      }
       const defaultSlot = slots.default?.()
       input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
       if (import.meta.dev) {
         if (defaultSlot && (defaultSlot.length > 1 || (defaultSlot[0] && typeof defaultSlot[0].children !== 'string'))) {
-          console.error('<Title> can take only one string in its default slot.')
+          unheadDiagnostics.NUXT_E6002()
         }
       }
       update()
@@ -425,10 +434,13 @@ export const Style: DefineSetupFnComponent<StyleComponentProps, {}, SlotWithDefa
     })
     return () => {
       const style = normalizeProps(props, key) as UnheadStyle
+      if (import.meta.dev && vapor && isVaporSlot(slots.default)) {
+        unheadDiagnostics.NUXT_E6004({ component: 'Style' })
+      }
       const textContent = slots.default?.()?.[0]?.children
       if (textContent) {
         if (import.meta.dev && typeof textContent !== 'string') {
-          console.error('<Style> can only take a string in its default slot.')
+          unheadDiagnostics.NUXT_E6003()
         }
         input.style![idx] = style
         style.textContent = textContent as string

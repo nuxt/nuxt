@@ -5,13 +5,12 @@ import type { RolldownString } from 'rolldown-string'
 import { dirname } from 'pathe'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
+import { MACRO_QUERY_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE } from '../../utils.ts'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
-const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
-const STYLE_QUERY_RE = /[?&]type=style/
-const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
+const ASYNC_DATA_CHUNK_RE = /\/async-data-chunk-\d+\.js$/
 
 export interface ExtractAsyncDataHandlersOptions {
   sourcemap: boolean
@@ -31,10 +30,15 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
         return source
       }
     },
-    load (id) {
-      if (id in asyncDatas) {
-        return asyncDatas[id]
-      }
+    load: {
+      filter: {
+        id: ASYNC_DATA_CHUNK_RE,
+      },
+      handler (id) {
+        if (id in asyncDatas) {
+          return asyncDatas[id]
+        }
+      },
     },
     transform: {
       filter: {
@@ -166,7 +170,7 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
 
             asyncDatas[key] = {
               code: chunk.toString(),
-              map: options.sourcemap ? chunk.generateMap({ hires: true }) : undefined,
+              map: options.sourcemap ? chunk.generateMap({ hires: true }) as SourceMapInput : undefined,
             }
 
             // Replace the original function with a dynamic import

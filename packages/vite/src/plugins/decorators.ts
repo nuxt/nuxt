@@ -1,8 +1,44 @@
 import type { Plugin } from 'vite'
-import { ensureDependencyInstalled, logger } from '@nuxt/kit'
+import type { SourceMapInput } from 'rollup'
+import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
+import jsTokens from 'js-tokens'
+import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const
+
+export function hasDecoratorSyntax (code: string, jsx = false) {
+  const tokens = jsx ? jsTokens(code, { jsx: true }) : jsTokens(code)
+
+  for (const token of tokens) {
+    if (!token.value.includes('@')) {
+      continue
+    }
+
+    switch (token.type) {
+      case 'HashbangComment':
+      case 'SingleLineComment':
+      case 'TemplateHead':
+      case 'TemplateMiddle':
+        continue
+      case 'MultiLineComment':
+      case 'StringLiteral':
+      case 'NoSubstitutionTemplate':
+      case 'TemplateTail':
+      case 'JSXString':
+        // An unclosed token can consume code that follows it. Let Babel parse
+        // ambiguous input instead of potentially hiding a real decorator.
+        if (token.closed) {
+          continue
+        }
+    }
+
+    return true
+  }
+
+  return false
+}
 
 export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
   let transformSync: typeof import('@babel/core').transformSync
@@ -18,7 +54,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
       })
 
       if (result !== true) {
-        logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), installCommand: await getAddDependencyCommand(result, nuxt.options.rootDir, { dev: true }) })
         return false
       }
 
@@ -32,24 +68,17 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
         code: '@',
 
         id: {
-          // Restrict transform to JavaScript/TypeScript and Vue files only
-          include: [/\.(ts|js|tsx|jsx|vue)$/],
-
-          // Explicitly exclude non-JS assets and Vue sub-blocks
-          // (e.g. <style> or <template> in SFCs)
-          exclude: [
-            /\.css$/,
-            /\.scss$/,
-            /\.sass$/,
-            /\.less$/,
-            /\.styl$/,
-            /\.vue\?.*\btype=(?:style|template)\b/,
-          ],
+          include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
+          exclude: VUE_NON_SCRIPT_BLOCK_RE,
         },
       },
       handler (code, id) {
         // Skip uncompiled SFC markup (raw .vue files not yet processed by @vitejs/plugin-vue)
         if (id.includes('.vue') && code.trimStart().startsWith('<')) {
+          return
+        }
+
+        if (!hasDecoratorSyntax(code, /\.[jt]sx(?:$|\?)/.test(id))) {
           return
         }
 
@@ -66,7 +95,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
         if (result?.code != null) {
           return {
             code: result.code,
-            map: result.map,
+            map: result.map as SourceMapInput,
           }
         }
       },

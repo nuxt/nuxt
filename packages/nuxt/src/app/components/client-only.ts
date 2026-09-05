@@ -2,11 +2,11 @@ import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, ge
 import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetupFnComponent, InjectionKey, RendererNode, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
+import { renderDiagnostics } from '../diagnostics/render'
 import ServerPlaceholder from './server-placeholder'
-import { elToStaticVNode } from './utils'
+import { elToStaticVNode, isVaporSlot, sanitizeTag } from './utils'
 
-// @ts-expect-error virtual file
-import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
+import { clientNodePlaceholder, vapor } from '#build/nuxt.config.mjs'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
 
@@ -63,15 +63,18 @@ const ClientOnly = defineComponent({
     return () => {
       if (mounted.value) {
         const vnodes = slots.default?.()
-        if (vnodes && vnodes.length === 1) {
+        if (vnodes && vnodes.length === 1 && !(vapor && isVaporSlot(slots.default))) {
           return [cloneVNode(vnodes[0]!, attrs)]
+        }
+        if (import.meta.dev && vapor && isVaporSlot(slots.default) && attrs && Object.keys(attrs).length > 0) {
+          renderDiagnostics.NUXT_E4021()
         }
         return vnodes
       }
       const slot = slots.fallback || slots.placeholder
       if (slot) { return h(slot) }
       const fallbackStr = props.fallback || props.placeholder || ''
-      const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
+      const fallbackTag = sanitizeTag(props.fallbackTag || props.placeholderTag, 'span')
       return createElementBlock(fallbackTag, attrs, fallbackStr)
     }
   },

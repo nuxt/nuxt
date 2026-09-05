@@ -1,9 +1,10 @@
 import type { Component, DefineSetupFnComponent, InjectionKey, SlotsType, VNode } from 'vue'
 import { Teleport, defineComponent, h, inject, provide, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
-// @ts-expect-error virtual file
+import { renderDiagnostics } from '../diagnostics/render'
+import { isVaporSlot } from './utils'
 import paths from '#build/component-chunk'
-// @ts-expect-error virtual file
+import { vapor } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 
 type ExtendedComponent = Component & {
@@ -45,6 +46,12 @@ const NuxtTeleportIslandComponent = /* @__PURE__ */ defineComponent({
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
+      if (vapor && isVaporSlot(slots.default)) {
+        if (import.meta.dev) {
+          renderDiagnostics.NUXT_E4022()
+        }
+        return slots.default?.()
+      }
       const slot = slots.default!()[0]!
       const slotType = slot.type as ExtendedComponent
       const name = (slotType.__name || slotType.name) as string

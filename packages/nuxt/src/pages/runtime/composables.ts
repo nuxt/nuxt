@@ -2,9 +2,10 @@ import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
 import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
-import type { NitroRouteConfig } from 'nitro/types'
-import type { NuxtError } from 'nuxt/app'
-import { useNuxtApp } from '#app/nuxt'
+import type { RouteRuleConfig } from 'nitro/types'
+import type { NuxtError } from '#app/composables/error'
+import { isInComponentSetup, useNuxtApp } from '#app/nuxt'
+import { appDiagnostics } from '../../app/diagnostics/core'
 import type { SerializableValue } from './utils'
 
 // Generated at runtime to be extended
@@ -66,11 +67,7 @@ declare module 'vue-router' {
 }
 
 const warnRuntimeUsage = (method: string) => {
-  console.warn(
-    `${method}() is a compiler-hint helper that is only usable inside ` +
-    'the script block of a single file component which is also a page. Its arguments should be ' +
-    'compiled away and passing it at runtime has no effect.',
-  )
+  appDiagnostics.NUXT_E1007({ name: method })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -78,6 +75,11 @@ export const definePageMeta = (meta: PageMeta): void => {
   if (import.meta.dev) {
     const component = getCurrentInstance()?.type
     try {
+      // vapor components have no vdom instance, so we cannot tell whether this is a route
+      // component; their setup does run in its own effect scope, which rules out plugins
+      if (!component && isInComponentSetup(useNuxtApp())) {
+        return
+      }
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
       if (isRouteComponent || isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {
@@ -102,4 +104,4 @@ export const definePageMeta = (meta: PageMeta): void => {
  */
 /* @__NO_SIDE_EFFECTS__ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const defineRouteRules = (rules: NitroRouteConfig): void => {}
+export const defineRouteRules = (rules: RouteRuleConfig): void => {}

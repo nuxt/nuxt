@@ -4,7 +4,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { RouteInjectionPlugin } from '../src/pages/plugins/route-injection.ts'
 
 describe('route-injection:transform', () => {
-  const injectionPlugin = RouteInjectionPlugin({ options: { sourcemap: { client: false, server: false } } } as Nuxt).raw({}, { framework: 'rollup' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+  const injectionPlugin = RouteInjectionPlugin({ options: { sourcemap: { client: false, server: false } } } as Nuxt).raw({}, { framework: 'rollup', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
   const transform = async (source: string) => {
     const result = await injectionPlugin.transform.handler.call({ error: null, warn: null } as any, source, 'test.vue')

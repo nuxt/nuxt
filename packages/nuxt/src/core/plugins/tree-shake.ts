@@ -3,7 +3,7 @@ import { createUnplugin } from 'unplugin'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import escapeStringRegexp from 'escape-string-regexp'
 
-import { isJS, isVue } from '../utils/index.ts'
+import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
 type ImportPath = string
 
@@ -22,11 +22,12 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
   return {
     name: 'nuxt:tree-shake-composables:transform',
     enforce: 'post',
-    transformInclude (id) {
-      return isVue(id, { type: ['script'] }) || isJS(id)
-    },
     transform: {
       filter: {
+        id: {
+          include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
+          exclude: VUE_NON_SCRIPT_BLOCK_RE,
+        },
         code: { include: new RegExp(`\\b(?:${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\b`) },
       },
       handler (code, id, meta?: unknown) {

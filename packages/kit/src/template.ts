@@ -1,19 +1,23 @@
+import { createHash } from 'node:crypto'
 import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
-import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
-import { gte } from 'semver'
-import { readPackageJSON } from 'pkg-types'
+import { isGreaterOrEqual } from 'verkit'
+import { readPackageJSON } from './internal/package-json.ts'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
 import { distDirURL, filterInPlace } from './utils.ts'
+import { recordServerSource } from './nitro.ts'
+import type { NitroVersionOptions } from './nitro.ts'
 import { directoryToURL } from './internal/esm.ts'
+import { resolveDeclarationPath } from './types.ts'
 import { getDirectory } from './module/install.ts'
 import { tryUseNuxt, useNuxt } from './context.ts'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
 import { resolveNuxtModule } from './resolve.ts'
 import { getLayerDirectories } from './layers.ts'
 import type { LayerDirectories } from './layers.ts'
@@ -52,17 +56,18 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNu
 /**
  * Adds a virtual file that can be used within the Nuxt Nitro server build.
  */
-export function addServerTemplate (template: NuxtServerTemplate): NuxtServerTemplate {
+export function addServerTemplate (template: NuxtServerTemplate, options: NitroVersionOptions = {}): NuxtServerTemplate {
   const nuxt = useNuxt()
 
   nuxt.options.nitro.virtual ||= {}
   nuxt.options.nitro.virtual[template.filename] = template.getContents
+  recordServerSource(nuxt, template.filename, options.version)
 
   return template
 }
 
 /**
- * Renders given types during build to disk in the project `buildDir`
+ * Renders given types during build to disk in the project `typesDir`
  * and register them as types.
  *
  * You can pass a second context object to specify in which context the type should be added.
@@ -75,7 +80,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
   const template = addTemplate(_template)
 
   if (!template.filename.endsWith('.d.ts')) {
-    throw new Error(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`)
+    throw kitDiagnostics.NUXT_B8007({ template: template.filename })
   }
 
   // Add template to types reference
@@ -117,12 +122,17 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
   return template
 }
 
+// `-` is stripped so the digest is safe to embed in an identifier as well as a filename.
+function hashPath (path: string) {
+  return createHash('sha256').update(path).digest('base64url').slice(0, 10).replace(/-/g, '_')
+}
+
 /**
  * Normalize a nuxt template object
  */
 export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
   if (!template) {
-    throw new Error('Invalid template: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8008({ template: JSON.stringify(template) })
   }
 
   // Normalize
@@ -135,24 +145,24 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   // Use src if provided
   if (template.src) {
     if (!existsSync(template.src)) {
-      throw new Error('Template not found: ' + template.src)
+      throw kitDiagnostics.NUXT_B8009({ template: template.src })
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
-      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src).replace(/-/g, '_')}${srcPath.ext}`
+      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hashPath(template.src)}${srcPath.ext}`
     }
   }
 
   if (!template.src && !template.getContents) {
-    throw new Error('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8010({ template: template.filename || template.src || JSON.stringify(template) })
   }
 
   if (!template.filename) {
-    throw new Error('Invalid template. `filename` must be provided: ' + JSON.stringify(template))
+    throw kitDiagnostics.NUXT_B8011({ template: JSON.stringify(template) })
   }
 
   // Always write declaration files
-  if (template.filename.endsWith('.d.ts')) {
+  if (template.filename.endsWith('.d.ts') || template.filename.endsWith('.d.mts') || template.filename.endsWith('.d.cts')) {
     template.write = true
   }
 
@@ -173,7 +183,7 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
 
 interface LayerPaths {
   nuxt: string[]
-  nitro: string[]
+  server: string[]
   node: string[]
   shared: string[]
   sharedDeclarations: string[]
@@ -185,6 +195,7 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
   const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
+  const relativeServerDir = relativeWithDot(projectBuildDir, dirs.server)
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
@@ -194,7 +205,8 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `layers/*/app/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/**/*`),
     ],
-    nitro: [
+    server: [
+      join(relativeServerDir, `**/*`),
       join(relativeModulesDir, `*/runtime/server/**/*`),
       join(relativeRootDir, `layers/*/server/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/server/**/*`),
@@ -205,7 +217,8 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `.config/nuxt.*`),
       join(relativeRootDir, `layers/*/nuxt.config.*`),
       join(relativeRootDir, `layers/*/.config/nuxt.*`),
-      join(relativeRootDir, `layers/*/modules/**/*`),
+      join(relativeRootDir, `layers/*/modules/*.*`),
+      join(relativeRootDir, `layers/*/modules/*/*.*`),
     ],
     shared: [
       join(relativeSharedDir, `**/*`),
@@ -224,9 +237,55 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
   }
 }
 
-const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
+async function getPathSubstitution (absolutePath: string, buildDir: string): Promise<string> {
+  return relativeWithDot(buildDir, await resolveDeclarationPath(absolutePath))
+}
+
+// Ordered by how specific the declaration is, so a hand-written `.d.ts` wins over the source it
+// describes, and TypeScript sources win over emitted JavaScript.
+const TS_PATH_TARGET_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']
+
+// Extensions an `include` glob such as `**/*` matches on its own (`.js` variants are matched
+// because we always set `allowJs`).
+const TS_MATCHED_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts', '.d.ts', '.js', '.jsx', '.mjs', '.cjs'])
+
+/**
+ * Rewrite an `include` entry so it names `extension` explicitly, or return `undefined` when the
+ * entry already targets specific files.
+ */
+function withExplicitExtension (entry: string, extension: string): string | undefined {
+  if (entry === '**/*' || entry.endsWith('/**/*')) {
+    return entry + extension
+  }
+  if (entry.includes('*') || basename(entry).includes('.')) {
+    return undefined
+  }
+  // directories are expanded by TypeScript to the extensions it recognises
+  return join(entry, '**/*' + extension)
+}
+
+/**
+ * Resolve an extensionless `paths` target to the file TypeScript should load for it.
+ *
+ * `bundler` resolution retries a fixed set of extensions when a substitution is extensionless,
+ * but the `node` environment is resolved as `nodenext`, which does not: the target has to name a
+ * real file. Returns `undefined` when nothing matches, leaving the target untouched.
+ */
+async function resolveExtensionlessTarget (absolutePath: string): Promise<string | undefined> {
+  for (const extension of TS_PATH_TARGET_EXTENSIONS) {
+    const candidate = absolutePath + extension
+    if (await fsp.stat(candidate).then(s => s.isFile(), () => false)) {
+      return candidate
+    }
+  }
+  return undefined
+}
+
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
+
+// Left out of the server tsconfig: these resolve only in the app environment.
+const appOnlyAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', 'vue-demi', /^#app/, /^#imports/, '~', '@', '~~', '@@']
 
 interface GenerateTypesReturn {
   declaration: string
@@ -234,23 +293,30 @@ interface GenerateTypesReturn {
   sharedDeclaration: string
   nodeTsConfig: TSConfig
   nodeDeclaration: string
+  serverTsConfig: TSConfig
+  serverDeclaration: string
   tsConfig: TSConfig
   legacyTsConfig: TSConfig
 }
 export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> {
+  // `typesDir` is resolved by the schema; the fallback is for hand-constructed options
+  const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
+
   const include = new Set<string>(['./nuxt.d.ts'])
   const nodeInclude = new Set<string>(['./nuxt.node.d.ts'])
   const sharedInclude = new Set<string>(['./nuxt.shared.d.ts'])
+  const serverInclude = new Set<string>(['./nuxt.server.d.ts'])
   const legacyInclude = new Set<string>([...include, ...nodeInclude])
 
   const exclude = new Set<string>()
   const nodeExclude = new Set<string>()
   const sharedExclude = new Set<string>()
+  const serverExclude = new Set<string>()
   const legacyExclude = new Set<string>()
 
   if (nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.srcDir) {
-    include.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
-    legacyInclude.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
+    include.add(join(relative(typesDir, nuxt.options.workspaceDir), '**/*'))
+    legacyInclude.add(join(relative(typesDir, nuxt.options.workspaceDir), '**/*'))
   }
 
   const layerDirs = getLayerDirectories(nuxt)
@@ -262,25 +328,27 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     // we only need to exclude node_modules directories if they are
     // being included automatically by being inside the source directory
     if (!sourceDirs.some(srcDir => dir.startsWith(srcDir))) {
-      exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+      exclude.add(relativeWithDot(typesDir, dir))
     }
-    nodeExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
-    legacyExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    nodeExclude.add(relativeWithDot(typesDir, dir))
+    serverExclude.add(relativeWithDot(typesDir, dir))
+    legacyExclude.add(relativeWithDot(typesDir, dir))
   }
 
   // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nitro-server/src/index.ts
   // + nitro generate .data in development when kv storage is used
   for (const dir of ['dist', '.data']) {
-    exclude.add(relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, dir)))
-    nodeExclude.add(relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, dir)))
-    legacyExclude.add(relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, dir)))
+    exclude.add(relativeWithDot(typesDir, resolve(nuxt.options.rootDir, dir)))
+    nodeExclude.add(relativeWithDot(typesDir, resolve(nuxt.options.rootDir, dir)))
+    serverExclude.add(relativeWithDot(typesDir, resolve(nuxt.options.rootDir, dir)))
+    legacyExclude.add(relativeWithDot(typesDir, resolve(nuxt.options.rootDir, dir)))
   }
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
     if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
-      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, dirs.root), '**/*')
-      const paths = resolveLayerPaths(dirs, nuxt.options.buildDir)
+      const rootGlob = join(relativeWithDot(typesDir, dirs.root), '**/*')
+      const paths = resolveLayerPaths(dirs, typesDir)
       for (const path of paths.nuxt) {
         include.add(path)
         legacyInclude.add(path)
@@ -288,7 +356,8 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
           nodeExclude.add(path)
         }
       }
-      for (const path of paths.nitro) {
+      for (const path of paths.server) {
+        serverInclude.add(path)
         exclude.add(path)
         nodeExclude.add(path)
         legacyExclude.add(path)
@@ -301,6 +370,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       for (const path of paths.shared) {
         legacyInclude.add(path)
         sharedInclude.add(path)
+        serverInclude.add(path)
       }
       for (const path of paths.sharedDeclarations) {
         include.add(path)
@@ -309,8 +379,22 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
         include.add(path)
         legacyInclude.add(path)
         sharedInclude.add(path)
+        serverInclude.add(path)
       }
     }
+  }
+
+  // a layer added through `extends` may resolve anywhere, so the `layers/*` globs above do not
+  // necessarily cover its server directory
+  for (const dirs of layerDirs) {
+    const serverGlob = join(relativeWithDot(typesDir, dirs.server), '**/*')
+    serverInclude.add(serverGlob)
+    serverInclude.add(join(relativeWithDot(typesDir, dirs.shared), '**/*.d.ts'))
+
+    // a layer whose source directory is its root would otherwise match these with its own `**/*`
+    exclude.add(serverGlob)
+    nodeExclude.add(serverGlob)
+    legacyExclude.add(serverGlob)
   }
 
   const moduleEntryPaths: string[] = []
@@ -324,7 +408,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const modulePaths = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
 
   for (const path of modulePaths) {
-    const relative = relativeWithDot(nuxt.options.buildDir, path)
+    const relative = relativeWithDot(typesDir, path)
     if (!path.includes('node_modules') && path.startsWith(rootDirWithSlash)) {
       include.add(join(relative, 'runtime'))
       include.add(join(relative, 'dist/runtime'))
@@ -337,12 +421,31 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     nodeExclude.add(join(relative, 'runtime'))
     nodeExclude.add(join(relative, 'dist/runtime'))
 
+    serverInclude.add(join(relative, 'runtime/server'))
+    serverInclude.add(join(relative, 'dist/runtime/server'))
+
+    serverExclude.add(join(relative, '*.*'))
+    serverExclude.add(join(relative, 'dist/*.*'))
+
     exclude.add(join(relative, 'runtime/server'))
     exclude.add(join(relative, 'dist/runtime/server'))
     exclude.add(join(relative, '*.*'))
     exclude.add(join(relative, 'dist/*.*'))
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
+  }
+
+  // TypeScript matches `include` globs only against extensions it recognises.
+  const extraExtensions = nuxt.options.extensions.filter(extension => !TS_MATCHED_EXTENSIONS.has(extension))
+  for (const entries of [include, legacyInclude]) {
+    for (const entry of [...entries]) {
+      for (const extension of extraExtensions) {
+        const withExtension = withExplicitExtension(entry, extension)
+        if (withExtension) {
+          entries.add(withExtension)
+        }
+      }
+    }
   }
 
   const nestedModulesDirs: string[] = []
@@ -356,17 +459,19 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   let hasTypescriptVersionWithModulePreserve
   for (const parent of nestedModulesDirs) {
     hasTypescriptVersionWithModulePreserve ??= await readPackageJSON('typescript', { parent })
-      .then(r => r?.version && gte(r.version, '5.4.0'))
+      .then(r => r?.version && isGreaterOrEqual(r.version, '5.4.0'))
       .catch(() => undefined)
   }
   hasTypescriptVersionWithModulePreserve ??= true
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
-  const userExclude = nuxt.options.typescript?.tsConfig?.exclude ?? []
+  const isV5OrHigher = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
+
+  const userExclude = [...(nuxt.options.typescript?.tsConfig?.exclude ?? []), ...(nuxt.options.typescript?.appTsConfig?.exclude ?? [])]
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
-  const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
+  const baseTsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: true,
@@ -384,6 +489,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       noUncheckedIndexedAccess: true,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
+      ...isV5OrHigher
+        ? {
+            noUncheckedSideEffectImports: true,
+          }
+        : {},
       /* Decorator support */
       ...useDecorators
         ? {
@@ -401,6 +511,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
         'dom.iterable',
         'webworker',
       ],
+      libReplacement: false,
       /* JSX support for Vue */
       jsx: 'preserve',
       jsxImportSource: 'vue',
@@ -418,37 +529,32 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...exclude],
   } satisfies TSConfig)
 
-  // This describes the environment where we load `nuxt.config.ts` (and modules)
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, baseTsConfig)
+
+  // `baseTsConfig.compilerOptions` already merges the user's global `typescript.tsConfig` with
+  // Nuxt's defaults. The `node` and `shared` environments load `nuxt.config` and modules, so
+  // they inherit that baseline minus the app-only (DOM/Vue) options, and always emit nothing,
+  // scan no ambient types, and start from empty `paths` (filled in below).
+  const appOnlyCompilerOptions = ['lib', 'libReplacement', 'jsx', 'jsxImportSource', 'noUncheckedSideEffectImports', 'experimentalDecorators'] as const
+  const nonAppCompilerOptions = (): NonNullable<TSConfig['compilerOptions']> => {
+    const compilerOptions = { ...baseTsConfig.compilerOptions }
+    for (const key of appOnlyCompilerOptions) {
+      delete compilerOptions[key]
+    }
+    return { ...compilerOptions, noEmit: true, types: [], paths: {} }
+  }
+
+  // This describes the environment where we load `nuxt.config.ts` (and modules).
   const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
     compilerOptions: {
-      /* Base options: */
-      esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
-      skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
-      target: tsConfig.compilerOptions?.target,
-      allowJs: tsConfig.compilerOptions?.allowJs,
-      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
-      resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
-      moduleDetection: tsConfig.compilerOptions?.moduleDetection,
-      isolatedModules: tsConfig.compilerOptions?.isolatedModules,
-      verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
-      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
-      /* Strictness */
-      strict: tsConfig.compilerOptions?.strict,
-      noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
-      forceConsistentCasingInFileNames: tsConfig.compilerOptions?.forceConsistentCasingInFileNames,
-      noImplicitOverride: tsConfig.compilerOptions?.noImplicitOverride,
-      /* If NOT transpiling with TypeScript: */
-      module: tsConfig.compilerOptions?.module,
-      noEmit: true,
-      /* remove auto-scanning for types */
-      types: [],
-      /* add paths object for filling-in later */
-      paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: tsConfig.compilerOptions?.moduleResolution,
-      useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
-      noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
-      allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
+      ...nonAppCompilerOptions(),
+      ...isV5OrHigher
+        ? {
+            module: 'nodenext',
+            moduleResolution: 'nodenext',
+            erasableSyntaxOnly: true,
+          }
+        : {},
     },
     include: [...nodeInclude],
     exclude: [...nodeExclude],
@@ -456,54 +562,47 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
   const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, {
-    compilerOptions: {
-      /* Base options: */
-      esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
-      skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
-      target: tsConfig.compilerOptions?.target,
-      allowJs: tsConfig.compilerOptions?.allowJs,
-      allowImportingTsExtensions: tsConfig.compilerOptions?.allowImportingTsExtensions,
-      resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
-      moduleDetection: tsConfig.compilerOptions?.moduleDetection,
-      isolatedModules: tsConfig.compilerOptions?.isolatedModules,
-      verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
-      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
-      /* Strictness */
-      strict: tsConfig.compilerOptions?.strict,
-      noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
-      forceConsistentCasingInFileNames: tsConfig.compilerOptions?.forceConsistentCasingInFileNames,
-      noImplicitOverride: tsConfig.compilerOptions?.noImplicitOverride,
-      /* If NOT transpiling with TypeScript: */
-      module: tsConfig.compilerOptions?.module,
-      noEmit: true,
-      /* remove auto-scanning for types */
-      types: [],
-      /* add paths object for filling-in later */
-      paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: tsConfig.compilerOptions?.moduleResolution,
-      useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
-      noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
-      allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
-    },
+    compilerOptions: nonAppCompilerOptions(),
     include: [...sharedInclude],
     exclude: [...sharedExclude],
+  } satisfies TSConfig)
+
+  // The environment the configured `server.builder` bundles for, in the parts holding for any
+  // server runtime. The builder contributes what its own needs through `prepare:types`.
+  const serverTsConfig: TSConfig = defu(nuxt.options.typescript?.serverTsConfig, {
+    compilerOptions: {
+      ...nonAppCompilerOptions(),
+      // bundled and web-standard rather than DOM-bound
+      lib: ['ESNext', 'webworker', 'dom.iterable'],
+      moduleResolution: 'Bundler',
+    },
+    include: [...serverInclude],
+    exclude: [...serverExclude],
   } satisfies TSConfig)
 
   const aliases: Record<string, string> = nuxt.options.alias
 
   // TODO: remove support for baseUrl in nuxt v5
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const basePath = tsConfig.compilerOptions!.baseUrl
-    // TODO: remove support for baseUrl in nuxt v5
+  const baseUrl = isV5OrHigher
+    ? undefined
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
-    : nuxt.options.buildDir
+    : tsConfig.compilerOptions!.baseUrl
+  const basePath = baseUrl ? resolve(typesDir, baseUrl) : typesDir
 
   tsConfig.compilerOptions ||= {}
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
   tsConfig.exclude ||= []
+
+  serverTsConfig.compilerOptions ||= {}
+  serverTsConfig.compilerOptions.paths ||= {}
+
+  // TODO: remove support for baseUrl in nuxt v5
+  const serverBaseUrl = isV5OrHigher
+    ? undefined
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    : serverTsConfig.compilerOptions.baseUrl ?? baseUrl
+  const serverBasePath = serverBaseUrl ? resolve(typesDir, serverBaseUrl) : typesDir
 
   const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
@@ -511,6 +610,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
+    const inServer = !appOnlyAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))
     let absolutePath = resolve(basePath, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
@@ -525,24 +625,40 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       }
     }
 
-    const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
+    const serverAbsolutePath = serverBasePath === basePath
+      ? absolutePath
+      : resolve(serverBasePath, aliases[alias]!)
+
+    const relativePath = relativeWithDot(typesDir, absolutePath)
+    const serverRelativePath = relativeWithDot(typesDir, serverAbsolutePath)
     if (stats?.isDirectory() || aliases[alias]!.endsWith('/')) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
+      if (inServer) {
+        serverTsConfig.compilerOptions.paths[alias] = [serverRelativePath]
+        serverTsConfig.compilerOptions.paths[`${alias}/*`] = [`${serverRelativePath}/*`]
+      }
     } else {
       const path = stats?.isFile()
-        // remove extension
-        ? relativePath.replace(EXTENSION_RE, '')
+        ? await getPathSubstitution(absolutePath, typesDir)
         // non-existent file probably shouldn't be resolved
         : aliases[alias]!
 
       tsConfig.compilerOptions.paths[alias] = [path]
+      if (inServer) {
+        serverTsConfig.compilerOptions.paths[alias] = [
+          serverBasePath === basePath
+            ? path
+            : stats?.isFile() ? await getPathSubstitution(serverAbsolutePath, typesDir) : aliases[alias]!,
+        ]
+      }
     }
   }
 
   const references: TSReference[] = []
   const nodeReferences: TSReference[] = []
   const sharedReferences: TSReference[] = []
+  const serverReferences: TSReference[] = []
 
   // This adds types of all modules
   await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async (id) => {
@@ -563,7 +679,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const declarations: string[] = []
 
-  await nuxt.callHook('prepare:types', { references, declarations, tsConfig, nodeTsConfig, nodeReferences, sharedTsConfig, sharedReferences })
+  await nuxt.callHook('prepare:types', { references, declarations, tsConfig, nodeTsConfig, nodeReferences, sharedTsConfig, sharedReferences, serverTsConfig, serverReferences })
 
   // Legacy tsConfig for backward compatibility
   const legacyTsConfig: TSConfig = defu({}, {
@@ -572,33 +688,55 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...userExclude, ...legacyExclude],
   })
 
+  // layer directories containing the project root would match every alias, so we ignore them
+  const nonRootLayerDirs = layerDirs
+    .map(dirs => dirs.root)
+    .filter(root => !rootDirWithSlash.startsWith(root))
+
   async function resolveConfig (tsConfig: TSConfig) {
+    if (isV5OrHigher) {
+      Reflect.deleteProperty(tsConfig.compilerOptions!, 'baseUrl')
+    }
+
     for (const alias in tsConfig.compilerOptions!.paths) {
       const paths = tsConfig.compilerOptions!.paths[alias]
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
         if (!isAbsolute(path)) { return path }
         const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-        return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(EXTENSION_RE, '') /* remove extension */ : path)
+        if (stats?.isFile()) {
+          return getPathSubstitution(path, typesDir)
+        }
+        // A declaration file next to the target wins over a directory of the same name, which is
+        // how `#app/types` resolves to `types.ts` rather than the `types/` directory beside it.
+        const resolved = await resolveExtensionlessTarget(path)
+        if (resolved) {
+          return relativeWithDot(typesDir, resolved)
+        }
+        return relativeWithDot(typesDir, path)
       })))]
     }
 
-    // Ensure `#build` is placed at the end of the paths object.
-    // https://github.com/nuxt/nuxt/issues/30325
-    sortTsPaths(tsConfig.compilerOptions!.paths)
+    tsConfig.compilerOptions!.paths = sortTsPaths(
+      tsConfig.compilerOptions!.paths,
+      nonRootLayerDirs,
+      typesDir,
+      nuxt.options.typescript?.hoist ?? [],
+    )
 
-    tsConfig.include = [...new Set(tsConfig.include!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
-    tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
+    tsConfig.include = [...new Set(tsConfig.include!.map(p => isAbsolute(p) ? relativeWithDot(typesDir, p) : p))]
+    tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(typesDir, p) : p))]
   }
 
   await Promise.all([
     resolveConfig(tsConfig),
     resolveConfig(nodeTsConfig),
     resolveConfig(sharedTsConfig),
+    resolveConfig(serverTsConfig),
     resolveConfig(legacyTsConfig),
   ])
 
   const declaration = [
-    ...references.map(ref => renderReference(ref, nuxt.options.buildDir)),
+    ...references.map(ref => renderReference(ref, typesDir)),
     ...declarations,
     '',
     'export {}',
@@ -606,14 +744,21 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   ].join('\n')
 
   const nodeDeclaration = [
-    ...nodeReferences.map(ref => renderReference(ref, nuxt.options.buildDir)),
+    ...nodeReferences.map(ref => renderReference(ref, typesDir)),
     '',
     'export {}',
     '',
   ].join('\n')
 
   const sharedDeclaration = [
-    ...sharedReferences.map(ref => renderReference(ref, nuxt.options.buildDir)),
+    ...sharedReferences.map(ref => renderReference(ref, typesDir)),
+    '',
+    'export {}',
+    '',
+  ].join('\n')
+
+  const serverDeclaration = [
+    ...serverReferences.map(ref => renderReference(ref, typesDir)),
     '',
     'export {}',
     '',
@@ -623,6 +768,8 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     declaration,
     sharedTsConfig,
     sharedDeclaration,
+    serverTsConfig,
+    serverDeclaration,
     nodeTsConfig,
     nodeDeclaration,
     tsConfig,
@@ -631,38 +778,104 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 }
 
 export async function writeTypes (nuxt: Nuxt): Promise<void> {
-  const { tsConfig, nodeTsConfig, nodeDeclaration, declaration, legacyTsConfig, sharedDeclaration, sharedTsConfig } = await _generateTypes(nuxt)
+  const { tsConfig, nodeTsConfig, nodeDeclaration, declaration, legacyTsConfig, sharedDeclaration, sharedTsConfig, serverDeclaration, serverTsConfig } = await _generateTypes(nuxt)
 
-  const appTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.app.json')
-  const legacyTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.json')
-  const nodeTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.node.json')
-  const sharedTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.shared.json')
+  const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
 
-  const declarationPath = resolve(nuxt.options.buildDir, 'nuxt.d.ts')
-  const nodeDeclarationPath = resolve(nuxt.options.buildDir, 'nuxt.node.d.ts')
-  const sharedDeclarationPath = resolve(nuxt.options.buildDir, 'nuxt.shared.d.ts')
+  const appTsConfigPath = resolve(typesDir, 'tsconfig.app.json')
+  const legacyTsConfigPath = resolve(typesDir, 'tsconfig.json')
+  const nodeTsConfigPath = resolve(typesDir, 'tsconfig.node.json')
+  const sharedTsConfigPath = resolve(typesDir, 'tsconfig.shared.json')
+  const serverTsConfigPath = resolve(typesDir, 'tsconfig.server.json')
 
-  await fsp.mkdir(nuxt.options.buildDir, { recursive: true })
+  const declarationPath = resolve(typesDir, 'nuxt.d.ts')
+  const nodeDeclarationPath = resolve(typesDir, 'nuxt.node.d.ts')
+  const sharedDeclarationPath = resolve(typesDir, 'nuxt.shared.d.ts')
+  const serverDeclarationPath = resolve(typesDir, 'nuxt.server.d.ts')
+
+  // nitro v2 writes a `tsconfig.server.json` of its own into the build directory, carrying the
+  // auto-import types it generates, so ours is only written where nothing else claims the name
+  const writesServerTsConfig = nuxt.options._nitroMajor !== 2
+
+  await fsp.mkdir(typesDir, { recursive: true })
   await Promise.all([
-    fsp.writeFile(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
-    fsp.writeFile(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
-    fsp.writeFile(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
-    fsp.writeFile(sharedTsConfigPath, JSON.stringify(sharedTsConfig, null, 2)),
-    fsp.writeFile(declarationPath, declaration),
-    fsp.writeFile(nodeDeclarationPath, nodeDeclaration),
-    fsp.writeFile(sharedDeclarationPath, sharedDeclaration),
+    writeIfChanged(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
+    writeIfChanged(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
+    writeIfChanged(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
+    writeIfChanged(sharedTsConfigPath, JSON.stringify(sharedTsConfig, null, 2)),
+    writesServerTsConfig && writeIfChanged(serverTsConfigPath, JSON.stringify(serverTsConfig, null, 2)),
+    writeIfChanged(declarationPath, declaration),
+    writeIfChanged(nodeDeclarationPath, nodeDeclaration),
+    writeIfChanged(sharedDeclarationPath, sharedDeclaration),
+    writesServerTsConfig && writeIfChanged(serverDeclarationPath, serverDeclaration),
   ])
 }
 
-function sortTsPaths (paths: Record<string, string[]>) {
+/**
+ * Types are regenerated on every start and are usually identical, so avoid
+ * touching the files: an unchanged mtime keeps editors and `tsc --watch` from
+ * redoing work they have already done.
+ */
+async function writeIfChanged (path: string, contents: string) {
+  const existing = await fsp.readFile(path, 'utf8').catch(() => undefined)
+  if (existing === contents) { return }
+  await fsp.writeFile(path, contents)
+}
+
+/**
+ * Sort the paths in the tsconfig.json file, so
+ * - Hoisted package paths stay at the top (`typescript.hoist`)
+ * - Custom layer aliases follow, then generic `#layers/*` aliases
+ * - Generic `~`/`@` aliases come after layer aliases
+ * - `#build` alias is at the bottom (https://github.com/nuxt/nuxt/issues/30325)
+ */
+function sortTsPaths (paths: Record<string, string[]>, layerDirs: string[], buildDir: string, hoist: string[]) {
+  const hoistKeys = new Set(hoist)
+  const hoistPaths: Record<string, string[]> = {}
+  const customLayerPaths: Record<string, string[]> = {}
+  const genericLayerPaths: Record<string, string[]> = {}
+  const otherPaths: Record<string, string[]> = {}
+  const buildPaths: Record<string, string[]> = {}
+
   for (const pathKey in paths) {
     if (pathKey.startsWith('#build')) {
-      const pathValue = paths[pathKey]!
-      // Delete & Reassign to ensure key is inserted at the end of object.
-      delete paths[pathKey]
-      paths[pathKey] = pathValue
+      buildPaths[pathKey] = paths[pathKey]!
+      continue
+    }
+
+    if (isHoistPathKey(pathKey, hoistKeys)) {
+      hoistPaths[pathKey] = paths[pathKey]!
+      continue
+    }
+
+    if (layerDirs.length && paths[pathKey]!.some(target => isPathUnderLayerDirs(target, buildDir, layerDirs))) {
+      if (pathKey.startsWith('#layers')) {
+        genericLayerPaths[pathKey] = paths[pathKey]!
+      } else {
+        customLayerPaths[pathKey] = paths[pathKey]!
+      }
+    } else {
+      otherPaths[pathKey] = paths[pathKey]!
     }
   }
+
+  return {
+    ...hoistPaths,
+    ...customLayerPaths,
+    ...genericLayerPaths,
+    ...otherPaths,
+    ...buildPaths,
+  }
+}
+
+const PATH_WILDCARD_RE = /\/?\*$/
+function isHoistPathKey (pathKey: string, hoistKeys: Set<string>) {
+  return hoistKeys.has(pathKey.replace(PATH_WILDCARD_RE, ''))
+}
+
+function isPathUnderLayerDirs (target: string, buildDir: string, layerDirs: string[]) {
+  const absolute = withTrailingSlash(resolve(buildDir, target.replace(PATH_WILDCARD_RE, '')))
+  return layerDirs.some(dir => absolute.startsWith(dir))
 }
 
 function renderReference (ref: TSReference, baseDir: string) {

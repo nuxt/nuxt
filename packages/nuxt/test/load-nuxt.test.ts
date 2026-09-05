@@ -2,8 +2,10 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
+import { defu } from 'defu'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
+import { _generateTypes } from '../../kit/src/template.ts'
 import { loadNuxt } from '../src/index.ts'
 import type { NuxtConfig } from '../schema.ts'
 
@@ -140,16 +142,15 @@ describe('loadNuxt', () => {
     `)
   })
 
-  it('includes layer server directories in nitro tsconfig', async () => {
+  it('includes layer server directories in the server tsconfig', async () => {
     const layerFixtureDir = withoutTrailingSlash(
       normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
     )
 
     const nuxt = await loadNuxt({ cwd: layerFixtureDir, ready: true })
+    const { serverTsConfig } = await _generateTypes(nuxt)
 
-    const tsConfigInclude = (nuxt as any)._nitro?.options.typescript?.tsConfig?.include ?? []
-
-    const hasLayerServer = tsConfigInclude.some((p: string) =>
+    const hasLayerServer = (serverTsConfig.include ?? []).some(p =>
       p.replace(/\\/g, '/').includes('layers/auto/server'),
     )
 
@@ -158,14 +159,166 @@ describe('loadNuxt', () => {
     await nuxt.close()
   })
 
-  it('includes #server alias in nitro tsconfig paths', async () => {
-    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+  it('does not leak debug mutation proxies into resolved options', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      overrides: {
+        experimental: { debugModuleMutation: true },
+        modules: [
+          (_options, nuxt) => {
+            nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
+              exampleModule: { apiKey: '' },
+            }) as unknown as typeof nuxt.options.runtimeConfig
+          },
+        ],
+      },
+    })
 
-    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+    expect(() => structuredClone(nuxt.options.runtimeConfig)).not.toThrow()
+
+    await nuxt.close()
+  })
+
+  it('includes #server alias in the server tsconfig paths', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+    const { serverTsConfig } = await _generateTypes(nuxt)
+
+    const tsConfigPaths = serverTsConfig.compilerOptions?.paths ?? {}
 
     expect(tsConfigPaths).toHaveProperty('#server')
     expect(tsConfigPaths).toHaveProperty('#server/*')
 
+    await nuxt.close()
+  })
+
+  it('resolves nitro aliases pointing at bare module specifiers', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        modules: [
+          (_options, nuxt) => {
+            nuxt.options.nitro.alias ||= {}
+            nuxt.options.nitro.alias['#probe/defu'] = 'defu'
+          },
+        ],
+      },
+    })
+
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    const tsConfigPaths = serverTsConfig.compilerOptions?.paths ?? {}
+
+    expect(tsConfigPaths['#probe/defu']?.[0]?.replace(/\\/g, '/')).toMatch(/node_modules\/defu\//)
+
+    await nuxt.close()
+  })
+
+  it('allows modules to enable `experimental.asyncContext`', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        experimental: { asyncContext: false },
+        modules: [
+          (_options, nuxt) => {
+            nuxt.options.experimental.asyncContext = true
+          },
+        ],
+      },
+    })
+
+    const config = { environments: { ssr: {}, client: {} }, plugins: [] as Array<{ name?: string }> }
+    await nuxt.callHook('vite:extend', { config } as any)
+    const pluginNames = config.plugins.flat().map(p => p?.name)
+
+    expect(pluginNames).toContain('nuxt:vue-async-context')
+    expect((nuxt as any)._nitro?.options.experimental?.asyncContext).toBe(true)
+
+    await nuxt.close()
+  })
+
+  it.each([
+    {
+      compatibilityVersion: 4,
+      expectedAlias: './legacy-base/probe-target',
+      expectedBaseUrl: 'legacy-base',
+    },
+    {
+      compatibilityVersion: 5,
+      expectedAlias: './probe-target',
+      expectedBaseUrl: undefined,
+    },
+  ] as const)('resolves nitro aliases with compatibilityVersion $compatibilityVersion', async ({ compatibilityVersion, expectedAlias, expectedBaseUrl }) => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        future: {
+          compatibilityVersion,
+        },
+        nitro: {
+          alias: {
+            '#probe/base-url': './probe-target',
+          },
+          typescript: {
+            tsConfig: {
+              compilerOptions: {
+                baseUrl: 'legacy-base',
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    const compilerOptions = serverTsConfig.compilerOptions ?? {}
+    const aliasPath = compilerOptions.paths?.['#probe/base-url']?.[0]
+    await nuxt.close()
+
+    expect(aliasPath).toBe(expectedAlias)
+    expect(Reflect.get(compilerOptions, 'baseUrl')).toBe(expectedBaseUrl)
+  })
+
+  it('applies global typescript.tsConfig compiler options to the server tsconfig', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } } },
+      },
+    })
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    expect(serverTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
+    await nuxt.close()
+  })
+
+  it('applies typescript.serverTsConfig over the global tsConfig in the server tsconfig', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        typescript: {
+          tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } },
+          serverTsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false } },
+        },
+      },
+    })
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    expect(serverTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
+    await nuxt.close()
+  })
+
+  it('keeps typescript.serverTsConfig and nitro.typescript.tsConfig in sync', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        nitro: { typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false } } } },
+      },
+    })
+    expect(nuxt.options.typescript.serverTsConfig).toBe(nuxt.options.nitro.typescript!.tsConfig)
+    expect(nuxt.options.typescript.serverTsConfig?.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
     await nuxt.close()
   })
 })
@@ -184,6 +337,12 @@ describe('pages detection', () => {
     const nuxt = await loadNuxt({ cwd: pagesFixtureDir, overrides, ready: true })
     // @ts-expect-error should resolve to object?
     expect(nuxt.options.pages).toMatchObject(result)
+    await nuxt.close()
+  })
+
+  it('generates layout types even when pages are disabled', async () => {
+    const nuxt = await loadNuxt({ cwd: pagesFixtureDir, overrides: { pages: false }, ready: true })
+    expect(nuxt.options.build.templates.some(t => t.filename === 'types/layouts.d.ts')).toBe(true)
     await nuxt.close()
   })
 })

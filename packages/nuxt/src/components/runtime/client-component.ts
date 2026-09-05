@@ -2,7 +2,6 @@ import { createCommentVNode, getCurrentInstance, h, onMounted, provide, shallowR
 import type { AsyncComponentLoader, Component, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '#app/nuxt'
-// @ts-expect-error virtual file
 import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 import ServerPlaceholder from '#app/components/server-placeholder'
 import { clientOnlySymbol } from '#app/components/client-only'
@@ -12,7 +11,12 @@ function createPlaceholder () {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export async function createClientPage (loader: AsyncComponentLoader): Promise<Component> {
+export async function createClientPage (loader?: AsyncComponentLoader): Promise<Component> {
+  // the route table omits the loader on the server, keeping the page chunk out
+  // of that bundle
+  if (import.meta.server || !loader) {
+    return ServerPlaceholder
+  }
   // vue-router: Write "() => import('./MyPage.vue')" instead of "defineAsyncComponent(() => import('./MyPage.vue'))".
   const m = await loader()
   const c = m.default || m
@@ -26,10 +30,6 @@ export async function createClientPage (loader: AsyncComponentLoader): Promise<C
 const cache = new WeakMap()
 
 function pageToClientOnly<T extends ComponentOptions> (component: T) {
-  if (import.meta.server) {
-    return ServerPlaceholder
-  }
-
   if (cache.has(component)) {
     return cache.get(component)
   }

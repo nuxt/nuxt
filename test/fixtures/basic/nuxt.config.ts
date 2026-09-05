@@ -3,7 +3,7 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
-import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix'
+import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
@@ -59,7 +59,7 @@ export default withMatrix({
       })
     },
     function (_options, nuxt) {
-      const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
+      const routesToDuplicate = ['/with-layout', '/with-layout2']
       const stripLayout = (page: NuxtPage): NuxtPage => ({
         ...page,
         children: page.children?.map(child => stripLayout(child)),
@@ -110,12 +110,10 @@ export default withMatrix({
         { name: 'description', content: 'Nuxt Fixture' },
       ],
     },
-    keepalive: {
-      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
-    },
   },
   css: ['~/assets/global.css'],
   vue: {
+    optionsApi: true,
     compilerOptions: {
       isCustomElement: (tag) => {
         return tag === 'custom-component'
@@ -151,7 +149,7 @@ export default withMatrix({
     ],
   },
   features: {
-    inlineStyles: id => !!id && !id.includes('assets.vue'),
+    inlineStyles: id => !!id,
   },
   experimental: {
     nitroAutoImports: true,
@@ -159,6 +157,7 @@ export default withMatrix({
     decorators: true,
     typedPages: true,
     clientFallback: true,
+    prerenderErrorPages: true,
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
@@ -173,6 +172,10 @@ export default withMatrix({
         dir: './custom-public',
         baseURL: '/custom',
       },
+      {
+        dir: '~~/custom-public',
+        baseURL: '/aliased',
+      },
     ],
     routeRules: {
       '/route-rules/spa': { ssr: false },
@@ -180,8 +183,10 @@ export default withMatrix({
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
+      // Decoded key must still apply to the percent-encoded path generated for the page.
+      '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
-      '/hydration/spa-redirection/**': { ssr: false },
+      '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
       '/route-rules/redirect': { redirect: '/' },
@@ -189,6 +194,7 @@ export default withMatrix({
       '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
+      '/payload-query': { cache: { swr: true, maxAge: 60, allowQuery: true } },
       '/swr': { swr: 60 },
     },
     prerender: {
@@ -197,6 +203,8 @@ export default withMatrix({
         '/random/b',
         '/random/c',
         '/prefetch/server-components',
+        '/prerender/catchall/a/b',
+        '/404.html',
       ],
     },
   },

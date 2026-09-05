@@ -1,13 +1,33 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { getContext } from 'unctx'
-import type { UseContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
+import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
 /**
- * Direct access to the Nuxt global context - see https://github.com/unjs/unctx.
+ * A handle to the global Nuxt instance context.
  * @deprecated Use `getNuxtCtx` instead
  */
-export const nuxtCtx: UseContext<Nuxt> = getContext<Nuxt>('nuxt')
+export interface NuxtContext {
+  /** Get the current Nuxt instance. Throws if none is set. */
+  use: () => Nuxt
+  /** Get the current Nuxt instance, or `null` when none is set. */
+  tryUse: () => Nuxt | null
+  /** Set the current Nuxt instance. */
+  set: (instance?: Nuxt, replace?: boolean) => void
+  /** Clear the current Nuxt instance. */
+  unset: () => void
+  /** Run a synchronous function with the provided Nuxt instance set. */
+  call: <R>(instance: Nuxt, callback: () => R) => R
+  /** Run an asynchronous function with the provided Nuxt instance set. */
+  callAsync: <R>(instance: Nuxt, callback: () => R | Promise<R>) => Promise<R>
+}
+
+/**
+ * Direct access to the Nuxt global context.
+ * @deprecated Use `getNuxtCtx` instead
+ */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export const nuxtCtx: NuxtContext = getContext<Nuxt>('nuxt')
 
 /** async local storage for the name of the current nuxt instance */
 const asyncNuxtStorage = getContext<Nuxt>('asyncNuxtStorage', {
@@ -31,7 +51,7 @@ export function useNuxt (): Nuxt {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const instance = asyncNuxtStorage.tryUse() || nuxtCtx.tryUse()
   if (!instance) {
-    throw new Error('Nuxt instance is unavailable!')
+    throw kitDiagnostics.NUXT_B8001()
   }
   return instance
 }

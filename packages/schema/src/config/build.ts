@@ -2,6 +2,7 @@ import { defu } from 'defu'
 import { join } from 'pathe'
 import type { Nuxt } from '../types/nuxt.ts'
 import { defineResolvers } from '../utils/definition.ts'
+import { schemaDiagnostics } from '../diagnostics.ts'
 
 export default defineResolvers({
   builder: {
@@ -37,7 +38,7 @@ export default defineResolvers({
   logLevel: {
     $resolve: async (val, get) => {
       if (val && typeof val === 'string' && !['silent', 'info', 'verbose'].includes(val)) {
-        console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
+        schemaDiagnostics.NUXT_B5012({ value: val })
       }
       return val && typeof val === 'string' ? val as 'silent' | 'info' | 'verbose' : (await get('test') ? 'silent' : 'info')
     },

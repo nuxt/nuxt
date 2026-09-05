@@ -1,6 +1,9 @@
 import type { HTTPEvent } from 'nitro/h3'
 import { FastURL } from 'srvx'
 
+export type { SSRError, SSRErrorInput } from 'nuxt/renderer/error'
+export { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, encodeSSRError, stringifyErrorData } from 'nuxt/renderer/error'
+
 /**
  * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.ts
  */

@@ -30,6 +30,10 @@ export default createConfigForNuxt({
         'packages/nuxt/src/app/components/error-*.vue',
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
         'packages/nitro-server/src/runtime/templates/error-*',
+        'packages/nitro-server/src/templates/spa-loading-icon.ts',
+        'packages/vite-server/src/templates/spa-loading-icon.ts',
+        'packages/schema/src/templates/loading.ts',
+        'packages/kit/test/types-fixture/**',
       ],
     },
     {
@@ -204,6 +208,7 @@ export default createConfigForNuxt({
           {
             definedTags: [
               'experimental',
+              'knipignore',
               '__NO_SIDE_EFFECTS__',
             ],
           },
@@ -227,6 +232,19 @@ export default createConfigForNuxt({
       },
     },
     {
+      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rspack}/src/**'],
+      // vite-node* files execute inside the nitro dev process rather than the
+      // Nuxt build process, so nostics catalogs do not apply there.
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**', '**/*.{spec,test}.{js,mjs,ts,mts}', 'packages/vite/src/vite-node*.ts'],
+      name: 'local/requires/nostics-diagnostics',
+      rules: {
+        'no-restricted-syntax': ['error', {
+          message: 'Use a nostics diagnostic (see packages/kit/src/diagnostics/) instead of logger/console for build-time warnings and errors.',
+          selector: 'CallExpression[callee.object.name=/^(logger|console)$/][callee.property.name=/^(warn|error)$/]',
+        }],
+      },
+    },
+    {
       files: ['packages/nuxt/src/app/**', 'test/**', '**/runtime/**', '**/*.test.ts'],
       name: 'local/disables/client-console',
       rules: {
@@ -241,6 +259,17 @@ export default createConfigForNuxt({
       name: 'local/disables/empty-object-type',
       rules: {
         '@typescript-eslint/no-empty-object-type': ['error', { allowObjectTypes: 'always' }],
+      },
+    },
+    // diagnostics catalogs keep an inline `/* #__PURE__ */` annotation on the
+    // reporter factory call inside the `reporters` array literal (for
+    // tree-shaking). array-bracket-spacing's autofix would strip a comment that
+    // sits right after `[`, so it is disabled in these dirs.
+    {
+      files: ['packages/**/diagnostics/**', 'packages/**/diagnostics.ts'],
+      name: 'local/diagnostics-pure-annotations',
+      rules: {
+        '@stylistic/array-bracket-spacing': 'off',
       },
     },
     // manually specify dependencies for nuxt browser app
@@ -263,6 +292,7 @@ export default createConfigForNuxt({
                   'vue-router',
                   ...runtimeDependencies,
                   'errx', /* only used in dev */
+                  'nostics', /* runtime diagnostics catalog */
                   // internal deps
                   'nuxt/app',
                 ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
@@ -278,6 +308,7 @@ export default createConfigForNuxt({
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/triple-slash-reference': 'off',
+        'nuxt/no-nuxt-config-test-key': 'off',
         'vue/multi-word-component-names': 'off',
         'vue/valid-v-for': 'off',
       },

@@ -1,5 +1,6 @@
 import { isObject } from '@vue/shared'
 import { isIgnored } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
@@ -11,6 +12,7 @@ import type { getComponentsT } from '../module.ts'
 import type { Nuxt } from 'nuxt/schema'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
+const IDENTIFIER_RE = /^[$_\p{ID_Start}][$\u200C\u200D\p{ID_Continue}]*$/u
 
 interface TransformPluginOptions {
   getComponents: getComponentsT
@@ -76,6 +78,9 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
           const mode = params.get('nuxt_component')
           const bare = id.replace(/\?.*/, '')
           const componentExport = params.get('nuxt_component_export') || 'default'
+          if (!IDENTIFIER_RE.test(componentExport)) {
+            throw buildDiagnostics.NUXT_B1021({ export: componentExport })
+          }
           const exportWording = componentExport === 'default' ? 'export default' : `export const ${componentExport} =`
           if (mode === 'async') {
             return {
@@ -113,7 +118,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else {
-            throw new Error(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`)
+            throw buildDiagnostics.NUXT_B1019({ mode: String(mode) })
           }
         },
       },

@@ -1,14 +1,19 @@
 import type { Nuxt } from '../types/nuxt.ts'
 import { type ResolverGetter, defineResolvers } from '../utils/definition.ts'
 
-type ServerBuilder = '@nuxt/nitro-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+type ServerBuilder = '@nuxt/nitro-server' | '@nuxt/vite-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+
+const serverBuilders = {
+  nitro: '@nuxt/nitro-server',
+  vite: '@nuxt/vite-server',
+} as const
 
 export default defineResolvers({
   server: {
     builder: {
       $resolve: (val: unknown): ServerBuilder => {
         if (typeof val === 'string') {
-          return val
+          return serverBuilders[val as keyof typeof serverBuilders] ?? val
         }
         if (val && typeof val === 'object' && 'bundle' in val) {
           return val as { bundle: (nuxt: Nuxt) => Promise<void> }
@@ -29,10 +34,7 @@ export default defineResolvers({
               ? runtimeConfig.app.baseURL.slice(1)
               : runtimeConfig.app.baseURL,
           },
-          nitro: {
-            envPrefix: 'NUXT_',
-            ...runtimeConfig.nitro,
-          },
+          nitro: Object.assign({ envPrefix: 'NUXT_' }, runtimeConfig.nitro),
         }
       },
     },
@@ -44,8 +46,39 @@ export default defineResolvers({
         }
       },
     },
+    tracingChannel: {
+      $resolve: async (val, get) => {
+        if (val === false) {
+          return false
+        }
+        const topLevel = await get('tracingChannel')
+        const base = typeof topLevel === 'object' ? topLevel : null
+        const override = val && typeof val === 'object' ? val : null
+        if (!base && !override) {
+          return val === true ? {} : false
+        }
+        return { ...(base || {}), ...(override || {}) }
+      },
+    },
   },
   routeRules: {},
   serverHandlers: [],
   devServerHandlers: [],
+  tracingChannel: {
+    $resolve: (val) => {
+      if (val === true) {
+        return { nuxt: true, srvx: true, h3: true, unstorage: true }
+      }
+      if (val && typeof val === 'object') {
+        return {
+          nuxt: true,
+          srvx: true,
+          h3: true,
+          unstorage: true,
+          ...val,
+        }
+      }
+      return false
+    },
+  },
 })

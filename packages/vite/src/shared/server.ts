@@ -5,15 +5,19 @@ import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
 
 import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export function ssr (nuxt: Nuxt) {
+  const isEnvApi = !useServerBuild(nuxt).buildsSeparately
   return {
-    external: [
-      'nitro/runtime-config',
-      // TODO: remove in v5
-      '#internal/nitro',
-      '#internal/nitro/utils',
-    ],
+    external: isEnvApi
+      ? []
+      : [
+          'nitro/runtime-config',
+          // TODO: remove in v5
+          '#internal/nitro',
+          '#internal/nitro/utils',
+        ],
     noExternal: [
       ...getTranspilePatterns({ isServer: true, isDev: nuxt.options.dev }),
       '/__vue-jsx',
@@ -25,6 +29,20 @@ export function ssr (nuxt: Nuxt) {
 }
 
 export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
+  const isEnvApi = !useServerBuild(nuxt).buildsSeparately
+  const sharedDirExternal = new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))))
+  const legacyExternals = isEnvApi
+    ? []
+    : [
+        'nitro/runtime-config',
+        // TODO: remove in v5
+        '#internal/nitro',
+        'nitropack/runtime',
+        '#internal/nuxt/paths',
+        '#internal/nuxt/app-config',
+        '#app-manifest',
+        '#shared',
+      ]
   return {
     build: {
       // we'll display this in nitro build output
@@ -35,15 +53,8 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       rolldownOptions: {
         input: { server: serverEntry },
         external: [
-          'nitro/runtime-config',
-          // TODO: remove in v5
-          '#internal/nitro',
-          'nitropack/runtime',
-          '#internal/nuxt/paths',
-          '#internal/nuxt/app-config',
-          '#app-manifest',
-          '#shared',
-          new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))),
+          ...legacyExternals,
+          sharedDirExternal,
         ],
         output: {
           entryFileNames: '[name].mjs',
@@ -58,6 +69,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       },
     },
     define: {
+      'process.env.NODE_ENV': JSON.stringify(nuxt.options.vite.mode),
       'process.server': true,
       'process.client': false,
       'process.browser': false,
@@ -65,11 +77,16 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       'import.meta.client': false,
       'import.meta.browser': false,
       'import.meta.envName': JSON.stringify(nuxt.options.envName),
-      'window': 'undefined',
-      'document': 'undefined',
-      'navigator': 'undefined',
-      'location': 'undefined',
-      'XMLHttpRequest': 'undefined',
+      // TODO: investigate - issue is onPrehydrate callbacks
+      ...(nuxt.options.dev && isEnvApi)
+        ? {}
+        : {
+            'window': 'undefined',
+            'document': 'undefined',
+            'navigator': 'undefined',
+            'location': 'undefined',
+            'XMLHttpRequest': 'undefined',
+          },
     },
     optimizeDeps: {
       noDiscovery: true,

@@ -1,16 +1,51 @@
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
+/// <reference path="./internal.d.ts" />
+import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, NitroRuntimeConfigApp, NormalizedRouteRules, RouteRuleConfig, TracingOptions } from 'nitro/types'
+import type { ServerImportsOptions } from './auto-imports.ts'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from 'nuxt/app'
-import type { HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
+import type { HookResult, RuntimeConfig, SharedAppConfig, TSReference } from 'nuxt/schema'
+
+/**
+ * Per-channel toggles for `tracingChannel`. Extends Nitro's own
+ * {@link TracingOptions} with a `nuxt` key for Nuxt-owned channels
+ * (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). Channel names
+ * follow the [untracing](https://github.com/unjs/untracing) naming convention
+ * (`{namespace}.{operation}`).
+ *
+ * @experimental Channel names, payload shapes, and option keys may change.
+ */
+export interface NuxtTracingChannelOptions extends TracingOptions {
+  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). */
+  nuxt?: boolean
+}
 
 declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
     baseURL: string
     buildAssetsDir: string
     cdnURL: string
+    buildId: string
   }
-  interface NitroRouteRules {
+
+  /**
+   * Server auto-imports, applied by `@nuxt/nitro-server`. Declared here because this is the
+   * channel `addServerImports()` and `addServerImportsDir()` write to through `nitro:config`.
+   */
+  interface NitroConfig {
+    imports?: false | ServerImportsOptions
+  }
+}
+
+declare module 'h3/rules' {
+  interface RouteRuleConfig {
+    ssr?: boolean
+    streaming?: boolean
+    noScripts?: boolean
+    /** @deprecated Use `noScripts` instead */
+    experimentalNoScripts?: boolean
+  }
+  interface RouteRules {
     ssr?: boolean
     streaming?: boolean
     noScripts?: boolean
@@ -24,13 +59,6 @@ declare module 'nitro/types' {
 declare module 'nitro/types' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
-  interface NitroRouteConfig {
-    ssr?: boolean
-    streaming?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-  }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
     'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
@@ -41,7 +69,18 @@ declare module 'nitro/types' {
   }
 }
 
+type _NitroOnlyRuntimeConfig = Omit<NonNullable<NitroRuntimeConfig['nitro']>, 'envPrefix'> & { envPrefix: string }
+
 declare module '@nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
+  interface ServerTypes {
+    event: H3Event
+    routeRules: NormalizedRouteRules
+  }
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -126,6 +165,17 @@ declare module '@nuxt/schema' {
      * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
      */
     devServerHandlers: NitroDevEventHandler[]
+
+    /**
+     * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
+     * tracing for Nuxt-owned subsystems and forward the corresponding Nitro-level
+     * channels (`srvx.request`, `h3.request`, `unstorage.*`).
+     *
+     * @experimental Channel names, payload shapes, and option keys may change.
+     *
+     * @see [Untracing naming registry](https://github.com/unjs/untracing)
+     */
+    tracingChannel: boolean | NuxtTracingChannelOptions
   }
 
   interface NuxtConfig {
@@ -135,7 +185,7 @@ declare module '@nuxt/schema' {
   interface RuntimeConfig {
     app: NitroRuntimeConfigApp
     /** Only available on the server. */
-    nitro?: NitroRuntimeConfig['nitro']
+    nitro?: _NitroOnlyRuntimeConfig
   }
 
   interface NuxtDebugOptions {
@@ -144,11 +194,20 @@ declare module '@nuxt/schema' {
   }
 
   interface NuxtPage {
-    rules?: NitroRouteConfig
+    rules?: RouteRuleConfig
   }
 }
 
 declare module 'nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
+  interface ServerTypes {
+    event: H3Event
+    routeRules: NormalizedRouteRules
+  }
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -233,6 +292,17 @@ declare module 'nuxt/schema' {
      * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
      */
     devServerHandlers: NitroDevEventHandler[]
+
+    /**
+     * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
+     * tracing for Nuxt-owned subsystems and forward the corresponding Nitro-level
+     * channels (`srvx.request`, `h3.request`, `unstorage.*`).
+     *
+     * @experimental Channel names, payload shapes, and option keys may change.
+     *
+     * @see [Untracing naming registry](https://github.com/unjs/untracing)
+     */
+    tracingChannel: boolean | NuxtTracingChannelOptions
   }
 
   interface NuxtConfig {
@@ -242,7 +312,7 @@ declare module 'nuxt/schema' {
   interface RuntimeConfig {
     app: NitroRuntimeConfigApp
     /** Only available on the server. */
-    nitro?: NitroRuntimeConfig['nitro']
+    nitro?: _NitroOnlyRuntimeConfig
   }
 
   interface NuxtDebugOptions {
@@ -251,7 +321,36 @@ declare module 'nuxt/schema' {
   }
 
   interface NuxtPage {
-    rules?: NitroRouteConfig
+    rules?: RouteRuleConfig
+  }
+}
+
+export interface NuxtRequestContext {
+  'appConfig'?: SharedAppConfig
+  'noSSR'?: boolean
+  /** @internal */
+  '~internal'?: boolean
+  /** @internal */
+  '~rendering-error'?: boolean
+  /**
+   * Dev-only: CSS module URLs the builder has loaded for this request, provided
+   * by a dev integration so the SSR renderer can emit the right stylesheet
+   * links / inline styles. @internal
+   */
+  '~devClientCss'?: string[]
+  /** @internal */
+  '~error-cause'?: unknown
+}
+
+declare module 'srvx' {
+  interface ServerRequestContext {
+    nuxt?: NuxtRequestContext
+  }
+}
+
+declare module 'h3' {
+  interface H3EventContext {
+    nuxt?: NuxtRequestContext
   }
 }
 

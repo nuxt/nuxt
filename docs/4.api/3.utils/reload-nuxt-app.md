@@ -1,6 +1,7 @@
 ---
 title: 'reloadNuxtApp'
 description: reloadNuxtApp will perform a hard reload of the page.
+minimalVersion: "3.3"
 links:
   - label: Source
     icon: i-simple-icons-github

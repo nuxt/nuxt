@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 
-import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
+import type { NuxtOptions, RuntimeValue, SharedAppConfig, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
 import { defineNuxtConfig } from 'nuxt/config'
 
@@ -113,22 +113,15 @@ describe('head', () => {
 })
 
 describe('app config', () => {
-  it('merges app config as expected', () => {
-    interface ExpectedMergedAppConfig {
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-      nuxt: {}
-      fromLayer: boolean
-      fromNuxtConfig: boolean
-      nested: {
-        val: number
-      }
-      userConfig: 123 | 456
-      someThing?: {
-        value?: string | false
-      }
-      [key: string]: unknown
-    }
-    expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
+  it('types inline and schema shared app config but not app-context `app.config` files', () => {
+    expectTypeOf<SharedAppConfig['fromNuxtConfig']>().toEqualTypeOf<boolean>()
+    expectTypeOf<SharedAppConfig['userConfig']>().toEqualTypeOf<123 | 456 | undefined>()
+    expectTypeOf<SharedAppConfig['fromLayer']>().toEqualTypeOf<unknown>()
+  })
+
+  it('types `nuxt.options.appConfig` with the shared app config', () => {
+    expectTypeOf<NuxtOptions['appConfig']>().toEqualTypeOf<SharedAppConfig>()
+    expectTypeOf<NuxtOptions['appConfig']['fromNuxtConfig']>().toEqualTypeOf<boolean>()
   })
 })
 
