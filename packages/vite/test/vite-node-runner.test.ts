@@ -46,6 +46,11 @@ describe('vite-node runner sourcemaps', () => {
     expect(fixStacktrace(stack)).toBe(`Error: boom\n    at useBoom (${charsetFile}:2:9)`)
   })
 
+  it('maps frames without a function name, which keep their bare form', () => {
+    const stack = `Error: boom\n    at ${viteFile}:3:9`
+    expect(fixStacktrace(stack)).toBe(`Error: boom\n    at ${viteFile}:2:9`)
+  })
+
   it('returns the stack unchanged when there is no sourcemap', () => {
     const stack = 'Error: boom\n    at fn (/src/unknown.ts:5:1)'
     expect(fixStacktrace(stack)).toBe(stack)

@@ -9,6 +9,8 @@ import process from 'node:process'
 const runner: ViteNodeRunner = createRunner()
 
 const FRAME_POSITION_RE = /\((.*):(\d+):(\d+)\)$/gm
+/** `at /path/to/file.ts:2:9`, the frame V8 emits for module-scope code. */
+const BARE_FRAME_RE = /^(\s*at )(?!.*\()(.*:\d+:\d+)$/
 
 /**
  * Sourcemap for an SSR-transformed file, if one is known.
@@ -54,6 +56,10 @@ export function getCode (file: string): string | undefined {
  * Columns are emitted 1-based, as in a V8 stack, rather than the 0-based
  * columns a sourcemap stores.
  *
+ * `ssrFixStacktrace` only recognises parenthesised positions, so frames
+ * without a function name are parenthesised for the duration of the mapping
+ * and restored afterwards.
+ *
  * @param stack - The `error.stack` string to map.
  * @returns The mapped stack, or the input unchanged if no mapping applies.
  */
@@ -61,26 +67,29 @@ export function fixStacktrace (stack: string): string {
   if (!stack) {
     return stack
   }
+  const lines = stack.split('\n')
+  const bare = new Set(lines.flatMap((line, index) => BARE_FRAME_RE.test(line) ? [index] : []))
+  const parenthesised = bare.size ? lines.map((line, index) => bare.has(index) ? line.replace(BARE_FRAME_RE, '$1($2)') : line).join('\n') : stack
   // `ssrFixStacktrace` only consults maps already cached on `moduleCache`
-  for (const match of stack.matchAll(FRAME_POSITION_RE)) {
+  for (const match of parenthesised.matchAll(FRAME_POSITION_RE)) {
     getSourceMap(match[1]!)
   }
-  const carrier = { name: 'Error', message: '', stack } as Error
+  const carrier = { name: 'Error', message: '', stack: parenthesised } as Error
   try {
     runner.ssrFixStacktrace(carrier)?.catch?.(() => {})
   } catch {
     return stack
   }
-  const mapped = typeof carrier.stack === 'string' ? carrier.stack : stack
-  if (mapped === stack) {
+  const mapped = typeof carrier.stack === 'string' ? carrier.stack : parenthesised
+  if (mapped === parenthesised) {
     return stack
   }
-  const originalLines = stack.split('\n')
+  const originalLines = parenthesised.split('\n')
   return mapped.split('\n').map((line, index) => {
-    if (line === originalLines[index]) {
-      return line
-    }
-    return line.replace(FRAME_POSITION_RE, (_, file: string, line: string, column: string) => `(${file}:${line}:${Number(column) + 1})`)
+    const positioned = line === originalLines[index]
+      ? line
+      : line.replace(FRAME_POSITION_RE, (_, file: string, line: string, column: string) => `(${file}:${line}:${Number(column) + 1})`)
+    return bare.has(index) ? positioned.replace(FRAME_POSITION_RE, '$1:$2:$3') : positioned
   }).join('\n')
 }
 
