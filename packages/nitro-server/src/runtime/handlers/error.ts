@@ -6,6 +6,7 @@ import { serverFetch } from 'nitro'
 
 import type { SSRErrorInput } from '../utils/error'
 import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
+import { withBaseURL } from '../utils/base'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -39,8 +40,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   const errorObject = (defaultRes.body || {}) as SSRErrorInput
-  // we will be rendering this error internally so we pass along the error.data safely
-  errorObject.data ??= error.data
+  if (!error.unhandled) {
+    errorObject.data ??= error.data
+  }
   errorObject.url = event.req.url
   // `fatal` is Nuxt-only, so Nitro's error body does not carry it
   errorObject.fatal = (error as { fatal?: boolean }).fatal ?? false
@@ -61,7 +63,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // HTML response (via SSR)
   const res = !isRenderingError && await serverFetch(
-    withQuery('/__nuxt_error', { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
+    withQuery(withBaseURL('/__nuxt_error'), { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
     {
       headers: event.req.headers,
       redirect: 'manual',

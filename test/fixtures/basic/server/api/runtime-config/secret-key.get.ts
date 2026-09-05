@@ -1,1 +1,1 @@
-export default defineEventHandler(() => useRuntimeConfig().secretKey)
+export default defineEventHandler(() => ({ secretKey: useRuntimeConfig().secretKey }))

@@ -3,14 +3,14 @@ import type { Nuxt } from '@nuxt/schema'
 import { withoutLeadingSlash } from 'ufo'
 import type { OutputOptions } from 'rolldown'
 import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
-import { useNitro } from '@nuxt/kit'
+import { useServerBuild } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
 import { defineEnv } from 'unenv'
 import escapeStringRegexp from 'escape-string-regexp'
 
 export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
   const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
-  const clientOutputDir = join(useNitro().options.output.publicDir, nuxt.options.app.buildAssetsDir)
+  const clientOutputDir = () => join(useServerBuild(nuxt).output.publicDir(), nuxt.options.app.buildAssetsDir)
 
   const clientAliases: Record<string, string> = {
     'nitro/runtime-config': join(nuxt.options.buildDir, 'nitro.client.mjs'),
@@ -45,7 +45,7 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
                   // so we need to transform the sourcemap path to be relative to the final build directory
                   if (!isAbsolute(relativeSourcePath)) {
                     const absoluteSourcePath = resolve(dirname(sourcemapPath), relativeSourcePath)
-                    return relative(clientOutputDir, absoluteSourcePath)
+                    return relative(clientOutputDir(), absoluteSourcePath)
                   }
                   return relativeSourcePath
                 }),

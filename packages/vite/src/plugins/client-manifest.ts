@@ -9,7 +9,7 @@ import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { setBuildOutput } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
 import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
@@ -28,7 +28,9 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   // captured in-memory from the client env's bundle under env-API
   let rawClientManifest: ViteClientManifest | undefined
 
-  const envApi = nuxt.options.experimental.nitroViteEnvironment
+  let clientBundleGenerated = false
+
+  const envApi = !useServerBuild(nuxt).buildsSeparately
 
   let finalized: Promise<void> | undefined
   const finalize = () => (finalized ??= finalizeBuildManifest())
@@ -76,11 +78,13 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     // Finalised in the ssr env: its `closeBundle` for legacy, or lazily on the
     // first `nuxt/manifest`/`nuxt/precomputed` provider read for env-API, by
     // which point the client build has flushed `manifest.json` to disk.
-    applyToEnvironment: environment => environment.name === 'ssr' || (envApi && environment.name === 'client'),
+    applyToEnvironment: environment => environment.name === 'ssr' || environment.name === 'client',
     generateBundle: {
       order: 'post',
       handler (_options, bundle) {
-        if (!envApi || nuxt.options.dev || this.environment?.name !== 'client') { return }
+        if (nuxt.options.dev || this.environment?.name !== 'client') { return }
+        clientBundleGenerated = true
+        if (!envApi) { return }
         const asset = bundle[manifestFileName]
         if (asset?.type === 'asset') {
           rawClientManifest = JSON.parse(asset.source.toString()) as ViteClientManifest
@@ -95,9 +99,16 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
         const clientBuild = config.environments.client?.build ?? config.build
         manifestFileName = resolveClientManifestFile(clientBuild.manifest)
         manifestFile = resolve(clientBuild.outDir, manifestFileName)
+        setServerBuild({
+          input: {
+            clientDir: () => clientBuild.outDir,
+            clientManifest: () => manifestFile,
+          },
+        }, nuxt)
       }
     },
     async closeBundle () {
+      if (this.environment?.name !== 'ssr') { return }
       // In env-API mode finalisation is triggered lazily by the provider
       // (see `finalize`), since the ssr env reads the manifest before
       // `closeBundle` runs.
@@ -107,6 +118,12 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   }
 
   async function finalizeBuildManifest (): Promise<void> {
+    if (!nuxt.options.dev && !clientBundleGenerated) {
+      // The client build never produced a bundle (for example, a build aborted
+      // before it ran), so there is no manifest to finalise.
+      return
+    }
+
     // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
     const devClientManifest = buildDevClientManifest()
 

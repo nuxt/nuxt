@@ -58,7 +58,10 @@ export default defineConfig<E2eConfigOptions>({
   forbidOnly: !!isCI,
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['@flakiness/playwright', { flakinessProject: 'nuxt/nuxt' }],
+  ],
   projects: [
     {
       name: 'setup fixtures',
@@ -74,6 +77,7 @@ export default defineConfig<E2eConfigOptions>({
       return {
         name,
         testIgnore: testIgnoreForProject(entry),
+        fullyParallel: !entry.isDev && !isCI,
         use: {
           ...devices['Desktop Chrome'],
           isDev: entry.isDev,

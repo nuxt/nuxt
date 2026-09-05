@@ -13,6 +13,8 @@ import type { Component, ComponentsOptions } from './components.ts'
 import type { NuxtImport, NuxtImportPreset, NuxtImportPresetSource } from './imports.ts'
 import type { NuxtManifest } from './manifest.ts'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt.ts'
+import type { ModuleMeta } from './module.ts'
+import type { ServerRequestTypes, ServerRouteHandler } from './server.ts'
 
 export type HookResult = Promise<void> | void
 
@@ -78,6 +80,14 @@ export type NuxtLayout = {
 export interface ImportPresetWithDeprecation extends NuxtImportPreset {
 }
 
+export interface ModuleInstallInfo {
+  /** A human-readable name for the module: `meta.name` where available, otherwise the package name, a path relative to `rootDir`, or the function name */
+  name: string
+  meta: ModuleMeta
+  /** The resolved path of the module on disk, where it is not an inline function */
+  path?: string
+}
+
 export interface GenerateAppOptions {
   filter?: (template: ResolvedNuxtTemplate<any>) => boolean
 }
@@ -139,6 +149,26 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'modules:done': () => HookResult
+  /**
+   * Called immediately before each individual module is set up.
+   * @param module Information about the module about to be set up
+   * @returns Promise
+   */
+  'module:before': (module: ModuleInstallInfo) => HookResult
+  /**
+   * Called immediately after each individual module has been set up.
+   * @param module Information about the module that was set up, including how long it took
+   * @returns Promise
+   */
+  'module:done': (module: ModuleInstallInfo & {
+    /** The module entry path, if it could be resolved */
+    entryPath?: string
+    /**
+     * Timings for the module, in milliseconds. `setup` is how long the module took to set up; a module may report
+     * additional keys of its own. This is the same object recorded in `_installedModules`.
+     */
+    timings: { setup: number } & Record<string, number | undefined>
+  }) => HookResult
 
   /**
    * Called after resolving the `app` instance.
@@ -158,6 +188,17 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'app:templatesGenerated': (app: NuxtApp, templates: ResolvedNuxtTemplate[], options?: GenerateAppOptions) => HookResult
+  /**
+   * Called when Nuxt needs the full set of route handlers the server will serve, so that it can
+   * type `$fetch` and `useFetch` against them. The configured `server.builder` is expected to add
+   * the handlers it discovered by scanning, in addition to those registered through
+   * `serverHandlers`.
+   * @param routes Array of route handlers to be extended
+   * @param context Object the builder can extend
+   * @param context.requestTypes How the builder's types read a handler's validated request shapes
+   * @returns Promise
+   */
+  'server:routes': (routes: ServerRouteHandler[], context: { requestTypes?: ServerRequestTypes }) => HookResult
 
   /**
    * Called before Nuxt bundle builder.
@@ -289,9 +330,11 @@ export interface NuxtHooks {
    * @param options.nodeReferences Array of Node TypeScript references
    * @param options.sharedTsConfig The shared TypeScript config object
    * @param options.sharedReferences Array of shared TypeScript references
+   * @param options.serverTsConfig The server TypeScript config object
+   * @param options.serverReferences Array of server TypeScript references
    * @returns Promise
    */
-  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig, nodeTsConfig: TSConfig, nodeReferences: TSReference[], sharedTsConfig: TSConfig, sharedReferences: TSReference[] }) => HookResult
+  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig, nodeTsConfig: TSConfig, nodeReferences: TSReference[], sharedTsConfig: TSConfig, sharedReferences: TSReference[], serverTsConfig: TSConfig, serverReferences: TSReference[] }) => HookResult
   /**
    * Called when the dev server is loading.
    * @param listenerServer The HTTP/HTTPS server object

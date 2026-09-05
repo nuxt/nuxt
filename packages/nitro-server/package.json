@@ -18,6 +18,9 @@
       ],
       "h3": [
         "./dist/h3.d.mts"
+      ],
+      "request-types": [
+        "./dist/request-types.d.mts"
       ]
     }
   },
@@ -25,13 +28,14 @@
     ".": "./src/index.ts",
     "./augments": "./src/augments.ts",
     "./h3": "./src/h3.ts",
+    "./request-types": "./src/request-types.ts",
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -61,6 +65,8 @@
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
+    "unimport": "catalog:build",
+    "unplugin": "catalog:build",
     "unrouting": "catalog:build",
     "unstorage": "catalog:nitro-runtime",
     "vue": "catalog:app-runtime",
@@ -102,6 +108,7 @@
       ".": "./dist/index.mjs",
       "./augments": "./dist/augments.mjs",
       "./h3": "./dist/h3.mjs",
+      "./request-types": "./dist/request-types.mjs",
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"

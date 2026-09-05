@@ -6,9 +6,8 @@ import type { SerializableHead } from '@unhead/vue'
 import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { H3Event, HTTPError } from '@nuxt/nitro-server/h3'
 import type { Hookable } from 'hookable'
-import type { RuntimeConfig } from 'nuxt/schema'
+import type { RequestEvent, RuntimeConfig } from '@nuxt/schema'
 
 type HookResult = Promise<void> | void
 
@@ -103,14 +102,41 @@ export interface NuxtServerApp {
  * `./composables/error.ts`, which remains the canonical exported value (and
  * the `NuxtError` type exported from `nuxt/app` / `#app`).
  *
- * It extends h3's `HTTPError` at the type level only: `NuxtError` is a
- * standalone class, but errors thrown during SSR have to remain structurally
- * compatible with what h3 and Nitro read off them.
+ * The members are declared here rather than inherited from h3's `HTTPError`,
+ * but must stay structurally compatible with it: that is what h3 and Nitro read
+ * off errors thrown during SSR.
  */
-export interface NuxtError<DataT = unknown> extends HTTPError<DataT> {
+export interface NuxtError<DataT = unknown> extends Error {
   readonly __nuxt_error: true
   readonly fatal: boolean
+  /** HTTP status code in range [100...599] */
+  readonly status: number
+  /** HTTP status text (reason phrase) */
+  readonly statusText: string | undefined
+  /** Additional HTTP headers to be sent with the error response. */
+  readonly headers: Headers | undefined
+  /** Additional data attached to the error JSON body under `data`. */
+  readonly data: DataT | undefined
+  /** Additional top-level properties to attach to the error JSON body. */
+  readonly body: Record<string, unknown> | undefined
+  /** Whether the error was not handled by the application. */
+  readonly unhandled: boolean | undefined
+  readonly cause: unknown
+  /** @deprecated use `status` */
+  readonly statusCode: number
+  /** @deprecated use `statusText` */
+  readonly statusMessage: string | undefined
+  toJSON (): NuxtErrorJSON
 }
+
+/** JSON body serialized from a {@link NuxtError} when it is sent as an HTTP response. */
+export type NuxtErrorJSON = {
+  status: number
+  statusText?: string
+  message: string
+  unhandled?: boolean
+  data?: unknown
+} & Record<string, unknown>
 
 /**
  * Serialized form of an error's `cause` chain, attached to the error page
@@ -145,7 +171,7 @@ export interface NuxtPayload {
 
 export interface NuxtSSRContext extends SSRContext {
   url: string
-  event: H3Event
+  event: RequestEvent
   runtimeConfig: RuntimeConfig
   noSSR: boolean
   /** whether we are rendering an SSR error */

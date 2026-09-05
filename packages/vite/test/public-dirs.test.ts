@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 const publicDir = join(tmpdir(), `nuxt-public-dirs-test-${Date.now()}`)
 
 vi.mock('@nuxt/kit', () => ({
-  useNitro: () => ({
+  tryUseNitro: () => ({
     options: {
       publicAssets: [{ baseURL: '/', dir: publicDir }],
     },

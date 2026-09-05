@@ -41,8 +41,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:dev": "playwright test --project 'e2e-vite-dev'",
     "test:e2e:webpack": "playwright test --project 'e2e-webpack-built'",
-    "test:engines": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --workspace-ignore='packages/schema' -i rollup-plugin-visualizer -i unctx",
-    "test:engines:fix": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --workspace-ignore='packages/schema' -i rollup-plugin-visualizer -i unctx --fix",
+    "test:engines": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --workspace-ignore='packages/schema' -i cssnano -i rollup-plugin-visualizer -i unctx",
+    "test:engines:fix": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --workspace-ignore='packages/schema' -i cssnano -i rollup-plugin-visualizer -i unctx --fix",
     "typecheck": "vue-tsc --noEmit",
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxt prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
@@ -52,6 +52,8 @@
     "@codspeed/core": "catalog:dev",
     "@codspeed/vitest-plugin": "catalog:dev",
     "@eslint/markdown": "catalog:dev",
+    "@flakiness/playwright": "catalog:dev",
+    "@flakiness/vitest": "catalog:dev",
     "@nuxt/cli": "catalog:build",
     "@nuxt/eslint-config": "catalog:dev",
     "@nuxt/kit": "workspace:*",
@@ -69,7 +71,6 @@
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
     "case-police": "catalog:dev",
-    "changelogen": "catalog:dev",
     "consola": "catalog:build",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
@@ -79,6 +80,7 @@
     "eslint-plugin-perfectionist": "catalog:dev",
     "eslint-typegen": "catalog:dev",
     "exsolve": "catalog:build",
+    "fast-check": "catalog:dev",
     "get-port-please": "catalog:build",
     "h3": "catalog:dev",
     "happy-dom": "catalog:dev",
@@ -113,6 +115,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@11.24.0",
   "version": ""
 }

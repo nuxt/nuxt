@@ -12,6 +12,7 @@ import type { getComponentsT } from '../module.ts'
 import type { Nuxt } from 'nuxt/schema'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
+const IDENTIFIER_RE = /^[$_\p{ID_Start}][$\u200C\u200D\p{ID_Continue}]*$/u
 
 interface TransformPluginOptions {
   getComponents: getComponentsT
@@ -77,6 +78,9 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
           const mode = params.get('nuxt_component')
           const bare = id.replace(/\?.*/, '')
           const componentExport = params.get('nuxt_component_export') || 'default'
+          if (!IDENTIFIER_RE.test(componentExport)) {
+            throw buildDiagnostics.NUXT_B1021({ export: componentExport })
+          }
           const exportWording = componentExport === 'default' ? 'export default' : `export const ${componentExport} =`
           if (mode === 'async') {
             return {

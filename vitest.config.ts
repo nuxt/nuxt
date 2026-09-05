@@ -2,7 +2,7 @@ import process from 'node:process'
 import { resolve } from 'pathe'
 import { defineVitestProject as _defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
-import { isCI, isWindows } from 'std-env'
+import { isCI, isWindows, provider } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 import type { NuxtConfig } from 'nuxt/schema'
@@ -110,9 +110,16 @@ const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nux
 
 export default defineConfig({
   test: {
+    // required for the flakiness.io reporter to record test locations
+    includeTaskLocation: isCI,
     onConsoleLog (log) {
       if (log.includes('<Suspense> is an experimental feature')) { return false }
     },
+    reporters: [
+      'default',
+      ...provider === 'github_actions' ? ['github-actions' as const] : [],
+      ['@flakiness/vitest', { flakinessProject: 'nuxt/nuxt' }],
+    ],
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },
@@ -145,6 +152,34 @@ export default defineConfig({
         },
       })),
       {
+        // stands in for the defines and aliases a server builder applies in its own bundle
+        define: {
+          'import.meta.dev': 'false',
+          'import.meta.server': 'true',
+          'import.meta.client': 'false',
+          'import.meta.prerender': 'false',
+        },
+        resolve: {
+          alias: {
+            'nuxt/renderer-config': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer-config.mjs'),
+            'nuxt/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
+            'nuxt/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
+            'nuxt/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
+            'nuxt/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
+            'nuxt/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
+            'nuxt/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
+            '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
+          },
+        },
+        test: {
+          name: 'renderer',
+          include: ['test/renderer/*.test.ts'],
+          globalSetup: ['./test/setup-renderer-prepare.ts'],
+          testTimeout: 60_000,
+          benchmark: { include: [] },
+        },
+      },
+      {
         test: {
           name: 'bundle',
           include: ['test/bundle.test.ts'],
@@ -152,6 +187,16 @@ export default defineConfig({
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: 180_000,
           retry: isCI ? 2 : 0,
+          benchmark: { include: [] },
+        },
+      },
+      {
+        test: {
+          name: 'type-perf',
+          include: ['packages/nuxt/test/typed-fetch-budget.test.ts'],
+          // runs after the other projects rather than beside them
+          sequence: { groupOrder: 1 },
+          testTimeout: 300_000,
           benchmark: { include: [] },
         },
       },
@@ -175,7 +220,6 @@ export default defineConfig({
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
-            '#internal/nuxt/nitro-config.mjs': resolve('./test/mocks/nitro-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),
@@ -189,7 +233,7 @@ export default defineConfig({
           include: ['packages/**/*.{test,spec}.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-          exclude: fixtureExclude,
+          exclude: [...fixtureExclude, 'packages/nuxt/test/typed-fetch-budget.test.ts'],
         },
       },
       await defineVitestProject({

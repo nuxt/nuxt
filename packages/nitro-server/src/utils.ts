@@ -1,19 +1,26 @@
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'pathe'
 import escapeRE from 'escape-string-regexp'
-import type { NuxtBuildOutputs } from '@nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
+
+/**
+ * Compile-time constants the server bundle needs which Nitro does not inject itself.
+ */
+export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
+  return {
+    '__VUE_PROD_DEVTOOLS__': String(false),
+    'import.meta.test': String(!!nuxt.options.test),
+  }
+}
+
+/**
+ * Specifier the app and the server runtime both import the asset URL helpers through,
+ * provided by the `paths.mjs` template Nuxt generates.
+ */
+export const PATHS_SPECIFIER = '#internal/nuxt/paths'
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
-}
-
-export const NUXT_BUILD_OUTPUT_MAP: Record<string, keyof NuxtBuildOutputs> = {
-  'nuxt/entry': 'serverEntry',
-  'nuxt/manifest': 'clientManifest',
-  'nuxt/precomputed': 'clientPrecomputed',
-  'nuxt/styles': 'ssrStyles',
-  'nuxt/entry-chunk': 'entryChunkName',
-  'nuxt/entry-ids': 'entryIds',
 }
 
 const NODE_MODULES_RE = /\/node_modules\//g

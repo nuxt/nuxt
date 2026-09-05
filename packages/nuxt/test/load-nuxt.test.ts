@@ -1,13 +1,13 @@
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { normalize, resolve } from 'pathe'
+import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
+import { _generateTypes } from '../../kit/src/template.ts'
 import { loadNuxt } from '../src/index.ts'
 import type { NuxtConfig } from '../schema.ts'
-import type { Nitro } from 'nitro/types'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -142,16 +142,15 @@ describe('loadNuxt', () => {
     `)
   })
 
-  it('includes layer server directories in nitro tsconfig', async () => {
+  it('includes layer server directories in the server tsconfig', async () => {
     const layerFixtureDir = withoutTrailingSlash(
       normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
     )
 
     const nuxt = await loadNuxt({ cwd: layerFixtureDir, ready: true })
+    const { serverTsConfig } = await _generateTypes(nuxt)
 
-    const tsConfigInclude = (nuxt as any)._nitro?.options.typescript?.tsConfig?.include ?? []
-
-    const hasLayerServer = tsConfigInclude.some((p: string) =>
+    const hasLayerServer = (serverTsConfig.include ?? []).some(p =>
       p.replace(/\\/g, '/').includes('layers/auto/server'),
     )
 
@@ -180,10 +179,11 @@ describe('loadNuxt', () => {
     await nuxt.close()
   })
 
-  it('includes #server alias in nitro tsconfig paths', async () => {
+  it('includes #server alias in the server tsconfig paths', async () => {
     const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+    const { serverTsConfig } = await _generateTypes(nuxt)
 
-    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+    const tsConfigPaths = serverTsConfig.compilerOptions?.paths ?? {}
 
     expect(tsConfigPaths).toHaveProperty('#server')
     expect(tsConfigPaths).toHaveProperty('#server/*')
@@ -205,9 +205,34 @@ describe('loadNuxt', () => {
       },
     })
 
-    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    const tsConfigPaths = serverTsConfig.compilerOptions?.paths ?? {}
 
     expect(tsConfigPaths['#probe/defu']?.[0]?.replace(/\\/g, '/')).toMatch(/node_modules\/defu\//)
+
+    await nuxt.close()
+  })
+
+  it('allows modules to enable `experimental.asyncContext`', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        experimental: { asyncContext: false },
+        modules: [
+          (_options, nuxt) => {
+            nuxt.options.experimental.asyncContext = true
+          },
+        ],
+      },
+    })
+
+    const config = { environments: { ssr: {}, client: {} }, plugins: [] as Array<{ name?: string }> }
+    await nuxt.callHook('vite:extend', { config } as any)
+    const pluginNames = config.plugins.flat().map(p => p?.name)
+
+    expect(pluginNames).toContain('nuxt:vue-async-context')
+    expect((nuxt as any)._nitro?.options.experimental?.asyncContext).toBe(true)
 
     await nuxt.close()
   })
@@ -215,12 +240,12 @@ describe('loadNuxt', () => {
   it.each([
     {
       compatibilityVersion: 4,
-      expectedAlias: 'legacy-base/probe-target',
+      expectedAlias: './legacy-base/probe-target',
       expectedBaseUrl: 'legacy-base',
     },
     {
       compatibilityVersion: 5,
-      expectedAlias: 'probe-target',
+      expectedAlias: './probe-target',
       expectedBaseUrl: undefined,
     },
   ] as const)('resolves nitro aliases with compatibilityVersion $compatibilityVersion', async ({ compatibilityVersion, expectedAlias, expectedBaseUrl }) => {
@@ -246,16 +271,16 @@ describe('loadNuxt', () => {
       },
     })
 
-    const nitro = (nuxt as typeof nuxt & { _nitro?: Nitro })._nitro
-    const compilerOptions = nitro?.options.typescript?.tsConfig?.compilerOptions ?? {}
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    const compilerOptions = serverTsConfig.compilerOptions ?? {}
     const aliasPath = compilerOptions.paths?.['#probe/base-url']?.[0]
     await nuxt.close()
 
-    expect(aliasPath).toBe(resolve(nuxt.options.buildDir, expectedAlias))
+    expect(aliasPath).toBe(expectedAlias)
     expect(Reflect.get(compilerOptions, 'baseUrl')).toBe(expectedBaseUrl)
   })
 
-  it('applies global typescript.tsConfig compiler options to the nitro tsconfig', async () => {
+  it('applies global typescript.tsConfig compiler options to the server tsconfig', async () => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
       ready: true,
@@ -263,12 +288,12 @@ describe('loadNuxt', () => {
         typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } } },
       },
     })
-    const compilerOptions = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions ?? {}
-    expect(compilerOptions.noPropertyAccessFromIndexSignature).toBe(true)
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    expect(serverTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
     await nuxt.close()
   })
 
-  it('applies typescript.serverTsConfig over the global tsConfig in the nitro tsconfig', async () => {
+  it('applies typescript.serverTsConfig over the global tsConfig in the server tsconfig', async () => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
       ready: true,
@@ -279,8 +304,8 @@ describe('loadNuxt', () => {
         },
       },
     })
-    const compilerOptions = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions ?? {}
-    expect(compilerOptions.noPropertyAccessFromIndexSignature).toBe(false)
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    expect(serverTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
     await nuxt.close()
   })
 

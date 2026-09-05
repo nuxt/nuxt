@@ -8,7 +8,7 @@ import { joinURL } from 'ufo'
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
-import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
+import { prerenderRoutes, useRequestEvent, useRequestFetch } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
@@ -19,7 +19,7 @@ import { $fetch } from '#build/fetch'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
-const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
+const DATA_ISLAND_UID_RE = /(?<=<[^<>"]*(?:"[^"]*"[^<>"]*)*\s)data-island-uid(="")?(?=[\s/>])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
 const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
@@ -109,6 +109,7 @@ const NuxtIsland = defineComponent({
     const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
+    const islandFetch = import.meta.server ? useRequestFetch() : $fetch
 
     let activeHead: ActiveHeadEntry<SerializableHead>
 
@@ -223,7 +224,7 @@ const NuxtIsland = defineComponent({
       }
       // TODO: Validate response
       // $fetch handles `app.baseURL` for relative URLs
-      const r = await $fetch.raw<NuxtIslandResponse>(url, {
+      const r = await islandFetch.raw<NuxtIslandResponse>(url, {
         // custom island sources should not be resolved against `app.baseURL` (#23093)
         ...(props.source ? { baseURL: '' } : {}),
         query: {
@@ -381,7 +382,7 @@ const NuxtIsland = defineComponent({
                 if (payloads.components) {
                   for (const [id, info] of Object.entries(payloads.components)) {
                     const { html, slots, uid: targetUID = uid.value } = info
-                    let replaced = html.replaceAll('data-island-uid', `data-island-uid="${uid.value}"`)
+                    let replaced = html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
                     for (const slot in slots) {
                       replaced = replaced.replaceAll(`data-island-slot="${slot}">`, full => full + slots[slot])
                     }

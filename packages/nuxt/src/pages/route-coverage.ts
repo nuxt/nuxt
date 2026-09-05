@@ -1,4 +1,4 @@
-import type { Nitro, NitroRouteConfig } from 'nitro/types'
+import type { Nitro, RouteRuleConfig } from 'nitro/types'
 import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
@@ -85,7 +85,7 @@ function patternToProbePath (pattern: string, probeSegment: string): string {
 const TRAILING_SLASH_RE = /\/$/
 
 export interface RouteRuleCoverageOptions {
-  isCovered: (rules: NitroRouteConfig) => boolean
+  isCovered: (rules: RouteRuleConfig) => boolean
   /** `resolvedPath` is the full route the page is reachable by, unlike the possibly relative `page.path`. */
   mark: (page: NuxtPage, covered: boolean, resolvedPath: string) => void
   /** Excluded pages count as uncovered, which also keeps every ancestor that renders them. */
@@ -106,7 +106,7 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: Nitro, op
   const routeRules = nitro.routing.routeRules
   const PROBE_SEGMENT = createProbeSegment(routeRules.routes)
   const isPathCovered = (path: string) =>
-    options.isCovered(defu({} as NitroRouteConfig, ...routeRules.matchAll('', path).reverse()))
+    options.isCovered(defu({} as RouteRuleConfig, ...routeRules.matchAll('', path).reverse()))
 
   // A dynamic pattern serves a subset of the region below its first dynamic
   // segment (`/products/*` and `/products/*/reviews` both live under

@@ -30,7 +30,6 @@ const RUNTIME_NEVER_BUNDLE = [
   /^#imports$/,
   /^#pages(\/|$)/,
   /^#unhead(\/|$)/,
-  /^#spa-template$/,
   /^nuxt(\/|$)/,
   /^nitro(\/|$)/,
   /^nitropack(\/|$)/,

@@ -9,6 +9,7 @@
           Scoped CSS should be delivered.
         </p>
       </div>
+      <ServerBox />
     </section>
   </main>
 </template>

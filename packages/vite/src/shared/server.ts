@@ -5,9 +5,10 @@ import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
 
 import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export function ssr (nuxt: Nuxt) {
-  const isEnvApi = nuxt.options.experimental.nitroViteEnvironment
+  const isEnvApi = !useServerBuild(nuxt).buildsSeparately
   return {
     external: isEnvApi
       ? []
@@ -28,7 +29,7 @@ export function ssr (nuxt: Nuxt) {
 }
 
 export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
-  const isEnvApi = nuxt.options.experimental.nitroViteEnvironment
+  const isEnvApi = !useServerBuild(nuxt).buildsSeparately
   const sharedDirExternal = new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))))
   const legacyExternals = isEnvApi
     ? []
