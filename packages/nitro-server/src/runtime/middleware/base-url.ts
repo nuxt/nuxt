@@ -1,7 +1,7 @@
 import { HTTPError, defineEventHandler } from 'nitro/h3'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 
-import { urlHash } from 'nuxt/renderer/url'
+import { urlHash } from 'nuxt/internal/renderer/url'
 
 import '../context'
 import { serverFetch } from 'nitro'

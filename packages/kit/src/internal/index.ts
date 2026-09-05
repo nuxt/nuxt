@@ -33,5 +33,5 @@ export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../cons
 
 export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
 
-export { BUILD_OUTPUT_SPECIFIERS, RENDERER_CONFIG_SPECIFIER, addRendererConfig, getRendererConfig, getRendererDefines } from './renderer.ts'
-export type { RendererConfigName, RendererConfigOptions } from './renderer.ts'
+export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
+export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'

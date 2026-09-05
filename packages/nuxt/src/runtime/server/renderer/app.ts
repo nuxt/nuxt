@@ -1,18 +1,19 @@
 import { createHead } from '@unhead/vue/server'
 import type { RequestEvent } from '@nuxt/schema'
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
-import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, unheadOptions } from 'nuxt/renderer-config'
-import { getRequestState, serverRuntime } from './runtime'
+import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, unheadOptions } from 'nuxt/internal/renderer-config'
+import { getRequestState } from './runtime'
+import type { NuxtRendererOptions } from './runtime'
 import { urlHash } from './url'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
-export function createSSRContext (event: RequestEvent): NuxtSSRContext {
+export function createSSRContext (options: NuxtRendererOptions, event: RequestEvent): NuxtSSRContext {
   const url = event.url.pathname + event.url.search + urlHash(event.url)
   const ssrContext: NuxtSSRContext = {
     url,
     event,
-    runtimeConfig: serverRuntime.runtimeConfig(),
+    runtimeConfig: options.runtimeConfig(),
     noSSR: !!(NUXT_NO_SSR) || getRequestState(event)?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     head: createHead(unheadOptions),
     error: false,
@@ -23,7 +24,7 @@ export function createSSRContext (event: RequestEvent): NuxtSSRContext {
   }
 
   if (import.meta.prerender) {
-    const sharedDataCache = serverRuntime.prerender?.sharedDataCache
+    const sharedDataCache = options.prerender?.sharedDataCache
     if (sharedDataCache) {
       ssrContext['~sharedPrerenderCache'] = sharedDataCache
     }
@@ -53,9 +54,9 @@ export function mergeHeaders (base: Headers, overlay: Headers): Headers {
   return base
 }
 
-export function returnRenderResponse (event: RequestEvent, response: Response): Response {
+export function returnRenderResponse (options: NuxtRendererOptions, event: RequestEvent, response: Response): Response {
   const headers = mergeHeaders(new Headers(event.res.headers), response.headers)
-  return serverRuntime.createResponse(response.body, {
+  return options.createResponse(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,

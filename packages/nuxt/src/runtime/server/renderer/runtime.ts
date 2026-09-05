@@ -70,20 +70,6 @@ export interface NuxtRendererOptions {
   }
 }
 
-/**
- * The options of the renderer created for this bundle, installed by
- * {@link createNuxtRenderer} and read lazily, so a module can be imported before
- * the renderer is created.
- */
-export const serverRuntime: NuxtRendererOptions = /* @__PURE__ */ {} as NuxtRendererOptions
-
-export function setServerRuntime (options: NuxtRendererOptions): void {
-  for (const key of Object.keys(serverRuntime)) {
-    Reflect.deleteProperty(serverRuntime, key)
-  }
-  Object.assign(serverRuntime, options)
-}
-
 /** Per-request Nuxt state the renderer reads from the request event, populated by the server runtime. */
 export interface NuxtRequestState {
   'noSSR'?: boolean

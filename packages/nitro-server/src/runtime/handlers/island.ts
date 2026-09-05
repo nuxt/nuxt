@@ -14,16 +14,15 @@ import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
-import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/renderer/app'
-import { getSSRRenderer } from 'nuxt/renderer/build-files'
-import { renderInlineStyles } from 'nuxt/renderer/inline-styles'
-import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/renderer/islands'
-import { isStyleOfModule, patchDevClientCss } from 'nuxt/renderer/dev-css'
-import { urlHash } from 'nuxt/renderer/url'
+import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
+import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
+import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/internal/renderer/islands'
+import { isStyleOfModule, patchDevClientCss } from 'nuxt/internal/renderer/dev-css'
+import { urlHash } from 'nuxt/internal/renderer/url'
 import { createEvent } from '../utils/base'
 import { recordDevClientCss } from '../utils/renderer/dev-client-css'
 
-import '../utils/renderer/options'
+import { rendererInstance } from '../utils/renderer/options'
 import { prerenderRenderingURLs } from '../utils/cache'
 import { useStorage } from 'nitro/storage'
 import type { Storage } from 'unstorage'
@@ -89,7 +88,7 @@ export default {
 
 function toResponse (event: H3Event, result: IslandRenderResult): Response {
   return 'raw' in result
-    ? returnRenderResponse(event, result.raw)
+    ? returnRenderResponse(rendererInstance.options, event, result.raw)
     : new FastResponse(JSON.stringify(result), event.res)
 }
 
@@ -125,14 +124,14 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   const islandContext = await getIslandContext(event)
 
   const ssrContext = {
-    ...createSSRContext(event),
+    ...createSSRContext(rendererInstance.options, event),
     islandContext,
     noSSR: false,
     url: islandContext.url,
   }
 
   // Render app
-  const renderer = await getSSRRenderer()
+  const renderer = await rendererInstance.getSSRRenderer()
 
   const renderResult = await (tracingChannelNuxt
     ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))

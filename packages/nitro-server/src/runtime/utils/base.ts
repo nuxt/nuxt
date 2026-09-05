@@ -1,7 +1,7 @@
 import { H3Event } from 'nitro/h3'
 import type { ServerRequest } from 'srvx'
 import { withoutTrailingSlash } from 'ufo'
-import { urlHash } from 'nuxt/renderer/url'
+import { urlHash } from 'nuxt/internal/renderer/url'
 
 /**
  * The base URL nitro registers its routes under, inlined at build time.

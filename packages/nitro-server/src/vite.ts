@@ -14,7 +14,7 @@ import remapping from '@ampproject/remapping'
 import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
-import { BUILD_OUTPUT_SPECIFIERS } from '@nuxt/kit/internal'
+import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 
 import { distDir, getServerReplacements } from './utils.ts'
 
@@ -85,8 +85,8 @@ function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string
 /**
  * Set up Nitro as a Vite environment using the `nitro/vite` plugin.
  */
-export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro): void {
-  addVitePlugin(NuxtBuildOutputsPlugin(nuxt))
+export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro, serverRuntime: NuxtServerRuntime): void {
+  addVitePlugin(NuxtBuildOutputsPlugin(nuxt, serverRuntime))
   addVitePlugin(NitroVirtualBridge(nitro))
   addVitePlugin(NitroDefinePlugin(nuxt))
 
@@ -291,14 +291,21 @@ async function getDeferredExpressions (nuxt: Nuxt, key: keyof NuxtBuildOutputs):
 }
 
 /**
- * Resolves the `nuxt/*` build-output specifiers for the ssr environment.
+ * Resolves the `nuxt/internal/*` build-output specifiers for the ssr environment.
  *
- * `nuxt/entry` resolves to its value provider's re-export body. Every other key
+ * `nuxt/internal/entry` resolves to its value provider's re-export body. Every other key
  * is deferred to `generateBundle` in a production build (see `DEFERRED_KEYS`),
  * so it picks up values finalised after the ssr env has bundled.
  */
-function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
+function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime: NuxtServerRuntime): VitePlugin {
   const { sentinel, literalRE, anyRE } = createSentinels()
+
+  const outputs: Record<string, keyof NuxtBuildOutputs> = {}
+  for (const [specifier, module] of Object.entries(serverRuntime.modules)) {
+    if (module.output) {
+      outputs[specifier] = module.output
+    }
+  }
 
   return {
     name: 'nuxt:build-outputs',
@@ -306,7 +313,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
     resolveId: {
       order: 'pre',
       handler (id) {
-        if (id in BUILD_OUTPUT_SPECIFIERS) {
+        if (id in outputs) {
           return VIRTUAL_PREFIX + id
         }
       },
@@ -317,7 +324,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         if (!id.startsWith(VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(VIRTUAL_PREFIX.length)
 
-        const key = BUILD_OUTPUT_SPECIFIERS[specifier]
+        const key = outputs[specifier]
         if (!key) { return }
 
         // In a production build, defer keys whose value is only final after the
@@ -345,7 +352,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         if (nuxt.options.dev || this.environment?.name !== 'ssr') { return }
 
         const replacements = new Map<string, string>()
-        for (const [specifier, key] of Object.entries(BUILD_OUTPUT_SPECIFIERS)) {
+        for (const [specifier, key] of Object.entries(outputs)) {
           if (!DEFERRED_KEYS.has(key)) { continue }
           const expressions = await getDeferredExpressions(nuxt, key)
           replacements.set(sentinel(specifier), `(${expressions.get(undefined)})`)

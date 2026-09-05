@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import type { Storage } from 'unstorage'
 import { useStorage } from 'nitro/storage'
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
-import type { CachedResponse } from 'nuxt/renderer/runtime'
+import type { CachedResponse } from 'nuxt/internal/renderer/runtime'
 
 export type { CachedResponse }
 

@@ -2,9 +2,10 @@ import { HTTPError, writeEarlyHints } from 'nitro/h3'
 import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { FastResponse } from 'srvx'
-import { setServerRuntime } from 'nuxt/renderer/runtime'
 import type { NuxtSSRContext } from '#app/types'
-import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/renderer/runtime'
+import { createRendererInstance } from 'nuxt/internal/renderer/instance'
+import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
+import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
 
 import '../../context'
 
@@ -29,6 +30,7 @@ export const rendererOptions: NuxtRendererOptions = {
   createResponse: (body, init) => new FastResponse(body, init),
   createError: init => new HTTPError(init),
   writeEarlyHints: (event, hints) => writeEarlyHints(event, hints),
+  renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   prerender: import.meta.prerender
     ? {
         payloadCache: payloadCache!,
@@ -51,4 +53,8 @@ export const rendererOptions: NuxtRendererOptions = {
     : undefined,
 }
 
-setServerRuntime(rendererOptions)
+/**
+ * The renderer the page and island handlers share, so that both render against a single
+ * load of the server bundle and its manifest.
+ */
+export const rendererInstance: NuxtRendererInstance = createRendererInstance(rendererOptions)
