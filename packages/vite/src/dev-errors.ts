@@ -118,15 +118,22 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       lastKey = key
       isRuntime = false
       file = (error.loc?.file ?? error.id)?.split('?')[0]
-      const [{ createReport, renderAnsi }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
-      const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'compile', presets: [nuxtPreset()] })
-      current = report
-      broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
-      showOverlay(report).catch(() => {})
-      if (!process.env[ERROR_CHANNEL_ENV]) {
-        options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
+      try {
+        const [{ createReport, renderAnsi }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
+        const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'compile', presets: [nuxtPreset()] })
+        current = report
+        broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
+        showOverlay(report).catch(() => {})
+        if (!process.env[ERROR_CHANNEL_ENV]) {
+          options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
+        }
+        return report
+      } catch {
+        // the bundler's logger has been told the error is handled, so a report
+        // that cannot be built still has to reach the terminal
+        options.print(error.stack || error.message)
+        return undefined
       }
-      return report
     },
     clear () {
       if (lastKey === undefined && file === undefined && !isRuntime) {
@@ -180,23 +187,28 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
     lastKey = key
     isRuntime = true
     file = undefined
-    const [{ createReport, fsLoader, renderAnsi }, { viteLoader }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/vite'), import('my-bad/presets')])
-    const input = Object.assign(new Error(error.message), {
-      name: error.name || 'Error',
-      stack: error.stack && resolveStackUrls(server, error.stack),
-    })
-    const report = await createReport(input, {
-      cwd: nuxt.options.rootDir,
-      loaders: [viteLoader(server), fsLoader()],
-      presets: [nuxtPreset()],
-    })
-    current = report
-    broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
-    // the error left the app half-rendered, so the page starts over once the
-    // error is gone
-    showOverlay(report, { reloadOnClear: true }).catch(() => {})
-    if (!process.env[ERROR_CHANNEL_ENV]) {
-      options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
+    try {
+      const [{ createReport, fsLoader, renderAnsi }, { viteLoader }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/vite'), import('my-bad/presets')])
+      const input = Object.assign(new Error(error.message), {
+        name: error.name || 'Error',
+        stack: error.stack && resolveStackUrls(server, error.stack),
+      })
+      const report = await createReport(input, {
+        cwd: nuxt.options.rootDir,
+        loaders: [viteLoader(server), fsLoader()],
+        presets: [nuxtPreset()],
+      })
+      current = report
+      broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
+      // the error left the app half-rendered, so the page starts over once the
+      // error is gone
+      showOverlay(report, { reloadOnClear: true }).catch(() => {})
+      if (!process.env[ERROR_CHANNEL_ENV]) {
+        options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
+      }
+    } catch {
+      // the browser has no other way of surfacing what it hit
+      options.print(error.stack || error.message)
     }
   }
 

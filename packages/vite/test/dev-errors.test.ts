@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { ViteDevServer } from 'vite'
 import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from '../src/dev-errors.ts'
@@ -37,6 +37,10 @@ describe('isTransformError', () => {
 })
 
 describe('createDevErrorReporter', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it('reports a compile error once, to the channel and the terminal', async () => {
     const nuxt = createNuxt()
     const print = vi.fn()
@@ -65,7 +69,20 @@ describe('createDevErrorReporter', () => {
     await reporter.report(transformError)
     expect(print).not.toHaveBeenCalled()
 
-    vi.unstubAllEnvs()
+    nuxt.close()
+  })
+
+  it('prints the raw error when a report cannot be built', async () => {
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    // `rootDir` is read while building the report, so a getter that throws
+    // stands in for any failure inside `my-bad`
+    Object.defineProperty(nuxt.options, 'rootDir', { get: () => { throw new Error('nope') } })
+
+    expect(await reporter.report(transformError)).toBeUndefined()
+    expect(print).toHaveBeenCalledWith(transformError.message)
+
     nuxt.close()
   })
 

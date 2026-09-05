@@ -94,6 +94,7 @@ const CHANNEL_KEY = Symbol.for('nuxt:dev:error-channel')
 
 function createForwardingChannel (): Channel {
   const broadcast = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
+  ;(broadcast as { unref?: () => void }).unref?.()
   const post = (message: ErrorChannelMessage) => broadcast.postMessage(message)
   let current: ErrorReport | undefined
   return {

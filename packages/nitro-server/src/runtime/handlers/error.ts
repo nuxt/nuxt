@@ -18,10 +18,14 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   let report: ErrorReport | undefined
   if (import.meta.dev) {
+    const errorChannel = await import('../utils/error-channel')
+    // a handled client error (a 404, a failed validation) is the app working as
+    // intended rather than something to report, so it gets no report, no
+    // overlay and no channel update
+    const isExpected = !error.unhandled && HTTPError.isError(error) && (error.status || 500) < 500
     // the report maps positions itself, so it reads the stack as raised; the
     // stack is mapped afterwards for the JSON body, the log and `error.vue`
-    const errorChannel = await import('../utils/error-channel')
-    report = await errorChannel.createErrorReport(error, event as H3Event).catch(() => undefined)
+    report = isExpected ? undefined : await errorChannel.createErrorReport(error, event as H3Event).catch(() => undefined)
     mapSSRStacktrace(error)
     // a dev server that owns the channel prints the reports it is sent
     if (report && !isRenderingError && !errorChannel.shouldForwardReports() && (error.unhandled ?? !HTTPError.isError(error))) {
