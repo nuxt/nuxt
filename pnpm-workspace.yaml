@@ -79,7 +79,7 @@ catalogs:
     vue-router: ^5.3.0
   nitro-runtime:
     destr: ^2.0.5
-    nitro: ^3.0.260610-beta
+    nitro: ^3.0.260903-beta
     srvx: 0.12.5
     unstorage: ^1.17.5
   vue:
