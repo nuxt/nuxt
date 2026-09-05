@@ -114,10 +114,11 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.build.emptyOutDir = true
       config.build.rolldownOptions ||= {}
       config.build.rolldownOptions.input = { index: entry }
-      config.build.rolldownOptions.output = defu({
+      // `nuxt preview` runs `server/index.mjs`, so the entry name is not configurable
+      config.build.rolldownOptions.output = {
+        ...defu({ chunkFileNames: '_chunks/[name]-[hash].mjs' }, config.build.rolldownOptions.output),
         entryFileNames: 'index.mjs',
-        chunkFileNames: '_chunks/[name]-[hash].mjs',
-      }, config.build.rolldownOptions.output)
+      }
 
       // the output is the deployable: nothing traces `node_modules` into it afterwards, so
       // every dependency is bundled and only node builtins are left as imports

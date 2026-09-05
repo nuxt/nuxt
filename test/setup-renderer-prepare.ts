@@ -10,8 +10,11 @@ export default async function setup (): Promise<void> {
   try {
     await buildNuxt(nuxt)
   } finally {
-    await nuxt.close()
-    // the build leaves stdout wrapped by consola, which swallows the reporter's output
-    logger.restoreAll()
+    try {
+      await nuxt.close()
+    } finally {
+      // the build leaves stdout wrapped by consola, which swallows the reporter's output
+      logger.restoreAll()
+    }
   }
 }

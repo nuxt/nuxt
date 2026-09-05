@@ -57,7 +57,7 @@ const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
  * render against the artifacts already loaded for another renderer.
  */
 export function createNuxtRenderer (optionsOrInstance: NuxtRendererOptions | NuxtRendererInstance): { fetch: (event: RequestEvent) => Promise<Response> } {
-  const instance = 'options' in optionsOrInstance ? optionsOrInstance : createRendererInstance(optionsOrInstance)
+  const instance = 'getRenderer' in optionsOrInstance ? optionsOrInstance : createRendererInstance(optionsOrInstance)
   return { fetch: event => fetch(instance, event) }
 }
 
