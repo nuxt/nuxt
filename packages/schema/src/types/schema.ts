@@ -1810,9 +1810,9 @@ export interface ConfigSchema {
      * When enabled, the server sends the HTML shell (head, styles, preload hints)
      * immediately and streams the rendered body content progressively.
      *
-     * Streaming is automatically disabled for bot/crawler user agents to ensure
-     * search engines receive fully-rendered HTML. You can opt a route out of
-     * streaming via `routeRules` with `streaming: false`.
+     * Streaming is automatically disabled for bot/crawler user agents (see
+     * `botRegex`) to ensure search engines receive fully-rendered HTML. You can
+     * opt a route out of streaming via `routeRules` with `streaming: false`.
      *
      * Set to `true` to enable with defaults, or pass an object to configure options.
      *
@@ -1822,9 +1822,15 @@ export interface ConfigSchema {
     ssrStreaming: boolean | {
       enabled?: boolean
       /**
-       * A regular expression matching bot/crawler user agents. Requests matching
-       * the pattern are served fully-buffered (non-streamed) responses for SEO
-       * safety.
+       * A regular expression matching bot/crawler user agents that should *not*
+       * receive a streamed response.
+       *
+       * When the `user-agent` header of a request matches this pattern, streaming
+       * is disabled for that request and the fully-rendered (buffered) HTML is
+       * sent instead, for SEO safety. Requests that do not match are streamed.
+       *
+       * Setting this replaces the default pattern rather than extending it, so
+       * include any built-in crawlers you still want to opt out of streaming.
        *
        * @default /bot\b|crawl|spider|slurp|facebookexternalhit|google\b|bing\b|yandex\b|baidu\b|duckduck/i
        */
