@@ -129,24 +129,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  if (nuxt.options.experimental.componentIslands) {
-    const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
-    const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
+  const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
 
-    nuxt.options.nitro.virtual ||= {}
-    nuxt.options.nitro.virtual[ISLAND_RENDERER_KEY] = () => {
-      // sync conditions with /packages/nuxt/src/core/templates.ts#L539
-      if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
-        return `export { default } from ${islandHandlerPath}`
-      }
-      return `export default { fetch: () => undefined }`
+  // the page renderer resolves this specifier whether or not islands are enabled
+  nuxt.options.nitro.virtual ||= {}
+  nuxt.options.nitro.virtual['#internal/nuxt/island-renderer.mjs'] = () => {
+    // sync conditions with /packages/nuxt/src/core/templates.ts#L539
+    if (nuxt.options.experimental.componentIslands && (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')))) {
+      return `export { default } from ${islandHandlerPath}`
     }
+    return `export default { fetch: () => undefined }`
+  }
 
-    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
-      nuxt.options.ssr = true
-      nuxt.options.nitro.routeRules ||= {}
-      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
-    }
+  if (nuxt.options.experimental.componentIslands && !nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
+    nuxt.options.ssr = true
+    nuxt.options.nitro.routeRules ||= {}
+    nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
   }
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
