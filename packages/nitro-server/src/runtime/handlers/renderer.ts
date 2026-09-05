@@ -315,6 +315,15 @@ async function renderRoute (event: H3Event, ssrError?: (NuxtPayload['error'] & {
 
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
+  if (import.meta.dev && !ssrError && !ssrContext.error) {
+    // a page rendered, so overlays showing the previous error can be dismissed
+    import('../utils/error-channel').then(({ useErrorChannel }) => useErrorChannel()).then((channel) => {
+      if (channel.current) {
+        channel.clearError()
+      }
+    }).catch(() => {})
+  }
+
   if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
     warnNoScriptsClientReliance(ssrContext, event.url.pathname)
   }

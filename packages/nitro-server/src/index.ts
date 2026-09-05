@@ -99,12 +99,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  if (nuxt.options.dev && nuxt.options.features.devLogs) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
-    nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
+  if (nuxt.options.dev) {
     nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
       '#internal/dev-server-logs-options': () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
     })
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
+  }
+  if (nuxt.options.dev && nuxt.options.features.devLogs) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
+    nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
   }
 
   // When the base URL is only known at runtime, the `base-url` middleware strips it from incoming
@@ -243,6 +246,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
           `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
           `export const NUXT_NO_SCRIPTS_PROD = ${nuxt.options.features.noScripts === 'production'}`,
+          `export const NUXT_ERROR_CHANNEL = ${JSON.stringify(nuxt.options.devServer.errorChannel)}`,
           `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
           `export const NUXT_VIEW_TRANSITIONS = ${!!(nuxt.options.app.viewTransition && typeof nuxt.options.app.viewTransition === 'object' && nuxt.options.app.viewTransition.enabled)}`,
           `export const NUXT_NO_SCRIPTS_PATTERNS = ${JSON.stringify(noScriptsPatterns)}`,
@@ -896,6 +900,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   nitro.options.devHandlers.push(...nuxt.options.devServerHandlers)
+  if (nuxt.options.dev) {
+    nitro.options.plugins.push(resolve(distDir, 'runtime/plugins/dev-errors'))
+    // live channel behind the development error page and overlay
+    nitro.options.handlers.unshift({
+      route: joinURL(nuxt.options.devServer.errorChannel, '**'),
+      lazy: true,
+      handler: resolve(distDir, 'runtime/handlers/error-channel'),
+    })
+  }
   if (!nuxt.options.experimental.nitroViteEnvironment) {
     nitro.options.handlers.unshift({
       route: '/__nuxt_error',

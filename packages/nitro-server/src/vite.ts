@@ -100,6 +100,9 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   // env hot channels whenever the graph gains a CSS module. The worker caches
   // the latest set and serves it, unioned with the globally-registered CSS.
   if (nuxt.options.dev) {
+    // expose the module runner's sourcemaps to nitro error handlers
+    nitro.options.plugins.push(resolve(distDir, 'runtime/plugins/dev-ssr-sourcemap'))
+
     nuxt.options.vite.plugins ||= []
     nuxt.options.vite.plugins.push(DevClientCssPlugin(nuxt))
 
