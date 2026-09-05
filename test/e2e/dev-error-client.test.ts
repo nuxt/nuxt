@@ -17,7 +17,7 @@ test.use({
 
 test.describe.configure({ mode: 'serial' })
 
-const appVue = readFileSync(join(sourceDir, 'app/app.vue'), 'utf8')
+const appVue = readFileSync(join(sourceDir, 'app/app.vue'), 'utf8').replaceAll('\r\n', '\n')
 
 test('overlays an error the browser raised, minimised over the app, and clears it on the next update', async ({ page, goto }) => {
   writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)

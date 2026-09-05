@@ -7,6 +7,7 @@ const fixtureDirs = [
   fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url)),
   fileURLToPath(new URL('../fixtures-temp/hmr-sibling-layer', import.meta.url)),
   fileURLToPath(new URL('../fixtures-temp/dev-error-sourcemap', import.meta.url)),
+  fileURLToPath(new URL('../fixtures-temp/dev-error-client', import.meta.url)),
 ]
 
 teardown('remove temporary hmr fixture directory', async () => {

@@ -17,8 +17,12 @@ test.use({
 
 test.describe.configure({ mode: 'serial' })
 
-const appVue = readFileSync(join(sourceDir, 'app/app.vue'), 'utf8')
+// checkouts on Windows have CRLF line endings, which the patterns below do not
+const appVue = readFileSync(join(sourceDir, 'app/app.vue'), 'utf8').replaceAll('\r\n', '\n')
 const brokenAppVue = appVue.replace('    rendered without error\n', '    <span\n      rendered without error\n    </span>\n')
+if (brokenAppVue === appVue) {
+  throw new Error('the fixture no longer contains the line these tests break; update `brokenAppVue`')
+}
 
 test('shows the error overlay on an open page when a file stops compiling, and removes it when fixed', async ({ page, goto }) => {
   writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)

@@ -26,6 +26,9 @@ if (runs) {
 function sourcePosition (file: string, needle: string) {
   const lines = readFileSync(new URL(file, fixtureURL), 'utf8').split('\n')
   const index = lines.findIndex(line => line.includes(needle))
+  if (index === -1) {
+    throw new Error(`\`${needle}\` is no longer in \`${file}\`; update the fixture or the test`)
+  }
   return { line: index + 1, column: lines[index]!.indexOf(needle) + 1 }
 }
 
