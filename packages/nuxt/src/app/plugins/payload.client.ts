@@ -14,8 +14,60 @@ import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedDa
 // track the active head entry per path for forwarded preload hints
 interface ActiveHeadEntryLike { dispose: () => void }
 const forwardedHintEntries = new Map<string, ActiveHeadEntryLike>()
+const forwardedHintHrefs = new Set<string>()
 // bumped on navigation, so payloads that resolve afterwards are discarded
 let hintGeneration = 0
+let forwardedHintCount = 0
+
+const MAX_HINTS_PER_ROUTE = 2
+const MAX_FORWARDED_HINTS = 8
+
+const SLOW_CONNECTION_TYPES = new Set(['slow-2g', '2g'])
+
+// `navigator.connection` is not part of the standard TS DOM lib
+interface NetworkInformationLike { saveData?: boolean, effectiveType?: string }
+type NavigatorWithConnection = Navigator & { connection?: NetworkInformationLike }
+
+function canAffordHints (): boolean {
+  const connection = (navigator as NavigatorWithConnection).connection
+  if (!connection) { return true }
+  return !connection.saveData && !SLOW_CONNECTION_TYPES.has(connection.effectiveType!)
+}
+
+function documentHrefs (): Set<string> {
+  const hrefs = new Set<string>()
+  for (const link of document.head.querySelectorAll('link[href]')) {
+    hrefs.add((link as HTMLLinkElement).href)
+  }
+  return hrefs
+}
+
+function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): Array<Record<string, string | boolean>> {
+  const existingHrefs = documentHrefs()
+  const links: Array<Record<string, string | boolean>> = []
+
+  for (const link of prefetchLinks) {
+    if (links.length >= MAX_HINTS_PER_ROUTE || forwardedHintCount + links.length >= MAX_FORWARDED_HINTS) { break }
+    if (typeof link.href !== 'string') { continue }
+    const href = new URL(link.href, window.location.href).href
+    if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
+    forwardedHintHrefs.add(href)
+
+    if (link.as === 'image') {
+      // `rel="prefetch"` has no request destination, so image hints stay as
+      // `rel="preload"`, with any `fetchpriority` dropped so that they cannot
+      // outrank the current page
+      const { fetchpriority: _fetchpriority, ...rest } = link
+      links.push(rest)
+      continue
+    }
+
+    const { rel: _rel, ...rest } = link
+    links.push({ ...rest, rel: 'prefetch' })
+  }
+
+  return links
+}
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:payload',
@@ -27,10 +79,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
         hintGeneration++
+        forwardedHintCount = 0
         for (const entry of forwardedHintEntries.values()) {
           entry.dispose()
         }
         forwardedHintEntries.clear()
+        forwardedHintHrefs.clear()
       })
     }
     router.beforeResolve(async (to, from) => {
@@ -66,27 +120,14 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         const payload = await loadPayload(url).catch(() => {
           stateDiagnostics.NUXT_E7003({ url })
         })
-        if (head && generation === hintGeneration && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname)) {
-          const entry = head.push({
-            link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {
-              if (link.as === 'image') {
-                // `rel="prefetch"` has no request destination, so image hints stay as
-                // `rel="preload"`, with any `fetchpriority` dropped so that they
-                // cannot outrank the current page
-                const { fetchpriority: _fetchpriority, ...rest } = link
-                return rest
-              }
-              // Downgrade preload (and modulepreload) to prefetch.
-              const { rel: _rel, ...rest } = link
-              return { ...rest, rel: 'prefetch' }
-            }),
-          })
-          forwardedHintEntries.set(pathname, entry)
+        if (head && generation === hintGeneration && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname) && canAffordHints()) {
+          const links = selectHints(payload.prefetchLinks)
+          if (!links.length) { return }
+          forwardedHintCount += links.length
+          forwardedHintEntries.set(pathname, head.push({ link: links }))
         }
       })
-      // `navigator.connection` (Network Information API) is widely supported in
-      // browsers but not part of the standard TS DOM lib.
-      if (isAppManifestEnabled && (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType !== 'slow-2g') {
+      if (isAppManifestEnabled && (navigator as NavigatorWithConnection).connection?.effectiveType !== 'slow-2g') {
         setTimeout(getAppManifest, 1000)
       }
     })

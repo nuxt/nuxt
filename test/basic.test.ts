@@ -1964,6 +1964,37 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
+  it.skipIf(!isTestingAppManifest)('should not forward hints for resources that could be arbitrarily large', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href$="/never-forwarded.mp4"]').length,
+    )).toBe(0)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should forward a limited number of hints per prefetched route', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href*="/hint-"]').length,
+    )).toBe(2)
+
+    await page.close()
+  })
+
   it.skipIf(!isTestingAppManifest)('should evict forwarded resource hints for routes that are never visited', async () => {
     const { page } = await renderPage()
 
