@@ -1796,6 +1796,15 @@ export interface ConfigSchema {
     nitroAutoImports: boolean
 
     /**
+     * Run Nitro as a Vite environment using the `nitro/vite` plugin instead of
+     * Nitro's own Rolldown pipeline.
+     *
+     * Not supported for Nuxt 3/4.
+     * @default false
+     */
+    nitroViteEnvironment: boolean
+
+    /**
      * Enable SSR streaming to improve Time to First Byte (TTFB).
      *
      * When enabled, the server sends the HTML shell (head, styles, preload hints)

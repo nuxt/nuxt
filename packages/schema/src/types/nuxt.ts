@@ -231,6 +231,13 @@ export interface NuxtServerBuild {
   target?: () => string | undefined
   /** What to call the `target` axis when printing it, such as `preset`. */
   targetLabel?: string
+  /**
+   * Whether the server build is a pass of its own, run by the server builder, rather than
+   * an environment of the app builder's build. A builder that builds separately also hosts
+   * the dev server, and reads the client manifest from disk rather than from the app
+   * builder's own build.
+   */
+  buildsSeparately: boolean
   output: NuxtServerBuildOutput
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime

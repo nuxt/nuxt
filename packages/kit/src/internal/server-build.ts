@@ -53,6 +53,7 @@ export function createServerBuild (options: NuxtOptions): NuxtServerBuild {
   const outputDir = () => options.nitro?.output?.dir || '.output'
   return {
     name: typeof options.server?.builder === 'string' ? options.server.builder : 'custom',
+    buildsSeparately: !options.experimental?.nitroViteEnvironment,
     output: {
       root: () => options.rootDir,
       dir: () => resolve(options.rootDir, outputDir()),

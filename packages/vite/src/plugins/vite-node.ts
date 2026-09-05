@@ -9,8 +9,8 @@ import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { win32 as pathWin32 } from 'node:path'
 import { dirname, join, normalize } from 'pathe'
-import { resolvePath, setBuildOutput, tryUseNitro, tryUseNuxt } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { resolvePath, setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import type { FetchResult } from 'vite-node'
 import { ViteNodeServer } from 'vite-node/server'
@@ -167,12 +167,13 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
     return
   }
 
-  // the bridge externalises modules in nitro's rollup config and serves them to its
-  // runtime, so there is nothing to bridge when the server builder is not nitro-backed
-  const nitro = tryUseNitro() as Nitro | undefined
-  if (!nitro) {
+  // the bridge externalises modules in the server build's own rollup pass and serves them
+  // to its runtime, so there is nothing to bridge when there is no pass of its own
+  if (!useServerBuild(nuxt).buildsSeparately) {
     return
   }
+
+  const nitro = useNitro() as Nitro
 
   let socketServer: net.Server | undefined
   const { socketPath, parentDir } = generateSocketPath()

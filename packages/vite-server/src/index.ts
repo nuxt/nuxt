@@ -50,6 +50,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     output: { dir: () => outputDir, publicDir: () => publicDir },
     // TODO: report what actually claimed the server, once a target can declare itself
     capabilities: { server: nuxt.options.ssr !== false, dev: true },
+    buildsSeparately: false,
     // `nitropack/runtime` does not resolve in a build without nitro
     runtime: {
       runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
