@@ -1,4 +1,5 @@
 import { withoutFragment } from 'ufo'
+import type { ResolvableLink } from 'unhead/types'
 
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
@@ -42,31 +43,20 @@ function documentHrefs (): Set<string> {
   return hrefs
 }
 
-function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): Array<Record<string, string | boolean>> {
+function selectHints (prefetchLinks: Array<Record<string, string | boolean>>) {
   const existingHrefs = documentHrefs()
-  const links: Array<Record<string, string | boolean>> = []
+  const selected: Array<Record<string, string | boolean>> = []
 
   for (const link of prefetchLinks) {
-    if (links.length >= MAX_HINTS_PER_ROUTE || forwardedHintCount + links.length >= MAX_FORWARDED_HINTS) { break }
+    if (selected.length >= MAX_HINTS_PER_ROUTE || forwardedHintCount + selected.length >= MAX_FORWARDED_HINTS) { break }
     if (typeof link.href !== 'string') { continue }
     const href = new URL(link.href, window.location.href).href
     if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
     forwardedHintHrefs.add(href)
-
-    if (link.as === 'image') {
-      // `rel="prefetch"` has no request destination, so image hints stay as
-      // `rel="preload"`, with any `fetchpriority` dropped so that they cannot
-      // outrank the current page
-      const { fetchpriority: _fetchpriority, ...rest } = link
-      links.push(rest)
-      continue
-    }
-
-    const { rel: _rel, ...rest } = link
-    links.push({ ...rest, rel: 'prefetch' })
+    selected.push(link)
   }
 
-  return links
+  return selected
 }
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
@@ -121,10 +111,25 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           stateDiagnostics.NUXT_E7003({ url })
         })
         if (head && generation === hintGeneration && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname) && canAffordHints()) {
-          const links = selectHints(payload.prefetchLinks)
-          if (!links.length) { return }
-          forwardedHintCount += links.length
-          forwardedHintEntries.set(pathname, head.push({ link: links }))
+          const selected = selectHints(payload.prefetchLinks)
+          if (!selected.length) { return }
+          forwardedHintCount += selected.length
+          const entry = head.push({
+            // payload serialisation erases the attribute types the destination resolved
+            link: selected.map((link) => {
+              if (link.as === 'image') {
+                // `rel="prefetch"` has no request destination, so image hints stay as
+                // `rel="preload"`, with any `fetchpriority` dropped so that they
+                // cannot outrank the current page
+                const { fetchpriority: _fetchpriority, ...rest } = link
+                return rest
+              }
+              // Downgrade preload (and modulepreload) to prefetch.
+              const { rel: _rel, ...rest } = link
+              return { ...rest, rel: 'prefetch' }
+            }) as ResolvableLink[],
+          })
+          forwardedHintEntries.set(pathname, entry)
         }
       })
     })
