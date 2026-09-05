@@ -60,6 +60,8 @@ export function createServerBuild (options: NuxtOptions): NuxtServerBuild {
       publicDir: () => resolve(options.rootDir, options.nitro?.output?.publicDir || join(outputDir(), 'public')),
     },
     capabilities: { server: true, dev: true },
-    runtime: { runtimeConfig: 'nitropack/runtime' },
+    runtime: options._nitroMajor === 3
+      ? { fetch: 'nitro', runtimeConfig: 'nitro/runtime-config' }
+      : { runtimeConfig: 'nitropack/runtime' },
   }
 }
