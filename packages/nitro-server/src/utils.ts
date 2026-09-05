@@ -1,7 +1,17 @@
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'pathe'
 import escapeRE from 'escape-string-regexp'
-import type { NuxtBuildOutputs } from '@nuxt/schema'
+import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
+
+/**
+ * Compile-time constants the server bundle needs which Nitro does not inject itself.
+ */
+export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
+  return {
+    '__VUE_PROD_DEVTOOLS__': String(false),
+    'import.meta.test': String(!!nuxt.options.test),
+  }
+}
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
