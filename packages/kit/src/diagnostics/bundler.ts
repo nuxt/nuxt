@@ -117,8 +117,8 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B7023: {
-      why: (p: { dir: string, baseURL: string }) => `The \`nitro.publicAssets\` directory \`${p.dir}\` does not exist, so requests to \`${p.baseURL}\` will 404.`,
-      fix: 'Relative directories are resolved against your project root. Correct the `dir` or remove the entry.',
+      why: (p: { dir: string, baseURL: string }) => `A configured \`nitro.publicAssets\` directory does not exist: \`${p.dir}\`. Requests to \`${p.baseURL}\` will return a 404.`,
+      fix: 'Relative `dir` values are resolved against your project root. Point `dir` at an existing directory, using an absolute path or a Nuxt alias (such as `~~/public/video`) if it lives elsewhere.',
       docs: false,
     },
     NUXT_B7024: {
