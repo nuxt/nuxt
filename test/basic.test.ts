@@ -1940,7 +1940,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should forward destination preload tags as prefetch hints on link prefetch', async () => {
+  it.skipIf(!isTestingAppManifest)('should preserve image preloads and downgrade other preload hints on link prefetch', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -1948,32 +1948,78 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
     // prefetching should trigger loading its payload, which includes the
     // forwarded preload links registered via `useHead` on that page.
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => document.head.querySelector('link[rel="preload"][as="image"][href$="/public.svg"]')
+        && document.head.querySelector('link[rel="prefetch"][as="fetch"][href$="/prefetch-resource.txt"]'),
     )
 
-    // Confirm the rel was downgraded from preload to prefetch.
-    const preloadCount = await page.evaluate(
-      () => document.head.querySelectorAll('link[rel="preload"][href$="/public.svg"]').length,
-    )
-    expect(preloadCount).toBe(0)
+    const hints = await page.evaluate(() => Array.from(document.head.querySelectorAll('link'))
+      .filter(link => link.href.endsWith('/public.svg') || link.href.endsWith('/prefetch-resource.txt'))
+      .map(link => ({
+        as: link.as,
+        fetchpriority: link.getAttribute('fetchpriority'),
+        href: new URL(link.href).pathname,
+        rel: link.rel,
+      })))
+    expect(hints).toContainEqual({
+      as: 'image',
+      fetchpriority: null,
+      href: '/public.svg',
+      rel: 'preload',
+    })
+    expect(hints).toContainEqual({
+      as: 'fetch',
+      fetchpriority: null,
+      href: '/prefetch-resource.txt',
+      rel: 'prefetch',
+    })
 
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should evict forwarded prefetch hints for routes that are never visited', async () => {
+  it.skipIf(!isTestingAppManifest)('should not forward hints for resources that could be arbitrarily large', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href$="/never-forwarded.mp4"]').length,
+    )).toBe(0)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should forward a limited number of hints per prefetched route', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href*="/hint-"]').length,
+    )).toBe(2)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should evict forwarded resource hints for routes that are never visited', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link'))
         .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
     )
 
     await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
     await page.waitForFunction(
-      () => !Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => !Array.from(document.head.querySelectorAll('link'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg') || (l as HTMLLinkElement).href.endsWith('/prefetch-resource.txt')),
     )
 
     await page.close()
