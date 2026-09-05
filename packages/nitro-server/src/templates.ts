@@ -24,6 +24,9 @@ import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 
 declare module 'nitro/types' {
+  interface NitroImportMeta {
+    test?: boolean
+  }
   interface NitroRuntimeConfigApp {
     baseURL: string
     buildAssetsDir: string

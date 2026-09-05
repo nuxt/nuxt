@@ -14,7 +14,7 @@ import remapping from '@ampproject/remapping'
 import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
-import { NUXT_BUILD_OUTPUT_MAP, distDir } from './utils.ts'
+import { NUXT_BUILD_OUTPUT_MAP, distDir, getServerReplacements } from './utils.ts'
 
 const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
@@ -86,6 +86,7 @@ function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string
 export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro): void {
   addVitePlugin(NuxtBuildOutputsPlugin(nuxt))
   addVitePlugin(NitroVirtualBridge(nitro))
+  addVitePlugin(NitroDefinePlugin(nuxt))
 
   // `nitro/vite` calls `build:before` before it derives its bundler config,
   // which is where the legacy path calls `nitro:build:before`: consumers use it
@@ -407,6 +408,23 @@ function DevClientCssPlugin (nuxt: Nuxt): VitePlugin {
         if (this.environment.name === 'ssr' && IS_CSS_RE.test(id)) { push?.() }
       },
     },
+  }
+}
+
+/**
+ * Apply the server-only compile-time constants to the `nitro` environment as
+ * `define`, so they are substituted in dev as well as in a build.
+ */
+function NitroDefinePlugin (nuxt: Nuxt): VitePlugin {
+  return {
+    name: 'nuxt:nitro-define',
+    config: () => ({
+      environments: {
+        nitro: {
+          define: getServerReplacements(nuxt),
+        },
+      },
+    }),
   }
 }
 

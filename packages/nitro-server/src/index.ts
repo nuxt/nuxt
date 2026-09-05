@@ -22,7 +22,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { NUXT_BUILD_OUTPUT_MAP, distDir, getLayerNodeModulesExcludePattern, getSsrResolveConditions, toArray } from './utils.ts'
+import { NUXT_BUILD_OUTPUT_MAP, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, toArray } from './utils.ts'
 import { setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
@@ -337,9 +337,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // Paths
       '#internal/nuxt/paths': resolve(distDir, 'runtime/utils/paths'),
     },
-    replace: {
-      '__VUE_PROD_DEVTOOLS__': String(false),
-    },
+    replace: nuxt.options.experimental.nitroViteEnvironment ? {} : getServerReplacements(nuxt),
     rollupConfig: {
       output: {
         generatedCode: {
