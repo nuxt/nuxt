@@ -39,15 +39,29 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     hooks: () => serverHooks,
     createResponse: (body, init) => new Response(body, init),
     createError: init => createError(init),
+    onRenderSuccess: import.meta.dev
+      ? () => {
+          import('./dev-error.ts').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+        }
+      : undefined,
   }
 }
 
 /**
  * A web-standard handler over the renderer: it renders the request, and renders the app's
  * error page for a request the render refused.
+ *
+ * In development it also serves the live error channel, and publishes what it failed on
+ * to it, so the error page carries a `my-bad` report.
  */
 export function createFetchHandler (renderer: NuxtRenderer): (request: Request) => Promise<Response> {
   return async function fetch (request: Request): Promise<Response> {
+    if (import.meta.dev) {
+      const devErrors = await import('./dev-error.ts')
+      if (devErrors.isErrorChannelRequest(new URL(request.url).pathname)) {
+        return devErrors.fetchErrorChannel(request)
+      }
+    }
     const event = createRequestEvent(request)
     try {
       return await renderer.fetch(event)
@@ -60,9 +74,15 @@ export function createFetchHandler (renderer: NuxtRenderer): (request: Request) 
 async function renderError (renderer: NuxtRenderer, request: Request, error: unknown): Promise<Response> {
   const { status, statusText, message, headers } = describeError(error)
   const url = new URL(request.url)
+  const isRenderingError = url.pathname.startsWith('/__nuxt_error')
+
+  const devErrors = import.meta.dev ? await import('./dev-error.ts') : undefined
+  const report = devErrors && !isRenderingError
+    ? await devErrors.observeError(error, request, { expected: status < 500 })
+    : undefined
 
   // a render that failed while rendering the error page cannot be recovered by rendering it again
-  if (!url.pathname.startsWith('/__nuxt_error')) {
+  if (!isRenderingError) {
     const errorEvent = createRequestEvent(new Request(withQuery(new URL('/__nuxt_error', url).href, {
       [SSR_ERROR_PARAM]: encodeSSRError({
         status,
@@ -71,9 +91,18 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
         fatal: false,
         url: request.url,
         data: (error as { data?: unknown })?.data,
+        ...(import.meta.dev && { stack: (error as { stack?: string })?.stack }),
       }),
     }), { headers: request.headers }))
-    ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = { '~rendering-error': true }
+    const errorContext = { '~rendering-error': true } as Record<string, unknown>
+    if (devErrors) {
+      // frames of the code that actually failed, for the app's own error page
+      const cause = devErrors.errorCause(error)
+      if (cause !== undefined) {
+        errorContext['~error-cause'] = cause
+      }
+    }
+    ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = errorContext
 
     const rendered = await renderer.fetch(errorEvent).catch(() => null)
     if (rendered) {
@@ -82,7 +111,20 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
         responseHeaders.set(name, value)
       }
       responseHeaders.set('content-type', 'text/html;charset=utf-8')
+      if (devErrors && report && !import.meta.test) {
+        const html = await rendered.text()
+        // the overlay is a development aid; never let it replace the real error
+        const body = await devErrors.overlayErrorReport(html, report).catch(() => html)
+        return new Response(body, { status, statusText, headers: responseHeaders })
+      }
       return new Response(rendered.body, { status, statusText, headers: responseHeaders })
+    }
+
+    if (devErrors && report) {
+      const page = await devErrors.renderReportPage(report).catch(() => undefined)
+      if (page) {
+        return new Response(page, { status, statusText, headers: { ...headers, 'content-type': 'text/html;charset=utf-8' } })
+      }
     }
   }
 

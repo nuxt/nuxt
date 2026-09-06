@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
 import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
+import { joinURL } from 'ufo'
 import type { Plugin, ViteDevServer } from 'vite'
 
 import { resolveDocument } from './document.ts'
@@ -42,9 +43,18 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     })
   }
 
+  // where error pages and overlays subscribe, unless a dev server in front mounts the
+  // channel somewhere else
+  const errorChannel = joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel)
+
   // loaded from the dev module graph, so an edit is picked up by the next render
   const render = async (request: Request) => {
-    const module = await viteServer!.ssrLoadModule(serverEntry!) as { fetch: (request: Request) => Promise<Response> }
+    const module = await viteServer!.ssrLoadModule(serverEntry!) as {
+      fetch: (request: Request) => Promise<Response>
+      setDevErrorContext?: (context: { server: ViteDevServer, cwd: string, channel: string }) => void
+    }
+    // set per render, since the module holding it is re-evaluated with the graph
+    module.setDevErrorContext?.({ server: viteServer!, cwd: nuxt.options.rootDir, channel: errorChannel })
     return module.fetch(request)
   }
 

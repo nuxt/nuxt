@@ -30,6 +30,7 @@
     "exsolve": "catalog:build",
     "hookable": "catalog:app-runtime",
     "mocked-exports": "catalog:build",
+    "my-bad": "catalog:nitro-runtime",
     "pathe": "catalog:build",
     "srvx": "catalog:nitro-runtime",
     "ufo": "catalog:build"

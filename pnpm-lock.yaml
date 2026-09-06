@@ -1142,6 +1142,9 @@ importers:
       magic-string:
         specifier: catalog:vite
         version: 1.2.3
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2)
       nanotar:
         specifier: catalog:build
         version: 0.3.0
@@ -1731,6 +1734,9 @@ importers:
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2)
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -2237,6 +2243,12 @@ importers:
       wrangler:
         specifier: ^4.127.1
         version: 4.129.0
+
+  test/fixtures/vite-server-dev-error:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/vite-server-netlify:
     dependencies:

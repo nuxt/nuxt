@@ -1,9 +1,9 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { fetch, setup } from '@nuxt/test-utils/e2e'
-import type { ErrorReport } from 'my-bad'
+import { setup } from '@nuxt/test-utils/e2e'
 
 import { asyncContext, isDev, isTestingAppManifest, isWebpack } from './matrix'
+import { renderErrorPage } from './dev-error-utils'
 
 const runs = isDev && !isWebpack && !asyncContext && isTestingAppManifest
 
@@ -19,15 +19,10 @@ if (runs) {
 
 describe.skipIf(!runs)('dev error page without an app error page', () => {
   it('overlays the default error page with the report, minimised', async () => {
-    const res = await fetch('/', { headers: { accept: 'text/html' } })
-    const body = await res.text()
+    const { overlay, report, status } = await renderErrorPage()
 
-    expect(res.status).toBe(500)
-    expect(body).toContain('<nuxt-error-overlay>')
-    expect(body).toContain('"mode":"overlay"')
-    expect(body).toContain('"startMinimized":true')
-
-    const report: ErrorReport = JSON.parse(/<script type="application\/json">([^<]*)<\/script>/.exec(body)![1]!).report
+    expect(status).toBe(500)
+    expect(overlay).toMatchObject({ mode: 'overlay', startMinimized: true })
     expect(report.message).toBe('boom from a composable')
     expect(report.frames[0]).toMatchObject({ file: expect.stringMatching(/app\/utils\/boom\.ts$/), line: 2, column: 9 })
   })

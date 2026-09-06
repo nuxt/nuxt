@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
-import { addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
 import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
@@ -128,6 +128,8 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   }
 
   if (nuxt.options.dev) {
+    // shows compile failures and errors the browser raised over the page already open
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
     setupDevServer(nuxt, server?.entry)
   } else {
     nuxt.hook('build:done', () => writeStaticOutput(nuxt, publicDir, { ssr }))

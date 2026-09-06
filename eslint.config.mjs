@@ -36,6 +36,7 @@ export default createConfigForNuxt({
         'packages/kit/test/types-fixture/**',
         // deliberately does not compile
         'test/fixtures/dev-error-sourcemap/app/components/Broken.vue',
+        'test/fixtures/vite-server-dev-error/app/components/Broken.vue',
       ],
     },
     {
