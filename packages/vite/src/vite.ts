@@ -232,7 +232,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ReplacePlugin(),
         LayerDepOptimizePlugin(nuxt),
         SSRStylesPlugin(nuxt),
-        ServerEntryPlugin(nuxt),
+        ServerEntryPlugin(nuxt, serverEntry),
         EnvironmentsPlugin(nuxt),
         ...nuxt.options.experimental.viteEnvironmentApi
           ? [
