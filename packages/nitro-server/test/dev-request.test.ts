@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { H3Event } from 'h3'
-import { isLocalDevRequest, isLoopbackAddress, isLoopbackPeer } from './dev-request.ts'
+import { isLocalDevRequest, isLoopbackAddress, isLoopbackPeer } from '../src/dev-request.ts'
 
 function event (headers: Record<string, string>, remoteAddress?: string, clientAddress?: string): H3Event {
   return {

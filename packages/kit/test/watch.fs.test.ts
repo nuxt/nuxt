@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { watch } from 'chokidar'
 import { join } from 'pathe'
 import { afterEach, describe, expect, it } from 'vitest'
-import { recoverThrottledChanges } from './watch.ts'
+import { recoverThrottledChanges } from '../src/watch.ts'
 
 const temporaryDirectories: string[] = []
 const disposers: Array<() => unknown> = []

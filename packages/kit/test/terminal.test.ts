@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { logger } from './logger.ts'
-import { useTerminal } from './terminal.ts'
-import type { TerminalHost } from './internal/terminal-host.ts'
+import { logger } from '../src/logger.ts'
+import { useTerminal } from '../src/terminal.ts'
+import type { TerminalHost } from '../src/internal/terminal-host.ts'
 
 const key = Symbol.for('nuxt:terminal-host')
 
