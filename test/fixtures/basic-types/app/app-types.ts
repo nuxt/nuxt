@@ -75,6 +75,10 @@ describe('API routes', () => {
     expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
   })
 
+  it('types the response of a handler written against `nuxt/server`', () => {
+    expectTypeOf($fetch('/api/portable')).toEqualTypeOf<Promise<{ greeting: string }>>()
+  })
+
   it('types responses of routes registered in `ServerRoutes`', () => {
     expectTypeOf($fetch('/api/registered')).toEqualTypeOf<Promise<{ registered: true }>>()
     expectTypeOf($fetch('/api/registered', { method: 'GET' })).toEqualTypeOf<Promise<{ registered: true }>>()

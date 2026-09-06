@@ -32,6 +32,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   const outputDir = resolve(nuxt.options.rootDir, nuxt.options.nitro.output?.dir || '.output')
   const publicDir = resolve(outputDir, 'public')
   const ssr = nuxt.options.ssr !== false
+  const handler = ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined
 
   setServerBuild({
     name: 'vite',
@@ -42,6 +43,8 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     // `nitropack/runtime` does not resolve in a build without nitro
     runtime: {
       runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
+      // the emitted entry, which only exists once a build has run
+      handler,
     },
     preview: ssr
       ? { command: () => 'node ./server/index.mjs' }
