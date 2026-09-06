@@ -92,7 +92,6 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
-        "@nuxt/nitro-server",
         "@nuxt/telemetry",
         "@nuxt/vite-builder",
         "@nuxt/vite-server"
@@ -125,6 +124,7 @@
       "ignoreDependencies": [
         "@nuxt/friendly-errors-webpack-plugin",
         "@nuxt/kit",
+        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
