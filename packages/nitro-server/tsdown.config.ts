@@ -2,7 +2,7 @@ import { defineConfig } from 'tsdown'
 
 export default defineConfig([
   {
-    dts: { oxc: true },
+    dts: { generator: 'oxc' },
     exports: { devExports: true },
     entry: ['src/index.ts', 'src/h3.ts', 'src/augments.ts', 'src/request-types.ts'],
     deps: {
