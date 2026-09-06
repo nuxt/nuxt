@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
 import { addTemplate } from '@nuxt/kit'
-import { getServerRuntime } from '@nuxt/kit/internal'
+import { getServerRuntime, useServerBuild } from '@nuxt/kit/internal'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -20,7 +20,7 @@ const SUPPORTED_SERVER_RUNTIME_VERSION = 1
  * by the generated entry: the renderer and the SSR app are bundled together, so the app's
  * entry is reached through the renderer rather than emitted on its own.
  */
-export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, unsupported: string[] } {
+export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handler: string, unsupported: string[] } {
   const serverRuntime = getServerRuntime({
     overrides: async () => ({
       spaTemplate: JSON.stringify(await spaLoadingTemplate(nuxt)),
@@ -40,38 +40,74 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, unsup
   const unsupported = disableUnsupported(nuxt)
 
   const serverDir = resolve(outputDir, 'server')
-  const entry = addServerEntry(nuxt, serverRuntime)
+  const { entry, handler } = addServerEntry(nuxt, serverRuntime)
 
   nuxt.options.vite.plugins ||= []
   nuxt.options.vite.plugins.push(
+    AppServerEnvironmentsPlugin(nuxt),
     ServerEnvironmentPlugin(nuxt, serverRuntime, entry, serverDir),
     BundledVuePlugin(nuxt),
     ServerRuntimeModulesPlugin(serverRuntime),
   )
 
-  return { entry, unsupported }
+  return { entry, handler, unsupported }
 }
 
 /**
- * The module the server build makes its `{ fetch }` from. Everything it imports is
- * imported by absolute path, so the entry needs no alias of its own to resolve.
- *
- * The node server is only created in a build, where the entry is emitted as
- * `server/index.mjs` beside the `public` directory it serves, and only listens when run as
- * the main module, so a custom server can import `fetch` from it instead.
+ * Names every server environment as one that renders the app, so that the app's own
+ * bundler plugins (the virtual file system behind `#build`, and everything else registered
+ * with `addVitePlugin()`) apply there too. This builder brings no server runtime, so a
+ * server environment a deploy target contributes is a build of the app rather than a
+ * service beside it.
  */
-function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): string {
-  const { dst } = addTemplate({
-    filename: 'vite-server/server-entry.mjs',
+function AppServerEnvironmentsPlugin (nuxt: Nuxt): Plugin {
+  return {
+    name: 'nuxt:vite-server:app-server-environments',
+    enforce: 'pre',
+    // resolved before any plugin container is created, and so before any scoping check
+    configResolved (config) {
+      nuxt._appServerEnvironments ??= new Set()
+      for (const [name, environment] of Object.entries(config.environments)) {
+        if (environment.consumer === 'server') {
+          nuxt._appServerEnvironments.add(name)
+        }
+      }
+    },
+  }
+}
+
+/**
+ * The modules the render is reached through. Everything they import is imported by absolute
+ * path, so neither needs an alias of its own to resolve.
+ *
+ * The handler is the render and nothing else, importing no node built-in, so an environment
+ * a deploy target owns can build it for whatever it runs on. The entry is what this
+ * builder's own environment builds: the handler behind a node server that serves the static
+ * output in front of it and listens when it is run as the main module.
+ */
+function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): { entry: string, handler: string } {
+  const { dst: handler } = addTemplate({
+    filename: 'vite-server/server-handler.mjs',
     write: true,
     getContents: () => [
       `import { createNuxtRenderer } from ${JSON.stringify(serverRuntime.entry)}`,
       `import { useRuntimeConfig } from ${JSON.stringify(resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'))}`,
       `import { createFetchHandler, createRendererOptions } from ${JSON.stringify(resolve(distDir, 'runtime/renderer'))}`,
-      `import { createNodeServer, listen } from ${JSON.stringify(resolve(distDir, 'runtime/node'))}`,
       '',
       `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig))`,
       `export const fetch = createFetchHandler(renderer)`,
+      `export default { fetch }`,
+    ].join('\n'),
+  })
+
+  const { dst: entry } = addTemplate({
+    filename: 'vite-server/server-entry.mjs',
+    write: true,
+    getContents: () => [
+      `import { fetch } from ${JSON.stringify(handler)}`,
+      `import { createNodeServer, listen } from ${JSON.stringify(resolve(distDir, 'runtime/node'))}`,
+      '',
+      `export { fetch }`,
       '',
       `const server = import.meta.dev ? undefined : createNodeServer({ fetch, publicDir: new URL('../public/', import.meta.url) })`,
       `export default server`,
@@ -82,30 +118,35 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): string {
     ].join('\n'),
   })
 
-  return dst
+  return { entry, handler }
 }
 
 /**
- * Configures the environment that renders: the server entry as its only input, the output
- * a deployable expects, and the defines the renderer must be compiled with.
+ * Configures the environments that render: the defines the renderer must be compiled with,
+ * everywhere it is compiled, and for this builder's own environment the server entry as
+ * its only input and the output a deployable expects.
  *
  * The input is replaced rather than added to: the app entry the app build would give this
  * environment is reached through the renderer instead, so building it as an entry of its
  * own would emit a second copy of the app.
+ *
+ * A deploy target that builds its own module as the input keeps it, and reaches the render
+ * through `#server-entry`; the environment then emits the target's artifact.
  */
 function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, entry: string, serverDir: string): Plugin {
   return {
     name: 'nuxt:vite-server:server-environment',
-    applyToEnvironment: environment => environment.name === 'ssr',
+    applyToEnvironment: environment => environment.config.consumer === 'server',
     configEnvironment (name, config) {
-      if (name !== 'ssr') { return }
+      if (config.consumer === 'client') { return }
 
       // `import.meta.prerender` reaching the runtime undefined silently disables payload
       // extraction, so the renderer's defines take precedence over a configured value
       config.define = { ...config.define, ...serverRuntime.defines }
 
-      // dev serves modules from the module graph and resolves dependencies through node
-      if (nuxt.options.dev) { return }
+      // only this builder's own environment emits the handler it describes; a target's is
+      // built with its own input, output and conditions
+      if (nuxt.options.dev || name !== 'ssr') { return }
 
       // mutated rather than returned: vite merges what a plugin returns, and the app
       // entry has to be dropped from the input rather than merged with
@@ -113,7 +154,15 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.build.outDir = serverDir
       config.build.emptyOutDir = true
       config.build.rolldownOptions ||= {}
-      config.build.rolldownOptions.input = { index: entry }
+
+      // the app build names its own entry `server`; an input that does not is a target's
+      const input = config.build.rolldownOptions.input
+      const claimed = !!input && typeof input === 'object' && !Array.isArray(input) && !('server' in input)
+      if (claimed) {
+        useServerBuild(nuxt).runtime.handler = undefined
+      } else {
+        config.build.rolldownOptions.input = { index: entry }
+      }
       // `nuxt preview` runs `server/index.mjs`, so the entry name is not configurable
       config.build.rolldownOptions.output = {
         ...defu({ chunkFileNames: '_chunks/[name]-[hash].mjs' }, config.build.rolldownOptions.output),
@@ -147,7 +196,7 @@ function BundledVuePlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:vite-server:bundled-vue',
     // dev resolves Vue through node, and inlining it into the module graph breaks that
     apply: 'build',
-    applyToEnvironment: environment => environment.name === 'ssr',
+    applyToEnvironment: environment => environment.config.consumer === 'server',
     resolveId: {
       order: 'pre',
       filter: { id: /^vue(?:\/server-renderer)?$/ },
@@ -171,7 +220,7 @@ function ServerRuntimeModulesPlugin (serverRuntime: NuxtServerRuntime): Plugin {
 
   return {
     name: 'nuxt:vite-server:server-runtime',
-    applyToEnvironment: environment => environment.name === 'ssr',
+    applyToEnvironment: environment => environment.config.consumer === 'server',
     resolveId: {
       order: 'pre',
       handler: id => id in serverRuntime.modules ? prefix + id : undefined,

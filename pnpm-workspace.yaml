@@ -36,7 +36,9 @@ overrides:
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
+  sharp: false
   unrs-resolver: false
+  workerd: true
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:

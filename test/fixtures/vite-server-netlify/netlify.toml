@@ -1,0 +1,8 @@
+[build]
+publish = ".output/public"
+functions = "netlify/functions"
+
+[[redirects]]
+from = "/legacy-about"
+to = "/about"
+status = 301

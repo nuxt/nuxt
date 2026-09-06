@@ -346,6 +346,15 @@ export interface Nuxt {
    */
   '_devServerListener'?: import('node:http').Server | import('node:https').Server
   /**
+   * Names of the bundler environments that build the app for the server, beyond `ssr`.
+   * Plugins registered with `addVitePlugin()` apply to these too, so that an environment a
+   * deploy target owns can bundle the app. Registered by the server builder, which is the
+   * only place that knows whether a server environment renders or is a runtime of its own
+   * (as Nitro's is).
+   * @internal
+   */
+  '_appServerEnvironments'?: Set<string>
+  /**
    * Module options functions collected from moduleDependencies.
    * @internal
    */
