@@ -73,6 +73,8 @@ export interface NuxtRendererOptions {
 /** Per-request Nuxt state the renderer reads from the request event, populated by the server runtime. */
 export interface NuxtRequestState {
   'noSSR'?: boolean
+  /** Routes the render asked the server runtime to prerender as well, as raw paths. */
+  'prerenderRoutes'?: string[]
   /** Set when the runtime re-enters the renderer to render an error page. */
   '~rendering-error'?: boolean
   /** Dev-only: CSS module URLs the builder has loaded for this request. */
@@ -83,4 +85,15 @@ export interface NuxtRequestState {
 
 export function getRequestState (event: RequestEvent): NuxtRequestState | undefined {
   return (event.context as { nuxt?: NuxtRequestState }).nuxt
+}
+
+/**
+ * Ask the server runtime to prerender `paths` alongside the route being rendered. What the
+ * runtime does with them is its own concern; a runtime that does not prerender ignores them.
+ */
+export function addPrerenderRoutes (event: RequestEvent, ...paths: string[]): void {
+  const context = event.context as { nuxt?: NuxtRequestState }
+  const state = context.nuxt ||= {}
+  state.prerenderRoutes ||= []
+  state.prerenderRoutes.push(...paths)
 }

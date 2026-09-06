@@ -158,8 +158,12 @@ export function useResponseHeader (header: string): import('vue').WritableComput
 export function prerenderRoutes (path: string | string[]): void {
   if (!import.meta.server || !import.meta.prerender) { return }
 
-  const paths = toArray(path)
-  useRequestEvent()?.res.headers.append('x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
+  const context = useRequestEvent()?.context
+  if (!context) { return }
+
+  const nuxt = context.nuxt ||= {}
+  nuxt.prerenderRoutes ||= []
+  nuxt.prerenderRoutes.push(...toArray(path))
 }
 
 const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'

@@ -8,7 +8,7 @@ import { joinURL } from 'ufo'
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
-import { prerenderRoutes, useRequestEvent, useRequestFetch } from '../composables/ssr'
+import { prerenderRoutes, useRequestFetch } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
@@ -108,7 +108,6 @@ const NuxtIsland = defineComponent({
     const serializedProps = computed(() => serializeIslandProps(props.props))
     const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
-    const event = useRequestEvent()
     const islandFetch = import.meta.server ? useRequestFetch() : $fetch
 
     let activeHead: ActiveHeadEntry<SerializableHead>
@@ -219,7 +218,6 @@ const NuxtIsland = defineComponent({
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
-        // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
@@ -241,9 +239,11 @@ const NuxtIsland = defineComponent({
         const result = r._data!
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
-          const hints = r.headers.get('x-nitro-prerender')
+          // the island render is a separate request, so its hints only reach the page that
+          // embedded it over the wire
+          const hints = r.headers.get('x-nuxt-prerender')
           if (hints) {
-            event!.res.headers.append('x-nitro-prerender', hints)
+            nuxtApp.runWithContext(() => prerenderRoutes(hints.split(',').map(hint => decodeURIComponent(hint.trim()))))
           }
         }
         setPayload(key, result)

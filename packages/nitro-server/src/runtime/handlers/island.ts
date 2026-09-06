@@ -20,6 +20,7 @@ import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse 
 import { isStyleOfModule, patchDevClientCss } from 'nuxt/internal/renderer/dev-css'
 import { urlHash } from 'nuxt/internal/renderer/url'
 import { createEvent } from '../utils/base'
+import { applyIslandPrerenderHints } from '../utils/prerender'
 import { recordDevClientCss } from '../utils/renderer/dev-client-css'
 
 import { rendererInstance } from '../utils/renderer/options'
@@ -81,12 +82,18 @@ export default {
 
       return toResponse(event, await prerenderIsland(event, islandPath))
     } catch (error) {
+      if (import.meta.prerender) {
+        applyIslandPrerenderHints(event)
+      }
       rethrowWithResponseHeaders(event, error)
     }
   },
 }
 
 function toResponse (event: H3Event, result: IslandRenderResult): Response {
+  if (import.meta.prerender) {
+    applyIslandPrerenderHints(event)
+  }
   return 'raw' in result
     ? returnRenderResponse(rendererInstance.options, event, result.raw)
     : new FastResponse(JSON.stringify(result), event.res)

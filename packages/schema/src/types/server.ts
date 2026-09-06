@@ -1,3 +1,5 @@
+import type { SharedAppConfig } from './config.ts'
+
 /**
  * Extension point through which the configured `server.builder` contributes the type of the
  * request event its runtime hands to the app layer.
@@ -93,6 +95,41 @@ export interface ServerRouteHandler {
 }
 
 /**
+ * Nuxt-owned per-request state, carried on the request event's context under `nuxt`.
+ *
+ * This is the channel the app layer and the SSR renderer use to communicate with the
+ * configured `server.builder`, which is free to translate it into whatever its own runtime
+ * understands (Nitro turns {@link NuxtRequestContext.prerenderRoutes} into the response header
+ * its crawler reads).
+ */
+export interface NuxtRequestContext {
+  'appConfig'?: SharedAppConfig
+  'noSSR'?: boolean
+  /**
+   * Routes to additionally prerender, as raw paths, collected from `prerenderRoutes()` and from
+   * the renderer's own hints while a route is prerendered.
+   */
+  'prerenderRoutes'?: string[]
+  /** @internal */
+  '~internal'?: boolean
+  /** @internal */
+  '~rendering-error'?: boolean
+  /**
+   * Dev-only: CSS module URLs the builder has loaded for this request, provided
+   * by a dev integration so the SSR renderer can emit the right stylesheet
+   * links / inline styles. @internal
+   */
+  '~devClientCss'?: string[]
+  /** @internal */
+  '~error-cause'?: unknown
+}
+
+/** The context of a {@link RequestEventFallback}, which carries Nuxt's own per-request state. */
+export interface RequestEventContext extends Record<string, unknown> {
+  nuxt?: NuxtRequestContext
+}
+
+/**
  * Fallback request event shape, described in web standards only. Used when no server builder
  * has contributed an event type.
  */
@@ -104,7 +141,7 @@ export interface RequestEventFallback {
     statusText?: string
     readonly headers: Headers
   }
-  readonly context: Record<string, unknown>
+  readonly context: RequestEventContext
 }
 
 /**
