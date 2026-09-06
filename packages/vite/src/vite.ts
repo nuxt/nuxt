@@ -23,7 +23,7 @@ import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
-import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize.ts'
+import { OptimizeDepsPlugin } from './plugins/optimize-deps.ts'
 import { distDir } from './dirs.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
@@ -223,7 +223,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           baseURL: nuxt.options.app.baseURL,
         }),
         ReplacePlugin(),
-        LayerDepOptimizePlugin(nuxt),
+        OptimizeDepsPlugin(nuxt),
         SSRStylesPlugin(nuxt),
         EnvironmentsPlugin(nuxt),
         // Add type-checking
