@@ -4,16 +4,21 @@ import { addRoute, createRouter as createRou3Router } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { defineComponent, h } from 'vue'
-import type { H3Event } from 'h3'
 import type { NuxtPage } from 'nuxt/schema'
 
 import { collectRou3PagePatterns } from '../../nuxt/src/pages/utils.ts'
 import { normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
-import { throwIfUnmatchedPagePath } from '../src/runtime/utils/renderer/early-404.ts'
+import { throwIfUnmatchedPagePath } from '../../nuxt/src/runtime/server/renderer/early-404.ts'
+import { setServerRuntime } from '../../nuxt/src/runtime/server/renderer/runtime.ts'
+import type { NuxtRendererOptions, RendererEvent } from '../../nuxt/src/runtime/server/renderer/runtime.ts'
+
+setServerRuntime({
+  createError: (init: { status: number, statusText?: string, data?: unknown }) => Object.assign(new Error(init.statusText), init),
+} as unknown as NuxtRendererOptions)
 
 let matcher: ((method: string, path: string) => unknown) | undefined
 
-vi.mock('#internal/nuxt/nitro-config.mjs', () => ({
+vi.mock('nuxt/renderer-config', () => ({
   get NUXT_PAGE_MATCHER () {
     return matcher
   },
@@ -88,12 +93,12 @@ function compileMatcher (patterns: string[]) {
   return new Function(`${compileRouterToString(router, 'NUXT_PAGE_MATCHER')}\nreturn NUXT_PAGE_MATCHER`)() as (method: string, path: string) => unknown
 }
 
-function createEvent (url: string): H3Event {
+function createEvent (url: string): RendererEvent {
   return {
-    path: url,
-    method: 'GET',
-    node: { req: { method: 'GET', url, headers: { host: 'localhost' } }, res: { setHeader: () => {} } },
-  } as unknown as H3Event
+    url: new URL(url, 'http://localhost'),
+    req: { method: 'GET' },
+    res: { headers: new Headers() },
+  } as unknown as RendererEvent
 }
 
 function isEarly404 (url: string) {
@@ -101,7 +106,7 @@ function isEarly404 (url: string) {
     throwIfUnmatchedPagePath(createEvent(url), {})
     return false
   } catch (error) {
-    if ((error as { statusCode?: number }).statusCode !== 404) { throw error }
+    if ((error as { status?: number }).status !== 404) { throw error }
     return true
   }
 }

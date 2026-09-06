@@ -1,7 +1,7 @@
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
-import type { RequestEvent } from '@nuxt/schema'
+import type { RuntimeRequestEvent } from '@nuxt/schema'
 import { $fetch as _$fetch } from '#build/fetch'
 
 import type { NuxtApp } from '../nuxt'
@@ -13,10 +13,10 @@ import { useHead } from './head'
 const $fetch = _$fetch as TypedFetch
 
 /** The request event, as declared by the configured `server.builder` (`H3Event` under `@nuxt/nitro-server`). */
-export type { RequestEvent } from '@nuxt/schema'
+export type { RuntimeRequestEvent } from '@nuxt/schema'
 
 /** @since 3.0.0 */
-export function useRequestEvent (nuxtApp?: NuxtApp): RequestEvent | undefined {
+export function useRequestEvent (nuxtApp?: NuxtApp): RuntimeRequestEvent | undefined {
   if (import.meta.client) { return }
   nuxtApp ||= useNuxtApp()
   return nuxtApp.ssrContext?.event
@@ -57,10 +57,10 @@ export function useRequestFetch (): TypedFetch {
 }
 
 /** @since 3.0.0 */
-export function setResponseStatus (event: RequestEvent, code?: number, message?: string): void
+export function setResponseStatus (event: RuntimeRequestEvent, code?: number, message?: string): void
 /** @deprecated Pass `event` as first option. */
 export function setResponseStatus (code: number, message?: string): void
-export function setResponseStatus (arg1: RequestEvent | number | undefined, arg2?: number | string, arg3?: string): void {
+export function setResponseStatus (arg1: RuntimeRequestEvent | number | undefined, arg2?: number | string, arg3?: string): void {
   if (import.meta.client) { return }
   if (arg1 && typeof arg1 !== 'number') {
     return _setResponseStatus(arg1, arg2 as number | undefined, arg3)

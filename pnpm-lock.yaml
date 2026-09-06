@@ -905,9 +905,6 @@ importers:
 
   packages/nitro-server:
     dependencies:
-      '@nuxt/devalue':
-        specifier: ^2.0.2
-        version: 2.0.2
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -1020,6 +1017,9 @@ importers:
       '@nuxt/cli':
         specifier: catalog:build
         version: '@nuxt/cli-nightly@4.0.0-20260831-132907-8bcf1bc(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)'
+      '@nuxt/devalue':
+        specifier: ^2.0.2
+        version: 2.0.2
       '@nuxt/devtools':
         specifier: catalog:build
         version: 3.4.2(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))(supports-color@10.2.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3))
@@ -1068,6 +1068,9 @@ importers:
       defu:
         specifier: catalog:app-runtime
         version: 6.1.7
+      destr:
+        specifier: catalog:nitro-runtime
+        version: 2.0.5
       devalue:
         specifier: catalog:app-runtime
         version: 5.9.2
@@ -1191,6 +1194,9 @@ importers:
       vue:
         specifier: 3.5.42
         version: 3.5.42(typescript@6.0.3)
+      vue-bundle-renderer:
+        specifier: catalog:app-runtime
+        version: 2.3.2
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.11
@@ -1234,9 +1240,6 @@ importers:
       vitest:
         specifier: catalog:dev
         version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.11)(happy-dom@20.12.0)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
-      vue-bundle-renderer:
-        specifier: catalog:build
-        version: 2.3.2
       vue-sfc-transformer:
         specifier: catalog:dev
         version: 0.2.5(@volar/typescript@2.4.28(typescript@6.0.3))(@vue/compiler-core@3.5.42)(@vue/language-core@3.3.11)(esbuild@0.28.2)(rolldown@1.2.6)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
@@ -2152,6 +2155,12 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+
+  test/fixtures/standalone-renderer:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/suspense:
     dependencies:
@@ -14303,9 +14312,9 @@ snapshots:
     dependencies:
       '@valibot/to-json-schema': 1.7.1(valibot@1.4.2(typescript@6.0.3))
       birpc: 4.0.0
-      crossws: 0.4.10(srvx@0.12.5)
+      crossws: 0.4.12(srvx@0.12.5)
       destr: 2.0.5
-      h3: 2.0.1-rc.22(crossws@0.4.10(srvx@0.12.5))
+      h3: 2.0.1-rc.22(crossws@0.4.12(srvx@1.0.3))
       mrmime: 2.0.1
       nostics: 1.2.0
       pathe: 2.0.3
@@ -15066,12 +15075,12 @@ snapshots:
       ufo: 1.6.4
       uncrypto: 0.1.3
 
-  h3@2.0.1-rc.22(crossws@0.4.10(srvx@0.12.5)):
+  h3@2.0.1-rc.22(crossws@0.4.12(srvx@1.0.3)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.22
     optionalDependencies:
-      crossws: 0.4.10(srvx@0.12.5)
+      crossws: 0.4.12(srvx@1.0.3)
     optional: true
 
   h3@2.0.1-rc.26(crossws@0.4.12(srvx@0.12.5)):

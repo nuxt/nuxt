@@ -170,6 +170,27 @@ export interface NuxtServerBuildOutput {
 }
 
 /**
+ * Where the app builder leaves the artifacts a server build consumes, for a server builder
+ * that bundles or serves them from disk rather than through the `nuxt/*` module bodies of
+ * {@link NuxtBuildOutputs}.
+ *
+ * Paths are functions because the app builder may only know them once its configuration is
+ * resolved.
+ *
+ * @internal
+ */
+export interface NuxtServerBuildInput {
+  /** Absolute path to the SSR entry the app builder emits, the input of a server bundle. */
+  serverEntry: () => string
+  /** Absolute path to the directory the SSR build's chunks land in. */
+  serverDir: () => string
+  /** Absolute path to the directory the client build's assets land in. */
+  clientDir: () => string
+  /** Absolute path to the client manifest `vue-bundle-renderer` renders against. */
+  clientManifest: () => string
+}
+
+/**
  * What a server builder can do, so consumers need not infer it from its name.
  *
  * @internal
@@ -243,6 +264,7 @@ export interface NuxtServerBuild {
    * builder's own build.
    */
   buildsSeparately: boolean
+  input: NuxtServerBuildInput
   output: NuxtServerBuildOutput
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime

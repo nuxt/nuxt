@@ -3,7 +3,7 @@ import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from '@nuxt/nitro-server/h3'
-import type { RequestEvent } from '@nuxt/schema'
+import type { RuntimeRequestEvent } from '@nuxt/schema'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
@@ -291,7 +291,7 @@ function writeClientCookie (name: string, value: string | undefined, opts: Cooki
   }
 }
 
-function writeServerCookie (event: RequestEvent, name: string, value: string | undefined, opts: CookieOptions = {}) {
+function writeServerCookie (event: RuntimeRequestEvent, name: string, value: string | undefined, opts: CookieOptions = {}) {
   if (event) {
     const serializeOpts = toSerializeOptions(opts)
     // update if value is set

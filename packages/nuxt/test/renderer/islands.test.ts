@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { NuxtSSRContext } from 'nuxt/app'
 
-import { replaceIslandTeleports } from '../src/runtime/utils/renderer/islands.ts'
+import { replaceIslandTeleports } from '../../src/runtime/server/renderer/islands.ts'
 
 function ssrContext (teleports: Record<string, string>) {
   return { teleports } as unknown as NuxtSSRContext

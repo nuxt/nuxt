@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { NuxtSSRContext } from 'nuxt/app'
 
-import { detectClientScriptReliance, warnNoScriptsClientReliance } from '../src/runtime/utils/renderer/no-scripts.ts'
+import { detectClientScriptReliance, warnNoScriptsClientReliance } from '../../src/runtime/server/renderer/no-scripts.ts'
 
 function ssrContext (context: Partial<NuxtSSRContext> = {}) {
   return context as unknown as NuxtSSRContext

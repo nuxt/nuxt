@@ -1,4 +1,4 @@
-import type { AppRouteRules, RequestEvent } from '@nuxt/schema'
+import type { AppRouteRules, RuntimeRequestEvent } from '@nuxt/schema'
 import type { $Fetch } from 'nitropack/types'
 import { useRuntimeConfig } from '../nuxt'
 import { manifestDiagnostics } from '../diagnostics/manifest'
@@ -64,11 +64,11 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 }
 
 /** @since 3.7.4 */
-export function getRouteRules (event: RequestEvent): AppRouteRules
+export function getRouteRules (event: RuntimeRequestEvent): AppRouteRules
 export function getRouteRules (options: { path: string }): Record<string, any>
 /** @deprecated use `getRouteRules({ path })` instead */
 export function getRouteRules (url: string): Record<string, any>
-export function getRouteRules (arg: string | RequestEvent | { path: string }) {
+export function getRouteRules (arg: string | RuntimeRequestEvent | { path: string }) {
   const path = typeof arg === 'string' ? arg : arg.path
   try {
     // The compiled matcher case-folds the lookup path itself (unless routing is

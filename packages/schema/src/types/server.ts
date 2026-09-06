@@ -119,8 +119,11 @@ export type ResolveRequestEvent<T> = T extends { event: infer E } ? E : RequestE
 /**
  * The request event handed to server-side composables such as `useRequestEvent()`, as declared
  * by the configured `server.builder`, or {@link RequestEventFallback} when none has declared it.
+ *
+ * This is the runtime's own event, in whatever shape it gives it. Server code that is written
+ * against `nuxt/server` reads the portable `RequestEvent` from there instead.
  */
-export type RequestEvent = ResolveRequestEvent<ServerTypes>
+export type RuntimeRequestEvent = ResolveRequestEvent<ServerTypes>
 
 /**
  * The route rules the app layer reads, as compiled into the route-rules matcher: keys the

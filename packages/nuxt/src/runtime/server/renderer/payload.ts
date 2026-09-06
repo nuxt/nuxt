@@ -1,22 +1,20 @@
-import type { NitroRouteRules, RenderResponse } from 'nitropack/types'
-import { getResponseStatus, getResponseStatusText } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
-import { serverDiagnostics } from '../../diagnostics'
+import { rendererDiagnostics } from './diagnostics'
+import type { CachedResponse, RendererEvent, RendererRouteRules } from './runtime'
 
-import { appId, multiApp } from '#internal/nuxt.config.mjs'
-import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, appId, multiApp } from 'nuxt/renderer-config'
 
-export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
+export function renderPayloadResponse (ssrContext: NuxtSSRContext, event: RendererEvent): CachedResponse {
   return {
     body: NUXT_JSON_PAYLOADS
       ? encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers']))
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
-    statusCode: getResponseStatus(ssrContext.event),
-    statusMessage: getResponseStatusText(ssrContext.event),
+    statusCode: event.res.status,
+    statusMessage: event.res.statusText,
     headers: {
       'content-type': NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
       'x-powered-by': 'Nuxt',
@@ -75,7 +73,7 @@ function escapeJsString (str: string): string {
     .replaceAll('<', '\\u003C')
 }
 
-export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: NitroRouteRules, data?: any, src?: string }): Script[] {
+export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: RendererRouteRules, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const nuxtData = devalue(opts.data)
   if (opts.src) {
@@ -127,7 +125,7 @@ function warnOnLargePayload (ssrContext: NuxtSSRContext, data: Partial<NuxtPaylo
     .slice(0, 5)
     .map(([key, keySize]) => `\`${key}\` (${formatPayloadSize(keySize)})`)
     .join('\n  - ')
-  serverDiagnostics.NUXT_E8006({ path: ssrContext.url, size: formatPayloadSize(size), keys: keys || undefined })
+  rendererDiagnostics.NUXT_E8006({ path: ssrContext.url, size: formatPayloadSize(size), keys: keys || undefined })
 }
 
 interface SplitPayload {

@@ -11,7 +11,7 @@ import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHoo
 import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, NuxtSSRContext, PageMeta, RequestEvent } from '#app'
+import type { NuxtError, NuxtSSRContext, PageMeta, RuntimeRequestEvent } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -1044,7 +1044,7 @@ describe('request event typing', () => {
   it('resolves the event to the one contributed by `@nuxt/nitro-server`', () => {
     expectTypeOf(useRequestEvent()).toEqualTypeOf<H3Event | undefined>()
     expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
-    expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
+    expectTypeOf<RuntimeRequestEvent>().toEqualTypeOf<H3Event>()
   })
 })
 

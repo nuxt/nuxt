@@ -18,7 +18,7 @@ describe('fallback request event shape', () => {
 })
 
 describe('`ServerTypes` registry', () => {
-  // `RequestEvent` resolves against whatever the surrounding program augmented into
+  // `RuntimeRequestEvent` resolves against whatever the surrounding program augmented into
   // `ServerTypes`, so the resolution is exercised through stand-in registries here
   it('resolves the event from a contributed event type', () => {
     interface Contributed { event: H3Event }

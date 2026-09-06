@@ -1,35 +1,39 @@
-import { createEvent } from 'h3'
-import type { H3Event } from 'h3'
 import { describe, expect, it, vi } from 'vitest'
 
-import { throwIfUnmatchedPagePath } from '../src/runtime/utils/renderer/early-404.ts'
+import { throwIfUnmatchedPagePath } from '../../src/runtime/server/renderer/early-404.ts'
+import { setServerRuntime } from '../../src/runtime/server/renderer/runtime.ts'
+import type { NuxtRendererOptions, RendererEvent } from '../../src/runtime/server/renderer/runtime.ts'
 
-vi.mock('#internal/nuxt/nitro-config.mjs', () => ({
+setServerRuntime({
+  createError: (init: { status: number, statusText?: string, data?: unknown }) => Object.assign(new Error(init.statusText), {
+    status: init.status,
+    data: init.data,
+  }),
+} as unknown as NuxtRendererOptions)
+
+vi.mock('nuxt/renderer-config', () => ({
   NUXT_PAGE_MATCHER: (_method: string, path: string) => path === '/known' ? 1 : undefined,
 }))
 
 function event (path: string, method = 'GET') {
-  const headers: Record<string, string> = {}
-  const req = { method, url: path, headers: { host: 'localhost' } }
-  const res = {
-    setHeader: (name: string, value: string) => { headers[name] = value },
-    getHeader: (name: string) => headers[name],
-  }
-  const h3Event = createEvent(req as any, res as any)
-  return { h3Event, headers }
+  return {
+    url: new URL(path, 'http://localhost'),
+    req: { method },
+    res: { headers: new Headers() },
+  } as unknown as RendererEvent
 }
 
 function cacheControlFor (path: string, method?: string, maxAge?: number) {
-  return errorFor(path, method, maxAge)?.headers['cache-control'] ?? null
+  return errorFor(path, method, maxAge)?.headers.get('cache-control') ?? null
 }
 
 function errorFor (path: string, method?: string, maxAge?: number) {
   const routeOptions = maxAge === undefined ? {} : { cache: { maxAge } }
-  const { h3Event, headers } = event(path, method)
+  const requestEvent = event(path, method)
   try {
-    throwIfUnmatchedPagePath(h3Event as H3Event, routeOptions)
+    throwIfUnmatchedPagePath(requestEvent, routeOptions)
   } catch (error) {
-    return { ...error as { statusCode: number, data: { path: string } }, headers }
+    return { ...error as { status: number, data: { path: string } }, headers: requestEvent.res.headers }
   }
   return undefined
 }
@@ -44,7 +48,7 @@ describe('throwIfUnmatchedPagePath', () => {
   it('throws a 404 carrying the request path', () => {
     const error = errorFor('/wp-login.php?redirect=1')
 
-    expect(error?.statusCode).toBe(404)
+    expect(error?.status).toBe(404)
     expect(error?.data.path).toBe('/wp-login.php?redirect=1')
   })
 

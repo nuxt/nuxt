@@ -12,7 +12,7 @@ export { useCookie, refreshCookie } from './cookie'
 export type { CookieOptions, CookieRef } from './cookie'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { onPrehydrate, prerenderRoutes, useRequestHeader, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus, useResponseHeader } from './ssr'
-export type { RequestEvent } from './ssr'
+export type { RuntimeRequestEvent } from './ssr'
 export { onNuxtReady } from './ready'
 export { abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, onBeforeRouteLeave, onBeforeRouteUpdate, setPageLayout, navigateTo, useRoute, useRouter } from './router'
 export type { AddRouteMiddlewareOptions, Early404IncompatibleRouterMethods, RouteMiddleware } from './router'

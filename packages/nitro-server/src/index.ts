@@ -4,7 +4,7 @@ import { existsSync, promises as fsp, mkdirSync, readFileSync, writeFileSync } f
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerRouteSegment } from '@nuxt/schema'
+import type { Nuxt, NuxtOptions, ServerRouteSegment } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import { isAbsolute, join, relative, resolve } from 'pathe'
@@ -13,7 +13,7 @@ import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
-import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
+import { BUILD_OUTPUT_SPECIFIERS, bundlerDiagnostics, getRendererConfig, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors, setHeader, setResponseStatus } from 'h3'
@@ -46,15 +46,6 @@ const logLevelMapReverse = {
   info: 3,
   verbose: 3,
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
-
-const NUXT_BUILD_OUTPUT_MAP: Record<string, keyof NuxtBuildOutputs> = {
-  'nuxt/entry': 'serverEntry',
-  'nuxt/manifest': 'clientManifest',
-  'nuxt/precomputed': 'clientPrecomputed',
-  'nuxt/styles': 'ssrStyles',
-  'nuxt/entry-chunk': 'entryChunkName',
-  'nuxt/entry-ids': 'entryIds',
-}
 
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
@@ -271,15 +262,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
-      '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
       // Build output defaults; overridden by builders via setBuildOutput(). Kept
       // here (rather than in the loop below) so they resolve in the nitro
       // environment even when the loop is scoped away from it.
       'nuxt/entry-chunk': () => nuxt.buildOutputs.entryChunkName(),
       'nuxt/entry-ids': () => nuxt.buildOutputs.entryIds(),
-      // overridden by head module when SSR streaming is enabled
-      '#internal/streaming-iife-chunk.mjs': () => `export const iifeChunkFileName = undefined`,
-      '#internal/nuxt/nitro-config.mjs': () => {
+      // build-time configuration of the SSR renderer, kept as inlined `const`s so
+      // the bundler can fold away the branches this build does not use
+      'nuxt/renderer-config': async () => {
         const hasCachedRoutes = Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
         // `href_matches` patterns (URLPattern syntax) for routes served under a
         // `noScripts` route rule, so scripted documents can speculatively
@@ -300,29 +290,30 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         // is server-rendered at build time
         const noSSRRoutes = ['/index.html', '/200.html', '/404.html'].filter(route => !errorPages.includes(Number(route.slice(1, -'.html'.length))))
         return [
-          `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
-          `export const NUXT_PRERENDER_ERROR_PAGES = ${JSON.stringify(errorPages)}`,
-          `export const NUXT_PRERENDER_NO_SSR_ROUTES = ${JSON.stringify(noSSRRoutes)}`,
-          `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
-          `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
-          `export const NUXT_NO_SCRIPTS_PROD = ${nuxt.options.features.noScripts === 'production'}`,
-          `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
-          `export const NUXT_VIEW_TRANSITIONS = ${!!(nuxt.options.app.viewTransition && typeof nuxt.options.app.viewTransition === 'object' && nuxt.options.app.viewTransition.enabled)}`,
-          `export const NUXT_NO_SCRIPTS_PATTERNS = ${JSON.stringify(noScriptsPatterns)}`,
-          `export const NUXT_PAGE_PATTERNS = ${JSON.stringify(pagePatterns)}`,
-          `export const NUXT_EARLY_404 = ${early404Patterns.length > 0}`,
-          `export ${compilePageMatcher(early404Patterns)}`,
-          `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
-          `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
-          `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
-          `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
-          `export const NUXT_PAYLOAD_EXTRACTION = ${nuxt.options.experimental.payloadExtraction !== false}`,
-          `export const NUXT_PAYLOAD_INLINE = ${nuxt.options.experimental.payloadExtraction !== true}`,
-          `export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${hasCachedRoutes}`,
-          `export const NUXT_SSR_STREAMING = ${!!(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled)}`,
-          `export const NUXT_SSR_STREAMING_BOT_RE = ${typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.botRegex instanceof RegExp ? String(nuxt.options.experimental.ssrStreaming.botRegex) : '/^$/'}`,
+          // islands depend on the resolved app, which only the app build knows
+          `import { componentIslands as _componentIslands, componentIslandsActive as _componentIslandsActive } from '#internal/nuxt.config.mjs'`,
+          getRendererConfig({
+            unheadOptions: '#internal/unhead-options.mjs',
+            headConfig: '#internal/unhead.config.mjs',
+            overrides: {
+              NUXT_PRERENDER_ERROR_PAGES: JSON.stringify(errorPages),
+              NUXT_PRERENDER_NO_SSR_ROUTES: JSON.stringify(noSSRRoutes),
+              NUXT_NO_SCRIPTS_PATTERNS: JSON.stringify(noScriptsPatterns),
+              NUXT_PAGE_PATTERNS: JSON.stringify(pagePatterns),
+              NUXT_EARLY_404: String(early404Patterns.length > 0),
+              NUXT_PAGE_MATCHER: compilePageMatcher(early404Patterns),
+              NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(hasCachedRoutes),
+              spaTemplate: JSON.stringify(await spaLoadingTemplate(nuxt)),
+              componentIslands: '_componentIslands',
+              componentIslandsActive: '_componentIslandsActive',
+            },
+          }, nuxt),
         ].join('\n')
       },
+      '#internal/nuxt/nitro-config.mjs': () => [
+        `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
+        `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
+      ].join('\n'),
     },
     routeRules: {
       ...(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
@@ -597,7 +588,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.options.alias['#app-manifest'] = mockProxy
   }
 
-  for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
+  for (const [specifier, key] of Object.entries(BUILD_OUTPUT_SPECIFIERS)) {
     if (specifier === 'nuxt/entry-chunk' || specifier === 'nuxt/entry-ids') {
       continue // already registered above in the virtual block
     }
@@ -1258,18 +1249,18 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
 }
 
 /**
- * Compile page route patterns into a static `NUXT_PAGE_MATCHER` matcher
- * declaration, so the renderer needs no runtime router construction.
+ * Compile page route patterns into a static matcher expression, so the renderer
+ * needs no runtime router construction.
  */
 function compilePageMatcher (patterns: string[]): string {
   if (!patterns.length) {
-    return 'const NUXT_PAGE_MATCHER = undefined'
+    return 'undefined'
   }
   const router = createRou3Router()
   for (const pattern of patterns) {
     addRoute(router, '', pattern, 1)
   }
-  return compileRouterToString(router, 'NUXT_PAGE_MATCHER')
+  return compileRouterToString(router)
 }
 
 /**
