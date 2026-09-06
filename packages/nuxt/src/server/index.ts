@@ -15,13 +15,13 @@
 import { parse, serialize } from 'cookie-es'
 import type { CookieSerializeOptions } from 'cookie-es'
 import { parseQuery } from 'ufo'
-import type { AppRouteRules, RequestEventFallback, RuntimeConfig } from 'nuxt/schema'
+import type { AppRouteRules, RequestEventContext, RequestEventFallback, RuntimeConfig } from 'nuxt/schema'
 import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runtime-config'
 
 import { NUXT_ERROR_SIGNATURE, createError } from '../app/error'
 import type { NuxtError } from '../app/error'
 
-export type { AppRouteRules, RequestEventFallback, ServerRoutes } from 'nuxt/schema'
+export type { AppRouteRules, RequestEventContext, RequestEventFallback, ServerRoutes } from 'nuxt/schema'
 export type { NuxtErrorDetails } from '../app/error'
 export type { NuxtErrorJSON } from '../app/types'
 
@@ -60,7 +60,7 @@ export interface RequestEvent {
    * Both `h3` majors carry it, so it is the one part of the runtime's event the portable
    * surface exposes directly.
    */
-  readonly context: Record<string, unknown>
+  readonly context: RequestEventContext
 }
 
 /**

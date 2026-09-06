@@ -142,7 +142,6 @@ export function isCachedPayloadRoute (url: string): boolean {
 }
 
 async function _isPrerenderedInManifest (url: string) {
-  // Note: Alternative for server is checking x-nitro-prerender header
   if (!appManifest) {
     return false
   }

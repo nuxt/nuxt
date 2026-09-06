@@ -22,7 +22,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
 import { extractCspNonce } from './csp-nonce'
-import { appEvent, getRequestState } from './runtime'
+import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RenderedResponse, RendererEvent, RendererRouteRules } from './runtime'
@@ -295,8 +295,8 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
 
   if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
-    // Hint nitro to prerender payload for this route
-    event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    // the payload for this route is prerendered alongside it
+    addPrerenderRoutes(event, joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Warm the cache for prerendered `_payload.json` requests. Confined to prerender: a
     // runtime write would persist one principal's payload under a path-only key.
     if (payloadCache) {

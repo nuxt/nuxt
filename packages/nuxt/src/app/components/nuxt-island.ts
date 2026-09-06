@@ -1,7 +1,6 @@
 import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsType, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
-import { appendResponseHeader } from '@nuxt/nitro-server/h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -220,7 +219,6 @@ const NuxtIsland = defineComponent({
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
-        // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
@@ -229,18 +227,20 @@ const NuxtIsland = defineComponent({
         ...props.context,
         props: props.props ? serializedProps.value : undefined,
       }))
+      // the island render is a separate request, so its hints only reach the page that
+      // embedded it over the wire, including when the render failed part-way
+      // TODO: support passing on more headers
+      if (import.meta.server && import.meta.prerender) {
+        const hints = r.headers.get('x-nuxt-prerender')
+        if (hints) {
+          nuxtApp.runWithContext(() => prerenderRoutes(hints.split(',').map(hint => decodeURIComponent(hint.trim()))))
+        }
+      }
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
         const result = await r.json()
-        // TODO: support passing on more headers
-        if (import.meta.server && import.meta.prerender) {
-          const hints = r.headers.get('x-nitro-prerender')
-          if (hints) {
-            appendResponseHeader(event!, 'x-nitro-prerender', hints)
-          }
-        }
         setPayload(key, result)
         return result
       } catch (e: any) {
