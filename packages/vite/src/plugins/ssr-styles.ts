@@ -4,6 +4,7 @@ import { basename, dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
 import { setBuildOutput } from '@nuxt/kit'
+import { useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import genericNames from 'generic-names'
@@ -433,7 +434,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         name: `nuxt:ssr-styles:${environment.name}`,
         enforce: 'pre',
         buildStart () {
-          if (this.environment.name === 'ssr') {
+          // Where the server build is a pass of its own, it reads the map back off disk
+          // from the directory this environment writes it to. Where it is not, the map is
+          // an output of the very bundle that would import it, so it cannot be named as a
+          // file here and is emitted in `generateBundle` instead.
+          if (this.environment.name === 'ssr' && useServerBuild(nuxt).buildsSeparately) {
             const stylesPath = resolve(this.environment.config.build.outDir, 'styles.mjs')
             setBuildOutput('ssrStyles', () => [
               `export { default } from ${JSON.stringify(stylesPath)}`,
@@ -566,6 +571,18 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             )}`,
           ].join('\n'),
           })
+
+          // A server build that is not a pass of its own bundles the map rather than
+          // reading the emitted file, so the module body is the map itself, importing each
+          // chunk by the name it lands under beside it.
+          if (!useServerBuild(nuxt).buildsSeparately) {
+            const entries = Object.entries(emitted).map(([key, value]) =>
+              [key, `() => import('./${basename(this.getFileName(value))}').then(r => r.default || r || [])`]) as [string, string][]
+            setBuildOutput('ssrStyles', () => [
+              `export default ${genObjectFromRawEntries(entries)}`,
+              `export const inlinedCSS = ${serializeInlinedCSSConditions()}`,
+            ].join('\n'), nuxt)
+          }
         },
         async buildEnd () {
           if (environment.name !== 'ssr') { return }

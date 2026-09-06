@@ -1,5 +1,6 @@
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
+import { useServerBuild } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
 import escapeStringRegexp from 'escape-string-regexp'
 
@@ -18,7 +19,10 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     applyToEnvironment (environment) {
-      if (nuxt.options.dev || environment.name !== 'ssr') {
+      // A server build that is a pass of its own resolves these itself, so the app build
+      // leaves them for it as absolute paths. A server build that is not a pass of its own
+      // *is* this environment, and its output is the deployable, so it bundles them.
+      if (nuxt.options.dev || environment.name !== 'ssr' || !useServerBuild(nuxt).buildsSeparately) {
         return false
       }
       return {

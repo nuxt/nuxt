@@ -9,7 +9,7 @@ import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { setBuildOutput } from '@nuxt/kit'
-import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
 
@@ -23,8 +23,50 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   // Default empty manifest so the build output is loadable before the real one is populated.
   let manifestCode = 'export default {}'
 
-  setBuildOutput('clientPrecomputed', () => precomputedCode)
-  setBuildOutput('clientManifest', () => manifestCode)
+  /**
+   * Whether the server build bundles the app rather than being a pass of its own, in which
+   * case it reads these outputs *while* it bundles, before `closeBundle` has run for it.
+   * Finalisation is therefore pulled by whoever reads them rather than pushed by the hook.
+   */
+  const serverBundlesApp = !useServerBuild(nuxt).buildsSeparately
+
+  let finalized: Promise<void> | undefined
+  const finalize = () => (finalized ??= finalizeBuildManifest())
+
+  setBuildOutput('clientPrecomputed', async () => {
+    if (serverBundlesApp && !nuxt.options.dev) { await finalize() }
+    return precomputedCode
+  })
+  setBuildOutput('clientManifest', async () => {
+    // in dev there is no client bundle to read, and the server build bundles the renderer
+    // itself, so the manifest it renders against is the dev one
+    if (serverBundlesApp && nuxt.options.dev) {
+      return 'export default ' + serialize(normalizeViteManifest(buildDevClientManifest()))
+    }
+    if (serverBundlesApp) { await finalize() }
+    return manifestCode
+  })
+
+  // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
+  const buildDevClientManifest = (): RendererManifest => ({
+    '@vite/client': {
+      isEntry: true,
+      file: '@vite/client',
+      css: [],
+      module: true,
+      resourceType: 'script',
+    },
+    ...nuxt.options.features.noScripts === 'all'
+      ? {}
+      : {
+          [clientEntry]: {
+            isEntry: true,
+            file: clientEntry,
+            module: true,
+            resourceType: 'script',
+          },
+        },
+  })
 
   return {
     name: 'nuxt:client-manifest',
@@ -46,60 +88,47 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       }
     },
     async closeBundle () {
-      // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
-      const devClientManifest: RendererManifest = {
-        '@vite/client': {
-          isEntry: true,
-          file: '@vite/client',
-          css: [],
-          module: true,
-          resourceType: 'script',
-        },
-        ...nuxt.options.features.noScripts === 'all'
-          ? {}
-          : {
-              [clientEntry]: {
-                isEntry: true,
-                file: clientEntry,
-                module: true,
-                resourceType: 'script',
-              },
-            },
-      }
-
-      const clientManifest = nuxt.options.dev ? devClientManifest : JSON.parse(readManifestFromDisk()) as ViteClientManifest
-      const manifestEntries = Object.values(clientManifest)
-
-      const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
-      const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
-
-      for (const entry of manifestEntries) {
-        entry.file &&= entry.file.replace(BASE_RE, '')
-        for (const item of ['css', 'assets'] as const) {
-          entry[item] &&= entry[item].map((i: string) => i.replace(BASE_RE, ''))
-        }
-      }
-
-      if (disableCssCodeSplit) {
-        for (const entry of manifestEntries) {
-          if (entry.file?.endsWith('.css')) {
-            clientManifest[key]!.css ||= []
-            ;(clientManifest[key]!.css as string[]).push(entry.file)
-            break
-          }
-        }
-      }
-
-      const manifest = normalizeViteManifest(clientManifest)
-      await nuxt.callHook('build:manifest', manifest)
-
-      precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
-      manifestCode = 'export default ' + serialize(manifest)
-
-      if (!nuxt.options.dev) {
-        await rm(manifestFile, { force: true })
-      }
+      // Where the server build reads these outputs while it bundles, finalisation has
+      // already been pulled by it (see `finalize`), and the manifest is gone from the
+      // client output by now.
+      if (serverBundlesApp && !nuxt.options.dev) { return }
+      await finalize()
     },
+  }
+
+  async function finalizeBuildManifest (): Promise<void> {
+    const clientManifest = nuxt.options.dev ? buildDevClientManifest() : JSON.parse(readManifestFromDisk()) as ViteClientManifest
+    const manifestEntries = Object.values(clientManifest)
+
+    const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
+    const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
+
+    for (const entry of manifestEntries) {
+      entry.file &&= entry.file.replace(BASE_RE, '')
+      for (const item of ['css', 'assets'] as const) {
+        entry[item] &&= entry[item].map((i: string) => i.replace(BASE_RE, ''))
+      }
+    }
+
+    if (disableCssCodeSplit) {
+      for (const entry of manifestEntries) {
+        if (entry.file?.endsWith('.css')) {
+          clientManifest[key]!.css ||= []
+          ;(clientManifest[key]!.css as string[]).push(entry.file)
+          break
+        }
+      }
+    }
+
+    const manifest = normalizeViteManifest(clientManifest)
+    await nuxt.callHook('build:manifest', manifest)
+
+    precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
+    manifestCode = 'export default ' + serialize(manifest)
+
+    if (!nuxt.options.dev) {
+      await rm(manifestFile, { force: true })
+    }
   }
 
   function readManifestFromDisk (): string {
