@@ -7,6 +7,7 @@ import { serverFetch } from 'nitro'
 import type { SSRErrorInput } from '../utils/error'
 import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
 import { withBaseURL } from '../utils/base'
+import { applyPrerenderHints } from '../utils/prerender'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -17,6 +18,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const status = error.status || 500
   const headers = new Headers(error.headers)
   appendVary(headers, 'accept, sec-fetch-mode')
+  if (import.meta.prerender && 'context' in event) {
+    applyPrerenderHints(event as H3Event, headers)
+  }
   if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
     const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [

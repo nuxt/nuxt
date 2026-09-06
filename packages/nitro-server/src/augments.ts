@@ -4,7 +4,7 @@ import type { ServerImportsOptions } from './auto-imports.ts'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { HookResult, RuntimeConfig, SharedAppConfig, TSReference } from 'nuxt/schema'
+import type { HookResult, NuxtRequestContext, RuntimeConfig, TSReference } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`. Extends Nitro's own
@@ -325,22 +325,7 @@ declare module 'nuxt/schema' {
   }
 }
 
-export interface NuxtRequestContext {
-  'appConfig'?: SharedAppConfig
-  'noSSR'?: boolean
-  /** @internal */
-  '~internal'?: boolean
-  /** @internal */
-  '~rendering-error'?: boolean
-  /**
-   * Dev-only: CSS module URLs the builder has loaded for this request, provided
-   * by a dev integration so the SSR renderer can emit the right stylesheet
-   * links / inline styles. @internal
-   */
-  '~devClientCss'?: string[]
-  /** @internal */
-  '~error-cause'?: unknown
-}
+export type { NuxtRequestContext } from 'nuxt/schema'
 
 declare module 'srvx' {
   interface ServerRequestContext {

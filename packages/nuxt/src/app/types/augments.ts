@@ -1,4 +1,5 @@
 /// <reference path="./build-only.d.ts" />
+/// <reference path="../../build-only-server-augments.d.ts" />
 
 import type { UseHeadInput } from '@unhead/vue/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
