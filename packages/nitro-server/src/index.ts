@@ -1013,7 +1013,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     // TODO: remove support for baseUrl in nuxt v5
     const serverBaseUrl = nuxt.options.future.compatibilityVersion >= 5
       ? undefined
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+
       : opts.serverTsConfig.compilerOptions.baseUrl
     const aliasBasePath = serverBaseUrl ? resolve(typesDir, serverBaseUrl) : typesDir
     for (const alias in nitro.options.alias) {
