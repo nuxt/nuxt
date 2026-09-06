@@ -266,8 +266,13 @@ export default defineNuxtModule<ComponentsOptions>({
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client' }), { server: false })
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server' }), { client: false })
+    const isComponentFile = (file: string) => {
+      const normalized = normalize(file)
+      return componentDirs.some(dir => normalized === dir.path || normalized.startsWith(dir.path.replace(/\/?$/, '/')))
+    }
+
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client', isComponentFile }), { server: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server', isComponentFile }), { client: false })
 
     if (nuxt.options.experimental.lazyHydration) {
       addBuildPlugin(LazyHydrationTransformPlugin({

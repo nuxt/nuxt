@@ -19,6 +19,7 @@ interface LoaderOptions {
   clientDelayedComponentRuntime: string
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
+  isComponentFile (file: string): boolean
 }
 
 // Match both:
@@ -37,10 +38,26 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const nuxt = tryUseNuxt()
+  const transformedModules = new Set<string>()
 
   return {
     name: 'nuxt:components-loader',
     enforce: 'post',
+    vite: {
+      hotUpdate: {
+        order: 'pre',
+        async handler ({ type, file }) {
+          if (type === 'update' || !options.isComponentFile(file)) { return }
+          if (options.mode === 'client') {
+            await nuxt?.callHook('builder:generateApp')
+          }
+          return [...transformedModules].flatMap((id) => {
+            const module = this.environment.moduleGraph.getModuleById(id)
+            return module ? [module] : []
+          })
+        },
+      },
+    },
     transform: {
       filter: {
         id: {
@@ -166,7 +183,13 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           s.prepend([...imports, ''].join('\n'))
         }
 
-        return generateTransform(s, id)
+        const result = generateTransform(s, id)
+        if (result) {
+          transformedModules.add(id)
+        } else {
+          transformedModules.delete(id)
+        }
+        return result
       },
     },
   }
