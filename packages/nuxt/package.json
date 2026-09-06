@@ -27,6 +27,8 @@
     },
     "./schema": "./schema.js",
     "./kit": "./kit.js",
+    "./devtools": "./devtools.js",
+    "./devtools-kit": "./devtools-kit.js",
     "./meta": "./meta.js",
     "./app": "./src/app/index.ts",
     "./internal/renderer": "./src/runtime/server/renderer/index.ts",
@@ -57,6 +59,8 @@
     "dist",
     "config.*",
     "kit.*",
+    "devtools.*",
+    "devtools-kit.*",
     "meta.*",
     "schema.*"
   ],
