@@ -14,6 +14,7 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
+import { checkRedirectChain } from '../../../app/utils/redirect-loop'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import _routeRulesMatcher from '#build/route-rules.mjs'
@@ -152,6 +153,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     const error = useError()
+    let redirectChains: WeakMap<object, Set<string>> | undefined
     // we only skip redirect handlers for component islands, not page islands
     const isServerPage = import.meta.server && nuxtApp.ssrContext?.islandContext?.name?.startsWith('page_')
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
@@ -301,10 +303,28 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return result
             }
             if (result) {
-              if (isNuxtError(result) && result.fatal) {
-                await nuxtApp.runWithContext(() => showError(result))
-                pushErroredRoute(to)
+              if (isNuxtError(result)) {
+                if (result.fatal) {
+                  await nuxtApp.runWithContext(() => showError(result))
+                  pushErroredRoute(to)
+                }
+                return result
               }
+
+              if ((import.meta.server || import.meta.dev) && !(result instanceof Error)) {
+                // vue-router keeps the initial location in `redirectedFrom` across guard redirects.
+                // Use it as the key so concurrent navigations never share redirect state.
+                const navigation = to.redirectedFrom ?? to
+                redirectChains ||= new WeakMap<object, Set<string>>()
+                let redirectChain = redirectChains.get(navigation)
+                if (!redirectChain) {
+                  redirectChain = new Set<string>()
+                  redirectChains.set(navigation, redirectChain)
+                }
+                const targetPath = router.resolve(result).fullPath
+                checkRedirectChain(redirectChain, targetPath)
+              }
+
               return result
             }
           } catch (err: any) {
