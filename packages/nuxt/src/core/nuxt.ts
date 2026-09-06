@@ -668,6 +668,14 @@ async function initNuxt (nuxt: Nuxt) {
     meta: getBuiltinComponentMeta('DevOnly'),
   })
 
+  // Add <PreviewOnly>
+  addComponent({
+    name: 'PreviewOnly',
+    priority: 10,
+    filePath: resolve(nuxt.options.appDir, 'components/preview-only'),
+    meta: getBuiltinComponentMeta('PreviewOnly'),
+  })
+
   // Add <ServerPlaceholder>
   addComponent({
     name: 'ServerPlaceholder',
