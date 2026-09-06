@@ -54,6 +54,34 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     expect(await $fetch('/api/counter')).toEqual({ count: 3 })
   })
 
+  it('should serve a handler written against `nuxt/server`', async () => {
+    const response = await fetch('/api/portable', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json', 'cookie': 'incoming=here' },
+    })
+
+    expect(response.status).toBe(201)
+    expect(response.headers.get('x-portable')).toBe('yes')
+    expect(response.headers.getSetCookie()).toEqual([
+      'portable=set; Path=/',
+      'stale=; Max-Age=0; Path=/',
+    ])
+    expect(await response.json()).toMatchObject({
+      name: 'nuxt',
+      path: '/api/portable',
+      incoming: 'here',
+      publicKey: 123,
+    })
+  })
+
+  it('should map an error created with `nuxt/server` to its status', async () => {
+    const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
+
+    expect(response.status).toBe(418)
+    expect(await response.json()).toMatchObject({ status: 418, statusText: 'Teapot', data: { fail: 'yes' } })
+  })
+
   it('should auto-import', async () => {
     const res = await $fetch('/api/auto-imports')
     expect(res).toMatchInlineSnapshot(`

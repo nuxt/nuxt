@@ -17,6 +17,7 @@ const RUNTIME_TREES = [
   'src/pages/runtime',
   'src/compiler/runtime',
   'src/runtime/server',
+  'src/server',
 ]
 const RUNTIME_ENTRY_GLOBS = RUNTIME_TREES.flatMap(tree => [
   `${tree}/**/*.ts`,

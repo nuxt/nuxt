@@ -1,8 +1,16 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
+import type { NuxtServerBuildRuntime } from '@nuxt/schema/internal'
 
 import { SERVER_RUNTIME_VERSION, getRendererConfig, getRendererDefines, getServerRuntime } from '../src/internal/renderer.ts'
+import { createServerBuild } from '../src/internal/server-build.ts'
+
+function withServerRuntime (instance: Nuxt, runtime: Partial<NuxtServerBuildRuntime>): Nuxt {
+  instance.serverBuild = createServerBuild(instance.options)
+  Object.assign(instance.serverBuild.runtime, runtime)
+  return instance
+}
 
 function nuxt (options: Record<string, any> = {}): Nuxt {
   const { buildOutputs, ...rest } = options
@@ -97,14 +105,31 @@ describe('getServerRuntime', () => {
 
   it('provides a module for every stub a builder must replace', () => {
     // every module at the root of the server runtime tree is a stub whose real body only
-    // the build knows, so each one must be in the record for a builder to find it
+    // the build knows, so each one must be in the record for a builder to find it. Not
+    // `server-default`, which is how a builder reaches the shipped `nuxt/server` bodies.
     const stubs = readdirSync(runtimeDir, { withFileTypes: true })
-      .filter(entry => entry.isFile() && entry.name.endsWith('.ts'))
+      .filter(entry => entry.isFile() && entry.name.endsWith('.ts') && entry.name !== 'server-default.ts')
       .map(entry => `nuxt/internal/${entry.name.replace(/\.ts$/, '')}`)
 
     const { modules } = getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() }))
 
-    expect(Object.keys(modules).sort()).toEqual(stubs.sort())
+    expect(Object.keys(modules).sort()).toEqual([...stubs, 'nuxt/server'].sort())
+  })
+
+  it('backs `nuxt/server` with the shipped implementations, and with a builder\'s where it supplies them', async () => {
+    const withoutDelegate = nuxt({ buildOutputs: buildOutputs() })
+    const shipped = await getServerRuntime({}, withoutDelegate).modules['nuxt/server']!.code()
+    expect(shipped).toMatch(/^export \* from "\S+server[/\\]index\.ts"$/)
+
+    const withDelegate = withServerRuntime(nuxt({ buildOutputs: buildOutputs() }), { server: '/delegate.mjs' })
+    expect(await getServerRuntime({}, withDelegate).modules['nuxt/server']!.code()).toBe('export * from "/delegate.mjs"')
+  })
+
+  it('reads runtime configuration from the module the server builder provides it in', async () => {
+    const instance = withServerRuntime(nuxt({ buildOutputs: buildOutputs() }), { runtimeConfig: '#my-server/config' })
+
+    expect(await getServerRuntime({}, instance).modules['nuxt/internal/server-runtime-config']!.code())
+      .toBe('export { useRuntimeConfig } from "#my-server/config"')
   })
 
   it('reads each module body lazily, and names the build output backing it', async () => {

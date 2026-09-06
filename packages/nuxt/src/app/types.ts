@@ -98,9 +98,9 @@ export interface NuxtServerApp {
 }
 
 /**
- * Type-only declaration of the `NuxtError` class in
- * `./composables/error.ts`, which remains the canonical exported value (and
- * the `NuxtError` type exported from `nuxt/app` / `#app`).
+ * Type-only declaration of the `NuxtError` class in `./error.ts`, which
+ * remains the canonical exported value (and the `NuxtError` type exported
+ * from `nuxt/app` / `#app` and from `nuxt/server`).
  *
  * The members are declared here rather than inherited from h3's `HTTPError`,
  * but must stay structurally compatible with it: that is what h3 and Nitro read

@@ -44,6 +44,8 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     runtime: {
       fetch: resolve(distDir, 'runtime/fetch'),
       runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
+      // the emitted entry, which only exists once a build has run
+      handler: ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined,
     },
     preview: ssr
       ? { command: () => 'node ./server/index.mjs' }

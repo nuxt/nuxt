@@ -3,8 +3,8 @@ import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
-import { createServerAutoImports } from './auto-imports.ts'
-import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
+import { createServerAutoImports } from '../src/auto-imports.ts'
+import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 
 const TYPE_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.mts', '.js', '.mjs']
 
@@ -40,11 +40,28 @@ describe('createServerAutoImports', () => {
     expect(referenced).toContain('nitro/cache')
   })
 
+  it('auto-imports the portable server surface rather than the runtime it delegates to', async () => {
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, presets: [nuxtServerImportsPreset, ...v2ImportsPreset, await getH3ImportsPreset()] },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+    )
+
+    const imports = await autoImports.getImports()
+    const sourceOf = (name: string) => imports.filter(i => (i.as ?? i.name) === name).map(i => i.from)
+
+    for (const name of ['defineEventHandler', 'createError', 'getQuery', 'readBody', 'getCookie', 'useRuntimeConfig', 'getRouteRules']) {
+      expect(sourceOf(name), name).toEqual(['nuxt/server'])
+    }
+
+    expect(sourceOf('readValidatedBody')).toEqual(['nitro/h3'])
+  })
+
   it('resolves a local type path to a declaration TypeScript can follow', async () => {
     const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
     const autoImports = createServerAutoImports(
       mockNuxt(),
-      { autoImport: true, imports: [{ name: 'withBaseURL', from: resolve(import.meta.dirname, 'runtime/utils/base.ts') }] },
+      { autoImport: true, imports: [{ name: 'withBaseURL', from: resolve(import.meta.dirname, '../src/runtime/utils/base.ts') }] },
       typesDir,
     )
 
