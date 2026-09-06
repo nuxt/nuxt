@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 export default defineNuxtConfig({
   modules: ['./modules/renderer-artifacts'],
   devtools: { enabled: false },
@@ -16,6 +18,6 @@ export default defineNuxtConfig({
   sourcemap: false,
   compatibilityDate: 'latest',
   server: {
-    builder: 'vite',
+    builder: fileURLToPath(new URL('./server-builder.ts', import.meta.url)),
   },
 })

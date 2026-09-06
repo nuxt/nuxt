@@ -1690,6 +1690,9 @@ importers:
       exsolve:
         specifier: catalog:build
         version: 1.1.1
+      hookable:
+        specifier: catalog:app-runtime
+        version: 6.1.1
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
@@ -2195,6 +2198,12 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/vite-server-spa:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/vite-server-ssr:
     dependencies:
       nuxt:
         specifier: workspace:*

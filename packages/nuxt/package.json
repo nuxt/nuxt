@@ -29,15 +29,14 @@
     "./kit": "./kit.js",
     "./meta": "./meta.js",
     "./app": "./src/app/index.ts",
+    "./internal/renderer": "./src/runtime/server/renderer/index.ts",
+    "./internal/*": "./src/runtime/server/*.ts",
     "./entry": "./src/runtime/server/entry.ts",
     "./manifest": "./src/runtime/server/manifest.ts",
     "./precomputed": "./src/runtime/server/precomputed.ts",
     "./styles": "./src/runtime/server/styles.ts",
     "./entry-chunk": "./src/runtime/server/entry-chunk.ts",
     "./entry-ids": "./src/runtime/server/entry-ids.ts",
-    "./renderer": "./src/runtime/server/renderer/index.ts",
-    "./renderer/*": "./src/runtime/server/renderer/*.ts",
-    "./renderer-config": "./src/runtime/server/renderer-config.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -60,14 +59,11 @@
       "entry-ids": [
         "./dist/runtime/server/entry-ids.d.ts"
       ],
-      "renderer": [
+      "internal/renderer": [
         "./dist/runtime/server/renderer/index.d.ts"
       ],
-      "renderer/*": [
-        "./dist/runtime/server/renderer/*.d.ts"
-      ],
-      "renderer-config": [
-        "./dist/runtime/server/renderer-config.d.ts"
+      "internal/*": [
+        "./dist/runtime/server/*.d.ts"
       ]
     }
   },
@@ -204,15 +200,14 @@
       "./kit": "./kit.js",
       "./meta": "./meta.js",
       "./app": "./dist/app/index.js",
+      "./internal/renderer": "./dist/runtime/server/renderer/index.js",
+      "./internal/*": "./dist/runtime/server/*.js",
       "./entry": "./dist/runtime/server/entry.js",
       "./manifest": "./dist/runtime/server/manifest.js",
       "./precomputed": "./dist/runtime/server/precomputed.js",
       "./styles": "./dist/runtime/server/styles.js",
       "./entry-chunk": "./dist/runtime/server/entry-chunk.js",
       "./entry-ids": "./dist/runtime/server/entry-ids.js",
-      "./renderer": "./dist/runtime/server/renderer/index.js",
-      "./renderer/*": "./dist/runtime/server/renderer/*.js",
-      "./renderer-config": "./dist/runtime/server/renderer-config.js",
       "./package.json": "./package.json"
     },
     "imports": {

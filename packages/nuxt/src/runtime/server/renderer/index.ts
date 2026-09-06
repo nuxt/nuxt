@@ -11,7 +11,7 @@ import { relative } from 'pathe'
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '../../../app/internal/tracing.ts'
 
-import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from './build-files'
+import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG } from './build-files'
 
 import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from './payload'
 import { createSSRContext, returnRenderResponse, setSSRError } from './app'
@@ -22,12 +22,16 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
 import { extractCspNonce } from './csp-nonce'
-import { appEvent, getRequestState, serverRuntime, setServerRuntime } from './runtime'
+import { appEvent, getRequestState } from './runtime'
+import { createRendererInstance } from './instance'
+import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RenderedResponse, RendererEvent, RendererRouteRules } from './runtime'
-import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/renderer-config'
-import entryIds from 'nuxt/entry-ids'
-import { entryFileName } from 'nuxt/entry-chunk'
+import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import entryIds from 'nuxt/internal/entry-ids'
+import { entryFileName } from 'nuxt/internal/entry-chunk'
 
+export { createRendererInstance } from './instance'
+export type { NuxtRendererInstance } from './instance'
 export type { CachedResponse, NuxtRendererOptions, NuxtRequestState, PayloadCache, RenderedResponse, RendererEvent, RendererHooks, RendererRouteRules } from './runtime'
 
 const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
@@ -38,24 +42,24 @@ const PAYLOAD_URL_RE = NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : 
 const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 const PAYLOAD_BUILD_ID_PARAM = '_b'
 
-let entryPath: string
-
 // Bot detection regex for SSR streaming.
 const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
 
 /**
- * Create the Nuxt SSR renderer for this bundle, returning a web-standard
- * handler for the requests a Nuxt app serves from its pages.
+ * Create a Nuxt SSR renderer, returning a web-standard handler for the requests a Nuxt
+ * app serves from its pages.
  *
- * Calling this twice replaces the options the renderer modules read.
+ * Everything the renderer reads belongs to the renderer it was created for, so a bundle
+ * may create as many as it needs. Pass an instance from `createRendererInstance()` to
+ * render against the artifacts already loaded for another renderer.
  */
-export function createNuxtRenderer (options: NuxtRendererOptions): { fetch: (event: RendererEvent) => Promise<Response> } {
-  setServerRuntime(options)
-  return { fetch }
+export function createNuxtRenderer (optionsOrInstance: NuxtRendererOptions | NuxtRendererInstance): { fetch: (event: RendererEvent) => Promise<Response> } {
+  const instance = 'getRenderer' in optionsOrInstance ? optionsOrInstance : createRendererInstance(optionsOrInstance)
+  return { fetch: event => fetch(instance, event) }
 }
 
-function fetch (event: RendererEvent): Promise<Response> {
-  const runtime = serverRuntime
+function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<Response> {
+  const runtime = instance.options
 
   if (componentIslands && runtime.renderIsland && event.url.pathname.startsWith('/__nuxt_island/')) {
     return Promise.resolve(runtime.renderIsland(event))
@@ -75,7 +79,7 @@ function fetch (event: RendererEvent): Promise<Response> {
     }))
   }
 
-  const render = () => renderRoute(event, ssrError).then(response => returnRenderResponse(event, response))
+  const render = () => renderRoute(instance, event, ssrError).then(response => returnRenderResponse(runtime, event, response))
   const wrapRender = import.meta.prerender ? runtime.prerender?.wrapRender : undefined
 
   return wrapRender ? wrapRender(event, render) : render()
@@ -117,13 +121,14 @@ function getPrerenderedErrorPage (event: RendererEvent): (NuxtPayload['error'] &
   } as NuxtPayload['error'] & { url: string }
 }
 
-async function renderRoute (event: RendererEvent, ssrError: (NuxtPayload['error'] & { url: string }) | null): Promise<RenderedResponse> {
-  const hooks = serverRuntime.hooks()
+async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent, ssrError: (NuxtPayload['error'] & { url: string }) | null): Promise<RenderedResponse> {
+  const runtime = instance.options
+  const hooks = runtime.hooks()
   const hookEvent = appEvent(event)
-  const payloadCache = serverRuntime.prerender?.payloadCache
+  const payloadCache = runtime.prerender?.payloadCache
 
   // Initialize ssr context
-  const ssrContext: NuxtSSRContext = createSSRContext(event)
+  const ssrContext: NuxtSSRContext = createSSRContext(runtime, event)
 
   ssrContext.head.push(appHead)
 
@@ -148,7 +153,7 @@ async function renderRoute (event: RendererEvent, ssrError: (NuxtPayload['error'
   }
 
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
-  const routeOptions = serverRuntime.getRouteRules(event)
+  const routeOptions = runtime.getRouteRules(event)
 
   if (routeOptions.ssr === false) {
     ssrContext.noSSR = true
@@ -158,7 +163,7 @@ async function renderRoute (event: RendererEvent, ssrError: (NuxtPayload['error'
   // its plugins and middleware) is loaded. Skipped when prerendering SPA shell
   // fallbacks (`/index.html`, `/200.html`), which are not page routes.
   if (NUXT_EARLY_404 && !ssrError && !(import.meta.prerender && ssrContext.noSSR)) {
-    throwIfUnmatchedPagePath(event, routeOptions)
+    throwIfUnmatchedPagePath(runtime, event, routeOptions)
   }
 
   // Whether we are prerendering route or using ISR/SWR caching
@@ -194,13 +199,13 @@ async function renderRoute (event: RendererEvent, ssrError: (NuxtPayload['error'
   const payloadURL = _PAYLOAD_EXTRACTION ? buildPayloadURL(ssrContext) : undefined
 
   // Render app
-  const renderer = await getRenderer(ssrContext)
+  const renderer = await instance.getRenderer(ssrContext)
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
     if (link) {
-      serverRuntime.writeEarlyHints?.(event, { link })
+      runtime.writeEarlyHints?.(event, { link })
     }
   }
 
@@ -235,7 +240,7 @@ async function renderRoute (event: RendererEvent, ssrError: (NuxtPayload['error'
   await hooks.callHook('render:route', renderRouteContext, { event: hookEvent })
 
   if (NUXT_SSR_STREAMING && canStream && renderRouteContext.prefersStream) {
-    const streamArgs = { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL }
+    const streamArgs = { instance, event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL }
     return tracingChannelNuxt
       ? traceAsync('nuxt.render', { event: hookEvent, ssrContext, streaming: true }, () => renderStreamedResponse(streamArgs))
       : renderStreamedResponse(streamArgs)
@@ -312,21 +317,7 @@ async function renderRoute (event: RendererEvent, ssrError: (NuxtPayload['error'
 
   // 0. Add import map for stable chunk hashes
   if (entryFileName && !NO_SCRIPTS) {
-    let path = entryPath
-    if (!path) {
-      path = serverRuntime.buildAssetsURL(entryFileName) as string
-      if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(path)) {
-        // cache absolute entry path
-        entryPath = path
-      } else {
-        // TODO: provide support for relative paths in assets as well
-        // relativise path
-        path = relative(event.url.pathname.replace(/\/[^/]+$/, '/'), joinURL('/', path))
-        if (!/^(?:\/|\.+\/)/.test(path)) {
-          path = `./${path}`
-        }
-      }
-    }
+    const path = entryImportMapPath(instance, event, ssrContext)
     ssrContext.head.push({
       script: [{
         type: 'importmap',
@@ -475,17 +466,19 @@ async function renderRoute (event: RendererEvent, ssrError: (NuxtPayload['error'
 }
 
 async function renderStreamedResponse (ctx: {
+  instance: NuxtRendererInstance
   event: RendererEvent
   ssrContext: NuxtSSRContext
-  renderer: Awaited<ReturnType<typeof getRenderer>>
+  renderer: Awaited<ReturnType<NuxtRendererInstance['getRenderer']>>
   routeOptions: RendererRouteRules
   ssrError: (NuxtPayload['error'] & { url: string }) | null
   _PAYLOAD_EXTRACTION: boolean
   _PAYLOAD_INLINE: boolean
   payloadURL: string | undefined
 }): Promise<RenderedResponse> {
-  const { event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
-  const hooks = serverRuntime.hooks()
+  const { instance, event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
+  const runtime = instance.options
+  const hooks = runtime.hooks()
   const hookEvent = appEvent(event)
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
@@ -520,16 +513,7 @@ async function renderStreamedResponse (ctx: {
 
   // Import map
   if (entryFileName && !NO_SCRIPTS) {
-    let path = entryPath
-    if (!path) {
-      path = serverRuntime.buildAssetsURL(entryFileName) as string
-      if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(path)) {
-        entryPath = path
-      } else {
-        path = relative(event.url.pathname.replace(/\/[^/]+$/, '/'), joinURL('/', path))
-        if (!/^(?:\/|\.+\/)/.test(path)) { path = `./${path}` }
-      }
-    }
+    const path = entryImportMapPath(instance, event, ssrContext)
     ssrContext.head.push({
       script: [{
         tagPosition: 'head',
@@ -578,7 +562,7 @@ async function renderStreamedResponse (ctx: {
   // Preload streaming IIFE script (production only - in dev we inline it)
   if (!NO_SCRIPTS && !import.meta.dev && iifeChunkFileName) {
     ssrContext.head.push({
-      link: [{ rel: 'preload', as: 'script', href: serverRuntime.buildAssetsURL(iifeChunkFileName) }],
+      link: [{ rel: 'preload', as: 'script', href: runtime.buildAssetsURL(iifeChunkFileName) }],
     })
   }
 
@@ -587,7 +571,7 @@ async function renderStreamedResponse (ctx: {
   // before we consume them for the shell. `createSSRApp` runs plugins and
   // middleware: `navigateTo()` from plugins/middleware throws `skipping
   // render` here, which we catch before committing any bytes.
-  const createSSRApp = await getServerApp()
+  const createSSRApp = await instance.getServerApp()
   let vueApp
   try {
     vueApp = await createSSRApp(ssrContext)
@@ -628,7 +612,7 @@ async function renderStreamedResponse (ctx: {
   let iifeScript = ''
   if (!NO_SCRIPTS) {
     if (!import.meta.dev && iifeChunkFileName) {
-      iifeScript = `<script async${nonceAttr} src="${serverRuntime.buildAssetsURL(iifeChunkFileName)}"></script>`
+      iifeScript = `<script async${nonceAttr} src="${runtime.buildAssetsURL(iifeChunkFileName)}"></script>`
     } else {
       iifeScript = `<script${nonceAttr}>${streamingIifeCode}</script>`
     }
@@ -984,6 +968,25 @@ function pushNoScriptsHints (ssrContext: NuxtSSRContext, noScripts: boolean) {
       }],
     })
   }
+}
+
+const entryPaths = new WeakMap<NuxtRendererInstance, string>()
+
+/** URL of the hashed entry chunk, which `#entry` is pinned to so chunk hashes stay stable across it. */
+function entryImportMapPath (instance: NuxtRendererInstance, event: RendererEvent, ssrContext: NuxtSSRContext): string {
+  const cached = entryPaths.get(instance)
+  if (cached) { return cached }
+
+  const url = instance.options.buildAssetsURL(entryFileName!)
+  if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(url)) {
+    // cache absolute entry path
+    entryPaths.set(instance, url)
+    return url
+  }
+  // TODO: provide support for relative paths in assets as well
+  // relativise path
+  const path = relative(event.url.pathname.replace(/\/[^/]+$/, '/'), joinURL('/', url))
+  return /^(?:\/|\.+\/)/.test(path) ? path : `./${path}`
 }
 
 function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: string[]) {

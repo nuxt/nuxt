@@ -6,7 +6,7 @@ import type { NuxtPayload, NuxtSSRContext } from '#app/types'
 import { rendererDiagnostics } from './diagnostics'
 import type { CachedResponse, RendererEvent, RendererRouteRules } from './runtime'
 
-import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, appId, multiApp } from 'nuxt/renderer-config'
+import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, appId, multiApp } from 'nuxt/internal/renderer-config'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext, event: RendererEvent): CachedResponse {
   return {

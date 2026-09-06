@@ -1,7 +1,8 @@
 import { createError, writeEarlyHints } from 'h3'
 import { getRouteRules, useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
-import { setServerRuntime } from 'nuxt/renderer/runtime'
-import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/renderer/runtime'
+import { createRendererInstance } from 'nuxt/internal/renderer/instance'
+import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
+import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
 import type { NuxtSSRContext } from '#app/types'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
@@ -55,4 +56,8 @@ export const rendererOptions: NuxtRendererOptions = {
     : undefined,
 }
 
-setServerRuntime(rendererOptions)
+/**
+ * The renderer the page and island handlers share, so that both render against a single
+ * load of the server bundle and its manifest.
+ */
+export const rendererInstance: NuxtRendererInstance = createRendererInstance(rendererOptions)

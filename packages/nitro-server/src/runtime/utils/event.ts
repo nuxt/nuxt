@@ -1,6 +1,6 @@
 import { getRequestHost, getRequestProtocol, toWebRequest } from 'h3'
 import type { H3Event } from 'h3'
-import type { RendererEvent } from 'nuxt/renderer/runtime'
+import type { RendererEvent } from 'nuxt/internal/renderer/runtime'
 
 const ENC_PIPE_RE = /%7C/g
 const ENC_BRACKET_OPEN_RE = /%5B/g

@@ -1,25 +1,27 @@
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import { useNuxt } from '../context.ts'
-import { addTemplate } from '../template.ts'
 
 // This surface is experimental for as long as `NuxtServerBuild` is, and will change without
 // a major release until it has settled.
 
 /** Specifier the SSR renderer reads its build-time configuration from. */
-export const RENDERER_CONFIG_SPECIFIER = 'nuxt/renderer-config'
+const RENDERER_CONFIG_SPECIFIER = 'nuxt/internal/renderer-config'
+
+/** Specifier a server builder imports `createNuxtRenderer` from. */
+const RENDERER_SPECIFIER = 'nuxt/internal/renderer'
 
 /** The specifier the renderer imports each build artifact through, and the {@link NuxtBuildOutputs} key that provides it. */
-export const BUILD_OUTPUT_SPECIFIERS: Record<string, keyof NuxtBuildOutputs> = {
-  'nuxt/entry': 'serverEntry',
-  'nuxt/manifest': 'clientManifest',
-  'nuxt/precomputed': 'clientPrecomputed',
-  'nuxt/styles': 'ssrStyles',
-  'nuxt/entry-chunk': 'entryChunkName',
-  'nuxt/entry-ids': 'entryIds',
+const BUILD_OUTPUT_SPECIFIERS: Record<string, keyof NuxtBuildOutputs> = {
+  'nuxt/internal/entry': 'serverEntry',
+  'nuxt/internal/manifest': 'clientManifest',
+  'nuxt/internal/precomputed': 'clientPrecomputed',
+  'nuxt/internal/styles': 'ssrStyles',
+  'nuxt/internal/entry-chunk': 'entryChunkName',
+  'nuxt/internal/entry-ids': 'entryIds',
 }
 
-/** Names of the constants `nuxt/renderer-config` inlines, which documents what each one means. */
+/** Names of the constants `nuxt/internal/renderer-config` inlines, which documents what each one means. */
 export type RendererConfigName =
   | 'NUXT_NO_SSR'
   | 'NUXT_PRERENDER_ERROR_PAGES'
@@ -62,10 +64,12 @@ export interface RendererConfigOptions {
   unheadOptions?: string
   /** Specifier the generated module re-exports the head module's own render options from. */
   headConfig?: string
+  /** Statements prepended to the generated module, for an override that reads a value from an import. */
+  prelude?: string
 }
 
 /**
- * Generate the body of the `nuxt/renderer-config` module the SSR renderer imports its
+ * Generate the body of the `nuxt/internal/renderer-config` module the SSR renderer imports its
  * build-time configuration from.
  *
  * Everything derivable from `nuxt.options` is inlined; the rest defaults to the value of a
@@ -117,6 +121,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
   }
 
   const lines = [
+    ...options.prelude ? [options.prelude] : [],
     `export { default as unheadOptions } from ${JSON.stringify(options.unheadOptions || '#build/unhead-options.mjs')}`,
     `export { iifeChunkFileName, renderSSRHeadOptions } from ${JSON.stringify(options.headConfig || '#build/unhead.config.mjs')}`,
   ]
@@ -126,23 +131,6 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
   }
 
   return lines.join('\n')
-}
-
-/**
- * Write the `nuxt/renderer-config` module for this build and alias the specifier to it.
- *
- * @internal
- */
-export function addRendererConfig (options: RendererConfigOptions = {}, nuxt: Nuxt = useNuxt()): string {
-  const { dst } = addTemplate({
-    filename: 'renderer-config.mjs',
-    write: true,
-    getContents: ({ nuxt }) => getRendererConfig(options, nuxt),
-  })
-
-  nuxt.options.alias[RENDERER_CONFIG_SPECIFIER] = dst
-
-  return dst
 }
 
 /**
@@ -158,5 +146,90 @@ export function getRendererDefines (phase: 'server' | 'prerender', nuxt: Nuxt = 
     'import.meta.server': 'true',
     'import.meta.client': 'false',
     'import.meta.prerender': String(phase === 'prerender'),
+  }
+}
+
+/**
+ * Version of the server runtime contract, bumped whenever a server builder has to do
+ * something different with what {@link getServerRuntime} hands it. A builder compares it
+ * against the version it was written for, so a mismatch is a build-time error rather than
+ * a module that silently resolves to a stub.
+ */
+export const SERVER_RUNTIME_VERSION = 1
+
+/** A module the SSR renderer imports, whose body only the build knows. */
+export interface NuxtServerRuntimeModule {
+  /**
+   * The module body. Read lazily, and more than once, so a builder may register the module
+   * before the value exists and still resolve the finalised one.
+   */
+  code: () => string | Promise<string>
+  /** The {@link NuxtBuildOutputs} key backing the module, absent for a module core generates itself. */
+  output?: keyof NuxtBuildOutputs
+}
+
+/** What core provides for a server builder to render with. See {@link getServerRuntime}. */
+export interface NuxtServerRuntime {
+  /** See {@link SERVER_RUNTIME_VERSION}. */
+  version: number
+  /**
+   * Modules the renderer imports and the builder must resolve, keyed by specifier. A builder
+   * registers each one however its bundler prefers (a virtual module, an alias, a file it
+   * writes) without knowing what any of them mean.
+   */
+  modules: Record<string, NuxtServerRuntimeModule>
+  /**
+   * Build-time replacements the renderer must be compiled with. A builder that does not
+   * apply them ships both sides of every branch, and reaches the runtime with
+   * `import.meta.prerender` undefined, which silently disables payload extraction.
+   */
+  defines: Record<string, string>
+  /** Specifier the builder imports `createNuxtRenderer` from in the module it makes its server entry. */
+  entry: string
+}
+
+export interface ServerRuntimeOptions extends Omit<RendererConfigOptions, 'overrides'> {
+  /** The phase the bundle renders in, which `import.meta.prerender` folds against. */
+  phase?: 'server' | 'prerender'
+  /**
+   * JS expressions replacing individual renderer constants, for values a builder resolves
+   * itself. A function is called each time the module body is read, so a value that is only
+   * final after another part of the build has run can be provided as one.
+   */
+  overrides?: RendererConfigOptions['overrides'] | (() => RendererConfigOptions['overrides'] | Promise<RendererConfigOptions['overrides']>)
+}
+
+/**
+ * Everything core provides for a server builder to stand up the SSR renderer with: the
+ * modules the renderer imports, the defines it must be compiled with, and the specifier
+ * its server entry creates the renderer from.
+ *
+ * Core owns the set of modules, so a builder that iterates them keeps working when the set
+ * changes; {@link SERVER_RUNTIME_VERSION} is what tells it when it cannot.
+ *
+ * @internal
+ */
+export function getServerRuntime (options: ServerRuntimeOptions = {}, nuxt: Nuxt = useNuxt()): NuxtServerRuntime {
+  const { phase = 'server', overrides, ...rendererConfig } = options
+
+  const modules: Record<string, NuxtServerRuntimeModule> = {
+    [RENDERER_CONFIG_SPECIFIER]: {
+      code: async () => getRendererConfig({
+        ...rendererConfig,
+        overrides: typeof overrides === 'function' ? await overrides() : overrides,
+      }, nuxt),
+    },
+  }
+
+  for (const specifier in BUILD_OUTPUT_SPECIFIERS) {
+    const output = BUILD_OUTPUT_SPECIFIERS[specifier]!
+    modules[specifier] = { output, code: () => nuxt.buildOutputs[output]() }
+  }
+
+  return {
+    version: SERVER_RUNTIME_VERSION,
+    modules,
+    defines: getRendererDefines(phase, nuxt),
+    entry: RENDERER_SPECIFIER,
   }
 }

@@ -15,14 +15,13 @@ import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
 import { islandCache, islandPropCache, prerenderRenderingURLs } from '../utils/cache'
-import { createSSRContext } from 'nuxt/renderer/app'
-import { getSSRRenderer } from 'nuxt/renderer/build-files'
-import { renderInlineStyles } from 'nuxt/renderer/inline-styles'
-import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/renderer/islands'
-import { isStyleOfModule } from 'nuxt/renderer/dev-css'
+import { createSSRContext } from 'nuxt/internal/renderer/app'
+import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
+import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/internal/renderer/islands'
+import { isStyleOfModule } from 'nuxt/internal/renderer/dev-css'
 import { toRequestEvent } from '../utils/event'
 
-import '../utils/renderer/options'
+import { rendererInstance } from '../utils/renderer/options'
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
@@ -118,14 +117,14 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   const islandContext = await getIslandContext(event)
 
   const ssrContext = {
-    ...createSSRContext(toRequestEvent(event)),
+    ...createSSRContext(rendererInstance.options, toRequestEvent(event)),
     islandContext,
     noSSR: false,
     url: islandContext.url,
   }
 
   // Render app
-  const renderer = await getSSRRenderer()
+  const renderer = await rendererInstance.getSSRRenderer()
 
   const renderResult = await (tracingChannelNuxt
     ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))

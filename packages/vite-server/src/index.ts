@@ -6,6 +6,7 @@ import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
+import { setupSSR } from './ssr.ts'
 import { DevServerListenerPlugin, setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { writeStaticOutput } from './output.ts'
@@ -13,50 +14,43 @@ import { writeStaticOutput } from './output.ts'
 /**
  * Experimental server builder implemented with Vite alone.
  *
- * It builds the client, emits a document for it, and ships no server of its own: with
- * `ssr: false` that is a complete static SPA. With SSR enabled the server environment is
- * built too, but running it is left to a Vite plugin or a custom server.
+ * It builds the client and emits a document for it: with `ssr: false` that is a complete
+ * static SPA. With SSR enabled it also builds a server from the Nuxt SSR renderer, whose
+ * entry exports a web-standard `{ fetch }` and, on node, serves the static output in
+ * front of it.
  *
- * Features that need a server are therefore unsupported: server routes and middleware,
- * route rules, prerendering, and composables that need a request (such as
- * `useRequestEvent`). Modules work to the extent that they do not require one:
- * `useNitro()` throws and the `nitro:config` / `nitro:init` hooks never fire.
- *
- * TODO: render on the server, by extracting the renderer from `@nuxt/nitro-server` into
- * something both builders can depend on, and exposing it here as a `{ fetch }` entry
- * a plugin-provided target can run. Until then the document carries an
- * `<!--ssr-outlet-->` marker, so a target can supply its own renderer.
- * TODO: skip building the server environment if unclaimed.
+ * Features that need a server runtime are unsupported: server routes and middleware,
+ * route rules, prerendering, and composables that need more of a request than the platform
+ * provides. Modules work to the extent that they do not require one: `useNitro()` throws
+ * and the `nitro:config` / `nitro:init` hooks never fire.
  */
 export function bundle (nuxt: Nuxt): Promise<void> {
   if (nuxt.options.builder !== '@nuxt/vite-builder') {
     throw new Error('`@nuxt/vite-server` requires the Vite builder.')
   }
 
-  logger.warn('`@nuxt/vite-server` is experimental. It builds with Vite alone and ships no server, so features and modules that need one will not work.')
-
-  if (nuxt.options.ssr !== false) {
-    logger.warn('`@nuxt/vite-server` does not render on the server. The server environment is built for a vite plugin or a custom server to run; until one does, the document is served as a client-only shell.')
-  }
-
-  warnUnsupported(nuxt)
-
   const outputDir = resolve(nuxt.options.rootDir, nuxt.options.nitro.output?.dir || '.output')
   const publicDir = resolve(outputDir, 'public')
+  const ssr = nuxt.options.ssr !== false
 
   setServerBuild({
     name: 'vite',
-    label: 'Vite SPA',
+    label: ssr ? 'Vite server' : 'Vite SPA',
     output: { dir: () => outputDir, publicDir: () => publicDir },
-    // TODO: report what actually claimed the server, once a target can declare itself
-    capabilities: { server: nuxt.options.ssr !== false, dev: true },
+    capabilities: { server: ssr, dev: true },
     buildsSeparately: false,
     // `nitropack/runtime` does not resolve in a build without nitro
     runtime: {
       runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
     },
-    preview: { staticDir: () => publicDir },
+    preview: ssr
+      ? { command: () => 'node ./server/index.mjs' }
+      : { staticDir: () => publicDir },
   }, nuxt)
+
+  const server = ssr ? setupSSR(nuxt, outputDir) : undefined
+
+  warnExperimental(nuxt, { ssr, unsupported: server?.unsupported ?? [] })
 
   // The env-API path is the only one that does not route the client build, the dev
   // middleware and the client manifest through nitro's own pipeline.
@@ -119,16 +113,16 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   }
 
   if (nuxt.options.dev) {
-    setupDevServer(nuxt)
+    setupDevServer(nuxt, server?.entry)
   } else {
-    nuxt.hook('build:done', () => writeStaticOutput(nuxt, publicDir))
+    nuxt.hook('build:done', () => writeStaticOutput(nuxt, publicDir, { ssr }))
   }
 
   return Promise.resolve()
 }
 
-function warnUnsupported (nuxt: Nuxt) {
-  const unsupported: string[] = []
+function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: string[] }) {
+  const unsupported = [...build.unsupported]
 
   if (nuxt.options.serverHandlers.length || getLayerDirectories(nuxt).some(dirs => existsSync(dirs.server))) {
     unsupported.push('server routes and server middleware')
@@ -145,7 +139,12 @@ function warnUnsupported (nuxt: Nuxt) {
     unsupported.push('dev server handlers')
   }
 
-  if (unsupported.length) {
-    logger.warn(`\`@nuxt/vite-server\` builds a static SPA with no server, so ${unsupported.join(', ')} will be ignored.`)
-  }
+  const what = build.ssr
+    ? 'renders with the Nuxt SSR renderer and brings no server runtime of its own'
+    : 'builds a static SPA and ships no server'
+
+  logger.warn([
+    `\`@nuxt/vite-server\` is experimental. It ${what}.`,
+    unsupported.length ? ` Unsupported in this build, and ignored: ${unsupported.join(', ')}.` : '',
+  ].join(''))
 }

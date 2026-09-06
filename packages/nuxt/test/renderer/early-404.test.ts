@@ -1,17 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { throwIfUnmatchedPagePath } from '../../src/runtime/server/renderer/early-404.ts'
-import { setServerRuntime } from '../../src/runtime/server/renderer/runtime.ts'
 import type { NuxtRendererOptions, RendererEvent } from '../../src/runtime/server/renderer/runtime.ts'
 
-setServerRuntime({
+const options = {
   createError: (init: { status: number, statusText?: string, data?: unknown }) => Object.assign(new Error(init.statusText), {
     status: init.status,
     data: init.data,
   }),
-} as unknown as NuxtRendererOptions)
+} as unknown as NuxtRendererOptions
 
-vi.mock('nuxt/renderer-config', () => ({
+vi.mock('nuxt/internal/renderer-config', () => ({
   NUXT_PAGE_MATCHER: (_method: string, path: string) => path === '/known' ? 1 : undefined,
 }))
 
@@ -31,7 +30,7 @@ function errorFor (path: string, method?: string, maxAge?: number) {
   const routeOptions = maxAge === undefined ? {} : { cache: { maxAge } }
   const requestEvent = event(path, method)
   try {
-    throwIfUnmatchedPagePath(requestEvent, routeOptions)
+    throwIfUnmatchedPagePath(options, requestEvent, routeOptions)
   } catch (error) {
     return { ...error as { status: number, data: { path: string } }, headers: requestEvent.res.headers }
   }

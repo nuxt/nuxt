@@ -9,16 +9,15 @@ import type { NuxtPage } from 'nuxt/schema'
 import { collectRou3PagePatterns } from '../../nuxt/src/pages/utils.ts'
 import { normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { throwIfUnmatchedPagePath } from '../../nuxt/src/runtime/server/renderer/early-404.ts'
-import { setServerRuntime } from '../../nuxt/src/runtime/server/renderer/runtime.ts'
 import type { NuxtRendererOptions, RendererEvent } from '../../nuxt/src/runtime/server/renderer/runtime.ts'
 
-setServerRuntime({
+const rendererOptions = {
   createError: (init: { status: number, statusText?: string, data?: unknown }) => Object.assign(new Error(init.statusText), init),
-} as unknown as NuxtRendererOptions)
+} as unknown as NuxtRendererOptions
 
 let matcher: ((method: string, path: string) => unknown) | undefined
 
-vi.mock('nuxt/renderer-config', () => ({
+vi.mock('nuxt/internal/renderer-config', () => ({
   get NUXT_PAGE_MATCHER () {
     return matcher
   },
@@ -103,7 +102,7 @@ function createEvent (url: string): RendererEvent {
 
 function isEarly404 (url: string) {
   try {
-    throwIfUnmatchedPagePath(createEvent(url), {})
+    throwIfUnmatchedPagePath(rendererOptions, createEvent(url), {})
     return false
   } catch (error) {
     if ((error as { status?: number }).status !== 404) { throw error }

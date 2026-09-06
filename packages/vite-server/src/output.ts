@@ -12,7 +12,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 /** Static hosts commonly map unknown paths to one of these files. */
 const SPA_FALLBACK_FILES = ['index.html', '200.html', '404.html']
 
-export async function writeStaticOutput (nuxt: Nuxt, publicDir: string): Promise<void> {
+export async function writeStaticOutput (nuxt: Nuxt, publicDir: string, options: { ssr?: boolean } = {}): Promise<void> {
   const document = resolve(publicDir, 'index.html')
 
   if (!existsSync(document)) {
@@ -22,11 +22,21 @@ export async function writeStaticOutput (nuxt: Nuxt, publicDir: string): Promise
   const html = await readFile(document, 'utf-8')
   await rm(resolve(publicDir, 'manifest.json'), { force: true })
 
+  // the document is a client build input, but a server build renders its own
+  if (options.ssr) {
+    await rm(document, { force: true })
+  }
+
   // copied after the build, which writes into this directory and empties it first
   for (const dirs of getLayerDirectories(nuxt)) {
     if (existsSync(dirs.public)) {
       await cp(dirs.public, publicDir, { recursive: true })
     }
+  }
+
+  if (options.ssr) {
+    logger.success(`Server output written to ${link(resolve(publicDir, '..'))}`)
+    return
   }
 
   for (const file of SPA_FALLBACK_FILES) {

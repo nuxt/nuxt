@@ -1,5 +1,5 @@
 import type { NuxtIslandResponse, NuxtSSRContext } from '#app/types'
-import { appRootTag } from 'nuxt/renderer-config'
+import { appRootTag } from 'nuxt/internal/renderer-config'
 
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)
 

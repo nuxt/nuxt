@@ -26,7 +26,7 @@ export function DevServerListenerPlugin (nuxt: Nuxt): Plugin {
   }
 }
 
-export function setupDevServer (nuxt: Nuxt): void {
+export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   let viteServer: ViteDevServer | undefined
   nuxt.hook('vite:serverCreated', (server) => {
     viteServer = server as ViteDevServer
@@ -42,6 +42,16 @@ export function setupDevServer (nuxt: Nuxt): void {
     })
   }
 
+  // loaded from the dev module graph, so an edit is picked up by the next render
+  const render = async (request: Request) => {
+    const module = await viteServer!.ssrLoadModule(serverEntry!) as { fetch: (request: Request) => Promise<Response> }
+    return module.fetch(request)
+  }
+
+  const respond = (request: Request, url: string) => {
+    return serverEntry && viteServer ? render(request) : shell(url)
+  }
+
   nuxt.server = {
     handler: async (req: IncomingMessage, res: ServerResponse) => {
       if (viteServer && await handledByVite(viteServer, req, res)) {
@@ -53,7 +63,7 @@ export function setupDevServer (nuxt: Nuxt): void {
       const request = new NodeRequest({ req, res })
       const next = (index: number): Response | Promise<Response> => {
         const handler = middleware[index]
-        return handler ? handler(request, () => next(index + 1)) : shell(req.url || '/')
+        return handler ? handler(request, () => next(index + 1)) : respond(request, req.url || '/')
       }
       await sendNodeResponse(res, await next(0))
     },

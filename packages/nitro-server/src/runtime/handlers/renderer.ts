@@ -3,18 +3,18 @@ import type { EventHandler } from 'h3'
 import { setResponseHeader } from 'h3'
 import { defineRenderHandler } from 'nitropack/runtime'
 import type { RenderResponse } from 'nitropack/types'
-import { createNuxtRenderer } from 'nuxt/renderer'
+import { createNuxtRenderer } from 'nuxt/internal/renderer'
 
 import { NUXT_ASYNC_CONTEXT } from '#internal/nuxt/nitro-config.mjs'
 import { toRequestEvent } from '../utils/event'
-import { rendererOptions } from '../utils/renderer/options'
+import { rendererInstance } from '../utils/renderer/options'
 
 // Polyfill for unctx (https://github.com/unjs/unctx#native-async-context)
 if (NUXT_ASYNC_CONTEXT && !('AsyncLocalStorage' in globalThis)) {
   (globalThis as any).AsyncLocalStorage = AsyncLocalStorage
 }
 
-const renderer = createNuxtRenderer(rendererOptions)
+const renderer = createNuxtRenderer(rendererInstance)
 
 const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const response = await renderer.fetch(toRequestEvent(event))
