@@ -713,7 +713,12 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const componentIslands = shouldEnableComponentIslands(ctx.nuxt, ctx.app)
     const nitro = tryUseNitro() as Nitro | undefined
     const hasCachedRoutes = !!nitro?.routing?.routeRules.routes.some(r => r.data.isr || r.data.cache)
-    const payloadExtraction = !!nitro && !!ctx.nuxt.options.experimental.payloadExtraction && (nitro.options.static || hasCachedRoutes || (nitro.options.prerender.routes && nitro.options.prerender.routes.length > 0) || !!nitro.routing?.routeRules.routes.some(r => r.data.prerender))
+    const isStatic = nitro ? nitro.options.static : !!ctx.nuxt.options.nitro.static
+    const prerenderRoutes = nitro ? nitro.options.prerender.routes : ctx.nuxt.options.nitro.prerender?.routes
+    const hasPrerenderRules = nitro
+      ? !!nitro.routing?.routeRules.routes.some(r => r.data.prerender)
+      : Object.values(ctx.nuxt.options.nitro.routeRules || {}).some(rules => rules?.prerender)
+    const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (isStatic || hasCachedRoutes || !!prerenderRoutes?.length || hasPrerenderRules)
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const componentIslands = ${componentIslands}`,
