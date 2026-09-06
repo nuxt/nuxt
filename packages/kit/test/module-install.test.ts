@@ -2,8 +2,8 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
-import { loadNuxt } from '../loader/nuxt.ts'
-import { defineNuxtModule } from './define.ts'
+import { loadNuxt } from '../src/loader/nuxt.ts'
+import { defineNuxtModule } from '../src/module/define.ts'
 
 const repoRoot = await findWorkspaceDir()
 

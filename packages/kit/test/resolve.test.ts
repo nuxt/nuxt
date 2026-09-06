@@ -1,10 +1,10 @@
 import { stat } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { resolve } from 'pathe'
-import { loadNuxt } from './loader/nuxt.ts'
-import { findPath, resolveNuxtModule, resolvePath } from './resolve.ts'
-import { defineNuxtModule } from './module/define.ts'
-import { addTemplate } from './template.ts'
+import { loadNuxt } from '../src/loader/nuxt.ts'
+import { findPath, resolveNuxtModule, resolvePath } from '../src/resolve.ts'
+import { defineNuxtModule } from '../src/module/define.ts'
+import { addTemplate } from '../src/template.ts'
 
 const nuxt = await loadNuxt({
   overrides: {

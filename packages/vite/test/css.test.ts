@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { toFsUrl } from './css.ts'
+import { toFsUrl } from '../src/utils/css.ts'
 
 describe('toFsUrl', () => {
   it('should prefix a posix path', () => {

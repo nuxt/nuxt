@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { RecoverableWatcher } from './watch.ts'
+import type { RecoverableWatcher } from '../src/watch.ts'
 
 const mtimes = new Map<string, number>()
 
@@ -18,7 +18,7 @@ vi.mock('node:fs/promises', () => ({
 // loads before any test file runs, so the module has to be re-evaluated for the
 // `node:fs/promises` mock to apply to it.
 vi.resetModules()
-const { recoverThrottledChanges } = await import('./watch.ts')
+const { recoverThrottledChanges } = await import('../src/watch.ts')
 
 const RECHECK_DELAY = 70
 

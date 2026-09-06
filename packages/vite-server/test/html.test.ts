@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 
-import { renderIndexHtml } from './html.ts'
+import { renderIndexHtml } from '../src/html.ts'
 
 function createNuxt (overrides: Record<string, unknown> = {}) {
   return {

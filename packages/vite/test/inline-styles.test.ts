@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isInlineStyleId, withInlineQuery } from './inline-styles.ts'
+import { isInlineStyleId, withInlineQuery } from '../src/utils/inline-styles.ts'
 
 describe('withInlineQuery', () => {
   it('appends the query when there is no trailing lang marker', () => {

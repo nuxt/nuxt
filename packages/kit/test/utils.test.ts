@@ -1,7 +1,7 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { filterInPlace, toArray } from './utils.ts'
+import { filterInPlace, toArray } from '../src/utils.ts'
 
 describe('toArray', () => {
   it('should wrap a single value and pass an array through unchanged', () => {

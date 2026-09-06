@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern } from './utils.ts'
+import { getLayerNodeModulesExcludePattern } from '../src/utils.ts'
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
