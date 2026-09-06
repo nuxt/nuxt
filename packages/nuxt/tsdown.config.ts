@@ -45,7 +45,7 @@ const RUNTIME_NEVER_BUNDLE = [
 
 export default defineConfig([
   {
-    dts: { oxc: true },
+    dts: { generator: 'oxc' },
     entry: 'src/index.ts',
     deps: {
       onlyBundle: [],
@@ -76,7 +76,7 @@ export default defineConfig([
     hooks: {
       'build:prepare': ({ options }) => cleanDist(options.outDir),
     },
-    // No `oxc: true`: it can't infer `defineDiagnostics()`'s return type, which the
+    // No `generator: 'oxc'`: it can't infer `defineDiagnostics()`'s return type, which the
     // diagnostics catalogs rely on. tsc handles it.
     dts: { sideEffects: true },
     // TODO: remove in Nuxt v5 to switch to `.mjs`
@@ -99,8 +99,12 @@ export default defineConfig([
       }),
     ],
     deps: {
-      skipNodeModulesBundle: true,
-      neverBundle: RUNTIME_NEVER_BUNDLE,
+      neverBundle: true,
+    },
+    // `deps.neverBundle: true` only covers bare package specifiers and `node_modules`;
+    // subpath imports and aliases resolved at Nuxt build time need to stay external too.
+    inputOptions: {
+      external: RUNTIME_NEVER_BUNDLE,
     },
   },
 ])
