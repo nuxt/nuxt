@@ -1409,6 +1409,18 @@ describe('errors', () => {
     expect(error).not.toHaveProperty('url')
   })
 
+  it('should render the app error page when accessing error route directly', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(404)
+    const html = await res.text()
+    expect(html).toContain('This is the error page 😱')
+    expect(html).toContain('Page Not Found: /__nuxt_error')
+  })
+
   it('should not recursively throw an error when there is an error rendering the error page', async () => {
     const res = await $fetch<string>('/', {
       headers: {
