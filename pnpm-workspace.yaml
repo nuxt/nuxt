@@ -43,7 +43,10 @@ allowBuilds:
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
+  - clickable-path
+  - errx
   - fnv1a-64
+  - my-bad
   - vue-bundle-renderer
   - unrouting
   - unimport
@@ -96,7 +99,9 @@ catalogs:
 
   # imported in the server runtime (packages/nuxt/src/runtime/server, packages/nitro-server/src/runtime)
   nitro-runtime:
+    '@jridgewell/trace-mapping': ^0.3.31
     destr: ^2.0.5
+    my-bad: https://pkg.pr.new/my-bad@e166bcd
     lru-cache: ^11.5.2
     nitro: ^3.0.260903-beta
     srvx: ^1.0.3
@@ -151,7 +156,7 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260831-132907-8bcf1bc
+    '@nuxt/cli': https://pkg.pr.new/@nuxt/cli@1518
     '@nuxt/devtools': ^4.0.0-alpha.15
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.42
