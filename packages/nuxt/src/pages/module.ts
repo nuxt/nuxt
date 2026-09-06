@@ -7,7 +7,6 @@ import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, 
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
-import type { Nitro, RouteRuleConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
@@ -24,7 +23,7 @@ import { toVirtualId } from '../core/plugins/virtual.ts'
 import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
-import type { Nuxt, NuxtPage } from 'nuxt/schema'
+import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
@@ -83,8 +82,8 @@ export default defineNuxtModule({
       nuxt.hook('nitro:init', (nitro) => {
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
-            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
-            nitro.routing.sync()
+            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config?.routeRules) })
+            nitro.routing?.sync()
             inlineRulesCache = inlineRules
           }
         }
@@ -494,8 +493,8 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = tryUseNitro() as Nitro | undefined
-      if (nitro && (nitro.options.prerender.crawlLinks || ('routing' in nitro && nitro.routing.routeRules.routes.some(r => r.data.prerender)))) {
+      const nitro = tryUseNitro()
+      if (nitro && (nitro.options.prerender.crawlLinks || nitro.routing?.routeRules.routes.some(r => r.data.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -536,7 +535,7 @@ export default defineNuxtModule({
     })
 
     const warnedConflicts = new Set<string>()
-    let publicAssets: Nitro['options']['publicAssets'] = []
+    let publicAssets: NitroInstanceOptions['publicAssets'] = []
     nuxt.hook('nitro:init', (nitro) => {
       const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
       publicAssets = nitro.options.publicAssets.filter((asset) => {
@@ -631,7 +630,7 @@ export default defineNuxtModule({
       nitro.options.prerender.routes ||= []
 
       // Inject page patterns that explicitly match `prerender: true` route rule
-      if (!nitro.options.static) {
+      if (!nitro.options.static && nitro.routing) {
         // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs`
         // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
         // not), then case-fold unless routing is `sensitive`.
@@ -748,7 +747,7 @@ export default defineNuxtModule({
     const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
-    let nitroForRouteCoverage: Nitro | undefined
+    let nitroForRouteCoverage: NitroInstance | undefined
     nuxt.hook('nitro:init', (nitro) => {
       nitroForRouteCoverage = nitro
     })

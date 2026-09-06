@@ -4,7 +4,7 @@ import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerRouteSegment } from '@nuxt/schema'
+import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerImportsOptions, ServerRouteSegment } from '@nuxt/schema'
 import { join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
@@ -36,7 +36,6 @@ import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from './imports.ts'
 import { createServerAutoImports, resolveServerImportDirs } from './auto-imports.ts'
 import { normalizeLegacyRouteRules } from './route-rules.ts'
-import type { ServerImportsOptions } from './auto-imports.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports

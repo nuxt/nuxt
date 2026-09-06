@@ -1,7 +1,7 @@
-import type { Nitro } from 'nitro/types'
+import type { NitroInstance } from '@nuxt/schema'
 import { decodeRoutePath } from './index.ts'
 
-type RouteRulesRouter = Nitro['routing']['routeRules']
+type RouteRulesRouter = NonNullable<NitroInstance['routing']>['routeRules']
 
 /**
  * Normalise a route-rule key or lookup path: decode percent-encoding, then case-fold when

@@ -27,11 +27,6 @@ declare module 'nitro/types' {
   interface NitroImportMeta {
     test?: boolean
   }
-  interface NitroRuntimeConfigApp {
-    baseURL: string
-    buildAssetsDir: string
-    cdnURL: string
-  }
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
