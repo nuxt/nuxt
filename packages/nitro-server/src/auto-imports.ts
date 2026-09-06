@@ -38,6 +38,12 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   const isIgnored = createIsIgnored(nuxt)
   const scanDirs = options.dirs ?? []
 
+  // the project comes first in `_layers`, so it gets the highest priority; the floor of 1 is
+  // unimport's default, so a scanned util still takes precedence over a preset of the same name
+  const layerPriorities = nuxt.options._layers
+    .map((layer, i) => [layer.config.rootDir, nuxt.options._layers.length - i] as const)
+    .sort(([a], [b]) => b.length - a.length)
+
   let initialised: Promise<void> | undefined
   function init () {
     initialised ??= (async () => {
@@ -53,6 +59,9 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       const scanned = await scanDirExports(scanDirs, {
         fileFilter: file => !isIgnored(file),
       })
+      for (const i of scanned) {
+        i.priority ??= layerPriorities.find(([dir]) => i.from === dir || i.from.startsWith(dir + '/'))?.[1]
+      }
       imports.push(...scanned)
       return imports
     })

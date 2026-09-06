@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
@@ -118,6 +118,28 @@ describe('createServerAutoImports', () => {
       const result = await autoImports.injectImports(code, '/app/server/utils/shadow.ts')
       expect(result?.s.hasChanged()).toBe(false)
     }
+  })
+
+  it('prefers a project server util over one from an extended layer', async () => {
+    const rootDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-layers-'))
+    const layerDir = join(rootDir, 'layer')
+    for (const [dir, value] of [[rootDir, 'root'], [layerDir, 'layer']] as const) {
+      mkdirSync(join(dir, 'server/utils'), { recursive: true })
+      writeFileSync(join(dir, 'server/utils/useMyServerUtil.ts'), `export const useMyServerUtil = () => '${value}'\n`)
+    }
+    const nuxt = mockNuxt()
+    nuxt.options.rootDir = rootDir
+    nuxt.options.srcDir = rootDir
+    nuxt.options._layers = [{ cwd: rootDir, config: { rootDir } }, { cwd: layerDir, config: { rootDir: layerDir } }] as unknown as Nuxt['options']['_layers']
+
+    const autoImports = createServerAutoImports(
+      nuxt,
+      { autoImport: true, dirs: [join(rootDir, 'server/utils'), join(layerDir, 'server/utils')] },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+    )
+
+    const imports = await autoImports.getImports()
+    expect(imports.filter(i => i.name === 'useMyServerUtil').map(i => i.from)).toEqual([join(rootDir, 'server/utils/useMyServerUtil.ts')])
   })
 
   it('resolves `#imports` to a path inside the types directory', () => {
