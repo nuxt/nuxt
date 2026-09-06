@@ -68,6 +68,21 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     })
   })
 
+  it('should give a `nuxt/server` handler the web-standard request and response', async () => {
+    const response = await fetch('/api/portable?web=yes', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json', 'accept': 'application/json' },
+    })
+
+    expect(response.headers.get('x-portable-web')).toBe('yes')
+    expect(await response.json()).toMatchObject({
+      name: 'nuxt',
+      path: '/api/portable',
+      accept: 'application/json',
+    })
+  })
+
   it('should map an error created with `nuxt/server` to its status', async () => {
     const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
 
