@@ -13,7 +13,7 @@ const rootDir = fileURLToPath(new URL('./fixtures/vite-server-netlify', import.m
 const publicDir = join(rootDir, '.output/public')
 
 // the function is called back over `127.0.0.1`, so it is unreachable where `localhost`
-// resolves to `::1` first (see the fixture's README)
+// resolves to `::1` first
 const reachesFunctions = await lookup('localhost').then(({ family }) => family === 4, () => false)
 
 if (runsOncePerEnvInMatrix && isDev) {
