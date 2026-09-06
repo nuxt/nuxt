@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { resolveModuleExportNames } from '@nuxt/kit/internal'
 import type { CookieSerializeOptions } from 'cookie-es'
-import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
+import type { AppRouteRules, RequestEventContext, RuntimeConfig } from 'nuxt/schema'
 
 import type {
   EventHandler,
@@ -47,7 +47,7 @@ interface MainSurface {
 
 /** The portable minimum: what both branches' event types carry. */
 interface EventLike {
-  readonly context: Record<string, unknown>
+  readonly context: RequestEventContext
 }
 
 /** Value exports `main` has, in the order they are declared there. */

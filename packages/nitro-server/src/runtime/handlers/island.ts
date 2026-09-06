@@ -20,6 +20,7 @@ import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/internal/renderer/islands'
 import { isStyleOfModule } from 'nuxt/internal/renderer/dev-css'
 import { toRequestEvent } from '../utils/event'
+import { applyIslandPrerenderHints } from '../utils/prerender'
 
 import { rendererInstance } from '../utils/renderer/options'
 
@@ -47,6 +48,17 @@ const handler: EventHandler = defineEventHandler(async (event) => {
     return toResponse(event, await renderIsland(event))
   }
 
+  try {
+    return await prerenderIslandRequest(event)
+  } catch (error) {
+    applyIslandPrerenderHints(event)
+    throw error
+  }
+})
+
+export default handler
+
+async function prerenderIslandRequest (event: H3Event) {
   const islandPath = (event.path || '').replace(/\?.*$/, '')
   const stack = prerenderRenderingURLs!.getStore()
   if (stack?.includes(islandPath)) {
@@ -75,11 +87,12 @@ const handler: EventHandler = defineEventHandler(async (event) => {
   }
 
   return toResponse(event, await prerenderIsland(event, islandPath))
-})
-
-export default handler
+}
 
 function toResponse (event: H3Event, result: IslandRenderResult) {
+  if (import.meta.prerender) {
+    applyIslandPrerenderHints(event)
+  }
   return 'raw' in result ? returnIslandResponse(event, result.raw) : result
 }
 

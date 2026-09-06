@@ -1,4 +1,4 @@
-import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
+import { setResponseStatus as _setResponseStatus, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
 import type { RuntimeRequestEvent } from '@nuxt/schema'
@@ -103,8 +103,12 @@ export function useResponseHeader (header: string): import('vue').WritableComput
 export function prerenderRoutes (path: string | string[]): void {
   if (!import.meta.server || !import.meta.prerender) { return }
 
-  const paths = toArray(path)
-  appendHeader(useRequestEvent()!, 'x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
+  const context = useRequestEvent()?.context
+  if (!context) { return }
+
+  const nuxt = context.nuxt ||= {}
+  nuxt.prerenderRoutes ||= []
+  nuxt.prerenderRoutes.push(...toArray(path))
 }
 
 const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'
