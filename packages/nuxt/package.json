@@ -30,6 +30,7 @@
     "./meta": "./meta.js",
     "./app": "./src/app/index.ts",
     "./server": "./src/server/index.ts",
+    "./internal/dev-error": "./src/runtime/server/dev-error/index.ts",
     "./internal/renderer": "./src/runtime/server/renderer/index.ts",
     "./internal/*": "./src/runtime/server/*.ts",
     "./package.json": "./package.json"
@@ -38,6 +39,9 @@
     "*": {
       "server": [
         "./dist/server/index.d.ts"
+      ],
+      "internal/dev-error": [
+        "./dist/runtime/server/dev-error/index.d.ts"
       ],
       "internal/renderer": [
         "./dist/runtime/server/renderer/index.d.ts"
@@ -99,6 +103,7 @@
     "klona": "catalog:app-runtime",
     "knitwork": "catalog:build",
     "magic-string": "catalog:vite",
+    "my-bad": "catalog:nitro-runtime",
     "nanotar": "catalog:build",
     "nostics": "catalog:app-runtime",
     "object-identity": "catalog:app-runtime",
