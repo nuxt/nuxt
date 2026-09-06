@@ -1545,6 +1545,57 @@ describe.skipIf(!once)('error boundaries', () => {
     expect(consoleLogs.filter(log => log.type === 'error' || log.type === 'warning')).toEqual([])
     await page.close()
   })
+
+  it('should catch server-side errors within error boundaries', async () => {
+    const res = await fetch('/error/error-boundary-ssr')
+    expect(res.status).toBe(200)
+    const html = await res.text()
+
+    expect(html).toContain('Content outside the boundary is still rendered')
+    expect(html).not.toContain('nuxt-error-page')
+
+    expect(html).toContain('sync boundary caught: ')
+    expect(html).not.toContain('ssr-boundary-sync-default')
+    expect(html).toContain('async boundary caught: ')
+    expect(html).not.toContain('ssr-boundary-async-default')
+    expect(html).toContain('nested async boundary caught an error')
+    expect(html).not.toContain('break-in-async-setup-wrapper')
+
+    expect(html).toContain('nuxt error caught: 418 I am a teapot {&quot;flavour&quot;:&quot;earl grey&quot;}')
+
+    expect(html).toContain('retry boundary caught an error')
+    expect(html).not.toContain('ssr-boundary-retry-default')
+    if (isDev) {
+      expect(html).toContain('retry-fails boundary caught: thrown on server')
+    } else {
+      expect(html).toContain('retry-fails boundary caught: Internal Server Error')
+      expect(html).not.toContain('thrown on server')
+    }
+
+    expect(html).toContain('Sugar Counter 12 x 2 = 24')
+    expect(html).not.toContain('this should never render')
+
+    const { page, pageErrors, consoleLogs } = await renderPage('/error/error-boundary-ssr')
+
+    expect(await page.locator('.ssr-boundary-sync-error').count()).toBe(1)
+    expect(await page.locator('.ssr-boundary-nuxt-error').innerText()).toContain('418 I am a teapot {"flavour":"earl grey"}')
+
+    await page.locator('.ssr-boundary-retry-default').waitFor()
+    expect(await page.locator('.ssr-boundary-retry-error').count()).toBe(0)
+    await page.getByText('retry-fails boundary caught: thrown on client').waitFor()
+
+    await page.locator('#clear-sync-error').click()
+    await page.locator('.ssr-boundary-sync-default').waitFor()
+    expect(await page.locator('.ssr-boundary-sync-error').count()).toBe(0)
+
+    await page.locator('#ssr-boundary-counter button').click()
+    expect(await page.locator('#ssr-boundary-counter').innerText()).toContain('Sugar Counter 13 x 2 = 26')
+
+    expect(pageErrors).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'error').map(l => l.text)).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'warning' && l.text.includes('Hydration')).map(l => l.text)).toEqual([])
+    await page.close()
+  })
 })
 
 describe('composables', () => {

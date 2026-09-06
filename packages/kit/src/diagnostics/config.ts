@@ -131,5 +131,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Declare the schema in `nuxt.config` to choose one, or report the conflict to the module authors.',
       docs: false,
     },
+    NUXT_B5035: {
+      why: '`experimental.clientFallback` and `<NuxtClientFallback>` are deprecated: `<NuxtErrorBoundary>` now catches server-side errors and can retry on the client.',
+      fix: 'Replace `<NuxtClientFallback>` with `<NuxtErrorBoundary retry-on-client>`, moving fallback content into the `#error` slot (and dropping `retry-on-client` where you used `keep-fallback`). Keep `experimental.ssrErrorBoundary` enabled (the default), then remove `experimental.clientFallback` from your `nuxt.config`.',
+      docs: false,
+    },
   },
 })
