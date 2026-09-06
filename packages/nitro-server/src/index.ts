@@ -832,7 +832,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     capabilities: { server: true, dev: true },
     buildsSeparately: true,
-    runtime: { runtimeConfig: 'nitropack/runtime' },
+    runtime: {
+      runtimeConfig: 'nitropack/runtime',
+      server: resolve(distDir, 'runtime/server'),
+    },
     preview: { command: () => nitro.options.commands.preview },
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)

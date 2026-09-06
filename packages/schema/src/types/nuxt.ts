@@ -216,6 +216,15 @@ export interface NuxtServerBuildRuntime {
   fetch?: string
   /** Exports `useRuntimeConfig`. */
   runtimeConfig: string
+  /**
+   * Exports the implementations backing `nuxt/server`, which the server build resolves that
+   * subpath to. Omitted by a runtime with nothing to add to the web-standard implementations
+   * Nuxt ships, which the subpath resolves to otherwise.
+   *
+   * Every value `nuxt/server` exports must be exported here too: the types come from the
+   * `nuxt` package either way, so a missing export is a runtime error, not a type error.
+   */
+  server?: string
 }
 
 /**

@@ -1,6 +1,9 @@
+import { resolveModulePath } from 'exsolve'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import { useNuxt } from '../context.ts'
+import { directoryToURL } from './esm.ts'
+import { useServerBuild } from './server-build.ts'
 
 // This surface is experimental for as long as `NuxtServerBuild` is, and will change without
 // a major release until it has settled.
@@ -10,6 +13,12 @@ const RENDERER_CONFIG_SPECIFIER = 'nuxt/internal/renderer-config'
 
 /** Specifier a server builder imports `createNuxtRenderer` from. */
 const RENDERER_SPECIFIER = 'nuxt/internal/renderer'
+
+/** The portable server surface, whose implementations the configured server builder supplies. */
+const SERVER_SPECIFIER = 'nuxt/server'
+
+/** Specifier the shipped `nuxt/server` implementations read runtime configuration from. */
+const SERVER_RUNTIME_CONFIG_SPECIFIER = 'nuxt/internal/server-runtime-config'
 
 /** The specifier the renderer imports each build artifact through, and the {@link NuxtBuildOutputs} key that provides it. */
 const BUILD_OUTPUT_SPECIFIERS: Record<string, keyof NuxtBuildOutputs> = {
@@ -150,6 +159,23 @@ export function getRendererDefines (phase: 'server' | 'prerender', nuxt: Nuxt = 
 }
 
 /**
+ * The module backing `nuxt/server` in the server bundle: the one the configured server
+ * builder supplies, or the web-standard implementations Nuxt ships.
+ *
+ * The default is resolved to a file rather than left as `nuxt/server`, which the bundle
+ * resolves to the module being generated here.
+ */
+function getServerSurfaceModule (nuxt: Nuxt): string {
+  const delegate = useServerBuild(nuxt).runtime.server
+  if (delegate) {
+    return delegate
+  }
+  return resolveModulePath('nuxt/server', {
+    from: [...(nuxt.options.modulesDir || []).filter(Boolean).map(dir => directoryToURL(dir)), import.meta.url],
+  })
+}
+
+/**
  * Version of the server runtime contract, bumped whenever a server builder has to do
  * something different with what {@link getServerRuntime} hands it. A builder compares it
  * against the version it was written for, so a mismatch is a build-time error rather than
@@ -225,6 +251,9 @@ export function getServerRuntime (options: ServerRuntimeOptions = {}, nuxt: Nuxt
     const output = BUILD_OUTPUT_SPECIFIERS[specifier]!
     modules[specifier] = { output, code: () => nuxt.buildOutputs[output]() }
   }
+
+  modules[SERVER_SPECIFIER] = { code: () => `export * from ${JSON.stringify(getServerSurfaceModule(nuxt))}` }
+  modules[SERVER_RUNTIME_CONFIG_SPECIFIER] = { code: () => `export { useRuntimeConfig } from ${JSON.stringify(useServerBuild(nuxt).runtime.runtimeConfig)}` }
 
   return {
     version: SERVER_RUNTIME_VERSION,

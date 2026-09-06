@@ -29,6 +29,7 @@
     "./kit": "./kit.js",
     "./meta": "./meta.js",
     "./app": "./src/app/index.ts",
+    "./server": "./src/server/index.ts",
     "./internal/renderer": "./src/runtime/server/renderer/index.ts",
     "./internal/*": "./src/runtime/server/*.ts",
     "./entry": "./src/runtime/server/entry.ts",
@@ -58,6 +59,9 @@
       ],
       "entry-ids": [
         "./dist/runtime/server/entry-ids.d.ts"
+      ],
+      "server": [
+        "./dist/server/index.d.ts"
       ],
       "internal/renderer": [
         "./dist/runtime/server/renderer/index.d.ts"
@@ -200,6 +204,7 @@
       "./kit": "./kit.js",
       "./meta": "./meta.js",
       "./app": "./dist/app/index.js",
+      "./server": "./dist/server/index.js",
       "./internal/renderer": "./dist/runtime/server/renderer/index.js",
       "./internal/*": "./dist/runtime/server/*.js",
       "./entry": "./dist/runtime/server/entry.js",
