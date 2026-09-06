@@ -1,15 +1,18 @@
-import { fileURLToPath } from 'node:url'
 import { createHooks } from 'hookable'
 import type { Nuxt } from 'nuxt/schema'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { findWorkspaceDir } from 'pkg-types'
 
-import { checkNuxtCompatibility, getNitroVersion, hasNitroVersion } from '../src/compatibility.ts'
+import { checkNuxtCompatibility, getNitroVersion } from '../src/compatibility.ts'
 import { runWithNuxtContext } from '../src/context.ts'
+import { kitDiagnostics } from '../src/diagnostics/kit-api.ts'
 import { defineNuxtModule } from '../src/module/define.ts'
-import { addDevServerHandler, addServerHandler, addServerImports, addServerImportsDir, addServerPlugin } from '../src/nitro.ts'
-import { createNitroHelpers } from '../src/nitro-helpers.ts'
+
+import { addDevServerHandler, addNitroPlugin, addServerHandler, addServerImports, addServerImportsDir, addServerPlugin, getHostServerApis, kServerApi, kUnusedVariants } from '../src/nitro.ts'
 import { addServerTemplate } from '../src/template.ts'
+
+const serverApiOf = (entry: object) => (entry as Record<symbol, string | undefined>)[kServerApi]
+const unusedVariantsOf = (entry: object) => (entry as Record<symbol, string[] | undefined>)[kUnusedVariants]
 
 const repoRoot = await findWorkspaceDir()
 
@@ -29,6 +32,7 @@ function createMockNuxt (nitroVersion?: string) {
       modulesDir: [],
       serverHandlers: [],
       devServerHandlers: [],
+      _serverPlugins: [],
       extensions: ['.js', '.ts', '.mjs'],
       alias: {},
       build: { transpile: [] },
@@ -64,7 +68,6 @@ describe('getNitroVersion', () => {
     const nuxt = createMockNuxt('3.0.1')
     nuxt.options._nitroMajor = 2
     expect(getNitroVersion(nuxt)).toBe(2)
-    expect(hasNitroVersion(2, nuxt)).toBe(true)
   })
 
   it('is reliable during setup via the marker when package resolution fails', () => {
@@ -75,7 +78,6 @@ describe('getNitroVersion', () => {
     nuxt.options.modulesDir = ['/nonexistent-root/node_modules']
     nuxt.options._nitroMajor = 3
     expect(getNitroVersion(nuxt)).toBe(3)
-    expect(hasNitroVersion(3, nuxt)).toBe(true)
   })
 })
 
@@ -97,13 +99,11 @@ describe('nitro detection on an older Nuxt host', () => {
 
   it('degrades to `undefined` instead of throwing when resolution misbehaves', () => {
     expect(getNitroVersion(createHostileHost())).toBeUndefined()
-    expect(hasNitroVersion(2, createHostileHost())).toBe(false)
   })
 
   it('does not throw when the Nuxt instance has no options', () => {
     // resolution still falls back to kit's own vicinity, which is nitro v3 here
     expect(() => getNitroVersion({} as Nuxt)).not.toThrow()
-    expect(hasNitroVersion(2, {} as Nuxt)).toBe(false)
   })
 
   it('resolves the nitro version from an unresolvable project without throwing', () => {
@@ -113,15 +113,15 @@ describe('nitro detection on an older Nuxt host', () => {
     expect(() => getNitroVersion(nuxt)).not.toThrow()
   })
 
-  it('registers untagged and v2 registrations even when detection fails', () => {
+  it('registers server code even when detection fails', () => {
     const nuxt = createHostileHost()
     runWithNuxtContext(nuxt, () => {
-      addServerHandler({ route: '/untagged', handler: '/handler.ts' })
-      addServerHandler({ route: '/v2', handler: '/handler.ts' }, { version: 2 })
-      addServerPlugin('/plugins/legacy.ts')
+      addServerHandler({ route: '/plain', handler: '/handler.ts' })
+      addServerHandler({ route: '/variants', handler: { nitro2: '/handler.v2.ts', nuxt: '/handler.ts' } })
+      addNitroPlugin('/plugins/legacy.ts')
     })
-    expect(nuxt.options.serverHandlers.map(h => h.route)).toEqual(['/untagged', '/v2'])
-    expect(nuxt.options.nitro.plugins).toEqual(['/plugins/legacy.ts'])
+    expect(nuxt.options.serverHandlers.map(h => h.route)).toEqual(['/plain', '/variants'])
+    expect(nuxt.options._serverPlugins).toEqual([{ plugin: '/plugins/legacy.ts', compatibility: undefined, unused: [] }])
   })
 
   it('does not throw from `checkNuxtCompatibility` when the nitro version is unknown', async () => {
@@ -146,15 +146,6 @@ describe('nitro major marker', () => {
   })
 })
 
-describe('hasNitroVersion', () => {
-  it('checks the exact nitro major', () => {
-    expect(hasNitroVersion(3, createMockNuxt('3.0.1'))).toBe(true)
-    expect(hasNitroVersion(2, createMockNuxt('2.11.0'))).toBe(true)
-    expect(hasNitroVersion(2, createMockNuxt('3.0.1'))).toBe(false)
-    expect(hasNitroVersion(3, createMockNuxt('2.11.0'))).toBe(false)
-  })
-})
-
 describe('checkNuxtCompatibility', () => {
   it('reports an issue when the nitro constraint is not satisfied', async () => {
     const issues = await checkNuxtCompatibility({ nitro: '^3.0.0' }, createMockNuxt('2.11.0'))
@@ -168,199 +159,200 @@ describe('checkNuxtCompatibility', () => {
   })
 })
 
+describe('getHostServerApis', () => {
+  it('orders what a nitro host runs, most preferred first', () => {
+    expect(getHostServerApis(createMockNuxt('3.0.1'))).toEqual(['nitro3', 'nuxt', 'nitro2'])
+    expect(getHostServerApis(createMockNuxt('2.11.0'))).toEqual(['nitro2', 'nuxt'])
+  })
+
+  it('only runs portable code under a server builder that is not nitro', () => {
+    for (const builder of ['@nuxt/vite-server', '/project/server-builder.ts', { bundle: () => Promise.resolve() }]) {
+      const nuxt = createMockNuxt('3.0.1')
+      ;(nuxt.options as any).server = { builder }
+      expect(getHostServerApis(nuxt)).toEqual(['nuxt'])
+    }
+  })
+
+  it('recognises the nitro builder given as a file path', () => {
+    for (const builder of ['@nuxt/nitro-server', '/repo/node_modules/@nuxt/nitro-server/dist/index.mjs', '/repo/packages/nitro-server/src/index.ts']) {
+      const nuxt = createMockNuxt('3.0.1')
+      ;(nuxt.options as any).server = { builder }
+      expect(getHostServerApis(nuxt)).toEqual(['nitro3', 'nuxt', 'nitro2'])
+    }
+  })
+
+  it('is unknown when nothing identifies the host', () => {
+    const nuxt = createMockNuxt()
+    Object.defineProperty(nuxt.options, 'modulesDir', { get () { throw new Error('unavailable') } })
+    expect(getHostServerApis(nuxt)).toBeUndefined()
+  })
+})
+
 describe('addServerHandler', () => {
-  it('registers untagged handlers unchanged', () => {
-    const nuxt = createMockNuxt('2.11.0')
+  it('registers a handler with the method its filename implies', () => {
+    const nuxt = createMockNuxt('3.0.1')
     runWithNuxtContext(nuxt, () => addServerHandler({ route: '/test', handler: '/handlers/test.get.ts' }))
     expect(nuxt.options.serverHandlers).toEqual([
       { method: 'GET', route: '/test', handler: '/handlers/test.get.ts' },
     ])
   })
 
-  it('tags handlers with an explicit version', () => {
+  it('registers the implementation this host runs, of one per server API', () => {
     const nuxt = createMockNuxt('3.0.1')
-    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/test', handler: '/handlers/test.ts' }, { version: 3 }))
+    runWithNuxtContext(nuxt, () => addServerHandler({
+      route: '/test',
+      handler: { nuxt: '/handlers/test.ts', nitro2: '\\handlers\\test.v2.ts' },
+    }))
     expect(nuxt.options.serverHandlers).toEqual([
-      { method: undefined, route: '/test', handler: '/handlers/test.ts', version: 3 },
+      { method: undefined, route: '/test', handler: '/handlers/test.ts' },
     ])
+    expect(serverApiOf(nuxt.options.serverHandlers[0]!)).toBe('nuxt')
+    expect(unusedVariantsOf(nuxt.options.serverHandlers[0]!)).toEqual(['/handlers/test.v2.ts'])
   })
 
-  it('skips v3 handlers on a nitro v2 host and records the skip', () => {
+  it('registers the nitro v2 implementation on a nitro v2 host', () => {
     const nuxt = createMockNuxt('2.11.0')
-    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/test', handler: '/handlers/test.ts' }, { version: 3 }))
-    expect(nuxt.options.serverHandlers).toEqual([])
-    expect(nuxt._skippedNitroRegistrations).toEqual([{ api: 'addServerHandler', version: 3, host: 2 }])
+    runWithNuxtContext(nuxt, () => addServerHandler({
+      route: '/test',
+      handler: { nuxt: '/handlers/test.ts', nitro2: '/handlers/test.v2.ts', nitro3: '/handlers/test.v3.ts' },
+    }))
+    expect(nuxt.options.serverHandlers.map(h => h.handler)).toEqual(['/handlers/test.v2.ts'])
   })
 
-  it('rejects a version map passed as the `handler` field', () => {
+  it('reports and skips a registration whose implementations the host cannot run', () => {
+    const report = vi.spyOn(kitDiagnostics, 'NUXT_B8024').mockImplementation(() => ({}) as any)
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/test', handler: { nitro3: '/handlers/test.v3.ts' } }))
+    expect(nuxt.options.serverHandlers).toEqual([])
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toMatchObject({ api: 'addServerHandler', declared: 'nitro3' })
+    report.mockRestore()
+  })
+
+  it('takes the filename convention from the implementation it registered', () => {
     const nuxt = createMockNuxt('3.0.1')
-    // the whole registration is versioned, not the handler
-    const invalid = { route: '/test', handler: { 2: '/handler.v2.ts', 3: '/handler.v3.ts' } } as unknown as Parameters<typeof addServerHandler>[0]
-    const error = (() => {
-      try {
-        runWithNuxtContext(nuxt, () => addServerHandler(invalid))
-      } catch (error) {
-        return error as Error & { code?: string }
-      }
-    })()
-
-    expect(error?.code).toBe('NUXT_B8025')
-    expect(error?.message).toContain('per-nitro-version map')
-    expect(nuxt.options.serverHandlers).toEqual([])
+    runWithNuxtContext(nuxt, () => addServerHandler({ handler: { nitro2: '/handlers/test.post.ts' } }))
+    expect(nuxt.options.serverHandlers[0]!.method).toBe('POST')
   })
 
-  it('picks the variant matching the host nitro version', () => {
-    for (const [nitroVersion, expected] of [['2.11.0', 2], ['3.0.1', 3]] as const) {
-      const nuxt = createMockNuxt(nitroVersion)
-      runWithNuxtContext(nuxt, () => addServerHandler({
-        2: { route: '/test', handler: '/handlers/test.v2.ts' },
-        3: { route: '/test', handler: '/handlers/test.v3.ts' },
-      }))
-      expect(nuxt.options.serverHandlers).toEqual([
-        { method: undefined, route: '/test', handler: `/handlers/test.v${expected}.ts`, version: expected },
-      ])
+  it('writes an entry a host older than this kit can consume', () => {
+    // an older host hands `serverHandlers` entries straight to nitro v2, so nothing beyond
+    // the keys nitro knows may be enumerable on them
+    const nuxt = createMockNuxt('2.11.0')
+    delete (nuxt.options as { _serverPlugins?: unknown })._serverPlugins
+    runWithNuxtContext(nuxt, () => {
+      addServerHandler({ route: '/test', handler: { nitro2: '/handlers/test.v2.ts', nuxt: '/handlers/test.ts' } })
+      addNitroPlugin({ nitro2: '/plugins/test.v2.ts', nitro3: '/plugins/test.v3.ts' })
+    })
+    expect(JSON.parse(JSON.stringify(nuxt.options.serverHandlers))).toEqual([
+      { route: '/test', handler: '/handlers/test.v2.ts' },
+    ])
+    expect(Object.keys(nuxt.options.serverHandlers[0]!).sort()).toEqual(['handler', 'method', 'route'])
+    expect(nuxt.options.nitro.plugins).toEqual(['/plugins/test.v2.ts'])
+  })
+
+  it('rejects a variant key that is not a server API', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    let error: (Error & { code?: string }) | undefined
+    try {
+      runWithNuxtContext(nuxt, () => addServerHandler({ route: '/test', handler: { nitro4: '/handlers/test.ts' } as any }))
+    } catch (e) {
+      error = e as Error
     }
-  })
-
-  it('falls back to a v2 variant on a nitro v3 host', () => {
-    const nuxt = createMockNuxt('3.0.1')
-    runWithNuxtContext(nuxt, () => addServerHandler({
-      2: { route: '/test', handler: '/handlers/test.v2.ts' },
-    }))
-    expect(nuxt.options.serverHandlers).toEqual([
-      { method: undefined, route: '/test', handler: '/handlers/test.v2.ts', version: 2 },
-    ])
-  })
-
-  it('skips a v3-only variant on a nitro v2 host', () => {
-    const nuxt = createMockNuxt('2.11.0')
-    runWithNuxtContext(nuxt, () => addServerHandler({
-      3: { route: '/test', handler: '/handlers/test.v3.ts' },
-    }))
+    expect(error?.code).toBe('NUXT_B8025')
     expect(nuxt.options.serverHandlers).toEqual([])
+  })
+
+  it('registers into the array a server builder already holds', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    const handlers = nuxt.options.serverHandlers
+    runWithNuxtContext(nuxt, () => {
+      addServerHandler({ route: '/early', handler: '/handlers/early.ts' })
+      addServerHandler({ route: '/late', handler: { nitro3: '/handlers/late.ts' } })
+    })
+    expect(handlers[1]!.handler).toBe('/handlers/late.ts')
+    expect(handlers.map(h => h.route)).toEqual(['/early', '/late'])
+    expect(nuxt.options.serverHandlers).toBe(handlers)
   })
 })
 
 describe('addDevServerHandler', () => {
-  it('tags dev handlers with an explicit version', () => {
+  it('registers the implementation this host runs', () => {
     const nuxt = createMockNuxt('3.0.1')
-    const handler = () => {}
-    runWithNuxtContext(nuxt, () => addDevServerHandler({ route: '/test', handler }, { version: 3 }))
-    expect(nuxt.options.devServerHandlers).toEqual([{ route: '/test', handler, version: 3 }])
-  })
-
-  it('rejects a version map passed as the `handler` field', () => {
-    const nuxt = createMockNuxt('3.0.1')
-    // the whole registration is versioned, not the handler
-    const invalid = { route: '/test', handler: { 2: '/handler.v2.ts', 3: '/handler.v3.ts' } } as unknown as Parameters<typeof addServerHandler>[0]
-    const error = (() => {
-      try {
-        runWithNuxtContext(nuxt, () => addServerHandler(invalid))
-      } catch (error) {
-        return error as Error & { code?: string }
-      }
-    })()
-
-    expect(error?.code).toBe('NUXT_B8025')
-    expect(error?.message).toContain('per-nitro-version map')
-    expect(nuxt.options.serverHandlers).toEqual([])
-  })
-
-  it('picks the variant matching the host nitro version', () => {
-    const nuxt = createMockNuxt('2.11.0')
     const v2 = () => {}
-    const v3 = () => {}
-    runWithNuxtContext(nuxt, () => addDevServerHandler({
-      2: { route: '/test', handler: v2 },
-      3: { route: '/test', handler: v3 },
-    }))
-    expect(nuxt.options.devServerHandlers).toEqual([{ route: '/test', handler: v2, version: 2 }])
+    const v3 = { fetch: () => new Response() }
+    runWithNuxtContext(nuxt, () => addDevServerHandler({ route: '/test', handler: { nitro2: v2, nitro3: v3 } }))
+    expect(nuxt.options.devServerHandlers).toEqual([{ route: '/test', handler: v3 }])
+    expect(serverApiOf(nuxt.options.devServerHandlers[0]!)).toBe('nitro3')
   })
 })
 
-describe('addServerPlugin', () => {
-  it('registers untagged plugins unchanged', () => {
-    const nuxt = createMockNuxt('2.11.0')
-    runWithNuxtContext(nuxt, () => addServerPlugin('/plugins/test.ts'))
-    expect(nuxt.options.nitro.plugins).toEqual(['/plugins/test.ts'])
-    expect((nuxt as any)._serverPluginVersions).toBeUndefined()
-  })
-
-  it('records plugin versions by normalized path', () => {
+describe('addNitroPlugin', () => {
+  it('registers a normalized path', () => {
     const nuxt = createMockNuxt('3.0.1')
-    runWithNuxtContext(nuxt, () => addServerPlugin('\\plugins\\test.ts', { version: 3 }))
-    expect(nuxt.options.nitro.plugins).toEqual(['/plugins/test.ts'])
-    expect((nuxt as any)._serverPluginVersions.get('/plugins/test.ts')).toBe(3)
-  })
-
-  it('also records the alias-resolved plugin path', () => {
-    const nuxt = createMockNuxt('3.0.1')
-    nuxt.options.alias = { '#test-mod': '/mods/test-module' }
-    runWithNuxtContext(nuxt, () => addServerPlugin('#test-mod/plugin.mjs', { version: 3 }))
-    const versions = nuxt._serverPluginVersions!
-    expect(versions.get('#test-mod/plugin.mjs')).toBe(3)
-    expect(versions.get('/mods/test-module/plugin.mjs')).toBe(3)
-  })
-
-  it('also records the plugin path resolved to a file', () => {
-    const nuxt = createMockNuxt('3.0.1')
-    const extensionless = fileURLToPath(new URL('./nitro.test', import.meta.url))
-    runWithNuxtContext(nuxt, () => addServerPlugin(extensionless, { version: 2 }))
-    const versions = (nuxt as any)._serverPluginVersions
-    expect(versions.get(extensionless.replace(/\\/g, '/'))).toBe(2)
-    expect(versions.get(`${extensionless.replace(/\\/g, '/')}.ts`)).toBe(2)
-  })
-
-  it('rejects a version map passed as the `handler` field', () => {
-    const nuxt = createMockNuxt('3.0.1')
-    // the whole registration is versioned, not the handler
-    const invalid = { route: '/test', handler: { 2: '/handler.v2.ts', 3: '/handler.v3.ts' } } as unknown as Parameters<typeof addServerHandler>[0]
-    const error = (() => {
-      try {
-        runWithNuxtContext(nuxt, () => addServerHandler(invalid))
-      } catch (error) {
-        return error as Error & { code?: string }
-      }
-    })()
-
-    expect(error?.code).toBe('NUXT_B8025')
-    expect(error?.message).toContain('per-nitro-version map')
-    expect(nuxt.options.serverHandlers).toEqual([])
-  })
-
-  it('picks the variant matching the host nitro version', () => {
-    const nuxt = createMockNuxt('3.0.1')
-    runWithNuxtContext(nuxt, () => addServerPlugin({ 2: '/plugins/test.v2.ts', 3: '/plugins/test.v3.ts' }))
-    expect(nuxt.options.nitro.plugins).toEqual(['/plugins/test.v3.ts'])
-    expect((nuxt as any)._serverPluginVersions.get('/plugins/test.v3.ts')).toBe(3)
-  })
-
-  it('skips a v3-only plugin on a nitro v2 host', () => {
-    const nuxt = createMockNuxt('2.11.0')
-    runWithNuxtContext(nuxt, () => addServerPlugin({ 3: '/plugins/test.v3.ts' }))
+    runWithNuxtContext(nuxt, () => addNitroPlugin('\\plugins\\test.ts'))
+    expect(nuxt.options._serverPlugins).toEqual([{ plugin: '/plugins/test.ts', compatibility: undefined, unused: [] }])
     expect(nuxt.options.nitro.plugins).toBeUndefined()
   })
+
+  it('registers the implementation this host runs, of one per nitro major', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    runWithNuxtContext(nuxt, () => addNitroPlugin({ nitro3: '/plugins/test.ts', nitro2: '/plugins/test.v2.ts' }))
+    expect(nuxt.options._serverPlugins).toEqual([
+      { plugin: '/plugins/test.ts', compatibility: 'nitro3', unused: ['/plugins/test.v2.ts'] },
+    ])
+  })
+
+  it('is skipped when it names a nitro major the host does not run', () => {
+    const report = vi.spyOn(kitDiagnostics, 'NUXT_B8024').mockImplementation(() => ({}) as any)
+    const nuxt = createMockNuxt('3.0.1')
+    ;(nuxt.options as any).server = { builder: '@nuxt/vite-server' }
+    runWithNuxtContext(nuxt, () => addNitroPlugin({ nitro3: '/plugins/test.v3.ts' }))
+    expect(nuxt.options._serverPlugins).toEqual([])
+    expect(report).toHaveBeenCalledTimes(1)
+    report.mockRestore()
+  })
+
+  it('has no portable variant, since there is no portable plugin surface', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    let error: (Error & { code?: string }) | undefined
+    try {
+      runWithNuxtContext(nuxt, () => addNitroPlugin({ nuxt: '/plugins/test.ts' } as any))
+    } catch (e) {
+      error = e as Error
+    }
+    expect(error?.code).toBe('NUXT_B8025')
+    expect(nuxt.options._serverPlugins).toEqual([])
+  })
+
+  it('is still reachable under its former name', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- the alias is what is under test
+    runWithNuxtContext(nuxt, () => addServerPlugin('/plugins/test.ts'))
+    expect(nuxt.options._serverPlugins).toEqual([{ plugin: '/plugins/test.ts', compatibility: undefined, unused: [] }])
+  })
 })
 
-describe('server source versions', () => {
-  it('records auto-import sources, directories and template ids', () => {
+describe('addServerImports', () => {
+  it('adds imports and directories through `nitro:config`', async () => {
     const nuxt = createMockNuxt('3.0.1')
     runWithNuxtContext(nuxt, () => {
       addServerImports([{ name: 'useThing', from: '/modules/runtime/utils' }])
-      addServerImports([{ name: 'useOther', from: '/modules/v3/utils' }], { version: 3 })
       addServerImportsDir('/modules/runtime/server/utils')
-      addServerImportsDir('/modules/v3/server/utils', { version: 3 })
-      addServerTemplate({ filename: '#module-template', getContents: () => '' })
-      addServerTemplate({ filename: '#module-template-v3', getContents: () => '' }, { version: 3 })
     })
+    const config: { imports?: { imports?: Array<{ name: string }>, dirs?: string[] } } = {}
+    await runWithNuxtContext(nuxt, () => nuxt.callHook('nitro:config', config as any))
+    expect(config.imports!.imports).toEqual([{ name: 'useThing', from: '/modules/runtime/utils' }])
+    expect(config.imports!.dirs).toEqual(['/modules/runtime/server/utils'])
+  })
+})
 
-    const versions = (nuxt as any)._serverImportVersions as Map<string, number>
-    // untagged sources are not recorded: absent means nitro v2
-    expect(versions.get('/modules/runtime/utils')).toBeUndefined()
-    expect(versions.get('/modules/v3/utils')).toBe(3)
-    expect(versions.get('/modules/v3/server/utils')).toBe(3)
-    expect(versions.get('#module-template-v3')).toBe(3)
-    expect(versions.get('#module-template')).toBeUndefined()
+describe('addServerTemplate', () => {
+  it('registers a virtual module for the server build', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    const getContents = () => ''
+    runWithNuxtContext(nuxt, () => addServerTemplate({ filename: '#module-template', getContents }))
+    expect(nuxt.options.nitro.virtual).toEqual({ '#module-template': getContents })
   })
 })
 
@@ -369,19 +361,17 @@ describe('module-level nitro compatibility', () => {
     const testModule = defineNuxtModule({
       meta: { name: `test-nitro-compat-${nitro ?? 'default'}-${(nuxt as any)._nitro?.meta.version}`, compatibility: nitro ? { nitro } : undefined },
       setup () {
-        addServerHandler({ route: '/default', handler: '/handlers/default.ts' })
-        addServerHandler({ route: '/explicit', handler: '/handlers/explicit.ts' }, { version: 2 })
+        addServerHandler({ route: '/test', handler: '/handlers/test.ts' })
       },
     })
     await runWithNuxtContext(nuxt, () => testModule({}, nuxt))
   }
 
-  it('is a requirement check only and does not version the module registrations', async () => {
+  it('is a requirement check only and does not declare the module registrations', async () => {
     const nuxt = createMockNuxt('3.0.1')
     await installTestModule(nuxt, '^3.0.0')
     expect(nuxt.options.serverHandlers).toEqual([
-      { method: undefined, route: '/default', handler: '/handlers/default.ts' },
-      { method: undefined, route: '/explicit', handler: '/handlers/explicit.ts', version: 2 },
+      { method: undefined, route: '/test', handler: '/handlers/test.ts' },
     ])
   })
 
@@ -389,39 +379,5 @@ describe('module-level nitro compatibility', () => {
     const nuxt = createMockNuxt('2.11.0')
     await installTestModule(nuxt, '^3.0.0')
     expect(nuxt.options.serverHandlers).toEqual([])
-  })
-})
-
-describe('createNitroHelpers', () => {
-  it('binds the version, including inside hook callbacks', async () => {
-    const nuxt = createMockNuxt('3.0.1')
-    runWithNuxtContext(nuxt, () => {
-      const nitro3 = createNitroHelpers({ version: 3 })
-      nitro3.addServerHandler({ route: '/bound', handler: '/handlers/bound.ts' })
-      nuxt.hook('modules:done', () => {
-        nitro3.addServerHandler({ route: '/hooked', handler: '/handlers/hooked.ts' })
-      })
-    })
-    await runWithNuxtContext(nuxt, () => nuxt.callHook('modules:done'))
-    expect(nuxt.options.serverHandlers).toEqual([
-      { method: undefined, route: '/bound', handler: '/handlers/bound.ts', version: 3 },
-      { method: undefined, route: '/hooked', handler: '/handlers/hooked.ts', version: 3 },
-    ])
-  })
-
-  it('records versions for plugins, imports and templates', () => {
-    const nuxt = createMockNuxt('3.0.1')
-    runWithNuxtContext(nuxt, () => {
-      const nitro3 = createNitroHelpers({ version: 3 })
-      nitro3.addServerPlugin('/plugins/bound.ts')
-      nitro3.addServerImports([{ name: 'useBound', from: '/bound/utils' }])
-      nitro3.addServerImportsDir('/bound/server/utils')
-      nitro3.addServerTemplate({ filename: '#bound-template', getContents: () => '' })
-    })
-    expect(nuxt._serverPluginVersions!.get('/plugins/bound.ts')).toBe(3)
-    const imports = nuxt._serverImportVersions!
-    expect(imports.get('/bound/utils')).toBe(3)
-    expect(imports.get('/bound/server/utils')).toBe(3)
-    expect(imports.get('#bound-template')).toBe(3)
   })
 })

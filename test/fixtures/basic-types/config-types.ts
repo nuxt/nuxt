@@ -160,6 +160,6 @@ describe('server builder config', () => {
   it('resolves the same keys on `nuxt.options`', () => {
     expectTypeOf<NuxtOptions['nitro']['scanDirs']>().toEqualTypeOf<string[] | undefined>()
     expectTypeOf<NonNullable<NuxtOptions['routeRules']>[string]['ssr']>().toEqualTypeOf<boolean | undefined>()
-    expectTypeOf<NuxtOptions['serverHandlers'][number]['route']>().toEqualTypeOf<string>()
+    expectTypeOf<NuxtOptions['serverHandlers'][number]['route']>().toEqualTypeOf<string | undefined>()
   })
 })

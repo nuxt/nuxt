@@ -19,6 +19,7 @@ export interface ServerImportsOptions {
   exclude?: Array<string | RegExp>
 }
 
+/** A handler entry in a server builder's own configuration, when it contributes no types. */
 export interface ServerHandlerFallback {
   handler: string
   route?: string
@@ -27,22 +28,128 @@ export interface ServerHandlerFallback {
   lazy?: boolean
 }
 
-/** @internal */
-export type ResolveServerHandler<T> = T extends { handler: infer H } ? H : ServerHandlerFallback
-
-/** A route handler registration, as written into `serverHandlers` by `addServerHandler()`. */
-export type ServerHandler = ResolveServerHandler<NitroTypes>
-
+/** A development-only handler entry in a server builder's own configuration. */
 export interface DevServerHandlerFallback {
   route?: string
   handler: unknown
 }
 
-/** @internal */
-export type ResolveDevServerHandler<T> = T extends { devHandler: infer H } ? H : DevServerHandlerFallback
+/**
+ * The server API a piece of server code is written against.
+ *
+ * - `nitro2`: nitropack v2 and h3 v1 (`h3`, `nitropack/runtime`, `#imports`). Runs on a
+ *   Nitro v3 host through the compatibility layer.
+ * - `nitro3`: Nitro v3 and h3 v2 (`nitro`, `nitro/h3`). Pinned to the Nitro server builder.
+ * - `nuxt`: only `nuxt/server`. Runs under any server builder.
+ *
+ * A closed set today; a server builder may contribute further values later.
+ */
+export type ServerApi = 'nitro2' | 'nitro3' | 'nuxt'
 
-/** A development-only route handler registration, as written by `addDevServerHandler()`. */
-export type DevServerHandler = ResolveDevServerHandler<NitroTypes>
+/**
+ * One implementation, or one per server API for code mid-migration. Only the one the host
+ * prefers is registered.
+ */
+export type ServerApiVariants<T, Api extends ServerApi = ServerApi> = T | Partial<Record<Api, T>>
+
+export type ServerHandlerMethod = 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'QUERY'
+
+/** Environments a handler is bundled for. */
+export type ServerHandlerEnv = 'dev' | 'prod' | 'prerender' | (string & {})
+
+export interface ServerRouteMeta {
+  openAPI?: Record<string, any>
+}
+
+/**
+ * What a route handler registration says about itself, apart from where its implementation
+ * lives. The configured `server.builder` normalises it into whatever its own runtime
+ * accepts; reach for `nuxt.options.nitro.handlers` to write an entry typed by Nitro itself.
+ */
+export interface ServerHandlerBase {
+  /**
+   * HTTP pathname pattern to match. A handler registered without one is middleware that
+   * runs on every route.
+   *
+   * @example "/test", "/api/:id", "/blog/**"
+   */
+  route?: string
+  /**
+   * HTTP method to match. `QUERY` requires a server runtime that implements it, and the
+   * registration is skipped on one that does not.
+   */
+  method?: ServerHandlerMethod | Lowercase<ServerHandlerMethod>
+  /** Run the handler as middleware, before other route handlers. */
+  middleware?: boolean
+  /** Import the handler lazily, on first use. */
+  lazy?: boolean
+  /** Route metadata (e.g. OpenAPI operation info). */
+  meta?: ServerRouteMeta
+  /** Environments to include and bundle this handler for. */
+  env?: ServerHandlerEnv | ServerHandlerEnv[]
+  /**
+   * Handler module format. Requires a server runtime that converts node handlers, and is
+   * dropped on one that does not.
+   */
+  format?: 'web' | 'node'
+}
+
+/** A route handler registration, as written into `serverHandlers`. */
+export interface ServerHandler extends ServerHandlerBase {
+  /** Path to the handler. */
+  handler: string
+}
+
+/**
+ * A route handler registration as `addServerHandler()` accepts it. Only the variant the
+ * host runs reaches `serverHandlers`.
+ */
+export interface ServerHandlerInput extends ServerHandlerBase {
+  /** Path to the handler, or one path per server API. */
+  handler: ServerApiVariants<string>
+}
+
+/** A development-only handler: a function taking the request event, or a fetchable object. */
+export type DevServerHandlerFunction = ((...args: any[]) => any) | { fetch: (...args: any[]) => any } | Record<string, any>
+
+/** What a development-only handler registration says about itself. */
+export interface DevServerHandlerBase {
+  /** HTTP pathname pattern to match. */
+  route?: string
+  /** HTTP method to match. */
+  method?: ServerHandlerMethod | Lowercase<ServerHandlerMethod>
+  /** Run the handler as middleware, before other route handlers. */
+  middleware?: boolean
+  /** Route metadata (e.g. OpenAPI operation info). */
+  meta?: ServerRouteMeta
+}
+
+/** A development-only route handler registration, as written into `devServerHandlers`. */
+export interface DevServerHandler extends DevServerHandlerBase {
+  handler: DevServerHandlerFunction
+}
+
+/** A development-only registration as `addDevServerHandler()` accepts it. */
+export interface DevServerHandlerInput extends DevServerHandlerBase {
+  /** The handler, or one per server API. */
+  handler: ServerApiVariants<DevServerHandlerFunction>
+}
+
+/**
+ * A plugin as `addNitroPlugin()` accepts it. There is no portable variant: `nuxt/server`
+ * has no plugin surface, so a startup plugin is written against a nitro major.
+ */
+export type ServerPluginInput = ServerApiVariants<string, Exclude<ServerApi, 'nuxt'>>
+
+/** A resolved server plugin registration, as written into `_serverPlugins`. */
+export interface ServerPlugin {
+  /** Path to the plugin the host runs. */
+  plugin: string
+  /** The server API it was registered for, when the module named one. */
+  compatibility?: ServerApi
+  /** Paths of the variants the host does not run. */
+  unused?: string[]
+}
 
 export interface RouteRuleConfigFallback extends RouteRuleConfigExtensions {
   prerender?: boolean
