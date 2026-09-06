@@ -17,6 +17,16 @@ export default defineEventHandler(async (event) => {
     return sendRedirect(event, '/login')
   }
 
+  if (getQuery<{ web?: string }>(event).web) {
+    const parsed = await event.req.json() as { name?: string }
+    event.res.headers.set('x-portable-web', 'yes')
+    return {
+      name: parsed.name ?? null,
+      path: event.url.pathname,
+      accept: event.req.headers.get('accept') ?? null,
+    }
+  }
+
   const body = await readBody<{ name?: string }>(event)
 
   setResponseStatus(event, 201)
