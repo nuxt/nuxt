@@ -1067,6 +1067,9 @@ importers:
       nostics:
         specifier: catalog:app-runtime
         version: 1.2.0
+      ofetch:
+        specifier: catalog:app-runtime
+        version: 2.0.0-alpha.3
       ohash:
         specifier: catalog:app-runtime
         version: 2.0.12
@@ -2161,6 +2164,26 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/nested-suspense:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+
+  test/fixtures/nitro-legacy:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+
+  test/fixtures/nitro-module-compat:
     dependencies:
       nuxt:
         specifier: workspace:*
