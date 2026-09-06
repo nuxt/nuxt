@@ -12,7 +12,9 @@ allowBuilds:
   '@parcel/watcher': false
   esbuild: false
   oxc-resolver: false
+  sharp: false
   unrs-resolver: false
+  workerd: true
 
 patchedDependencies:
   # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
