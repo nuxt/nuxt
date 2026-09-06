@@ -2,16 +2,16 @@ import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
-import type { CachedResponse } from './runtime'
+import type { CachedResponse, RendererEvent } from './runtime'
 import { rendererDiagnostics } from './diagnostics'
 
 import { NUXT_NO_SSR, appId, multiApp } from 'nuxt/internal/renderer-config'
 
-export function renderPayloadResponse (ssrContext: NuxtSSRContext): CachedResponse {
+export function renderPayloadResponse (ssrContext: NuxtSSRContext, event: RendererEvent): CachedResponse {
   return {
     body: encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])),
-    status: ssrContext.event.res.status || 200,
-    statusText: ssrContext.event.res.statusText || '',
+    status: event.res.status || 200,
+    statusText: event.res.statusText || '',
     headers: {
       'content-type': 'application/json;charset=utf-8',
       'x-powered-by': 'Nuxt',

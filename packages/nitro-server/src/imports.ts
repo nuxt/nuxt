@@ -71,6 +71,7 @@ export const nuxtServerImportsPreset = {
     'setResponseHeader',
     'setResponseHeaders',
     'setResponseStatus',
+    'toNuxtRequestEvent',
     'useRuntimeConfig',
   ],
 }

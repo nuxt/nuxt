@@ -1,29 +1,34 @@
 /**
- * The portable server surface, typed against {@link RequestEvent}: the event
- * type the configured `server.builder` contributes. Code written against it
- * runs unchanged on any Nuxt server builder, and across an h3 or Nitro major.
+ * The portable server surface: helpers typed against {@link RequestEvent}, the
+ * web-standard part of the event every server runtime provides. Code written
+ * against them runs on any Nuxt server builder.
  *
- * The implementations here are web-standard, over the
- * {@link RequestEventFallback} shape. A server builder whose runtime can do
- * better replaces this module in its own bundle.
- *
- * For anything not exported here, import from the server runtime itself
- * (`nitro`, `nitro/h3`), and accept that the code is pinned to it.
+ * {@link toNuxtRequestEvent} returns the event in the shape the configured
+ * `server.builder` provides. Anything not exported here comes from the server
+ * runtime itself (`nitro`, `nitro/h3`), and pins the code to it.
  *
  * @module nuxt/server
  */
 import { parse, serialize } from 'cookie-es'
 import type { CookieSerializeOptions } from 'cookie-es'
 import { parseQuery } from 'ufo'
-import type { AppRouteRules, RequestEvent, RequestEventFallback, RuntimeConfig } from 'nuxt/schema'
+import type { AppRouteRules, NuxtRequestEvent, RequestEvent, RuntimeConfig } from 'nuxt/schema'
 import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runtime-config'
 
 import { NUXT_ERROR_SIGNATURE, NuxtError, createError } from '../app/error'
 import type { NuxtError as NuxtErrorContract } from '../app/types'
 
-export type { AppRouteRules, RequestEvent, RequestEventFallback, ServerRoutes } from 'nuxt/schema'
+export type { AppRouteRules, RequestEvent, RequestEventContext, ServerRoutes } from 'nuxt/schema'
 export type { NuxtErrorDetails } from '../app/error'
 export type { NuxtErrorJSON } from '../app/types'
+
+/**
+ * The request event in the shape the configured `server.builder` provides: h3's
+ * `H3Event` under `@nuxt/nitro-server`. Returned by {@link toNuxtRequestEvent}.
+ *
+ * @since 5.0.0
+ */
+export type { NuxtRequestEvent } from 'nuxt/schema'
 
 /**
  * A request handler, as {@link defineEventHandler} returns it.
@@ -31,11 +36,6 @@ export type { NuxtErrorJSON } from '../app/types'
  * @since 5.0.0
  */
 export type EventHandler<Result = unknown> = (event: RequestEvent) => Result
-
-/** The web-standard shape every server builder's event is a superset of. */
-function web (event: RequestEvent): RequestEventFallback {
-  return event as unknown as RequestEventFallback
-}
 
 /**
  * Define a request handler.
@@ -61,6 +61,28 @@ export function defineEventHandler<Result> (handler: EventHandler<Result>): Even
   return handler
 }
 
+/**
+ * The event in the shape the configured `server.builder` provides, for calls the
+ * helpers here do not cover. It is the same request, not a copy.
+ *
+ * @example
+ * ```ts
+ * // server/api/cors.ts
+ * import { defineEventHandler, toNuxtRequestEvent } from 'nuxt/server'
+ * import { handleCors } from 'nitro/h3'
+ *
+ * export default defineEventHandler((event) => {
+ *   handleCors(toNuxtRequestEvent(event), { origin: '*' })
+ *   return { ok: true }
+ * })
+ * ```
+ *
+ * @since 5.0.0
+ */
+export function toNuxtRequestEvent (event: RequestEvent): NuxtRequestEvent {
+  return ((event as RequestEvent & { '~app'?: NuxtRequestEvent })['~app'] ?? event) as NuxtRequestEvent
+}
+
 export { createError, NuxtError }
 
 /**
@@ -77,9 +99,9 @@ export type NuxtErrorLike<DataT = unknown> = Error
 /**
  * Whether a caught value is an HTTP error carrying a status.
  *
- * The check is structural, because the error may have been constructed by the
- * server runtime rather than by {@link createError}. h3 identifies its own
- * errors by `name`, which is why Nuxt's errors report `HTTPError` as theirs.
+ * The check is structural, because the error may come from the server runtime
+ * rather than from {@link createError}. h3 v2 names its errors `HTTPError`; h3
+ * v1 marks the constructor instead.
  *
  * @example
  * ```ts
@@ -96,11 +118,11 @@ export type NuxtErrorLike<DataT = unknown> = Error
  * @since 5.0.0
  */
 export function isNuxtError<DataT = unknown> (error: unknown): error is NuxtErrorLike<DataT> {
-  const candidate = error as { status?: unknown, [NUXT_ERROR_SIGNATURE]?: unknown } | null | undefined
+  const candidate = error as { status?: unknown, constructor?: { __h3_error__?: unknown }, [NUXT_ERROR_SIGNATURE]?: unknown } | null | undefined
   if (!(error instanceof Error) || typeof candidate?.status !== 'number') {
     return false
   }
-  return candidate[NUXT_ERROR_SIGNATURE] === true || error.name === 'HTTPError'
+  return candidate[NUXT_ERROR_SIGNATURE] === true || error.name === 'HTTPError' || candidate.constructor?.__h3_error__ === true
 }
 
 /**
@@ -109,7 +131,7 @@ export function isNuxtError<DataT = unknown> (error: unknown): error is NuxtErro
  * @since 5.0.0
  */
 export function getRequestURL (event: RequestEvent): URL {
-  return web(event).url
+  return event.url
 }
 
 /**
@@ -120,7 +142,7 @@ export function getRequestURL (event: RequestEvent): URL {
  * @since 5.0.0
  */
 export function getRequestHeader (event: RequestEvent, name: string): string | undefined {
-  return web(event).req.headers.get(name) ?? undefined
+  return event.req.headers.get(name) ?? undefined
 }
 
 /**
@@ -129,7 +151,7 @@ export function getRequestHeader (event: RequestEvent, name: string): string | u
  * @since 5.0.0
  */
 export function getRequestHeaders (event: RequestEvent): Record<string, string> {
-  return Object.fromEntries(web(event).req.headers)
+  return Object.fromEntries(event.req.headers)
 }
 
 /**
@@ -138,7 +160,7 @@ export function getRequestHeaders (event: RequestEvent): Record<string, string> 
  * @since 5.0.0
  */
 export function setResponseStatus (event: RequestEvent, status: number, statusText?: string): void {
-  const res = web(event).res
+  const res = event.res
   res.status = status
   if (statusText !== undefined) {
     res.statusText = statusText
@@ -151,7 +173,7 @@ export function setResponseStatus (event: RequestEvent, status: number, statusTe
  * @since 5.0.0
  */
 export function setResponseHeader (event: RequestEvent, name: string, value: string): void {
-  web(event).res.headers.set(name, value)
+  event.res.headers.set(name, value)
 }
 
 /**
@@ -160,7 +182,7 @@ export function setResponseHeader (event: RequestEvent, name: string, value: str
  * @since 5.0.0
  */
 export function setResponseHeaders (event: RequestEvent, headers: Record<string, string>): void {
-  const target = web(event).res.headers
+  const target = event.res.headers
   for (const name in headers) {
     target.set(name, headers[name]!)
   }
@@ -173,7 +195,7 @@ export function setResponseHeaders (event: RequestEvent, headers: Record<string,
  * @since 5.0.0
  */
 export function getQuery<T extends Record<string, unknown> = Record<string, string | string[]>> (event: RequestEvent): T {
-  return parseQuery(web(event).url.search) as T
+  return parseQuery(event.url.search) as T
 }
 
 /**
@@ -189,7 +211,7 @@ export function getQuery<T extends Record<string, unknown> = Record<string, stri
  * @since 5.0.0
  */
 export async function readBody<T = unknown> (event: RequestEvent): Promise<T> {
-  const request = web(event).req
+  const request = event.req
   const contentType = request.headers.get('content-type') || ''
   const text = await request.text()
 
@@ -230,7 +252,7 @@ function collectEntries (entries: Iterable<[string, string]>): Record<string, st
  * @since 5.0.0
  */
 export function getCookie (event: RequestEvent, name: string): string | undefined {
-  const header = web(event).req.headers.get('cookie')
+  const header = event.req.headers.get('cookie')
   return header ? parse(header)[name] : undefined
 }
 
@@ -241,7 +263,7 @@ export function getCookie (event: RequestEvent, name: string): string | undefine
  * @since 5.0.0
  */
 export function setCookie (event: RequestEvent, name: string, value: string, options?: CookieSerializeOptions): void {
-  web(event).res.headers.append('set-cookie', serialize(name, value, { path: '/', ...options }))
+  event.res.headers.append('set-cookie', serialize(name, value, { path: '/', ...options }))
 }
 
 /**

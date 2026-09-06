@@ -26,14 +26,14 @@ describe('the h3-backed `nuxt/server` implementations', () => {
  */
 describe('parity between the shipped implementations and h3', () => {
   function events (request: Request) {
-    const fallback = {
+    const fallback: RequestEvent = {
       req: request.clone(),
       url: new URL(request.url),
       res: { headers: new Headers() },
       context: {},
-    } as unknown as RequestEvent
+    }
 
-    return { fallback, h3: new H3Event(request) as unknown as RequestEvent }
+    return { fallback, h3: new H3Event(request) satisfies RequestEvent }
   }
 
   async function compare<T> (request: Request, read: (api: typeof shipped, event: RequestEvent) => T | Promise<T>) {

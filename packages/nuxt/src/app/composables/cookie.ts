@@ -2,7 +2,7 @@ import type { Ref, WatchHandle } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
-import type { RequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent } from '@nuxt/schema'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
@@ -290,7 +290,7 @@ function writeClientCookie (name: string, value: string | undefined, opts: Cooki
   }
 }
 
-function writeServerCookie (event: RequestEvent, name: string, value: string | undefined, opts: CookieOptions = {}) {
+function writeServerCookie (event: NuxtRequestEvent, name: string, value: string | undefined, opts: CookieOptions = {}) {
   if (event) {
     const serializeOpts = toSerializeOptions(opts)
     // update if value is set
@@ -312,7 +312,7 @@ function cookieKey (name: string, opts: { domain?: string, path?: string }) {
   return [name, (opts.domain || '').replace(/^\./, '').toLowerCase(), opts.path || '/'].join(';')
 }
 
-function setResponseCookie (event: RequestEvent, name: string, value: string, opts: CookieSerializeOptions) {
+function setResponseCookie (event: NuxtRequestEvent, name: string, value: string, opts: CookieSerializeOptions) {
   const newCookie = serialize(name, value, { path: '/', ...opts })
   const currentCookies = event.res.headers.getSetCookie()
 

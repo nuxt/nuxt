@@ -5,6 +5,7 @@ import { FastResponse } from 'srvx'
 import type { NuxtSSRContext } from '#app/types'
 import { createRendererInstance } from 'nuxt/internal/renderer/instance'
 import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
+import { appEvent } from 'nuxt/internal/renderer/runtime'
 import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
 
 import '../../context'
@@ -29,7 +30,7 @@ export const rendererOptions: NuxtRendererOptions = {
   hooks: () => useNitroHooks() as RendererHooks,
   createResponse: (body, init) => new FastResponse(body, init),
   createError: init => new HTTPError(init),
-  writeEarlyHints: (event, hints) => writeEarlyHints(event, hints),
+  writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   prerender: import.meta.prerender
     ? {
