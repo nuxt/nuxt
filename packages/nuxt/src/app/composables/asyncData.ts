@@ -652,7 +652,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       }
 
       // Allow directly awaiting on asyncData
-      const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
+      const asyncDataPromise = Promise.resolve(import.meta.client && opts.lazy ? undefined : nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
       Object.assign(asyncDataPromise, asyncReturn)
       // Allow destructuring without losing promise methods
       Object.defineProperties(asyncDataPromise, {
