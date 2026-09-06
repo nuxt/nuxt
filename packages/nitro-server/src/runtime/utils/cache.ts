@@ -1,9 +1,10 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
-// Workaround for 'The inferred type of 'payloadCache' cannot be named without a reference to '.pnpm/unstorage@1.16.0_db0@0.3.2_ioredis@5.6.1/node_modules/unstorage'.
-// This is likely not portable. A type annotation is necessary.
-import type { Storage } from 'unstorage'
 import { useStorage } from 'nitropack/runtime'
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
+
+// Derived from `useStorage` rather than imported from `unstorage` so the type follows
+// the `unstorage` instance nitropack resolves; pnpm can split ours from it by `db0` peer.
+type Storage = ReturnType<typeof useStorage>
 
 /**
  * Stack of URLs currently rendering in the active async context (oldest first).
