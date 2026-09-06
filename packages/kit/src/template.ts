@@ -585,7 +585,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // TODO: remove support for baseUrl in nuxt v5
   const baseUrl = isV5OrHigher
     ? undefined
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     : tsConfig.compilerOptions!.baseUrl
   const basePath = baseUrl ? resolve(typesDir, baseUrl) : typesDir
 
@@ -600,7 +600,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // TODO: remove support for baseUrl in nuxt v5
   const serverBaseUrl = isV5OrHigher
     ? undefined
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     : serverTsConfig.compilerOptions.baseUrl ?? baseUrl
   const serverBasePath = serverBaseUrl ? resolve(typesDir, serverBaseUrl) : typesDir
 
