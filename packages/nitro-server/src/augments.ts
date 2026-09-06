@@ -1,4 +1,5 @@
 /// <reference path="./internal.d.ts" />
+import type {} from 'nitropack'
 import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRouteRules, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
 import type { EventHandler, H3Event } from 'h3'
 import type { LogObject } from 'consola'
