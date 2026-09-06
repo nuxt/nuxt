@@ -103,4 +103,12 @@ describe('parity between the shipped implementations and h3', () => {
     const { shipped, h3 } = await compare(new Request('https://nuxt.com/api?a=1#hash'), (api, event) => api.getRequestURL(event).href)
     expect(shipped).toEqual(h3)
   })
+
+  it.for([
+    ['an h3 error', () => new h3.HTTPError({ status: 404 })],
+    ['a Nuxt error', () => shipped.createError({ status: 404 })],
+    ['a plain error', () => new Error('oops')],
+  ] as const)('recognises %s the same way h3 does', ([, construct]) => {
+    expect(shipped.isNuxtError(construct())).toBe(h3.HTTPError.isError(construct()))
+  })
 })

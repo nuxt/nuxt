@@ -96,13 +96,11 @@ export type NuxtErrorLike<DataT = unknown> = Error
  * @since 5.0.0
  */
 export function isNuxtError<DataT = unknown> (error: unknown): error is NuxtErrorLike<DataT> {
-  if (!error || typeof error !== 'object') {
+  const candidate = error as { status?: unknown, [NUXT_ERROR_SIGNATURE]?: unknown } | null | undefined
+  if (!(error instanceof Error) || typeof candidate?.status !== 'number') {
     return false
   }
-  if (NUXT_ERROR_SIGNATURE in error) {
-    return true
-  }
-  return error instanceof Error && error.name === 'HTTPError' && typeof (error as { status?: unknown }).status === 'number'
+  return candidate[NUXT_ERROR_SIGNATURE] === true || error.name === 'HTTPError'
 }
 
 /**

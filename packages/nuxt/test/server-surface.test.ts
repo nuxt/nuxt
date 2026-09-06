@@ -191,11 +191,18 @@ describe('errors', () => {
     expect(isNuxtError(new HTTPError('teapot'))).toBe(true)
   })
 
-  it('rejects anything that is not an HTTP error', () => {
+  it('rejects anything that does not carry the shape it narrows to', () => {
     expect(isNuxtError(new Error('oops'))).toBe(false)
-    expect(isNuxtError({ status: 404 })).toBe(false)
     expect(isNuxtError(undefined)).toBe(false)
     expect(isNuxtError('oops')).toBe(false)
+    // marked, but not an `Error`, so `message` and `stack` are not there to read
+    expect(isNuxtError({ __nuxt_error: true, status: 404 })).toBe(false)
+    expect(isNuxtError({ status: 404 })).toBe(false)
+    // marked, but with no status to branch on
+    expect(isNuxtError(Object.assign(new Error('oops'), { __nuxt_error: true }))).toBe(false)
+    expect(isNuxtError(Object.assign(new Error('oops'), { __nuxt_error: true, status: '404' }))).toBe(false)
+    // the marker is only a marker when it is set
+    expect(isNuxtError(Object.assign(new Error('oops'), { __nuxt_error: false, status: 404 }))).toBe(false)
   })
 
   it('narrows to the shape both its own and the runtime\'s errors have', () => {
