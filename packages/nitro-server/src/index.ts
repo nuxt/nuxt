@@ -140,7 +140,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     return `export default { fetch: () => undefined }`
   }
 
-  if (nuxt.options.experimental.componentIslands && !nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
+  // islands need a server renderer, so a client-only app is switched to `ssr: true` with a
+  // blanket `ssr: false` route rule; remember the original setting for static output decisions
+  const clientOnlyApp = !nuxt.options.ssr
+  if (nuxt.options.experimental.componentIslands && clientOnlyApp && nuxt.options.experimental.componentIslands !== 'auto') {
     nuxt.options.ssr = true
     nuxt.options.nitro.routeRules ||= {}
     nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
@@ -727,7 +730,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitro.storage ||= { watch: () => {}, getMount: () => ({}) }
 
   // For full-static output, ensure payload extraction is not disabled
-  if (nuxt.options.ssr && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
+  if (!clientOnlyApp && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
     bundlerDiagnostics.NUXT_B7015()
   }
 
@@ -1080,7 +1083,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       for (const status of errorPages) {
         routes.add(`/${status}.html`)
       }
-      if (!nuxt.options.ssr) {
+      if (clientOnlyApp) {
         routes.add('/index.html')
       }
     })
