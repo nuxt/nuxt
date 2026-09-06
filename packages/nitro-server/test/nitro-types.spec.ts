@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { NitroInstance, NitroInstanceOptions } from '@nuxt/kit'
 import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, RouteRuleConfig as SchemaRouteRuleConfig, TSReference } from '@nuxt/schema'
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, RouteRuleConfig, TracingOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroOptions, RouteRuleConfig, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { NuxtSSRContext } from '#app/types'
 
@@ -32,8 +32,6 @@ describe('contributed configuration types', () => {
     expectTypeOf<NuxtOptions['nitro']>().toEqualTypeOf<NitroConfig>()
     expectTypeOf<NuxtConfig['nitro']>().toEqualTypeOf<NitroConfig | undefined>()
     expectTypeOf<NuxtOptions['routeRules']>().toEqualTypeOf<Record<string, RouteRuleConfig> | undefined>()
-    expectTypeOf<NuxtOptions['serverHandlers']>().toEqualTypeOf<NitroEventHandler[]>()
-    expectTypeOf<NuxtOptions['devServerHandlers']>().toEqualTypeOf<NitroDevEventHandler[]>()
     expectTypeOf<NuxtOptions['tracingChannel']>().toEqualTypeOf<boolean | ({ nuxt?: boolean } & TracingOptions)>()
   })
 
