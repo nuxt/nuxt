@@ -33,6 +33,7 @@ import { entryFileName } from 'nuxt/internal/entry-chunk'
 export { createRendererInstance } from './instance'
 export type { NuxtRendererInstance } from './instance'
 export type { CachedResponse, NuxtRendererOptions, NuxtRequestState, PayloadCache, RenderedResponse, RendererEvent, RendererHooks, RendererRouteRules } from './runtime'
+export { appEvent } from './runtime'
 
 const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''

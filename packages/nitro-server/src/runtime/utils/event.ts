@@ -87,11 +87,6 @@ class NodeResponseHeaders {
   }
 }
 
-/** The h3 v1 event a renderer event was built from. */
-export function getH3Event (event: RendererEvent): H3Event {
-  return (event['~app'] ?? event) as unknown as H3Event
-}
-
 const WEB_PROPERTIES = new Set(['req', 'res', 'url', '~app'])
 
 const portableEvents = new WeakMap<H3Event, RequestEvent>()
@@ -189,7 +184,7 @@ function toWebView (event: H3Event): RendererEvent {
     },
   } as RendererEvent
 
-  // read only by `appEvent()`, which is how the renderer hands the application and the
+  // read through `appEvent()`, which is how the renderer passes the application and the
   // render hooks the event this runtime gave it rather than this view of it
   requestEvent['~app'] = event as unknown as RendererEvent['~app']
 

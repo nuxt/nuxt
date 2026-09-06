@@ -2,15 +2,12 @@ import type { NuxtRequestEvent, RequestEvent } from '@nuxt/schema'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, NuxtSSRContext } from '#app/types'
 
 /**
- * The request event the renderer reads, described in web standards only.
- *
- * A server runtime whose own event has another shape (an `h3` v1 event, say) hands the
- * renderer this view of it and names the event the application sees in {@link app}, so
- * that `useRequestEvent()` and the render hooks keep receiving the runtime's own event.
+ * The request event the renderer reads. A server runtime whose own event has another
+ * shape passes a web-standard view of it and names its own event in `~app`.
  */
 export interface RendererEvent extends RequestEvent {
   /**
-   * The event the application sees, where the runtime's own event is not web-shaped.
+   * The runtime's own event, where it is not web-shaped.
    *
    * Prefixed, because a server runtime's own event may carry an `app` of its own (h3 v2's
    * event does), and read only through {@link appEvent}.
@@ -18,7 +15,7 @@ export interface RendererEvent extends RequestEvent {
   '~app'?: NuxtRequestEvent
 }
 
-/** The event to hand to application code and to the hooks a server runtime exposes. */
+/** The event to pass to application code and to the render hooks. */
 export function appEvent (event: RendererEvent): NuxtRequestEvent {
   return (event['~app'] ?? event) as unknown as NuxtRequestEvent
 }
@@ -69,10 +66,7 @@ export interface PayloadCache {
 
 /** Capabilities the server runtime provides to the renderer for each build. */
 export interface NuxtRendererOptions {
-  /**
-   * Resolved runtime config. The event is passed because a runtime may hand out a copy
-   * per request, which its own plugins are then free to mutate for that request alone.
-   */
+  /** Resolved runtime config. The event is passed for a runtime that resolves it per request. */
   runtimeConfig: (event: RendererEvent) => NuxtSSRContext['runtimeConfig']
   /** URL of a file emitted into the build assets directory. */
   buildAssetsURL: (...path: string[]) => string
