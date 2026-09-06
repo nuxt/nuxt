@@ -4,8 +4,10 @@ import type { SSRSourceMaps } from '../../augments'
 import type { H3Event } from 'nitro/h3'
 import { useNitroApp } from 'nitro/app'
 import { isMainThread } from 'node:worker_threads'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import process from 'node:process'
-import { rootDir } from '#internal/dev-server-logs-options'
+import { rootDir, srcDir } from '#internal/dev-server-logs-options'
 import * as devError from 'nuxt/internal/dev-error'
 
 import { NUXT_ERROR_CHANNEL } from '#internal/nuxt/nitro-config.mjs'
@@ -14,7 +16,7 @@ import { withBaseURL } from './base'
 export const ERROR_CHANNEL_ENV = devError.ERROR_CHANNEL_ENV
 export const ERROR_CHANNEL_BROADCAST = devError.ERROR_CHANNEL_BROADCAST
 
-export { clearErrorReport, serializeErrorCause } from 'nuxt/internal/dev-error'
+export { clearErrorReport, publishDevLog, publishDevProgress, serializeErrorCause } from 'nuxt/internal/dev-error'
 export type { ErrorChannelMessage } from 'nuxt/internal/dev-error'
 
 /**
@@ -67,12 +69,55 @@ export function publishErrorReport (report: ErrorReport, event?: H3Event): Promi
  * @param event - Request being handled, used for the request and route sections.
  */
 export async function createErrorReport (error: unknown, event?: H3Event): Promise<ErrorReport> {
+  resolveTransformPaths(error)
   const ssrSourceMaps = useNitroApp().ssrSourceMaps
   return devError.createErrorReport(error, {
     cwd: rootDir,
     loaders: ssrSourceMaps ? await sourceMapLoaders(ssrSourceMaps) : [],
     context: { event },
   })
+}
+
+/**
+ * A module that failed to transform is named by the id the bundler served it under, such
+ * as `/app.vue`, which reads as an absolute path but is relative to the environment's
+ * root. Resolve those to the file on disk, so the report names something the developer
+ * can open, and walk the cause chain because the failure is usually wrapped.
+ */
+function resolveTransformPaths (error: unknown, seen = new Set<unknown>()): void {
+  if (typeof error !== 'object' || error === null || seen.has(error)) {
+    return
+  }
+  seen.add(error)
+  const candidate = error as { id?: unknown, loc?: { file?: unknown }, cause?: unknown, errors?: unknown }
+  if (typeof candidate.id === 'string') {
+    candidate.id = resolveTransformPath(candidate.id)
+  }
+  if (candidate.loc && typeof candidate.loc.file === 'string') {
+    candidate.loc.file = resolveTransformPath(candidate.loc.file)
+  }
+  resolveTransformPaths(candidate.cause, seen)
+  if (Array.isArray(candidate.errors)) {
+    for (const nested of candidate.errors) {
+      resolveTransformPaths(nested, seen)
+    }
+  }
+}
+
+function resolveTransformPath (path: string): string {
+  const query = path.indexOf('?')
+  const file = query === -1 ? path : path.slice(0, query)
+  if (!file.startsWith('/') || existsSync(file)) {
+    return path
+  }
+  // the SSR environment is rooted at `srcDir`, and virtual ids can be root-relative
+  for (const root of [srcDir, rootDir]) {
+    const resolved = join(root, file)
+    if (existsSync(resolved)) {
+      return query === -1 ? resolved : resolved + path.slice(query)
+    }
+  }
+  return path
 }
 
 /**

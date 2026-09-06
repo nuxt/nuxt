@@ -1,6 +1,7 @@
 import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
+import type { BuildProgress } from 'my-bad/channel'
 import type { ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { joinURL } from 'ufo'
 
@@ -41,6 +42,8 @@ export interface DevErrorReporter {
   readonly file: string | undefined
   /** Whether the current report came from the browser rather than the bundler. */
   readonly isRuntime: boolean
+  /** Show what the bundler is busy with on the progress bar of pages showing a report. */
+  progress: (progress: BuildProgress) => void
   /** Push overlays to open pages over the HMR channel. */
   attach: (server: ViteDevServer) => void
 }
@@ -146,6 +149,9 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
     },
     get isRuntime () {
       return isRuntime
+    },
+    progress (progress) {
+      broadcast.postMessage({ type: 'nuxt:dev:error:progress', progress })
     },
     attach (devServer) {
       server = devServer
@@ -280,6 +286,9 @@ export function DevErrorsPlugin (reporter: DevErrorReporter): VitePlugin {
       pending = file
       const environment = this.environment
       setTimeout(() => {
+        // the page showing the report is waiting on this transform, with no way of its own
+        // to know it is under way
+        reporter.progress({ phase: 'transform', message: 'Rebuilding' })
         environment.transformRequest(file).then(
           () => reporter.clear(),
           (error) => {
@@ -288,6 +297,7 @@ export function DevErrorsPlugin (reporter: DevErrorReporter): VitePlugin {
             }
           },
         ).finally(() => {
+          reporter.progress({ phase: 'transform', percent: 100 })
           pending = undefined
         })
       })

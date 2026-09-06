@@ -80,7 +80,7 @@ catalogs:
       specifier: ^0.5.10
       version: 0.5.10
     '@nuxt/cli':
-      specifier: https://pkg.pr.new/@nuxt/cli@1518
+      specifier: https://pkg.pr.new/@nuxt/cli@b9c3131
       version: 4.0.0-alpha.1
     '@nuxt/devtools':
       specifier: ^4.0.0-alpha.15
@@ -102,7 +102,7 @@ catalogs:
       version: 5.0.0
     clickable-path:
       specifier: ^0.1.0
-      version: 0.1.1
+      version: 0.1.0
     compatx:
       specifier: ^0.2.0
       version: 0.2.0
@@ -484,7 +484,7 @@ catalogs:
       specifier: ^11.5.2
       version: 11.5.2
     my-bad:
-      specifier: https://pkg.pr.new/my-bad@e166bcd
+      specifier: https://pkg.pr.new/my-bad@d9f855a
       version: 0.0.1
     nitro:
       specifier: ^3.0.260903-beta
@@ -633,7 +633,7 @@ importers:
         version: 1.9.2
       '@nuxt/cli':
         specifier: catalog:build
-        version: https://pkg.pr.new/@nuxt/cli@1518(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)(vite@8.2.2)
+        version: https://pkg.pr.new/@nuxt/cli@b9c3131(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)(vite@8.2.2)
       '@nuxt/eslint-config':
         specifier: catalog:dev
         version: 1.17.0(@typescript-eslint/utils@8.67.0(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.5.42)(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -738,7 +738,7 @@ importers:
         version: 0.49.1(supports-color@10.2.2)
       my-bad:
         specifier: catalog:nitro-runtime
-        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2)
+        version: https://pkg.pr.new/my-bad@d9f855a(vite@8.2.2)
       nitro:
         specifier: catalog:nitro-runtime
         version: 3.0.260903-beta
@@ -975,7 +975,7 @@ importers:
         version: 0.1.1
       my-bad:
         specifier: catalog:nitro-runtime
-        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2)
+        version: https://pkg.pr.new/my-bad@d9f855a(vite@8.2.2)
       nitro:
         specifier: catalog:nitro-runtime
         version: 3.0.260903-beta
@@ -1057,7 +1057,7 @@ importers:
         version: 0.5.10(@rspack/core@2.2.1(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.6)(rollup@4.63.1)(vite@8.2.2)(webpack@5.110.2(cssnano@9.0.1(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.26))
       '@nuxt/cli':
         specifier: catalog:build
-        version: https://pkg.pr.new/@nuxt/cli@1518(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)(vite@8.2.2)
+        version: https://pkg.pr.new/@nuxt/cli@b9c3131(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)(vite@8.2.2)
       '@nuxt/devtools':
         specifier: catalog:build
         version: 4.0.0-alpha.15(af56847434e8aff20f9eb6c70fb4468d)
@@ -1093,7 +1093,7 @@ importers:
         version: 5.0.0
       clickable-path:
         specifier: catalog:build
-        version: 0.1.1
+        version: 0.1.0
       compatx:
         specifier: catalog:build
         version: 0.2.0
@@ -1144,7 +1144,7 @@ importers:
         version: 1.2.3
       my-bad:
         specifier: catalog:nitro-runtime
-        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2)
+        version: https://pkg.pr.new/my-bad@d9f855a(vite@8.2.2)
       nanotar:
         specifier: catalog:build
         version: 0.3.0
@@ -1600,7 +1600,7 @@ importers:
         version: 6.0.8(vite@8.2.2)(vue@3.5.42(typescript@6.0.3))
       clickable-path:
         specifier: catalog:build
-        version: 0.1.1
+        version: 0.1.0
       consola:
         specifier: catalog:build
         version: 3.4.2
@@ -1630,7 +1630,7 @@ importers:
         version: 0.1.1
       my-bad:
         specifier: catalog:nitro-runtime
-        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2)
+        version: https://pkg.pr.new/my-bad@d9f855a(vite@8.2.2)
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -1721,7 +1721,7 @@ importers:
         version: link:../kit
       clickable-path:
         specifier: catalog:build
-        version: 0.1.1
+        version: 0.1.0
       defu:
         specifier: catalog:build
         version: 6.1.7
@@ -1736,7 +1736,7 @@ importers:
         version: 0.1.1
       my-bad:
         specifier: catalog:nitro-runtime
-        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2)
+        version: https://pkg.pr.new/my-bad@d9f855a(vite@8.2.2)
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -3982,8 +3982,8 @@ packages:
     resolution: {integrity: sha512-llZkSzeTsimFx64U+ThT2xQM2uEce8GIQUYvxgbB6ZFvBhV2LP9LeJJb3HT+syG0uCFLsTCHjV9SfC0WNU1vtA==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@nuxt/cli@https://pkg.pr.new/@nuxt/cli@1518':
-    resolution: {integrity: sha512-n6a1tca2ssybp/8SPqHknKMgM1vy0WDJCS4XAXqeeZnyHwYh7Cufy8QwQm73i+17TJsQQITuKhLsY2v6NvyNfQ==, tarball: https://pkg.pr.new/@nuxt/cli@1518}
+  '@nuxt/cli@https://pkg.pr.new/@nuxt/cli@b9c3131':
+    resolution: {integrity: sha512-n6a1tca2ssybp/8SPqHknKMgM1vy0WDJCS4XAXqeeZnyHwYh7Cufy8QwQm73i+17TJsQQITuKhLsY2v6NvyNfQ==, tarball: https://pkg.pr.new/@nuxt/cli@b9c3131}
     version: 4.0.0-alpha.1
     engines: {node: ^22.19.0 || ^24.11.0 || >=26.0.0}
     hasBin: true
@@ -6666,6 +6666,10 @@ packages:
     resolution: {integrity: sha512-+W/5efTR7y5HRD7gACw9yQjqMVvEMLBHmboM/kPWam+H+Hmyrgjh6YncVKK122YZkXrLudzTuAukUw9FnMf7IQ==}
     engines: {node: 10.* || >= 12.*}
 
+  clickable-path@0.1.0:
+    resolution: {integrity: sha512-JRBIpDbw7S1vaEGvCXfm728cfchkUDtv4I2DjWMMm7IoEygxuFWhO6UQOrg+u61TPI13c/HsGG/RLwl3NBt+4w==}
+    engines: {node: '>=22.1.0'}
+
   clickable-path@0.1.1:
     resolution: {integrity: sha512-ROn/mdV2pR8WFdpJjFDCSouLRg9myf95xacO1iy8G/AVO/x5y124pjF3EaoWrTBRWC3vh0DPqa/MhKyx3mMeKg==}
     engines: {node: '>=22.1.0'}
@@ -6880,6 +6884,14 @@ packages:
 
   crossws@0.3.5:
     resolution: {integrity: sha512-ojKiDvcmByhwa8YYqbQI/hg7MEU0NC03+pSdEq4ZUnZR9xXpwk7E43SMNGkn+JxJGPFtNvQ48+vV2p+P1ml5PA==}
+
+  crossws@0.4.10:
+    resolution: {integrity: sha512-pz3oubH/dt12KjqsUB0IuXW4nwRDQ583iDsP4555Cpdqx0NoU7pGlWBcayyFI8f/l/idRpgjMEfwuOxSWJYlIA==}
+    peerDependencies:
+      srvx: '>=0.11.5'
+    peerDependenciesMeta:
+      srvx:
+        optional: true
 
   crossws@0.4.12:
     resolution: {integrity: sha512-aypfsr6t0uNvkqaZc6zvBfXzC6pLI0/sIulpkV6RwCVtZqG5ebBzv4weImKK0VNCj91Wl9F5j7p5WU4MNrybng==}
@@ -9296,16 +9308,6 @@ packages:
 
   my-bad@https://pkg.pr.new/my-bad@d9f855a:
     resolution: {integrity: sha512-J98HJ/Yc+wsFfxMlBTrEVe/cIfEPOYeFXNXhqJ3JwJ5fNf2WMZnnLLM7+uk1Pc4g0lORJjEBNxMkoper+KR1Gg==, tarball: https://pkg.pr.new/my-bad@d9f855a}
-    version: 0.0.1
-    engines: {node: '>=22.12.0'}
-    peerDependencies:
-      vite: 8.2.2
-    peerDependenciesMeta:
-      vite:
-        optional: true
-
-  my-bad@https://pkg.pr.new/my-bad@e166bcd:
-    resolution: {integrity: sha512-au0zgRsdlRh4d/DinfjqhdrESH9sZipoHowegy3fl6sZ52ar8IfWJGLhUQYmFNWc9iLfoz2NSGyVsJtEhwCyNw==, tarball: https://pkg.pr.new/my-bad@e166bcd}
     version: 0.0.1
     engines: {node: '>=22.12.0'}
     peerDependencies:
@@ -14147,7 +14149,7 @@ snapshots:
     dependencies:
       which: 7.0.0
 
-  '@nuxt/cli@https://pkg.pr.new/@nuxt/cli@1518(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)(vite@8.2.2)':
+  '@nuxt/cli@https://pkg.pr.new/@nuxt/cli@b9c3131(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.147.0)(rolldown@1.2.6)(vite@8.2.2)':
     dependencies:
       '@clack/prompts': 1.7.0
       args-tokenizer: 0.3.0
@@ -16947,6 +16949,8 @@ snapshots:
     optionalDependencies:
       '@colors/colors': 1.5.0
 
+  clickable-path@0.1.0: {}
+
   clickable-path@0.1.1: {}
 
   cliui@7.0.4:
@@ -17136,6 +17140,10 @@ snapshots:
   crossws@0.3.5:
     dependencies:
       uncrypto: 0.1.3
+
+  crossws@0.4.10(srvx@1.0.3):
+    optionalDependencies:
+      srvx: 1.0.3
 
   crossws@0.4.12(srvx@1.0.3):
     optionalDependencies:
@@ -19370,7 +19378,7 @@ snapshots:
       '@parcel/watcher-wasm': 2.6.0
       citty: 0.2.2
       consola: 3.4.2
-      crossws: 0.4.12(srvx@1.0.3)
+      crossws: 0.4.10(srvx@1.0.3)
       defu: 6.1.7
       get-port-please: 3.2.0
       h3: 1.15.11
@@ -20090,14 +20098,6 @@ snapshots:
   muggle-string@0.4.1: {}
 
   my-bad@https://pkg.pr.new/my-bad@d9f855a(vite@8.2.2):
-    dependencies:
-      clickable-path: 0.1.1
-      errx: 0.2.0
-      fnv1a-64: 0.1.2
-    optionalDependencies:
-      vite: 8.2.2(@types/node@24.13.3)(@vitejs/devtools@0.5.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)
-
-  my-bad@https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2):
     dependencies:
       clickable-path: 0.1.1
       errx: 0.2.0
