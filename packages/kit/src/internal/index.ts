@@ -30,3 +30,8 @@ export type { ResolveModuleExportNamesOptions } from './exports.ts'
 export { installModules } from '../module/install.ts'
 
 export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../constants.ts'
+
+export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
+
+export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
+export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'

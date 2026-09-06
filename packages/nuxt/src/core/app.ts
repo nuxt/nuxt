@@ -227,7 +227,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       `*/index{${extensionGlob}}`,
     ])
     for (const file of middlewareFiles) {
-      const name = getNameFromPath(file)
+      const name = getNameFromPath(file, dirs.appMiddleware)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
         pageDiagnostics.NUXT_B4010({ file: linkToAlias(file, nuxt) })

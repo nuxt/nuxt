@@ -1,9 +1,10 @@
 /// <reference path="./internal.d.ts" />
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp, TracingOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, NitroRuntimeConfigApp, NormalizedRouteRules, RouteRuleConfig, TracingOptions } from 'nitro/types'
+import type { ServerImportsOptions } from './auto-imports.ts'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { AppConfig, HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
+import type { HookResult, RuntimeConfig, SharedAppConfig, TSReference } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`. Extends Nitro's own
@@ -26,7 +27,25 @@ declare module 'nitro/types' {
     cdnURL: string
     buildId: string
   }
-  interface NitroRouteRules {
+
+  /**
+   * Server auto-imports, applied by `@nuxt/nitro-server`. Declared here because this is the
+   * channel `addServerImports()` and `addServerImportsDir()` write to through `nitro:config`.
+   */
+  interface NitroConfig {
+    imports?: false | ServerImportsOptions
+  }
+}
+
+declare module 'h3/rules' {
+  interface RouteRuleConfig {
+    ssr?: boolean
+    streaming?: boolean
+    noScripts?: boolean
+    /** @deprecated Use `noScripts` instead */
+    experimentalNoScripts?: boolean
+  }
+  interface RouteRules {
     ssr?: boolean
     streaming?: boolean
     noScripts?: boolean
@@ -40,13 +59,6 @@ declare module 'nitro/types' {
 declare module 'nitro/types' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
-  interface NitroRouteConfig {
-    ssr?: boolean
-    streaming?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-  }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
     'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
@@ -60,6 +72,15 @@ declare module 'nitro/types' {
 type _NitroOnlyRuntimeConfig = Omit<NonNullable<NitroRuntimeConfig['nitro']>, 'envPrefix'> & { envPrefix: string }
 
 declare module '@nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
+  interface ServerTypes {
+    event: H3Event
+    routeRules: NormalizedRouteRules
+  }
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -173,11 +194,20 @@ declare module '@nuxt/schema' {
   }
 
   interface NuxtPage {
-    rules?: NitroRouteConfig
+    rules?: RouteRuleConfig
   }
 }
 
 declare module 'nuxt/schema' {
+  interface NitroTypes {
+    instance: Nitro
+  }
+
+  interface ServerTypes {
+    event: H3Event
+    routeRules: NormalizedRouteRules
+  }
+
   interface NuxtHooks {
     /**
      * Called when the dev middleware is being registered on the Nitro dev server.
@@ -291,12 +321,12 @@ declare module 'nuxt/schema' {
   }
 
   interface NuxtPage {
-    rules?: NitroRouteConfig
+    rules?: RouteRuleConfig
   }
 }
 
 export interface NuxtRequestContext {
-  'appConfig'?: AppConfig
+  'appConfig'?: SharedAppConfig
   'noSSR'?: boolean
   /** @internal */
   '~internal'?: boolean

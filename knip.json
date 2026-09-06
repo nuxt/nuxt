@@ -29,12 +29,13 @@
         "test/e2e/*.ts",
         "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
-        "test/mocks/app-config.ts"
+        "test/mocks/app-config.ts",
+        "test/mocks/paths.ts"
       ]
     },
     "test/fixtures/*": {
       "entry": [
-        "**/*.{js,ts,tsx,mjs,vue}!"
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
       ],
       "paths": {
         "~~/*": ["./*"],
@@ -52,7 +53,13 @@
         "ohash",
         "hookable",
         "@babel/plugin-proposal-decorators",
-        "@babel/plugin-syntax-typescript"
+        "@babel/plugin-syntax-typescript",
+        "lru-cache"
+      ]
+    },
+    "packages/vite-server": {
+      "ignoreDependencies": [
+        "mocked-exports"
       ]
     },
     "packages/vite": {
@@ -89,8 +96,10 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
+        "@nuxt/nitro-server",
         "@nuxt/telemetry",
-        "@nuxt/vite-builder"
+        "@nuxt/vite-builder",
+        "@nuxt/vite-server"
       ]
     },
     "packages/ui-templates": {

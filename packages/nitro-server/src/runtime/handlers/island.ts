@@ -1,7 +1,8 @@
 import { useNitroHooks } from 'nitro/app'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
-import { H3Event, HTTPError, getQuery } from 'nitro/h3'
+import { HTTPError, getQuery } from 'nitro/h3'
+import type { H3Event } from 'nitro/h3'
 import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
@@ -13,12 +14,15 @@ import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
-import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
-import { getSSRRenderer } from '../utils/renderer/build-files'
-import { renderInlineStyles } from '../utils/renderer/inline-styles'
-import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
-import { isStyleOfModule, patchDevClientCss } from '../utils/renderer/dev-css'
+import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
+import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
+import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/internal/renderer/islands'
+import { isStyleOfModule, patchDevClientCss } from 'nuxt/internal/renderer/dev-css'
+import { urlHash } from 'nuxt/internal/renderer/url'
+import { createEvent } from '../utils/base'
 import { recordDevClientCss } from '../utils/renderer/dev-client-css'
+
+import { rendererInstance } from '../utils/renderer/options'
 import { prerenderRenderingURLs } from '../utils/cache'
 import { useStorage } from 'nitro/storage'
 import type { Storage } from 'unstorage'
@@ -43,7 +47,7 @@ const inFlightIslands: Map<string, Promise<IslandRenderResult>> | null = import.
 
 export default {
   async fetch (request: Request): Promise<Response> {
-    const event = new H3Event(request)
+    const event = createEvent(request)
     try {
       event.res.headers.set('content-type', 'application/json;charset=utf-8')
       event.res.headers.set('x-powered-by', 'Nuxt')
@@ -84,7 +88,7 @@ export default {
 
 function toResponse (event: H3Event, result: IslandRenderResult): Response {
   return 'raw' in result
-    ? returnRenderResponse(event, result.raw)
+    ? returnRenderResponse(rendererInstance.options, event, result.raw)
     : new FastResponse(JSON.stringify(result), event.res)
 }
 
@@ -100,7 +104,7 @@ function prerenderIsland (event: H3Event, islandPath: string): Promise<IslandRen
     if (!('raw' in result)) {
       await islandCache!.setItem(islandPath, result)
       // without the props entry, a later request for the bare path hashes empty props and is rejected
-      await islandPropCache!.setItem(islandPath, islandPath + event.url.search + event.url.hash)
+      await islandPropCache!.setItem(islandPath, islandPath + event.url.search + urlHash(event.url))
     }
     return result
   }).finally(() => {
@@ -120,14 +124,14 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   const islandContext = await getIslandContext(event)
 
   const ssrContext = {
-    ...createSSRContext(event),
+    ...createSSRContext(rendererInstance.options, event),
     islandContext,
     noSSR: false,
     url: islandContext.url,
   }
 
   // Render app
-  const renderer = await getSSRRenderer()
+  const renderer = await rendererInstance.getSSRRenderer()
 
   const renderResult = await (tracingChannelNuxt
     ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
@@ -262,7 +266,7 @@ async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext
 }
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
-  let url = event.url.pathname + event.url.search + event.url.hash
+  let url = event.url.pathname + event.url.search + urlHash(event.url)
   const islandPath = event.url.pathname
   if (import.meta.prerender && await islandPropCache!.hasItem(islandPath)) {
     // for prerender, the original request URL (with query) is rehydrated from cache

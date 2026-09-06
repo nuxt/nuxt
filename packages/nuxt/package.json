@@ -29,33 +29,17 @@
     "./kit": "./kit.js",
     "./meta": "./meta.js",
     "./app": "./src/app/index.ts",
-    "./entry": "./src/runtime/server/entry.ts",
-    "./manifest": "./src/runtime/server/manifest.ts",
-    "./precomputed": "./src/runtime/server/precomputed.ts",
-    "./styles": "./src/runtime/server/styles.ts",
-    "./entry-chunk": "./src/runtime/server/entry-chunk.ts",
-    "./entry-ids": "./src/runtime/server/entry-ids.ts",
+    "./internal/renderer": "./src/runtime/server/renderer/index.ts",
+    "./internal/*": "./src/runtime/server/*.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "entry": [
-        "./dist/runtime/server/entry.d.ts"
+      "internal/renderer": [
+        "./dist/runtime/server/renderer/index.d.ts"
       ],
-      "manifest": [
-        "./dist/runtime/server/manifest.d.ts"
-      ],
-      "precomputed": [
-        "./dist/runtime/server/precomputed.d.ts"
-      ],
-      "styles": [
-        "./dist/runtime/server/styles.d.ts"
-      ],
-      "entry-chunk": [
-        "./dist/runtime/server/entry-chunk.d.ts"
-      ],
-      "entry-ids": [
-        "./dist/runtime/server/entry-ids.d.ts"
+      "internal/*": [
+        "./dist/runtime/server/*.d.ts"
       ]
     }
   },
@@ -77,7 +61,7 @@
     "schema.*"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -90,6 +74,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "catalog:build",
     "@nuxt/vite-builder": "workspace:*",
+    "@nuxt/vite-server": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
     "@vue/shared": "catalog:app-runtime",
     "chokidar": "catalog:build",
@@ -102,6 +87,7 @@
     "errx": "catalog:app-runtime",
     "escape-string-regexp": "catalog:build",
     "exsolve": "catalog:build",
+    "fetchdts": "catalog:build",
     "fnv1a-64": "catalog:app-runtime",
     "hookable": "catalog:app-runtime",
     "ignore": "catalog:build",
@@ -136,6 +122,7 @@
     "untyped": "catalog:build",
     "verkit": "catalog:build",
     "vue": "catalog:app-runtime",
+    "vue-bundle-renderer": "catalog:app-runtime",
     "vue-component-type-helpers": "catalog:vue",
     "vue-router": "catalog:app-runtime"
   },
@@ -153,7 +140,6 @@
     "typescript": "catalog:dev",
     "vite": "catalog:vite",
     "vitest": "catalog:dev",
-    "vue-bundle-renderer": "catalog:build",
     "vue-sfc-transformer": "catalog:dev"
   },
   "peerDependencies": {
@@ -191,12 +177,8 @@
       "./kit": "./kit.js",
       "./meta": "./meta.js",
       "./app": "./dist/app/index.js",
-      "./entry": "./dist/runtime/server/entry.js",
-      "./manifest": "./dist/runtime/server/manifest.js",
-      "./precomputed": "./dist/runtime/server/precomputed.js",
-      "./styles": "./dist/runtime/server/styles.js",
-      "./entry-chunk": "./dist/runtime/server/entry-chunk.js",
-      "./entry-ids": "./dist/runtime/server/entry-ids.js",
+      "./internal/renderer": "./dist/runtime/server/renderer/index.js",
+      "./internal/*": "./dist/runtime/server/*.js",
       "./package.json": "./package.json"
     },
     "imports": {
