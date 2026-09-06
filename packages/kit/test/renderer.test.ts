@@ -1,11 +1,13 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 
-import { getRendererConfig, getRendererDefines } from '../src/internal/renderer.ts'
+import { SERVER_RUNTIME_VERSION, getRendererConfig, getRendererDefines, getServerRuntime } from '../src/internal/renderer.ts'
 
 function nuxt (options: Record<string, any> = {}): Nuxt {
+  const { buildOutputs, ...rest } = options
   return {
+    buildOutputs,
     options: {
       dev: false,
       ssr: true,
@@ -23,7 +25,7 @@ function nuxt (options: Record<string, any> = {}): Nuxt {
       features: {},
       future: {},
       unhead: {},
-      ...options,
+      ...rest,
     },
   } as unknown as Nuxt
 }
@@ -76,6 +78,63 @@ describe('getRendererConfig', () => {
     expect(code).toContain(`export { iifeChunkFileName, renderSSRHeadOptions } from "#build/unhead.config.mjs"`)
 
     expect(getRendererConfig({ unheadOptions: '#custom', headConfig: '#custom-config' }, nuxt())).toContain(`from "#custom-config"`)
+  })
+})
+
+describe('getServerRuntime', () => {
+  const runtimeDir = new URL('../../nuxt/src/runtime/server/', import.meta.url)
+
+  function buildOutputs () {
+    return {
+      serverEntry: () => 'export default {}',
+      ssrStyles: () => 'export default {}',
+      clientManifest: () => 'export default {}',
+      clientPrecomputed: () => 'export default undefined',
+      entryChunkName: () => 'export const entryFileName = undefined',
+      entryIds: () => 'export default []',
+    }
+  }
+
+  it('provides a module for every stub a builder must replace', () => {
+    // every module at the root of the server runtime tree is a stub whose real body only
+    // the build knows, so each one must be in the record for a builder to find it
+    const stubs = readdirSync(runtimeDir, { withFileTypes: true })
+      .filter(entry => entry.isFile() && entry.name.endsWith('.ts'))
+      .map(entry => `nuxt/internal/${entry.name.replace(/\.ts$/, '')}`)
+
+    const { modules } = getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() }))
+
+    expect(Object.keys(modules).sort()).toEqual(stubs.sort())
+  })
+
+  it('reads each module body lazily, and names the build output backing it', async () => {
+    const outputs = buildOutputs()
+    let manifest = 'export default {}'
+    outputs.clientManifest = () => manifest
+
+    const { modules, version, entry } = getServerRuntime({}, nuxt({ buildOutputs: outputs }))
+
+    expect(version).toBe(SERVER_RUNTIME_VERSION)
+    expect(entry).toBe('nuxt/internal/renderer')
+
+    manifest = 'export default { entry: {} }'
+    expect(await modules['nuxt/internal/manifest']!.code()).toBe(manifest)
+    expect(modules['nuxt/internal/manifest']!.output).toBe('clientManifest')
+    expect(modules['nuxt/internal/renderer-config']!.output).toBeUndefined()
+  })
+
+  it('resolves the renderer config overrides each time the module is read', async () => {
+    let template = '""'
+    const { modules } = getServerRuntime({ overrides: () => ({ spaTemplate: template }) }, nuxt({ buildOutputs: buildOutputs() }))
+
+    template = '"<span/>"'
+    expect(await modules['nuxt/internal/renderer-config']!.code()).toContain('export const spaTemplate = "<span/>"')
+  })
+
+  it('folds the renderer against the phase the bundle renders in', () => {
+    expect(getServerRuntime({ phase: 'prerender' }, nuxt({ buildOutputs: buildOutputs() })).defines).toMatchObject({
+      'import.meta.prerender': 'true',
+    })
   })
 })
 
