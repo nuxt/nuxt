@@ -232,20 +232,20 @@ const NuxtIsland = defineComponent({
         responseType: 'json',
         ignoreResponseError: true,
       })
+      // the island render is a separate request, so its hints only reach the page that
+      // embedded it over the wire, including when the render failed part-way
+      // TODO: support passing on more headers
+      if (import.meta.server && import.meta.prerender) {
+        const hints = r.headers.get('x-nuxt-prerender')
+        if (hints) {
+          nuxtApp.runWithContext(() => prerenderRoutes(hints.split(',').map(hint => decodeURIComponent(hint.trim()))))
+        }
+      }
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
         const result = r._data!
-        // TODO: support passing on more headers
-        if (import.meta.server && import.meta.prerender) {
-          // the island render is a separate request, so its hints only reach the page that
-          // embedded it over the wire
-          const hints = r.headers.get('x-nuxt-prerender')
-          if (hints) {
-            nuxtApp.runWithContext(() => prerenderRoutes(hints.split(',').map(hint => decodeURIComponent(hint.trim()))))
-          }
-        }
         setPayload(key, result)
         return result
       } catch (e: any) {
