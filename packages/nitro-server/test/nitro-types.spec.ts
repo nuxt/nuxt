@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { NitroInstance, NitroInstanceOptions } from '@nuxt/kit'
-import type { RequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent } from '@nuxt/schema'
 import type { Nitro, NitroOptions } from 'nitro/types'
 import type { H3Event } from 'nitro/h3'
 import type { NuxtSSRContext } from '#app/types'
@@ -21,8 +21,8 @@ describe('contributed nitro instance types', () => {
 })
 
 describe('contributed request event type', () => {
-  it('resolves `RequestEvent` to the event this builder hands to the app layer', () => {
-    expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
+  it('resolves `NuxtRequestEvent` to the event this builder hands to the app layer', () => {
+    expectTypeOf<NuxtRequestEvent>().toEqualTypeOf<H3Event>()
     expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
   })
 })

@@ -1,6 +1,6 @@
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
-import type { RequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent } from '@nuxt/schema'
 
 import { getRequestState } from './runtime'
 
@@ -12,7 +12,7 @@ import { getRequestState } from './runtime'
  * in dev the SSR manifest has no per-request CSS, so we attach the modules
  * to the `@vite/client` entry, which `getRequestDependencies` always resolves.
  */
-export function patchDevClientCss (event: RequestEvent, rendererContext: RendererContext): void {
+export function patchDevClientCss (event: NuxtRequestEvent, rendererContext: RendererContext): void {
   const css = getRequestState(event)?.['~devClientCss']
   if (!css?.length) { return }
 

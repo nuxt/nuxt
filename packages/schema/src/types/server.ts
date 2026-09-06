@@ -124,16 +124,17 @@ export interface NuxtRequestContext {
   '~error-cause'?: unknown
 }
 
-/** The context of a {@link RequestEventFallback}, which carries Nuxt's own per-request state. */
+/** The context of a {@link RequestEvent}, which carries Nuxt's own per-request state. */
 export interface RequestEventContext extends Record<string, unknown> {
   nuxt?: NuxtRequestContext
 }
 
 /**
- * Fallback request event shape, described in web standards only. Used when no server builder
- * has contributed an event type.
+ * The web-standard part of a request event, which every server runtime provides. Portable
+ * server code is written against this, and the event resolves to it when no server builder
+ * has contributed one.
  */
-export interface RequestEventFallback {
+export interface RequestEvent {
   readonly req: Request
   url: URL
   readonly res: {
@@ -146,18 +147,20 @@ export interface RequestEventFallback {
 
 /**
  * Resolves the event type contributed to a {@link ServerTypes} registry, or
- * {@link RequestEventFallback} when the registry does not declare one. Exported for type tests;
+ * {@link RequestEvent} when the registry does not declare one. Exported for type tests;
  * not part of the public API.
  *
  * @internal
  */
-export type ResolveRequestEvent<T> = T extends { event: infer E } ? E : RequestEventFallback
+export type ResolveRequestEvent<T> = T extends { event: infer E } ? E : RequestEvent
 
 /**
- * The request event handed to server-side composables such as `useRequestEvent()`, as declared
- * by the configured `server.builder`, or {@link RequestEventFallback} when none has declared it.
+ * The request event in the shape the configured `server.builder` provides (`H3Event` under
+ * `@nuxt/nitro-server`), or {@link RequestEvent} when none has contributed one.
+ *
+ * Returned by server-side composables such as `useRequestEvent()`.
  */
-export type RequestEvent = ResolveRequestEvent<ServerTypes>
+export type NuxtRequestEvent = ResolveRequestEvent<ServerTypes>
 
 /**
  * The route rules the app layer reads, as compiled into the route-rules matcher: keys the

@@ -34,4 +34,5 @@ export {
   setResponseHeader,
   setResponseHeaders,
   setResponseStatus,
+  toNuxtRequestEvent,
 } from 'nuxt/internal/server-default'

@@ -7,7 +7,7 @@ import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import { relative } from 'pathe'
-import type { RequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent } from '@nuxt/schema'
 
 import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from './error'
 import type { SSRError } from './error'
@@ -56,12 +56,12 @@ const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
  * may create as many as it needs. Pass an instance from `createRendererInstance()` to
  * render against the artifacts already loaded for another renderer.
  */
-export function createNuxtRenderer (optionsOrInstance: NuxtRendererOptions | NuxtRendererInstance): { fetch: (event: RequestEvent) => Promise<Response> } {
+export function createNuxtRenderer (optionsOrInstance: NuxtRendererOptions | NuxtRendererInstance): { fetch: (event: NuxtRequestEvent) => Promise<Response> } {
   const instance = 'getRenderer' in optionsOrInstance ? optionsOrInstance : createRendererInstance(optionsOrInstance)
   return { fetch: event => fetch(instance, event) }
 }
 
-function fetch (instance: NuxtRendererInstance, event: RequestEvent): Promise<Response> {
+function fetch (instance: NuxtRendererInstance, event: NuxtRequestEvent): Promise<Response> {
   const runtime = instance.options
 
   if (componentIslands && runtime.renderIsland && event.url.pathname.startsWith('/__nuxt_island/')) {
@@ -112,7 +112,7 @@ function isPrerenderedErrorPage (pathname: string) {
  * with, so the page is server-rendered at build time rather than written out as
  * an empty SPA shell.
  */
-function getPrerenderedErrorPage (event: RequestEvent): SSRError | undefined {
+function getPrerenderedErrorPage (event: NuxtRequestEvent): SSRError | undefined {
   const status = isPrerenderedErrorPage(event.url.pathname)
   if (!status) { return undefined }
 
@@ -127,7 +127,7 @@ function getPrerenderedErrorPage (event: RequestEvent): SSRError | undefined {
   } as unknown as SSRError
 }
 
-async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<Response> {
+async function renderRoute (instance: NuxtRendererInstance, event: NuxtRequestEvent, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<Response> {
   const runtime = instance.options
 
   // Initialize ssr context
@@ -437,7 +437,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
 
 async function renderStreamedResponse (ctx: {
   instance: NuxtRendererInstance
-  event: RequestEvent
+  event: NuxtRequestEvent
   ssrContext: NuxtSSRContext
   renderer: Awaited<ReturnType<NuxtRendererInstance['getRenderer']>>
   routeOptions: RendererRouteRules
@@ -900,7 +900,7 @@ function pushNoScriptsHints (ssrContext: NuxtSSRContext, noScripts: boolean) {
 const entryPaths = new WeakMap<NuxtRendererInstance, string>()
 
 /** Import map pinning `#entry` to the hashed entry chunk, so chunk hashes stay stable across it. */
-function entryImportMap (instance: NuxtRendererInstance, event: RequestEvent, ssrContext: NuxtSSRContext): { script: Script[] } {
+function entryImportMap (instance: NuxtRendererInstance, event: NuxtRequestEvent, ssrContext: NuxtSSRContext): { script: Script[] } {
   let path = entryPaths.get(instance)
   if (!path) {
     path = instance.options.buildAssetsURL(entryFileName!)
