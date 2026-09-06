@@ -3,6 +3,11 @@ import { fetch } from '@nuxt/test-utils/e2e'
 import type { ErrorReport, Frame } from 'my-bad'
 
 const OVERLAY_RE = /<nuxt-error-overlay><\/nuxt-error-overlay>\s*<script type="application\/json">([^<]*)<\/script>/
+const FRAME_RE = /[^\s"'(]*(?:app\.vue|boom\.ts):\d+:\d+/g
+
+function causeFrames (page: string): string[] {
+  return page.replaceAll('\\u002F', '/').replaceAll('\\\\', '/').replaceAll('\\', '/').match(FRAME_RE) ?? []
+}
 
 export interface ErrorPage {
   status: number
@@ -25,7 +30,7 @@ export async function renderErrorPage (path = '/'): Promise<ErrorPage> {
   return {
     status: res.status,
     body,
-    causeFrames: page.replaceAll('\\u002F', '/').match(/[^\s"'\\(]*(?:app\.vue|boom\.ts):\d+:\d+/g) ?? [],
+    causeFrames: causeFrames(page),
     overlay,
     report: overlay.report,
   }
@@ -42,7 +47,7 @@ export function sourcePosition (fixtureURL: URL, file: string, needle: string): 
 }
 
 export function frameAt (report: ErrorReport, file: string): Frame | undefined {
-  return report.frames.find(frame => frame.file?.endsWith(file))
+  return report.frames.find(frame => frame.file?.replaceAll('\\', '/').endsWith(file))
 }
 
 /** The report and every report nested under it, depth first. */
