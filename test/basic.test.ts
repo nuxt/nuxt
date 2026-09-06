@@ -1709,6 +1709,14 @@ describe('server tree shaking', () => {
   })
 })
 
+describe('dependencies of code in node_modules', () => {
+  // https://github.com/nuxt/nuxt/issues/22077
+  it('resolves them from the importing package rather than the project', async () => {
+    const html = await $fetch<string>('/foo')
+    expect(html).toContain('Plugin | nested dependency: nested dependency of foo')
+  })
+})
+
 describe.skipIf(!runsOnceInMatrix)('extends support', () => {
   it('renders layer layout, page, component, middleware, composable and plugin together', async () => {
     const html = await $fetch<string>('/foo')
