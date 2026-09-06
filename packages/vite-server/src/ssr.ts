@@ -109,6 +109,10 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): { entry:
       '',
       `export { fetch }`,
       '',
+      // the dev server hands the renderer the module graph its sourcemaps live in
+      ...nuxt.options.dev
+        ? [`export { setDevErrorContext } from ${JSON.stringify(resolve(distDir, 'runtime/dev-error'))}`, '']
+        : [],
       `const server = import.meta.dev ? undefined : createNodeServer({ fetch, publicDir: new URL('../public/', import.meta.url) })`,
       `export default server`,
       '',

@@ -41,8 +41,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:dev": "playwright test --project 'e2e-vite-dev'",
     "test:e2e:webpack": "playwright test --project 'e2e-webpack-built'",
-    "test:engines": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --workspace-ignore='packages/schema' -i cssnano -i rollup-plugin-visualizer -i unctx",
-    "test:engines:fix": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --workspace-ignore='packages/schema' -i cssnano -i rollup-plugin-visualizer -i unctx --fix",
+    "test:engines": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --workspace-ignore='packages/schema' -i cssnano -i my-bad -i rollup-plugin-visualizer -i unctx",
+    "test:engines:fix": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --workspace-ignore='packages/schema' -i cssnano -i my-bad -i rollup-plugin-visualizer -i unctx --fix",
     "typecheck": "vue-tsc --noEmit",
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxt prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
@@ -89,6 +89,7 @@
     "knip": "catalog:dev",
     "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
+    "my-bad": "catalog:nitro-runtime",
     "nitro": "catalog:nitro-runtime",
     "nitropack": "catalog:dev",
     "nuxt": "workspace:*",

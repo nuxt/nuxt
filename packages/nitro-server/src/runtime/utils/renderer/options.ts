@@ -31,6 +31,11 @@ export const rendererOptions: NuxtRendererOptions = {
   createError: init => new HTTPError(init),
   writeEarlyHints: (event, hints) => writeEarlyHints(event, hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
+  onRenderSuccess: import.meta.dev
+    ? () => {
+        import('../error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+      }
+    : undefined,
   prerender: import.meta.prerender
     ? {
         payloadCache: payloadCache!,

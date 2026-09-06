@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
 import { waitForHydration } from '@nuxt/test-utils'
+import type { Page } from '@playwright/test'
 import { expect, test } from './test-utils'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/ui-templates', import.meta.url))
@@ -16,12 +17,17 @@ test.use({
   },
 })
 
+/** The app itself: in development the error page also carries the error overlay. */
+function app (page: Page) {
+  return page.locator('#__nuxt')
+}
+
 test.describe('error-404 template', () => {
   test('offers only the home link on a direct hit', async ({ page }) => {
     await page.goto('/does-not-exist')
     await waitForHydration(page, '/does-not-exist', 'hydration')
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('404')
+    await expect(app(page).getByRole('heading', { level: 1 })).toHaveText('404')
     await expect(page.locator('[data-back-home]')).toBeVisible()
     await expect(page.locator('[data-back-previous]')).toBeHidden()
   })
@@ -47,8 +53,8 @@ test.describe('error-500 template', () => {
     await page.goto('/crash')
     await waitForHydration(page, '/crash', 'hydration')
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('500')
-    await expect(page.getByRole('heading', { level: 2 })).toHaveText('Internal Server Error')
+    await expect(app(page).getByRole('heading', { level: 1 })).toHaveText('500')
+    await expect(app(page).getByRole('heading', { level: 2 })).toHaveText('Internal Server Error')
   })
 })
 

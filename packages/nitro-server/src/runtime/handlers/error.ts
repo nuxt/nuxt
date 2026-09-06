@@ -1,18 +1,45 @@
 import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
-import type { SerializedErrorCause } from '#app/types'
 import type { H3Event } from 'nitro/h3'
+import { HTTPError } from 'nitro/h3'
+import type { ErrorReport } from 'my-bad'
+import type { SerializedErrorCause } from '#app/types'
 import { serverFetch } from 'nitro'
 
 import type { SSRErrorInput } from '../utils/error'
 import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
-import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
+  // an inner failure has already been logged and published by the outer request
+  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!(event as H3Event).context.nuxt?.['~rendering-error']
+
+  let report: ErrorReport | undefined
+  let errorCause: SerializedErrorCause | undefined
+  if (import.meta.dev) {
+    // every dev-only import goes through here, so a production build folds the block away
+    const errorChannel = await import('../utils/error-channel')
+    // a handled client error (a 404, a failed validation) is the app working as intended
+    const isExpected = !error.unhandled && HTTPError.isError(error) && (error.status || 500) < 500
+    // the report maps positions itself, so it reads the stack as raised, and the stack is
+    // mapped after it for the JSON body, the log and `error.vue`
+    report = isExpected ? undefined : await errorChannel.createErrorReport(error, event as H3Event).catch(() => undefined)
+    errorChannel.mapSSRStacktrace(error)
+    errorCause = errorChannel.serializeErrorCause(error.cause)
+    // a dev server that owns the channel prints the reports it is sent
+    if (report && !isRenderingError && !errorChannel.shouldForwardReports() && (error.unhandled ?? !HTTPError.isError(error))) {
+      const rendered = await errorChannel.renderErrorAnsi(report).catch(() => undefined)
+      if (rendered) {
+        console.log(`[request error] [${event.req.method}] ${event.req.url}\n\n${rendered}`)
+      } else {
+        console.error(`[request error] [${event.req.method}] ${event.req.url}\n\n`, error)
+      }
+    }
+  }
+
   // invoke default Nitro error handler (which will log appropriately if required)
-  const defaultRes = await defaultHandler(error, event, { json: true })
+  const defaultRes = await defaultHandler(error, event, { json: true, silent: import.meta.dev && !!report })
 
   // return Nitro response + our headers for redirects and JSON responses
   const status = error.status || 500
@@ -50,15 +77,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   errorObject.url = event.req.url
   // `fatal` is Nuxt-only, so Nitro's error body does not carry it
   errorObject.fatal = (error as { fatal?: boolean }).fatal ?? false
-  const errorCause = import.meta.dev ? serializeErrorCause(error.cause) : undefined
 
   // Merge defaultRes headers, skipping content-type (would be application/json)
   // and content-security-policy (would disable JS execution in the error page)
   mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
 
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
-  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!(event as H3Event).context.nuxt?.['~rendering-error']
-
   if (!isRenderingError) {
     const eventContext = (event as H3Event).context
     eventContext.nuxt ||= {}
@@ -83,12 +107,27 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // Fallback to static rendered error page
   if (!res) {
+    headers.set('Content-Type', 'text/html;charset=UTF-8')
+
+    if (import.meta.dev && report) {
+      const { renderErrorPage } = await import('../utils/error-channel')
+      const body = await renderErrorPage(report).catch(() => undefined)
+      if (body) {
+        // tells the outer request the body is already a complete error page
+        headers.set(ERROR_PAGE_HEADER, '1')
+        return new Response(body, {
+          headers,
+          status: defaultRes.status,
+          statusText: defaultRes.statusText,
+        })
+      }
+    }
+
     const { template } = await import('../templates/error-500')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
-    headers.set('Content-Type', 'text/html;charset=UTF-8')
 
     return new Response(template(errorObject), {
       headers,
@@ -99,15 +138,21 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   let html = await res.text()
 
-  if (import.meta.dev && !import.meta.test && typeof html === 'string') {
-    const prettyResponse = await defaultHandler(error, event, { json: false })
-    if (typeof prettyResponse.body === 'string') {
-      html = html.replace('</body>', `${generateErrorOverlayHTML(prettyResponse.body, { startMinimized: 300 <= error.status && error.status < 500 })}</body>`)
+  if (import.meta.dev && !import.meta.test && report && typeof html === 'string') {
+    const { publishErrorReport, withErrorOverlay } = await import('../utils/error-channel')
+    try {
+      await publishErrorReport(report, event as H3Event)
+      if (!res.headers.has(ERROR_PAGE_HEADER)) {
+        // the page behind is the app's own error page, so the report sits a click away
+        html = await withErrorOverlay(html, report, { startMinimized: true })
+      }
+    } catch {
+      // the overlay is a development aid; never let it replace the real error
     }
   }
 
   const setCookies = new Set(headers.getSetCookie())
-  mergeHeaders(headers, res.headers, setCookies)
+  mergeHeaders(headers, res.headers, setCookies, INTERNAL_HEADERS)
   if ('res' in event) {
     mergeHeaders(headers, (event as H3Event).res.headers, setCookies)
   }
@@ -118,8 +163,13 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     statusText: res.statusText || defaultRes.statusText,
   })
 }
+
+/** Set on a rendered error page that is already complete and should not receive an overlay. */
+const ERROR_PAGE_HEADER = 'x-nuxt-error-page'
+const INTERNAL_HEADERS = new Set([ERROR_PAGE_HEADER])
+
 // Headers that should not be forwarded from the default handler or SSR render to the error page
-const IGNORED_ERROR_HEADERS = new Set(['content-type', 'content-security-policy'])
+const IGNORED_ERROR_HEADERS = new Set(['content-type', 'content-security-policy', ERROR_PAGE_HEADER])
 
 function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>, setCookies: Set<string>, ignore?: Set<string>): Headers {
   for (const [name, value] of overrides) {
@@ -166,21 +216,4 @@ function appendVary (headers: Headers, value: string): void {
 
 function parseVary (value: string | null): string[] {
   return value ? value.split(',').map(token => token.trim().toLowerCase()).filter(Boolean) : []
-}
-
-function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {
-  if (depth >= 10 || (cause instanceof Error && seen.has(cause))) { return }
-  if (cause instanceof Error) {
-    seen.add(cause)
-    const nestedCause = serializeErrorCause(cause.cause, depth + 1, seen)
-    return {
-      name: cause.name,
-      message: cause.message,
-      ...(cause.stack && { stack: cause.stack }),
-      ...(nestedCause !== undefined && { cause: nestedCause }),
-    }
-  }
-  if (cause === null || typeof cause === 'string' || typeof cause === 'number' || typeof cause === 'boolean') {
-    return cause
-  }
 }
