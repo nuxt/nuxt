@@ -194,6 +194,31 @@ describe('pages', () => {
     expect(html).toContain('Hello Nuxt 3!')
   })
 
+  // Regression for https://github.com/nuxt/nuxt/issues/34042 and https://github.com/nuxt/nuxt/pull/34043
+  it('respects non-ASCII aliases during SSR and hydration', async () => {
+    const path = '/товары/日本語'
+    const html = await $fetch<string>(path)
+    expect(html).toContain('Random page: <b')
+    expect(html).toContain('>日本語</b>')
+
+    const page = await createPage()
+    const pageErrors: Error[] = []
+    const consoleWarnings: string[] = []
+    page.on('pageerror', error => pageErrors.push(error))
+    page.on('console', (message) => {
+      if (message.type() === 'warning') {
+        consoleWarnings.push(message.text())
+      }
+    })
+    await page.goto(url(path))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp().isHydrating)
+    expect(await page.evaluate(() => window.useNuxtApp?.()._route.matched.length)).toBe(1)
+    expect(await page.innerText('body')).toContain('Random page: 日本語')
+    expect(pageErrors).toEqual([])
+    expect(consoleWarnings).not.toContainEqual(expect.stringContaining('No match found for location'))
+    await page.close()
+  })
+
   it('respects redirects in page metadata', async () => {
     const { headers } = await fetch('/redirect', { redirect: 'manual' })
     expect(headers.get('location')).toEqual('/')
