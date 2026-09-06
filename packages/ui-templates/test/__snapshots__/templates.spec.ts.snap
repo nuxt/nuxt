@@ -60,8 +60,8 @@ exports[`template > produces correct output for error-404 template 1`] = `
 .text-center {
   text-align: center;
 }
-.text-\\[80px\\] {
-  font-size: 80px;
+.text-\\[56px\\] {
+  font-size: 56px;
 }
 .text-2xl {
   font-size: 1.5rem;
@@ -71,13 +71,13 @@ exports[`template > produces correct output for error-404 template 1`] = `
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
-.text-\\[\\#020420\\] {
+.text-neutral-500 {
   --un-text-opacity: 1;
-  color: rgb(2 4 32 / var(--un-text-opacity));
+  color: rgb(115 115 115 / var(--un-text-opacity));
 }
-.text-\\[\\#64748B\\] {
+.text-neutral-950 {
   --un-text-opacity: 1;
-  color: rgb(100 116 139 / var(--un-text-opacity));
+  color: rgb(10 10 10 / var(--un-text-opacity));
 }
 .hover\\:text-\\[\\#00DC82\\]:hover {
   --un-text-opacity: 1;
@@ -132,9 +132,9 @@ exports[`template > produces correct output for error-404 template 1`] = `
   -moz-osx-font-smoothing: grayscale;
 }
 @media (prefers-color-scheme: dark) {
-  .dark\\:bg-\\[\\#020420\\] {
+  .dark\\:bg-neutral-950 {
     --un-bg-opacity: 1;
-    background-color: rgb(2 4 32 / var(--un-bg-opacity));
+    background-color: rgb(10 10 10 / var(--un-bg-opacity));
   }
   .dark\\:text-white {
     --un-text-opacity: 1;
@@ -142,8 +142,8 @@ exports[`template > produces correct output for error-404 template 1`] = `
   }
 }
 @media (width>=640px) {
-  .sm\\:text-\\[110px\\] {
-    font-size: 110px;
+  .sm\\:text-\\[72px\\] {
+    font-size: 72px;
   }
   .sm\\:text-3xl {
     font-size: 1.875rem;
@@ -317,20 +317,23 @@ exports[`template > produces correct output for error-500 template 1`] = `
 .text-center {
   text-align: center;
 }
-.text-\\[80px\\] {
-  font-size: 80px;
+.text-\\[56px\\] {
+  font-size: 56px;
 }
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
 }
-.text-\\[\\#020420\\] {
+.text-neutral-500 {
   --un-text-opacity: 1;
-  color: rgb(2 4 32 / var(--un-text-opacity));
+  color: rgb(115 115 115 / var(--un-text-opacity));
 }
-.text-\\[\\#64748B\\] {
+.text-neutral-950 {
   --un-text-opacity: 1;
-  color: rgb(100 116 139 / var(--un-text-opacity));
+  color: rgb(10 10 10 / var(--un-text-opacity));
+}
+.font-medium {
+  font-weight: 500;
 }
 .font-semibold {
   font-weight: 600;
@@ -369,9 +372,9 @@ exports[`template > produces correct output for error-500 template 1`] = `
   -moz-osx-font-smoothing: grayscale;
 }
 @media (prefers-color-scheme: dark) {
-  .dark\\:bg-\\[\\#020420\\] {
+  .dark\\:bg-neutral-950 {
     --un-bg-opacity: 1;
-    background-color: rgb(2 4 32 / var(--un-bg-opacity));
+    background-color: rgb(10 10 10 / var(--un-bg-opacity));
   }
   .dark\\:text-white {
     --un-text-opacity: 1;
@@ -379,8 +382,8 @@ exports[`template > produces correct output for error-500 template 1`] = `
   }
 }
 @media (width>=640px) {
-  .sm\\:text-\\[110px\\] {
-    font-size: 110px;
+  .sm\\:text-\\[72px\\] {
+    font-size: 72px;
   }
   .sm\\:text-3xl {
     font-size: 1.875rem;
@@ -637,8 +640,8 @@ svg {
 }
 @media (prefers-color-scheme: light) {
   :root {
-    --nuxt-mist: rgba(2, 4, 32, 0.76);
-    --nuxt-dim: rgba(2, 4, 32, 0.42);
+    --nuxt-mist: hsla(0, 0%, 4%, 0.76);
+    --nuxt-dim: hsla(0, 0%, 4%, 0.42);
     --nuxt-accent: #00a86a;
   }
   body,
@@ -694,8 +697,8 @@ svg {
 }
 @media (prefers-color-scheme: light) {
   :root {
-    --nuxt-mist: rgba(2, 4, 32, 0.76);
-    --nuxt-dim: rgba(2, 4, 32, 0.42);
+    --nuxt-mist: hsla(0, 0%, 4%, 0.76);
+    --nuxt-dim: hsla(0, 0%, 4%, 0.42);
     --nuxt-accent: #00a86a;
   }
   body,
@@ -897,13 +900,6 @@ exports[`template > produces correct output for welcome template 1`] = `
   --un-text-opacity: 1;
   color: rgb(0 220 130 / var(--un-text-opacity));
 }
-.text-\\[\\#020420\\] {
-  --un-text-opacity: 1;
-  color: rgb(2 4 32 / var(--un-text-opacity));
-}
-.text-\\[\\#020420\\]\\/20 {
-  color: #02042033;
-}
 .text-gray-500 {
   --un-text-opacity: 1;
   color: rgb(117 117 117 / var(--un-text-opacity));
@@ -916,9 +912,16 @@ exports[`template > produces correct output for welcome template 1`] = `
   --un-text-opacity: 1;
   color: rgb(0 153 86 / var(--un-text-opacity));
 }
-.hover\\:text-\\[\\#020420\\]:hover {
+.text-neutral-950 {
   --un-text-opacity: 1;
-  color: rgb(2 4 32 / var(--un-text-opacity));
+  color: rgb(10 10 10 / var(--un-text-opacity));
+}
+.text-neutral-950\\/20 {
+  color: #0a0a0a33;
+}
+.hover\\:text-neutral-950:hover {
+  --un-text-opacity: 1;
+  color: rgb(10 10 10 / var(--un-text-opacity));
 }
 .font-bold {
   font-weight: 700;
@@ -977,9 +980,9 @@ exports[`template > produces correct output for welcome template 1`] = `
     --un-border-opacity: 1;
     border-color: rgb(0 220 130 / var(--un-border-opacity));
   }
-  .dark\\:bg-\\[\\#020420\\] {
+  .dark\\:bg-neutral-950 {
     --un-bg-opacity: 1;
-    background-color: rgb(2 4 32 / var(--un-bg-opacity));
+    background-color: rgb(10 10 10 / var(--un-bg-opacity));
   }
   .dark\\:bg-white\\/5 {
     background-color: #ffffff0d;
