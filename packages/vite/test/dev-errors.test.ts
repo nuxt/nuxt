@@ -313,7 +313,7 @@ describe('DevErrorsPlugin', () => {
   }
 
   it('transforms the file that failed once it changes, clearing the report when it compiles', async () => {
-    const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), file: '/src/app.vue' }
+    const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), progress: vi.fn(), file: '/src/app.vue' }
     const transform = vi.fn(() => Promise.resolve({}))
 
     hotUpdate(reporter, '/src/app.vue', transform)
@@ -321,8 +321,19 @@ describe('DevErrorsPlugin', () => {
     expect(transform).toHaveBeenCalledWith('/src/app.vue')
   })
 
+  it('reports progress while the file that failed is transformed, retiring it afterwards', async () => {
+    const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), progress: vi.fn(), file: '/src/app.vue' }
+
+    hotUpdate(reporter, '/src/app.vue', () => Promise.resolve({}))
+    await vi.waitFor(() => expect(reporter.progress).toHaveBeenCalledTimes(2))
+    expect(reporter.progress.mock.calls).toEqual([
+      [{ phase: 'transform', message: 'Rebuilding' }],
+      [{ phase: 'transform', percent: 100 }],
+    ])
+  })
+
   it('reports the file again when it still fails', async () => {
-    const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), file: '/src/app.vue' }
+    const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), progress: vi.fn(), file: '/src/app.vue' }
 
     hotUpdate(reporter, '/src/app.vue', () => Promise.reject(transformError))
     await vi.waitFor(() => expect(reporter.report).toHaveBeenCalledWith(transformError))
@@ -330,7 +341,7 @@ describe('DevErrorsPlugin', () => {
   })
 
   it('clears a runtime error on any update, since the page reports it again', () => {
-    const reporter = { report: vi.fn(), clear: vi.fn(), file: undefined, isRuntime: true }
+    const reporter = { report: vi.fn(), clear: vi.fn(), progress: vi.fn(), file: undefined, isRuntime: true }
 
     hotUpdate(reporter, '/src/other.vue', () => Promise.resolve({}))
     expect(reporter.clear).toHaveBeenCalledTimes(1)
@@ -346,7 +357,7 @@ describe('DevErrorsPlugin', () => {
   })
 
   it('transforms once per change even when several environments see it', async () => {
-    const reporter = { report: vi.fn(), clear: vi.fn(), file: '/src/app.vue' }
+    const reporter = { report: vi.fn(), clear: vi.fn(), progress: vi.fn(), file: '/src/app.vue' }
     const plugin = DevErrorsPlugin(reporter as any)
     const hook = plugin.hotUpdate as unknown as (this: { environment: { name: string, transformRequest: () => Promise<unknown> } }, options: { file: string }) => void
     const transform = vi.fn(() => new Promise(resolve => setTimeout(resolve, 20)))

@@ -1,6 +1,7 @@
 import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
+import type { BuildProgress } from 'my-bad/channel'
 import type { ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { joinURL } from 'ufo'
 
@@ -41,14 +42,15 @@ export interface DevErrorReporter {
   readonly file: string | undefined
   /** Whether the current report came from the browser rather than the bundler. */
   readonly isRuntime: boolean
+  /** Show what the bundler is busy with on pages showing a report. */
+  progress: (progress: BuildProgress) => void
   /** Push overlays to open pages over the HMR channel. */
   attach: (server: ViteDevServer) => void
 }
 
 /**
- * Turns the compile errors Vite raises while transforming into reports on the dev
- * error channel, posted over a `BroadcastChannel` to whoever owns it, so error
- * pages and overlays update before anyone requests a page.
+ * Turns the compile errors Vite raises into reports on the dev error channel, posted
+ * over a `BroadcastChannel` to whoever owns it.
  */
 export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered: string) => void }): DevErrorReporter {
   const broadcast = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
@@ -56,8 +58,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   nuxt.hook('close', () => broadcast.close())
 
   let server: ViteDevServer | undefined
-  // replayed to each client that connects: an error raised while the page loads
-  // predates its hmr connection
+  // an error raised while the page loads predates its hmr connection
   let pendingOverlay: { type: 'custom', event: string, data: unknown } | undefined
   const channelPath = () => process.env[ERROR_CHANNEL_ENV] || joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel)
   const overlayPath = joinURL(nuxt.options.app.baseURL, `${nuxt.options.devServer.errorChannel}-overlay`)
@@ -85,7 +86,6 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   broadcast.onmessage = (event) => {
     const message = event.data as { type?: string, report?: ErrorReport }
     switch (message?.type) {
-      // a channel that starts listening after the error was reported asks for it
       case 'nuxt:dev:error:sync':
         if (current) {
           broadcast.postMessage({ type: 'nuxt:dev:error:report', report: current })
@@ -151,6 +151,9 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
     get isRuntime () {
       return isRuntime
     },
+    progress (progress) {
+      broadcast.postMessage({ type: 'nuxt:dev:error:progress', progress })
+    },
     attach (devServer) {
       server = devServer
       devServer.middlewares.use(overlayPath, (req, res, next) => {
@@ -177,10 +180,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
     },
   }
 
-  /**
-   * Build and publish a report for an error the browser raised. Its stack points
-   * at the modules Vite served, so URLs are resolved back to files first.
-   */
+  /** Report an error the browser raised, whose stack points at the modules Vite served. */
   async function reportRuntimeError (error: ClientRuntimeError): Promise<void> {
     if (!server) {
       return
@@ -217,7 +217,6 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
       }
     } catch {
-      // the browser has no other way of surfacing what it hit
       options.print(error.stack || error.message)
     }
   }
@@ -232,8 +231,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
     if (!graph) {
       return stack.split('\n').filter((line, index) => index === 0 || !FRAME_LOCATION_RE.test(line)).join('\n')
     }
-    // graph urls are relative to the bundler's base; the app's base URL sits in
-    // front of it in the browser
+    // graph urls are relative to the bundler's base, which the app's base URL precedes
     const bases = [devServer.config.base, nuxt.options.app.baseURL].map(base => base.replace(/\/$/, '')).filter(Boolean)
     const graphFiles = new Set<string>()
     const [message, ...frames] = stack.split('\n')
@@ -295,9 +293,8 @@ function compileFile (report: ErrorReport): string | undefined {
  * Clears the report once the file that failed compiles again, and clears a browser
  * runtime error on any update.
  *
- * Vite transforms on demand and the page showing the error has no HMR client to ask
- * for it, so the failed file is transformed here: once, in the first environment to
- * see the change, and after Vite's own update pass so it cannot race invalidation.
+ * Vite transforms on demand and the page showing the error has no HMR client to ask for
+ * it, so the failed file is transformed here, after Vite's own update pass.
  */
 export function DevErrorsPlugin (reporter: DevErrorReporter): VitePlugin {
   let pending: string | undefined
@@ -318,6 +315,8 @@ export function DevErrorsPlugin (reporter: DevErrorReporter): VitePlugin {
       pending = file
       const environment = this.environment
       setTimeout(() => {
+        // the page showing the report is waiting on this transform
+        reporter.progress({ phase: 'transform', message: 'Rebuilding' })
         environment.transformRequest(file).then(
           () => reporter.clear(),
           (error) => {
@@ -326,6 +325,7 @@ export function DevErrorsPlugin (reporter: DevErrorReporter): VitePlugin {
             }
           },
         ).finally(() => {
+          reporter.progress({ phase: 'transform', percent: 100 })
           pending = undefined
         })
       })

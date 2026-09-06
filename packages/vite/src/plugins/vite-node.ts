@@ -26,21 +26,21 @@ import type { ErrorPartial } from '../types.ts'
 import type { ViteNodeErrorData } from '../vite-node-runner.ts'
 
 /**
- * Serialise a Vite transform failure for transport over the vite-node socket, keeping
- * the metadata an error handler needs to render an exact location.
+ * Serialise a Vite transform failure for transport over the vite-node socket, keeping the
+ * metadata an error handler needs to render an exact location.
  *
- * @param error - The error thrown by `fetchModule`.
- * @param moduleId - Module id that was being fetched.
+ * `file` is preferred over `moduleId`, since an id such as `/app.vue` reads as an absolute
+ * path but is relative to the environment root, so an error naming it cannot be opened.
  */
-export function serializeViteNodeError (error: any, moduleId: string): ViteNodeErrorData {
+export function serializeViteNodeError (error: any, moduleId: string, file?: string): ViteNodeErrorData {
   const errorData: ViteNodeErrorData = {
     code: 'VITE_ERROR',
-    id: moduleId,
+    id: file || moduleId,
     stack: error.stack || '',
     message: error.message || '',
   }
   if (error.frame) { errorData.frame = error.frame }
-  if (error.loc) { errorData.loc = { file: error.loc.file || error.id, line: error.loc.line, column: error.loc.column } }
+  if (error.loc) { errorData.loc = { file: error.loc.file || file || error.id, line: error.loc.line, column: error.loc.column } }
   if (error.plugin) { errorData.plugin = error.plugin }
   if (error.pluginCode) { errorData.pluginCode = error.pluginCode }
   return errorData
@@ -424,7 +424,8 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
             }
             const response = await ssrServer.environments.ssr.fetchModule(request.payload.moduleId)
               .catch(async (err) => {
-                const errorData = serializeViteNodeError(err, request.payload.moduleId)
+                const file = ssrServer.environments.ssr.moduleGraph.getModuleById(request.payload.moduleId)?.file ?? undefined
+                const errorData = serializeViteNodeError(err, request.payload.moduleId, file)
 
                 if (!errorData.frame && err.code === 'PARSE_ERROR') {
                   try {

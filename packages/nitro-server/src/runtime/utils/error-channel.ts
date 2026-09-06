@@ -16,13 +16,12 @@ import { withBaseURL } from './base'
 export const ERROR_CHANNEL_ENV = devError.ERROR_CHANNEL_ENV
 export const ERROR_CHANNEL_BROADCAST = devError.ERROR_CHANNEL_BROADCAST
 
-export { clearErrorReport, serializeErrorCause } from 'nuxt/internal/dev-error'
+export { clearErrorReport, publishDevLog, publishDevProgress, serializeErrorCause } from 'nuxt/internal/dev-error'
 export type { ErrorChannelMessage } from 'nuxt/internal/dev-error'
 
 /**
  * Whether reports should be forwarded to the dev server that announced itself with
- * {@link ERROR_CHANNEL_ENV}. Only reachable from a worker thread of that server, so a
- * runner anywhere else keeps a channel of its own.
+ * {@link ERROR_CHANNEL_ENV}, which is only reachable from a worker thread of it.
  */
 export function shouldForwardReports (env: NodeJS.ProcessEnv = process.env, mainThread: boolean = isMainThread): boolean {
   return !!env[ERROR_CHANNEL_ENV] && !mainThread
@@ -45,7 +44,10 @@ export function publishErrorReport (report: ErrorReport, event?: H3Event): Promi
   return devError.publishErrorReport(report, event && { method: event.req.method, url: event.url, headers: event.req.headers })
 }
 
-/** Build a report for an error raised while rendering, whose stack the runner has mapped. */
+/**
+ * Build a report for an error raised while rendering. Frames are mapped through the SSR
+ * bundle's sourcemaps, so this must run on the stack as it was raised.
+ */
 export function createErrorReport (error: unknown, event?: H3Event): Promise<ErrorReport> {
   devError.resolveErrorPaths(error, resolveTransformPath)
   const ssrSourceMaps = useNitroApp().ssrSourceMaps
@@ -102,10 +104,7 @@ export function renderErrorPage (report: ErrorReport): Promise<string> {
   return devError.renderErrorPage(report, { cwd: rootDir, channel: getErrorChannelPath() })
 }
 
-/**
- * Render a report for the terminal, with the project root shortened to `.`. It carries its
- * own icon and colours, so log it plainly rather than at a logger's error level.
- */
+/** Render a report for the terminal. It carries its own icon and colours, so log it plainly. */
 export function renderErrorAnsi (report: ErrorReport): Promise<string> {
   return devError.renderErrorAnsi(report, { cwd: rootDir })
 }
