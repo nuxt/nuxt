@@ -14,7 +14,7 @@ export type { ImportsOptions, NuxtImport, NuxtImportAddonsOptions, NuxtImportCom
 export type { AppHeadMetaObject, MetaObject, MetaObjectRaw } from './types/head.ts'
 export type { ModuleDefinition, ModuleDependencies, ModuleDependencyMeta, ModuleMeta, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, NuxtModule, ResolvedModuleOptions } from './types/module.ts'
 export type { Nuxt, NuxtApp, NuxtBuildOutputs, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTemplateChange, NuxtTemplateDependency, NuxtTypeTemplate, NuxtServerTemplate, ResolvedNuxtTemplate } from './types/nuxt.ts'
-export type { RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router.ts'
+export type { NuxtLinkOptions, RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router.ts'
 export type { NitroInstance, NitroInstanceFallback, NitroInstanceOptions, NitroInstanceOptionsFallback, NitroTypes } from './types/nitro.ts'
 export type { AppRouteRules, AppRouteRulesBase, AppRouteRulesExtensions, NuxtRequestContext, RequestEventContext, RequestEvent, NuxtRequestEvent, ServerRequestTypes, ServerRouteHandler, ServerRoutes, ServerRouteSegment, ServerTypes } from './types/server.ts'
 export type { ConfigSchema } from './types/schema.ts'
