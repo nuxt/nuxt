@@ -129,6 +129,7 @@
       "ignoreDependencies": [
         "@nuxt/friendly-errors-webpack-plugin",
         "@nuxt/kit",
+        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
