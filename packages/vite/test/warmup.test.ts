@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'node:http'
 import { describe, expect, it, vi } from 'vitest'
 import type { DevEnvironment } from 'vite'
-import { isNavigationRequest, warmupViteServer } from './warmup.ts'
+import { isNavigationRequest, warmupViteServer } from '../src/utils/warmup.ts'
 
 const root = '/project'
 

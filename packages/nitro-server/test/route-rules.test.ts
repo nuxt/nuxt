@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { NitroConfig } from 'nitro/types'
-import { normalizeLegacyRouteRules } from './route-rules.ts'
+import { normalizeLegacyRouteRules } from '../src/route-rules.ts'
 
 vi.mock('@nuxt/kit/internal', () => ({
   bundlerDiagnostics: { NUXT_B7026: vi.fn() },

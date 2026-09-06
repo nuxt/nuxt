@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { logger, useLogger } from './logger.ts'
+import { logger, useLogger } from '../src/logger.ts'
 
 describe('logger', () => {
   it('should expose consola', () => {

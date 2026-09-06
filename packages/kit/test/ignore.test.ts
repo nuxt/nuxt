@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
-import { isIgnored, resolveGroupSyntax, resolveIgnorePatterns } from './ignore.ts'
-import * as context from './context.ts'
+import { isIgnored, resolveGroupSyntax, resolveIgnorePatterns } from '../src/ignore.ts'
+import * as context from '../src/context.ts'
 
 describe('isIgnored', () => {
   it('should populate _ignore', () => {

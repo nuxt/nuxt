@@ -4,7 +4,7 @@ import { join } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { buildNuxt, loadNuxt } from '@nuxt/kit'
 
-const fixtureDir = fileURLToPath(new URL('../../../../test/fixtures-temp/transpile-test', import.meta.url))
+const fixtureDir = fileURLToPath(new URL('../../../test/fixtures-temp/transpile-test', import.meta.url))
 
 // https://github.com/nuxt/nuxt/issues/33828
 describe('async transpile to optimizeDeps.exclude', () => {

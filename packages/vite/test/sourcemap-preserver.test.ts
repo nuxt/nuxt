@@ -5,7 +5,7 @@ import { join } from 'pathe'
 import type { Plugin as RollupPlugin } from 'rollup'
 import type { Plugin as VitePlugin } from 'vite'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { SourcemapPreserverPlugin } from './sourcemap-preserver.ts'
+import { SourcemapPreserverPlugin } from '../src/plugins/sourcemap-preserver.ts'
 
 interface NitroMock {
   options: { rollupConfig: { plugins?: RollupPlugin[] } }
