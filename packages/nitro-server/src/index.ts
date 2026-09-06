@@ -33,7 +33,7 @@ import { compileRouterToString } from 'rou3/compiler'
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
-import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
+import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from './imports.ts'
 import { createServerAutoImports, resolveServerImportDirs } from './auto-imports.ts'
 import { normalizeLegacyRouteRules } from './route-rules.ts'
 import type { ServerImportsOptions } from './auto-imports.ts'
@@ -151,7 +151,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
 
   const autoImportPresets = nuxt.options.experimental.nitroAutoImports
-    ? [...v2ImportsPreset, await getH3ImportsPreset()]
+    ? [nuxtServerImportsPreset, ...v2ImportsPreset, await getH3ImportsPreset()]
     : []
 
   const serverRuntime = getServerRuntime({
@@ -765,7 +765,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     capabilities: { server: true, dev: true },
     buildsSeparately: !nuxt.options.experimental.nitroViteEnvironment,
     imports: () => autoImports.getImports(),
-    runtime: { fetch: 'nitro', runtimeConfig: 'nitro/runtime-config' },
+    runtime: {
+      fetch: 'nitro',
+      runtimeConfig: 'nitro/runtime-config',
+      server: resolve(distDir, 'runtime/server'),
+    },
     preview: { command: () => nitro.options.commands.preview },
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)

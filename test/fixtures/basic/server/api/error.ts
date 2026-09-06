@@ -1,5 +1,5 @@
-import { HTTPError, defineEventHandler } from 'nitro/h3'
+import { createError } from 'nuxt/server'
 
 export default defineEventHandler(() => {
-  throw new HTTPError({ status: 400 })
+  throw createError({ status: 400 })
 })

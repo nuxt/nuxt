@@ -1,6 +1,7 @@
 import { withQuery } from 'ufo'
 import { createHooks } from 'hookable'
 import { SSR_ERROR_PARAM, encodeSSRError } from 'nuxt/internal/renderer/error'
+import { createError } from 'nuxt/server'
 import type { NuxtRendererOptions, RendererHooks } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -16,23 +17,6 @@ export interface NuxtRenderer {
  * for a module to register one at build time, so a custom server is the one that hooks in.
  */
 export const serverHooks: RendererHooks = createHooks() as unknown as RendererHooks
-
-/** An error carrying the HTTP status the renderer refused a request with. */
-export class NuxtServerError extends Error {
-  status: number
-  statusText: string
-  data: unknown
-  headers?: Record<string, string>
-
-  constructor (init: { status: number, statusText?: string, data?: unknown, headers?: Record<string, string> }) {
-    super(init.statusText || `Request failed with status ${init.status}`)
-    this.name = 'NuxtServerError'
-    this.status = init.status
-    this.statusText = init.statusText || ''
-    this.data = init.data
-    this.headers = init.headers
-  }
-}
 
 /**
  * The capabilities `@nuxt/vite-server` provides to the renderer. Everything comes from the
@@ -54,7 +38,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     getRouteRules: () => ({ ssr: true }),
     hooks: () => serverHooks,
     createResponse: (body, init) => new Response(body, init),
-    createError: init => new NuxtServerError(init),
+    createError: init => createError(init),
   }
 }
 

@@ -88,6 +88,10 @@ describe('API routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
   })
 
+  it('types the response of a handler written against `nuxt/server`', () => {
+    expectTypeOf($fetch('/api/portable')).toEqualTypeOf<Promise<{ greeting: string }>>()
+  })
+
   it('types responses of routes contributed by augmentation', () => {
     expectTypeOf($fetch('/api/augmented')).toEqualTypeOf<Promise<{ augmented: true }>>()
     expectTypeOf($fetch('/api/augmented', { method: 'GET' })).toEqualTypeOf<Promise<{ augmented: true }>>()

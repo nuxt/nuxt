@@ -7,6 +7,8 @@
       "#unhead/composables": ["./src/head/runtime/composables"],
       "nuxt/app": ["./src/app/index"],
       "nuxt/app/*": ["./src/app/*"],
+      "nuxt/server": ["./src/server/index"],
+      "nuxt/internal/*": ["./src/runtime/server/*"],
       "#build/nuxt.config.mjs": ["./src/build-stub-nuxt-config.d.ts"],
       "#build/pages": ["./src/build-stub-pages.d.ts"],
       "#build/fetch": ["./src/build-stub-fetch.d.ts"],
