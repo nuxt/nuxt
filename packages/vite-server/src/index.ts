@@ -4,13 +4,15 @@ import { addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logge
 import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
+import { joinURL } from 'ufo'
 import type { Nuxt } from '@nuxt/schema'
 
 import { distDir } from './dirs.ts'
 import { setupSSR } from './ssr.ts'
 import { DevServerListenerPlugin, setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
-import { writeStaticOutput } from './output.ts'
+import { finishStaticOutput, writeStaticOutput } from './output.ts'
+import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } from './prerender.ts'
 
 /**
  * Experimental server builder implemented with Vite alone.
@@ -20,10 +22,13 @@ import { writeStaticOutput } from './output.ts'
  * entry exports a web-standard `{ fetch }` and, on node, serves the static output in
  * front of it.
  *
+ * `nuxt generate` crawls that server at the end of the build, leaving the public directory
+ * as the whole deployable.
+ *
  * Features that need a server runtime are unsupported: server routes and middleware,
- * route rules, prerendering, and composables that need more of a request than the platform
- * provides. Modules work to the extent that they do not require one: `useNitro()` throws
- * and the `nitro:config` / `nitro:init` hooks never fire.
+ * route rules beyond `prerender`, and composables that need more of a request than the
+ * platform provides. Modules work to the extent that they do not require one:
+ * `useNitro()` throws and the `nitro:config` / `nitro:init` hooks never fire.
  */
 export function bundle (nuxt: Nuxt): Promise<void> {
   if (nuxt.options.builder !== '@nuxt/vite-builder') {
@@ -43,13 +48,14 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 
   const publicDir = resolve(outputDir, 'public')
   const ssr = nuxt.options.ssr !== false
+  const prerender = isPrerendering(nuxt)
   const handler = ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined
 
   setServerBuild({
     name: 'vite',
     label: ssr ? 'Vite server' : 'Vite SPA',
     output: { dir: () => outputDir, publicDir: () => publicDir },
-    capabilities: { server: ssr, dev: true },
+    capabilities: { server: ssr && !prerender, dev: true },
     buildsSeparately: false,
     // `nitropack/runtime` does not resolve in a build without nitro
     runtime: {
@@ -57,9 +63,12 @@ export function bundle (nuxt: Nuxt): Promise<void> {
       // the emitted entry, which only exists once a build has run
       handler,
     },
-    preview: ssr
-      ? { command: () => 'node ./server/index.mjs' }
-      : { staticDir: () => publicDir },
+    // read at preview time, so a project that has run both `nuxt build` and `nuxt generate`
+    // previews whichever is on disk
+    preview: {
+      command: () => handler && existsSync(handler) ? 'node ./server/index.mjs' : undefined,
+      staticDir: () => publicDir,
+    },
   }, nuxt)
 
   const server = ssr ? setupSSR(nuxt, outputDir) : undefined
@@ -86,9 +95,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     ].join('\n'),
   })
 
-  // The app manifest is served by nitro from a generated public asset directory.
-  nuxt.options.experimental.appManifest = false
-  nuxt.options.alias['#app-manifest'] = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+  setupAppManifest(nuxt, prerender)
 
   // Registered at the root rather than through `addVitePlugin`, which scopes plugins to
   // an environment, where an app-level `buildApp` hook is never called.
@@ -133,7 +140,16 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   if (nuxt.options.dev) {
     setupDevServer(nuxt, server?.entry)
   } else {
-    nuxt.hook('build:done', () => writeStaticOutput(nuxt, publicDir, { ssr }))
+    nuxt.hook('build:done', async () => {
+      await writeStaticOutput(nuxt, publicDir, { ssr, prerender })
+      if (!prerender || !handler) { return }
+
+      const routes = await prerenderRoutes(nuxt, { publicDir, handler })
+      if (nuxt.options.experimental.appManifest) {
+        await writeAppManifest(nuxt, publicDir, routes)
+      }
+      await finishStaticOutput(outputDir, publicDir)
+    })
   }
 
   return Promise.resolve()
@@ -163,17 +179,50 @@ function addServerEntryAlias (nuxt: Nuxt, entry: string): void {
   }, { nuxt: true, node: true, shared: true })
 }
 
+/**
+ * The manifest is a static asset naming the prerendered routes, so the client knows which
+ * of them have a payload file. A build that does not prerender has nothing to put in it.
+ */
+function setupAppManifest (nuxt: Nuxt, prerender: boolean): void {
+  if (!prerender || !nuxt.options.experimental.appManifest) {
+    nuxt.options.experimental.appManifest = false
+    nuxt.options.alias['#app-manifest'] = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+    return
+  }
+
+  const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
+
+  // the bundle inlines an empty list: the crawl that discovers the routes runs afterwards
+  const { dst } = addTemplate({
+    filename: 'vite-server/app-manifest.json',
+    write: true,
+    getContents: () => JSON.stringify({ id: buildId, timestamp: manifestTimestamp(nuxt), prerendered: [] }),
+  })
+  nuxt.options.alias['#app-manifest'] = dst
+
+  nuxt.options.nitro.prerender ||= {}
+  nuxt.options.nitro.prerender.ignore ||= []
+  nuxt.options.nitro.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds'))
+}
+
 function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: string[] }) {
   const unsupported = [...build.unsupported]
 
   if (nuxt.options.serverHandlers.length || getLayerDirectories(nuxt).some(dirs => existsSync(dirs.server))) {
     unsupported.push('server routes and server middleware')
   }
-  if (Object.keys(nuxt.options.routeRules || {}).length || Object.keys(nuxt.options.nitro.routeRules || {}).length) {
-    unsupported.push('route rules')
+  const routeRules = [...Object.values(nuxt.options.routeRules || {}), ...Object.values(nuxt.options.nitro.routeRules || {})]
+  const ignoredRules = isPrerendering(nuxt)
+    ? routeRules.filter(rules => Object.keys(rules || {}).some(key => key !== 'prerender'))
+    : routeRules
+  if (ignoredRules.length) {
+    unsupported.push(isPrerendering(nuxt) ? 'route rules other than `prerender`' : 'route rules')
   }
-  if (nuxt.options.nitro.prerender?.routes?.length || nuxt.options.nitro.prerender?.crawlLinks) {
-    unsupported.push('prerendering')
+  const wantsPrerender = nuxt.options.nitro.prerender?.routes?.length
+    || nuxt.options.nitro.prerender?.crawlLinks
+    || routeRules.some(rules => rules?.prerender)
+  if (!isPrerendering(nuxt) && wantsPrerender) {
+    unsupported.push('prerendering (run `nuxt generate` for a prerendered build)')
   }
   // @todo serve these in dev: they are h3 handlers, so it needs an h3 app in front of
   // the vite middlewares rather than the plain node listener used today
@@ -181,9 +230,11 @@ function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: strin
     unsupported.push('dev server handlers')
   }
 
-  const what = build.ssr
-    ? 'renders with the Nuxt SSR renderer and brings no server runtime of its own'
-    : 'builds a static SPA and ships no server'
+  const what = !build.ssr
+    ? 'builds a static SPA and ships no server'
+    : isPrerendering(nuxt)
+      ? 'prerenders with the Nuxt SSR renderer and ships no server'
+      : 'renders with the Nuxt SSR renderer and brings no server runtime of its own'
 
   logger.warn([
     `\`@nuxt/vite-server\` is experimental. It ${what}.`,

@@ -41,7 +41,7 @@ export class NuxtServerError extends Error {
  * Route rules are not resolved: without a server runtime there is no matcher, so every
  * route is server-rendered and the build warns that the rules are ignored.
  */
-export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runtimeConfig']): NuxtRendererOptions {
+export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runtimeConfig'], prerender?: NuxtRendererOptions['prerender']): NuxtRendererOptions {
   // the URL helpers the app build generates read these off the global
   ;(globalThis as { __buildAssetsURL?: unknown }).__buildAssetsURL = buildAssetsURL
   ;(globalThis as { __publicAssetsURL?: unknown }).__publicAssetsURL = publicAssetsURL
@@ -54,8 +54,15 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     hooks: () => serverHooks,
     createResponse: (body, init) => new Response(body, init),
     createError: init => new NuxtServerError(init),
+    prerender,
   }
 }
+
+/**
+ * Header the crawler reads additional routes from. The renderer collects them on the
+ * request event, which does not cross the handler boundary, so they ride the response.
+ */
+const PRERENDER_HINTS_HEADER = 'x-nuxt-prerender'
 
 /**
  * A web-standard handler over the renderer: it renders the request, and renders the app's
@@ -65,14 +72,29 @@ export function createFetchHandler (renderer: NuxtRenderer): (request: Request) 
   return async function fetch (request: Request): Promise<Response> {
     const event = createRequestEvent(request)
     try {
-      return await renderer.fetch(event)
+      const response = await renderer.fetch(event)
+      if (import.meta.prerender) {
+        applyPrerenderHints(event, response)
+      }
+      return response
     } catch (error) {
-      return renderError(renderer, request, error)
+      const response = await renderError(renderer, request, error, event)
+      if (import.meta.prerender) {
+        applyPrerenderHints(event, response)
+      }
+      return response
     }
   }
 }
 
-async function renderError (renderer: NuxtRenderer, request: Request, error: unknown): Promise<Response> {
+function applyPrerenderHints (event: ReturnType<typeof createRequestEvent>, response: Response): void {
+  const paths = (event.context as { nuxt?: { prerenderRoutes?: string[] } }).nuxt?.prerenderRoutes
+  if (!paths?.length) { return }
+
+  response.headers.append(PRERENDER_HINTS_HEADER, paths.map(path => encodeURIComponent(path)).join(', '))
+}
+
+async function renderError (renderer: NuxtRenderer, request: Request, error: unknown, event: ReturnType<typeof createRequestEvent>): Promise<Response> {
   const { status, statusText, message, headers } = describeError(error)
   const url = new URL(request.url)
 
@@ -89,8 +111,15 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
       url: request.url,
       ...data === undefined ? {} : { data: typeof data === 'string' ? data : JSON.stringify(data) },
     }), { headers: request.headers }))
-    // the renderer only serves the internal error route to a request the runtime made itself
-    ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = { '~internal': true }
+    // the renderer only serves the internal error route to a request the runtime made itself;
+    // while prerendering the two renders share one state, so routes the error page asks for
+    // are reported alongside those the failed render collected before it threw
+    const state = (import.meta.prerender ? (event.context as { nuxt?: Record<string, unknown> }).nuxt : undefined) || {}
+    state['~internal'] = true
+    ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = state
+    if (import.meta.prerender) {
+      ;(event.context as { nuxt?: Record<string, unknown> }).nuxt = state
+    }
 
     const rendered = await renderer.fetch(errorEvent).catch(() => null)
     if (rendered) {

@@ -1801,12 +1801,18 @@ importers:
       pathe:
         specifier: catalog:build
         version: 2.0.3
+      rou3:
+        specifier: ^0.9.2
+        version: 0.9.2
       srvx:
         specifier: catalog:nitro-runtime
         version: 0.12.5
       ufo:
         specifier: catalog:build
         version: 1.6.4
+      ultrahtml:
+        specifier: catalog:build
+        version: 1.7.0
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -2308,6 +2314,12 @@ importers:
       wrangler:
         specifier: ^4.127.1
         version: 4.129.0
+
+  test/fixtures/vite-server-generate:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/vite-server-netlify:
     dependencies:

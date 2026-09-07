@@ -8,6 +8,7 @@ import type { Plugin } from 'vite'
 
 import { distDir } from './dirs.ts'
 import { spaLoadingTemplate } from './output.ts'
+import { isPrerendering } from './prerender.ts'
 
 /** The contract version this builder is written against. */
 const SUPPORTED_SERVER_RUNTIME_VERSION = 1
@@ -21,9 +22,24 @@ const SUPPORTED_SERVER_RUNTIME_VERSION = 1
  * entry is reached through the renderer rather than emitted on its own.
  */
 export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handler: string, unsupported: string[] } {
+  const prerender = isPrerendering(nuxt)
+
+  // statuses whose error page is server-rendered at build time; the remaining fallbacks are
+  // written out as an empty shell
+  const errorPageOption = nuxt.options.experimental.prerenderErrorPages
+  const errorPages = errorPageOption === true ? [404] : errorPageOption || []
+  const noSSRRoutes = ['/index.html', '/200.html', '/404.html'].filter(route => !errorPages.includes(Number(route.slice(1, -'.html'.length))))
+
   const serverRuntime = getServerRuntime({
+    phase: prerender ? 'prerender' : 'server',
     overrides: async () => ({
       spaTemplate: JSON.stringify(await spaLoadingTemplate(nuxt)),
+      ...prerender
+        ? {
+            NUXT_PRERENDER_ERROR_PAGES: JSON.stringify(errorPages),
+            NUXT_PRERENDER_NO_SSR_ROUTES: JSON.stringify(noSSRRoutes),
+          }
+        : {},
     }),
   }, nuxt)
 
@@ -31,21 +47,15 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
     throw new Error(`[nuxt:vite-server] This builder renders with v${SUPPORTED_SERVER_RUNTIME_VERSION} of the Nuxt server runtime contract, and Nuxt provides v${serverRuntime.version}. Update \`@nuxt/vite-server\`.`)
   }
 
-  // prerendering needs a server to crawl the app with, and the renderer's prerender-only
-  // capabilities (the payload and shared-data caches) are not provided here
-  if (nuxt.options.nitro.static) {
-    throw new Error('[nuxt:vite-server] `nuxt generate` is not supported by `@nuxt/vite-server`: it does not prerender. Run `nuxt build` for a server build, or set `ssr: false` for a static SPA.')
-  }
-
   const unsupported = disableUnsupported(nuxt)
 
   const serverDir = resolve(outputDir, 'server')
-  const { entry, handler } = addServerEntry(nuxt, serverRuntime)
+  const { entry, handler } = addServerEntry(nuxt, serverRuntime, prerender)
 
   nuxt.options.vite.plugins ||= []
   nuxt.options.vite.plugins.push(
     AppServerEnvironmentsPlugin(nuxt),
-    ServerEnvironmentPlugin(nuxt, serverRuntime, entry, serverDir),
+    ServerEnvironmentPlugin(nuxt, serverRuntime, entry, serverDir, prerender),
     BundledVuePlugin(nuxt),
     ServerRuntimeModulesPlugin(serverRuntime),
   )
@@ -85,7 +95,7 @@ function AppServerEnvironmentsPlugin (nuxt: Nuxt): Plugin {
  * builder's own environment builds: the handler behind a node server that serves the static
  * output in front of it and listens when it is run as the main module.
  */
-function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): { entry: string, handler: string } {
+function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender: boolean): { entry: string, handler: string } {
   const { dst: handler } = addTemplate({
     filename: 'vite-server/server-handler.mjs',
     write: true,
@@ -93,8 +103,9 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): { entry:
       `import { createNuxtRenderer } from ${JSON.stringify(serverRuntime.entry)}`,
       `import { useRuntimeConfig } from ${JSON.stringify(resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'))}`,
       `import { createFetchHandler, createRendererOptions } from ${JSON.stringify(resolve(distDir, 'runtime/renderer'))}`,
+      ...prerender ? [`import { createPrerenderOptions } from ${JSON.stringify(resolve(distDir, 'runtime/prerender'))}`] : [],
       '',
-      `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig))`,
+      `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig${prerender ? `, createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : ''}))`,
       `export const fetch = createFetchHandler(renderer)`,
       `export default { fetch }`,
     ].join('\n'),
@@ -133,7 +144,7 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): { entry:
  * A deploy target that builds its own module as the input keeps it, and reaches the render
  * through `#server-entry`; the environment then emits the target's artifact.
  */
-function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, entry: string, serverDir: string): Plugin {
+function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, entry: string, serverDir: string, prerender: boolean): Plugin {
   return {
     name: 'nuxt:vite-server:server-environment',
     applyToEnvironment: environment => environment.config.consumer === 'server',
@@ -155,10 +166,15 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.build.emptyOutDir = true
       config.build.rolldownOptions ||= {}
 
-      // the app build names its own entry `server`; an input that does not is a target's
+      // the app build names its own entry `server`, and a repeated resolution pass sees the
+      // entry substituted below; anything else belongs to a target
       const input = config.build.rolldownOptions.input
-      const claimed = !!input && typeof input === 'object' && !Array.isArray(input) && !('server' in input)
+      const named = !!input && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, string> : undefined
+      const claimed = !!named && !('server' in named) && named.index !== entry
       if (claimed) {
+        if (prerender) {
+          throw new Error('[nuxt:vite-server] `nuxt generate` cannot prerender through a deploy target: the target owns the server environment and its output is not a node handler. Remove the target, or run `nuxt build`.')
+        }
         useServerBuild(nuxt).runtime.handler = undefined
       } else {
         config.build.rolldownOptions.input = { index: entry }

@@ -51,6 +51,8 @@ export interface RouteRuleConfigFallback {
   appMiddleware?: Record<string, boolean>
   payload?: boolean
   redirect?: string | { to: string, status?: number } | false
+  isr?: number | boolean | Record<string, any>
+  cache?: false | Record<string, any>
 }
 
 /** @internal */

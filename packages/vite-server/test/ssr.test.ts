@@ -52,6 +52,15 @@ describe('the server environment', () => {
     expect(useServerBuild(nuxt).runtime.handler).toBe('/app/.output/server/index.mjs')
   })
 
+  it('keeps the handler when the environment is configured more than once', () => {
+    const { nuxt, entry, configure } = setup()
+
+    const config = configure(configure().build)
+
+    expect(config.build!.rolldownOptions!.input).toEqual({ index: entry })
+    expect(useServerBuild(nuxt).runtime.handler).toBe('/app/.output/server/index.mjs')
+  })
+
   it('leaves a target its own input, and emits no handler of its own', () => {
     const { nuxt, configure } = setup()
 
