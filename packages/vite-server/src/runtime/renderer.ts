@@ -152,38 +152,35 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
   const { status, statusText, message, headers } = describeError(error)
   const url = new URL(request.url)
 
-  // a render that failed while rendering the error page cannot be recovered by rendering it again
-  if (!url.pathname.startsWith('/__nuxt_error')) {
-    // the renderer reads the error off the query, as the error page's props
-    const data = (error as { data?: unknown })?.data
-    const errorEvent = createRequestEvent(new Request(withQuery(new URL('/__nuxt_error', url).href, {
-      status: String(status),
-      statusCode: String(status),
-      statusText,
-      statusMessage: statusText,
-      message,
-      url: request.url,
-      ...data === undefined ? {} : { data: typeof data === 'string' ? data : JSON.stringify(data) },
-    }), { headers: request.headers }))
-    // the renderer only serves the internal error route to a request the runtime made itself;
-    // while prerendering the two renders share one state, so routes the error page asks for
-    // are reported alongside those the failed render collected before it threw
-    const state = (import.meta.prerender ? (event.context as { nuxt?: Record<string, unknown> }).nuxt : undefined) || {}
-    state['~internal'] = true
-    ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = state
-    if (import.meta.prerender) {
-      ;(event.context as { nuxt?: Record<string, unknown> }).nuxt = state
-    }
+  // the renderer reads the error off the query, as the error page's props
+  const data = (error as { data?: unknown })?.data
+  const errorEvent = createRequestEvent(new Request(withQuery(new URL('/__nuxt_error', url).href, {
+    status: String(status),
+    statusCode: String(status),
+    statusText,
+    statusMessage: statusText,
+    message,
+    url: request.url,
+    ...data === undefined ? {} : { data: typeof data === 'string' ? data : JSON.stringify(data) },
+  }), { headers: request.headers }))
+  // the renderer only serves the internal error route to a request the runtime made itself;
+  // while prerendering the two renders share one state, so routes the error page asks for
+  // are reported alongside those the failed render collected before it threw
+  const state = (import.meta.prerender ? (event.context as { nuxt?: Record<string, unknown> }).nuxt : undefined) || {}
+  state['~internal'] = true
+  ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = state
+  if (import.meta.prerender) {
+    ;(event.context as { nuxt?: Record<string, unknown> }).nuxt = state
+  }
 
-    const rendered = await renderer.fetch(errorEvent).catch(() => null)
-    if (rendered) {
-      const responseHeaders = new Headers(rendered.headers)
-      for (const [name, value] of new Headers(headers)) {
-        responseHeaders.set(name, value)
-      }
-      responseHeaders.set('content-type', 'text/html;charset=utf-8')
-      return new Response(rendered.body, { status, statusText, headers: responseHeaders })
+  const rendered = await renderer.fetch(errorEvent).catch(() => null)
+  if (rendered) {
+    const responseHeaders = new Headers(rendered.headers)
+    for (const [name, value] of new Headers(headers)) {
+      responseHeaders.set(name, value)
     }
+    responseHeaders.set('content-type', 'text/html;charset=utf-8')
+    return new Response(rendered.body, { status, statusText, headers: responseHeaders })
   }
 
   return new Response(message, {
