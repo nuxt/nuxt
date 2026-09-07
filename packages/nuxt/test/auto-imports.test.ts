@@ -232,12 +232,12 @@ describe('imports:nuxt/scripts', async () => {
     'useScriptGoogleTagManager',
     'useScriptGoogleAnalytics',
   ])
-  it.each(scriptsStubsPreset.imports)(`should register %s from @nuxt/scripts`, (name) => {
+  it.each(scriptsStubsPreset.imports)(`stubbed %s should exist in the @nuxt/scripts registry`, (name) => {
     if (globalScripts.has(name)) { return }
 
     expect(scripts).toContain(name)
   })
-  it.each(scripts)(`should register %s from @nuxt/scripts`, (name) => {
+  it.each(scripts)(`%s from the @nuxt/scripts registry should be stubbed`, (name) => {
     expect(scriptsStubsPreset.imports).toContain(name)
   })
 })

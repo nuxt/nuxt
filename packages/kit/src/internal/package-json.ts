@@ -23,7 +23,7 @@ function isFile (path: string) {
   }
 }
 
-function resolveStartPath (id: string | URL, options: ResolveOptions) {
+function resolveStartPath (id: string | URL, options: ResolveOptions): string | undefined {
   if (id instanceof URL || id.startsWith('file://')) {
     return normalize(fileURLToPath(id))
   }
@@ -54,7 +54,9 @@ function findUp (start: string, filenames: string[], furthest?: boolean) {
 
 /** Find the `package.json` nearest to `id`, which may be a path, a URL or a module id. */
 export function resolvePackageJSON (id: string | URL = process.cwd(), options: ResolveOptions = {}): string | undefined {
-  const path = findUp(resolveStartPath(id, options), ['package.json'])
+  // `resolveStartPath` returns `undefined` for an unresolvable module id when `try` is set
+  const start = resolveStartPath(id, options)
+  const path = start ? findUp(start, ['package.json']) : undefined
   if (!path && !options.try) {
     throw new Error(`Cannot find matching package.json in ${id} or parent directories.`)
   }
@@ -86,6 +88,9 @@ export function findWorkspaceDir (id: string | URL = process.cwd(), options: Res
 
 function resolveWorkspaceDir (id: string | URL, options: ResolveOptions): string {
   const start = resolveStartPath(id, options)
+  if (!start) {
+    throw new Error(`Cannot detect workspace root from ${id}.`)
+  }
 
   const workspaceFile = findUp(start, WORKSPACE_FILES, true)
   if (workspaceFile) {

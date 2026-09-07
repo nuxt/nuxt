@@ -6,7 +6,7 @@ export default defineConfig({
   alias: {
     'pkg-types': fileURLToPath(new URL('src/internal/package-json.ts', import.meta.url)),
   },
-  // No `oxc: true`: it can't infer `defineDiagnostics()`'s return type, which the
+  // No `generator: 'oxc'`: it can't infer `defineDiagnostics()`'s return type, which the
   // diagnostics catalogs rely on. tsc handles it.
   dts: {},
   exports: { devExports: true },
@@ -23,8 +23,7 @@ export default defineConfig({
       'dotenv',
       'jiti',
       '@nuxt/schema',
-      'nitro/types',
-      'nitropack/types',
+      '@nuxt/schema/internal',
       /^rolldown(\/|$)/,
       'oxc-parser',
       'mlly',

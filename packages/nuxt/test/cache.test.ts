@@ -43,7 +43,7 @@ async function renderIndex (outputDir: string) {
 // the inline style extracted from the fixture's scoped `<style>` block
 const INLINE_STYLE_RE = /<style[^>]*>[^<]*color\s*:\s*red/
 
-describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
+describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
   const workspaceDir = await findWorkspaceDir()
   const tmpDir = join(workspaceDir, '.test/build-cache')
 

@@ -1,7 +1,8 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { performance } from 'node:perf_hooks'
 import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptions } from '@nuxt/schema'
-import { dirname, isAbsolute, join, resolve } from 'pathe'
+import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
@@ -11,6 +12,7 @@ import { directoryToURL } from '../internal/esm.ts'
 import { interopDefault } from '../internal/interop.ts'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from '../internal/node-module.ts'
 import { useNuxt } from '../context.ts'
+import { logger } from '../logger.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
@@ -479,6 +481,20 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   }
 }
 
+function getModuleName (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta, nameOrPath: string | undefined, rootDir: string): string {
+  if (meta.name) {
+    return meta.name
+  }
+  if (nameOrPath) {
+    const parsed = parseNodeModulePath(nameOrPath)
+    if (parsed.name) {
+      return parsed.name
+    }
+    return isAbsolute(nameOrPath) ? relative(rootDir, nameOrPath) : nameOrPath
+  }
+  return nuxtModule.name || 'anonymous module'
+}
+
 interface CallModuleOptions {
   meta: ModuleMeta
   modulePath?: string
@@ -495,7 +511,28 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
     ? nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(moduleOptions, nuxt))
     : nuxtModule(moduleOptions, nuxt)
 
+  const moduleInfo = {
+    name: getModuleName(nuxtModule, options.meta, nameOrPath, nuxt.options.rootDir),
+    meta: options.meta,
+    path: modulePath,
+  }
+
+  // fired within `callModule` so modules installed as dependencies or via `installModule` are covered too
+  await nuxt.callHook('module:before', moduleInfo)
+
+  const start = performance.now()
   const res = options.meta.disabled ? false : await fn()
+  const duration = Math.round((performance.now() - start) * 100) / 100
+  // our measurement of the whole invocation is authoritative for `setup`; extra keys a module reports are kept
+  const timings = defu({ setup: duration }, (res || {} as Record<string, undefined>).timings)
+
+  if (!options.meta.disabled) {
+    if (duration > 5000 && moduleInfo.name !== '@nuxt/telemetry') {
+      kitDiagnostics.NUXT_B8014({ name: moduleInfo.name, time: duration })
+    } else if (nuxt.options.debug && nuxt.options.debug.modules) {
+      logger.info(`Module \`${moduleInfo.name}\` took \`${duration}ms\` to setup.`)
+    }
+  }
 
   let entryPath: string | undefined
   if (typeof modulePath === 'string') {
@@ -528,7 +565,9 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
   nuxt.options._installedModules.push({
     meta: options.meta,
     module: nuxtModule,
-    timings: (res || {} as Record<string, undefined>).timings,
+    timings: options.meta.disabled ? undefined : timings,
     entryPath,
   })
+
+  await nuxt.callHook('module:done', { ...moduleInfo, entryPath, timings })
 }

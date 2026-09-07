@@ -2,8 +2,7 @@ import type { Ref, WatchHandle } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
-import { deleteCookie, getCookie, setCookie } from '@nuxt/nitro-server/h3'
-import type { H3Event } from '@nuxt/nitro-server/h3'
+import type { NuxtRequestEvent } from '@nuxt/schema'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import type { NuxtApp } from '../nuxt'
@@ -399,28 +398,59 @@ function writeClientCookie (name: string, value: string | undefined, opts: Cooki
   }
 }
 
-function writeServerCookie (event: H3Event, name: string, value: string | undefined, opts: CookieOptions = {}) {
+function writeServerCookie (event: NuxtRequestEvent, name: string, value: string | undefined, opts: CookieOptions = {}) {
   if (event) {
     const serializeOpts = toSerializeOptions(opts)
     // update if value is set
     if (value !== undefined) {
-      return setCookie(event, name, value, serializeOpts)
+      return setResponseCookie(event, name, value, serializeOpts)
     }
 
     // delete if cookie exists in browser, or was set earlier in the response, and value is null/undefined
-    if (getCookie(event, name) !== undefined || responseSetsCookie(event, name)) {
-      return deleteCookie(event, name, serializeOpts)
+    if (parse(event.req.headers.get('cookie') || '')[name] !== undefined || responseSetsCookie(event, name)) {
+      return setResponseCookie(event, name, '', { ...serializeOpts, maxAge: 0 })
     }
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined
   }
 }
 
-function responseSetsCookie (event: H3Event, name: string) {
+function responseSetsCookie (event: NuxtRequestEvent, name: string) {
   for (const raw of event.res.headers.getSetCookie()) {
     if (parseSetCookie(raw, { decode: false })?.name === name) { return true }
   }
   return false
+}
+
+// cookies are distinct per name, domain and path, so only a cookie matching all three is replaced
+function cookieKey (name: string, opts: { domain?: string, path?: string }) {
+  return [name, (opts.domain || '').replace(/^\./, '').toLowerCase(), opts.path || '/'].join(';')
+}
+
+function setResponseCookie (event: NuxtRequestEvent, name: string, value: string, opts: CookieSerializeOptions) {
+  const newCookie = serialize(name, value, { path: '/', ...opts })
+  const currentCookies = event.res.headers.getSetCookie()
+
+  if (currentCookies.length === 0) {
+    event.res.headers.set('set-cookie', newCookie)
+    return
+  }
+
+  const namePrefix = `${name}=`
+  if (!currentCookies.some(cookie => cookie.startsWith(namePrefix))) {
+    event.res.headers.append('set-cookie', newCookie)
+    return
+  }
+
+  const newCookieKey = cookieKey(name, opts)
+  event.res.headers.delete('set-cookie')
+  for (const cookie of currentCookies) {
+    const parsed = parseSetCookie(cookie)
+    const isReplaced = parsed ? cookieKey(parsed.name, parsed) === newCookieKey : cookie.startsWith(namePrefix)
+    if (isReplaced) { continue }
+    event.res.headers.append('set-cookie', cookie)
+  }
+  event.res.headers.append('set-cookie', newCookie)
 }
 
 /**

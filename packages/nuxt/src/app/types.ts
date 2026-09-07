@@ -1,14 +1,15 @@
 /**
- * Minimal server-compatible types for the parts of `nuxt/app` types that are needed in
- * `@nuxt/nitro-server` and `@nuxt/schema`.
+ * Minimal server-compatible types for the parts of `nuxt/app` types that a server builder
+ * needs.
  */
 import type { SerializableHead } from '@unhead/vue'
 import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { H3Event, HTTPError } from '@nuxt/nitro-server/h3'
 import type { Hookable } from 'hookable'
-import type { RuntimeConfig } from 'nuxt/schema'
+import type { NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
+
+export type { NuxtLinkOptions } from '@nuxt/schema'
 
 type HookResult = Promise<void> | void
 
@@ -28,48 +29,6 @@ export interface PluginMeta {
    * It overrides the value of `enforce` and is used to sort plugins.
    */
   order?: number
-}
-
-/**
- * Create a NuxtLink component with given options as defaults.
- *
- * Declared without reference to `vue-router` types so this leaf does not
- * force a (possibly duplicated) `vue-router` instance into consuming
- * programs; the fields mirror `RouterLinkProps['activeClass' |
- * 'exactActiveClass']` and `NuxtLinkProps['prefetch' | 'prefetchedClass' |
- * 'prefetchOn']` in `../components/nuxt-link.ts`.
- * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
- */
-export interface NuxtLinkOptions {
-  /**
-   * The name of the component.
-   * @default "NuxtLink"
-   */
-  componentName?: string
-  /**
-   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
-   */
-  externalRelAttribute?: string | null
-  /**
-   * An option to either add or remove trailing slashes in the `href`.
-   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
-   */
-  trailingSlash?: 'append' | 'remove'
-  /** A class to apply to active links. */
-  activeClass?: string
-  /** A class to apply to exact active links. */
-  exactActiveClass?: string
-  /** A class to apply to links that have been prefetched. */
-  prefetchedClass?: string
-  /** When enabled will prefetch middleware, layouts and payloads of links in the viewport. */
-  prefetch?: boolean
-  /**
-   * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
-   */
-  prefetchOn?: Partial<{
-    visibility: boolean
-    interaction: boolean
-  }>
 }
 
 type AppRenderedContext = { ssrContext: NuxtSSRContext | undefined, renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
@@ -99,18 +58,45 @@ export interface NuxtServerApp {
 }
 
 /**
- * Type-only declaration of the `NuxtError` class in
- * `./composables/error.ts`, which remains the canonical exported value (and
- * the `NuxtError` type exported from `nuxt/app` / `#app`).
+ * Type-only declaration of the `NuxtError` class in `./error.ts`, which
+ * remains the canonical exported value (and the `NuxtError` type exported
+ * from `nuxt/app` / `#app` and from `nuxt/server`).
  *
- * It extends h3's `HTTPError` at the type level only: `NuxtError` is a
- * standalone class, but errors thrown during SSR have to remain structurally
- * compatible with what h3 and Nitro read off them.
+ * The members are declared here rather than inherited from h3's `HTTPError`,
+ * but must stay structurally compatible with it: that is what h3 and Nitro read
+ * off errors thrown during SSR.
  */
-export interface NuxtError<DataT = unknown> extends HTTPError<DataT> {
+export interface NuxtError<DataT = unknown> extends Error {
   readonly __nuxt_error: true
   readonly fatal: boolean
+  /** HTTP status code in range [100...599] */
+  readonly status: number
+  /** HTTP status text (reason phrase) */
+  readonly statusText: string | undefined
+  /** Additional HTTP headers to be sent with the error response. */
+  readonly headers: Headers | undefined
+  /** Additional data attached to the error JSON body under `data`. */
+  readonly data: DataT | undefined
+  /** Additional top-level properties to attach to the error JSON body. */
+  readonly body: Record<string, unknown> | undefined
+  /** Whether the error was not handled by the application. */
+  readonly unhandled: boolean | undefined
+  readonly cause: unknown
+  /** @deprecated use `status` */
+  readonly statusCode: number
+  /** @deprecated use `statusText` */
+  readonly statusMessage: string | undefined
+  toJSON (): NuxtErrorJSON
 }
+
+/** JSON body serialized from a {@link NuxtError} when it is sent as an HTTP response. */
+export type NuxtErrorJSON = {
+  status: number
+  statusText?: string
+  message: string
+  unhandled?: boolean
+  data?: unknown
+} & Record<string, unknown>
 
 /**
  * Serialized form of an error's `cause` chain, attached to the error page
@@ -145,7 +131,7 @@ export interface NuxtPayload {
 
 export interface NuxtSSRContext extends SSRContext {
   url: string
-  event: H3Event
+  event: NuxtRequestEvent
   runtimeConfig: RuntimeConfig
   noSSR: boolean
   /** whether we are rendering an SSR error */

@@ -59,6 +59,7 @@ export function isWhitespace (char: number | string | undefined | null): boolean
 }
 
 export const JS_EXT_RE = /^[^?]*\.(?:[jt]sx?|[cm][jt]s)(?:$|\?)/
+export const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 export const NUXT_LIB_RE = /^[^?]*node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
 export const STYLE_QUERY_RE = /[?&]type=style/
 export const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/

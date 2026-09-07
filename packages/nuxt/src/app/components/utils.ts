@@ -115,7 +115,8 @@ export function vforToArray (source: any): any[] {
     const length = source > MAX_VFOR_LENGTH ? MAX_VFOR_LENGTH : source
     const array: number[] = []
     for (let i = 0; i < length; i++) {
-      array[i] = i
+      // Vue's `v-for` over a number is 1-based
+      array[i] = i + 1
     }
     return array
   } else if (isObject(source)) {

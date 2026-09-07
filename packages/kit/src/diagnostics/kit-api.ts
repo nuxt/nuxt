@@ -124,5 +124,15 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Loading it natively is faster, as jiti has to transform the module first. Report it to the module author if the module is not your own.',
       docs: false,
     },
+    NUXT_B8024: {
+      why: (p: { api: string, version: number, host: number }) => `A \`${p.api}\` registration written for nitro v${p.version} was skipped because this project uses nitro v${p.host}.`,
+      fix: 'Provide a variant compatible with the current nitro version, or gate the registration with `hasNitroVersion()`. Report it to the module author if the module is not your own.',
+      docs: false,
+    },
+    NUXT_B8025: {
+      why: (p: { api: string }) => `The \`handler\` passed to \`${p.api}\` is a per-nitro-version map, but only the whole registration can be versioned.`,
+      fix: (p: { api: string }) => `Pass the variants as the registration itself, for example \`${p.api}({ 2: { route, handler }, 3: { route, handler } })\`.`,
+      docs: false,
+    },
   },
 })

@@ -8,8 +8,8 @@ import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
-import { configDiagnostics, installModules } from '@nuxt/kit/internal'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
+import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -42,6 +42,7 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
+import { buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRoutesModule, resolveServerRoutes } from './utils/server-routes.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
@@ -53,6 +54,7 @@ import { NuxtPerfProfiler } from './perf.ts'
 import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
+import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
@@ -84,12 +86,13 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     apps: {},
     buildOutputs: {
       ssrStyles: () => 'export default {}\nexport const inlinedCSS = {}',
-      serverEntry: () => `export default () => { throw new Error('[nuxt] nuxt/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.') }`,
+      serverEntry: () => `export default () => { throw new Error('[nuxt] nuxt/internal/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.') }`,
       clientManifest: () => 'export default {}',
       clientPrecomputed: () => 'export default undefined',
       entryChunkName: () => 'export const entryFileName = undefined',
       entryIds: () => 'export default []',
     },
+    serverBuild: createServerBuild(options),
     runWithContext: fn => runWithNuxtContext(nuxt, fn),
     options,
   }
@@ -249,20 +252,54 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
+  // The compiler emits the route tree, an exact-match table for the fully static paths, the path
+  // union as source and accessors specialised to this route set. It is a module rather than an
+  // ambient declaration because the accessors are type aliases, which cannot be reached through
+  // interface augmentation; the app layer imports them from `#build/server-routes`.
+  addTemplate({
+    filename: 'server-routes.d.ts',
+    // the routes come from the server builder's own scan rather than from anything the template
+    // system watches, so nothing but a page change can affect the output - and only where pages are
+    // part of the schema
+    dependsOn: nuxt.options.experimental.strictRouteTypes === 'isomorphic' ? ['pages'] : [],
+    getContents: async ({ app, nuxt }) => {
+      // handler specifiers are relative to the emitted file, which sits at the root of the build
+      // directory rather than in `types/`
+      const emittedFrom = nuxt.options.buildDir
+      const { routes, requestTypes } = await resolveServerRoutes(nuxt)
+
+      // under `'isomorphic'` the pages the Vue router serves are part of the route set: nitro does
+      // not know about the renderer, so a page's path is otherwise invisible and would be rejected
+      const pages = nuxt.options.experimental.strictRouteTypes === 'isomorphic'
+        ? buildServerRoutes(collectServerRoutes(collectPageRoutes(app.pages || [])), emittedFrom)
+            .map(route => ({ ...route, metadata: { GET: { responseType: 'string' } } }))
+        : []
+
+      return emitServerRoutesModule({
+        routes: buildServerRoutes(routes, emittedFrom, requestTypes),
+        pages,
+        requestTypes,
+        strict: nuxt.options.experimental.strictRouteTypes !== false,
+      })
+    },
+  })
+
   addTypeTemplate({
     filename: 'types/nitro-layouts.d.ts',
     dependsOn: [],
     getContents: ({ app }) => {
       return [
         `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-        'declare module \'nitro/types\' {',
-        '  interface NitroRouteConfig {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '  interface NitroRouteRules {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '}',
+        ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+          `declare module '${module}' {`,
+          '  interface AppRouteRulesExtensions {',
+          '    appLayout?: LayoutKey | false',
+          '  }',
+          '  interface RouteRuleConfigExtensions {',
+          '    appLayout?: LayoutKey | false',
+          '  }',
+          '}',
+        ]),
       ].join('\n')
     },
   }, { nuxt: true, nitro: true, node: true })
@@ -301,29 +338,32 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   nuxt['~runtimeDependencies'] = [...runtimeDependencies]
 
-  // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
+  // Set resolutions for types that might be obscured with shamefully-hoist=false, applied to
+  // each generated tsconfig from the `prepare:types` handler below.
   let paths: Record<string, [string]> | undefined
   let nodePaths: Record<string, [string]> | undefined
-  const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
-    paths ||= await resolveTypescriptPaths(nuxt)
-    nitroConfig.typescript = defu(nitroConfig.typescript, {
-      tsConfig: { compilerOptions: { paths: { ...paths } } },
-    })
-  }
-  if (nuxt.options.dev) {
-    nuxt.hook('nitro:build:before', nitro => applyNitroTypePaths(nitro.options))
-  } else {
-    nuxt.hook('nitro:config', applyNitroTypePaths)
-  }
 
   let serverBuilderReference: { path: string } | { types: string } | undefined
+  /**
+   * A server builder declares the augmentations it contributes (`ServerTypes`, `ServerRoutes`,
+   * `RuntimeConfig`, …) from an `./augments` subpath export, which is referenced on its own so
+   * the declarations reach the shared environment without pulling in the builder's own types.
+   * Builders without that export are referenced by package name.
+   */
   const getServerBuilderReference = () => {
-    if (serverBuilderReference || typeof nuxt.options.server.builder !== 'string') {
+    const builder = nuxt.options.server.builder
+    // only a package can have an `augments` subpath or be referenced by name
+    if (serverBuilderReference || typeof builder !== 'string' || isAbsolute(builder) || builder.startsWith('.')) {
       return serverBuilderReference
     }
-    serverBuilderReference = nuxt.options.server.builder === '@nuxt/nitro-server'
-      ? { path: resolveModulePath('@nuxt/nitro-server/augments', { from: import.meta.url }).replace(/\.mjs$/, '.d.mts') }
-      : { types: nuxt.options.server.builder }
+    const augments = resolveModulePath(`${builder}/augments`, {
+      from: [import.meta.url, directoryToURL(nuxt.options.rootDir)],
+      try: true,
+    })
+    const declaration = augments?.replace(JS_EXTENSION_RE, (_, modifier = '') => `.d.${modifier}ts`)
+    serverBuilderReference = declaration && existsSync(declaration)
+      ? { path: declaration }
+      : { types: builder }
     return serverBuilderReference
   }
 
@@ -355,7 +395,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (serverBuilderReference) {
       opts.references.push(serverBuilderReference)
       opts.nodeReferences.push(serverBuilderReference)
-      if (nuxt.options.server.builder === '@nuxt/nitro-server') {
+      if ('path' in serverBuilderReference) {
         opts.sharedReferences.push(serverBuilderReference)
       }
     }
@@ -374,6 +414,8 @@ async function initNuxt (nuxt: Nuxt) {
     // required for the server builder's augmentations (referenced above)
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
+    // bundler-resolved, so it takes the same substitutions as the app
+    opts.serverTsConfig.compilerOptions = defu(opts.serverTsConfig.compilerOptions, { paths: { ...paths } })
 
     for (const dirs of layerDirs) {
       const declaration = join(dirs.root, 'index.d.ts')
@@ -433,6 +475,11 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   nuxt.hook('modules:done', () => {
+    // Transform initial composable call within `<script setup>` to preserve context
+    if (nuxt.options.experimental.asyncContext) {
+      addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
+    }
+
     const helperModule = resolveModulePath('unctx', { from: import.meta.url, try: true }) ?? 'unctx'
     // Add unctx transform
     addBuildPlugin(UnctxTransformPlugin({
@@ -460,41 +507,42 @@ async function initNuxt (nuxt: Nuxt) {
       const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
       const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
       const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
-      const sharedProtectionConfig = {
-        cwd: nuxt.options.rootDir,
-        trace: true,
+      const trace = nuxt.options.dev ? true : 'lazy' as const
+      const sharedMatcher = {
         include: sharedPatterns,
         patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
       }
-      addBuildPlugin({
-        vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
-        webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
-        rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
-      }, { server: false, prepend: true })
-
-      // Add import protection
-      const nuxtProtectionConfig = {
-        cwd: nuxt.options.rootDir,
-        trace: true,
+      const nuxtAppMatcher = {
         // Exclude top-level resolutions by plugins
         exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
         patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
       }
       addBuildPlugin({
-        webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
-        rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
+        webpack: () => ImpoundPlugin.webpack({ cwd: nuxt.options.rootDir, trace, ...sharedMatcher }),
+        rspack: () => ImpoundPlugin.rspack({ cwd: nuxt.options.rootDir, trace, ...sharedMatcher }),
+      }, { server: false, prepend: true })
+
+      // Add import protection
+      addBuildPlugin({
+        webpack: () => ImpoundPlugin.webpack({ cwd: nuxt.options.rootDir, trace, ...nuxtAppMatcher }),
+        rspack: () => ImpoundPlugin.rspack({ cwd: nuxt.options.rootDir, trace, ...nuxtAppMatcher }),
       })
 
       // Register Vite import protection plugins with split enforce:
       // - The main impound plugin (resolveId) needs prepend to run before Vite's resolver
       // - The impound:trace plugin (transform) should run after SFC compilation so
       //   es-module-lexer can parse the compiled JS and produce accurate code snippets
+      // Both matchers share a single plugin instance so eager tracing parses each module once.
       for (const envOptions of [
         { client: false } as const,
         { server: false } as const,
       ]) {
         const error = envOptions.client === false ? false : true
-        const vitePlugins = [ImpoundPlugin.vite({ ...nuxtProtectionConfig, error, ...(error === false && { warn: 'once' as const }) })].flat()
+        const matcherOptions = { error, ...(error === false && { warn: 'once' as const }) }
+        const matchers = envOptions.client === false
+          ? [{ ...nuxtAppMatcher, ...matcherOptions }]
+          : [{ ...sharedMatcher, ...matcherOptions }, { ...nuxtAppMatcher, ...matcherOptions }]
+        const vitePlugins = [ImpoundPlugin.vite({ cwd: nuxt.options.rootDir, trace, matchers })].flat()
           .map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` }))
         const mainPlugins = vitePlugins.filter(p => !p.name.includes('trace'))
         const tracePlugins = vitePlugins.filter(p => p.name.includes('trace'))
@@ -527,11 +575,6 @@ async function initNuxt (nuxt: Nuxt) {
 
     // add plugin to make warnings less verbose in dev mode
     addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
-  }
-
-  // Transform initial composable call within `<script setup>` to preserve context
-  if (nuxt.options.experimental.asyncContext) {
-    addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -725,6 +768,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   await installModules(modules, resolvedModulePaths, nuxt)
 
+  // Transform top-level `await navigateTo()` in `<script setup>` into an early return.
+  // Registered after modules so its `post` transform runs after auto-import injection.
+  if (nuxt.options.experimental.navigateToEarlyReturn) {
+    addBuildPlugin(NavigateToEarlyReturnPlugin())
+  }
+
   if (nuxt.options.experimental.debugModuleMutation) {
     stripDebugProxies(nuxt.options)
   }
@@ -814,7 +863,7 @@ async function initNuxt (nuxt: Nuxt) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/vapor-interop.client'))
     } else {
       nuxt.options.vue.vapor = false
-      logger.warn('`vue.vapor` requires vue `3.6.0` or later; vapor mode has been disabled.')
+      configDiagnostics.NUXT_B5024()
     }
   }
 
@@ -1086,6 +1135,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
+const JS_EXTENSION_RE = /\.(m|c)?js$/
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
 
 function deduplicateArray<T = unknown> (maybeArray: T): T {
@@ -1263,7 +1313,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     if (RELATIVE_CSS_ENTRY_RE.test(entry)) {
       const absolute = resolve(nuxt.options.rootDir, entry)
       const asAlias = '~/' + relative(nuxt.options.srcDir, absolute)
-      logger.warn(`\`css\` entries are resolved as module ids, not relative to \`nuxt.config\`. Replace \`${entry}\` with ${existsSync(absolute) ? `\`${link(absolute, { formatter: () => asAlias })}\`` : 'an aliased or absolute path'}.`)
+      configDiagnostics.NUXT_B5025({ entry, replacement: existsSync(absolute) ? `\`${link(absolute, { formatter: () => asAlias })}\`` : 'an aliased or absolute path' })
       continue
     }
 
@@ -1271,7 +1321,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     // be resolved by builder-specific aliases, so neither can be checked here
     const resolved = resolveAlias(entry, nuxt.options.alias)
     if (isAbsolute(resolved) && !resolved.startsWith(nuxt.options.buildDir) && !existsSync(resolved)) {
-      logger.warn(`\`css\` entry \`${entry}\` could not be found${resolved === entry ? '' : ` (resolved to \`${linkToAlias(resolved, nuxt)}\`)`}.`)
+      configDiagnostics.NUXT_B5026({ entry, resolved: resolved === entry ? undefined : linkToAlias(resolved, nuxt) })
     }
   }
 }

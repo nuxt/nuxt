@@ -1,6 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { getFragmentHTML } from '../../packages/nuxt/src/app/components/utils'
+import { renderList } from 'vue'
+import { getFragmentHTML, vforToArray } from '../../packages/nuxt/src/app/components/utils'
+
+describe('vforToArray', () => {
+  it('matches renderList semantics for number sources', () => {
+    expect(vforToArray(3)).toEqual([1, 2, 3])
+    expect(vforToArray(3)).toEqual(renderList(3, (item: number) => item))
+  })
+
+  it('matches renderList semantics for string, array and iterable sources', () => {
+    expect(vforToArray('ab')).toEqual(renderList('ab', (item: string) => item))
+    expect(vforToArray(['a', 'b'])).toEqual(renderList(['a', 'b'], (item: string) => item))
+    expect(vforToArray(new Set(['a', 'b']))).toEqual(renderList(new Set(['a', 'b']), (item: string) => item))
+    expect(vforToArray({ a: 1, b: 2 })).toEqual(renderList({ a: 1, b: 2 }, (item: number) => item))
+  })
+})
 
 describe('getFragmentHTML', () => {
   afterEach(() => {

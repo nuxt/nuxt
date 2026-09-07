@@ -37,6 +37,13 @@ You do not need to `await` `useFetch`. On the server, Nuxt waits for the promise
 `data`, `status`, and `error` are Vue refs, and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
 ::
 
+::note
+The request URL, the response, and any `body`, `query` or `headers` the matching handler validates
+are typed from the routes your server serves. A path built at runtime resolves to `unknown`, and
+naming the response type (`useFetch<Todo[]>(url)`) overrides whatever Nuxt resolved. Read more about
+[typed routes](/docs/4.x/getting-started/data-fetching#typed-routes).
+::
+
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
 
 ```ts [app/pages/index.vue]
@@ -157,7 +164,6 @@ type UseFetchOptions<ResT, DataT = ResT> = {
   key?: MaybeRefOrGetter<string>
   method?: MaybeRefOrGetter<string>
   query?: MaybeRefOrGetter<SearchParams>
-  params?: MaybeRefOrGetter<SearchParams>
   body?: MaybeRefOrGetter<RequestInit['body'] | Record<string, any>>
   headers?: MaybeRefOrGetter<Record<string, string> | [key: string, value: string][] | Headers>
   baseURL?: MaybeRefOrGetter<string>
@@ -212,8 +218,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 |---------------------------------------------------------------------------|-------------------------------------------------------------------------|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `key`                                                                     | `MaybeRefOrGetter<string>`                                              | auto-gen   | Unique key for de-duplication. If not provided, generated from the URL, options and call site location in the source code.                                                                                                                                                         |
 | `method`                                                                  | `MaybeRefOrGetter<string>`                                              | `'GET'`    | HTTP request method.                                                                                                                                                                                                                                                               |
-| `query`                                                                   | `MaybeRefOrGetter<SearchParams>`                                        | -          | Query/search params to append to the URL. Alias: `params`.                                                                                                                                                                                                                         |
-| `params`                                                                  | `MaybeRefOrGetter<SearchParams>`                                        | -          | Alias for `query`.                                                                                                                                                                                                                                                                 |
+| `query`                                                                   | `MaybeRefOrGetter<SearchParams>`                                        | -          | Query/search params to append to the URL.                                                                                                                                                                                                                         |
 | `body`                                                                    | `MaybeRefOrGetter<RequestInit['body'] \| Record<string, any>>`          | -          | Request body. Objects are automatically stringified.                                                                                                                                                                                                                               |
 | `headers`                                                                 | `MaybeRefOrGetter<Record<string, string> \| [key, value][] \| Headers>` | -          | Request headers.                                                                                                                                                                                                                                                                   |
 | `baseURL`                                                                 | `MaybeRefOrGetter<string>`                                              | -          | Base URL for the request.                                                                                                                                                                                                                                                          |

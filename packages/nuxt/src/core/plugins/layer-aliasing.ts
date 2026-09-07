@@ -1,4 +1,5 @@
 import { type UnpluginOptions, createUnplugin } from 'unplugin'
+import escapeStringRegexp from 'escape-string-regexp'
 import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
@@ -13,7 +14,7 @@ interface LayerAliasingOptions {
 const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
 const ALIAS_ID_RE = /^[~@]{1,2}\//
-const CSS_LANG_RE = /\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:\?|$)/
+const CSS_LANG_PATTERN = '\\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:\\?|$)'
 
 export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnplugin((_options, meta) => {
   const aliases: Record<string, Record<string, string>> = {}
@@ -35,14 +36,12 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
   // resolution skips plugin `resolveId`. Webpack/rspack rely on the textual
   // rewrite for everything.
   const isCssLikeOnly = meta.framework === 'vite'
-  const transformInclude: UnpluginOptions['transformInclude'] = (id) => {
-    const _id = normalize(id)
-    if (!layers.some(dir => _id.startsWith(dir))) { return false }
-    if (isCssLikeOnly && !CSS_LANG_RE.test(id)) { return false }
-    return true
-  }
+  const layerIdREs = layers.map(dir => new RegExp(
+    '^' + escapeStringRegexp(dir).replace(/\//g, '[\\\\/]') + (isCssLikeOnly ? '.*' + CSS_LANG_PATTERN : ''),
+  ))
   const transform: UnpluginOptions['transform'] = {
     filter: {
+      id: { include: layerIdREs },
       code: { include: ALIAS_RE_SINGLE },
     },
     handler (code, id, meta?: unknown) {
@@ -86,7 +85,6 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
     },
 
     // https://github.com/nuxt/nuxt/issues/24427
-    transformInclude,
     transform,
   }
 })

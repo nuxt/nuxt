@@ -9,12 +9,35 @@ import { toArray } from '../utils/index.ts'
 
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
   let entryFileName: string | undefined
+  let entryChunkFileName: string | undefined
 
   setBuildOutput('entryChunkName', () => `export const entryFileName = ${JSON.stringify(entryFileName)}`)
 
   return {
     name: 'nuxt:stable-entry',
     apply: () => !nuxt.options.dev && nuxt.options.experimental.entryImportMap,
+    configEnvironment (name, config) {
+      if (name !== 'client' || config.build?.modulePreload === false) {
+        return
+      }
+      const modulePreload = typeof config.build?.modulePreload === 'object' ? config.build.modulePreload : {}
+      const resolveDependencies = modulePreload.resolveDependencies
+      return {
+        build: {
+          modulePreload: {
+            ...modulePreload,
+            // the entry is a static import of any chunk that would preload it, so it is
+            // already loaded. Leaving it in the list would reinject its hash into chunks
+            // whose rendered content no longer references it, so the same [hash] filename
+            // could be emitted with different content across builds
+            resolveDependencies: (filename, deps, context) => {
+              const resolved = resolveDependencies ? resolveDependencies(filename, deps, context) : deps
+              return entryChunkFileName ? resolved.filter(dep => dep !== entryChunkFileName) : resolved
+            },
+          },
+        },
+      }
+    },
     applyToEnvironment (environment) {
       if (environment.name !== 'client') {
         return false
@@ -41,8 +64,14 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
 
       return generateTransform(s, chunk.fileName)
     },
-    writeBundle (_options, bundle) {
-      let entry = Object.values(bundle).find(chunk => chunk.type === 'chunk' && chunk.isEntry && chunk.name === 'entry')?.fileName
+    generateBundle: {
+      order: 'pre',
+      handler (_options, bundle) {
+        entryChunkFileName = Object.values(bundle).find(chunk => chunk.type === 'chunk' && chunk.isEntry && chunk.name === 'entry')?.fileName
+      },
+    },
+    writeBundle () {
+      let entry = entryChunkFileName
       const prefix = withoutLeadingSlash(nuxt.options.app.buildAssetsDir)
       if (entry?.startsWith(prefix)) {
         entry = entry.slice(prefix.length)

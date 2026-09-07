@@ -55,7 +55,7 @@ import{defineComponent as _defineComponent}from"vue";const _sfc_main=_defineComp
 
 function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", line, column, vnode) }
 `
-    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: (code: string, id: string) => { code: string, map?: unknown } | null }).transform(
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string, map?: unknown } | null } }).transform.handler(
       content,
       '/app.vue',
     ))
@@ -127,7 +127,7 @@ export default {
   }
 };
 `
-    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: (code: string, id: string) => { code: string } | null }).transform(
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }).transform.handler(
       content,
       '/app.vue?vue&type=script&setup=true&lang.jsx',
     ))
@@ -278,7 +278,7 @@ function _sfc_render(_ctx) {
   return n3;
 }
 `
-    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: (code: string, id: string) => { code: string } | null }).transform(
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }).transform.handler(
       content,
       '/pages/index.vue',
     ))
