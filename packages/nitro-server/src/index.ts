@@ -12,7 +12,7 @@ import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack/types'
-import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import { bundlerDiagnostics, getServerRuntime, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -24,7 +24,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitropack/runtime/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, toArray } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, toArray, toFsDriverIgnorePatterns } from './utils.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
@@ -91,6 +91,25 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
+  // The scanned directories are collected in layer order (the project first) and unimport
+  // keeps the last of two same-named imports, so a layer's util would shadow the project's.
+  // Scanning the layers in reverse leaves the project last, which is the precedence the
+  // handlers scanned from the same layers already have. A directory belonging to no layer
+  // keeps the lowest precedence.
+  nuxt.hook('nitro:init', (nitro) => {
+    const dirs = nitro.options.imports === false ? undefined : nitro.options.imports.dirs
+    if (!dirs?.length) { return }
+    const layers = nuxt.options._layers
+    const layerRoots = layers
+      .map((layer, index) => [withTrailingSlash(layer.config.rootDir), index] as const)
+      .sort(([a], [b]) => b.length - a.length)
+    const layerOf = (dir: string | { glob: string }) => {
+      const path = withTrailingSlash(typeof dir === 'string' ? dir : dir.glob)
+      return layerRoots.find(([root]) => path.startsWith(root))?.[1] ?? layers.length
+    }
+    dirs.sort((a, b) => layerOf(b) - layerOf(a))
+  })
+
   // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
@@ -138,6 +157,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  // islands need a server renderer, so a client-only app is switched to `ssr: true` with a
+  // blanket `ssr: false` route rule; remember the original setting for static output decisions
+  const clientOnlyApp = !nuxt.options.ssr
+
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
     const h3Path = JSON.stringify(resolve(distDir, 'h3'))
@@ -156,7 +179,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       handler: '#internal/nuxt/island-renderer.mjs',
     })
 
-    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
+    if (clientOnlyApp && nuxt.options.experimental.componentIslands !== 'auto') {
       nuxt.options.ssr = true
       nuxt.options.nitro.routeRules ||= {}
       nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
@@ -670,26 +693,25 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     ],
   }))
 
-  // Apply Nuxt's ignore configuration to the root and src unstorage mounts
-  // created by Nitro. This ensures that the unstorage watcher will use the
-  // same ignore list as Nuxt's watcher and can reduce unnecessary file handles.
-  const isIgnored = createIsIgnored(nuxt)
+  // Nitro serialises mount options with `JSON.stringify` for the storage its dev and
+  // prerender runtimes build, so the patterns have to go through the fs driver's `ignore`
+  // option rather than a `watchOptions.ignored` matcher, which does not survive that.
+  const devStorageIgnore = (mountBase: string, relativeTo?: string) => toFsDriverIgnorePatterns([
+    '**/node_modules',
+    ...resolveIgnorePatterns(relativeTo),
+  ], mountBase)
   nitroConfig.devStorage ??= {}
   nitroConfig.devStorage.root ??= {
     driver: 'fs',
     readOnly: true,
     base: nitroConfig.rootDir,
-    watchOptions: {
-      ignored: [isIgnored],
-    },
+    ignore: devStorageIgnore(nitroConfig.rootDir!),
   }
   nitroConfig.devStorage.src ??= {
     driver: 'fs',
     readOnly: true,
     base: nitroConfig.srcDir,
-    watchOptions: {
-      ignored: [isIgnored],
-    },
+    ignore: devStorageIgnore(nitroConfig.srcDir!, nitroConfig.srcDir),
   }
 
   const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
@@ -795,7 +817,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // For full-static output, ensure payload extraction is not disabled
-  if (nuxt.options.ssr && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
+  if (!clientOnlyApp && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
     bundlerDiagnostics.NUXT_B7015()
   }
 
@@ -1091,7 +1113,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       for (const status of errorPages) {
         routes.add(`/${status}.html`)
       }
-      if (!nuxt.options.ssr) {
+      if (clientOnlyApp) {
         routes.add('/index.html')
       }
     })

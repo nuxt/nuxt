@@ -1,11 +1,13 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack/types'
-import { appendResponseHeader, getRequestHeaders, getResponseHeader, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import { appendResponseHeader, getResponseHeader, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 import type { H3Event } from 'h3'
+import type { NuxtRequestContext } from 'nuxt/schema'
 import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
+import { getFetchedRequestContext } from '../utils/event'
 import { applyPrerenderHints } from '../utils/prerender'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
@@ -57,11 +59,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   setResponseHeaders(event, defaultRes.headers)
   appendVary(event, 'accept, sec-fetch-mode')
 
-  // Access request headers
-  const reqHeaders = getRequestHeaders(event)
+  // Skip SSR error rendering if we're already inside one, to avoid recursion.
+  const isRenderingError = !!(event.context.nuxt?.['~rendering-error'] || getFetchedRequestContext(event)?.['~rendering-error'])
 
-  // Detect to avoid recursion in SSR rendering of errors
-  const isRenderingError = event.path.startsWith('/__nuxt_error') || !!reqHeaders['x-nuxt-error']
+  if (!isRenderingError) {
+    event.context.nuxt = { ...event.context.nuxt, '~rendering-error': true }
+  }
 
   // HTML response (via SSR)
   const res = isRenderingError
@@ -72,8 +75,11 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
           ...(errorCause !== undefined && { cause: JSON.stringify(errorCause) }),
         }),
         {
-          headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
+          headers: event.headers,
           redirect: 'manual',
+          context: {
+            nuxt: { '~rendering-error': true } satisfies NuxtRequestContext,
+          },
         },
       ).catch(() => null)
 

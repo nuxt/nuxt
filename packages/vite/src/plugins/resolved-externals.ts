@@ -1,51 +1,61 @@
+import { isBuiltin } from 'node:module'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { useServerBuild } from '@nuxt/kit/internal'
+import { parseNodeModulePath } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
+import { dirname, relative } from 'pathe'
 import escapeStringRegexp from 'escape-string-regexp'
 
+const BARE_ID_RE = /^(?!\.{0,2}[/\\]|[A-Z]:[/\\]|[\0#~]|virtual:)/i
+
 export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
-  let external: Set<string> = new Set()
   return {
     name: 'nuxt:resolve-externals',
     enforce: 'pre',
     config () {
-      external = new Set(nuxt['~runtimeDependencies'])
-
       return {
         optimizeDeps: {
-          exclude: Array.from(external),
+          exclude: nuxt['~runtimeDependencies'],
         },
       }
     },
     applyToEnvironment (environment) {
-      // A server build that is a pass of its own resolves these itself, so the app build
-      // leaves them for it as absolute paths. A server build that is not a pass of its own
-      // *is* this environment, and its output is the deployable, so it bundles them.
-      if (nuxt.options.dev || environment.name !== 'ssr' || !useServerBuild(nuxt).buildsSeparately) {
+      // a build that inlines everything has no externals to correct and is the deployable
+      if (nuxt.options.dev || environment.name !== 'ssr' || environment.config.resolve.noExternal === true) {
         return false
       }
+
+      // an importer inside the project (and outside node_modules) resolves a bare id to the
+      // same package the build directory does, so there is nothing to correct for it
+      const { rootDir, buildDir } = nuxt.options
+      const localImporterRE = relative(rootDir, buildDir).startsWith('..')
+        ? undefined
+        : new RegExp('^' + escapeStringRegexp(rootDir.replace(/\/$/, '') + '/') + '(?!.*node_modules)')
+
+      const conditions = [...new Set([...environment.config.resolve.conditions, 'import', 'default'])]
+        .map(c => c === 'development|production' ? 'production' : c)
+
       return {
         name: 'nuxt:resolve-externals:external',
         resolveId: {
           filter: {
-            id: [...external].map(dep => new RegExp('^' + escapeStringRegexp(dep) + '$')),
+            id: BARE_ID_RE,
           },
           async handler (id, importer) {
+            if (!importer || isBuiltin(id) || localImporterRE?.test(importer)) { return }
             const res = await this.resolve?.(id, importer, { skipSelf: true })
-            if (res !== undefined && res !== null) {
-              if (res.id === id) {
-                res.id = resolveModulePath(res.id, {
-                  try: true,
-                  from: importer,
-                  extensions: nuxt.options.extensions,
-                }) || res.id
-              }
-              return {
-                ...res,
-                external: 'absolute',
-              }
-            }
+            if (!res || res.external !== true || res.id !== id) { return res }
+            // every file in a package resolves a bare id the same way, so resolving from the
+            // package directory lets exsolve's cache absorb the other import sites
+            const { dir, name } = parseNodeModulePath(importer)
+            const path = resolveModulePath(id, {
+              try: true,
+              from: dir && name ? `${dir}${name}/` : `${dirname(importer)}/`,
+              conditions,
+              extensions: nuxt.options.extensions,
+            })
+            if (!path) { return res }
+            return { ...res, id: path, external: 'absolute' }
           },
         },
       }

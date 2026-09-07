@@ -1,7 +1,7 @@
 import { getRequestHost, getRequestProtocol, toWebRequest } from 'h3'
 import type { H3Event } from 'h3'
 import type { RendererEvent } from 'nuxt/internal/renderer/runtime'
-import type { RequestEvent } from 'nuxt/schema'
+import type { NuxtRequestContext, RequestEvent } from 'nuxt/schema'
 
 const ENC_PIPE_RE = /%7C/g
 const ENC_BRACKET_OPEN_RE = /%5B/g
@@ -126,15 +126,22 @@ export function toPortableEvent (event: H3Event): RequestEvent {
   return portable
 }
 
+/**
+ * The Nuxt context a request nitro made to itself was fetched with: `node-mock-http` carries
+ * it on the mock request rather than in the h3 event's own context. A request that arrives
+ * over the network has none, whoever sent it.
+ */
+export function getFetchedRequestContext (event: H3Event): NuxtRequestContext | undefined {
+  return (event.node.req as { __unenv__?: { nuxt?: NuxtRequestContext } }).__unenv__?.nuxt
+}
+
 /** The event the SSR renderer reads, which reaches the h3 v1 event itself through `~app`. */
 export function toRequestEvent (event: H3Event): RendererEvent {
   const requestEvent = toWebView(event)
 
-  // a request nitro made to itself may reach the internal error route
-  if ('__unenv__' in event.node.req) {
-    const context = event.context as { nuxt?: { '~internal'?: boolean } }
-    context.nuxt ||= {}
-    context.nuxt['~internal'] = true
+  const fetchedWith = getFetchedRequestContext(event)
+  if (fetchedWith) {
+    event.context.nuxt = { ...fetchedWith, ...event.context.nuxt }
   }
 
   return requestEvent

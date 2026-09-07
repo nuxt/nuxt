@@ -66,19 +66,23 @@ function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<R
     return Promise.resolve(runtime.renderIsland(event))
   }
 
-  // Whether we're rendering an error page
-  const ssrError = event.url.pathname.startsWith('/__nuxt_error')
-    ? getURLQuery(event.url.href) as unknown as NuxtPayload['error'] & { url: string }
-    : import.meta.prerender
-      ? getPrerenderedErrorPage(event)
-      : null
+  // The internal error route renders the error it is passed, so it is only served to a
+  // request the runtime made to render one. A static error page carries no such error:
+  // its own is synthesised from the path it is prerendered at.
+  const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
 
-  if (ssrError && !getRequestState(event)?.['~internal'] /* allow internal fetch */) {
+  if (isErrorRoute && !getRequestState(event)?.['~rendering-error']) {
     return Promise.reject(runtime.createError({
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',
     }))
   }
+
+  const ssrError = isErrorRoute
+    ? getURLQuery(event.url.href) as unknown as NuxtPayload['error'] & { url: string }
+    : import.meta.prerender
+      ? getPrerenderedErrorPage(event)
+      : null
 
   const render = () => renderRoute(instance, event, ssrError).then(response => returnRenderResponse(runtime, event, response))
   const wrapRender = import.meta.prerender ? runtime.prerender?.wrapRender : undefined

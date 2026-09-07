@@ -1402,6 +1402,26 @@ describe('errors', () => {
     `)
   })
 
+  it('should render the app error page when accessing error route directly', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(404)
+    const html = await res.text()
+    expect(html).toContain('This is the error page 😱')
+    expect(html).toContain('Page Not Found: /__nuxt_error')
+  })
+
+  it('should not render the error route for a request the server makes to itself', async () => {
+    const res = await $fetch<{ status: number, body: string }>('/api/internal-error-render')
+
+    expect(res.status).toBe(404)
+    expect(res.body).toContain('<h1>Page Not Found: /__nuxt_error</h1>')
+    expect(res.body).not.toContain('<h1>i-should-not-be-rendered</h1>')
+  })
+
   it('should not recursively throw an error when there is an error rendering the error page', async () => {
     const res = await $fetch<string>('/', {
       headers: {
@@ -1692,6 +1712,14 @@ describe('server tree shaking', () => {
   })
 })
 
+describe('dependencies of code in node_modules', () => {
+  // https://github.com/nuxt/nuxt/issues/22077
+  it('resolves them from the importing package rather than the project', async () => {
+    const html = await $fetch<string>('/foo')
+    expect(html).toContain('Plugin | nested dependency: nested dependency of foo')
+  })
+})
+
 describe.skipIf(!runsOnceInMatrix)('extends support', () => {
   it('renders layer layout, page, component, middleware, composable and plugin together', async () => {
     const html = await $fetch<string>('/foo')
@@ -1722,6 +1750,10 @@ describe.skipIf(!runsOnceInMatrix)('extends support', () => {
     expect(await $fetch<string>('/api/foo')).toBe('foo')
     const { headers } = await fetch('/')
     expect(headers.get('injected-header')).toEqual('foo')
+  })
+
+  it('prefers a project server util over a layer\'s of the same name', async () => {
+    expect(await $fetch('/api/layer-utils')).toEqual({ shared: 'root', layerOnly: 'layer-only' })
   })
 
   it('extends foo/app/router.options & bar/app/router.options', async () => {
