@@ -104,13 +104,11 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     },
 
     async getImports () {
-      if (!enabled) { return [] }
       await init()
       return ctx.getImports()
     },
 
     async refresh () {
-      if (!enabled) { return }
       await init()
       resolvedTypePaths.clear()
       await ctx.modifyDynamicImports((imports) => {
@@ -123,27 +121,26 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     async writeTypes () {
       await mkdir(join(typesDir, 'types'), { recursive: true })
 
-      if (!enabled) {
-        await writeFile(importsModulePath + '.d.ts', 'export {}\n', 'utf8')
-        await writeFile(importsModulePath + '.mjs', 'export {}\n', 'utf8')
-        return
-      }
-
       await init()
       const imports = await ctx.getImports()
       resolveTypePaths(imports)
 
-      const declarations = await ctx.generateTypeDeclarations({
-        exportHelper: false,
-        resolvePath: i => resolvedTypePaths.get(i.typeFrom || i.from) ?? i.from,
-      })
+      // with `autoImport: false` nothing is injected, but the registered imports stay reachable
+      // through an explicit `import { x } from '#imports/server'`, so the module is still emitted;
+      // only the ambient global declarations are skipped
+      const declarations = enabled
+        ? await ctx.generateTypeDeclarations({
+            exportHelper: false,
+            resolvePath: i => resolvedTypePaths.get(i.typeFrom || i.from) ?? i.from,
+          })
+        : ''
 
       // the re-exports make this a module, so `import { x } from '#imports'` resolves as well as
       // the ambient `x` the declarations provide
       const reExports = toExports(imports, importsModuleDir, true)
 
       await Promise.all([
-        writeFile(importsModulePath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}', ''].join('\n'), 'utf8'),
+        writeFile(importsModulePath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}'].filter(Boolean).join('\n') + '\n', 'utf8'),
         writeFile(importsModulePath + '.mjs', (toExports(imports, importsModuleDir).trim() || 'export {}') + '\n', 'utf8'),
       ])
     },
