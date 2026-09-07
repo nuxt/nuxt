@@ -134,4 +134,98 @@ describe('useCookie expiration timeout', () => {
     vi.advanceTimersByTime(maxAge * 1000)
     expect(derived.value).toBe('expired')
   })
+
+  it('should reset expiration when expires getter is re-evaluated on set', () => {
+    const cookie = useCookie('expire-getter-reset', {
+      default: () => 'initial',
+      expires: () => new Date(Date.now() + 1000),
+    })
+
+    cookie.value = 'first'
+    expect(cookie.value).toBe('first')
+
+    vi.advanceTimersByTime(500)
+    expect(cookie.value).toBe('first')
+
+    // Re-set — getter returns a fresh Date 1000ms from now
+    cookie.value = 'second'
+    expect(cookie.value).toBe('second')
+
+    vi.advanceTimersByTime(500)
+    expect(cookie.value).toBe('second')
+
+    vi.advanceTimersByTime(500)
+    expect(cookie.value).toBeUndefined()
+  })
+
+  it('should not extend a fixed expires Date beyond its absolute time on re-set', () => {
+    const expires = new Date(Date.now() + 1000)
+    const cookie = useCookie('expire-fixed-date', {
+      default: () => 'initial',
+      expires,
+    })
+
+    cookie.value = 'first'
+    expect(cookie.value).toBe('first')
+
+    vi.advanceTimersByTime(500)
+    expect(cookie.value).toBe('first')
+
+    // Re-set should use remaining time to the fixed Date, not restart a full 1000ms
+    cookie.value = 'second'
+    expect(cookie.value).toBe('second')
+
+    vi.advanceTimersByTime(500)
+    expect(cookie.value).toBeUndefined()
+  })
+
+  it('should prefer maxAge over expires for the client expiration timer', () => {
+    const cookie = useCookie('expire-maxage-precedence', {
+      default: () => 'value',
+      maxAge: 2,
+      expires: () => new Date(Date.now() + 60_000),
+    })
+
+    cookie.value = 'value'
+    expect(cookie.value).toBe('value')
+
+    vi.advanceTimersByTime(2000)
+    expect(cookie.value).toBeUndefined()
+  })
+
+  it('should start an expiration timer when expires changes from undefined to a Date', () => {
+    const state: { expires?: Date } = {}
+    const cookie = useCookie('expire-session-to-date', {
+      default: () => 'initial',
+      expires: () => state.expires,
+    })
+
+    cookie.value = 'session'
+    vi.advanceTimersByTime(1000)
+    expect(cookie.value).toBe('session')
+
+    state.expires = new Date(Date.now() + 1000)
+    cookie.value = 'persistent'
+
+    vi.advanceTimersByTime(1000)
+    expect(cookie.value).toBeUndefined()
+  })
+
+  it('should clear the expiration timer when expires changes from a Date to undefined', () => {
+    const state: { expires?: Date } = { expires: new Date(Date.now() + 1000) }
+    const cookie = useCookie('expire-date-to-session', {
+      default: () => 'initial',
+      expires: () => state.expires,
+    })
+
+    cookie.value = 'persistent'
+    vi.advanceTimersByTime(500)
+    expect(cookie.value).toBe('persistent')
+
+    state.expires = undefined
+    cookie.value = 'session'
+
+    vi.advanceTimersByTime(1000)
+    expect(cookie.value).toBe('session')
+  })
 })

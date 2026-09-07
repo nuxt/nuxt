@@ -1,4 +1,4 @@
-import { withMatrix } from '../../matrix'
+import { withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   css: ['~/assets/main.css'],

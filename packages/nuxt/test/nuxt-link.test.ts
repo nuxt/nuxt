@@ -411,6 +411,27 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: '/to', external: true }, appendSlashOptions).props.href).toBe('/to/')
         expect(nuxtLink({ to: '/to/', external: true }, removeSlashOptions).props.href).toBe('/to')
       })
+
+      it('leaves the URL untouched when trailingSlash is unset', () => {
+        // When neither the option nor the prop is set, the trailing slash must be
+        // preserved on every render path — the value should be ignored (see #35500).
+
+        // Internal links expose the resolved `to` (via resolveTrailingSlashBehavior)
+        expect(nuxtLink({ to: '/to/' }).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: '/to' }).props.to).toEqual('/to')
+        expect(nuxtLink({ href: '/to/' }).props.to).toEqual('/to/')
+
+        // External links surface the resolved `href` (via applyTrailingSlashBehavior)
+        expect(nuxtLink({ to: '/to/', external: true }).props.href).toBe('/to/')
+        expect(nuxtLink({ to: '/to', external: true }).props.href).toBe('/to')
+
+        // `target="_blank"` internal links also go through the `href` path
+        expect(nuxtLink({ to: '/to/', target: '_blank' }).props.href).toBe('/to/')
+        expect(nuxtLink({ to: '/to', target: '_blank' }).props.href).toBe('/to')
+
+        // An invalid `trailingSlash` value is treated as unset and ignored
+        expect(nuxtLink({ to: '/to/', external: true, trailingSlash: 'invalid' as NuxtLinkProps['trailingSlash'] }).props.href).toBe('/to/')
+      })
     })
   })
 })

@@ -1,13 +1,10 @@
-import { createConsola } from 'consola'
 import type { LogObject } from 'consola'
-import { parse } from 'devalue'
 import type { ParsedTrace } from 'errx'
 
 import { h } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
-// @ts-expect-error virtual file
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
 
 const devRevivers: Record<string, (data: any) => any> = import.meta.server
@@ -28,6 +25,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin(async (nuxtApp) => {
 
   // Show things in console
   if (devLogs !== 'silent') {
+    const { createConsola } = await import('consola')
     const logger = createConsola({
       formatOptions: {
         colors: true,
@@ -44,8 +42,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin(async (nuxtApp) => {
   if (typeof window !== 'undefined') {
     const nuxtLogsElement = document.querySelector(`[data-nuxt-logs="${nuxtApp._id}"]`)
     const content = nuxtLogsElement?.textContent
-    const logs = content ? parse(content, { ...devRevivers, ...nuxtApp._payloadRevivers }) as LogObject[] : []
-    await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
+    if (content) {
+      const { parse } = await import('devalue')
+      const logs = parse(content, { ...devRevivers, ...nuxtApp._payloadRevivers }) as LogObject[]
+      await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
+    }
   }
 })
 

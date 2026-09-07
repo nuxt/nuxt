@@ -60,6 +60,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
       return
     }
     if (at >= 100) { return finish({ force: opts.force }) }
+    _clearTimeouts()
     clear()
     progress.value = at < 0 ? 0 : at
     const throttleTime = opts.force ? 0 : throttle

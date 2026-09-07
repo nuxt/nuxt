@@ -32,6 +32,7 @@ jobs:
             schema
             ui-templates
             vite
+            vite-server
             webpack
             nitro
             deps

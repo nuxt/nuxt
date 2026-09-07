@@ -91,7 +91,7 @@
     {
       "component": "() => import("pages/a&b.vue")",
       "name": ""a&b"",
-      "path": ""/a%26b"",
+      "path": ""/a&b"",
     },
     {
       "component": "() => import("pages/a/b.vue")",

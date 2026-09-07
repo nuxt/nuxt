@@ -30,8 +30,9 @@ describe('config typings', () => {
     expectTypeOf(config.app).toEqualTypeOf<{
       baseURL: string
       buildAssetsDir: string
+      buildId: string
       cdnURL: string
-      [key: string]: any
+      [key: string]: unknown
     }>()
   })
 

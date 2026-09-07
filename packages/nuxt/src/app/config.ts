@@ -2,7 +2,6 @@ import { reactive } from 'vue'
 import { klona } from 'klona'
 import { useNuxtApp } from './nuxt'
 import type { AppConfig } from 'nuxt/schema'
-// @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

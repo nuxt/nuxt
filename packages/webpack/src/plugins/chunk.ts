@@ -1,5 +1,5 @@
 import type { Compiler } from 'webpack'
-import { webpack } from '#builder'
+import { webpack } from '../builder.ts'
 
 const pluginName = 'ChunkErrorPlugin'
 

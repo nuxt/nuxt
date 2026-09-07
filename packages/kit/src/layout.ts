@@ -2,7 +2,7 @@ import type { NuxtTemplate } from '@nuxt/schema'
 import { join, parse } from 'pathe'
 import { kebabCase } from 'scule'
 import { useNuxt } from './context.ts'
-import { logger } from './logger.ts'
+import { pageDiagnostics } from './diagnostics/pages.ts'
 import { addTemplate } from './template.ts'
 import { reverseResolveAlias } from 'pathe/utils'
 
@@ -16,9 +16,8 @@ export function addLayout (template: NuxtTemplate | string, name?: string): void
   nuxt.hook('app:templates', (app) => {
     if (layoutName in app.layouts) {
       const relativePath = reverseResolveAlias(app.layouts[layoutName]!.file, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || app.layouts[layoutName]!.file
-      return logger.warn(
-        `Not overriding \`${layoutName}\` (provided by \`${relativePath}\`) with \`${src || filename}\`.`,
-      )
+      pageDiagnostics.NUXT_B4014({ layoutName, existingPath: relativePath, newPath: src || filename })
+      return
     }
     app.layouts[layoutName] = {
       file: join('#build', filename),

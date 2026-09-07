@@ -3,10 +3,11 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { camelCase, pascalCase } from 'scule'
 
 import { tryUseNuxt } from '@nuxt/kit'
+import { componentDiagnostics } from '@nuxt/kit/internal'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
-import { isVue } from '../../core/utils/index.ts'
-import { logger, resolveToAlias } from '../../utils.ts'
+import { VUE_ID_FILTER } from '../../core/utils/index.ts'
+import { linkToAlias, offsetToPosition } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -36,17 +37,12 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
   return {
     name: 'nuxt:components-loader-pre',
     enforce: 'pre',
-    transformInclude (id) {
-      if (exclude.some(pattern => pattern.test(id))) {
-        return false
-      }
-      if (include.some(pattern => pattern.test(id))) {
-        return true
-      }
-      return isVue(id)
-    },
     transform: {
       filter: {
+        id: {
+          include: [...include, ...VUE_ID_FILTER],
+          exclude,
+        },
         code: { include: TEMPLATE_WITH_LAZY_HYDRATION_RE },
       },
 
@@ -92,7 +88,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               const prop = camelCase(isDynamic ? attr.slice(1) : attr)
               if (prop in hydrationStrategyMap) {
                 if (strategy) {
-                  logger.warn(`Multiple hydration strategies are not supported in the same component`)
+                  componentDiagnostics.NUXT_B3005({ component: node.name, file: linkToAlias(id, nuxt, offsetToPosition(code, node.loc[0].start + offset)) })
                 } else {
                   strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
                 }
@@ -101,9 +97,8 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
 
             if (strategy && !/^(?:Lazy|lazy-)/.test(node.name)) {
               if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
-                const relativePath = resolveToAlias(id, nuxt)
-                logger.warn(`Component \`<${node.name}>\` (used in \`${relativePath}\`) has lazy-hydration props but is not declared as a lazy component.\n` +
-                  `Rename it to \`<Lazy${pascalCase(node.name)} />\` or remove the lazy-hydration props to avoid unexpected behavior.`)
+                const relativePath = linkToAlias(id, nuxt, offsetToPosition(code, node.loc[0].start + offset))
+                componentDiagnostics.NUXT_B3006({ component: node.name, file: relativePath, lazyName: `Lazy${pascalCase(node.name)}` })
               }
               return
             }

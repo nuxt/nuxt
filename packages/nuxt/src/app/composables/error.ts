@@ -1,12 +1,15 @@
-import { HTTPError } from '@nuxt/nitro-server/h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import type { NuxtApp, NuxtPayload } from '../nuxt'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
+import { appDiagnostics } from '../diagnostics/core'
+import { NUXT_ERROR_SIGNATURE, NuxtError, createError, isNuxtError } from '../error'
+import type { NuxtErrorDetails } from '../error'
 
-export const NUXT_ERROR_SIGNATURE = '__nuxt_error' as const
+export { NUXT_ERROR_SIGNATURE, NuxtError, createError, isNuxtError }
+export type { NuxtErrorDetails }
 
 /** @since 3.0.0 */
 /* @__NO_SIDE_EFFECTS__ */
@@ -14,10 +17,7 @@ export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payl
 
 /** @since 3.0.0 */
 export const showError = <DataT = unknown>(
-  error: string | Error | (Partial<NuxtError<DataT>> & {
-    status?: number
-    statusText?: string
-  }),
+  error: string | Error | NuxtErrorDetails<DataT>,
 ): NuxtError<DataT> => {
   const nuxtError = createError<DataT>(error)
 
@@ -45,7 +45,7 @@ export const showError = <DataT = unknown>(
  */
 export const _notifyCrawlerError = (nuxtApp: NuxtApp, error: Error): Promise<void> | void => {
   const result = nuxtApp.callHook('app:error', createError(error))
-  console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, error)
+  appDiagnostics.NUXT_E1012({ userAgent: navigator.userAgent, cause: error })
   return result
 }
 
@@ -75,26 +75,10 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
   }
 
   error.value = undefined
-}
 
-/** @since 3.0.0 */
-export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError<DataT> => {
-  return !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
-}
-
-export class NuxtError<DataT = unknown> extends HTTPError<DataT> {
-  readonly __nuxt_error = true as const
-  readonly fatal: boolean
-
-  constructor (message = '', opts: Partial<NuxtError<DataT>> = {}) {
-    super(message, opts)
-    this.fatal = opts.fatal ?? !!opts.unhandled
+  if (import.meta.dev && import.meta.client) {
+    for (const el of document.querySelectorAll('nuxt-error-overlay')) {
+      el.remove()
+    }
   }
-}
-
-/** @since 3.0.0 */
-export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>): NuxtError<DataT> => {
-  return typeof error === 'string'
-    ? new NuxtError<DataT>(error)
-    : new NuxtError<DataT>(error.message, error)
 }

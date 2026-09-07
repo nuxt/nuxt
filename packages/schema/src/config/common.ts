@@ -10,6 +10,7 @@ import { findWorkspaceDir } from 'pkg-types'
 import type { NuxtDebugOptions } from '../types/debug.ts'
 import type { NuxtModule } from '../types/module.ts'
 import { defineResolvers } from '../utils/definition.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export default defineResolvers({
   extends: undefined,
@@ -76,6 +77,14 @@ export default defineResolvers({
     $resolve: async (val, get) => {
       const rootDir = await get('rootDir')
       return resolve(rootDir, val && typeof val === 'string' ? val : '.nuxt')
+    },
+  },
+  typesDir: {
+    $resolve: async (val, get) => {
+      if (val && typeof val === 'string') {
+        return resolve(await get('rootDir'), val)
+      }
+      return get('buildDir')
     },
   },
   appId: {
@@ -206,7 +215,7 @@ export default defineResolvers({
   },
   extensions: {
     $resolve: (val): string[] => {
-      const extensions = ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.vue']
+      const extensions = [...DEFAULT_JS_FILE_EXTENSIONS, '.vue']
       if (Array.isArray(val)) {
         for (const item of val) {
           if (item && typeof item === 'string') {

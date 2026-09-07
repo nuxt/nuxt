@@ -1,0 +1,39 @@
+name: pr comments
+
+on:
+  # zizmor: ignore[dangerous-triggers] - no checkout of PR code; only posts a comment on merged PRs
+  pull_request_target:
+    types: [closed]
+
+permissions: {}
+
+concurrency:
+  group: pr-comments-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  merged:
+    if: |
+      github.repository_owner == 'nuxt' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.user.type != 'Bot' &&
+      !contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.pull_request.author_association)
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      - run: gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$BODY"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BODY: |
+            This PR has been merged into `main`, which is the development branch for the next major version of Nuxt.
+
+            It will also be backported to the `4.x` branch and included in an upcoming 4.x release, unless it is a breaking change, or depends on a breaking or architectural change that has only happened on `main`.
+
+            If you think this change should (or shouldn't) be backported, feel free to leave a comment.
+
+            Thank you for contributing to Nuxt! 💚

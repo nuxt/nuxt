@@ -52,7 +52,7 @@ function createAnnouncer (opts: NuxtAnnouncerOpts = {}): NuxtAnnouncer {
 
 /**
  * Composable for announcing messages to screen readers
- * @since 3.17.0
+ * @since 4.4.2
  * @example
  * const { polite, assertive } = useAnnouncer()
  * polite('Item saved successfully')

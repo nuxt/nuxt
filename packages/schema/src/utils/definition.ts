@@ -32,7 +32,6 @@ type ReturnFromKey<T, K extends string> = keyof T extends string
   : never
 
 export type Awaitable<T> = T | Promise<T>
-export type MaybeArray<T> = T | T[]
 
 export type JavascriptExtension = 'js' | 'ts' | 'tsx' | 'jsx' | 'mjs' | 'cjs' | 'mts' | 'cts'
 export type VueExtension = 'vue'

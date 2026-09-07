@@ -1,6 +1,7 @@
 ---
 title: 'clearNuxtState'
 description: Delete the cached state of useState.
+minimalVersion: "3.6"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -22,4 +23,4 @@ export function clearNuxtState (keys?: string | string[] | ((key: string) => boo
 
 - `keys`: One or an array of keys that are used in [`useState`](/docs/4.x/api/composables/use-state) to delete their cached state. If no keys are provided, **all state** will be invalidated.
 - `opts`: An options object to configure the clear behavior.
-  - `reset`: When set to `true`, resets the state to the initial value provided by the `init` function of [`useState`](/docs/4.x/api/composables/use-state) instead of setting it to `undefined`. When not specified, defaults to the value of `experimental.defaults.useState.resetOnClear` in your Nuxt config (which is `true` with `compatibilityVersion: 5`).
+  - `reset` :badge[v4.4]{color="info" size="xs" class="align-middle"}: When set to `true`, resets the state to the initial value provided by the `init` function of [`useState`](/docs/4.x/api/composables/use-state) instead of setting it to `undefined`. When not specified, defaults to the value of `experimental.defaults.useState.resetOnClear` in your Nuxt config (which is `true` with `compatibilityVersion: 5`).

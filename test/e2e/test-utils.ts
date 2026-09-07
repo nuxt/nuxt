@@ -1,7 +1,9 @@
-import { waitForHydration } from '@nuxt/test-utils/e2e'
+import { createTest, waitForHydration } from '@nuxt/test-utils/e2e'
 import { test as base, expect as baseExpect } from '@nuxt/test-utils/playwright'
 import type { Page } from '@playwright/test'
+import defu from 'defu'
 import { fetch } from 'ofetch'
+import { isWindows } from 'std-env'
 import { joinURL } from 'ufo'
 
 export interface MatrixOptions {
@@ -11,11 +13,42 @@ export interface MatrixOptions {
   builder: 'vite' | 'rspack' | 'webpack'
 }
 
+// TODO: remove custom _nuxtHooks below when upgrading nuxt/test-utils
+const FIXTURE_TIMEOUT = (isWindows ? 420 : 180) * 1000
+const DEFAULT_SETUP_TIMEOUT = (isWindows ? 360 : 120) * 1000
+
 const test = base.extend<{ fetch: (path: string) => Promise<Response> } & MatrixOptions>({
   isDev: [false, { option: true }],
   isBuilt: [true, { option: true }],
   isWebpack: [false, { option: true }],
   builder: ['vite' as const, { option: true }],
+  _nuxtHooks: [async ({ nuxt, defaults }, use) => {
+    const hooks = createTest(defu(nuxt || {}, defaults.nuxt || {}))
+    const setupTimeout = hooks.ctx.options.setupTimeout || DEFAULT_SETUP_TIMEOUT
+
+    const setup = hooks.beforeAll()
+
+    try {
+      let timer: NodeJS.Timeout | undefined
+      await Promise.race([
+        setup,
+        new Promise((_resolve, reject) => {
+          timer = setTimeout(() => reject(new Error(`Nuxt fixture setup did not complete within ${setupTimeout}ms`)), setupTimeout)
+        }),
+      ]).finally(() => clearTimeout(timer))
+    } catch (error) {
+      await hooks.afterAll().catch(() => {})
+      // a timed-out setup may still spawn a dev server after teardown has run
+      await Promise.race([setup.catch(() => {}), new Promise(resolve => setTimeout(resolve, 30_000))])
+      await hooks.afterAll().catch(() => {})
+      const logs = hooks.ctx.serverLogs?.join('\n')
+      throw new Error(`Nuxt fixture setup failed for ${hooks.ctx.options.rootDir}: ${error instanceof Error ? error.message : error}${logs ? `\n\nServer output:\n${logs}` : ''}`, { cause: error })
+    }
+
+    await use(hooks)
+
+    await hooks.afterAll()
+  }, { scope: 'worker', timeout: FIXTURE_TIMEOUT }],
   fetch: ({ request, _nuxtHooks }, use) => {
     use(async (path) => {
       let res: Response | undefined

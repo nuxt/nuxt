@@ -4,7 +4,9 @@ import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'v
 
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
-import { createBuffer, sanitizeTag } from './utils'
+import { createBuffer, isVaporSlot, sanitizeTag } from './utils'
+import { renderDiagnostics } from '../diagnostics/render'
+import { vapor } from '#build/nuxt.config.mjs'
 
 interface NuxtClientFallbackProps {
   fallbackTag?: string
@@ -65,6 +67,13 @@ const NuxtClientFallbackServer = defineComponent({
     })
 
     try {
+      if (vapor && isVaporSlot(ctx.slots.default)) {
+        if (import.meta.dev) {
+          renderDiagnostics.NUXT_E4020()
+        }
+        error.value = true
+        return { ssrFailed: true, ssrVNodes: [] }
+      }
       const defaultSlot = ctx.slots.default?.()
       const ssrVNodes = createBuffer()
 
@@ -81,7 +90,9 @@ const NuxtClientFallbackServer = defineComponent({
 
       return { ssrFailed, ssrVNodes }
     } catch (ssrError) {
-      // catch in dev
+      if (import.meta.dev) {
+        renderDiagnostics.NUXT_E4006({ cause: ssrError })
+      }
       error.value = true
       ctx.emit('ssr-error', ssrError)
       return { ssrFailed: true, ssrVNodes: [] }

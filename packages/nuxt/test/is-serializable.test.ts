@@ -1,21 +1,20 @@
+import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import { parseSync } from 'rolldown/utils'
 import type { ESTree } from 'rolldown/utils'
 
 import { isSerializable } from '../src/pages/utils.ts'
 
-function parseExpression (source: string): { code: string, node: ESTree.Expression } {
+function parseExpression (source: string): ESTree.Expression {
   // Parse as a variable initialiser so a leading `{` isn't ambiguous with a block, and we get the
   // raw expression node rather than a ParenthesizedExpression wrapper.
-  const code = `const __x = ${source}`
-  const ast = parseSync('test.js', code, { lang: 'js' })
+  const ast = parseSync('test.js', `const __x = ${source}`, { lang: 'js' })
   const decl = ast.program.body[0] as ESTree.VariableDeclaration
-  return { code, node: decl.declarations[0]!.init as ESTree.Expression }
+  return decl.declarations[0]!.init as ESTree.Expression
 }
 
 function check (source: string) {
-  const { code, node } = parseExpression(source)
-  return isSerializable(code, node)
+  return isSerializable(parseExpression(source))
 }
 
 describe('isSerializable', () => {
@@ -106,5 +105,31 @@ describe('isSerializable', () => {
 
   it('rejects arrow function values', () => {
     expect(check(`{ foo: () => 1 }`)).toEqual({ serializable: false })
+  })
+
+  it('keeps a `__proto__` key as an own property', () => {
+    const { serializable, value } = check(`{ __proto__: { polluted: true } }`)
+    expect(serializable).toBe(true)
+    expect(JSON.stringify(value)).toBe(`{"__proto__":{"polluted":true}}`)
+    expect(value.polluted).toBeUndefined()
+  })
+
+  const objectKey = fc.oneof(fc.string(), fc.constantFrom('__proto__', 'constructor', 'toString', 'a', '0', '1e3'))
+  const jsonValue = fc.letrec<{ value: unknown }>(tie => ({
+    value: fc.oneof(
+      { weight: 6, arbitrary: fc.oneof(fc.string(), fc.integer(), fc.double({ noNaN: true, noDefaultInfinity: true }), fc.boolean(), fc.constant(null)) },
+      { weight: 1, arbitrary: fc.array(tie('value'), { maxLength: 3 }) },
+      { weight: 1, arbitrary: fc.dictionary(objectKey, tie('value'), { maxKeys: 3 }) },
+    ),
+  })).value
+
+  it('should round-trip any JSON value printed as a literal', () => {
+    fc.assert(fc.property(jsonValue, (value) => {
+      const json = JSON.stringify(value)
+      const { serializable, value: extracted } = check(json)
+      expect(serializable).toBe(true)
+      expect(extracted).toEqual(JSON.parse(json))
+      expect(JSON.stringify(extracted)).toBe(json)
+    }), { numRuns: 1000 })
   })
 })

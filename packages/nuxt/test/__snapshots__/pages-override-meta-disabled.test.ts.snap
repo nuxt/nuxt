@@ -137,7 +137,7 @@
       "component": "() => import("pages/a&b.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "a&b"",
-      "path": "mockMeta?.path ?? "/a%26b"",
+      "path": "mockMeta?.path ?? "/a&b"",
       "props": "mockMeta?.props ?? false",
       "redirect": "mockMeta?.redirect",
     },

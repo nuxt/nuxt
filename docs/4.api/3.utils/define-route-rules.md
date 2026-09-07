@@ -43,7 +43,10 @@ When running [`nuxt build`](/docs/4.x/api/commands/build), the home page will be
 ## Notes
 
 - A rule defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests.
-- A rule in `~/pages/foo/[id].vue` will be applied to `/foo/**` requests.
+- A rule in `~/pages/foo/[id].vue` will be applied to `/foo/*` requests.
+- A rule in a page with a finite set of alternatives, such as a custom `path` of `/:locale(en|fr)/about`, will generate one rule per alternative (`/en/about` and `/fr/about`).
+
+If a page path cannot be converted to an equivalent route rule pattern (for example, a param with a regular expression like `/:id(\d+)`, a partial segment like `/prefix-:id`, or a repeatable param like `/:slug+`), the rules for that page are **not** applied and Nuxt warns during build. In that case, define the rules explicitly in `nitro.routeRules` in your `nuxt.config`.
 
 For more control, such as if you are using a custom `path` or `alias` set in the page's [`definePageMeta`](/docs/4.x/api/utils/define-page-meta), you should set `routeRules` directly within your `nuxt.config`.
 

@@ -1,4 +1,4 @@
-import { withMatrix } from '../../matrix'
+import { withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   // default title/description so unhead's client-side dev validation (#35468)

@@ -2,7 +2,7 @@ import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
 import { defu } from 'defu'
 
 import { useNuxt } from './context.ts'
-import { logger } from './logger.ts'
+import { pageDiagnostics } from './diagnostics/pages.ts'
 import type { NitroRouteConfig } from './nitro-types.ts'
 import { toArray } from './utils.ts'
 
@@ -53,7 +53,7 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
         if (options.override === true) {
           app.middleware[find] = { ...middleware }
         } else {
-          logger.warn(`'${middleware.name}' middleware already exists at '${foundPath}'. You can set \`override: true\` to replace it.`)
+          pageDiagnostics.NUXT_B4013({ name: middleware.name, foundPath })
         }
       } else if (options.prepend === true) {
         app.middleware.unshift({ ...middleware })

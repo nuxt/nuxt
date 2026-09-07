@@ -77,7 +77,7 @@ interface PageMeta {
 
     Aliases for the record. Allows defining extra paths that will behave like a copy of the record. Allows having paths shorthands like `/users/:id` and `/u/:id`. All `alias` and `path` values must share the same params.
 
-  **`groups`**
+  **`groups`** :badge[v4.3]{color="info" size="xs" class="align-middle"}
 
   - **Type**: `string[]`
 
@@ -159,7 +159,7 @@ interface PageMeta {
 
     Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/4.x/directory-structure/app/pages/#typing-custom-metadata).
 
-## Examples
+## Example
 
 ### Basic Usage
 

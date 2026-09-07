@@ -1,5 +1,6 @@
 import type { Component } from 'vue'
 import type { RouteLocationRaw, Router } from 'vue-router'
+import type { NuxtAppLiterals } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import { useRouter } from './router'
@@ -9,7 +10,7 @@ import { useRouter } from './router'
  * @param components Pascal-cased name or names of components to prefetch
  * @since 3.0.0
  */
-export const preloadComponents = async (components: string | string[]): Promise<void> => {
+export const preloadComponents = async (components: NuxtAppLiterals['componentName'] | Array<NuxtAppLiterals['componentName']>): Promise<void> => {
   if (import.meta.server) { return }
   const nuxtApp = useNuxtApp()
 
@@ -27,7 +28,7 @@ export const preloadComponents = async (components: string | string[]): Promise<
  * @param components Pascal-cased name or names of components to prefetch
  * @since 3.0.0
  */
-export const prefetchComponents = (components: string | string[]): Promise<void> | undefined => {
+export const prefetchComponents = (components: NuxtAppLiterals['componentName'] | Array<NuxtAppLiterals['componentName']>): Promise<void> | undefined => {
   if (import.meta.server) { return }
 
   // TODO

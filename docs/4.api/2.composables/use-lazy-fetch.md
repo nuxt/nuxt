@@ -23,6 +23,9 @@ const { status, data: posts } = await useLazyFetch('/api/posts')
   <div v-if="status === 'pending'">
     Loading ...
   </div>
+  <div v-else-if="status === 'error'">
+    Error loading posts
+  </div>
   <div v-else>
     <div v-for="post in posts">
       <!-- do something -->
@@ -36,7 +39,7 @@ const { status, data: posts } = await useLazyFetch('/api/posts')
 ::
 
 ::warning
-Awaiting `useLazyFetch` only ensures the call is initialized. On client-side navigation, data may not be immediately available, and you must handle the `pending` state in your component's template.
+Awaiting `useLazyFetch` initializes the call but does not wait for the data. During client-side navigation, check `status === 'pending'` and `status === 'error'` in your component's template before using the result.
 ::
 
 ::warning
@@ -46,10 +49,10 @@ Awaiting `useLazyFetch` only ensures the call is initialized. On client-side nav
 ## Type
 
 ```ts [Signature]
-export function useLazyFetch<DataT, ErrorT> (
+export function useLazyFetch<ResT, ErrorT = NuxtError<unknown>, DataT = ResT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
-  options?: UseFetchOptions<DataT>,
-): Promise<AsyncData<DataT, ErrorT>>
+  options?: UseFetchOptions<ResT, DataT>,
+): AsyncData<DataT, ErrorT> & Promise<AsyncData<DataT, ErrorT>>
 ```
 
 ::note
@@ -75,20 +78,20 @@ Returns the same `AsyncData` object as [`useFetch`](/docs/4.x/api/composables/us
 | `refresh` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Function to manually refresh the data.                                                                           |
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`.                                                                                             |
 | `error`   | `Ref<ErrorT \| undefined>`                          | Error object if the data fetching failed.                                                                        |
-| `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the data request.                                                                                      |
-| `pending` | `Ref<boolean>`                                      | Boolean flag indicating whether the current request is in progress.                                              |
+| `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the data request. Use it to distinguish `idle`, `pending`, `success`, and `error`.                     |
+| `pending` | `Ref<boolean>`                                      | `true` while a request is in flight. See [`useFetch`](/docs/4.x/api/composables/use-fetch#return-values).        |
 | `clear`   | `() => void`                                        | Resets `data` to `undefined`, `error` to `undefined`, sets `status` to `idle`, and cancels any pending requests. |
 
 :read-more{to="/docs/4.x/api/composables/use-fetch#return-values"}
 
-## Examples
+## Example
 
-### Handling Pending State
+### Handling Loading State
 
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
-/* Navigation will occur before fetching is complete.
- * Handle 'pending' and 'error' states directly within your component's template
+/* useLazyFetch lets navigation continue before the fetch completes.
+ * Handle loading and error states in the template.
  */
 const { status, data: posts } = await useLazyFetch('/api/posts')
 watch(posts, (newPosts) => {
@@ -100,6 +103,9 @@ watch(posts, (newPosts) => {
 <template>
   <div v-if="status === 'pending'">
     Loading ...
+  </div>
+  <div v-else-if="status === 'error'">
+    Error loading posts
   </div>
   <div v-else>
     <div v-for="post in posts">

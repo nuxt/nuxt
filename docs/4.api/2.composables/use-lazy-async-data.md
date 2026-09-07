@@ -36,7 +36,7 @@ const { status, data: posts } = await useLazyAsyncData('posts', () => $fetch('/a
 </template>
 ```
 
-When using `useLazyAsyncData`, navigation will occur before fetching is complete. This means you must handle `pending` and `error` states directly within your component's template.
+`useLazyAsyncData` lets navigation continue while it fetches data. Check `status === 'pending'` and `status === 'error'` in your component's template before using the result.
 
 ::warning
 `useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyAsyncData`.
@@ -45,16 +45,16 @@ When using `useLazyAsyncData`, navigation will occur before fetching is complete
 ## Type
 
 ```ts [Signature]
-export function useLazyAsyncData<DataT, ErrorT> (
-  handler: (ctx?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions<DataT>,
-): AsyncData<DataT, ErrorT>
+export function useLazyAsyncData<ResT, DataE = unknown, DataT = ResT> (
+  handler: AsyncDataHandler<ResT>,
+  options?: AsyncDataOptions<ResT, DataT>,
+): AsyncData<DataT, DataE> & Promise<AsyncData<DataT, DataE>>
 
-export function useLazyAsyncData<DataT, ErrorT> (
-  key: string,
-  handler: (ctx?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions<DataT>,
-): AsyncData<DataT, ErrorT>
+export function useLazyAsyncData<ResT, DataE = unknown, DataT = ResT> (
+  key: MaybeRefOrGetter<string>,
+  handler: AsyncDataHandler<ResT>,
+  options?: AsyncDataOptions<ResT, DataT>,
+): AsyncData<DataT, DataE> & Promise<AsyncData<DataT, DataE>>
 ```
 
 `useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/4.x/api/composables/use-async-data).
@@ -75,8 +75,8 @@ export function useLazyAsyncData<DataT, ErrorT> (
 
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
-/* Navigation will occur before fetching is complete.
-  Handle 'pending' and 'error' states directly within your component's template
+/* useLazyAsyncData lets navigation continue before the fetch completes.
+  Handle loading and error states in the template.
 */
 const { status, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
 
@@ -87,8 +87,14 @@ watch(count, (newCount) => {
 </script>
 
 <template>
-  <div>
-    {{ status === 'pending' ? 'Loading' : count }}
+  <div v-if="status === 'pending'">
+    Loading
+  </div>
+  <div v-else-if="status === 'error'">
+    Error loading count
+  </div>
+  <div v-else>
+    {{ count }}
   </div>
 </template>
 ```

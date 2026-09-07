@@ -1,0 +1,17 @@
+/**
+ * dev-only `types` equivalent of `./types.d.mts`
+ */
+import type { SchemaDefinition } from 'nuxt/schema'
+import type { DefineNuxtConfig } from 'nuxt/config'
+
+export * from './src/index.ts'
+
+declare global {
+  const defineNuxtConfig: DefineNuxtConfig
+  const defineNuxtSchema: (schema: SchemaDefinition) => SchemaDefinition
+
+  interface ImportMeta {
+    url: string
+    readonly env: ImportMetaEnv
+  }
+}

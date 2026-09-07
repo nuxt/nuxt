@@ -1,13 +1,168 @@
+/**
+ * Minimal server-compatible types for the parts of `nuxt/app` types that a server builder
+ * needs.
+ */
 import type { SerializableHead } from '@unhead/vue'
+import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
+import type { SSRHeadPayload } from '@unhead/vue/server'
+import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
+import type { Hookable } from 'hookable'
+import type { NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
 
-export type { PageMeta, NuxtPageProps, NuxtLayouts } from '../pages/runtime/index'
+export type { NuxtLinkOptions } from '@nuxt/schema'
+
+type HookResult = Promise<void> | void
 
 export interface NuxtAppLiterals {
   [key: string]: string
 }
 
+export interface PluginMeta {
+  name?: string
+  enforce?: 'pre' | 'default' | 'post'
+  /**
+   * Await for other named plugins to finish before running this plugin.
+   */
+  dependsOn?: NuxtAppLiterals['pluginName'][]
+  /**
+   * This allows more granular control over plugin order and should only be used by advanced users.
+   * It overrides the value of `enforce` and is used to sort plugins.
+   */
+  order?: number
+}
+
+type AppRenderedContext = { ssrContext: NuxtSSRContext | undefined, renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
+
+/**
+ * The runtime app hooks fired from the server runtime. The full
+ * `RuntimeNuxtHooks` interface in `./nuxt.ts` extends this with the
+ * client-side hooks, whose signatures need the DOM lib.
+ */
+export interface NuxtServerRuntimeHooks {
+  'app:error': (err: any) => HookResult
+  'app:rendered': (ctx: AppRenderedContext) => HookResult
+}
+
+/**
+ * The part of the runtime Nuxt app addressable from the server runtime
+ * (`ssrContext.nuxt`). The full `NuxtApp` in `./nuxt.ts` is assignable to
+ * this shape; `hooks` is deliberately narrowed to the members the server
+ * runtime calls, as `Hookable` instantiations over different hook maps are
+ * not mutually assignable.
+ */
+export interface NuxtServerApp {
+  hooks: Pick<Hookable<NuxtServerRuntimeHooks>, 'hook' | 'callHook'>
+  payload: NuxtPayload
+  ssrContext?: NuxtSSRContext
+  [key: string]: unknown
+}
+
+/**
+ * Type-only declaration of the `NuxtError` class in `./error.ts`, which
+ * remains the canonical exported value (and the `NuxtError` type exported
+ * from `nuxt/app` / `#app` and from `nuxt/server`).
+ *
+ * The members are declared here rather than inherited from h3's `HTTPError`,
+ * but must stay structurally compatible with it: that is what h3 and Nitro read
+ * off errors thrown during SSR.
+ */
+export interface NuxtError<DataT = unknown> extends Error {
+  readonly __nuxt_error: true
+  readonly fatal: boolean
+  /** HTTP status code in range [100...599] */
+  readonly status: number
+  /** HTTP status text (reason phrase) */
+  readonly statusText: string | undefined
+  /** Additional HTTP headers to be sent with the error response. */
+  readonly headers: Headers | undefined
+  /** Additional data attached to the error JSON body under `data`. */
+  readonly data: DataT | undefined
+  /** Additional top-level properties to attach to the error JSON body. */
+  readonly body: Record<string, unknown> | undefined
+  /** Whether the error was not handled by the application. */
+  readonly unhandled: boolean | undefined
+  readonly cause: unknown
+  /** @deprecated use `status` */
+  readonly statusCode: number
+  /** @deprecated use `statusText` */
+  readonly statusMessage: string | undefined
+  toJSON (): NuxtErrorJSON
+}
+
+/** JSON body serialized from a {@link NuxtError} when it is sent as an HTTP response. */
+export type NuxtErrorJSON = {
+  status: number
+  statusText?: string
+  message: string
+  unhandled?: boolean
+  data?: unknown
+} & Record<string, unknown>
+
+/**
+ * Serialized form of an error's `cause` chain, attached to the error page
+ * error in development. Error causes are serialized to their name, message,
+ * stack and nested cause; primitive causes are passed through as-is, and any
+ * other values are omitted.
+ */
+export type SerializedErrorCause = string | number | boolean | null | {
+  name: string
+  message: string
+  stack?: string
+  cause?: SerializedErrorCause
+}
+
+export interface NuxtPayload {
+  path?: string
+  serverRendered?: boolean
+  prerenderedAt?: number
+  data: Record<string, any>
+  state: Record<string, any>
+  once: Set<string>
+  config?: Pick<RuntimeConfig, 'public' | 'app'>
+  error?: NuxtError | undefined
+  _errors: Record<string, NuxtError | undefined>
+  /**
+   * Forwarded `<link rel="preload">` / `<link rel="modulepreload">` hints from the destination route, populated when `experimental.prefetchPreloadTags` is enabled.
+   * @internal
+   */
+  prefetchLinks?: Array<Record<string, string | boolean>>
+  [key: string]: unknown
+}
+
+export interface NuxtSSRContext extends SSRContext {
+  url: string
+  event: NuxtRequestEvent
+  runtimeConfig: RuntimeConfig
+  noSSR: boolean
+  /** whether we are rendering an SSR error */
+  error?: boolean
+  nuxt: NuxtServerApp
+  payload: Partial<NuxtPayload>
+  head: VueHeadClient<UseHeadInput, SSRHeadPayload>
+  /** This is used solely to render runtime config with SPA renderer. */
+  config?: Pick<RuntimeConfig, 'public' | 'app'>
+  teleports?: Record<string, string>
+  islandContext?: NuxtIslandContext
+  /** @internal */
+  ['~renderResponse']?: Response
+  /** @internal */
+  ['~payloadReducers']: Record<string, (data: any) => any>
+  /** @internal */
+  ['~sharedPrerenderCache']?: {
+    get<T = unknown> (key: string): Promise<T> | undefined
+    set<T> (key: string, value: Promise<T>): Promise<void>
+  }
+  /** @internal */
+  ['~preloadManifest']?: boolean
+  /** @internal */
+  ['~lazyHydratedModules']?: Set<string>
+  /** @internal */
+  ['~neverHydratedModules']?: Set<string>
+}
+
 export interface NuxtIslandSlotResponse {
   props: Array<unknown>
+  scopeId?: string
   fallback?: string
 }
 
@@ -16,6 +171,7 @@ export interface NuxtIslandClientResponse {
   props: unknown
   chunk: string
   slots?: Record<string, string>
+  uid?: string
 }
 
 export interface NuxtIslandContext {

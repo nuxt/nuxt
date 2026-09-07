@@ -1,6 +1,13 @@
+import { defaultUserConfig } from './utils/app-config-value'
+
 export default defineAppConfig({
-  userConfig: 123,
+  userConfig: defaultUserConfig,
   nested: {
     val: 2,
+  },
+  themed: {
+    colors: { primary: 'green' },
+    variants: ['solid'],
+    format: (value: string) => value,
   },
 })

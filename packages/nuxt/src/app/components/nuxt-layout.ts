@@ -1,25 +1,19 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
-import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
+import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onBeforeUnmount, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { NitroRouteRules } from 'nitro/types'
 
-import type { PageMeta } from '../../pages/runtime/composables'
+import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 
+import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { _mergeTransitionProps, _wrapInTransition } from './utils'
-import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
+import { renderDiagnostics } from '../diagnostics/render'
+import { _mergeTransitionProps, _wrapInTransition, isVaporSlot } from './utils'
+import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
-// @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
-// @ts-expect-error virtual file
 import layouts from '#build/layouts'
-// @ts-expect-error virtual file
-import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
-import _routeRulesMatcher from '#build/route-rules.mjs'
-
-const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
+import { appLayoutTransition as defaultLayoutTransition, vapor } from '#build/nuxt.config.mjs'
 
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
@@ -31,7 +25,7 @@ const LayoutLoader = defineComponent({
   setup (props, context) {
     // This is a deliberate hack - this component must always be called with an explicit key to ensure
     // that setup reruns when the name changes.
-    return () => h(layouts[props.name], props.layoutProps, context.slots)
+    return () => h(layouts[props.name! as keyof typeof layouts], props.layoutProps, context.slots)
   },
 })
 
@@ -61,27 +55,38 @@ export default defineComponent({
     const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     const layout = computed(() => {
-      let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
+      type LayoutName = keyof NuxtLayouts | false | 'default'
+      let layout = resolveLayoutName(route, props.name) as LayoutName
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          console.warn(`[nuxt] Invalid layout \`${layout}\` selected.`)
+          renderDiagnostics.NUXT_E4001({ layout, available: Object.keys(layouts).join(', ') || 'none' })
         }
         if (props.fallback) {
-          layout = unref(props.fallback)
+          layout = unref(props.fallback as MaybeRef<LayoutName>)
         }
       }
       return layout
     })
 
+    provide(LayoutSymbol, layout)
+
+    const resolveRouteLayout = (routeToCheck: RouteLocationNormalizedLoaded) => resolveLayoutName(routeToCheck, props.name)
+
     const layoutRef = shallowRef()
     context.expose({ layoutRef })
 
     const done = nuxtApp.deferHydration()
-    if (import.meta.client && nuxtApp.isHydrating) {
-      const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      const removeGuard = useRouter().beforeEach(() => {
-        removeErrorHook()
-        removeGuard()
+    if (import.meta.client) {
+      if (nuxtApp.isHydrating) {
+        const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
+        const removeGuard = useRouter().beforeEach(() => {
+          removeErrorHook()
+          removeGuard()
+        })
+      }
+      onBeforeUnmount(() => {
+        // Ensure hydration completes if unmounted before Suspense resolves
+        done()
       })
     }
 
@@ -134,6 +139,7 @@ export default defineComponent({
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
+              resolveRouteLayout,
               isRenderingNewLayout: (name?: string | boolean) => {
                 return (name !== previouslyRenderedLayout && name === layout.value)
               },
@@ -165,6 +171,10 @@ const LayoutProvider = defineComponent({
       type: Function as unknown as () => (name?: string | boolean) => boolean,
       required: true,
     },
+    resolveRouteLayout: {
+      type: Function as unknown as () => (route: RouteLocationNormalizedLoaded) => string | false,
+      required: true,
+    },
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -173,7 +183,7 @@ const LayoutProvider = defineComponent({
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
         // When name=false, always return true so NuxtPage doesn't skip rendering
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? 'default'),
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === props.resolveRouteLayout(route),
       })
     }
 
@@ -211,11 +221,12 @@ const LayoutProvider = defineComponent({
     if (import.meta.dev && import.meta.client) {
       onMounted(() => {
         nextTick(() => {
+          if (vapor && isVaporSlot(context.slots.default)) { return }
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
-              console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+              renderDiagnostics.NUXT_E4002({ name })
             } else {
-              console.warn('[nuxt] `<NuxtLayout>` needs to be passed a single root node in its default slot.')
+              renderDiagnostics.NUXT_E4003()
             }
           }
         })

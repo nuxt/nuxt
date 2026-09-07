@@ -1,9 +1,9 @@
 import { KeepAlive, h } from 'vue'
 import type { VNode } from 'vue'
+import type { ComponentSlots } from 'vue-component-type-helpers'
 import type { RouteLocationMatched, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
 
-type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
-type RouterViewSlot = Exclude<InstanceOf<typeof RouterView>['$slots']['default'], undefined>
+type RouterViewSlot = NonNullable<ComponentSlots<typeof RouterView>['default']>
 export type RouterViewSlotProps = Parameters<RouterViewSlot>[0]
 
 type SerializablePrimitive = string | number | boolean | null | undefined
@@ -30,7 +30,7 @@ const interpolatePath = (route: RouteLocationNormalizedLoaded, match: RouteLocat
   return match.path
     .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
     .replace(ROUTE_KEY_SYMBOLS_RE, '$1')
-    .replace(ROUTE_KEY_NORMAL_RE, r => route.params[r.slice(1)]?.toString() || '')
+    .replace(ROUTE_KEY_NORMAL_RE, r => (route.params as Record<string, unknown>)[r.slice(1)]?.toString() || '')
 }
 
 export const generateRouteKey = (routeProps: RouterViewSlotProps, override?: string | ((route: RouteLocationNormalizedLoaded) => string)): string | false | undefined => {

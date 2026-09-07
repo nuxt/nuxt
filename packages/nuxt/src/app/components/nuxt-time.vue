@@ -52,6 +52,13 @@ const date = computed(() => {
   return new Date(date)
 })
 
+const locale = computed(() => {
+  // track the prop even when the server-rendered locale takes precedence during hydration
+  const propsLocale = props.locale
+  if (_locale && nuxtApp.isHydrating) { return _locale }
+  return propsLocale
+})
+
 const now = ref(import.meta.client && nuxtApp.isHydrating && window._nuxtTimeNow ? new Date(window._nuxtTimeNow) : new Date())
 if (import.meta.client && props.relative) {
   const handler = () => {
@@ -62,11 +69,11 @@ if (import.meta.client && props.relative) {
 }
 
 const formatter = computed(() => {
-  const { locale: propsLocale, relative, relativeStyle, ...rest } = props
+  const { locale: _propLocale, relative, relativeStyle, ...rest } = props
   if (relative) {
-    return new Intl.RelativeTimeFormat(_locale ?? propsLocale, { ...rest, style: relativeStyle })
+    return new Intl.RelativeTimeFormat(locale.value, { ...rest, style: relativeStyle })
   }
-  return new Intl.DateTimeFormat(_locale ?? propsLocale, rest)
+  return new Intl.DateTimeFormat(locale.value, rest)
 })
 
 const formattedDate = computed(() => {

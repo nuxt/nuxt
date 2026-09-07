@@ -1,5 +1,5 @@
-import type { Defu } from 'defu'
 import type { NuxtHooks } from './hooks.ts'
+import type { Merged } from './merge.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { NuxtCompatibility } from './compatibility.ts'
 
@@ -63,7 +63,7 @@ export type ResolvedModuleOptions<
   TOptionsDefaults extends Partial<TOptions>,
 > =
   Prettify<
-    Defu<
+    Merged<
       Partial<TOptions>,
       [Partial<TOptions>, TOptionsDefaults]
     >

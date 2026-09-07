@@ -1,6 +1,7 @@
 ---
 title: "useRequestHeader"
 description: "Use useRequestHeader to access a certain incoming request header."
+minimalVersion: "3.9"
 links:
   - label: Source
     icon: i-simple-icons-github

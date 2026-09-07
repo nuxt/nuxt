@@ -15,11 +15,26 @@
     <h2 class="text-2xl font-semibold sm:text-3xl mb-2">{{ messages.statusText }}</h2>
     <p class="text-[#64748B] text-md mb-4 px-2">{{ messages.description }}</p>
     <div class="w-full flex items-center justify-center">
-      <a href="/" class="underline underline-offset-3 text-sm font-medium hover:text-[#00DC82]">
+      <a href="/" data-back-home class="underline underline-offset-3 text-sm font-medium hover:text-[#00DC82]">
         {{ messages.backHome }}
       </a>
+      <button type="button" data-back-previous hidden class="appearance-none bg-transparent border-0 p-0 cursor-pointer font-sans text-inherit underline underline-offset-3 text-sm font-medium hover:text-[#00DC82]">
+        {{ messages.backToPrevious }}
+      </button>
     </div>
   </div>
+  <script>
+    ;(() => {
+      if (!(window.history.state && window.history.state.back)) { return }
+
+      const home = document.querySelector('[data-back-home]')
+      const previous = document.querySelector('[data-back-previous]')
+      if (!home || !previous) { return }
+      previous.onclick = () => window.history.back()
+      home.hidden = true
+      previous.hidden = false
+    })()
+  </script>
 </body>
 
 </html>

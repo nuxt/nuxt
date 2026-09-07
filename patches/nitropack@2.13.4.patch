@@ -1,0 +1,8 @@
+diff --git a/types.d.ts b/types.d.ts
+index 888993344aa6dfe9b4986cbd34596d34d647af3c..b4ea20e8c0baeca7cd3b4c08934afed993b90b08 100644
+--- a/types.d.ts
++++ b/types.d.ts
+@@ -1 +1 @@
+-export * from "./dist/types/index";
+\ No newline at end of file
++export * from "./dist/types/index.js";

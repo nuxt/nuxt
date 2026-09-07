@@ -12,6 +12,8 @@ on:
       - opened
       - edited
 
+permissions: {}
+
 jobs:
   detect:
     name: Detect bot opt-in

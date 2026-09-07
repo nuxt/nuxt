@@ -1,12 +1,53 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { describe, expect, it, vi } from 'vitest'
+import { createHooks } from 'hookable'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
+import type { RuntimeNuxtHooks } from '#app/nuxt'
+import * as payload from '#app/composables/payload'
+import payloadPlugin from '#app/plugins/payload.client'
 
 describe('nuxt-link:prefetch', () => {
+  it('should prefetch a link payload after hydration when interacted with during hydration', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const wrapper = await mountSuspended(component, { props: { to: '/to', prefetchOn: 'interaction' } })
+    const nuxtApp = useNuxtApp()
+    const router = useRouter()
+    const originalHooks = nuxtApp.hooks
+    const isHydrating = nuxtApp.isHydrating
+    const loadPayload = vi.spyOn(payload, 'loadPayload').mockResolvedValue({ data: {} })
+    const beforeResolve = vi.spyOn(router, 'beforeResolve').mockReturnValue(() => {})
+    const afterEach = vi.spyOn(router, 'afterEach').mockReturnValue(() => {})
+
+    vi.useFakeTimers()
+    nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
+    nuxtApp.isHydrating = true
+
+    try {
+      await nuxtApp.runWithContext(() => payloadPlugin.setup!(nuxtApp))
+      await wrapper.find('a').trigger('pointerenter')
+
+      expect(loadPayload).not.toHaveBeenCalled()
+
+      nuxtApp.isHydrating = false
+      await nuxtApp.hooks.callHook('app:suspense:resolve')
+
+      expect(loadPayload).toHaveBeenCalledExactlyOnceWith('/to')
+    } finally {
+      wrapper.unmount()
+      nuxtApp.hooks = originalHooks
+      nuxtApp.isHydrating = isHydrating
+      loadPayload.mockRestore()
+      beforeResolve.mockRestore()
+      afterEach.mockRestore()
+      vi.clearAllTimers()
+      vi.useRealTimers()
+    }
+  })
+
   it('should prefetch on visibility by default', async () => {
     const component = defineNuxtLink(nuxtLinkDefaults)
 
@@ -69,6 +110,78 @@ describe('nuxt-link:prefetch', () => {
 
     await observer.trigger()
     expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
+  })
+
+  it('should expose prefetch controls to the custom slot on an internal link', async () => {
+    const NuxtLink = defineNuxtLink(nuxtLinkDefaults)
+    const nuxtApp = useNuxtApp()
+    nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
+
+    let prefetch: ((nuxtApp?: ReturnType<typeof useNuxtApp>) => Promise<void>) | undefined
+    let shouldPrefetch: ((mode: 'visibility' | 'interaction') => boolean) | undefined
+
+    const wrapper = await mountSuspended(defineComponent({
+      render () {
+        return h(NuxtLink, { to: '/to', custom: true, prefetchedClass: 'is-prefetched' }, {
+          default: (slotProps: {
+            href: string
+            prefetch: (nuxtApp?: ReturnType<typeof useNuxtApp>) => Promise<void>
+            prefetched: boolean
+            shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
+          }) => {
+            prefetch = slotProps.prefetch
+            shouldPrefetch = slotProps.shouldPrefetch
+            return h('a', { href: slotProps.href, class: slotProps.prefetched ? 'is-prefetched' : '' }, 'link')
+          },
+        })
+      },
+    }))
+
+    expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
+    expect(wrapper.find('a').classes()).not.toContain('is-prefetched')
+    expect(shouldPrefetch?.('visibility')).toBe(true)
+    expect(prefetch).toEqual(expect.any(Function))
+
+    await prefetch?.(nuxtApp)
+    await flushPromises()
+
+    expect(nuxtApp.hooks.callHook).toHaveBeenCalledTimes(1)
+    expect(wrapper.find('a').classes()).toContain('is-prefetched')
+    expect(shouldPrefetch?.('visibility')).toBe(false)
+  })
+
+  it('should preserve RouterLink slot props on an internal custom link', async () => {
+    const NuxtLink = defineNuxtLink(nuxtLinkDefaults)
+    const router = useRouter()
+    const to = router.currentRoute.value.path || '/'
+    let slotProps: {
+      href: string
+      route?: { href: string }
+      isActive: boolean
+      isExactActive: boolean
+      prefetch: (nuxtApp?: ReturnType<typeof useNuxtApp>) => Promise<void>
+      prefetched: boolean
+      shouldPrefetch: (mode: 'visibility' | 'interaction') => boolean
+    } | undefined
+
+    await mountSuspended(defineComponent({
+      render () {
+        return h(NuxtLink, { to, custom: true }, {
+          default: (props: typeof slotProps) => {
+            slotProps = props
+            return h('a', { href: props?.href }, 'link')
+          },
+        })
+      },
+    }))
+
+    expect(slotProps?.href).toBe(to)
+    expect(slotProps?.route?.href).toBe(to)
+    expect(slotProps?.isActive).toBe(true)
+    expect(slotProps?.isExactActive).toBe(true)
+    expect(slotProps?.prefetch).toEqual(expect.any(Function))
+    expect(slotProps?.prefetched).toBe(false)
+    expect(slotProps?.shouldPrefetch).toEqual(expect.any(Function))
   })
 })
 

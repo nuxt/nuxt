@@ -1,0 +1,81 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
+import { renderList } from 'vue'
+import { getFragmentHTML, vforToArray } from '../../packages/nuxt/src/app/components/utils'
+
+describe('vforToArray', () => {
+  it('matches renderList semantics for number sources', () => {
+    expect(vforToArray(3)).toEqual([1, 2, 3])
+    expect(vforToArray(3)).toEqual(renderList(3, (item: number) => item))
+  })
+
+  it('matches renderList semantics for string, array and iterable sources', () => {
+    expect(vforToArray('ab')).toEqual(renderList('ab', (item: string) => item))
+    expect(vforToArray(['a', 'b'])).toEqual(renderList(['a', 'b'], (item: string) => item))
+    expect(vforToArray(new Set(['a', 'b']))).toEqual(renderList(new Set(['a', 'b']), (item: string) => item))
+    expect(vforToArray({ a: 1, b: 2 })).toEqual(renderList({ a: 1, b: 2 }, (item: number) => item))
+  })
+})
+
+describe('getFragmentHTML', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('walks large fragments without overflowing the call stack', () => {
+    const fragment = document.createDocumentFragment()
+    const start = document.createComment('[')
+    fragment.append(start)
+
+    for (let i = 0; i < 20_000; i++) {
+      const element = document.createElement('span')
+      element.textContent = String(i)
+      fragment.append(element)
+    }
+
+    fragment.append(document.createComment(']'))
+
+    const html = getFragmentHTML(start)
+    expect(html).toHaveLength(20_000)
+    expect(html?.[0]).toBe('<span>0</span>')
+    expect(html?.[19_999]).toBe('<span>19999</span>')
+  })
+
+  it('stops at the fragment boundary and clears island slot contents', () => {
+    const fragment = document.createDocumentFragment()
+    const start = document.createComment('[')
+    const element = document.createElement('div')
+    const slot = document.createElement('span')
+    const ignored = document.createElement('p')
+
+    slot.dataset.islandSlot = 'default'
+    slot.textContent = 'slot content'
+    element.append('before', slot, 'after')
+    ignored.textContent = 'outside fragment'
+    fragment.append(start, element, document.createComment(']'), ignored)
+
+    expect(getFragmentHTML(start, true)).toEqual([
+      '<div>before<span data-island-slot="default"></span>after</div>',
+    ])
+  })
+
+  // cloning a live `<img>` starts a second load of its `src`
+  it('does not clone live nodes', () => {
+    const cloneNode = vi.spyOn(Node.prototype, 'cloneNode')
+
+    const fragment = document.createDocumentFragment()
+    const start = document.createComment('[')
+    const withSlot = document.createElement('div')
+    const withoutSlot = document.createElement('div')
+
+    withSlot.innerHTML = '<img src="/island-asset.svg"><span data-island-slot="default">slot content</span>'
+    withoutSlot.innerHTML = '<img src="/island-asset.svg">'
+    fragment.append(start, withSlot, withoutSlot, document.createComment(']'))
+
+    expect(getFragmentHTML(start, true)).toEqual([
+      '<div><img src="/island-asset.svg"><span data-island-slot="default"></span></div>',
+      '<div><img src="/island-asset.svg"></div>',
+    ])
+    expect(cloneNode).not.toHaveBeenCalled()
+  })
+})

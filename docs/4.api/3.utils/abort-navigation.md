@@ -26,7 +26,7 @@ export function abortNavigation (err?: Error | string): false
 
   Optional error to be thrown by `abortNavigation`.
 
-## Examples
+## Example
 
 The example below shows how you can use `abortNavigation` in a route middleware to prevent unauthorized route access:
 

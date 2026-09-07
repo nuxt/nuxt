@@ -2,7 +2,6 @@ import type { createHead as createClientHead } from '@unhead/vue/client'
 import type { ActiveHeadEntry } from '@unhead/vue'
 import type { NuxtApp } from '#app/nuxt'
 
-// @ts-expect-error virtual file
 import { appHead } from '#build/nuxt.config.mjs'
 
 type ClientHead = ReturnType<typeof createClientHead>

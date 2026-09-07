@@ -2,6 +2,14 @@ import type { CompilerScanDir } from './compiler.ts'
 import type { AugmentProperty, VueExtension } from '../utils/definition.ts'
 
 export interface ComponentMeta {
+  /**
+   * Short description shown as IDE hover documentation for the component.
+   */
+  description?: string
+  /**
+   * Documentation URL rendered as a `@see` tag in generated component types.
+   */
+  docsUrl?: string
   [key: string]: unknown
 }
 

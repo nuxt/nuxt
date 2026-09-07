@@ -19,7 +19,7 @@ export default defineNuxtRouteMiddleware((to) => {
 })
 ```
 
-## Passing Props to Layouts
+## Passing Props to Layouts :badge[v4.3]{color="info" size="xs" class="align-middle"}
 
 You can pass props to the layout by providing an object as the second argument:
 

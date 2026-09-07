@@ -4,14 +4,14 @@ import { getPort } from 'get-port-please'
 import { defu } from 'defu'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type { H3Event as H3V1Event } from 'h3'
-import { useNitro } from '@nuxt/kit'
+import { tryUseNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { toVirtualId } from '../utils/index.ts'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
   let useViteCors = false
-  const nitro = useNitro()
+  const nitro = tryUseNitro()
   return {
     name: 'nuxt:dev-server',
     async config (config) {
@@ -38,13 +38,21 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
 
       if (config.server && config.server.hmr !== false) {
+        // Attach HMR to Nuxt's dev server (captured in core from the `listen`
+        // hook) so it shares the app's port and certificate. Falls back to a
+        // dedicated HMR port when that server isn't available (e.g. an older
+        // core, where the dev CLI wires this up instead).
+        const hmrServer = nuxt._devServerListener
         const serverDefaults: Omit<ServerOptions, 'hmr' | 'ws'> & { hmr: Exclude<ServerOptions['hmr'], boolean>, ws: NonNullable<Exclude<ServerOptions['ws'], false>> } = {
           hmr: {
             protocol: nuxt.options.devServer.https ? 'wss' : undefined,
+            server: hmrServer,
           },
-          ws: {},
+          ws: {
+            server: hmrServer,
+          },
         }
-        if (typeof config.server.ws !== 'object' || !config.server.ws.server) {
+        if (!hmrServer && (typeof config.server.ws !== 'object' || !config.server.ws.server)) {
           const hmrPortDefault = 24678 // Vite's default HMR port
           serverDefaults.ws.port = await getPort({
             verbose: false,
@@ -58,20 +66,14 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
     },
     async configureServer (viteServer) {
-      // Invalidate virtual modules when templates are re-generated
-      nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
-        await Promise.all(changedTemplates.map(async (template) => {
-          for (const mod of viteServer.moduleGraph.getModulesByFile(toVirtualId(template.dst, nuxt)) || []) {
-            viteServer.moduleGraph.invalidateModule(mod)
-            await viteServer.reloadModule(mod)
-          }
-        }))
-      })
-
       await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
 
+      if (!useServerBuild(nuxt).buildsSeparately) {
+        return
+      }
+
       const staticBases: string[] = []
-      for (const folder of nitro.options.publicAssets) {
+      for (const folder of nitro?.options.publicAssets || []) {
         if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {
           staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
         }

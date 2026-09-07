@@ -1,8 +1,8 @@
-import type { TransformerOptions } from 'unctx/transform'
-import { createTransformer } from 'unctx/transform'
+import type { Transformer, TransformerOptions } from 'unctx/transform'
+import { createTransformer, getTransformFilter } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
-import { isJS, isVue } from '../utils/index.ts'
+import { JS_ID_RE, VUE_SCRIPT_TEMPLATE_ID_FILTER } from '../utils/index.ts'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 const TRANSFORM_MARKER_RE = /^\/\* _processed_nuxt_unctx_transform \*\/\n/
@@ -13,29 +13,29 @@ interface UnctxTransformPluginOptions {
 }
 
 export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
-  const transformer = createTransformer(options.transformerOptions)
+  let transformer: Promise<Transformer> | undefined
+  const filter = getTransformFilter(options.transformerOptions)
 
   return {
     name: 'unctx:transform',
     enforce: 'post',
-    transformInclude (id) {
-      return isVue(id, { type: ['template', 'script'] }) || isJS(id)
-    },
     transform: {
       filter: {
-        ...transformer.filter,
+        id: { include: [...VUE_SCRIPT_TEMPLATE_ID_FILTER, JS_ID_RE] },
         code: {
-          ...transformer.filter.code,
+          include: filter.code,
           exclude: TRANSFORM_MARKER_RE,
         },
       },
-      handler (code) {
+      async handler (code) {
+        const { shouldTransform, transform } = await (transformer ??= createTransformer(options.transformerOptions))
         // TODO: needed for webpack - update transform in unctx/unplugin?
-        if (!transformer.shouldTransform(code)) { return }
-        const result = transformer.transform(code)
+        if (!shouldTransform(code)) { return }
+        const result = transform(code)
         if (result) {
+          result.magicString.prepend(TRANSFORM_MARKER)
           return {
-            code: TRANSFORM_MARKER + result.code,
+            code: result.magicString.toString(),
             map: options.sourcemap
               ? result.magicString.generateMap({ hires: true })
               : undefined,

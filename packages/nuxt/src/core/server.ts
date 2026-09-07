@@ -1,4 +1,7 @@
-import { directoryToURL, importModule } from '@nuxt/kit'
+import { pathToFileURL } from 'node:url'
+import { directoryToURL, getAddDependencyCommand, importModule } from '@nuxt/kit'
+import { resolveModulePath } from 'exsolve'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
@@ -19,11 +22,12 @@ export async function bundleServer (nuxt: Nuxt) {
 async function loadServerBuilder (nuxt: Nuxt, builder = '@nuxt/nitro-server'): Promise<NuxtBuilder> {
   try {
     // prefer our own dependency tree before walking up from rootDir
-    if (builder === '@nuxt/nitro-server') {
-      return await import(builder)
+    const resolved = resolveModulePath(builder, { from: import.meta.url, try: true })
+    if (resolved) {
+      return await import(pathToFileURL(resolved).href)
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err) {
-    throw new Error(`Loading \`${builder}\` server builder failed. You can read more about the nuxt \`server.builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder-1\``, { cause: err })
+    throw buildDiagnostics.NUXT_B1018({ builder, installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }), cause: err })
   }
 }

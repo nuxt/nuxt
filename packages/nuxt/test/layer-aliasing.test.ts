@@ -3,14 +3,14 @@ import type { UnpluginContextMeta } from 'unplugin'
 import { describe, expect, it } from 'vitest'
 
 import { LayerAliasingPlugin } from '../src/core/plugins/layer-aliasing'
+import { matchesIdFilter } from './utils.ts'
 
 interface TransformHandler {
   (this: unknown, code: string, id: string): { code: string } | undefined
 }
 
 interface RawPlugin {
-  transformInclude?: (id: string) => boolean | null | undefined
-  transform?: { handler: TransformHandler }
+  transform?: { filter: { id: RegExp | RegExp[] | { include?: RegExp | RegExp[], exclude?: RegExp | RegExp[] } }, handler: TransformHandler }
 }
 
 function makeLayer (cwd: string): NuxtConfigLayer {
@@ -22,7 +22,7 @@ function createPlugin (layers: NuxtConfigLayer[], framework: 'vite' | 'webpack' 
   const raw = LayerAliasingPlugin({ root: '/', dev: false, layers }).raw({}, meta)
   const entry = (Array.isArray(raw) ? raw[0] : raw) as RawPlugin
   return {
-    transformInclude: entry.transformInclude!,
+    transformInclude: (id: string) => matchesIdFilter(entry.transform!.filter.id, id),
     transform: (code: string, id: string) => entry.transform!.handler.call({}, code, id),
   }
 }
