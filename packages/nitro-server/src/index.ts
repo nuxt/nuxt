@@ -694,17 +694,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         }))
       }
     }
-
-    // a file added to or removed from a scanned directory changes the auto-import set
-    const scannedDirs = (nitroConfig.imports as ServerImportsOptions).dirs ?? []
-    nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (event !== 'add' && event !== 'unlink') { return }
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      if (!scannedDirs.some(dir => path === dir || path.startsWith(dir + '/'))) { return }
-      await autoImports.refresh()
-      await autoImports.writeTypes()
-    })
   }
+
+  // a file added to or removed from a scanned directory changes the set of imports available
+  // through `#imports/server`, whether or not they are injected
+  const scannedDirs = (nitroConfig.imports as ServerImportsOptions).dirs ?? []
+  nuxt.hook('builder:watch', async (event, relativePath) => {
+    if (event !== 'add' && event !== 'unlink') { return }
+    const path = resolve(nuxt.options.srcDir, relativePath)
+    if (!scannedDirs.some(dir => path === dir || path.startsWith(dir + '/'))) { return }
+    await autoImports.refresh()
+    await autoImports.writeTypes()
+  })
 
   if (nitroConfig.static && nuxt.options.dev) {
     nitroConfig.routeRules ||= {}

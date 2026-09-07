@@ -87,6 +87,26 @@ describe('createServerAutoImports', () => {
     expect(readFileSync(autoImports.importsModulePath + '.mjs', 'utf8')).toContain('export {}')
   })
 
+  it('still re-exports registered imports when auto-importing is disabled', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: false, imports: [{ name: 'withBaseURL', from: resolve(import.meta.dirname, '../src/runtime/utils/base.ts') }] },
+      typesDir,
+    )
+
+    await autoImports.writeTypes()
+
+    const module = readFileSync(autoImports.importsModulePath + '.mjs', 'utf8')
+    const declarations = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    expect(module).toContain('export { withBaseURL }')
+    expect(declarations).toContain('export { withBaseURL }')
+    expect(declarations).not.toContain('declare global')
+
+    const injected = await autoImports.injectImports('export default withBaseURL("/")', '/app/server/api/index.ts')
+    expect(injected).toBeUndefined()
+  })
+
   it('injects an import for an identifier used in a TypeScript-only expression', async () => {
     const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
     const autoImports = createServerAutoImports(
