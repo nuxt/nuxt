@@ -48,7 +48,7 @@ test.describe('SSR Streaming', () => {
     expect(head).toContain('<title>Streaming Home</title>')
     expect(head).toContain('rel="canonical"')
     expect(head).toContain('application/ld+json')
-    // head entries registered after an await are still streamed as pushes
+    // entries registered after an await are still streamed as pushes
     expect(html).toContain('window.__unhead__.push(')
   })
 
@@ -393,7 +393,7 @@ test.describe('SSR Streaming', () => {
     const res = await fetch('/nonce')
     const html = await res.text()
 
-    // bootstrap keeps the nonce (3.4 added the `||(` clobber guard)
+    // Bootstrap queue carries the nonce
     expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\|\|\(window\.__unhead__=\{_q:\[\]/)
     // Streamed head-push chunks carry the nonce
     expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\.push/)

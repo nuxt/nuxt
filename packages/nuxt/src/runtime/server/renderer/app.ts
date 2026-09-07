@@ -8,11 +8,8 @@ import { urlHash } from './url'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
-/**
- * Streaming wants `createStreamableHead`: it marks the head so late JSON-LD,
- * `noscript` and body-positioned tags render as markup at `</body>` instead
- * of client patches.
- */
+// a streamable head renders late JSON-LD, `noscript` and body-positioned tags
+// as markup before `</body>` rather than as client patches
 function createServerHead (): NuxtSSRContext['head'] {
   if (!NUXT_SSR_STREAMING) {
     return createHead(unheadOptions) as NuxtSSRContext['head']
