@@ -115,6 +115,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@11.24.0",
+  "packageManager": "pnpm@11.25.0",
   "version": ""
 }
