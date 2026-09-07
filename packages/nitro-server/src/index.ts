@@ -723,7 +723,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@', 'h3', 'h3/package.json']
   // TODO: remove support for baseUrl in nuxt v5
   const isV5OrHigher = nuxt.options.future.compatibilityVersion >= 5
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const baseUrl = isV5OrHigher ? undefined : nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl
   const basePath = baseUrl ? resolve(typesDir, baseUrl) : typesDir
   const aliases = nitroConfig.alias!
