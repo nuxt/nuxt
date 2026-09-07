@@ -751,6 +751,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   })
 
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    // Nitro builds the prerenderer with its own bundler. The Vite `define` does not reach it.
+    nitro.hooks.hook('prerender:config', (config) => {
+      config.replace = { ...getServerReplacements(nuxt), ...config.replace }
+    })
+  }
+
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
   setServerBuild({
