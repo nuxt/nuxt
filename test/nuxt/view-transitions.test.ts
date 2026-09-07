@@ -462,5 +462,24 @@ describe('view transitions plugin', () => {
       await expect(secondUpdate).resolves.toBeUndefined()
       expect(router.currentRoute.value.path).toBe('/vt-b')
     })
+
+    it('should not produce an unhandled rejection when the transition is skipped', async () => {
+      appViewTransition.enabled = true
+
+      const unhandled = vi.fn()
+      process.on('unhandledRejection', unhandled)
+
+      await navigateTo('/vt-a')
+      await flushPromises()
+
+      const transition = transitions[0]!
+      transition.rejectReady(new DOMException('Transition was skipped', 'AbortError'))
+      transition.settleFinished()
+      await flushPromises()
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      process.off('unhandledRejection', unhandled)
+      expect(unhandled).not.toHaveBeenCalled()
+    })
   })
 })
