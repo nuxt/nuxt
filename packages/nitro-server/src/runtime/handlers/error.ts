@@ -7,6 +7,7 @@ import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
+import { getFetchedRequestContext } from '../utils/event'
 import { applyPrerenderHints } from '../utils/prerender'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
@@ -58,12 +59,8 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   setResponseHeaders(event, defaultRes.headers)
   appendVary(event, 'accept, sec-fetch-mode')
 
-  // `node-mock-http` carries the context a request nitro made to itself passed through
-  // `localFetch` on the mock request rather than in the h3 event's own context
-  const passedContext = (event.node.req as { __unenv__?: { nuxt?: NuxtRequestContext } }).__unenv__?.nuxt
-
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
-  const isRenderingError = !!(event.context.nuxt?.['~rendering-error'] || passedContext?.['~rendering-error'])
+  const isRenderingError = !!(event.context.nuxt?.['~rendering-error'] || getFetchedRequestContext(event)?.['~rendering-error'])
 
   if (!isRenderingError) {
     event.context.nuxt = { ...event.context.nuxt, '~rendering-error': true }
@@ -81,10 +78,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
           headers: event.headers,
           redirect: 'manual',
           context: {
-            nuxt: {
-              '~internal': true,
-              '~rendering-error': true,
-            } satisfies NuxtRequestContext,
+            nuxt: { '~rendering-error': true } satisfies NuxtRequestContext,
           },
         },
       ).catch(() => null)

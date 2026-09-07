@@ -163,11 +163,10 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
     url: request.url,
     ...data === undefined ? {} : { data: typeof data === 'string' ? data : JSON.stringify(data) },
   }), { headers: request.headers }))
-  // the renderer only serves the internal error route to a request the runtime made itself;
   // while prerendering the two renders share one state, so routes the error page asks for
   // are reported alongside those the failed render collected before it threw
   const state = (import.meta.prerender ? (event.context as { nuxt?: Record<string, unknown> }).nuxt : undefined) || {}
-  state['~internal'] = true
+  state['~rendering-error'] = true
   ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = state
   if (import.meta.prerender) {
     ;(event.context as { nuxt?: Record<string, unknown> }).nuxt = state

@@ -1414,6 +1414,14 @@ describe('errors', () => {
     expect(html).toContain('Page Not Found: /__nuxt_error')
   })
 
+  it('should not render the error route for a request the server makes to itself', async () => {
+    const res = await $fetch<{ status: number, body: string }>('/api/internal-error-render')
+
+    expect(res.status).toBe(404)
+    expect(res.body).toContain('<h1>Page Not Found: /__nuxt_error</h1>')
+    expect(res.body).not.toContain('<h1>i-should-not-be-rendered</h1>')
+  })
+
   it('should not recursively throw an error when there is an error rendering the error page', async () => {
     const res = await $fetch<string>('/', {
       headers: {
