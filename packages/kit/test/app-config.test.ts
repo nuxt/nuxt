@@ -7,7 +7,7 @@ import { rm } from 'node:fs/promises'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-describe('updateAppConfig', { sequential: true }, () => {
+describe('updateAppConfig', { concurrent: false }, () => {
   const tempDir = join(__dirname, '..', '..', 'temp', 'app-config-test')
 
   it('merges appConfig deeply', async () => {
