@@ -34,6 +34,7 @@ ignoreWorkspaceCycles: true
 overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
+  "@types/node": "24.13.3"
   esbuild: "0.28.2"
   nuxt: "workspace:*"
   oxc-parser: "0.148.0"
