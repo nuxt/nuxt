@@ -697,6 +697,11 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  it.skipIf(isDev)('substitutes the server compile-time constants in the prerenderer', async () => {
+    const html = await $fetch<string>('/prerender/import-meta-test')
+    expect(html).toContain('server test flag: true')
+  })
+
   it('renders pages with special characters in route', async () => {
     const html = await $fetch('/non-ascii/ç')
     // Verify page renders successfully with layout
