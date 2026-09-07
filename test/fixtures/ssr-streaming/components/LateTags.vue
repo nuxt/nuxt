@@ -15,7 +15,7 @@ useHead({
   ],
   script: [
     { type: 'application/ld+json', innerHTML: '{"@type":"Product","name":"Late Product"}' },
-    { src: '/late-body-close.js', tagPosition: 'bodyClose' },
+    { id: 'late-body-close', innerHTML: 'globalThis.__lateBodyClose = true', tagPosition: 'bodyClose' },
   ],
   noscript: [{ innerHTML: 'late noscript fallback' }],
 })

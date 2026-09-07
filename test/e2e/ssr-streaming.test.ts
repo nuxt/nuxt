@@ -81,7 +81,7 @@ test.describe('SSR Streaming', () => {
     const bodyClose = html.lastIndexOf('</body>')
     expect(html.indexOf('late noscript fallback')).toBeLessThan(bodyClose)
 
-    expect(html, 'entry-level bodyClose script must render as markup').toMatch(/<script[^>]*src="\/late-body-close\.js"[^>]*><\/script>/)
+    expect(html, 'entry-level bodyClose script must render as markup').toMatch(/<script[^>]*id="late-body-close"[^>]*>/)
 
     // patches never become served markup
     expect(html).toContain('window.__unhead__.push(')
@@ -107,7 +107,7 @@ test.describe('SSR Streaming', () => {
     // the client adopts served markup instead of duplicating it
     await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
     await expect(page.locator('noscript')).toHaveCount(1)
-    await expect(page.locator('script[src="/late-body-close.js"]')).toHaveCount(1)
+    await expect(page.locator('script#late-body-close')).toHaveCount(1)
 
     expect(pageErrors, `pageerror events: ${pageErrors.join(' | ')}`).toEqual([])
     expect(consoleErrors, `console.error output: ${consoleErrors.join(' | ')}`).toEqual([])
