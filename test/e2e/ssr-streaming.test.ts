@@ -142,6 +142,10 @@ test.describe('SSR Streaming', () => {
     expect(jsonLdIdx).toBeGreaterThan(html.indexOf('id="__nuxt"'))
     const headEnd = html.indexOf('</head>')
     expect(jsonLdIdx, 'held JSON-LD must not be in the shell head').toBeGreaterThan(headEnd)
+
+    // head-only tags still ship as a patch
+    expect(html, 'the head patch must carry the late meta').toMatch(/window\.__unhead__\.push\(.*Held error description/)
+
     expect(html.trimEnd()).toMatch(/<\/body><\/html>$/)
   })
 

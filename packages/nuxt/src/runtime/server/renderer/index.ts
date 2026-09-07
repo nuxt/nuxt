@@ -841,22 +841,26 @@ async function renderStreamedResponse (ctx: {
             ssrContext.head.push({
               script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload }),
             }, { tagPosition: 'bodyClose', tagPriority: 'high' })
-            // a tag getter that throws on the error's broken state must not
-            // take the payload script with it - the client needs it to render
-            // the error page
-            try {
-              renderSSRHeadSuspenseChunk(ssrContext.head)
-            } catch (error) {
-              rendererDiagnostics.NUXT_E8009({
-                path: event.url.pathname,
-                what: 'flushing the head tags registered after the shell',
-                cause: String(error),
-              })
-            }
-            const streamBodyTags = renderStreamBodyTags(ssrContext.head)
-            const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-            controller.enqueue(encoder.encode(streamBodyTags + tail.bodyTags))
           }
+          // a tag getter that throws on the error's broken state must not take
+          // the payload script with it - the client needs it to render the
+          // error page
+          let headChunk: string | undefined
+          try {
+            headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
+          } catch (error) {
+            rendererDiagnostics.NUXT_E8009({
+              path: event.url.pathname,
+              what: 'flushing the head tags registered after the shell',
+              cause: String(error),
+            })
+          }
+          if (headChunk && !NO_SCRIPTS) {
+            controller.enqueue(encoder.encode(`<script${nonceAttr}>${headChunk};document.currentScript.remove()</script>`))
+          }
+          const streamBodyTags = renderStreamBodyTags(ssrContext.head)
+          const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
+          controller.enqueue(encoder.encode(streamBodyTags + tail.bodyTags))
         } catch (error) {
           rendererDiagnostics.NUXT_E8009({
             path: event.url.pathname,
