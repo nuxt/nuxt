@@ -81,7 +81,7 @@ export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[
     return { routes: nitro.routing.routeRules.routes, baseURL: nitro.options.baseURL || '' }
   }
   const routes = Object.entries(normalizeRouteRules(nuxt.options.routeRules))
-    .map(([route, data]) => ({ route, method: '', data: { ...data, _route: route } }))
+    .map(([route, data]) => ({ route, method: '', data }))
   return { routes, baseURL: nuxt.options.app.baseURL || '' }
 }
 

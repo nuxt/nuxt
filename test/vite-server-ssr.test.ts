@@ -119,6 +119,45 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     expect(await response.text()).toContain('id="__nuxt"')
   })
 
+  it('renders a route ruled `ssr: false` as an empty shell', async () => {
+    const shell = await (await render('/spa')).text()
+
+    expect(shell).not.toContain('id="spa"')
+    expect(shell).toContain('data-ssr="false"')
+  })
+
+  it('renders a route ruled `noScripts` without scripts', async () => {
+    const rendered = await (await render('/no-scripts')).text()
+
+    expect(rendered).toContain('id="no-scripts"')
+    expect(rendered).not.toContain('<script type="module"')
+  })
+
+  it('answers a `redirect` rule without rendering', async () => {
+    const response = await render('/old/page')
+
+    expect(response.status).toBe(301)
+    expect(response.headers.get('location')).toBe('/about')
+  })
+
+  it('carries the request query onto a redirect target that names its own', async () => {
+    const response = await render('/moved?ref=ad')
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe('/about?from=rule&ref=ad#top')
+  })
+
+  it('runs the middleware an `appMiddleware` rule names', async () => {
+    const response = await render('/guarded')
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/about')
+  })
+
+  it('renders with the layout an `appLayout` rule names', async () => {
+    expect(await (await render('/themed')).text()).toContain('id="themed"')
+  })
+
   it('leaves no static document in front of the renderer', async () => {
     await expect(readFile(join(outputDir, 'public/index.html'), 'utf-8')).rejects.toThrow()
   })

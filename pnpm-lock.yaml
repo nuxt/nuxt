@@ -1820,9 +1820,6 @@ importers:
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
-      nuxt:
-        specifier: workspace:*
-        version: link:../nuxt
       pathe:
         specifier: catalog:build
         version: 2.0.3
@@ -1842,6 +1839,9 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      nuxt:
+        specifier: workspace:*
+        version: link:../nuxt
       tsdown:
         specifier: catalog:dev
         version: 0.23.0(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.5.2)(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(typescript@6.0.3)(vue-tsc@3.3.11(typescript@6.0.3))
