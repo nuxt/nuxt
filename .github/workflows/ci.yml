@@ -506,6 +506,15 @@ jobs:
       - name: Test (e2e)
         run: vp run test:e2e ${{ matrix.shard }}
 
+      - name: Upload e2e failure context
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-test-results-${{ matrix.os }}-${{ strategy.job-index }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
         run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
