@@ -42,6 +42,21 @@
         "#shared/*": ["./shared/*"]
       }
     },
+    "test/fixtures/basic": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreDependencies": [
+        "@babel/plugin-proposal-decorators",
+        "@babel/plugin-syntax-jsx",
+        "nested-dep"
+      ]
+    },
     "packages/nitro-server": {
       "entry": [
         "src/runtime/**/*.{js,ts,mjs}!"
