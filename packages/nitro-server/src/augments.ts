@@ -1,37 +1,20 @@
 /// <reference path="./internal.d.ts" />
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, NitroRuntimeConfigApp, NormalizedRouteRules, RouteRuleConfig, TracingOptions } from 'nitro/types'
-import type { ServerImportsOptions } from './auto-imports.ts'
+import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, NormalizedRouteRules, RouteRuleConfig, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { HookResult, NuxtRequestContext, RuntimeConfig, TSReference } from 'nuxt/schema'
+import type { NuxtRequestContext, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
 /**
- * Per-channel toggles for `tracingChannel`. Extends Nitro's own
- * {@link TracingOptions} with a `nuxt` key for Nuxt-owned channels
- * (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). Channel names
- * follow the [untracing](https://github.com/unjs/untracing) naming convention
- * (`{namespace}.{operation}`).
+ * Per-channel toggles for `tracingChannel`: Nitro's own {@link TracingOptions}, plus the
+ * Nuxt-owned channels.
  *
  * @experimental Channel names, payload shapes, and option keys may change.
  */
-export interface NuxtTracingChannelOptions extends TracingOptions {
-  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). */
-  nuxt?: boolean
-}
+export type NuxtTracingChannelOptions = TracingChannelOptions
 
 declare module 'nitro/types' {
-  interface NitroRuntimeConfigApp {
-    baseURL: string
-    buildAssetsDir: string
-    cdnURL: string
-    buildId: string
-  }
-
-  /**
-   * Server auto-imports, applied by `@nuxt/nitro-server`. Declared here because this is the
-   * channel `addServerImports()` and `addServerImportsDir()` write to through `nitro:config`.
-   */
+  /** The channel `addServerImports()` and `addServerImportsDir()` write to through `nitro:config`. */
   interface NitroConfig {
     imports?: false | ServerImportsOptions
   }
@@ -71,119 +54,31 @@ declare module 'nitro/types' {
 
 type _NitroOnlyRuntimeConfig = Omit<NonNullable<NitroRuntimeConfig['nitro']>, 'envPrefix'> & { envPrefix: string }
 
+/** The types this package contributes to Nuxt's build-time registry. */
+interface NitroSchemaTypes {
+  instance: Nitro
+  config: NitroConfig
+  handler: NitroEventHandler
+  devHandler: NitroDevEventHandler
+  routeRuleConfig: RouteRuleConfig
+  tracingChannels: TracingOptions
+}
+
+/** The types this package's runtime contributes to the app layer. */
+interface NitroServerTypes {
+  event: H3Event
+  eventHandler: EventHandler
+  routeRules: NormalizedRouteRules
+}
+
 declare module '@nuxt/schema' {
-  interface NitroTypes {
-    instance: Nitro
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NitroTypes extends NitroSchemaTypes {}
 
-  interface ServerTypes {
-    event: H3Event
-    routeRules: NormalizedRouteRules
-  }
-
-  interface NuxtHooks {
-    /**
-     * Called when the dev middleware is being registered on the Nitro dev server.
-     * @param handler the Vite or Webpack event handler
-     * @returns Promise
-     */
-    'server:devHandler': (handler: EventHandler, options: { cors: (path: string) => boolean }) => HookResult
-
-    /**
-     * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
-     * @param options Objects containing `references`, `declarations`
-     * @param options.references Array of TypeScript references to add
-     * @param options.declarations Array of declaration strings to add
-     * @returns Promise
-     */
-    'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
-    /**
-     * Called before initializing Nitro, allowing customization of Nitro's configuration.
-     * @param nitroConfig The nitro config to be extended
-     * @returns Promise
-     */
-    'nitro:config': (nitroConfig: NitroConfig) => HookResult
-    /**
-     * Called after Nitro is initialized, which allows registering Nitro hooks and interacting directly with Nitro.
-     * @param nitro The created nitro object
-     * @returns Promise
-     */
-    'nitro:init': (nitro: Nitro) => HookResult
-    /**
-     * Called before building the Nitro instance.
-     * @param nitro The created nitro object
-     * @returns Promise
-     */
-    'nitro:build:before': (nitro: Nitro) => HookResult
-    /**
-     * Called after copying public assets. Allows modifying public assets before Nitro server is built.
-     * @param nitro The created nitro object
-     * @returns Promise
-     */
-    'nitro:build:public-assets': (nitro: Nitro) => HookResult
-  }
-
-  interface ConfigSchema {
-    /**
-     * Configuration for Nitro.
-     *
-     * @see [Nitro configuration docs](https://nitro.build/config)
-     */
-    nitro: NitroConfig
-
-    /**
-     * Global route options applied to matching server routes.
-     *
-     * @experimental This is an experimental feature and API may change in the future.
-     *
-     * @see [Nitro route rules documentation](https://nitro.build/config#routerules)
-     */
-    routeRules: NitroConfig['routeRules']
-
-    /**
-     * Nitro server handlers.
-     *
-     * Each handler accepts the following options:
-     * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
-     *
-     * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
-     *
-     * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
-     *
-     * @example
-     * ```js
-     * serverHandlers: [
-     *   { route: '/path/foo/**:name', handler: '#server/foohandler.ts' }
-     * ]
-     * ```
-     */
-    serverHandlers: NitroEventHandler[]
-
-    /**
-     * Nitro development-only server handlers.
-     *
-     * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
-     */
-    devServerHandlers: NitroDevEventHandler[]
-
-    /**
-     * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
-     * tracing for Nuxt-owned subsystems and forward the corresponding Nitro-level
-     * channels (`srvx.request`, `h3.request`, `unstorage.*`).
-     *
-     * @experimental Channel names, payload shapes, and option keys may change.
-     *
-     * @see [Untracing naming registry](https://github.com/unjs/untracing)
-     */
-    tracingChannel: boolean | NuxtTracingChannelOptions
-  }
-
-  interface NuxtConfig {
-    nitro?: NitroConfig
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerTypes extends NitroServerTypes {}
 
   interface RuntimeConfig {
-    app: NitroRuntimeConfigApp
     /** Only available on the server. */
     nitro?: _NitroOnlyRuntimeConfig
   }
@@ -191,126 +86,17 @@ declare module '@nuxt/schema' {
   interface NuxtDebugOptions {
     /** Debug options for Nitro */
     nitro?: NitroOptions['debug']
-  }
-
-  interface NuxtPage {
-    rules?: RouteRuleConfig
   }
 }
 
 declare module 'nuxt/schema' {
-  interface NitroTypes {
-    instance: Nitro
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NitroTypes extends NitroSchemaTypes {}
 
-  interface ServerTypes {
-    event: H3Event
-    routeRules: NormalizedRouteRules
-  }
-
-  interface NuxtHooks {
-    /**
-     * Called when the dev middleware is being registered on the Nitro dev server.
-     * @param handler the Vite or Webpack event handler
-     * @returns Promise
-     */
-    'server:devHandler': (handler: EventHandler, options: { cors: (path: string) => boolean }) => HookResult
-
-    /**
-     * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
-     * @param options Objects containing `references`, `declarations`
-     * @param options.references Array of TypeScript references to add
-     * @param options.declarations Array of declaration strings to add
-     * @returns Promise
-     */
-    'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
-    /**
-     * Called before initializing Nitro, allowing customization of Nitro's configuration.
-     * @param nitroConfig The nitro config to be extended
-     * @returns Promise
-     */
-    'nitro:config': (nitroConfig: NitroConfig) => HookResult
-    /**
-     * Called after Nitro is initialized, which allows registering Nitro hooks and interacting directly with Nitro.
-     * @param nitro The created nitro object
-     * @returns Promise
-     */
-    'nitro:init': (nitro: Nitro) => HookResult
-    /**
-     * Called before building the Nitro instance.
-     * @param nitro The created nitro object
-     * @returns Promise
-     */
-    'nitro:build:before': (nitro: Nitro) => HookResult
-    /**
-     * Called after copying public assets. Allows modifying public assets before Nitro server is built.
-     * @param nitro The created nitro object
-     * @returns Promise
-     */
-    'nitro:build:public-assets': (nitro: Nitro) => HookResult
-  }
-
-  interface ConfigSchema {
-    /**
-     * Configuration for Nitro.
-     *
-     * @see [Nitro configuration docs](https://nitro.build/config)
-     */
-    nitro: NitroConfig
-
-    /**
-     * Global route options applied to matching server routes.
-     *
-     * @experimental This is an experimental feature and API may change in the future.
-     *
-     * @see [Nitro route rules documentation](https://nitro.build/config#routerules)
-     */
-    routeRules: NitroConfig['routeRules']
-
-    /**
-     * Nitro server handlers.
-     *
-     * Each handler accepts the following options:
-     * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
-     *
-     * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
-     *
-     * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
-     *
-     * @example
-     * ```js
-     * serverHandlers: [
-     *   { route: '/path/foo/**:name', handler: '~/server/foohandler.ts' }
-     * ]
-     * ```
-     */
-    serverHandlers: NitroEventHandler[]
-
-    /**
-     * Nitro development-only server handlers.
-     *
-     * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
-     */
-    devServerHandlers: NitroDevEventHandler[]
-
-    /**
-     * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
-     * tracing for Nuxt-owned subsystems and forward the corresponding Nitro-level
-     * channels (`srvx.request`, `h3.request`, `unstorage.*`).
-     *
-     * @experimental Channel names, payload shapes, and option keys may change.
-     *
-     * @see [Untracing naming registry](https://github.com/unjs/untracing)
-     */
-    tracingChannel: boolean | NuxtTracingChannelOptions
-  }
-
-  interface NuxtConfig {
-    nitro?: NitroConfig
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerTypes extends NitroServerTypes {}
 
   interface RuntimeConfig {
-    app: NitroRuntimeConfigApp
     /** Only available on the server. */
     nitro?: _NitroOnlyRuntimeConfig
   }
@@ -318,10 +104,6 @@ declare module 'nuxt/schema' {
   interface NuxtDebugOptions {
     /** Debug options for Nitro */
     nitro?: NitroOptions['debug']
-  }
-
-  interface NuxtPage {
-    rules?: RouteRuleConfig
   }
 }
 

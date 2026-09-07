@@ -3,16 +3,7 @@ import { createIsIgnored } from '@nuxt/kit'
 import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { Import, InjectImportsOptions, Unimport } from 'unimport'
-import type { Nuxt } from '@nuxt/schema'
-
-/** Options accepted on `nitro.imports`. */
-export interface ServerImportsOptions {
-  autoImport?: boolean
-  dirs?: string[]
-  imports?: Import[]
-  presets?: Array<{ from: string, imports: Array<string | { name: string, as?: string }>, typeFrom?: string }>
-  exclude?: Array<string | RegExp>
-}
+import type { Nuxt, ServerImportsOptions } from '@nuxt/schema'
 
 export interface ServerAutoImports {
   /** Inject auto-imports into a server module, or `undefined` when auto-imports are disabled. */

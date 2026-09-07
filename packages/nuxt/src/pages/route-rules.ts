@@ -1,5 +1,4 @@
-import type { NuxtPage } from '@nuxt/schema'
-import type { RouteRuleConfig } from 'nitro/types'
+import type { NuxtPage, RouteRuleConfig } from '@nuxt/schema'
 
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import { isEqual } from 'ohash'

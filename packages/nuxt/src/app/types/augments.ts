@@ -1,5 +1,5 @@
 /// <reference path="./build-only.d.ts" />
-/// <reference path="../../build-only-server-augments.d.ts" />
+/// <reference path="./internal-modules.d.ts" />
 
 import type { UseHeadInput } from '@unhead/vue/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
@@ -10,6 +10,7 @@ declare global {
     client: boolean
     dev: boolean
     envName: string
+    prerender: boolean
     server: boolean
     test: boolean
   }

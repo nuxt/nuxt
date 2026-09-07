@@ -3,7 +3,8 @@
   "type": "module",
   "name": "fixture-vite-server-ssr",
   "scripts": {
-    "build": "nuxt build"
+    "build": "nuxt build",
+    "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
   },
   "dependencies": {
     "nuxt": "workspace:*"
