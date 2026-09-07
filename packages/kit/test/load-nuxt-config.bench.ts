@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { describe, test } from 'vitest'
 import { join } from 'pathe'
 import { loadNuxtConfig } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
@@ -15,8 +15,10 @@ describe('loadNuxtConfig', async () => {
   const repoRoot = await findWorkspaceDir()
   for (const fixture in fixtures) {
     const path = join(repoRoot, fixtures[fixture as keyof typeof fixtures])
-    bench(`loadNuxtConfig in the ${fixture}`, async () => {
-      await loadNuxtConfig({ cwd: path })
+    test(`loadNuxtConfig in the ${fixture}`, async ({ bench }) => {
+      await bench(`loadNuxtConfig in the ${fixture}`, async () => {
+        await loadNuxtConfig({ cwd: path })
+      }).run()
     })
   }
 })
