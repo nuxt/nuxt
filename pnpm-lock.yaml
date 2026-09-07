@@ -2033,12 +2033,21 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
     devDependencies:
+      '@babel/plugin-proposal-decorators':
+        specifier: catalog:dev
+        version: 8.0.2(@babel/core@8.0.1)
+      '@babel/plugin-syntax-jsx':
+        specifier: catalog:dev
+        version: 8.0.1(@babel/core@8.0.1)
       '@vue/devtools-api':
         specifier: catalog:dev
         version: 8.2.1
       defu:
         specifier: catalog:build
         version: 6.1.7
+      nested-dep:
+        specifier: file:./deps/nested-dep
+        version: file:test/fixtures/basic/deps/nested-dep
       postcss:
         specifier: catalog:build
         version: 8.5.28
@@ -9480,6 +9489,9 @@ packages:
 
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
+
+  nested-dep@file:test/fixtures/basic/deps/nested-dep:
+    resolution: {directory: test/fixtures/basic/deps/nested-dep, type: directory}
 
   netlify-redirector@0.5.0:
     resolution: {integrity: sha512-4zdzIP+6muqPCuE8avnrgDJ6KW/2+UpHTRcTbMXCIRxiRmyrX+IZ4WSJGZdHPWF3WmQpXpy603XxecZ9iygN7w==}
@@ -20261,6 +20273,8 @@ snapshots:
   natural-orderby@5.0.0: {}
 
   neo-async@2.6.2: {}
+
+  nested-dep@file:test/fixtures/basic/deps/nested-dep: {}
 
   netlify-redirector@0.5.0: {}
 
