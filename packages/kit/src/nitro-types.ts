@@ -1,9 +1,12 @@
 /**
- * Minimal structural types for the nitro majors supported by Nuxt.
+ * Minimal structural types for the inputs accepted by this package's nitro utilities, covering
+ * the nitro majors supported by Nuxt.
  *
- * These are inlined (rather than imported from `nitropack`/`nitro`) so that
- * `@nuxt/kit` does not depend on either package being installed and can be
- * used unchanged whichever nitro major the host Nuxt provides.
+ * These are inlined (rather than imported from `nitropack`/`nitro`) so that `@nuxt/kit` does not
+ * depend on either package being installed, and so its utilities accept the same registrations
+ * whichever nitro major the host Nuxt provides. The type of a running nitro instance is a
+ * different matter: that one comes from `@nuxt/schema`, where the configured `server.builder`
+ * contributes it.
  */
 
 type MaybeArray<T> = T | T[]
@@ -132,70 +135,46 @@ export interface NitroDevEventHandlerV3 {
 
 export type NitroDevEventHandler = NitroDevEventHandlerV2 | NitroDevEventHandlerV3
 
-export interface NitroRouteConfig {
+/**
+ * Route rules common to both nitro majors.
+ *
+ * Route rules are augmentable upstream and these types are inlined, so the index signature is
+ * what lets a module set a rule neither nitro declares (`ssr`, `appMiddleware`, its own).
+ */
+interface NitroRouteConfigBase {
   cache?: Record<string, any> | false
   headers?: Record<string, string>
-  redirect?: string | { to: string, status?: number, statusCode?: number }
   prerender?: boolean
-  proxy?: string | ({ to: string } & Record<string, any>)
   isr?: number | boolean | Record<string, any>
-  cors?: boolean
   swr?: boolean | number
   static?: boolean | number
-  basicAuth?: Record<string, any> | false
   /** Additional route options, including framework-specific route rules. */
   [key: string]: any
 }
 
-export interface NitroOptions {
-  handlers: NitroEventHandler[]
-  devHandlers: NitroDevEventHandler[]
-  runtimeConfig: Record<string, any>
-  plugins: string[]
-  alias: Record<string, string>
-  virtual: Record<string, any>
-  publicAssets: Array<Record<string, any>>
-  prerender: Record<string, any>
-  output: Record<string, any>
-  storage?: Record<string, any>
-  devStorage?: Record<string, any>
-  static?: boolean
-  node?: boolean
-  baseURL?: string
-  preset?: string
+/** Route rule shape accepted by nitro v2 (`nitropack`). */
+export interface NitroRouteConfigV2 extends NitroRouteConfigBase {
+  /** A plain string defaults to status `302`. */
+  redirect?: string | { to: string, statusCode?: number }
+  proxy?: string | ({ to: string } & Record<string, any>)
+  cors?: boolean
 }
 
-export interface Nitro {
-  meta: {
-    version: string
-    majorVersion: number
-  }
-  options: NitroOptions
-  scannedHandlers: NitroEventHandler[]
-  vfs: Record<string, string> | Map<string, { render: () => string | Promise<string> }>
-  hooks: {
-    hook: (...args: any[]) => () => void
-    hookOnce: (...args: any[]) => () => void
-    callHook: (...args: any[]) => void | Promise<any>
-    addHooks: (...args: any[]) => () => void
-    removeHook: (...args: any[]) => void
-  }
-  logger: {
-    log: (...args: any[]) => void
-    info: (...args: any[]) => void
-    warn: (...args: any[]) => void
-    error: (...args: any[]) => void
-  } & Record<string, any>
-  /** Only available on nitro v3. */
-  fetch?: (input: Request) => Response | Promise<Response>
-  /** Only available on nitro v3. */
-  routing?: {
-    sync: () => void
-    routeRules: { routes: Array<{ route: string, data: Record<string, any> }> }
-  } & Record<string, any>
-  /** Only available on nitro v2. */
-  storage?: unknown
-  unimport?: unknown
-  updateConfig: (config: Record<string, any>) => void | Promise<void>
-  close: () => Promise<void>
+/** Route rule shape accepted by nitro v3 (`nitro`). */
+export interface NitroRouteConfigV3 extends NitroRouteConfigBase {
+  /** A plain string defaults to status `307`. */
+  redirect?: string | { to: string, status?: number } | false
+  /** `false` resets a rule inherited from a less specific pattern. */
+  proxy?: string | ({ to: string } & Record<string, any>) | false
+  cors?: Record<string, any> | boolean
 }
+
+/**
+ * A route rule accepted by either supported nitro major.
+ *
+ * A union rather than one merged shape, so that a rule written as an object literal has to match
+ * one major as a whole and excess property checking rejects a literal mixing the two. Anything
+ * valid in either is accepted, since the host's nitro major is not visible here; name
+ * {@link NitroRouteConfigV2} or {@link NitroRouteConfigV3} to be held to one.
+ */
+export type NitroRouteConfig = NitroRouteConfigV2 | NitroRouteConfigV3

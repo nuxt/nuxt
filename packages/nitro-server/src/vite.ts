@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
@@ -13,7 +14,9 @@ import remapping from '@ampproject/remapping'
 import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
-import { NUXT_BUILD_OUTPUT_MAP, distDir } from './utils.ts'
+import type { NuxtServerRuntime } from '@nuxt/kit/internal'
+
+import { distDir, getServerReplacements } from './utils.ts'
 
 const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
@@ -82,9 +85,10 @@ function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string
 /**
  * Set up Nitro as a Vite environment using the `nitro/vite` plugin.
  */
-export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro): void {
-  addVitePlugin(NuxtBuildOutputsPlugin(nuxt))
+export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro, serverRuntime: NuxtServerRuntime): void {
+  addVitePlugin(NuxtBuildOutputsPlugin(nuxt, serverRuntime))
   addVitePlugin(NitroVirtualBridge(nitro))
+  addVitePlugin(NitroDefinePlugin(nuxt))
 
   // `nitro/vite` calls `build:before` before it derives its bundler config,
   // which is where the legacy path calls `nitro:build:before`: consumers use it
@@ -120,16 +124,6 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
       '  return [...new Set(store.css ?? globalCss)]',
       '}',
     ].join('\n')
-  }
-
-  // Per-env `buildStart`/`buildEnd` is what causes unimport's plugin-instance
-  // ctx to scan auto-import dirs at request time in dev. Without this, the
-  // nitro env's plugins (including `unimport`) never get their `buildStart`
-  // hook called, so `addServerImportsDir` entries never reach the transform
-  // pipeline. The flag is a no-op in build mode.
-  if (nuxt.options.dev) {
-    nuxt.options.vite.server ||= {}
-    nuxt.options.vite.server.perEnvironmentStartEndDuringDev = true
   }
 
   nuxt.options.vite.plugins ||= []
@@ -249,8 +243,25 @@ const DEFERRED_NAMED_EXPORTS: Partial<Record<keyof NuxtBuildOutputs, readonly st
   ssrStyles: ['inlinedCSS'],
 }
 
-function sentinel (specifier: string, name?: string): string {
-  return `__NUXT_BUILD_OUTPUT__${specifier.replace(/\W/g, '_')}${name ? `__${name}` : ''}__`
+/**
+ * Sentinels carry a per-build random tag so that they cannot collide with a
+ * string that appears in application code: substitution rewrites every
+ * occurrence it finds and fails the build on any it cannot resolve, so a
+ * guessable token would let user code be silently rewritten or break the build.
+ */
+function createSentinels () {
+  const tag = randomBytes(8).toString('hex')
+  return {
+    sentinel: (specifier: string, name?: string) => `__NUXT_BUILD_OUTPUT_${tag}__${specifier.replace(/\W/g, '_')}${name ? `__${name}` : ''}__`,
+    /**
+     * Matches a sentinel string literal in an emitted chunk. The quote
+     * character is captured rather than assumed: the chunk has already been
+     * through the minifier by the time substitution runs, and minifiers are
+     * free to re-quote string literals (oxc emits backticks).
+     */
+    literalRE: new RegExp(`(["'\`])(__NUXT_BUILD_OUTPUT_${tag}__\\w+__)\\1`, 'g'),
+    anyRE: new RegExp(`__NUXT_BUILD_OUTPUT_${tag}__\\w+__`),
+  }
 }
 
 const NAMED_EXPORT_RE = /\nexport const (\w+) = /
@@ -280,20 +291,29 @@ async function getDeferredExpressions (nuxt: Nuxt, key: keyof NuxtBuildOutputs):
 }
 
 /**
- * Resolves the `nuxt/*` build-output specifiers for the ssr environment.
+ * Resolves the `nuxt/internal/*` build-output specifiers for the ssr environment.
  *
- * `nuxt/entry` resolves to its value provider's re-export body. Every other key
+ * `nuxt/internal/entry` resolves to its value provider's re-export body. Every other key
  * is deferred to `generateBundle` in a production build (see `DEFERRED_KEYS`),
  * so it picks up values finalised after the ssr env has bundled.
  */
-function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
+function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime: NuxtServerRuntime): VitePlugin {
+  const { sentinel, literalRE, anyRE } = createSentinels()
+
+  const outputs: Record<string, keyof NuxtBuildOutputs> = {}
+  for (const [specifier, module] of Object.entries(serverRuntime.modules)) {
+    if (module.output) {
+      outputs[specifier] = module.output
+    }
+  }
+
   return {
     name: 'nuxt:build-outputs',
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
       handler (id) {
-        if (id in NUXT_BUILD_OUTPUT_MAP) {
+        if (id in outputs) {
           return VIRTUAL_PREFIX + id
         }
       },
@@ -304,7 +324,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         if (!id.startsWith(VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(VIRTUAL_PREFIX.length)
 
-        const key = NUXT_BUILD_OUTPUT_MAP[specifier]
+        const key = outputs[specifier]
         if (!key) { return }
 
         // In a production build, defer keys whose value is only final after the
@@ -332,7 +352,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         if (nuxt.options.dev || this.environment?.name !== 'ssr') { return }
 
         const replacements = new Map<string, string>()
-        for (const [specifier, key] of Object.entries(NUXT_BUILD_OUTPUT_MAP)) {
+        for (const [specifier, key] of Object.entries(outputs)) {
           if (!DEFERRED_KEYS.has(key)) { continue }
           const expressions = await getDeferredExpressions(nuxt, key)
           replacements.set(sentinel(specifier), `(${expressions.get(undefined)})`)
@@ -345,21 +365,24 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }): VitePlugin {
         for (const file of Object.values(bundle)) {
           if (file.type !== 'chunk') { continue }
           let s: MagicString | undefined
-          for (const [token, expression] of replacements) {
-            for (const quote of ['"', '\''] as const) {
-              const literal = quote + token + quote
-              const index = file.code.indexOf(literal)
-              if (index === -1) { continue }
-              s ??= new MagicString(file.code)
-              s.overwrite(index, index + literal.length, expression)
+          for (const match of file.code.matchAll(literalRE)) {
+            const expression = replacements.get(match[2]!)
+            if (!expression) {
+              throw new Error(`[nuxt] Unknown build output placeholder \`${match[2]}\` in \`${file.fileName}\`.`)
             }
+            s ??= new MagicString(file.code)
+            s.overwrite(match.index, match.index + match[0].length, expression)
           }
-          if (!s) { continue }
-          if (sourcemap && file.map) {
-            const editMap = s.generateMap({ hires: true, source: file.fileName })
-            file.map = remapping([editMap as any, file.map as any], () => null) as unknown as typeof file.map
+          if (s) {
+            if (sourcemap && file.map) {
+              const editMap = s.generateMap({ hires: true, source: file.fileName })
+              file.map = remapping([editMap as any, file.map as any], () => null) as unknown as typeof file.map
+            }
+            file.code = s.toString()
           }
-          file.code = s.toString()
+          if (anyRE.test(file.code)) {
+            throw new Error(`[nuxt] Failed to substitute build output placeholder in \`${file.fileName}\`. This is a bug in Nuxt; please report it.`)
+          }
         }
       },
     },
@@ -394,6 +417,23 @@ function DevClientCssPlugin (nuxt: Nuxt): VitePlugin {
         if (this.environment.name === 'ssr' && IS_CSS_RE.test(id)) { push?.() }
       },
     },
+  }
+}
+
+/**
+ * Apply the server-only compile-time constants to the `nitro` environment as
+ * `define`, so they are substituted in dev as well as in a build.
+ */
+function NitroDefinePlugin (nuxt: Nuxt): VitePlugin {
+  return {
+    name: 'nuxt:nitro-define',
+    config: () => ({
+      environments: {
+        nitro: {
+          define: getServerReplacements(nuxt),
+        },
+      },
+    }),
   }
 }
 

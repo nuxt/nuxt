@@ -31,6 +31,7 @@ export default createConfigForNuxt({
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
         'packages/nitro-server/src/runtime/templates/error-*',
         'packages/nitro-server/src/templates/spa-loading-icon.ts',
+        'packages/vite-server/src/templates/spa-loading-icon.ts',
         'packages/schema/src/templates/loading.ts',
         'packages/kit/test/types-fixture/**',
       ],
@@ -216,7 +217,7 @@ export default createConfigForNuxt({
     },
     {
       files: ['packages/*/src/**'],
-      ignores: ['packages/nuxt/src/app/**', '**/runtime/**/*'],
+      ignores: ['packages/nuxt/src/app/**', 'packages/nuxt/src/server/**', '**/runtime/**/*'],
       name: 'local/import-extensions',
       plugins: {
         'import-x': importX,

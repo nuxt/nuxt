@@ -1,11 +1,11 @@
 import { normalize } from 'pathe'
 import { resolveModulePath } from 'exsolve'
-import type { Nuxt, NuxtImport } from '@nuxt/schema'
+import type { NitroInstance, Nuxt, NuxtImport } from '@nuxt/schema'
+import type { NitroCompatibilityVersion, NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3 } from './nitro-types.ts'
 
-import { useNuxt } from './context.ts'
+import { tryUseNuxt, useNuxt } from './context.ts'
 import { getNitroVersion } from './compatibility.ts'
 import { resolveAlias } from './resolve.ts'
-import type { Nitro, NitroCompatibilityVersion, NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3 } from './nitro-types.ts'
 import { toArray } from './utils.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
@@ -209,12 +209,24 @@ export function addPrerenderRoutes (routes: string | string[]): void {
  * })
  * ```
  */
-export function useNitro (): Nitro {
-  const nuxt = useNuxt()
-  if (!(nuxt as any)._nitro) {
+export function useNitro (): NitroInstance {
+  const nitro = tryUseNitro()
+  if (!nitro) {
     throw kitDiagnostics.NUXT_B8003()
   }
-  return (nuxt as any)._nitro
+  return nitro
+}
+
+/**
+ * Access to the Nitro instance, if there is one.
+ *
+ * Returns `undefined` before the `ready` hook has run, and for the lifetime of the
+ * build when the configured `server.builder` is not backed by Nitro (such as the
+ * static SPA builder). Prefer this over {@link useNitro} for anything that should
+ * still work without a server runtime.
+ */
+export function tryUseNitro (): NitroInstance | undefined {
+  return (tryUseNuxt() as any)?._nitro
 }
 
 /**

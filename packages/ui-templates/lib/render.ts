@@ -217,6 +217,7 @@ export const RenderPlugin = () => {
       // we manually copy files across rather than using symbolic links for better windows support
       const nuxtRoot = r('../nuxt')
       const nitroRoot = r('../nitro-server')
+      const viteServerRoot = r('../vite-server')
       const schemaRoot = r('../schema')
       for (const file of ['error-404.vue', 'error-500.vue', 'welcome.vue']) {
         await copyFile(join(outputDir, 'templates', file), join(nuxtRoot, 'src/app/components', file))
@@ -225,6 +226,8 @@ export const RenderPlugin = () => {
       await copyFile(join(outputDir, 'templates/error-500.ts'), join(nitroRoot, 'src/runtime/templates/error-500.ts'))
       await mkdir(join(nitroRoot, 'src/templates'), { recursive: true })
       await copyFile(join(outputDir, 'templates/spa-loading-icon.ts'), join(nitroRoot, 'src/templates/spa-loading-icon.ts'))
+      await mkdir(join(viteServerRoot, 'src/templates'), { recursive: true })
+      await copyFile(join(outputDir, 'templates/spa-loading-icon.ts'), join(viteServerRoot, 'src/templates/spa-loading-icon.ts'))
       await mkdir(join(schemaRoot, 'src/templates'), { recursive: true })
       await copyFile(join(outputDir, 'templates/loading.ts'), join(schemaRoot, 'src/templates/loading.ts'))
     },

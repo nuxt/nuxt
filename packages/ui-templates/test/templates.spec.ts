@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
+import { runInNewContext } from 'node:vm'
 import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
@@ -64,5 +65,74 @@ describe('template', () => {
     const { valid, results } = await (validator as any).validateString(html)
     expect.soft(valid).toBe(true)
     expect.soft(results).toEqual([])
+  })
+
+  describe('loading template poll', () => {
+    async function runPoll (options: { body: string }) {
+      const { template } = await import(`file://${distDir}/loading.ts`) as { template: () => string }
+      const script = template().match(/<script>([^<]*__NUXT_LOADING__[^<]*)<\/script>/)![1]!
+
+      const delays: number[] = []
+      const fetches: Array<{ url: string, init?: { headers?: Record<string, string> } }> = []
+      let reloaded = false
+      let next: (() => void) | undefined
+
+      const window = {
+        fetch: (url: string, init?: { headers?: Record<string, string> }) => {
+          fetches.push({ url, init })
+          return Promise.resolve({ text: () => Promise.resolve(options.body) })
+        },
+        location: { href: 'http://localhost:3000/', reload: () => { reloaded = true } },
+      }
+
+      runInNewContext(script, {
+        window,
+        setTimeout: (fn: () => void, delay: number) => {
+          delays.push(delay)
+          next = fn
+        },
+      })
+
+      const flush = async () => {
+        for (let i = 0; i < 10; i++) {
+          await Promise.resolve()
+        }
+      }
+
+      return {
+        delays,
+        fetches,
+        get reloaded () { return reloaded },
+        async advance (times: number) {
+          for (let i = 0; i < times; i++) {
+            await flush()
+            next?.()
+          }
+          await flush()
+        },
+      }
+    }
+
+    it('backs off while the page is still loading', async () => {
+      const poll = await runPoll({ body: '<html>__NUXT_LOADING__</html>' })
+      await poll.advance(5)
+
+      expect(poll.delays).toEqual([200, 300, 450, 675, 1000, 1000])
+      expect(poll.reloaded).toBe(false)
+    })
+
+    it('reloads once the app is ready', async () => {
+      const poll = await runPoll({ body: '<html>ready</html>' })
+      await poll.advance(1)
+
+      expect(poll.reloaded).toBe(true)
+    })
+
+    it('polls as a document request', async () => {
+      const poll = await runPoll({ body: '<html>ready</html>' })
+      await poll.advance(1)
+
+      expect(poll.fetches).toEqual([{ url: 'http://localhost:3000/', init: { headers: { accept: 'text/html' } } }])
+    })
   })
 })

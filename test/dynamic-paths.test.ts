@@ -39,6 +39,15 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     }
   })
 
+  it('should keep url() wrappers in inlined styles', async () => {
+    const html: string = await $fetch<string>('/inline-url')
+    const inlinedStyles = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g), m => m[1]!).join('\n')
+
+    expect(inlinedStyles).toMatch(/\.inline-public-asset\s*\{\s*background-image:\s*url\(['"]?\/public\.svg['"]?\)/)
+    expect(inlinedStyles).toMatch(/\.inline-build-asset\s*\{\s*background-image:\s*url\([^)]*logo[^)]*\.svg\)/)
+    expect(inlinedStyles).toMatch(/src:\s*url\(['"]?\/css-only-public-asset\.svg['"]?\)\s*format\(/)
+  })
+
   // https://github.com/nuxt/nuxt/issues/14766
   it.skipIf(isWebpack)('resolves dynamic and glob asset imports during SSR', async () => {
     const testIds = ['dynamic-import-asset', 'lazy-glob-asset', 'eager-glob-asset'] as const

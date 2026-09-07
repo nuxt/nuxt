@@ -10,7 +10,7 @@ import { randomUUID } from 'node:crypto'
 import { win32 as pathWin32 } from 'node:path'
 import { dirname, join, normalize } from 'pathe'
 import { setBuildOutput, tryUseNuxt, useNitro } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import type { FetchResult } from 'vite-node'
 import type { Nitro } from 'nitro/types'
@@ -163,7 +163,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   if (!nuxt.options.dev) {
     return
   }
-  if (nuxt.options.experimental.nitroViteEnvironment) {
+  if (!useServerBuild(nuxt).buildsSeparately) {
     return
   }
 

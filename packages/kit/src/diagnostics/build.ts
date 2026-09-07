@@ -111,5 +111,10 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove `experimental.watcher` from your `nuxt.config`, or use a builder that supports its own watcher.',
       docs: false,
     },
+    NUXT_B1021: {
+      why: (p: { export: string }) => `Component export name \`${p.export}\` is not a valid JavaScript identifier.`,
+      fix: 'If you are a module author, ensure the `export` you register for a component is a valid identifier. Otherwise, please report this issue.',
+      docs: false,
+    },
   },
 })

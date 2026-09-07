@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-vite-server-universal-deploy",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "@universal-deploy/vite": "0.1.11"
+  },
+  "engines": {
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  }
+}

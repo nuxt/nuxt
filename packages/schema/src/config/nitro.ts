@@ -1,14 +1,19 @@
 import type { Nuxt } from '../types/nuxt.ts'
 import { type ResolverGetter, defineResolvers } from '../utils/definition.ts'
 
-type ServerBuilder = '@nuxt/nitro-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+type ServerBuilder = '@nuxt/nitro-server' | '@nuxt/vite-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+
+const serverBuilders = {
+  nitro: '@nuxt/nitro-server',
+  vite: '@nuxt/vite-server',
+} as const
 
 export default defineResolvers({
   server: {
     builder: {
       $resolve: (val: unknown): ServerBuilder => {
         if (typeof val === 'string') {
-          return val
+          return serverBuilders[val as keyof typeof serverBuilders] ?? val
         }
         if (val && typeof val === 'object' && 'bundle' in val) {
           return val as { bundle: (nuxt: Nuxt) => Promise<void> }

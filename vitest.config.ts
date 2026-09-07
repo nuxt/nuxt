@@ -2,15 +2,42 @@ import process from 'node:process'
 import { resolve } from 'pathe'
 import { defineVitestProject as _defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
-import { isCI, isWindows } from 'std-env'
+import { isCI, isWindows, provider } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 import type { NuxtConfig } from 'nuxt/schema'
+import type { Plugin } from 'vite'
 import { defu } from 'defu'
+
+// vitest evaluates `define` entries for `import.meta.*` once when the worker starts, so a value
+// referencing a global no longer tracks changes made by a test. Replace the flags in source instead,
+// which keeps them readable at call time and lets tests toggle them with `vi.stubGlobal`.
+function runtimeImportMeta (flags: Record<string, string>): Plugin {
+  const pattern = new RegExp(`\\bimport\\.meta\\.(${Object.keys(flags).join('|')})\\b`, 'g')
+  return {
+    name: 'nuxt:test-runtime-import-meta',
+    enforce: 'pre',
+    transform (code) {
+      if (!pattern.test(code)) { return }
+      pattern.lastIndex = 0
+      const transformed = code.replace(pattern, (match, flag: string, index: number) => {
+        // `import.meta.*` also appears as a `define` key in build code, which must stay a literal
+        const quoted = /['"`]/.test(code[index - 1] || '') && /['"`]/.test(code[index + match.length] || '')
+        return quoted ? match : flags[flag]!
+      })
+      return { code: transformed, map: null }
+    },
+  }
+}
 
 // TODO: fix upstream in nuxt/test-utils
 function defineVitestProject (config: Parameters<typeof _defineVitestProject>[0]) {
   return _defineVitestProject(defu({
+    resolve: {
+      // `@nuxt/test-utils` still references the `vitest/environments` entrypoint removed in vitest 5
+      // https://github.com/nuxt/test-utils/blob/main/src/environments/vitest.ts
+      alias: { 'vitest/environments': 'vitest/runtime' },
+    },
     test: {
       environmentOptions: {
         nuxt: {
@@ -110,9 +137,16 @@ const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nux
 
 export default defineConfig({
   test: {
+    // required for the flakiness.io reporter to record test locations
+    includeTaskLocation: isCI,
     onConsoleLog (log) {
       if (log.includes('<Suspense> is an experimental feature')) { return false }
     },
+    reporters: [
+      'default',
+      ...provider === 'github_actions' ? ['github-actions' as const] : [],
+      ['@flakiness/vitest', { flakinessProject: 'nuxt/nuxt' }],
+    ],
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },
@@ -129,9 +163,7 @@ export default defineConfig({
         },
       },
       ...fixtureMatrix.map(entry => ({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
           include: ['test/*.test.ts'],
@@ -145,6 +177,36 @@ export default defineConfig({
         },
       })),
       {
+        // stands in for the defines and aliases a server builder applies in its own bundle
+        define: {
+          'import.meta.dev': 'false',
+          'import.meta.server': 'true',
+          'import.meta.client': 'false',
+          'import.meta.prerender': 'false',
+        },
+        resolve: {
+          alias: {
+            'nuxt/internal/renderer-config': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
+            'nuxt/internal/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
+            'nuxt/internal/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
+            'nuxt/internal/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
+            'nuxt/internal/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
+            'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
+            'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
+            '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
+            // provided by the server builder in a real build; the fixture writes them out
+            '#internal/nuxt/paths': resolve('./test/fixtures/standalone-renderer/.nuxt/paths.mjs'),
+          },
+        },
+        test: {
+          name: 'renderer',
+          include: ['test/renderer/*.test.ts'],
+          globalSetup: ['./test/setup-renderer-prepare.ts'],
+          testTimeout: 60_000,
+          benchmark: { include: [] },
+        },
+      },
+      {
         test: {
           name: 'bundle',
           include: ['test/bundle.test.ts'],
@@ -152,6 +214,16 @@ export default defineConfig({
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: 180_000,
           retry: isCI ? 2 : 0,
+          benchmark: { include: [] },
+        },
+      },
+      {
+        test: {
+          name: 'type-perf',
+          include: ['packages/nuxt/test/typed-fetch-budget.test.ts'],
+          // runs after the other projects rather than beside them
+          sequence: { groupOrder: 1 },
+          testTimeout: 300_000,
           benchmark: { include: [] },
         },
       },
@@ -166,16 +238,12 @@ export default defineConfig({
         },
       },
       {
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-          'import.meta.server': '(globalThis.__TEST_SERVER__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)' })],
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
-            '#internal/nuxt/nitro-config.mjs': resolve('./test/mocks/nitro-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),
@@ -189,7 +257,7 @@ export default defineConfig({
           include: ['packages/**/*.{test,spec}.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-          exclude: fixtureExclude,
+          exclude: [...fixtureExclude, 'packages/nuxt/test/typed-fetch-budget.test.ts'],
         },
       },
       await defineVitestProject({
@@ -206,9 +274,7 @@ export default defineConfig({
         },
       }),
       ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: project,
           dir: './test/nuxt',
@@ -227,9 +293,7 @@ export default defineConfig({
         },
       }))),
       await defineVitestProject({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: 'nuxt-insensitive',
           dir: './test/nuxt/insensitive',
@@ -251,9 +315,7 @@ export default defineConfig({
         },
       }),
       await defineVitestProject({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: 'nuxt-sensitive',
           dir: './test/nuxt/sensitive',

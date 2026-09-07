@@ -17,6 +17,10 @@ When utilizing [Hybrid Rendering](/docs/4.x/guide/concepts/rendering#hybrid-rend
 You can define the [`cache.varies` option](https://nitro.build/guide/cache#options) to specify headers that will be considered when caching and serving the responses, such as `host` and `x-forwarded-host` for multi-tenant environments.
 ::
 
+::note
+If you have set [`app.baseURL`](/docs/4.x/api/nuxt-config#baseurl), the path returned on the server is relative to it, so `/base/about` is served as `/about`. On the client, `useRequestURL` reads `window.location`, which includes the base URL.
+::
+
 ::code-group
 
 ```vue [app/pages/about.vue]

@@ -1,0 +1,172 @@
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { describe, expect, it } from 'vitest'
+import { dirname, isAbsolute, join, resolve } from 'pathe'
+import type { Nuxt } from '@nuxt/schema'
+import { createServerAutoImports } from '../src/auto-imports.ts'
+import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
+
+const TYPE_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.mts', '.js', '.mjs']
+
+function mockNuxt (): Nuxt {
+  return {
+    options: {
+      rootDir: '/app',
+      srcDir: '/app',
+      ignore: [],
+      imports: { scan: false },
+      _layers: [],
+    },
+  } as unknown as Nuxt
+}
+
+describe('createServerAutoImports', () => {
+  it('names package subpaths as written rather than as a path on disk', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, presets: [...v2ImportsPreset, await getH3ImportsPreset()] },
+      typesDir,
+    )
+
+    await autoImports.writeTypes()
+
+    const contents = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    const referenced = [...new Set([...contents.matchAll(/import\('([^']+)'\)/g)].map(m => m[1]!))]
+    expect(referenced.length).toBeGreaterThan(0)
+
+    expect(referenced.filter(s => s.includes('node_modules'))).toEqual([])
+    expect(referenced).toContain('nitro/h3')
+    expect(referenced).toContain('nitro/cache')
+  })
+
+  it('auto-imports the portable server surface rather than the runtime it delegates to', async () => {
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, presets: [nuxtServerImportsPreset, ...v2ImportsPreset, await getH3ImportsPreset()] },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+    )
+
+    const imports = await autoImports.getImports()
+    const sourceOf = (name: string) => imports.filter(i => (i.as ?? i.name) === name).map(i => i.from)
+
+    for (const name of ['defineEventHandler', 'createError', 'getQuery', 'readBody', 'getCookie', 'useRuntimeConfig', 'getRouteRules']) {
+      expect(sourceOf(name), name).toEqual(['nuxt/server'])
+    }
+
+    expect(sourceOf('readValidatedBody')).toEqual(['nitro/h3'])
+  })
+
+  it('resolves a local type path to a declaration TypeScript can follow', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, imports: [{ name: 'withBaseURL', from: resolve(import.meta.dirname, '../src/runtime/utils/base.ts') }] },
+      typesDir,
+    )
+
+    await autoImports.writeTypes()
+
+    const declarationPath = autoImports.importsModulePath + '.d.ts'
+    const contents = readFileSync(declarationPath, 'utf8')
+    const referenced = [...new Set([...contents.matchAll(/import\('([^']+)'\)/g)].map(m => m[1]!))]
+
+    expect(referenced).toHaveLength(1)
+    expect(referenced[0]).toMatch(/^\.\.?\//)
+    const target = resolve(dirname(declarationPath), referenced[0]!)
+    expect(TYPE_EXTENSIONS.some(ext => existsSync(target + ext))).toBe(true)
+  })
+
+  it('emits a module even when there are no imports to declare', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
+    const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true }, typesDir)
+
+    await autoImports.writeTypes()
+
+    expect(readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')).toContain('export {}')
+    expect(readFileSync(autoImports.importsModulePath + '.mjs', 'utf8')).toContain('export {}')
+  })
+
+  it('still re-exports registered imports when auto-importing is disabled', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: false, imports: [{ name: 'withBaseURL', from: resolve(import.meta.dirname, '../src/runtime/utils/base.ts') }] },
+      typesDir,
+    )
+
+    await autoImports.writeTypes()
+
+    const module = readFileSync(autoImports.importsModulePath + '.mjs', 'utf8')
+    const declarations = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    expect(module).toContain('export { withBaseURL }')
+    expect(declarations).toContain('export { withBaseURL }')
+    expect(declarations).not.toContain('declare global')
+
+    const injected = await autoImports.injectImports('export default withBaseURL("/")', '/app/server/api/index.ts')
+    expect(injected).toBeUndefined()
+  })
+
+  it('injects an import for an identifier used in a TypeScript-only expression', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, presets: [{ from: 'nitro/h3', imports: ['defineEventHandler'] }] },
+      typesDir,
+    )
+
+    const code = `export default defineEventHandler(() => ({ a: 1 }) as { a: number } | { b: string })`
+    const result = await autoImports.injectImports(code, '/app/server/api/union.ts')
+
+    expect(result?.s.hasChanged()).toBe(true)
+    expect(result!.s.toString()).toContain('defineEventHandler')
+    expect(result!.s.toString()).toMatch(/^import /m)
+  })
+
+  it('does not inject an import for a name a local binding shadows', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, imports: [{ name: 'defineEventHandler', from: 'nitro/h3' }] },
+      typesDir,
+    )
+
+    for (const code of [
+      'export function f (defineEventHandler) { return defineEventHandler }',
+      'export function f () { const defineEventHandler = 1; return defineEventHandler }',
+    ]) {
+      const result = await autoImports.injectImports(code, '/app/server/utils/shadow.ts')
+      expect(result?.s.hasChanged()).toBe(false)
+    }
+  })
+
+  it('prefers a project server util over one from an extended layer', async () => {
+    const rootDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-layers-'))
+    const layerDir = join(rootDir, 'layer')
+    for (const [dir, value] of [[rootDir, 'root'], [layerDir, 'layer']] as const) {
+      mkdirSync(join(dir, 'server/utils'), { recursive: true })
+      writeFileSync(join(dir, 'server/utils/useMyServerUtil.ts'), `export const useMyServerUtil = () => '${value}'\n`)
+    }
+    const nuxt = mockNuxt()
+    nuxt.options.rootDir = rootDir
+    nuxt.options.srcDir = rootDir
+    nuxt.options._layers = [{ cwd: rootDir, config: { rootDir } }, { cwd: layerDir, config: { rootDir: layerDir } }] as unknown as Nuxt['options']['_layers']
+
+    const autoImports = createServerAutoImports(
+      nuxt,
+      { autoImport: true, dirs: [join(rootDir, 'server/utils'), join(layerDir, 'server/utils')] },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+    )
+
+    const imports = await autoImports.getImports()
+    expect(imports.filter(i => i.name === 'useMyServerUtil').map(i => i.from)).toEqual([join(rootDir, 'server/utils/useMyServerUtil.ts')])
+  })
+
+  it('resolves `#imports` to a path inside the types directory', () => {
+    const typesDir = '/app/.nuxt'
+    const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true }, typesDir)
+
+    expect(isAbsolute(autoImports.importsModulePath)).toBe(true)
+    expect(autoImports.importsModulePath.startsWith(typesDir)).toBe(true)
+  })
+})

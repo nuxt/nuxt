@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 
-import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
+import type { NuxtOptions, RuntimeValue, SharedAppConfig, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
 import { defineNuxtConfig } from 'nuxt/config'
 
@@ -113,10 +113,15 @@ describe('head', () => {
 })
 
 describe('app config', () => {
-  it('types inline and schema app config but not app-context `app.config` files', () => {
-    expectTypeOf<AppConfig['fromNuxtConfig']>().toEqualTypeOf<boolean>()
-    expectTypeOf<AppConfig['userConfig']>().toEqualTypeOf<123 | 456 | undefined>()
-    expectTypeOf<AppConfig['fromLayer']>().toEqualTypeOf<unknown>()
+  it('types inline and schema shared app config but not app-context `app.config` files', () => {
+    expectTypeOf<SharedAppConfig['fromNuxtConfig']>().toEqualTypeOf<boolean>()
+    expectTypeOf<SharedAppConfig['userConfig']>().toEqualTypeOf<123 | 456 | undefined>()
+    expectTypeOf<SharedAppConfig['fromLayer']>().toEqualTypeOf<unknown>()
+  })
+
+  it('types `nuxt.options.appConfig` with the shared app config', () => {
+    expectTypeOf<NuxtOptions['appConfig']>().toEqualTypeOf<SharedAppConfig>()
+    expectTypeOf<NuxtOptions['appConfig']['fromNuxtConfig']>().toEqualTypeOf<boolean>()
   })
 })
 
@@ -132,5 +137,29 @@ describe('kit utilities', () => {
     const _fake: Fromage = 'babybel'
 
     const _fromage: Fromage = 'cheese'
+  })
+})
+
+describe('server builder config', () => {
+  it('types the keys the server builder contributes to', () => {
+    defineNuxtConfig({
+      nitro: { compressPublicAssets: true },
+      routeRules: { '/spa': { ssr: false, noScripts: true } },
+      serverHandlers: [{ route: '/api/handler', handler: '~/server/handler.ts' }],
+      devServerHandlers: [],
+      tracingChannel: { nuxt: true, h3: true },
+    })
+    // @ts-expect-error not a valid nitro option
+    defineNuxtConfig({ nitro: { unknownNitroKey: true } })
+    // @ts-expect-error not a valid route rule
+    defineNuxtConfig({ routeRules: { '/spa': { unknownRule: true } } })
+    // @ts-expect-error not a valid tracing channel
+    defineNuxtConfig({ tracingChannel: { unknownChannel: true } })
+  })
+
+  it('resolves the same keys on `nuxt.options`', () => {
+    expectTypeOf<NuxtOptions['nitro']['scanDirs']>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<NonNullable<NuxtOptions['routeRules']>[string]['ssr']>().toEqualTypeOf<boolean | undefined>()
+    expectTypeOf<NuxtOptions['serverHandlers'][number]['route']>().toEqualTypeOf<string>()
   })
 })

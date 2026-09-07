@@ -149,7 +149,7 @@ export type OpenWindowFeatures = {
   & XOR<{ top?: number }, { screenY?: number }>
 
 export type OpenOptions = {
-  target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
+  target?: '_blank' | '_parent' | '_self' | '_top' | (string & {})
   windowFeatures?: OpenWindowFeatures
 }
 
@@ -194,6 +194,7 @@ function encodeForHtmlAttr (value: string): string {
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   to ||= '/'
 
+  const isPathForm = typeof to === 'string' || 'path' in to
   const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
@@ -202,6 +203,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (protocol && isScriptProtocol(protocol)) {
       throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
+
+    // route objects with a `name` are already resolved against the router base by `router.resolve`
+    const isInternal = isPathForm && !hasProtocol(toPath, { acceptRelative: true }) && !toPath.startsWith('#')
+    const openPath = isInternal ? joinURL(useRuntimeConfig().app.baseURL, toPath) : toPath
 
     const { target = '_blank', windowFeatures = {} } = options.open
 
@@ -212,7 +217,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       }
     }
 
-    open(toPath, target, features.join(', '))
+    open(openPath, target, features.join(', '))
     return Promise.resolve()
   }
 

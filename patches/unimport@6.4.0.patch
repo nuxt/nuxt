@@ -1,0 +1,22 @@
+diff --git a/dist/chunks/detect-oxc.mjs b/dist/chunks/detect-oxc.mjs
+index e7ef364de8f4cb24c16088e4b9d061edd40791f9..bfdc18ebd1f1a0abb0d30eed8a83b99c227ad246 100644
+--- a/dist/chunks/detect-oxc.mjs
++++ b/dist/chunks/detect-oxc.mjs
+@@ -28,11 +28,15 @@ async function loadDetector() {
+       "[unimport] the `oxc` parser requires either `rolldown` or `oxc-parser` to be installed."
+     );
+   }
+-  return createEstreeDetector((code) => parseSync("", code, { sourceType: "module" }).program);
++  return parseSync;
+ }
+ async function detectImportsOxc(code, ctx, options) {
+   detectorPromise ??= loadDetector();
+-  const detector = await detectorPromise;
++  const parseSync = await detectorPromise;
++  // oxc infers the language from the filename, so a module still carrying TypeScript syntax
++  // fails to parse (and reports no imports) when it is not named
++  const filename = typeof options?.id === "string" ? options.id.replace(/\?.*$/, "") : "";
++  const detector = createEstreeDetector((code2) => parseSync(filename, code2, { sourceType: "module" }).program);
+   return detector(code, ctx, options);
+ }
+ 

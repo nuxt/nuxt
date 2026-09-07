@@ -1,8 +1,9 @@
+import { existsSync } from 'node:fs'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt } from '@nuxt/kit'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt, writeTypes } from '@nuxt/kit'
+import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -14,6 +15,8 @@ import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
+  await ensureGeneratedTsConfigs(nuxt)
+
   nuxt._perf?.startPhase('app:generate')
   const app = createApp(nuxt)
   nuxt.apps.default = app
@@ -90,14 +93,14 @@ export async function build (nuxt: Nuxt): Promise<void> {
     const { restoreCache, collectCache, clientCachePlugin } = await getVueHash(nuxt)
     const hit = await restoreCache()
 
-    if (hit && !nuxt.options.experimental.nitroViteEnvironment) {
+    if (hit && useServerBuild(nuxt).buildsSeparately) {
       // `@nuxt/nitro-server` builds nitro from `build:done` in the legacy path
       await nuxt.callHook('build:done')
       await nuxt.callHook('close', nuxt)
       return
     }
 
-    if (nuxt.options.experimental.nitroViteEnvironment) {
+    if (!useServerBuild(nuxt).buildsSeparately) {
       // nitro only builds as part of the vite build, so a cache hit still has
       // to run it. The plugin is registered at the root rather than with
       // `addVitePlugin`, which in this path scopes plugins to the client and
@@ -146,6 +149,26 @@ export async function build (nuxt: Nuxt): Promise<void> {
   if (!nuxt.options.dev) {
     await nuxt.callHook('close', nuxt)
   }
+}
+
+const generatedTsConfigs = ['tsconfig.json', 'tsconfig.app.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json']
+
+/**
+ * The project `tsconfig.json` references the generated configurations. Tools that
+ * resolve them (such as tsconfck, which Vite uses to load compiler options) throw if
+ * a referenced project is missing and cache that failure for the lifetime of the
+ * process, so a bundler that starts before typegen has run keeps failing until it is
+ * restarted.
+ *
+ * Typegen normally runs before the build, so this only generates types when a
+ * referenced configuration is genuinely missing. A stub is not enough: whatever is on
+ * disk when the bundler first reads it is the configuration it uses for the rest of
+ * the session.
+ */
+async function ensureGeneratedTsConfigs (nuxt: Nuxt) {
+  if (nuxt.options._prepare) { return }
+  if (generatedTsConfigs.every(name => existsSync(join(nuxt.options.typesDir || nuxt.options.buildDir, name)))) { return }
+  await writeTypes(nuxt).catch(() => {})
 }
 
 const watchEvents: Record<EventType, 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'> = {
