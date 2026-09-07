@@ -114,20 +114,20 @@ describe('useRuntimeConfig env value casting', () => {
   })
 
   it.each([
-    { envValue: '', expected: '' },
-    { envValue: 'hello-world', expected: 'hello-world' },
-    { envValue: '0', expected: 0 },
-    { envValue: '3000', expected: 3000 },
-    { envValue: 'true', expected: true },
-    { envValue: 'false', expected: false },
-    { envValue: undefined, expected: '' },
-    { envValue: 'undefined', expected: '' },
-    { envValue: 'null', expected: '' },
-    { envValue: '4848e0', expected: 4848 },
-    { envValue: '"4848e0"', expected: '4848e0' },
-    { envValue: '""4848e0""', expected: '"4848e0"' },
-    { envValue: '{ foo: "bar" }', expected: '{ foo: "bar" }' },
-  ])('casts $envValue to $expected', ({ envValue, expected }) => {
+    { name: 'empty string', envValue: '', expected: '' },
+    { name: 'string `hello-world`', envValue: 'hello-world', expected: 'hello-world' },
+    { name: 'string `0`', envValue: '0', expected: 0 },
+    { name: 'string `3000`', envValue: '3000', expected: 3000 },
+    { name: 'string `true`', envValue: 'true', expected: true },
+    { name: 'string `false`', envValue: 'false', expected: false },
+    { name: 'unset variable', envValue: undefined, expected: '' },
+    { name: 'string `undefined`', envValue: 'undefined', expected: '' },
+    { name: 'string `null`', envValue: 'null', expected: '' },
+    { name: 'string `4848e0`', envValue: '4848e0', expected: 4848 },
+    { name: 'quoted string `"4848e0"`', envValue: '"4848e0"', expected: '4848e0' },
+    { name: 'double-quoted string `""4848e0""`', envValue: '""4848e0""', expected: '"4848e0"' },
+    { name: 'object-like string', envValue: '{ foo: "bar" }', expected: '{ foo: "bar" }' },
+  ])('casts $name to $expected', ({ envValue, expected }) => {
     const runtimeConfig = { myVar: '' }
     vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion: false } } } } as any)
     mockKlona.mockReturnValue(runtimeConfig)
