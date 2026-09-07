@@ -419,5 +419,48 @@ describe('view transitions plugin', () => {
       expect(hookSpy).toHaveBeenCalledTimes(1)
       expect(hookSpy).toHaveBeenCalledWith(transitions[0])
     })
+
+    it('should resolve the update callback of a transition that interrupts an animating one', async () => {
+      appViewTransition.enabled = true
+      autoRunUpdate = false
+
+      const firstNavigation = navigateTo('/vt-a')
+      await vi.waitFor(() => expect(transitions).toHaveLength(1))
+      const first = transitions[0]!
+      const firstUpdate = first.runUpdate()
+      await firstNavigation
+      await firstUpdate
+      expect(router.currentRoute.value.path).toBe('/vt-a')
+
+      const secondNavigation = navigateTo('/vt-b')
+      await vi.waitFor(() => expect(transitions).toHaveLength(2))
+      const second = transitions[1]!
+
+      first.settleFinished()
+      await flushPromises()
+
+      const secondUpdate = second.runUpdate()
+      await secondNavigation
+      await expect(Promise.race([secondUpdate, new Promise((_, reject) => setTimeout(() => reject(new Error('update callback never resolved')), 200))])).resolves.toBeUndefined()
+      expect(router.currentRoute.value.path).toBe('/vt-b')
+    })
+
+    it('should settle the update callback of a transition whose navigation was superseded', async () => {
+      appViewTransition.enabled = true
+      autoRunUpdate = false
+
+      const firstNavigation = navigateTo('/vt-a')
+      await vi.waitFor(() => expect(transitions).toHaveLength(1))
+      const firstUpdate = transitions[0]!.runUpdate()
+
+      const secondNavigation = router.push('/vt-b')
+      await vi.waitFor(() => expect(transitions).toHaveLength(2))
+      const secondUpdate = transitions[1]!.runUpdate()
+
+      await Promise.allSettled([firstNavigation, secondNavigation])
+      await expect(Promise.race([firstUpdate, new Promise((_, reject) => setTimeout(() => reject(new Error('update callback never resolved')), 200))])).resolves.toBeUndefined()
+      await expect(secondUpdate).resolves.toBeUndefined()
+      expect(router.currentRoute.value.path).toBe('/vt-b')
+    })
   })
 })
