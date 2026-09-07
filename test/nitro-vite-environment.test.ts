@@ -33,7 +33,11 @@ describe.skipIf(builder !== 'nitro-vite' || !isBuilt)('nitro/vite environment pr
       process.env.NODE_ENV = 'production'
       await buildNuxt(nuxt)
     } finally {
-      process.env.NODE_ENV = nodeEnv
+      if (nodeEnv === undefined) {
+        delete process.env.NODE_ENV
+      } else {
+        process.env.NODE_ENV = nodeEnv
+      }
       await nuxt.close()
     }
   }, 240 * 1000)
