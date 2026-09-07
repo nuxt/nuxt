@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { normalize, relative } from 'pathe'
+import { extname, normalize, relative } from 'pathe'
 import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
@@ -13,7 +13,7 @@ import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4, vueRouterToRou3 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
-import { getLoader } from '../core/utils/index.ts'
+import { getLoader, parseModuleId } from '../core/utils/index.ts'
 import { linkToAlias, logger, offsetToPosition, toArray } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -465,6 +465,17 @@ export function getDynamicMetaKeys (absolutePath: string, extraExtractionKeys: S
   return dynamicMetaCache.get(absolutePath)?.get(getExtractVariant(extraExtractionKeys, options)) ?? EMPTY_DYNAMIC_META
 }
 
+/**
+ * Whether build-time scanning can see a page file's `definePageMeta` call. A file in a format the
+ * scanner cannot parse (e.g. `.md` compiled to a component by a build plugin) may still call the
+ * macro once transformed, so all of its metadata has to be left to the runtime macro module.
+ * Extensionless entries have no module to transform and so nothing to fall back to.
+ */
+export function isScannablePageFile (path: string) {
+  const { pathname } = parseModuleId(path)
+  return !!getLoader(pathname) || !extname(pathname)
+}
+
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {
   const variant = getExtractVariant(extraExtractionKeys, options)
 
@@ -480,17 +491,22 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     return klona(cached)
   }
 
+  const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
+
   const loader = getLoader(absolutePath)
-  const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
-  if (!scriptBlocks) {
+  if (!loader) {
+    if (!isScannablePageFile(absolutePath)) {
+      cacheVariant(dynamicMetaCache, absolutePath).set(variant, new Set<string>([...extractionKeys, 'meta']))
+    }
     cacheVariant(extractCache, absolutePath).set(variant, {})
     return {}
   }
 
+  const scriptBlocks = loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
+
   const extractedData: Partial<Record<keyof NuxtPage, any>> = {}
   const fileAt = (offset: number) => linkToAlias(absolutePath, undefined, offsetToPosition(contents, offset))
 
-  const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
   // Widened for lookups by a property name that may not be a route field at all.
   const routeFieldKeys: ReadonlySet<string> = extractionKeys
   const dynamicProperties = new Set<keyof NuxtPage>()
