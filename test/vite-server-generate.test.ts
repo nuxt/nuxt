@@ -84,8 +84,20 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       'index.html',
       'links/index.html',
       'redirected/index.html',
+      'rules/no-scripts/index.html',
       'rules/prerendered/index.html',
+      'rules/spa/index.html',
     ])
+  })
+
+  it('honours the rules matched for a route it prerenders', async () => {
+    const spa = await read('rules/spa/index.html')
+    expect(spa).not.toContain('id="rules-spa"')
+    expect(spa).toContain('data-ssr="false"')
+
+    const noScripts = await read('rules/no-scripts/index.html')
+    expect(noScripts).toContain('id="rules-no-scripts"')
+    expect(noScripts).not.toContain('<script type="module"')
   })
 
   it('server-renders each route it wrote', async () => {
@@ -127,6 +139,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       'blog/crawled/_payload.json',
       'hinted/from-hint/_payload.json',
       'links/_payload.json',
+      'rules/no-scripts/_payload.json',
       'rules/prerendered/_payload.json',
     ])
 
@@ -159,7 +172,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       '/blog/crawled',
       '/hinted/from-hint',
       '/links',
-      '/rules/prerendered',
+      '/rules/no-scripts',
     ])
     expect(JSON.parse(await read('_nuxt/builds/latest.json'))).toMatchObject({ id: manifest.id })
   })

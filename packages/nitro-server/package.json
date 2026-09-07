@@ -95,6 +95,7 @@
     "@babel/plugin-syntax-typescript": "catalog:dev",
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "catalog:dev",
+    "h3": "catalog:dev",
     "hookable": "catalog:app-runtime",
     "nuxt": "workspace:*",
     "tsdown": "catalog:dev",

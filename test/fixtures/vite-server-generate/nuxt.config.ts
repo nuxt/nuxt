@@ -8,6 +8,8 @@ export default defineNuxtConfig({
   routeRules: {
     '/rules/prerendered': { prerender: true },
     '/rules/ignored': { prerender: false },
+    '/rules/spa': { ssr: false },
+    '/rules/no-scripts': { noScripts: true },
   },
   sourcemap: false,
   experimental: {
