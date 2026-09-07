@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import { matchesGlob } from 'node:path'
 import { dirname } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
@@ -53,6 +54,42 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
   return excludePaths.length
     ? new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)
     : /node_modules/
+}
+
+/**
+ * Convert Nuxt's gitignore-style ignore patterns into globs for the unstorage `fs`
+ * driver, which matches them with `node:path` `matchesGlob` relative to the mount base.
+ *
+ * 1. A gitignore pattern without a slash matches at any depth, so it is prefixed with `**\/`
+ * 2. A trailing slash (directory-only) and a leading slash (anchored) have no meaning.
+ * 3. Re-inclusion cannot be expressed in a flat list of globs at all, we drop whatever
+ *    a negated pattern would 'undo'.
+ */
+export function toFsDriverIgnorePatterns (patterns: string[]): string[] {
+  const globs = new Set<string>()
+  const rescued = new Set<string>()
+  for (const pattern of patterns) {
+    const negated = pattern[0] === '!'
+    const glob = toFsDriverGlob(negated ? pattern.slice(1) : pattern)
+    if (glob) {
+      (negated ? rescued : globs).add(glob)
+    }
+  }
+  if (!rescued.size) {
+    return [...globs]
+  }
+  return [...globs].filter(glob => ![...rescued].some(path => matchesGlob(path, glob)))
+}
+
+function toFsDriverGlob (pattern: string): string | undefined {
+  const trimmed = pattern.replace(/\/+$/, '')
+  const anchored = trimmed.includes('/')
+  const glob = trimmed.replace(/^\//, '')
+  // patterns resolved outside the mount base can never match a key within it
+  if (!glob || glob.startsWith('../')) {
+    return
+  }
+  return anchored ? glob : `**/${glob}`
 }
 
 /**
