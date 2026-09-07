@@ -290,17 +290,12 @@ async function initNuxt (nuxt: Nuxt) {
     getContents: ({ app }) => {
       return [
         `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-        'declare module \'h3/rules\' {',
-        '  interface RouteRuleConfig {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '  interface RouteRules {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '}',
         ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
           `declare module '${module}' {`,
           '  interface AppRouteRulesExtensions {',
+          '    appLayout?: LayoutKey | false',
+          '  }',
+          '  interface RouteRuleConfigExtensions {',
           '    appLayout?: LayoutKey | false',
           '  }',
           '}',

@@ -292,11 +292,13 @@ export default defineNuxtModule({
         filename: 'types/middleware.d.ts',
         dependsOn: [],
         getContents: () => [
-          'declare module \'h3/rules\' {',
-          '  interface RouteRuleConfig {',
-          '    appMiddleware?: string | string[] | Record<string, boolean>',
-          '  }',
-          '}',
+          ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+            `declare module '${module}' {`,
+            '  interface RouteRuleConfigExtensions {',
+            '    appMiddleware?: string | string[] | Record<string, boolean>',
+            '  }',
+            '}',
+          ]),
           'export {}',
         ].join('\n'),
       }, { nuxt: true, nitro: true, node: true })
@@ -891,11 +893,13 @@ export default defineNuxtModule({
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          'declare module \'h3/rules\' {',
-          '  interface RouteRuleConfig {',
-          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
-          '  }',
-          '}',
+          ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+            `declare module '${module}' {`,
+            '  interface RouteRuleConfigExtensions {',
+            '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
+            '  }',
+            '}',
+          ]),
         ].join('\n')
       },
     }, { nuxt: true, nitro: true, node: true })

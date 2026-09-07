@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { NitroInstance, NitroInstanceOptions } from '@nuxt/kit'
-import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, TSReference } from '@nuxt/schema'
+import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, RouteRuleConfig as SchemaRouteRuleConfig, TSReference } from '@nuxt/schema'
 import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, RouteRuleConfig, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { NuxtSSRContext } from '#app/types'
@@ -39,6 +39,22 @@ describe('contributed configuration types', () => {
 
   it('resolves the route rules a page may declare', () => {
     expectTypeOf<NuxtPage['rules']>().toEqualTypeOf<RouteRuleConfig | undefined>()
+  })
+})
+
+declare module '@nuxt/schema' {
+  interface RouteRuleConfigExtensions {
+    appLayout?: 'generated' | false
+  }
+}
+
+describe('route rules Nuxt generates types for', () => {
+  it('are configurable through the rules Nuxt resolves', () => {
+    expectTypeOf<SchemaRouteRuleConfig['appLayout']>().toEqualTypeOf<'generated' | false | undefined>()
+  })
+
+  it('are configurable through the rules this builder resolves', () => {
+    expectTypeOf<RouteRuleConfig['appLayout']>().toEqualTypeOf<'generated' | false | undefined>()
   })
 })
 

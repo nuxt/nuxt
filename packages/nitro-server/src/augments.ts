@@ -3,7 +3,7 @@ import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, Nitro
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { NuxtRequestContext, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
+import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`: Nitro's own {@link TracingOptions}, plus the
@@ -21,6 +21,10 @@ declare module 'nitro/types' {
 }
 
 declare module 'h3/rules' {
+  // rules Nuxt generates types for are declared on `@nuxt/schema`, and bridged here so that
+  // configuration typed by nitro accepts them too
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface RouteRuleConfig extends RouteRuleConfigExtensions {}
   interface RouteRuleConfig {
     ssr?: boolean
     streaming?: boolean

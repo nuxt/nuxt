@@ -8,7 +8,7 @@ import { decodeRoutePath } from './index.ts'
 /** One entry of a route-rules router: the pattern it matches and the rules it resolves to. */
 export interface RouteRulesRoute {
   route: string
-  method: string
+  method?: string
   data: Record<string, any>
 }
 
@@ -95,7 +95,7 @@ export function createRouteRulesRouter (routes: RouteRulesRoute[], baseURL: stri
   const base = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL
   const router = createRouter<Record<string, any>>()
   for (const route of routes) {
-    addRoute(router, route.method, base + route.route, route.data)
+    addRoute(router, route.method || '', base + route.route, route.data)
   }
 
   return {
