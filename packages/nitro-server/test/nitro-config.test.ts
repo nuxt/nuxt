@@ -51,7 +51,7 @@ describe('nitro config', () => {
 
   it.for([true, false])('passes the server replacements to the prerenderer when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
     await withNitro({ experimental: { nitroViteEnvironment } }, async (nitro) => {
-      // Nitro creates the prerenderer from a copy of this config after the hook.
+      // nitro creates the prerenderer from a copy of this config
       const prerendererConfig: NitroConfig = { ...nitro.options._config }
       await nitro.hooks.callHook('prerender:config', prerendererConfig)
       expect(prerendererConfig.replace).toMatchObject(serverReplacements)

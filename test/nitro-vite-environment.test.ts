@@ -22,14 +22,14 @@ describe.skipIf(builder !== 'nitro-vite' || !isBuilt)('nitro/vite environment pr
         nitro: {
           output: { dir: outputDir },
           prerender: { routes: ['/'] },
-          // Nitro bundles vue-router into the prerenderer. The bundle reads `__VUE_PROD_DEVTOOLS__`.
+          // inlining vue-router is what makes the prerenderer read `__VUE_PROD_DEVTOOLS__`
           noExternals: ['vue-router'],
         },
       },
     })
     const nodeEnv = process.env.NODE_ENV
     try {
-      // `nuxt build` sets this. The vue-router guard only reads the flag in production.
+      // vue-router only reads the flag in a production bundle
       process.env.NODE_ENV = 'production'
       await buildNuxt(nuxt)
     } finally {
@@ -82,5 +82,10 @@ describe.skipIf(builder !== 'nitro-vite' || isBuilt)('nitro/vite environment dev
     expect(res.headers.get('content-type')).toMatch(/(text|application)\/javascript/)
     // Drain so Vite doesn't hold the socket open and block server close.
     await res.arrayBuffer()
+  }, 120 * 1000)
+
+  it('does not substitute the server constants inside string literals', async () => {
+    const res = await fetch(`http://127.0.0.1:${port}/api/string-literals`)
+    await expect(res.json()).resolves.toEqual({ vueFlag: 'flag __VUE_PROD_DEVTOOLS__ in a string' })
   }, 120 * 1000)
 })
