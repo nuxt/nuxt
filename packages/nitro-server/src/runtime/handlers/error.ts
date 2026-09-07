@@ -1,7 +1,8 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack/types'
-import { appendResponseHeader, getRequestHeaders, getResponseHeader, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import { appendResponseHeader, getResponseHeader, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 import type { H3Event } from 'h3'
+import type { NuxtRequestContext } from 'nuxt/schema'
 import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
@@ -57,11 +58,16 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   setResponseHeaders(event, defaultRes.headers)
   appendVary(event, 'accept, sec-fetch-mode')
 
-  // Access request headers
-  const reqHeaders = getRequestHeaders(event)
+  // `node-mock-http` carries the context a request nitro made to itself passed through
+  // `localFetch` on the mock request rather than in the h3 event's own context
+  const passedContext = (event.node.req as { __unenv__?: { nuxt?: NuxtRequestContext } }).__unenv__?.nuxt
 
-  // Detect to avoid recursion in SSR rendering of errors
-  const isRenderingError = !!reqHeaders['x-nuxt-error']
+  // Skip SSR error rendering if we're already inside one, to avoid recursion.
+  const isRenderingError = !!(event.context.nuxt?.['~rendering-error'] || passedContext?.['~rendering-error'])
+
+  if (!isRenderingError) {
+    event.context.nuxt = { ...event.context.nuxt, '~rendering-error': true }
+  }
 
   // HTML response (via SSR)
   const res = isRenderingError
@@ -72,8 +78,14 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
           ...(errorCause !== undefined && { cause: JSON.stringify(errorCause) }),
         }),
         {
-          headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
+          headers: event.headers,
           redirect: 'manual',
+          context: {
+            nuxt: {
+              '~internal': true,
+              '~rendering-error': true,
+            } satisfies NuxtRequestContext,
+          },
         },
       ).catch(() => null)
 
