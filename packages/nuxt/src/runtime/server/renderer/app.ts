@@ -4,7 +4,6 @@ import type { NuxtPayload, NuxtSSRContext } from '#app/types'
 import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SSR_STREAMING, unheadOptions } from 'nuxt/internal/renderer-config'
 import { appEvent, getRequestState } from './runtime'
 import type { NuxtRendererOptions, RendererEvent } from './runtime'
-import { registerStreamedHeadWarning } from './streamed-head'
 import { urlHash } from './url'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
@@ -14,14 +13,11 @@ const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
  * `noscript` and body-positioned tags render as markup at `</body>` instead
  * of client patches.
  */
-function createServerHead (path: string): NuxtSSRContext['head'] {
+function createServerHead (): NuxtSSRContext['head'] {
   if (!NUXT_SSR_STREAMING) {
     return createHead(unheadOptions) as NuxtSSRContext['head']
   }
   const { head } = createStreamableHead({ ...unheadOptions, writesBodyTags: true })
-  if (import.meta.dev) {
-    registerStreamedHeadWarning(head, path)
-  }
   return head as NuxtSSRContext['head']
 }
 
@@ -32,7 +28,7 @@ export function createSSRContext (options: NuxtRendererOptions, event: RendererE
     event: appEvent(event),
     runtimeConfig: options.runtimeConfig(event),
     noSSR: !!(NUXT_NO_SSR) || getRequestState(event)?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
-    head: createServerHead(event.url.pathname),
+    head: createServerHead(),
     error: false,
     nuxt: undefined!, /* NuxtApp */
     payload: {},
