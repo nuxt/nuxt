@@ -17,7 +17,8 @@ const EXTENSION_RE = /\.[\da-z]+$/
 const JSON_SIGNATURE_RE = /^\s*["[{]|^\s*-?\d{1,16}(?:\.\d{1,17})?(?:e[+-]?\d+)?\s*$/i
 const HTML_ENTITIES: Record<string, string> = { '&lt;': '<', '&gt;': '>', '&amp;': '&', '&apos;': '\'', '&quot;': '"' }
 const HTML_ENTITY_RE = /&(?:lt|gt|amp|apos|quot);/g
-const WRITABLE_STATUSES = new Set([200, 301, 302, 303, 304, 307, 308])
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
+const WRITABLE_STATUSES = new Set([200, 304, ...REDIRECT_STATUSES])
 
 /** Longest path segment most file systems accept. */
 const FS_MAX_SEGMENT = 255
@@ -101,7 +102,7 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
     }
 
     const contentType = response.headers.get('content-type') || ''
-    const isRedirect = response.status >= 300 && response.status < 400
+    const isRedirect = REDIRECT_STATUSES.has(response.status)
     const isImplicitHTML = !route.endsWith('.html') && (isRedirect || contentType.includes('html')) && !JSON_SIGNATURE_RE.test(body.subarray(0, 32).toString('utf-8'))
     const htmlPath = route.endsWith('/') || config.autoSubfolderIndex ? joinURL(route, 'index.html') : route + '.html'
     const fileName = withoutBase(isImplicitHTML ? htmlPath : (route.endsWith('/') ? route + 'index' : route), baseURL)
