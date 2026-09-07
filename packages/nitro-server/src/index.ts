@@ -12,7 +12,7 @@ import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack/types'
-import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import { bundlerDiagnostics, getServerRuntime, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -24,7 +24,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitropack/runtime/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, toArray } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, toArray, toFsDriverIgnorePatterns } from './utils.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
@@ -674,26 +674,25 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     ],
   }))
 
-  // Apply Nuxt's ignore configuration to the root and src unstorage mounts
-  // created by Nitro. This ensures that the unstorage watcher will use the
-  // same ignore list as Nuxt's watcher and can reduce unnecessary file handles.
-  const isIgnored = createIsIgnored(nuxt)
+  // Nitro serialises mount options with `JSON.stringify` for the storage its dev and
+  // prerender runtimes build, so the patterns have to go through the fs driver's `ignore`
+  // option rather than a `watchOptions.ignored` matcher, which does not survive that.
+  const devStorageIgnore = (mountBase: string, relativeTo?: string) => toFsDriverIgnorePatterns([
+    '**/node_modules',
+    ...resolveIgnorePatterns(relativeTo),
+  ], mountBase)
   nitroConfig.devStorage ??= {}
   nitroConfig.devStorage.root ??= {
     driver: 'fs',
     readOnly: true,
     base: nitroConfig.rootDir,
-    watchOptions: {
-      ignored: [isIgnored],
-    },
+    ignore: devStorageIgnore(nitroConfig.rootDir!),
   }
   nitroConfig.devStorage.src ??= {
     driver: 'fs',
     readOnly: true,
     base: nitroConfig.srcDir,
-    watchOptions: {
-      ignored: [isIgnored],
-    },
+    ignore: devStorageIgnore(nitroConfig.srcDir!, nitroConfig.srcDir),
   }
 
   const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')

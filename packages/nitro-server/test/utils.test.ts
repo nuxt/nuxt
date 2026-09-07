@@ -1,5 +1,6 @@
+import { matchesGlob } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern } from '../src/utils.ts'
+import { getLayerNodeModulesExcludePattern, toFsDriverIgnorePatterns } from '../src/utils.ts'
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -61,5 +62,45 @@ describe('getLayerNodeModulesExcludePattern', () => {
     const withSlash = getLayerNodeModulesExcludePattern(['/proj/node_modules/foo/'])
     const withoutSlash = getLayerNodeModulesExcludePattern(['/proj/node_modules/foo'])
     expect(withSlash.source).toBe(withoutSlash.source)
+  })
+})
+
+describe('toFsDriverIgnorePatterns', () => {
+  const base = '/app'
+
+  it('matches slashless patterns at any depth, and a file by name alone', () => {
+    expect(toFsDriverIgnorePatterns(['*.log', 'node_modules'], base)).toEqual(['**/*.log', '**/node_modules'])
+    expect(matchesGlob('/app/nested/file.log', '**/*.log')).toBe(true)
+    expect(matchesGlob('file.log', '**/*.log')).toBe(true)
+  })
+
+  it('resolves patterns containing a slash against the mount base', () => {
+    expect(toFsDriverIgnorePatterns(['app/middleware/*.js', '**/*.spec.ts'], base)).toEqual(['/app/app/middleware/*.js', '**/*.spec.ts'])
+    expect(matchesGlob('/app/nested/app/middleware/x.js', '/app/app/middleware/*.js')).toBe(false)
+  })
+
+  it('strips the leading and trailing slashes of anchored and directory-only patterns', () => {
+    expect(toFsDriverIgnorePatterns(['/vendor', 'build/', '/packages/a/'], base)).toEqual(['/app/vendor', '**/build', '/app/packages/a'])
+    expect(matchesGlob('/app/nested/packages/a', '/app/packages/a')).toBe(false)
+  })
+
+  it('drops patterns resolved outside the mount base', () => {
+    expect(toFsDriverIgnorePatterns(['../.nuxt', '.nuxt'], base)).toEqual(['**/.nuxt'])
+  })
+
+  it('drops patterns a negated pattern would re-include', () => {
+    expect(toFsDriverIgnorePatterns(['app/middleware/foo/*.js', '!app/middleware/foo/bar.js'], base)).toEqual([])
+    expect(toFsDriverIgnorePatterns(['*.log', '!important.log'], base)).toEqual([])
+    expect(toFsDriverIgnorePatterns(['*.log', '**/.output', '!important.log'], base)).toEqual(['**/.output'])
+  })
+
+  it('drops a pattern re-included by a more general negated pattern', () => {
+    expect(toFsDriverIgnorePatterns(['app/middleware/foo/bar.js', '!app/middleware/foo/*.js'], base)).toEqual([])
+    expect(toFsDriverIgnorePatterns(['app/middleware/foo/bar.js', '!**/*.js'], base)).toEqual([])
+  })
+
+  it('keeps a pattern declared after the negated pattern it overlaps', () => {
+    expect(toFsDriverIgnorePatterns(['!important.log', '*.log'], base)).toEqual(['**/*.log'])
+    expect(toFsDriverIgnorePatterns(['*.log', '!important.log', '**/*.log'], base)).toEqual(['**/*.log'])
   })
 })
