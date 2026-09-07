@@ -9,7 +9,6 @@ import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
 import { addRoute, createRouter as createRou3Router } from 'rou3'
 
-import type { Nitro, NitroRouteConfig, NitroRouteRules } from 'nitropack/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
@@ -26,7 +25,7 @@ import { toVirtualId } from '../core/plugins/virtual.ts'
 import { normalizeRouteRulePath, resolveRouteRules } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
-import type { Nuxt, NuxtPage } from 'nuxt/schema'
+import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
@@ -79,13 +78,13 @@ export default defineNuxtModule({
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
-    let inlineRulesCache: Record<string, NitroRouteConfig> = {}
-    let updateRouteConfig: (inlineRules: Record<string, NitroRouteConfig>) => void | Promise<void>
+    let inlineRulesCache: Record<string, RouteRuleConfig> = {}
+    let updateRouteConfig: (inlineRules: Record<string, RouteRuleConfig>) => void | Promise<void>
     if (nuxt.options.experimental.inlineRouteRules) {
       nuxt.hook('nitro:init', (nitro) => {
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
-            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
+            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config?.routeRules) })
             inlineRulesCache = inlineRules
           }
         }
@@ -499,7 +498,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = tryUseNitro() as Nitro | undefined
+      const nitro = tryUseNitro()
       if (nitro && (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
@@ -541,7 +540,7 @@ export default defineNuxtModule({
     })
 
     const warnedConflicts = new Set<string>()
-    let publicAssets: Nitro['options']['publicAssets'] = []
+    let publicAssets: NitroInstanceOptions['publicAssets'] = []
     nuxt.hook('nitro:init', (nitro) => {
       const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
       publicAssets = nitro.options.publicAssets.filter((asset) => {
@@ -639,7 +638,7 @@ export default defineNuxtModule({
         // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
         // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const routeRulesRouter = createRou3Router<NitroRouteRules>()
+        const routeRulesRouter = createRou3Router<NitroInstanceOptions['routeRules'][string]>()
         for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
           addRoute(routeRulesRouter, undefined, normalizeRouteRulePath(route, !caseSensitiveRouteRules), rules)
         }
@@ -689,7 +688,7 @@ export default defineNuxtModule({
 
     // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
     nuxt.hook('pages:extend', (routes) => {
-      const nitro = tryUseNitro() as Nitro | undefined
+      const nitro = tryUseNitro()
       let resolvedRoutes: string[]
       for (const [path, rule] of Object.entries(nitro?.options.routeRules ?? {})) {
         if (!rule.redirect) { continue }
@@ -754,7 +753,7 @@ export default defineNuxtModule({
     const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
-    let nitroForRouteCoverage: Nitro | undefined
+    let nitroForRouteCoverage: NitroInstance | undefined
     nuxt.hook('nitro:init', (nitro) => {
       nitroForRouteCoverage = nitro
     })

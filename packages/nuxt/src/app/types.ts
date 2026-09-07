@@ -1,6 +1,6 @@
 /**
- * Minimal server-compatible types for the parts of `nuxt/app` types that are needed in
- * `@nuxt/nitro-server` and `@nuxt/schema`.
+ * Minimal server-compatible types for the parts of `nuxt/app` types that a server builder
+ * needs.
  */
 import type { SerializableHead } from '@unhead/vue'
 import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
@@ -9,6 +9,8 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack/types'
 import type { Hookable } from 'hookable'
 import type { NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
+
+export type { NuxtLinkOptions } from '@nuxt/schema'
 
 type HookResult = Promise<void> | void
 
@@ -28,48 +30,6 @@ export interface PluginMeta {
    * It overrides the value of `enforce` and is used to sort plugins.
    */
   order?: number
-}
-
-/**
- * Create a NuxtLink component with given options as defaults.
- *
- * Declared without reference to `vue-router` types so this leaf does not
- * force a (possibly duplicated) `vue-router` instance into consuming
- * programs; the fields mirror `RouterLinkProps['activeClass' |
- * 'exactActiveClass']` and `NuxtLinkProps['prefetch' | 'prefetchedClass' |
- * 'prefetchOn']` in `../components/nuxt-link.ts`.
- * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
- */
-export interface NuxtLinkOptions {
-  /**
-   * The name of the component.
-   * @default "NuxtLink"
-   */
-  componentName?: string
-  /**
-   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
-   */
-  externalRelAttribute?: string | null
-  /**
-   * An option to either add or remove trailing slashes in the `href`.
-   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
-   */
-  trailingSlash?: 'append' | 'remove'
-  /** A class to apply to active links. */
-  activeClass?: string
-  /** A class to apply to exact active links. */
-  exactActiveClass?: string
-  /** A class to apply to links that have been prefetched. */
-  prefetchedClass?: string
-  /** When enabled will prefetch middleware, layouts and payloads of links in the viewport. */
-  prefetch?: boolean
-  /**
-   * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
-   */
-  prefetchOn?: Partial<{
-    visibility: boolean
-    interaction: boolean
-  }>
 }
 
 type AppRenderedContext = { ssrContext: NuxtSSRContext | undefined, renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }

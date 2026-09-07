@@ -50,12 +50,25 @@ type RuntimeConfigNamespace = Record<string, unknown>
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
+/** Runtime configuration of the app itself, set at build time from `app` and `buildId`. */
+export interface RuntimeConfigApp extends RuntimeConfigNamespace {
+  /** The base path the app is served from. */
+  baseURL: string
+  /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). */
+  buildAssetsDir: string
+  /** An absolute URL the public folder is served from (production-only). */
+  cdnURL: string
+  /** Identifier of the current build, regenerated on every build. */
+  buildId: string
+}
+
 export interface RuntimeConfig extends RuntimeConfigNamespace {
   public: PublicRuntimeConfig
+  app: RuntimeConfigApp
 }
 
 // Avoid DeepPartial for some problematic config, including:
-// - nitro config interface (#31908) located in packages/nitro-server/src/augments.ts
+// - the server builder's config interface (#31908)
 // - vite config interface (#4772)
 
 /**
@@ -65,6 +78,7 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' 
   components?: ConfigSchema['components']
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   vite?: ConfigSchema['vite']
+  nitro?: ConfigSchema['nitro']
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>

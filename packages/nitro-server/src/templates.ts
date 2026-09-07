@@ -53,10 +53,6 @@ import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 
 declare module 'nitropack' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
@@ -84,10 +80,6 @@ declare module 'nitropack' {
   }
 }
 declare module 'nitropack/types' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean

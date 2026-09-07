@@ -11,7 +11,6 @@ import type { CompatibilityDateSpec } from 'compatx'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
-import type { NuxtLinkOptions } from '#app/types'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
@@ -29,7 +28,7 @@ import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
 
-import type { RouterConfigSerializable } from './router.ts'
+import type { NuxtLinkOptions, RouterConfigSerializable } from './router.ts'
 import type { NuxtHooks } from './hooks.ts'
 import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
@@ -40,6 +39,7 @@ import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
+import type { DevServerHandler, NitroConfig, RouteRuleConfig, ServerHandler, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -1945,6 +1945,59 @@ export interface ConfigSchema {
   server: {
     builder?: '@nuxt/nitro-server' | '@nuxt/vite-server' | 'nitro' | 'vite' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
   }
+
+  /**
+   * Configuration of the configured `server.builder`, whose shape that builder declares.
+   *
+   * @see [Nitro configuration docs](https://nitro.build/config)
+   */
+  nitro: NitroConfig
+
+  /**
+   * Global route options applied to matching server routes.
+   *
+   * @experimental This is an experimental feature and API may change in the future.
+   *
+   * @see [Nitro route rules documentation](https://nitro.build/config#routerules)
+   */
+  routeRules: Record<string, RouteRuleConfig> | undefined
+
+  /**
+   * Server handlers registered with the configured `server.builder`.
+   *
+   * Each handler accepts the following options:
+   * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
+   *
+   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
+   *
+   * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
+   *
+   * @example
+   * ```js
+   * serverHandlers: [
+   *   { route: '/path/foo/**:name', handler: '#server/foohandler.ts' }
+   * ]
+   * ```
+   */
+  serverHandlers: ServerHandler[]
+
+  /**
+   * Development-only server handlers registered with the configured `server.builder`.
+   *
+   * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
+   */
+  devServerHandlers: DevServerHandler[]
+
+  /**
+   * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
+   * tracing for Nuxt-owned subsystems, and forward the channels the configured
+   * `server.builder` provides.
+   *
+   * @experimental Channel names, payload shapes, and option keys may change.
+   *
+   * @see [Untracing naming registry](https://github.com/unjs/untracing)
+   */
+  tracingChannel: boolean | TracingChannelOptions
 
   postcss: {
   /**

@@ -12,6 +12,15 @@ import type { SharedAppConfig } from './config.ts'
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerTypes {}
 
+/** @internal */
+export type ResolveServerEventHandler<T> = T extends { eventHandler: infer H } ? H : (...args: any[]) => unknown
+
+/**
+ * A handler the server runtime can mount, which is why the runtime declares it: it is the
+ * shape a bundler's dev middleware is handed over in through `server:devHandler`.
+ */
+export type ServerEventHandler = ResolveServerEventHandler<ServerTypes>
+
 /**
  * Extension point through which the configured `server.builder` contributes the response types
  * of the routes its runtime serves.

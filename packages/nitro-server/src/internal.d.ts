@@ -1,7 +1,6 @@
 declare module '#internal/nuxt.config.mjs'
 declare module '#internal/nuxt/nitro-config.mjs'
 declare module '#internal/nuxt/entry-ids.mjs'
-declare module '#internal/nuxt/paths'
 declare module '#internal/nuxt/app-config'
 declare module '#internal/entry-chunk.mjs'
 declare module '#internal/nuxt/island-renderer.mjs'
