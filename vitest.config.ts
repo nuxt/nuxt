@@ -6,7 +6,29 @@ import { isCI, isWindows, provider } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 import type { NuxtConfig } from 'nuxt/schema'
+import type { Plugin } from 'vite'
 import { defu } from 'defu'
+
+// vitest evaluates `define` entries for `import.meta.*` once when the worker starts, so a value
+// referencing a global no longer tracks changes made by a test. Replace the flags in source instead,
+// which keeps them readable at call time and lets tests toggle them with `vi.stubGlobal`.
+function runtimeImportMeta (flags: Record<string, string>): Plugin {
+  const pattern = new RegExp(`\\bimport\\.meta\\.(${Object.keys(flags).join('|')})\\b`, 'g')
+  return {
+    name: 'nuxt:test-runtime-import-meta',
+    enforce: 'pre',
+    transform (code) {
+      if (!pattern.test(code)) { return }
+      pattern.lastIndex = 0
+      const transformed = code.replace(pattern, (match, flag: string, index: number) => {
+        // `import.meta.*` also appears as a `define` key in build code, which must stay a literal
+        const quoted = /['"`]/.test(code[index - 1] || '') && /['"`]/.test(code[index + match.length] || '')
+        return quoted ? match : flags[flag]!
+      })
+      return { code: transformed, map: null }
+    },
+  }
+}
 
 const commonSettings: NuxtConfig = {
   pages: true,
@@ -127,9 +149,7 @@ export default defineConfig({
         },
       },
       ...fixtureMatrix.map(entry => ({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
           include: ['test/*.test.ts'],
@@ -202,10 +222,7 @@ export default defineConfig({
         },
       },
       {
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-          'import.meta.server': '(globalThis.__TEST_SERVER__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)' })],
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
@@ -241,9 +258,7 @@ export default defineConfig({
         },
       }),
       ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: project,
           dir: './test/nuxt',
@@ -279,9 +294,7 @@ export default defineConfig({
         },
       }),
       await defineVitestProject({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: 'nuxt-sensitive',
           dir: './test/nuxt/sensitive',
