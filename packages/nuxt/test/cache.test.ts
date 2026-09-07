@@ -15,7 +15,7 @@ async function resolveBuildOutputs (nuxt: Nuxt) {
   return resolved
 }
 
-describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
+describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
   const workspaceDir = await findWorkspaceDir()
   const tmpDir = join(workspaceDir, '.test/build-cache')
 
