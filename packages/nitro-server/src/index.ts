@@ -545,7 +545,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         // Add pages prerendered but not covered by route rules
         const prerenderedRoutes = new Set<string>()
         const fold = !nuxt.options.router.options.sensitive
-        const routeRulesMatcher = createNormalizedRouteRulesRouter(nitro.options.routeRules, fold)
+        const routeRulesMatcher = createNormalizedRouteRulesRouter(Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, data })), '', fold)
         if (nitro._prerenderedRoutes?.length) {
           const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
           for (const route of nitro._prerenderedRoutes) {

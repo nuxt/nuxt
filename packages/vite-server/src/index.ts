@@ -26,7 +26,7 @@ import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } 
  * as the whole deployable.
  *
  * Features that need a server runtime are unsupported: server routes and middleware,
- * route rules beyond `prerender`, and composables that need more of a request than the
+ * route rules an HTTP layer answers (caching, proxying, CORS), and composables that need more of a request than the
  * platform provides. Modules work to the extent that they do not require one:
  * `useNitro()` throws and the `nitro:config` / `nitro:init` hooks never fire.
  */
@@ -205,18 +205,22 @@ function setupAppManifest (nuxt: Nuxt, prerender: boolean): void {
   nuxt.options.nitro.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds'))
 }
 
+/**
+ * Rules a request has to reach a server runtime to be answered: this builder brings none, so
+ * nothing caches, proxies or negotiates CORS for a request it serves.
+ */
+const SERVER_ONLY_RULES = new Set(['cache', 'swr', 'isr', 'proxy', 'cors'])
+
 function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: string[] }) {
   const unsupported = [...build.unsupported]
 
   if (nuxt.options.serverHandlers.length || getLayerDirectories(nuxt).some(dirs => existsSync(dirs.server))) {
     unsupported.push('server routes and server middleware')
   }
-  const routeRules = [...Object.values(nuxt.options.routeRules || {}), ...Object.values(nuxt.options.nitro.routeRules || {})]
-  const ignoredRules = isPrerendering(nuxt)
-    ? routeRules.filter(rules => Object.keys(rules || {}).some(key => key !== 'prerender'))
-    : routeRules
+  const routeRules = Object.values(nuxt.options.routeRules || {})
+  const ignoredRules = [...new Set(routeRules.flatMap(rules => Object.keys(rules || {}).filter(key => SERVER_ONLY_RULES.has(key))))]
   if (ignoredRules.length) {
-    unsupported.push(isPrerendering(nuxt) ? 'route rules other than `prerender`' : 'route rules')
+    unsupported.push(`route rules needing an HTTP layer (${ignoredRules.sort().map(rule => `\`${rule}\``).join(', ')})`)
   }
   const wantsPrerender = nuxt.options.nitro.prerender?.routes?.length
     || nuxt.options.nitro.prerender?.crawlLinks

@@ -1,15 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { addRoute, createRouter } from 'rou3'
 import type { NitroRouteRules } from 'nitropack/types'
 
-import { normalizeRouteRulePath, resolveRouteRules } from '../src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, resolveRouteRules } from '../src/core/utils/route-rules.ts'
 
 function createMatcher (rules: Record<string, NitroRouteRules>, fold = true) {
-  const router = createRouter<NitroRouteRules>()
-  for (const [route, data] of Object.entries(rules)) {
-    addRoute(router, undefined, normalizeRouteRulePath(route, fold), data)
-  }
-  return router
+  return createNormalizedRouteRulesRouter(Object.entries(rules).map(([route, data]) => ({ route, data })), '', fold)
 }
 
 describe('resolveRouteRules', () => {

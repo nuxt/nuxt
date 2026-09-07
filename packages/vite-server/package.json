@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
+    "nuxt": "workspace:*",
     "tsdown": "catalog:dev",
     "vite": "catalog:vite",
     "vitest": "catalog:dev"

@@ -11,12 +11,12 @@ import { tryUseNitro } from '@nuxt/kit'
 import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import type { Nitro } from 'nitropack/types'
 import { resolveModulePath } from 'exsolve'
-import { compileRouterToString } from 'rou3/compiler'
 
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
-import { EXTENSION_RE, decodeRoutePath } from './utils/index.ts'
-import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter } from './utils/route-rules.ts'
+import { EXTENSION_RE } from './utils/index.ts'
+import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, normalizePathCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
+import type { RouteRulesRouter } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
 const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
@@ -774,15 +774,13 @@ export const routeRulesTemplate: NuxtTemplate = {
   // from configuration
   dependsOn: (_change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules,
   getContents ({ nuxt }) {
-    const nitro = tryUseNitro() as Nitro | undefined
-    // route rules are registered by the server builder, so without a server (or without
-    // any rules) there is nothing to match
-    const routeRules = nitro?.options.routeRules
-    if (!routeRules || !Object.keys(routeRules).length) {
+    const routes = resolveRouteRulesRoutes(nuxt).routes
+      .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => key in data))
+    if (!routes.length) {
       return `export default () => ({})`
     }
     const cache = cachedMatchers.get(nuxt) ?? cachedMatchers.set(nuxt, {}).get(nuxt)!
-    const cacheKey = hash(routeRules)
+    const cacheKey = hash(routes)
     if (cache[cacheKey]) {
       return cache[cacheKey]
     }
@@ -793,13 +791,14 @@ export const routeRulesTemplate: NuxtTemplate = {
     // matcher and pick at runtime.
     const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
     const warned = warnedKeyCollisions.get(nuxt) ?? warnedKeyCollisions.set(nuxt, new Set()).get(nuxt)!
-    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routeRules, fold, (existing, route, key) => {
+    // rule keys are matched against router paths, which carry no base URL
+    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
       // Only the matcher that will actually be used at runtime should report collisions.
       if (fold === caseSensitiveRouteRules || warned.has(key)) { return }
       warned.add(key)
       bundlerDiagnostics.NUXT_B7022({ existing, route, canFold: fold })
     })
-    const compileOptions: NonNullable<Parameters<typeof compileRouterToString>[2]> = {
+    const compileOptions: NonNullable<Parameters<RouteRulesRouter['compileToString']>[0]> = {
       matchAll: true,
       serialize (routeRules) {
         return `{${Object.entries(routeRules)
@@ -830,8 +829,8 @@ export const routeRulesTemplate: NuxtTemplate = {
         }}`
       },
     }
-    const sensitiveMatcher = compileRouterToString(getNormalizedRouter(false), '', compileOptions)
-    const foldedMatcher = compileRouterToString(getNormalizedRouter(true), '', compileOptions)
+    const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
+    const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
     const needsRouterOptions = foldedMatcher !== sensitiveMatcher || caseSensitiveRouteRules
     return cache[cacheKey] = [
       `import { defu } from 'defu'`,
@@ -840,16 +839,7 @@ export const routeRulesTemplate: NuxtTemplate = {
       needsRouterOptions
         ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)
         : `const foldedMatcher = ${foldedMatcher}`,
-      // `decodeRoutePath` has no free variables, so it can be inlined by source to keep
-      // the runtime lookup and the build-time key normalisation from drifting apart.
-      `const decodeRoutePath = ${decodeRoutePath.toString()}`,
-      // Decoding must precede case folding, or a percent-encoded non-ASCII character
-      // would never fold.
-      `const normalizePath = (path, fold) => {`,
-      `  if (typeof path !== 'string') { return path }`,
-      `  const decoded = decodeRoutePath(path)`,
-      `  return fold ? decoded.toLowerCase() : decoded`,
-      `}`,
+      normalizePathCode,
       needsRouterOptions
         ? [
             `export default (path) => routerOptions.sensitive`,

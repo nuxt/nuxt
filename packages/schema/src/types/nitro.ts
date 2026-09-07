@@ -44,11 +44,10 @@ export type ResolveDevServerHandler<T> = T extends { devHandler: infer H } ? H :
 /** A development-only route handler registration, as written by `addDevServerHandler()`. */
 export type DevServerHandler = ResolveDevServerHandler<NitroTypes>
 
-export interface RouteRuleConfigFallback {
+export interface RouteRuleConfigFallback extends RouteRuleConfigExtensions {
   prerender?: boolean
   ssr?: boolean
   noScripts?: boolean
-  appMiddleware?: Record<string, boolean>
   payload?: boolean
   redirect?: string | { to: string, status?: number } | false
   isr?: number | boolean | Record<string, any>
@@ -57,6 +56,17 @@ export interface RouteRuleConfigFallback {
 
 /** @internal */
 export type ResolveRouteRuleConfig<T> = T extends { routeRuleConfig: infer R } ? R : RouteRuleConfigFallback
+
+/**
+ * Extension point for rules that may be configured for a route pattern but are not known
+ * statically, such as `appLayout` and `appMiddleware`, whose values Nuxt generates from the
+ * layouts and middleware it has scanned.
+ *
+ * A server builder that resolves rules with its own types bridges these into them, so that a
+ * rule is configurable whichever type describes the configuration.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface RouteRuleConfigExtensions {}
 
 /**
  * The rules that may be configured for a route pattern. `AppRouteRules` describes the same
@@ -84,21 +94,25 @@ export type TracingChannelOptions = ResolveTracingChannelOptions<NitroTypes>
 /**
  * Fallback configuration shape, limited to the keys Nuxt itself reads and writes. A server
  * builder typically accepts a far wider set, which it describes itself.
+ *
+ * Members must be registry-independent: a member typed through a {@link NitroTypes} or
+ * `ServerTypes` key stops describing the fallback as soon as a builder's augments are in the
+ * program.
  */
 export interface NitroConfigFallback {
   virtual?: Record<string, string | (() => string | Promise<string>)>
   plugins?: string[]
   output?: { dir?: string, publicDir?: string, serverDir?: string }
   runtimeConfig?: Record<string, unknown>
-  handlers?: ServerHandler[]
-  devHandlers?: DevServerHandler[]
+  handlers?: ServerHandlerFallback[]
+  devHandlers?: DevServerHandlerFallback[]
   imports?: false | ServerImportsOptions
   scanDirs?: string[]
-  routeRules?: Record<string, RouteRuleConfig>
+  routeRules?: Record<string, RouteRuleConfigFallback>
   prerender?: { routes?: string[], crawlLinks?: boolean, ignore?: unknown[], failOnError?: boolean }
   static?: boolean
   typescript?: { tsConfig?: Record<string, any>, generateTsConfig?: boolean, strict?: boolean }
-  tracingChannel?: boolean | TracingChannelOptions
+  tracingChannel?: boolean | (TracingChannelOptionsBase & Record<string, boolean | undefined>)
   experimental?: { envExpansion?: boolean }
 }
 
@@ -111,6 +125,8 @@ export type NitroConfig = ResolveNitroConfig<NitroTypes>
 /**
  * Fallback options shape, describing the subset of resolved options common to the supported
  * nitro majors. Used when no server builder has contributed an instance type.
+ *
+ * Members must be registry-independent, as on {@link NitroConfigFallback}.
  */
 export interface NitroInstanceOptionsFallback {
   handlers: ServerHandlerFallback[]
@@ -139,6 +155,8 @@ export interface NitroInstanceOptionsFallback {
 /**
  * Fallback instance shape, describing the subset of the nitro instance common to the
  * supported nitro majors. Used when no server builder has contributed an instance type.
+ *
+ * Members must be registry-independent, as on {@link NitroConfigFallback}.
  */
 export interface NitroInstanceFallback {
   meta: {

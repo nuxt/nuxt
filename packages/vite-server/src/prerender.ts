@@ -4,10 +4,10 @@ import { pathToFileURL } from 'node:url'
 import { dirname, join, resolve } from 'pathe'
 import { joinURL, parseURL, withBase, withoutBase } from 'ufo'
 import { logger } from '@nuxt/kit'
-import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import { parse, walk } from 'ultrahtml'
-import { defu } from 'defu'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
+
+import { createRouteRulesMatcher } from './route-rules.ts'
 
 /** Header the renderer reports the routes a render asked to prerender as well on. */
 const PRERENDER_HINTS_HEADER = 'x-nuxt-prerender'
@@ -167,7 +167,7 @@ function seedRoutes (nuxt: Nuxt, config: ResolvedPrerenderConfig): Set<string> {
     routes.add(`/${status}.html`)
   }
 
-  const rules = nuxt.options.nitro.routeRules || {}
+  const rules = nuxt.options.routeRules || {}
   for (const path in rules) {
     if (rules[path]?.prerender && !path.includes('*')) {
       routes.add(path)
@@ -210,15 +210,8 @@ function staticPageRoutes (pages: NuxtPage[], currentPath = '/', routes = new Se
   return routes
 }
 
-function createRouteRulesMatcher (nuxt: Nuxt): (path: string) => Record<string, any> {
-  const router = createRouter<Record<string, any>>()
-  for (const path in nuxt.options.nitro.routeRules) {
-    addRoute(router, undefined, path, nuxt.options.nitro.routeRules[path] as Record<string, any>)
-  }
-  return path => defu({}, ...findAllRoutes(router, undefined, path).map(match => match.data).reverse()) as Record<string, any>
-}
-
 function createPrerenderFilter (nuxt: Nuxt, config: ResolvedPrerenderConfig): (route: string) => boolean {
+  const baseURL = nuxt.options.app.baseURL || '/'
   const matcher = createRouteRulesMatcher(nuxt)
 
   return function canPrerender (route: string): boolean {
@@ -227,7 +220,7 @@ function createPrerenderFilter (nuxt: Nuxt, config: ResolvedPrerenderConfig): (r
         return false
       }
     }
-    return matcher(route).prerender !== false
+    return matcher(withoutBase(route, baseURL)).prerender !== false
   }
 }
 
@@ -335,10 +328,15 @@ async function runParallel (queue: Set<string>, task: (route: string) => Promise
 export async function writeAppManifest (nuxt: Nuxt, publicDir: string, routes: string[]): Promise<void> {
   const buildId = nuxt.options.runtimeConfig.app.buildId
   const timestamp = manifestTimestamp(nuxt)
+  const baseURL = nuxt.options.app.baseURL || '/'
+  const matcher = createRouteRulesMatcher(nuxt)
   const prerendered = new Set<string>()
   for (const route of routes) {
-    if (route.endsWith(PAYLOAD_SUFFIX)) {
-      prerendered.add(route.slice(0, -PAYLOAD_SUFFIX.length) || '/')
+    if (!route.endsWith(PAYLOAD_SUFFIX)) { continue }
+    const path = route.slice(0, -PAYLOAD_SUFFIX.length) || '/'
+    // a route the client can resolve a `prerender` rule for needs no entry of its own
+    if (!matcher(withoutBase(path, baseURL)).prerender) {
+      prerendered.add(path)
     }
   }
 

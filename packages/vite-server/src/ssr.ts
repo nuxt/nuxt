@@ -9,6 +9,7 @@ import type { Plugin } from 'vite'
 import { distDir } from './dirs.ts'
 import { spaLoadingTemplate } from './output.ts'
 import { isPrerendering } from './prerender.ts'
+import { addRouteRulesTemplate } from './route-rules.ts'
 
 /** The contract version this builder is written against. */
 const SUPPORTED_SERVER_RUNTIME_VERSION = 1
@@ -50,7 +51,7 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
   const unsupported = disableUnsupported(nuxt)
 
   const serverDir = resolve(outputDir, 'server')
-  const { entry, handler } = addServerEntry(nuxt, serverRuntime, prerender)
+  const { entry, handler } = addServerEntry(nuxt, serverRuntime, prerender, addRouteRulesTemplate())
 
   nuxt.options.vite.plugins ||= []
   nuxt.options.vite.plugins.push(
@@ -95,7 +96,7 @@ function AppServerEnvironmentsPlugin (nuxt: Nuxt): Plugin {
  * builder's own environment builds: the handler behind a node server that serves the static
  * output in front of it and listens when it is run as the main module.
  */
-function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender: boolean): { entry: string, handler: string } {
+function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender: boolean, routeRules: string): { entry: string, handler: string } {
   const { dst: handler } = addTemplate({
     filename: 'vite-server/server-handler.mjs',
     write: true,
@@ -103,10 +104,11 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
       `import { createNuxtRenderer } from ${JSON.stringify(serverRuntime.entry)}`,
       `import { useRuntimeConfig } from ${JSON.stringify(resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'))}`,
       `import { createFetchHandler, createRendererOptions } from ${JSON.stringify(resolve(distDir, 'runtime/renderer'))}`,
+      `import matchRouteRules from ${JSON.stringify(routeRules)}`,
       ...prerender ? [`import { createPrerenderOptions } from ${JSON.stringify(resolve(distDir, 'runtime/prerender'))}`] : [],
       '',
-      `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig${prerender ? `, createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : ''}))`,
-      `export const fetch = createFetchHandler(renderer)`,
+      `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig, matchRouteRules${prerender ? `, createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : ''}))`,
+      `export const fetch = createFetchHandler(renderer, matchRouteRules)`,
       `export default { fetch }`,
     ].join('\n'),
   })

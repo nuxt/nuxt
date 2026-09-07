@@ -47,13 +47,14 @@ export const nitroSchemaTemplate: NuxtTemplate = {
     return /* typescript */`
 ${lines.join('\n')}
 
-import type { RuntimeConfig } from 'nuxt/schema'
+import type { RouteRuleConfigExtensions, RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 
 declare module 'nitropack' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig extends RouteRuleConfigExtensions {}
   interface NitroRouteConfig {
     ssr?: boolean
     streaming?: boolean
@@ -81,6 +82,7 @@ declare module 'nitropack' {
 }
 declare module 'nitropack/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig extends RouteRuleConfigExtensions {}
   interface NitroRouteConfig {
     ssr?: boolean
     streaming?: boolean

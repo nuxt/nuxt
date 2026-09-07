@@ -1,9 +1,8 @@
 import type { NitroInstance, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import { joinURL } from 'ufo'
-import { addRoute, createRouter as createRou3Router } from 'rou3'
 import { vueRouterToRou3 } from 'unrouting'
 import { toArray } from '../utils.ts'
-import { normalizeRouteRulePath, resolveRouteRules } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, resolveRouteRules } from '../core/utils/route-rules.ts'
 
 const UNESCAPE_RE = /\\(.)/g
 
@@ -103,15 +102,9 @@ export interface RouteRuleCoverageOptions {
 export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInstance, options: RouteRuleCoverageOptions & { sensitive?: boolean }): boolean {
   // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs` matcher
   const fold = !options.sensitive
-  const matcher = createRou3Router<RouteRuleConfig>()
-  const routes: string[] = []
-  for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
-    const normalized = normalizeRouteRulePath(route, fold)
-    routes.push(normalized)
-    addRoute(matcher, undefined, normalized, rules)
-  }
+  const matcher = createNormalizedRouteRulesRouter(Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, data })), '', fold)
 
-  const PROBE_SEGMENT = createProbeSegment(routes)
+  const PROBE_SEGMENT = createProbeSegment(matcher.routes.map(({ route }) => route))
   const isPathCovered = (path: string) => options.isCovered(resolveRouteRules(matcher, path, fold))
 
   // A dynamic pattern serves a subset of the region below its first dynamic
@@ -131,7 +124,7 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInst
     // rule keys are raw rou3 patterns, so the region filter compares them against the raw prefix
     const rawPrefix = pattern.split('/').slice(0, dynamicAt).join('/') || '/'
     const within = rawPrefix === '/' ? '/' : rawPrefix + '/'
-    for (const route of routes) {
+    for (const { route } of matcher.routes) {
       if (route !== rawPrefix && !route.startsWith(within)) { continue }
       if (!isPathCovered(patternToProbePath(route, PROBE_SEGMENT))) { return false }
     }
