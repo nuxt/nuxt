@@ -105,7 +105,8 @@ function clientHMR (ctx: WebpackConfigContext) {
 }
 
 function clientOptimization (ctx: WebpackConfigContext) {
-  if (!ctx.nuxt.options.features.inlineStyles) {
+  const inlineStyles = ctx.nuxt.options.features.inlineStyles
+  if (!inlineStyles) {
     return
   }
 
@@ -134,7 +135,7 @@ function clientOptimization (ctx: WebpackConfigContext) {
         const identifier = normalize(module.identifier())
         for (const globalPath of globalCSSPaths) {
           if (identifier.includes(globalPath)) {
-            return true
+            return typeof inlineStyles === 'boolean' ? inlineStyles : inlineStyles(module.identifier())
           }
         }
         return false

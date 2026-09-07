@@ -18,6 +18,9 @@
       ],
       "h3": [
         "./dist/h3.d.mts"
+      ],
+      "request-types": [
+        "./dist/request-types.d.mts"
       ]
     }
   },
@@ -25,13 +28,14 @@
     ".": "./src/index.ts",
     "./augments": "./src/augments.ts",
     "./h3": "./src/h3.ts",
+    "./request-types": "./src/request-types.ts",
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -56,10 +60,13 @@
     "nostics": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
+    "rou3": "catalog:build",
     "srvx": "catalog:nitro-runtime",
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
+    "unimport": "catalog:build",
+    "unplugin": "catalog:build",
     "unrouting": "catalog:build",
     "unstorage": "catalog:nitro-runtime",
     "vue": "catalog:app-runtime",
@@ -88,6 +95,7 @@
     "@babel/plugin-syntax-typescript": "catalog:dev",
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "catalog:dev",
+    "h3": "catalog:dev",
     "hookable": "catalog:app-runtime",
     "nuxt": "workspace:*",
     "tsdown": "catalog:dev",
@@ -101,6 +109,7 @@
       ".": "./dist/index.mjs",
       "./augments": "./dist/augments.mjs",
       "./h3": "./dist/h3.mjs",
+      "./request-types": "./dist/request-types.mjs",
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"

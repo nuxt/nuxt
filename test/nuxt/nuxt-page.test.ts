@@ -1126,3 +1126,70 @@ describe('NuxtPage with page keys', () => {
     el.unmount()
   })
 })
+
+describe('NuxtPage transitions on nested child routes (#12361)', () => {
+  let router: ReturnType<typeof useRouter>
+  const hooks: string[] = []
+
+  beforeEach(() => {
+    router = useRouter()
+    hooks.length = 0
+
+    router.addRoute({
+      name: 'parent-12361',
+      path: '/parent-12361',
+      component: defineComponent({
+        name: 'parent-12361',
+        render: () => h('div', { 'data-testid': 'parent-12361' }, [
+          h('span', 'Parent'),
+          h(NuxtPage, {
+            transition: {
+              css: false,
+              onEnter: (_el: Element, done: () => void) => { hooks.push('enter'); done() },
+              onLeave: (_el: Element, done: () => void) => { hooks.push('leave'); done() },
+            },
+          }),
+        ]),
+      }),
+      children: [
+        {
+          name: 'child-12361',
+          path: 'child',
+          component: defineComponent({
+            name: 'child-12361',
+            render: () => h('div', { 'data-testid': 'child-12361' }, 'Child'),
+          }),
+        },
+      ],
+    })
+  })
+
+  afterEach(async () => {
+    await navigateTo('/')
+    await flushPromises()
+    router.removeRoute('parent-12361')
+  })
+
+  it('runs enter and leave transitions when a child route is added or removed', async () => {
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    }, { global: { stubs: { transition: false } } })
+
+    await navigateTo('/parent-12361')
+    await flushPromises()
+    expect(el.html()).toContain('Parent')
+    expect(el.html()).not.toContain('Child')
+
+    await navigateTo('/parent-12361/child')
+    await flushPromises()
+    expect(el.html()).toContain('Child')
+    expect(hooks).toEqual(['enter'])
+
+    await navigateTo('/parent-12361')
+    await flushPromises()
+    expect(el.html()).not.toContain('Child')
+    expect(hooks).toEqual(['enter', 'leave'])
+
+    el.unmount()
+  })
+})

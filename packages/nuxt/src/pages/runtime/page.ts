@@ -129,7 +129,9 @@ export default defineComponent({
                   return vnode
                 }
                 done()
-                return
+                const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
+                if (!hasTransition) { return }
+                return _wrapInTransition(_mergeTransitionProps([props.transition, routeProps.route.meta.pageTransition, defaultPageTransition]), null).default()
               }
 
               // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
@@ -261,6 +263,7 @@ export default defineComponent({
                       renderKey: key || undefined,
                       trackRootNodes: hasTransition,
                       vnodeRef: pageRef,
+                      routeRecord: import.meta.dev ? routeProps.route.matched.find(m => m.components?.default === routeProps.Component.type) : undefined,
                     }
 
                     if (!keepaliveConfig) {

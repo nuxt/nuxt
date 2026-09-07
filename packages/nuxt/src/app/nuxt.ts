@@ -20,7 +20,7 @@ import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 import { appDiagnostics } from './diagnostics/core'
-import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
 export type { NuxtPayload, NuxtSSRContext, PluginMeta } from './types'
 
@@ -578,6 +578,21 @@ export function useNuxtApp (id?: string): NuxtApp {
   }
 
   return nuxtAppInstance
+}
+
+/**
+ * Whether the current execution context is a component setup rather than a plugin or the app scope.
+ *
+ * Vapor components have no vdom `getCurrentInstance()`, but their setup runs within a dedicated
+ * effect scope distinct from the nuxt app's own scope (which plugins run in), so the scope
+ * discriminates the two cases.
+ * @internal
+ */
+export function isInComponentSetup (nuxtApp: NuxtApp): boolean {
+  if (getCurrentInstance()) { return true }
+  if (!vapor) { return false }
+  const scope = getCurrentScope()
+  return !!scope && scope !== nuxtApp._scope
 }
 
 /** @since 3.0.0 */

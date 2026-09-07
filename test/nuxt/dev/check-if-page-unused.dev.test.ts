@@ -118,14 +118,61 @@ describe('check-if-page-unused: nested page without `<NuxtPage />` (#25077)', ()
     router.removeRoute('ok-parent')
   })
 
+  it('does not warn when navigating between sibling child routes (#35945)', async () => {
+    router.addRoute({
+      name: 'sibling-parent',
+      path: '/sibling-parent',
+      component: parentComponent(true),
+      children: [{ name: 'sibling-parent-child', path: ':id', component: child }],
+    })
+
+    const el = await mountAndNavigate('/sibling-parent/1')
+    await navigateAndSettle('/sibling-parent/2')
+
+    expect(el.html()).toContain('child content')
+    const messages = warn.mock.calls.map(args => args.join(' ')).filter(m => m.includes('NUXT_E4016'))
+    expect(messages).toHaveLength(0)
+
+    el.unmount()
+    router.removeRoute('sibling-parent')
+  })
+
+  it('does not warn on sibling navigation when the parent wraps the page in a slot', async () => {
+    router.addRoute({
+      name: 'slot-parent',
+      path: '/slot-parent',
+      component: defineComponent({
+        name: 'slot-parent-page',
+        setup: () => () => h('div', ['parent content', h(NuxtPage, null, {
+          default: ({ Component }: any) => Component ? h('section', [h(Component)]) : null,
+        })]),
+      }),
+      children: [{ name: 'slot-parent-child', path: ':id', component: child }],
+    })
+
+    const el = await mountAndNavigate('/slot-parent/1')
+    await navigateAndSettle('/slot-parent/2')
+
+    expect(el.html()).toContain('child content')
+    const messages = warn.mock.calls.map(args => args.join(' ')).filter(m => m.includes('NUXT_E4016'))
+    expect(messages).toHaveLength(0)
+
+    el.unmount()
+    router.removeRoute('slot-parent')
+  })
+
   it('does not warn for parent routes without a component', async () => {
     router.addRoute({
       name: 'transparent-parent',
       path: '/transparent-parent',
-      children: [{ name: 'transparent-parent-child', path: 'child', component: child }],
+      children: [
+        { name: 'transparent-parent-child', path: 'child', component: child },
+        { name: 'transparent-parent-other', path: 'other', component: child },
+      ],
     })
 
     const el = await mountAndNavigate('/transparent-parent/child')
+    await navigateAndSettle('/transparent-parent/other')
 
     expect(el.html()).toContain('child content')
     const messages = warn.mock.calls.map(args => args.join(' ')).filter(m => m.includes('NUXT_E4016'))

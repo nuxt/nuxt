@@ -3,7 +3,8 @@ import { transformWithOxc } from 'vite'
 import { defu } from 'defu'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { RenderedModule } from 'rolldown'
-import { bundlerDiagnostics, ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 
 export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   if (nuxt.options.test) {

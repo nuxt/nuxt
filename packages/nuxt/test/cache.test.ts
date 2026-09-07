@@ -241,6 +241,38 @@ describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
     expect(html).toBe(expectedHtml)
   })
 
+  it('should hit the cache when only an ignored file changes', async () => {
+    const rootDir = join(tmpDir, 'project')
+
+    const nuxt1 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'ignored-1',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt1)
+
+    await writeFile(join(rootDir, 'unit.spec.ts'), 'export const marker = 1')
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'ignored-2',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    expect(nuxt2.options.buildId).toBe('ignored-1')
+    await build(nuxt2)
+
+    const latestJson = JSON.parse(await readFile(join(nuxt2.options.buildDir, 'manifest', 'latest.json'), 'utf-8'))
+    expect(latestJson.id).toBe('ignored-1')
+  })
+
   it('should generate a new buildId when sources change', async () => {
     const rootDir = join(tmpDir, 'project')
 

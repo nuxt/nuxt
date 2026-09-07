@@ -1,5 +1,5 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
-import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
+import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onBeforeUnmount, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
@@ -8,12 +8,12 @@ import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
-import { _mergeTransitionProps, _wrapInTransition } from './utils'
+import { _mergeTransitionProps, _wrapInTransition, isVaporSlot } from './utils'
 import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
 import { useRoute as useVueRouterRoute } from '#build/pages'
 import layouts from '#build/layouts'
-import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
+import { appLayoutTransition as defaultLayoutTransition, vapor } from '#build/nuxt.config.mjs'
 
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
@@ -70,15 +70,23 @@ export default defineComponent({
 
     provide(LayoutSymbol, layout)
 
+    const resolveRouteLayout = (routeToCheck: RouteLocationNormalizedLoaded) => resolveLayoutName(routeToCheck, props.name)
+
     const layoutRef = shallowRef()
     context.expose({ layoutRef })
 
     const done = nuxtApp.deferHydration()
-    if (import.meta.client && nuxtApp.isHydrating) {
-      const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      const removeGuard = useRouter().beforeEach(() => {
-        removeErrorHook()
-        removeGuard()
+    if (import.meta.client) {
+      if (nuxtApp.isHydrating) {
+        const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
+        const removeGuard = useRouter().beforeEach(() => {
+          removeErrorHook()
+          removeGuard()
+        })
+      }
+      onBeforeUnmount(() => {
+        // Ensure hydration completes if unmounted before Suspense resolves
+        done()
       })
     }
 
@@ -131,6 +139,7 @@ export default defineComponent({
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
+              resolveRouteLayout,
               isRenderingNewLayout: (name?: string | boolean) => {
                 return (name !== previouslyRenderedLayout && name === layout.value)
               },
@@ -162,6 +171,10 @@ const LayoutProvider = defineComponent({
       type: Function as unknown as () => (name?: string | boolean) => boolean,
       required: true,
     },
+    resolveRouteLayout: {
+      type: Function as unknown as () => (route: RouteLocationNormalizedLoaded) => string | false,
+      required: true,
+    },
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -170,7 +183,7 @@ const LayoutProvider = defineComponent({
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
         // When name=false, always return true so NuxtPage doesn't skip rendering
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === resolveLayoutName(route),
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === props.resolveRouteLayout(route),
       })
     }
 
@@ -208,6 +221,7 @@ const LayoutProvider = defineComponent({
     if (import.meta.dev && import.meta.client) {
       onMounted(() => {
         nextTick(() => {
+          if (vapor && isVaporSlot(context.slots.default)) { return }
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
               renderDiagnostics.NUXT_E4002({ name })

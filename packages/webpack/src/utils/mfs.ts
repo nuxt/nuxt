@@ -1,5 +1,5 @@
 import { join } from 'pathe'
-import pify from 'pify'
+import { promisify } from 'node:util'
 import { Volume, createFsFromVolume } from 'memfs'
 
 import type { IFs } from 'memfs'
@@ -17,8 +17,7 @@ export function createMFS () {
 
   // Used by vue-renderer
   _fs.exists = p => Promise.resolve(_fs.existsSync(p))
-  // @ts-expect-error need better types for `pify`
-  _fs.readFile = pify(_fs.readFile)
+  _fs.readFile = promisify(_fs.readFile)
 
   return _fs as IFs & { join?(...paths: string[]): string }
 }

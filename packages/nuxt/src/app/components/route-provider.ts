@@ -1,7 +1,8 @@
-import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
+import { defineComponent, h, nextTick, onMounted, onUnmounted, provide, shallowReactive } from 'vue'
 import type { DefineSetupFnComponent, Ref, VNode } from 'vue'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalizedLoaded, RouteRecordNormalized } from 'vue-router'
 import { renderDiagnostics } from '../diagnostics/render'
+import { trackRenderedRecord } from '../diagnostics/rendered-records'
 import { PageRouteSymbol } from './injections'
 
 interface RouteProviderProps {
@@ -10,6 +11,8 @@ interface RouteProviderProps {
   vnodeRef?: Ref<any>
   renderKey?: string
   trackRootNodes?: boolean
+  /** the matched route record this provider renders, used by dev-only render diagnostics */
+  routeRecord?: RouteRecordNormalized
 }
 
 export type RouteProviderComponent = DefineSetupFnComponent<RouteProviderProps>
@@ -25,6 +28,7 @@ export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderCompon
     vnodeRef: Object as () => Ref<any>,
     renderKey: String,
     trackRootNodes: Boolean,
+    routeRecord: Object as () => RouteRecordNormalized,
   },
   setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -41,6 +45,13 @@ export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderCompon
     }
 
     provide(PageRouteSymbol, shallowReactive(route))
+
+    if (import.meta.dev && import.meta.client) {
+      const record = props.routeRecord ?? props.route.matched.find(m => m.components?.default === props.vnode?.type)
+      if (record) {
+        onUnmounted(trackRenderedRecord(record))
+      }
+    }
 
     let vnode: VNode
     if (import.meta.dev && import.meta.client && props.trackRootNodes) {

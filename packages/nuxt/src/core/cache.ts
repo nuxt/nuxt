@@ -1,7 +1,8 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { buildDiagnostics, createIsIgnored, setBuildOutput, useNitro } from '@nuxt/kit'
+import { createIsIgnored, setBuildOutput } from '@nuxt/kit'
+import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
@@ -45,7 +46,7 @@ export async function getVueHash (nuxt: Nuxt) {
 
   // When Nitro builds as a Vite environment the client bundle is written to
   // `output.publicDir`, outside `buildDir`, so it needs its own cache entry.
-  const cachesClientAssets = nuxt.options.experimental.nitroViteEnvironment
+  const cachesClientAssets = !useServerBuild(nuxt).buildsSeparately
   let clientFiles: string[] = []
 
   return {
@@ -55,7 +56,7 @@ export async function getVueHash (nuxt: Nuxt) {
       await persistBuildOutputs(nuxt)
       await writeCache(nuxt.options.buildDir, nuxt.options.buildDir, cacheFile)
       if (cachesClientAssets && clientFiles.length) {
-        const publicDir = useNitro().options.output.publicDir
+        const publicDir = useServerBuild(nuxt).output.publicDir()
         await writeCache(publicDir, publicDir, clientCacheFile, clientFiles)
       }
 
@@ -103,7 +104,7 @@ export async function getVueHash (nuxt: Nuxt) {
         ...options.restore
           ? {
               async buildApp (builder) {
-                await restoreCacheFromFile(useNitro().options.output.publicDir, clientCacheFile)
+                await restoreCacheFromFile(useServerBuild(nuxt).output.publicDir(), clientCacheFile)
                 await restoreBuildOutputs(nuxt, CLIENT_BUILD_OUTPUT_KEYS)
                 const client = builder.environments.client
                 if (client) {
@@ -239,7 +240,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
 
     const isIgnored = createIsIgnored(nuxt)
     const sourceFiles = await readFilesRecursive(options.cwd(layer), {
-      shouldIgnore: isIgnored, // TODO: Validate if works with absolute paths
+      shouldIgnore: isIgnored,
       cwd: nuxt.options.rootDir,
       patterns: options.patterns(layer),
     })
@@ -250,7 +251,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
     })
 
     const rootFiles = await readFilesRecursive(layer.config?.rootDir || layer.cwd, {
-      shouldIgnore: isIgnored, // TODO: Validate if works with absolute paths
+      shouldIgnore: isIgnored,
       cwd: nuxt.options.rootDir,
       patterns: [
         '.nuxtrc',
@@ -292,7 +293,8 @@ type FileWithMeta = TarFileInput & {
 }
 
 interface ReadFilesRecursiveOptions {
-  shouldIgnore?: (name: string) => boolean
+  /** Called with the absolute path of each matched file. */
+  shouldIgnore?: (path: string) => boolean
   patterns: string[]
   cwd: string
 }
@@ -305,7 +307,7 @@ async function readFilesRecursive (dir: string | string[], opts: ReadFilesRecurs
   const files = await glob(opts.patterns, { cwd: dir })
 
   const fileEntries = await Promise.all(files.map(async (fileName) => {
-    if (!opts.shouldIgnore?.(fileName)) {
+    if (!opts.shouldIgnore?.(resolve(dir, fileName))) {
       const file = await readFileWithMeta(dir, fileName)
       if (!file) { return }
       return {

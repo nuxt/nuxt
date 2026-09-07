@@ -1,16 +1,28 @@
 import type { KeepAliveProps, TransitionProps, AppConfig as VueAppConfig } from 'vue'
-import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
+import type { Plugin as VitePluginType, ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
+import type { Configuration as WebpackConfiguration, WebpackPluginInstance as WebpackPluginInstanceType } from 'webpack'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { SnakeCase } from 'scule'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
+import type { SnakeCase } from './case.ts'
 import type { NuxtConfigLayer, NuxtConfigLayerMeta } from './layers.ts'
 import type { ConfigSchema } from './schema.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { AppHeadMetaObject } from './head.ts'
 
 export type { SchemaDefinition } from 'untyped'
+
+/**
+ * Bundler types re-exported for the utilities that extend a bundler's own configuration.
+ *
+ * Authoring a Vite or webpack plugin is not possible without the bundler's types, so these are a
+ * deliberate exception to Nuxt owning its public types: `@nuxt/kit` takes them from here rather
+ * than importing the bundlers itself.
+ */
+export type VitePlugin = VitePluginType
+export type WebpackConfig = WebpackConfiguration
+export type WebpackPluginInstance = WebpackPluginInstanceType
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -38,12 +50,25 @@ type RuntimeConfigNamespace = Record<string, unknown>
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
+/** Runtime configuration of the app itself, set at build time from `app` and `buildId`. */
+export interface RuntimeConfigApp extends RuntimeConfigNamespace {
+  /** The base path the app is served from. */
+  baseURL: string
+  /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). */
+  buildAssetsDir: string
+  /** An absolute URL the public folder is served from (production-only). */
+  cdnURL: string
+  /** Identifier of the current build, regenerated on every build. */
+  buildId: string
+}
+
 export interface RuntimeConfig extends RuntimeConfigNamespace {
   public: PublicRuntimeConfig
+  app: RuntimeConfigApp
 }
 
 // Avoid DeepPartial for some problematic config, including:
-// - nitro config interface (#31908) located in packages/nitro-server/src/augments.ts
+// - the server builder's config interface (#31908)
 // - vite config interface (#4772)
 
 /**
@@ -53,6 +78,7 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' 
   components?: ConfigSchema['components']
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   vite?: ConfigSchema['vite']
+  nitro?: ConfigSchema['nitro']
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
@@ -157,7 +183,11 @@ export interface CustomAppConfig {
   [key: string]: unknown
 }
 
-export interface AppConfigInput extends CustomAppConfig {
+/**
+ * User-authored `app.config.ts` input.
+ */
+export interface AppConfigInput {
+  [key: string]: unknown
   /** @deprecated reserved */
   private?: never
   /** @deprecated reserved */
@@ -183,6 +213,11 @@ export interface NuxtAppConfig {
 }
 
 export interface AppConfig {
+  [key: string]: unknown
+}
+
+/** App config available in shared and server contexts, excluding user `app.config` files. */
+export interface SharedAppConfig {
   [key: string]: unknown
 }
 

@@ -4,7 +4,8 @@ import { performance } from 'node:perf_hooks'
 import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { Diagnostic } from 'nostics'
-import { buildDiagnostics, findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, pageDiagnostics, pluginDiagnostics, resolveFiles, resolvePath } from '@nuxt/kit'
+import { findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
+import { buildDiagnostics, pageDiagnostics, pluginDiagnostics } from '@nuxt/kit/internal'
 
 import { linkToAlias, logger } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
@@ -226,7 +227,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       `*/index{${extensionGlob}}`,
     ])
     for (const file of middlewareFiles) {
-      const name = getNameFromPath(file)
+      const name = getNameFromPath(file, dirs.appMiddleware)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
         pageDiagnostics.NUXT_B4010({ file: linkToAlias(file, nuxt) })

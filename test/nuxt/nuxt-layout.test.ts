@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
-import { flushPromises } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { NuxtLayout, NuxtPage } from '#components'
 import layouts from '#build/layouts.mjs'
 import { useRoute } from '#app/composables/router'
@@ -215,6 +215,26 @@ describe('NuxtLayout', () => {
     expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-2')
   })
 
+  it('should not block navigation when name is overridden to the current meta layout', async () => {
+    const override = ref<string | undefined>(undefined)
+    const overrideEl = await mountSuspended({
+      // @ts-expect-error dynamically-added layout is not typed
+      setup: () => () => h(NuxtLayout, { name: override.value }, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/layout-1')
+    await flushPromises()
+    expect.soft(overrideEl.find('h3').text()).toBe('Current route: /layout-1')
+
+    override.value = 'layout-1'
+    await nextTick()
+
+    await navigateTo('/no-layout')
+    await flushPromises()
+    expect.soft(overrideEl.find('h1').text()).toBe(`'layout-1' layout`)
+    expect.soft(overrideEl.find('h3').text()).toBe('Current route: /no-layout')
+  })
+
   it.todo('should not change layout before child page resolves', async () => {
     await navigateTo('/layout-1')
     await flushPromises()
@@ -280,5 +300,30 @@ describe('layout switching', () => {
     router.removeRoute('layout-switch-start')
     router.removeRoute('layout-switch-end')
     delete layouts['layout-async']
+  })
+})
+
+describe('layout hydration', () => {
+  it('should release the hydration guard when unmounted before its suspense resolves', async () => {
+    const nuxtApp = useNuxtApp()
+    const done = vi.fn()
+    const deferHydration = vi.spyOn(nuxtApp, 'deferHydration').mockReturnValue(done)
+
+    layouts['layout-pending'] = defineAsyncComponent(() => new Promise(() => {}))
+
+    const el = nuxtApp.runWithContext(() => mount({
+      setup: () => () => h(NuxtLayout, { name: 'layout-pending' }),
+    }))
+    await flushPromises()
+
+    expect(done).not.toHaveBeenCalled()
+
+    el.unmount()
+    await flushPromises()
+
+    expect(done).toHaveBeenCalled()
+
+    deferHydration.mockRestore()
+    delete layouts['layout-pending']
   })
 })

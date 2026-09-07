@@ -3,7 +3,7 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/util.js
  */
 
-import { bundlerDiagnostics, configDiagnostics } from '@nuxt/kit'
+import { bundlerDiagnostics, configDiagnostics } from '@nuxt/kit/internal'
 import type { Compiler } from 'webpack'
 
 export const validate = (compiler: Compiler) => {

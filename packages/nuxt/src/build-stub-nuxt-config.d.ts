@@ -48,5 +48,6 @@ export {
   anyValue as stripNeverHydratedData,
   anyValue as tracingChannelNuxt,
   anyValue as useStateDefaults,
+  anyValue as vapor,
   anyValue as vueAppRootContainer,
 }

@@ -25,5 +25,10 @@ export const unheadDiagnostics = !import.meta.dev
           fix: 'Pass a single string to the `<Style>` default slot.',
           docs: false,
         },
+        NUXT_E6004: {
+          why: (p: { component: string }) => `\`<${p.component}>\` reads its text content from the slot VNodes, which a vapor slot does not expose.`,
+          fix: (p: { component: string }) => `Pass the \`<${p.component}>\` content as a string instead.`,
+          docs: false,
+        },
       },
     })

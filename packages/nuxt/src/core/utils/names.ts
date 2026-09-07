@@ -40,10 +40,12 @@ export function resolveComponentNameSegments (fileName: string, prefixParts: str
     matchedSuffix.unshift(...splitByCase(prefixPart).map(p => p.toLowerCase()))
     const matchedSuffixContent = matchedSuffix.join('/')
     if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
-      // e.g. Item/Item/Item.vue -> Item
+      // e.g. Item/Item/Item.vue -> Item. `index` walks the prefix parts with grouping
+      // folders removed, so the repeated part is looked up there too; indexing the
+      // unfiltered parts would compare a different pair whenever a grouping folder
+      // precedes them, and grouping folders may not affect the resolved name.
       (prefixPart.toLowerCase() === fileNamePartsContent &&
-        prefixParts[index + 1] &&
-        prefixParts[index] === prefixParts[index + 1])) {
+        componentPrefixParts[index + 1] === prefixPart)) {
       componentNameParts.length = index
     }
     index--

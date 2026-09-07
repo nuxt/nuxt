@@ -1,7 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { normalize } from 'pathe'
-import { joinURL } from 'ufo'
-import { readPackageJSON } from 'pkg-types'
+import { readPackageJSON } from './package-json.ts'
 import type { PackageJson } from 'pkg-types'
 
 type Exports = Exclude<PackageJson['exports'], undefined>
@@ -87,7 +86,8 @@ function flattenExports (exports: Exports, parentSubpath = './'): Array<{ subpat
   }
 
   return Object.entries(exports).flatMap(([key, value]) => {
-    const childSubpath = joinURL(parentSubpath, key.startsWith('.') ? key.slice(1) : '')
+    const segment = key.startsWith('.') ? key.slice(1).replace(/^\//, '') : ''
+    const childSubpath = segment ? `${parentSubpath.replace(/\/$/, '')}/${segment}` : parentSubpath
 
     if (typeof value === 'string') {
       return [{ subpath: childSubpath, fsPath: value }]

@@ -6,6 +6,8 @@ import { serverFetch } from 'nitro'
 
 import type { SSRErrorInput } from '../utils/error'
 import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
+import { withBaseURL } from '../utils/base'
+import { applyPrerenderHints } from '../utils/prerender'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -15,6 +17,10 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // return Nitro response + our headers for redirects and JSON responses
   const status = error.status || 500
   const headers = new Headers(error.headers)
+  appendVary(headers, 'accept, sec-fetch-mode')
+  if (import.meta.prerender && 'context' in event) {
+    applyPrerenderHints(event as H3Event, headers)
+  }
   if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
     const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [
@@ -38,8 +44,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   const errorObject = (defaultRes.body || {}) as SSRErrorInput
-  // we will be rendering this error internally so we pass along the error.data safely
-  errorObject.data ??= error.data
+  if (!error.unhandled) {
+    errorObject.data ??= error.data
+  }
   errorObject.url = event.req.url
   // `fatal` is Nuxt-only, so Nitro's error body does not carry it
   errorObject.fatal = (error as { fatal?: boolean }).fatal ?? false
@@ -50,7 +57,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
 
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
-  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!(event as H3Event).context.nuxt?.['~rendering-error']
+  const isRenderingError = !!(event as H3Event).context.nuxt?.['~rendering-error']
 
   if (!isRenderingError) {
     const eventContext = (event as H3Event).context
@@ -60,7 +67,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // HTML response (via SSR)
   const res = !isRenderingError && await serverFetch(
-    withQuery('/__nuxt_error', { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
+    withQuery(withBaseURL('/__nuxt_error'), { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
     {
       headers: event.req.headers,
       redirect: 'manual',
@@ -117,7 +124,9 @@ const IGNORED_ERROR_HEADERS = new Set(['content-type', 'content-security-policy'
 function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>, setCookies: Set<string>, ignore?: Set<string>): Headers {
   for (const [name, value] of overrides) {
     if (ignore?.has(name)) { continue }
-    if (name === 'set-cookie') {
+    if (name === 'vary') {
+      appendVary(target, value)
+    } else if (name === 'set-cookie') {
       if (!setCookies.has(value)) {
         setCookies.add(value)
         target.append(name, value)
@@ -127,6 +136,36 @@ function mergeHeaders (target: Headers, overrides: Headers | [string, string][] 
     }
   }
   return target
+}
+
+/**
+ * Add `value`'s tokens to the `vary` header, keeping any already present. `*`
+ * absorbs everything else, since it means the response varies on all headers.
+ */
+function appendVary (headers: Headers, value: string): void {
+  const incoming = parseVary(value)
+  if (!incoming.length) {
+    return
+  }
+  const existing = parseVary(headers.get('vary'))
+  if (existing.includes('*')) {
+    return
+  }
+  if (incoming.includes('*')) {
+    headers.set('vary', '*')
+    return
+  }
+  const merged = existing.slice()
+  for (const token of incoming) {
+    if (!merged.includes(token)) {
+      merged.push(token)
+    }
+  }
+  headers.set('vary', merged.join(', '))
+}
+
+function parseVary (value: string | null): string[] {
+  return value ? value.split(',').map(token => token.trim().toLowerCase()).filter(Boolean) : []
 }
 
 function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {

@@ -4,6 +4,7 @@
     "duplicates": "off"
   },
   "ignoreExportsUsedInFile": true,
+  "tags": ["-knipignore"],
   "ignoreIssues": {
     "**/.nuxt/**": ["unlisted", "unresolved"]
   },
@@ -28,18 +29,34 @@
         "test/e2e/*.ts",
         "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
-        "test/mocks/app-config.ts"
+        "test/mocks/app-config.ts",
+        "test/mocks/paths.ts"
       ]
     },
     "test/fixtures/*": {
       "entry": [
-        "**/*.{js,ts,tsx,mjs,vue}!"
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
       ],
       "paths": {
         "~~/*": ["./*"],
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       }
+    },
+    "test/fixtures/basic": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreDependencies": [
+        "@babel/plugin-proposal-decorators",
+        "@babel/plugin-syntax-jsx",
+        "nested-dep"
+      ]
     },
     "packages/nitro-server": {
       "entry": [
@@ -51,7 +68,14 @@
         "ohash",
         "hookable",
         "@babel/plugin-proposal-decorators",
-        "@babel/plugin-syntax-typescript"
+        "@babel/plugin-syntax-typescript",
+        "lru-cache"
+      ]
+    },
+    "packages/vite-server": {
+      "ignoreDependencies": [
+        "mocked-exports",
+        "rou3"
       ]
     },
     "packages/vite": {
@@ -88,8 +112,10 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
+        "@nuxt/nitro-server",
         "@nuxt/telemetry",
-        "@nuxt/vite-builder"
+        "@nuxt/vite-builder",
+        "@nuxt/vite-server"
       ]
     },
     "packages/ui-templates": {
@@ -119,6 +145,7 @@
       "ignoreDependencies": [
         "@nuxt/friendly-errors-webpack-plugin",
         "@nuxt/kit",
+        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
@@ -136,7 +163,6 @@
         "mini-css-extract-plugin",
         "ohash",
         "pathe",
-        "pify",
         "postcss",
         "postcss-import",
         "postcss-import-resolver",

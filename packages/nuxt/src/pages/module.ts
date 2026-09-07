@@ -1,32 +1,33 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, pageDiagnostics, resolvePath, resolveTypePaths, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
-import type { Nitro, NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
-import { createFoldedRouteRulesRouter } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
-import type { Nuxt, NuxtPage } from 'nuxt/schema'
+import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+const ROOT_CATCHALL_PATTERN_RE = /^\/\*\*(?::[\w-]+)?$/
 const RELATIVE_WITH_DOT_RE = /^([^.])/
 
 function relativeWithDot (from: string, to: string) {
@@ -75,14 +76,34 @@ export default defineNuxtModule({
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
-    let inlineRulesCache: Record<string, NitroRouteConfig> = {}
-    let updateRouteConfig: (inlineRules: Record<string, NitroRouteConfig>) => void | Promise<void>
+    let inlineRulesCache: Record<string, RouteRuleConfig> = {}
+    let updateRouteConfig: (inlineRules: Record<string, RouteRuleConfig>) => void | Promise<void>
     if (nuxt.options.experimental.inlineRouteRules) {
+      // without a server builder to register them with, the rules the build compiles are
+      // the configured ones, so extracted rules are merged into the configuration itself
+      const overwritten = new Map<string, RouteRuleConfig | undefined>()
+      updateRouteConfig = (inlineRules) => {
+        if (isEqual(inlineRulesCache, inlineRules)) { return }
+        const rules = (nuxt.options.routeRules ||= {})
+        for (const [route, previous] of overwritten) {
+          if (previous === undefined) {
+            delete rules[route]
+          } else {
+            rules[route] = previous
+          }
+        }
+        overwritten.clear()
+        for (const [route, inline] of Object.entries(inlineRules)) {
+          overwritten.set(route, rules[route])
+          rules[route] = defu(inline, rules[route])
+        }
+        inlineRulesCache = inlineRules
+      }
       nuxt.hook('nitro:init', (nitro) => {
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
-            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
-            nitro.routing.sync()
+            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config?.routeRules) })
+            nitro.routing?.sync()
             inlineRulesCache = inlineRules
           }
         }
@@ -271,16 +292,13 @@ export default defineNuxtModule({
         filename: 'types/middleware.d.ts',
         dependsOn: [],
         getContents: () => [
-          'declare module \'nitro/types\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: string | string[] | Record<string, boolean>',
-          '  }',
-          '}',
-          'declare module \'nitro\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: string | string[] | Record<string, boolean>',
-          '  }',
-          '}',
+          ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+            `declare module '${module}' {`,
+            '  interface RouteRuleConfigExtensions {',
+            '    appMiddleware?: string | string[] | Record<string, boolean>',
+            '  }',
+            '}',
+          ]),
           'export {}',
         ].join('\n'),
       }, { nuxt: true, nitro: true, node: true })
@@ -497,8 +515,8 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = useNitro()
-      if (nitro.options.prerender.crawlLinks || ('routing' in nitro && nitro.routing.routeRules.routes.some(r => r.data.prerender))) {
+      const nitro = tryUseNitro()
+      if (nitro && (nitro.options.prerender.crawlLinks || nitro.routing?.routeRules.routes.some(r => r.data.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -539,7 +557,7 @@ export default defineNuxtModule({
     })
 
     const warnedConflicts = new Set<string>()
-    let publicAssets: Nitro['options']['publicAssets'] = []
+    let publicAssets: NitroInstanceOptions['publicAssets'] = []
     nuxt.hook('nitro:init', (nitro) => {
       const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
       publicAssets = nitro.options.publicAssets.filter((asset) => {
@@ -580,13 +598,47 @@ export default defineNuxtModule({
     // can scope their speculation rules to same-origin *page* navigations, which
     // are safe to GET, instead of a blanket rule that could prefetch/prerender
     // non-idempotent server routes (`~/server/routes/*`). A catch-all page
-    // (`[...slug]`) widens this back to a blanket `*`.
+    // (`[...slug]`) widens this back to a blanket `*`. These stay named
+    // (`/products/:id`) rather than using the collapsed early-404 patterns.
     nuxt.hook('nitro:build:before', (nitro) => {
-      const patterns = new Set<string>()
+      const urlPatterns = new Set<string>()
       for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
-        patterns.add(rou3PatternToURLPattern(route).pattern)
+        urlPatterns.add(rou3PatternToURLPattern(route).pattern)
       }
-      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...patterns]
+      ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...urlPatterns]
+    })
+
+    // The rou3 patterns the renderer compiles into an early-404 matcher for
+    // paths that cannot match any page, before loading the app.
+    nuxt.hook('nitro:build:before', async (nitro) => {
+      if (!nuxt.options.experimental.early404 || nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
+
+      const blockedRoutes = new Set<string>()
+      const patterns = collectRou3PagePatterns(nuxt.apps.default?.pages || [], ['/'], route => blockedRoutes.add(route))
+      if (!patterns) {
+        pageDiagnostics.NUXT_B4018({ paths: [...blockedRoutes] })
+        return
+      }
+
+      if (patterns.some(pattern => ROOT_CATCHALL_PATTERN_RE.test(pattern))) {
+        pageDiagnostics.NUXT_B4019({})
+        return
+      }
+
+      const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
+      for (const file of routerOptionsFiles) {
+        if (file.optional) { continue }
+        const code = await readFile(file.path, 'utf-8').catch(() => undefined)
+        if (code === undefined || routerOptionsMayModifyRoutes(code, file.path)) {
+          pageDiagnostics.NUXT_B4020({ file: linkToAlias(file.path, nuxt) })
+          return
+        }
+      }
+
+      // Patterns and lookups are always case-folded: with `sensitive` routing this can
+      // only let a request through to the app (which still 404s), never wrongly 404 it.
+      ;(nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns
+        = [...new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))]
     })
 
     nuxt.hook('nitro:build:before', (nitro) => {
@@ -600,16 +652,14 @@ export default defineNuxtModule({
       nitro.options.prerender.routes ||= []
 
       // Inject page patterns that explicitly match `prerender: true` route rule
-      if (!nitro.options.static) {
-        // Fold keys (unless `sensitive`) to mirror the compiled `#build/route-rules.mjs`
-        // matcher, so a `prerender: true` rule keyed `/Admin` is honoured at `/Admin`.
+      if (!nitro.options.static && nitro.routing) {
+        // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs`
+        // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
+        // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const foldRouteRuleKey = (route: string) => caseSensitiveRouteRules ? route : route.toLowerCase()
-        const ruleMatcher = caseSensitiveRouteRules
-          ? nitro.routing.routeRules
-          : createFoldedRouteRulesRouter(nitro.routing.routeRules, nitro.options.baseURL)
+        const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules.routes, nitro.options.baseURL, !caseSensitiveRouteRules)
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', foldRouteRuleKey(route)).reverse())
+          const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
@@ -654,9 +704,8 @@ export default defineNuxtModule({
 
     // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
     nuxt.hook('pages:extend', (routes) => {
-      const nitro = useNitro()
       let resolvedRoutes: string[]
-      for (const route of 'routing' in nitro ? nitro.routing.routeRules.routes : []) {
+      for (const route of resolveRouteRulesRoutes(nuxt).routes) {
         if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path
@@ -719,17 +768,20 @@ export default defineNuxtModule({
     const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
-    let nitroForRouteCoverage: Nitro | undefined
+    let nitroForRouteCoverage: NitroInstance | undefined
     nuxt.hook('nitro:init', (nitro) => {
       nitroForRouteCoverage = nitro
     })
     function markPagesForRouteRules (pages: NuxtPage[]) {
+      const restrictedPages = new Map<NuxtPage, 'noScripts' | 'spaOnly'>()
       const nitro = nitroForRouteCoverage
-      if (!nitro) { return }
+      if (!nitro) { return restrictedPages }
 
       markPagesCoveredByRouteRule(pages, nitro, {
         isCovered: rules => !!rules.noScripts,
-        mark: (page, covered) => { page._noScripts = covered },
+        mark: (page, covered) => {
+          if (covered) { restrictedPages.set(page, 'noScripts') }
+        },
       })
 
       // server components render on the server by definition, whatever `ssr` says
@@ -738,16 +790,20 @@ export default defineNuxtModule({
         isCovered: rules => rules.ssr === false,
         filter: page => page.mode !== 'server',
         mark: (page, covered, resolvedPath) => {
-          if (covered && page._noScripts) {
+          if (!covered) { return }
+          if (restrictedPages.get(page) === 'noScripts') {
             conflicting.push(resolvedPath)
+            return
           }
-          page._spaOnly = covered && !page._noScripts
+          restrictedPages.set(page, 'spaOnly')
         },
       })
 
       if (conflicting.length) {
-        logger.warn(`\`ssr: false\` and \`noScripts\` both apply to ${conflicting.map(path => `\`${path}\``).join(', ')}, which leaves nothing to render the route: the server emits an empty shell and no client bundle is loaded to fill it. Remove one of the two rules.`)
+        pageDiagnostics.NUXT_B4021({ paths: conflicting.map(path => `\`${path}\``).join(', ') })
       }
+
+      return restrictedPages
     }
 
     // Add routes template
@@ -757,8 +813,9 @@ export default defineNuxtModule({
       dependsOn: nuxt.options.experimental.scanPageMeta ? ['pages'] : [],
       getContents ({ app }) {
         if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
-        markPagesForRouteRules(app.pages)
+        const restrictedPages = markPagesForRouteRules(app.pages)
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
+          restrictedPages,
           serverComponentRuntime,
           clientComponentRuntime,
           overrideMeta: !!nuxt.options.experimental.scanPageMeta,
@@ -836,19 +893,34 @@ export default defineNuxtModule({
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          'declare module \'nitro/types\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
-          '  }',
-          '}',
-          'declare module \'nitro\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
-          '  }',
-          '}',
+          ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+            `declare module '${module}' {`,
+            '  interface RouteRuleConfigExtensions {',
+            '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
+            '  }',
+            '}',
+          ]),
         ].join('\n')
       },
     }, { nuxt: true, nitro: true, node: true })
+
+    // `router.addRoute()` would bypass the build-time route patterns used for early
+    // 404 responses, so remove it from the router type. `removeRoute` stays: it only
+    // narrows the real route set, which is the safe direction for the matcher.
+    if (nuxt.options.experimental.early404) {
+      addTypeTemplate({
+        filename: 'types/early404.d.ts',
+        dependsOn: [],
+        getContents: () => [
+          'declare module \'nuxt/app\' {',
+          '  interface Early404IncompatibleRouterMethods {',
+          '    addRoute: true',
+          '  }',
+          '}',
+          'export {}',
+        ].join('\n'),
+      })
+    }
 
     // add page meta types if enabled
     if (nuxt.options.experimental.viewTransition) {
