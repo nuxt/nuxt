@@ -91,6 +91,25 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
+  // The scanned directories are collected in layer order (the project first) and unimport
+  // keeps the last of two same-named imports, so a layer's util would shadow the project's.
+  // Scanning the layers in reverse leaves the project last, which is the precedence the
+  // handlers scanned from the same layers already have. A directory belonging to no layer
+  // keeps the lowest precedence.
+  nuxt.hook('nitro:init', (nitro) => {
+    const dirs = nitro.options.imports === false ? undefined : nitro.options.imports.dirs
+    if (!dirs?.length) { return }
+    const layers = nuxt.options._layers
+    const layerRoots = layers
+      .map((layer, index) => [withTrailingSlash(layer.config.rootDir), index] as const)
+      .sort(([a], [b]) => b.length - a.length)
+    const layerOf = (dir: string | { glob: string }) => {
+      const path = withTrailingSlash(typeof dir === 'string' ? dir : dir.glob)
+      return layerRoots.find(([root]) => path.startsWith(root))?.[1] ?? layers.length
+    }
+    dirs.sort((a, b) => layerOf(b) - layerOf(a))
+  })
+
   // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)

@@ -1752,6 +1752,10 @@ describe.skipIf(!runsOnceInMatrix)('extends support', () => {
     expect(headers.get('injected-header')).toEqual('foo')
   })
 
+  it('prefers a project server util over a layer\'s of the same name', async () => {
+    expect(await $fetch('/api/layer-utils')).toEqual({ shared: 'root', layerOnly: 'layer-only' })
+  })
+
   it('extends foo/app/router.options & bar/app/router.options', async () => {
     const html: string = await $fetch<string>('/')
     const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)![1]!.split(' ')
