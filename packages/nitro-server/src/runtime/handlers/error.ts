@@ -6,6 +6,7 @@ import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
+import { applyPrerenderHints } from '../utils/prerender'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -15,6 +16,11 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
   // invoke default Nitro error handler (which will log appropriately if required)
   const defaultRes = await defaultHandler(error, event, { json: true })
+
+  // the render that failed may have collected hints before it threw
+  if (import.meta.prerender) {
+    applyPrerenderHints(event)
+  }
 
   // let Nitro handle redirect if appropriate
   const status = (error as any).status || error.statusCode || 500
@@ -86,7 +92,8 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   const html = await res.text()
   for (const [header, value] of res.headers.entries()) {
-    if (header === 'set-cookie') {
+    // the error render's own prerender hints add to the ones already on this response
+    if (header === 'set-cookie' || header === 'x-nitro-prerender') {
       appendResponseHeader(event, header, value)
       continue
     }

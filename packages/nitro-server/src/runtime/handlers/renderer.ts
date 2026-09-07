@@ -7,6 +7,7 @@ import { createNuxtRenderer } from 'nuxt/internal/renderer'
 
 import { NUXT_ASYNC_CONTEXT } from '#internal/nuxt/nitro-config.mjs'
 import { toRequestEvent } from '../utils/event'
+import { applyPrerenderHints } from '../utils/prerender'
 import { rendererInstance } from '../utils/renderer/options'
 
 // Polyfill for unctx (https://github.com/unjs/unctx#native-async-context)
@@ -24,6 +25,10 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
     // place multiple cookies stay distinct, so it wins over the response's flat view
     if (name === 'set-cookie') { continue }
     setResponseHeader(event, name, value)
+  }
+
+  if (import.meta.prerender) {
+    applyPrerenderHints(event)
   }
 
   return {

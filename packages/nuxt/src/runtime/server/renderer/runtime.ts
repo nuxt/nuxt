@@ -1,26 +1,23 @@
-import type { RequestEventFallback, RuntimeRequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent, RequestEvent } from '@nuxt/schema'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, NuxtSSRContext } from '#app/types'
 
 /**
- * The request event the renderer reads, described in web standards only.
- *
- * A server runtime whose own event has another shape (an `h3` v1 event, say) hands the
- * renderer this view of it and names the event the application sees in {@link app}, so
- * that `useRequestEvent()` and the render hooks keep receiving the runtime's own event.
+ * The request event the renderer reads. A server runtime whose own event has another
+ * shape passes a web-standard view of it and names its own event in `~app`.
  */
-export interface RendererEvent extends RequestEventFallback {
+export interface RendererEvent extends RequestEvent {
   /**
-   * The event the application sees, where the runtime's own event is not web-shaped.
+   * The runtime's own event, where it is not web-shaped.
    *
    * Prefixed, because a server runtime's own event may carry an `app` of its own (h3 v2's
    * event does), and read only through {@link appEvent}.
    */
-  '~app'?: RuntimeRequestEvent
+  '~app'?: NuxtRequestEvent
 }
 
-/** The event to hand to application code and to the hooks a server runtime exposes. */
-export function appEvent (event: RendererEvent): RuntimeRequestEvent {
-  return (event['~app'] ?? event) as unknown as RuntimeRequestEvent
+/** The event to pass to application code and to the render hooks. */
+export function appEvent (event: RendererEvent): NuxtRequestEvent {
+  return (event['~app'] ?? event) as unknown as NuxtRequestEvent
 }
 
 /**
@@ -53,11 +50,11 @@ export interface RendererRouteRules {
 
 /** Hooks the renderer calls while rendering a route. */
 export interface RendererHooks {
-  callHook(name: 'render:route', context: NuxtRenderRouteContext, extra: { event: RuntimeRequestEvent }): void | Promise<void>
-  callHook(name: 'render:html', context: NuxtRenderHTMLContext, extra: { event: RuntimeRequestEvent, streaming?: boolean }): void | Promise<void>
-  callHook(name: 'render:html:chunk', context: NuxtRenderChunkContext, extra: { event: RuntimeRequestEvent }): void | Promise<void>
-  callHook(name: 'render:html:close', context: NuxtRenderCloseContext, extra: { event: RuntimeRequestEvent }): void | Promise<void>
-  callHook(name: 'render:island', response: NuxtIslandResponse, extra: { event: RuntimeRequestEvent, islandContext: NuxtIslandContext }): void | Promise<void>
+  callHook(name: 'render:route', context: NuxtRenderRouteContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
+  callHook(name: 'render:html', context: NuxtRenderHTMLContext, extra: { event: NuxtRequestEvent, streaming?: boolean }): void | Promise<void>
+  callHook(name: 'render:html:chunk', context: NuxtRenderChunkContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
+  callHook(name: 'render:html:close', context: NuxtRenderCloseContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
+  callHook(name: 'render:island', response: NuxtIslandResponse, extra: { event: NuxtRequestEvent, islandContext: NuxtIslandContext }): void | Promise<void>
 }
 
 /** Storage for the payloads rendered alongside a prerendered route. */
@@ -69,10 +66,7 @@ export interface PayloadCache {
 
 /** Capabilities the server runtime provides to the renderer for each build. */
 export interface NuxtRendererOptions {
-  /**
-   * Resolved runtime config. The event is passed because a runtime may hand out a copy
-   * per request, which its own plugins are then free to mutate for that request alone.
-   */
+  /** Resolved runtime config. The event is passed for a runtime that resolves it per request. */
   runtimeConfig: (event: RendererEvent) => NuxtSSRContext['runtimeConfig']
   /** URL of a file emitted into the build assets directory. */
   buildAssetsURL: (...path: string[]) => string
@@ -102,6 +96,8 @@ export interface NuxtRendererOptions {
 /** Per-request Nuxt state the renderer reads from the request event, populated by the server runtime. */
 export interface NuxtRequestState {
   'noSSR'?: boolean
+  /** Routes the render asked the server runtime to prerender as well, as raw paths. */
+  'prerenderRoutes'?: string[]
   /** Set by the runtime for a request it made to itself, which may reach internal routes. */
   '~internal'?: boolean
   /** Set when the runtime re-enters the renderer to render an error page. */
@@ -114,4 +110,15 @@ export interface NuxtRequestState {
 
 export function getRequestState (event: RendererEvent): NuxtRequestState | undefined {
   return (event.context as { nuxt?: NuxtRequestState }).nuxt
+}
+
+/**
+ * Ask the server runtime to prerender `paths` alongside the route being rendered. What the
+ * runtime does with them is its own concern; a runtime that does not prerender ignores them.
+ */
+export function addPrerenderRoutes (event: RendererEvent, ...paths: string[]): void {
+  const context = event.context as { nuxt?: NuxtRequestState }
+  const state = context.nuxt ||= {}
+  state.prerenderRoutes ||= []
+  state.prerenderRoutes.push(...paths)
 }

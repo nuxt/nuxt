@@ -8,7 +8,7 @@ import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack/types'
 import type { Hookable } from 'hookable'
-import type { RuntimeConfig, RuntimeRequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
 
 type HookResult = Promise<void> | void
 
@@ -167,7 +167,7 @@ export interface NuxtPayload {
 
 export interface NuxtSSRContext extends SSRContext {
   url: string
-  event: RuntimeRequestEvent
+  event: NuxtRequestEvent
   runtimeConfig: RuntimeConfig
   noSSR: boolean
   /** whether we are rendering an SSR error */

@@ -1,5 +1,4 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import type { RequestEventFallback } from 'nuxt/schema'
 
 import {
   createError,
@@ -17,6 +16,7 @@ import {
   setResponseHeader,
   setResponseHeaders,
   setResponseStatus,
+  toNuxtRequestEvent,
 } from '../src/server/index'
 import type { NuxtErrorLike, RequestEvent } from '../src/server/index'
 
@@ -26,11 +26,11 @@ function event (request: Request): RequestEvent {
     url: new URL(request.url),
     res: { headers: new Headers() },
     context: {},
-  } as unknown as RequestEvent
+  }
 }
 
 function response (event: RequestEvent) {
-  return (event as unknown as RequestEventFallback).res
+  return event.res
 }
 
 describe('`defineEventHandler`', () => {
@@ -223,9 +223,29 @@ describe('errors', () => {
 })
 
 describe('the event the surface is typed against', () => {
-  it('is the event the configured server builder contributes, never a particular runtime\'s', () => {
+  it('is the web-standard event, never a runtime\'s own', () => {
     expectTypeOf<Parameters<typeof getRequestURL>[0]>().toEqualTypeOf<RequestEvent>()
     expectTypeOf<Parameters<typeof getCookie>[0]>().toEqualTypeOf<RequestEvent>()
     expectTypeOf<Parameters<typeof readBody>[0]>().toEqualTypeOf<RequestEvent>()
+  })
+
+  it('describes the request, its URL and the response, and nothing a runtime adds', () => {
+    expectTypeOf<RequestEvent['req']>().toEqualTypeOf<Request>()
+    expectTypeOf<RequestEvent['url']>().toEqualTypeOf<URL>()
+    expectTypeOf<RequestEvent['res']['headers']>().toEqualTypeOf<Headers>()
+    expectTypeOf<RequestEvent['context']>().toExtend<Record<string, unknown>>()
+    expectTypeOf<RequestEvent>().not.toHaveProperty('node')
+    expectTypeOf<RequestEvent>().not.toHaveProperty('waitUntil')
+  })
+
+  it('resolves to the event itself where it is web-shaped', () => {
+    const e = event(new Request('https://nuxt.com/api'))
+    expect(toNuxtRequestEvent(e)).toBe(e)
+  })
+
+  it('resolves to the event named in `~app` where there is one', () => {
+    const runtimeEvent = event(new Request('https://nuxt.com/api'))
+    const view = Object.assign(event(new Request('https://nuxt.com/api')), { '~app': runtimeEvent })
+    expect(toNuxtRequestEvent(view)).toBe(runtimeEvent)
   })
 })

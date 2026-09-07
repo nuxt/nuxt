@@ -4,7 +4,7 @@ import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, Nitro
 import type { EventHandler, H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
+import type { HookResult, NuxtRequestContext, RuntimeConfig, TSReference } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`, with a `nuxt` key for Nuxt-owned
@@ -356,6 +356,14 @@ declare module 'nuxt/schema' {
 
   interface NuxtPage {
     rules?: NitroRouteConfig
+  }
+}
+
+export type { NuxtRequestContext } from 'nuxt/schema'
+
+declare module 'h3' {
+  interface H3EventContext {
+    nuxt?: NuxtRequestContext
   }
 }
 

@@ -1,6 +1,7 @@
 import { getRequestHost, getRequestProtocol, toWebRequest } from 'h3'
 import type { H3Event } from 'h3'
 import type { RendererEvent } from 'nuxt/internal/renderer/runtime'
+import type { RequestEvent } from 'nuxt/schema'
 
 const ENC_PIPE_RE = /%7C/g
 const ENC_BRACKET_OPEN_RE = /%5B/g
@@ -86,24 +87,69 @@ class NodeResponseHeaders {
   }
 }
 
-/** The h3 v1 event a renderer event was built from. */
-export function getH3Event (event: RendererEvent): H3Event {
-  return (event['~app'] ?? event) as unknown as H3Event
+const WEB_PROPERTIES = new Set(['req', 'res', 'url', '~app'])
+
+const portableEvents = new WeakMap<H3Event, RequestEvent>()
+
+/**
+ * The event a `nuxt/server` handler is given, in the web-standard shape.
+ *
+ * Both shapes are served from one object: `req`, `res`, `url` and `~app` resolve to the web
+ * view, everything else to the h3 v1 event, so h3's own helpers work on it too (they read
+ * `event.node`, not its deprecated `req`/`res` aliases). Cached per event.
+ */
+export function toPortableEvent (event: H3Event): RequestEvent {
+  const cached = portableEvents.get(event)
+  if (cached) { return cached }
+
+  const web = toWebView(event)
+  const portable = new Proxy(event, {
+    get (target, property) {
+      return WEB_PROPERTIES.has(property as string)
+        ? web[property as keyof RendererEvent]
+        : Reflect.get(target, property, target)
+    },
+    set (target, property, value) {
+      if (property === 'url') {
+        web.url = value
+        return true
+      }
+      return Reflect.set(target, property, value, target)
+    },
+    has (target, property) {
+      return WEB_PROPERTIES.has(property as string) || Reflect.has(target, property)
+    },
+  }) as unknown as RequestEvent
+
+  portableEvents.set(event, portable)
+
+  return portable
+}
+
+/** The event the SSR renderer reads, which reaches the h3 v1 event itself through `~app`. */
+export function toRequestEvent (event: H3Event): RendererEvent {
+  const requestEvent = toWebView(event)
+
+  // a request nitro made to itself may reach the internal error route
+  if ('__unenv__' in event.node.req) {
+    const context = event.context as { nuxt?: { '~internal'?: boolean } }
+    context.nuxt ||= {}
+    context.nuxt['~internal'] = true
+  }
+
+  return requestEvent
 }
 
 /**
- * Describe an h3 v1 event in the web-standard shape the SSR renderer reads.
- *
- * The event is described rather than adapted in place because `event.req` and `event.res`
- * already name the node request and response on an h3 v1 event, and that is the shape
- * `useRequestEvent()` and the render hooks must keep seeing; the renderer is handed this
- * view and reaches the event itself through `app`.
+ * Describe an h3 v1 event in the web-standard shape, rather than adapting it in place:
+ * `event.req` and `event.res` already name the node request and response, and that is the
+ * shape `useRequestEvent()` and the render hooks must keep seeing.
  *
  * Everything is resolved on access, and the response is backed by the node response rather
  * than a copy of it, so a header the application sets through h3 and a header the renderer
  * sets are the same header.
  */
-export function toRequestEvent (event: H3Event): RendererEvent {
+function toWebView (event: H3Event): RendererEvent {
   const node = event.node
   let request: Request | undefined
   let url: URL | undefined
@@ -122,12 +168,6 @@ export function toRequestEvent (event: H3Event): RendererEvent {
     },
     headers: new NodeResponseHeaders(node.res) as unknown as Headers,
   }
-  // a request nitro made to itself may reach the internal error route
-  if ('__unenv__' in node.req) {
-    const context = event.context as { nuxt?: { '~internal'?: boolean } }
-    context.nuxt ||= {}
-    context.nuxt['~internal'] = true
-  }
   const requestEvent = {
     context: event.context,
     res,
@@ -144,7 +184,7 @@ export function toRequestEvent (event: H3Event): RendererEvent {
     },
   } as RendererEvent
 
-  // read only by `appEvent()`, which is how the renderer hands the application and the
+  // read through `appEvent()`, which is how the renderer passes the application and the
   // render hooks the event this runtime gave it rather than this view of it
   requestEvent['~app'] = event as unknown as RendererEvent['~app']
 

@@ -1,7 +1,7 @@
-import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
+import { setResponseStatus as _setResponseStatus, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
-import type { RuntimeRequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent } from '@nuxt/schema'
 import { $fetch as _$fetch } from '#build/fetch'
 
 import type { NuxtApp } from '../nuxt'
@@ -12,11 +12,11 @@ import { useHead } from './head'
 
 const $fetch = _$fetch as TypedFetch
 
-/** The request event, as declared by the configured `server.builder` (`H3Event` under `@nuxt/nitro-server`). */
-export type { RuntimeRequestEvent } from '@nuxt/schema'
+/** The request event in the shape the configured `server.builder` provides (`H3Event` under `@nuxt/nitro-server`). */
+export type { NuxtRequestEvent } from '@nuxt/schema'
 
 /** @since 3.0.0 */
-export function useRequestEvent (nuxtApp?: NuxtApp): RuntimeRequestEvent | undefined {
+export function useRequestEvent (nuxtApp?: NuxtApp): NuxtRequestEvent | undefined {
   if (import.meta.client) { return }
   nuxtApp ||= useNuxtApp()
   return nuxtApp.ssrContext?.event
@@ -57,10 +57,10 @@ export function useRequestFetch (): TypedFetch {
 }
 
 /** @since 3.0.0 */
-export function setResponseStatus (event: RuntimeRequestEvent, code?: number, message?: string): void
+export function setResponseStatus (event: NuxtRequestEvent, code?: number, message?: string): void
 /** @deprecated Pass `event` as first option. */
 export function setResponseStatus (code: number, message?: string): void
-export function setResponseStatus (arg1: RuntimeRequestEvent | number | undefined, arg2?: number | string, arg3?: string): void {
+export function setResponseStatus (arg1: NuxtRequestEvent | number | undefined, arg2?: number | string, arg3?: string): void {
   if (import.meta.client) { return }
   if (arg1 && typeof arg1 !== 'number') {
     return _setResponseStatus(arg1, arg2 as number | undefined, arg3)
@@ -103,8 +103,12 @@ export function useResponseHeader (header: string): import('vue').WritableComput
 export function prerenderRoutes (path: string | string[]): void {
   if (!import.meta.server || !import.meta.prerender) { return }
 
-  const paths = toArray(path)
-  appendHeader(useRequestEvent()!, 'x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
+  const context = useRequestEvent()?.context
+  if (!context) { return }
+
+  const nuxt = context.nuxt ||= {}
+  nuxt.prerenderRoutes ||= []
+  nuxt.prerenderRoutes.push(...toArray(path))
 }
 
 const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'

@@ -42,7 +42,7 @@ describe('the shape of what it reads off an h3 v1 event', () => {
       url: new URL(url),
       res: { headers: new Headers() },
       context: {},
-    } as unknown as RequestEvent
+    }
   }
 
   function event (path: string, options: { method?: string, headers?: Record<string, string> } = {}): H3Event {
@@ -124,5 +124,52 @@ describe('the shape of what it reads off an h3 v1 event', () => {
     expect(e.node.res.getHeader('location')).toBe('/login?next="><script>alert(1)</script>')
     expect(body).toBe(shipped.sendRedirect(webEvent('https://nuxt.com/'), '/login?next="><script>alert(1)</script>'))
     expect(body).not.toContain('<script>')
+  })
+
+  describe('the event it hands a handler', () => {
+    it('reads the request, its URL and the response in the portable shape', () => {
+      const e = event('/api/hello?name=nuxt', { headers: { 'x-custom': 'value' } })
+      const handler = delegate.defineEventHandler(portable => portable)
+
+      const portable = handler(e)
+
+      expect(portable.req).toBeInstanceOf(Request)
+      expect(portable.req.headers.get('x-custom')).toBe('value')
+      expect(portable.url.pathname).toBe('/api/hello')
+      expect(portable.url.search).toBe('?name=nuxt')
+      expect(portable.context).toBe(e.context)
+
+      portable.res.status = 418
+      portable.res.headers.set('x-from-portable', 'yes')
+      expect(e.node.res.statusCode).toBe(418)
+      expect(e.node.res.getHeader('x-from-portable')).toBe('yes')
+    })
+
+    it('is still the runtime event, so h3\'s own helpers work on it', () => {
+      const e = event('/api/hello?name=nuxt')
+      const handler = delegate.defineEventHandler(portable => portable)
+
+      const portable = handler(e) as unknown as H3Event
+
+      expect(portable.node).toBe(e.node)
+      expect(portable.path).toBe('/api/hello?name=nuxt')
+      expect(delegate.getQuery(portable)).toEqual({ name: 'nuxt' })
+      delegate.setResponseHeader(portable, 'x-from-h3', 'yes')
+      expect(e.node.res.getHeader('x-from-h3')).toBe('yes')
+    })
+
+    it('resolves through `toNuxtRequestEvent` to the h3 v1 event it is a view of', () => {
+      const e = event('/api/hello?name=nuxt')
+      const handler = delegate.defineEventHandler(portable => delegate.toNuxtRequestEvent(portable))
+
+      expect(handler(e)).toBe(e)
+    })
+
+    it('is the same event every time, so state stored on it is shared', () => {
+      const e = event('/')
+      const handler = delegate.defineEventHandler(portable => portable)
+
+      expect(handler(e)).toBe(handler(e))
+    })
   })
 })

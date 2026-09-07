@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-vite-server-netlify",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "@netlify/vite-plugin": "3.0.1"
+  },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  }
+}

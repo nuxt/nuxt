@@ -2,10 +2,9 @@
  * The `nuxt/server` implementations for a nitropack v2 build, registered as
  * `serverBuild.runtime.server`.
  *
- * Every name `nuxt/server` exports is exported here, because none of the shipped
- * implementations can be reused: they read the request and response in the web-standard
- * shape, and an h3 v1 event has neither. h3 v1's own helpers take the event instead, so
- * this is a rename of them plus the few Nuxt adds.
+ * Every name `nuxt/server` exports is exported here. Most are h3 v1's own helpers, which
+ * take the event rather than reading a web-standard request and response off it, plus the
+ * few Nuxt adds.
  *
  * The types come from `nuxt/server` whichever module backs it, so a name missing here is
  * a runtime error rather than a type error; `test/server.test.ts` guards that.
@@ -30,6 +29,7 @@ import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
 import type { EventHandler, NuxtErrorLike } from 'nuxt/server'
 
 import { NUXT_ERROR_SIGNATURE } from '#app/error'
+import { toPortableEvent } from './utils/event'
 
 export {
   deleteCookie,
@@ -42,12 +42,19 @@ export {
   setResponseStatus,
 }
 
-export type { AppRouteRules, RequestEventFallback, ServerRoutes } from 'nuxt/schema'
-export type { EventHandler, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RuntimeRequestEvent } from 'nuxt/server'
+export { toNuxtRequestEvent } from 'nuxt/internal/server-default'
 
-/** @see {@link import('nuxt/server').defineEventHandler} */
-export function defineEventHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
-  return handler
+export type { AppRouteRules, ServerRoutes } from 'nuxt/schema'
+export type { EventHandler, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent } from 'nuxt/server'
+
+/**
+ * @see {@link import('nuxt/server').defineEventHandler}
+ *
+ * The handler is given the event in the portable shape, so that it can read
+ * `event.req`/`event.url`/`event.res` as the surface promises.
+ */
+export function defineEventHandler<Result> (handler: EventHandler<Result>): (event: H3Event) => Result {
+  return event => handler(toPortableEvent(event))
 }
 
 /**
