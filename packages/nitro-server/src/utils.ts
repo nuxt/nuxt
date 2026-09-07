@@ -64,21 +64,32 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
  * 2. A trailing slash (directory-only) and a leading slash (anchored) have no meaning.
  * 3. Re-inclusion cannot be expressed in a flat list of globs at all, we drop whatever
  *    a negated pattern would 'undo'.
+ *
+ * Rules are order-sensitive (the last one to match a path wins), so a negated pattern
+ * only drops the patterns declared before it.
  */
 export function toFsDriverIgnorePatterns (patterns: string[]): string[] {
-  const globs = new Set<string>()
-  const rescued = new Set<string>()
+  const globs: string[] = []
   for (const pattern of patterns) {
     const negated = pattern[0] === '!'
     const glob = toFsDriverGlob(negated ? pattern.slice(1) : pattern)
-    if (glob) {
-      (negated ? rescued : globs).add(glob)
+    if (!glob) {
+      continue
+    }
+    if (!negated) {
+      if (!globs.includes(glob)) {
+        globs.push(glob)
+      }
+      continue
+    }
+    for (let i = globs.length - 1; i >= 0; i--) {
+      const ignored = globs[i]!
+      if (matchesGlob(glob, ignored) || matchesGlob(ignored, glob)) {
+        globs.splice(i, 1)
+      }
     }
   }
-  if (!rescued.size) {
-    return [...globs]
-  }
-  return [...globs].filter(glob => ![...rescued].some(path => matchesGlob(path, glob)))
+  return globs
 }
 
 function toFsDriverGlob (pattern: string): string | undefined {

@@ -90,4 +90,14 @@ describe('toFsDriverIgnorePatterns', () => {
     expect(toFsDriverIgnorePatterns(['*.log', '!important.log'])).toEqual([])
     expect(toFsDriverIgnorePatterns(['*.log', '**/.output', '!important.log'])).toEqual(['**/.output'])
   })
+
+  it('drops a pattern re-included by a more general negated pattern', () => {
+    expect(toFsDriverIgnorePatterns(['app/middleware/foo/bar.js', '!app/middleware/foo/*.js'])).toEqual([])
+    expect(toFsDriverIgnorePatterns(['app/middleware/foo/bar.js', '!**/*.js'])).toEqual([])
+  })
+
+  it('keeps a pattern declared after the negated pattern it overlaps', () => {
+    expect(toFsDriverIgnorePatterns(['!important.log', '*.log'])).toEqual(['**/*.log'])
+    expect(toFsDriverIgnorePatterns(['*.log', '!important.log', '**/*.log'])).toEqual(['**/*.log'])
+  })
 })
