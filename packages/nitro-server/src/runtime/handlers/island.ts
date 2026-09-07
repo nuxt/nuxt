@@ -9,7 +9,7 @@ import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
 import { filterIslandProps, getIslandHash } from '#app/island-hash'
 import { findUnsafeIslandPropKey } from '#app/island-props'
-import { MAX_ISLAND_BODY_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
+import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
@@ -222,11 +222,27 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
 
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 
+async function drainBody (event: H3Event) {
+  if (!event.req.body) { return }
+  const reader = event.req.body.getReader()
+  try {
+    for (;;) {
+      const { done } = await reader.read()
+      if (done) { break }
+    }
+  } finally {
+    reader.releaseLock()
+  }
+}
+
 // Read a non-GET island body, refusing oversized or deeply nested input before the JSON
 // parse and hash run on it.
 async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext> {
   const contentLength = Number(event.req.headers.get('content-length'))
   if (contentLength > MAX_ISLAND_BODY_BYTES) {
+    if (contentLength <= MAX_ISLAND_DRAIN_BYTES) {
+      await drainBody(event)
+    }
     throw new HTTPError({ status: 413, statusText: 'Island request body too large' })
   }
 
