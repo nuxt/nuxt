@@ -3,7 +3,7 @@ import { renderToWebStream } from 'vue/server-renderer'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
-import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '@unhead/vue/stream/server'
+import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell, renderStreamBodyTags } from '@unhead/vue/stream/server'
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
@@ -596,8 +596,48 @@ async function renderStreamedResponse (ctx: {
     return ssrContext['~renderResponse'] || (ssrContext._renderResponse as never)
   }
 
-  // 5. Render the shell head (atomically renders and clears entries pushed
-  // by both the shell-prep section above and the just-completed plugin phase).
+  // 5. Create the Vue stream and pre-read the first chunk. The shell head is
+  // rendered afterwards (step 6) so `useHead` calls in setup land in it.
+  const vueStream = renderToWebStream(vueApp, ssrContext)
+  const reader = vueStream.getReader()
+
+  // Three things can surface in the first chunk that must short-circuit
+  // streaming, since once the shell is on the wire the status is committed:
+  //   1. `navigateTo()` from a page `<script setup>` sets `~renderResponse`
+  //      during Vue's setup phase - we must return that redirect instead.
+  //   2. Fatal errors thrown during initial render - fall through to the
+  //      buffered error renderer.
+  //   3. `createError({ fatal: true })` populates `payload.error` without
+  //      throwing - same as above.
+  let firstChunk: Uint8Array | undefined
+  try {
+    const { done, value } = await reader.read()
+    if (!done) { firstChunk = value }
+  } catch (error) {
+    reader.releaseLock()
+    event.res.headers.delete('link')
+    if (ssrContext['~renderResponse'] || ssrContext._renderResponse) {
+      return ssrContext['~renderResponse'] || (ssrContext._renderResponse as never)
+    }
+    const _err = (!ssrError && ssrContext.payload?.error) || error
+    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    throw _err
+  }
+
+  if (ssrContext['~renderResponse'] || ssrContext._renderResponse) {
+    reader.cancel().catch(() => {})
+    event.res.headers.delete('link')
+    return ssrContext['~renderResponse'] || (ssrContext._renderResponse as never)
+  }
+
+  if (ssrContext.payload?.error && !ssrError) {
+    reader.cancel().catch(() => {})
+    event.res.headers.delete('link')
+    throw ssrContext.payload.error
+  }
+
+  // 6. Render the shell head (atomically renders and clears every entry
+  // pushed so far, including those from the synchronous part of setup).
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
 
   // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
@@ -608,7 +648,7 @@ async function renderStreamedResponse (ctx: {
   const cspNonce = extractCspNonce(headTags)
   const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
 
-  // 6. Build the HTML shell context and fire `render:html` with `streaming: true`.
+  // 7. Build the HTML shell context and fire `render:html` with `streaming: true`.
   // Modules that mutate `htmlAttrs`/`head`/`bodyAttrs`/`bodyPrepend` see their
   // changes land in the shell. `body`/`bodyAppend` mutations are silently
   // dropped (the body is about to stream), and a dev warning is emitted if
@@ -646,46 +686,6 @@ async function renderStreamedResponse (ctx: {
     + `<head>${joinTags(shellContext.head)}</head>`
     + `<body${joinAttrs(shellContext.bodyAttrs)}>`
     + joinTags(shellContext.bodyPrepend)
-
-  // 7. Create the Vue stream
-  const vueStream = renderToWebStream(vueApp, ssrContext)
-  const reader = vueStream.getReader()
-
-  // Pre-read the first chunk before committing any bytes. Three things can
-  // surface here that must short-circuit streaming, since once the shell is
-  // on the wire the response status is committed:
-  //   1. `navigateTo()` from a page `<script setup>` sets `~renderResponse`
-  //      during Vue's setup phase - we must return that redirect instead.
-  //   2. Fatal errors thrown during initial render - fall through to the
-  //      buffered error renderer.
-  //   3. `createError({ fatal: true })` populates `payload.error` without
-  //      throwing - same as above.
-  let firstChunk: Uint8Array | undefined
-  try {
-    const { done, value } = await reader.read()
-    if (!done) { firstChunk = value }
-  } catch (error) {
-    reader.releaseLock()
-    event.res.headers.delete('link')
-    if (ssrContext['~renderResponse'] || ssrContext._renderResponse) {
-      return ssrContext['~renderResponse'] || (ssrContext._renderResponse as never)
-    }
-    const _err = (!ssrError && ssrContext.payload?.error) || error
-    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
-    throw _err
-  }
-
-  if (ssrContext['~renderResponse'] || ssrContext._renderResponse) {
-    reader.cancel().catch(() => {})
-    event.res.headers.delete('link')
-    return ssrContext['~renderResponse'] || (ssrContext._renderResponse as never)
-  }
-
-  if (ssrContext.payload?.error && !ssrError) {
-    reader.cancel().catch(() => {})
-    event.res.headers.delete('link')
-    throw ssrContext.payload.error
-  }
 
   // Snapshot status + headers before shell commit so we can warn in dev when
   // composables like `useCookie`, `setResponseStatus`, or `useResponseHeader`
@@ -811,8 +811,9 @@ async function renderStreamedResponse (ctx: {
         // Render any final head updates (payload scripts, etc.) and fire the
         // streaming `render:html:close` hook so modules can inject final
         // bodyAppend content (analytics tags, end-of-body scripts, etc.).
+        const streamBodyTags = renderStreamBodyTags(ssrContext.head)
         const closingHead = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-        const closeContext = { bodyAppend: normalizeChunks([bodyTags, closingHead.bodyTags]) }
+        const closeContext = { bodyAppend: normalizeChunks([streamBodyTags, bodyTags, closingHead.bodyTags]) }
         await hooks.callHook('render:html:close', closeContext, { event: hookEvent })
 
         // Teleports + closing tags. `teleports.body` collects content from
@@ -882,11 +883,32 @@ async function renderStreamedResponse (ctx: {
                 ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
                 : renderPayloadScript({ ssrContext, data: ssrContext.payload, routeOptions }),
             }, { tagPosition: 'bodyClose', tagPriority: 'high' })
-            const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-            controller.enqueue(encoder.encode(tail.bodyTags))
           }
-        } catch {
-          // best-effort
+          // a tag getter that throws on the error's broken state must not take
+          // the payload script with it - the client needs it to render the
+          // error page
+          let headChunk: string | undefined
+          try {
+            headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
+          } catch (error) {
+            rendererDiagnostics.NUXT_E8009({
+              path: event.url.pathname,
+              what: 'flushing the head tags registered after the shell',
+              cause: String(error),
+            })
+          }
+          if (headChunk && !NO_SCRIPTS) {
+            controller.enqueue(encoder.encode(`<script${nonceAttr}>${headChunk};document.currentScript.remove()</script>`))
+          }
+          const streamBodyTags = renderStreamBodyTags(ssrContext.head)
+          const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
+          controller.enqueue(encoder.encode(streamBodyTags + tail.bodyTags))
+        } catch (error) {
+          rendererDiagnostics.NUXT_E8009({
+            path: event.url.pathname,
+            what: 'rendering the closing HTML that carries the page error',
+            cause: String(error),
+          })
         }
         controller.enqueue(encoder.encode(APP_ROOT_CLOSE_TAG + '</body></html>'))
         controller.close()
