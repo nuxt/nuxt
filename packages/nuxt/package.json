@@ -111,6 +111,7 @@
     "picomatch": "catalog:build",
     "pkg-types": "catalog:build",
     "rolldown-string": "catalog:vite",
+    "rou3": "catalog:build",
     "scule": "catalog:build",
     "std-env": "catalog:build",
     "tinyglobby": "catalog:build",

@@ -635,7 +635,7 @@ export default defineNuxtModule({
         // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
         // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules, nitro.options.baseURL, !caseSensitiveRouteRules)
+        const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules.routes, nitro.options.baseURL, !caseSensitiveRouteRules)
         for (const route of prerenderRoutes) {
           const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
           if (rules.prerender) {
