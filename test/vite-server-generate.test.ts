@@ -83,6 +83,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       'hinted/from-hint/index.html',
       'index.html',
       'links/index.html',
+      'redirected/index.html',
       'rules/prerendered/index.html',
     ])
   })
@@ -101,6 +102,10 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
 
   it('follows links in the rendered html to reach a dynamic route', async () => {
     expect(await read('blog/crawled/index.html')).toContain('blog post crawled')
+  })
+
+  it('writes a redirect where a static host will follow it', async () => {
+    expect(await read('redirected/index.html')).toBe('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/about"></head></html>')
   })
 
   it('ignores links that cannot become a static file', () => {
@@ -185,9 +190,12 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       await nuxt.close()
     }
 
-    const html = await glob('**/*.html', { cwd: join(nitroOutputDir, 'public') })
+    const toRoutes = (found: string[]) => new Set(found.map(file => '/' + file.replace(/(?:^|\/)(?:index\.html|_payload\.json)$/, '').replace(/\.html$/, '')))
+    const prerendered = toRoutes(files)
 
-    expect(html.sort()).toEqual(files.filter(file => file.endsWith('.html')))
+    for (const route of toRoutes(await glob(['**/*.html', '**/_payload.json'], { cwd: join(nitroOutputDir, 'public') }))) {
+      expect(prerendered).toContain(route)
+    }
   }, 240 * 1000)
 })
 

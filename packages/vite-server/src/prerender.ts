@@ -101,7 +101,8 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
     }
 
     const contentType = response.headers.get('content-type') || ''
-    const isImplicitHTML = !route.endsWith('.html') && contentType.includes('html') && !JSON_SIGNATURE_RE.test(body.subarray(0, 32).toString('utf-8'))
+    const isRedirect = response.status >= 300 && response.status < 400
+    const isImplicitHTML = !route.endsWith('.html') && (isRedirect || contentType.includes('html')) && !JSON_SIGNATURE_RE.test(body.subarray(0, 32).toString('utf-8'))
     const htmlPath = route.endsWith('/') || config.autoSubfolderIndex ? joinURL(route, 'index.html') : route + '.html'
     const fileName = withoutBase(isImplicitHTML ? htmlPath : (route.endsWith('/') ? route + 'index' : route), baseURL)
 
@@ -221,12 +222,17 @@ function createPrerenderFilter (nuxt: Nuxt, config: ResolvedPrerenderConfig): (r
 
   return function canPrerender (route: string): boolean {
     for (const pattern of config.ignore) {
-      if (typeof pattern === 'string' ? route.startsWith(pattern) : pattern instanceof RegExp ? pattern.test(route) : pattern(route) === true) {
+      if (typeof pattern === 'string' ? route.startsWith(pattern) : pattern instanceof RegExp ? matchesPattern(pattern, route) : pattern(route) === true) {
         return false
       }
     }
     return matcher(route).prerender !== false
   }
+}
+
+function matchesPattern (pattern: RegExp, route: string): boolean {
+  pattern.lastIndex = 0
+  return pattern.test(route)
 }
 
 function canWriteToDisk (route: string, fileName: string): boolean {

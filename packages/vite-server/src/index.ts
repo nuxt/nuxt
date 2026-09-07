@@ -208,12 +208,16 @@ function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: strin
   if (nuxt.options.serverHandlers.length || getLayerDirectories(nuxt).some(dirs => existsSync(dirs.server))) {
     unsupported.push('server routes and server middleware')
   }
-  if (Object.keys(nuxt.options.routeRules || {}).length || Object.keys(nuxt.options.nitro.routeRules || {}).length) {
+  const routeRules = [...Object.values(nuxt.options.routeRules || {}), ...Object.values(nuxt.options.nitro.routeRules || {})]
+  const ignoredRules = isPrerendering(nuxt)
+    ? routeRules.filter(rules => Object.keys(rules || {}).some(key => key !== 'prerender'))
+    : routeRules
+  if (ignoredRules.length) {
     unsupported.push(isPrerendering(nuxt) ? 'route rules other than `prerender`' : 'route rules')
   }
   const wantsPrerender = nuxt.options.nitro.prerender?.routes?.length
     || nuxt.options.nitro.prerender?.crawlLinks
-    || Object.values(nuxt.options.nitro.routeRules || {}).some(rules => rules?.prerender)
+    || routeRules.some(rules => rules?.prerender)
   if (!isPrerendering(nuxt) && wantsPrerender) {
     unsupported.push('prerendering (run `nuxt generate` for a prerendered build)')
   }
