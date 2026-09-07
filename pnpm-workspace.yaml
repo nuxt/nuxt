@@ -198,7 +198,7 @@ catalogs:
     '@flakiness/vitest': 1.9.2
     '@nuxt/eslint-config': 1.17.0
     '@nuxt/scripts': 1.3.8
-    '@nuxt/test-utils': 4.3.1
+    '@nuxt/test-utils': 4.3.2
     '@parcel/watcher': 2.6.0
     '@playwright/test': 1.63.0
     '@rollup/plugin-babel': 7.1.0
