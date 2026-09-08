@@ -120,7 +120,8 @@ function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: Resolve
   if (base === route || !base || base === '/') {
     return
   }
-  const occupied = nuxt.options.serverHandlers.some(handler => handler.route === base && (!handler.method || handler.method === entry.method))
+  const method = entry.method?.toUpperCase()
+  const occupied = nuxt.options.serverHandlers.some(handler => handler.route === base && (!handler.method || handler.method.toUpperCase() === method))
   if (!occupied) {
     nuxt.options.serverHandlers.push(withVariantMeta({ ...entry, route: base }, resolved))
   }
