@@ -58,8 +58,8 @@ describe('NuxtError / h3 interop', () => {
     expect(createError('boom').status).toBe(500)
   })
 
-  it('should fall back to a 500 status where h3 yields NaN', () => {
-    expect(new HTTPError({ statusCode: 'abc' as unknown as number }).status).toBeNaN()
+  it('should fall back to a 500 status for a non-numeric status', () => {
+    expect(new HTTPError({ statusCode: 'abc' as unknown as number }).status).toBe(500)
     expect(createError({ statusCode: 'abc' as unknown as number }).status).toBe(500)
   })
 

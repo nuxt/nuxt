@@ -51,6 +51,7 @@
     "verkit": "catalog:build"
   },
   "peerDependencies": {
+    "@nuxt/schema": "^4.6.0 || ^5.0.0-0",
     "confbox": "catalog:build",
     "dotenv": "catalog:build",
     "giget": "catalog:build",
@@ -60,6 +61,9 @@
     "rolldown": ">=1.0.0"
   },
   "peerDependenciesMeta": {
+    "@nuxt/schema": {
+      "optional": true
+    },
     "confbox": {
       "optional": true
     },

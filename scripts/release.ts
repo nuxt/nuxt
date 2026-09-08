@@ -32,9 +32,20 @@ async function main () {
   // so it must be regenerated after the nightly bump.
   execFile('vp', ['exec', 'pnpm', '--config.verify-deps-before-run=false', '--filter', '@nuxt/ui-templates', 'build'])
 
+  const failures: Array<{ pkgDir: string, error: unknown }> = []
+
   for (const pkgDir of packageDirs) {
     console.info(`📦 Publishing ${pkgDir} with tag: ${tag}`)
-    execFile('vp', ['exec', 'pnpm', 'publish', '--access', 'public', '--no-git-checks', '--tag', tag], pkgDir)
+    try {
+      execFile('vp', ['exec', 'pnpm', 'publish', '--access', 'public', '--no-git-checks', '--tag', tag], pkgDir)
+    } catch (error) {
+      console.error(`❌ Failed to publish ${pkgDir}:`, error)
+      failures.push({ pkgDir, error })
+    }
+  }
+
+  if (failures.length > 0) {
+    throw new Error(`Failed to publish ${failures.length} package(s): ${failures.map(f => f.pkgDir).join(', ')}`)
   }
 
   console.info('🎉 Nightly release completed successfully!')

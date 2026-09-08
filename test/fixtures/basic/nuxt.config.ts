@@ -194,7 +194,7 @@ export default withMatrix({
       '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
-      '/payload-query': { cache: { swr: true, maxAge: 60 } },
+      '/payload-query': { cache: { swr: true, maxAge: 60, allowQuery: true } },
       '/swr': { swr: 60 },
     },
     prerender: {
@@ -203,6 +203,7 @@ export default withMatrix({
         '/random/b',
         '/random/c',
         '/prefetch/server-components',
+        '/prefetch/many-hints',
         '/prerender/catchall/a/b',
         '/404.html',
       ],

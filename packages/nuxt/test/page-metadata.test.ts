@@ -555,6 +555,46 @@ describe('page metadata macro position', () => {
     expect(warn).not.toHaveBeenCalled()
   })
 
+  it('should not warn when a macro is called at the top level of an Options API `setup()`', () => {
+    getRouteMeta(`
+    <script>
+    export default {
+      setup () {
+        definePageMeta({ middleware: ['authenticated'] })
+      },
+    }
+    </script>
+    `, '/app/pages/options-api.vue')
+
+    getRouteMeta(`
+    <script lang="ts">
+    export default defineComponent({
+      async setup () {
+        definePageMeta({ middleware: ['authenticated'] })
+      },
+    })
+    </script>
+    `, '/app/pages/define-component.vue')
+
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('should warn when a macro is called conditionally inside an Options API `setup()`', () => {
+    getRouteMeta(`
+    <script>
+    export default {
+      setup () {
+        if (condition) {
+          definePageMeta({ middleware: ['authenticated'] })
+        }
+      },
+    }
+    </script>
+    `, '/app/pages/options-api-conditional.vue')
+
+    expect(warn).toHaveBeenCalledWith({ fnName: 'definePageMeta', file: expect.stringMatching(/app\/pages\/options-api-conditional\.vue:6:11$/) })
+  })
+
   it('should warn when a macro is called conditionally', () => {
     getRouteMeta(`
     <script setup>
@@ -696,6 +736,32 @@ describe('normalizeRoutes', () => {
       overrideMeta: true,
     })
     expect(imports).toEqual(new Set())
+  })
+
+  it('should import the macro module for pages the scanner cannot parse', async () => {
+    const mdPath = '/app/pages/about.md'
+    const page: NuxtPage = { path: '/about', name: 'about', file: mdPath }
+    await augmentForNuxt([page], { [mdPath]: '---\nmeta:\n  layout: dark\n---\n# About' }, { fullyResolvedPaths: new Set([mdPath]) })
+
+    const { routes, imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
+    expect(imports.size).toBe(1)
+    expect(routes).toMatchInlineSnapshot(`
+      "[
+        {
+          name: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.name ?? "about",
+          path: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.path ?? "/about",
+          props: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.props ?? false,
+          meta: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta || {},
+          alias: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.alias || [],
+          redirect: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.redirect,
+          component: () => import("/app/pages/about.md")
+        }
+      ]"
+    `)
   })
 
   it('should import the macro module for a route whose name was stripped as a duplicate', async () => {
@@ -1613,6 +1679,27 @@ definePageMeta({ title: 'hello', order: -2, tags: ['a', 'b'], nested: { deep: tr
       const macro = macroModule(sfc)
       expect(macro).not.toContain('hello')
       expect(macro).toContain('const __nuxt_page_meta = {')
+    })
+
+    it('should keep all metadata in the macro module for files the scanner cannot parse', () => {
+      const code = `
+import { definePageMeta } from '#app/composables/pages'
+export const meta = { redirect: '/about' }
+const _sfc_main = {
+  setup() {
+    definePageMeta({ redirect: '/about', layout: 'dark' })
+    return () => null
+  }
+}
+export default _sfc_main
+      `
+      expect(getRouteMeta(code, '/app/pages/redirect.md', new Set(), options)).toEqual({
+        dynamic: new Set([...defaultExtractionKeys, 'meta']),
+      })
+      const plugin = PageMetaPlugin({ extractedKeys: [...defaultExtractionKeys], extractSerializable: true }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+      const macro = plugin.transform.handler(code, '/app/pages/redirect.md?macro=true')?.code
+      expect(macro).toContain(`redirect: '/about'`)
+      expect(macro).toContain(`layout: 'dark'`)
     })
 
     it('should fall back to the macro module for an unlisted key that is not serializable', () => {

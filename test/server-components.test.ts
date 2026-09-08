@@ -1,13 +1,14 @@
+import { connect } from 'node:net'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { withQuery } from 'ufo'
 import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
-import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch, setup, startServer, url } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
-import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
+import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
@@ -338,13 +339,13 @@ describe('component islands', () => {
             "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
             "props": [
               {
-                "t": 0,
-              },
-              {
                 "t": 1,
               },
               {
                 "t": 2,
+              },
+              {
+                "t": 3,
               },
             ],
           },
@@ -674,6 +675,41 @@ describe('denial-of-service protections', () => {
       body: JSON.stringify({ props }),
     })
     expect(res.status).toBe(413)
+  })
+
+  it('keeps the connection usable after rejecting an oversized body', async () => {
+    const { hostname, port } = new URL(url('/'))
+    const oversized = 'x'.repeat(MAX_ISLAND_DRAIN_BYTES)
+    const nested = `{"props":${'['.repeat(500)}${']'.repeat(500)}}`
+    const request = (body: string) => [
+      'POST /__nuxt_island/PureComponent_deadbeef.json HTTP/1.1',
+      `Host: ${hostname}:${port}`,
+      'Content-Type: application/json',
+      `Content-Length: ${Buffer.byteLength(body)}`,
+      '',
+      body,
+    ].join('\r\n')
+
+    const statuses = await new Promise<string[]>((resolve, reject) => {
+      const socket = connect(Number(port), hostname)
+      let received = ''
+      socket.on('data', (chunk) => {
+        received += chunk.toString()
+        const statuses = [...received.matchAll(/^HTTP\/1\.1 (\d{3})/gm)].map(m => m[1]!)
+        if (statuses.length === 2) {
+          socket.end()
+          resolve(statuses)
+        }
+      })
+      socket.on('error', reject)
+      socket.on('close', () => reject(new Error(`connection closed after: ${received.split('\r\n')[0]}`)))
+      socket.on('connect', () => {
+        socket.write(request(oversized))
+        socket.write(request(nested))
+      })
+    })
+
+    expect(statuses).toEqual(['413', '400'])
   })
 
   it('rejects an oversized chunked island body without content-length', async () => {

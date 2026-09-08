@@ -9,6 +9,17 @@ export const MAX_ISLAND_BODY_BYTES = 64 * 1024
 export const MAX_ISLAND_PROP_DEPTH = 64
 
 /**
+ * Upper bound on an oversized body that is still read to completion before the 413 is sent.
+ * Replying while the upload is still in flight leaves the client (or a proxy in front of the
+ * server) with an unfinished request on the wire, which can stall and take down the keep-alive
+ * connection along with whatever is queued behind it. Above this size the body is refused
+ * without reading it.
+ *
+ * @internal
+ */
+export const MAX_ISLAND_DRAIN_BYTES = 4 * 1024 * 1024
+
+/**
  * Whether the bracket nesting of a JSON-ish string exceeds `maxDepth`, in a single linear
  * pass. Brackets inside string values are ignored.
  *

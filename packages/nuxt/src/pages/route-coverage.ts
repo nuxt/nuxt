@@ -1,5 +1,4 @@
-import type { Nitro, NitroRouteConfig } from 'nitro/types'
-import type { NuxtPage } from 'nuxt/schema'
+import type { NitroInstance, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
@@ -85,7 +84,7 @@ function patternToProbePath (pattern: string, probeSegment: string): string {
 const TRAILING_SLASH_RE = /\/$/
 
 export interface RouteRuleCoverageOptions {
-  isCovered: (rules: NitroRouteConfig) => boolean
+  isCovered: (rules: RouteRuleConfig) => boolean
   /** `resolvedPath` is the full route the page is reachable by, unlike the possibly relative `page.path`. */
   mark: (page: NuxtPage, covered: boolean, resolvedPath: string) => void
   /** Excluded pages count as uncovered, which also keeps every ancestor that renders them. */
@@ -100,13 +99,13 @@ export interface RouteRuleCoverageOptions {
  * canonical path, each alias, and the whole subtree below it. Anything that
  * cannot be proven statically counts as uncovered.
  */
-export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: Nitro, options: RouteRuleCoverageOptions): boolean {
-  if (!('routing' in nitro)) { return false }
+export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInstance, options: RouteRuleCoverageOptions): boolean {
+  if (!nitro.routing) { return false }
 
   const routeRules = nitro.routing.routeRules
   const PROBE_SEGMENT = createProbeSegment(routeRules.routes)
   const isPathCovered = (path: string) =>
-    options.isCovered(defu({} as NitroRouteConfig, ...routeRules.matchAll('', path).reverse()))
+    options.isCovered(defu({} as RouteRuleConfig, ...routeRules.matchAll('', path).reverse()))
 
   // A dynamic pattern serves a subset of the region below its first dynamic
   // segment (`/products/*` and `/products/*/reviews` both live under

@@ -19,6 +19,8 @@ export { configDiagnostics } from '../diagnostics/config.ts'
 export { headDiagnostics } from '../diagnostics/head.ts'
 export { bundlerDiagnostics } from '../diagnostics/bundler.ts'
 
+export { reportPendingTemplates, trackPendingTemplate } from './pending-templates.ts'
+
 export { loadJiti } from './jiti.ts'
 
 export { parseNodeModulePath } from './node-module.ts'
@@ -27,6 +29,13 @@ export type { ParsedNodeModulePath } from './node-module.ts'
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
 
+export { kServerApi, kUnusedVariants } from '../nitro.ts'
+
 export { installModules } from '../module/install.ts'
 
 export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../constants.ts'
+
+export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
+
+export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
+export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'

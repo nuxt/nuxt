@@ -9,6 +9,8 @@ import type {
   NuxtHooks as _NuxtHooks,
   NuxtOptions as _NuxtOptions,
   NuxtPage as _NuxtPage,
+  ServerRoutes as _ServerRoutes,
+  ServerTypes as _ServerTypes,
   SharedAppConfig as _SharedAppConfig,
   ViteOptions as _ViteOptions,
 } from '@nuxt/schema'
@@ -39,4 +41,8 @@ declare module 'nuxt/schema' {
   interface NuxtDebugOptions extends _NuxtDebugOptions {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ViteOptions extends _ViteOptions {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerTypes extends _ServerTypes {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ServerRoutes extends _ServerRoutes {}
 }

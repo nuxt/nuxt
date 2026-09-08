@@ -62,6 +62,9 @@ export default defineResolvers({
     },
   },
   experimental: {
+    strictRouteTypes: {
+      $resolve: val => val === 'isomorphic' || typeof val === 'boolean' ? val : false,
+    },
     runtimeBaseURL: false,
     decorators: false,
     asyncEntry: {

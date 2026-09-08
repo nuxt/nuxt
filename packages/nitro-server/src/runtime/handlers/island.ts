@@ -9,18 +9,21 @@ import { getQuery as getURLQuery } from 'ufo'
 import { FastResponse } from 'srvx'
 import { filterIslandProps, getIslandHash } from '#app/island-hash'
 import { findUnsafeIslandPropKey } from '#app/island-props'
-import { MAX_ISLAND_BODY_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
+import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
-import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from '../utils/renderer/app'
-import { createEvent, urlHash } from '../utils/base'
-import { getSSRRenderer } from '../utils/renderer/build-files'
-import { renderInlineStyles } from '../utils/renderer/inline-styles'
-import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
-import { isStyleOfModule, patchDevClientCss } from '../utils/renderer/dev-css'
+import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
+import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
+import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/internal/renderer/islands'
+import { isStyleOfModule, patchDevClientCss } from 'nuxt/internal/renderer/dev-css'
+import { urlHash } from 'nuxt/internal/renderer/url'
+import { createEvent } from '../utils/base'
+import { applyIslandPrerenderHints } from '../utils/prerender'
 import { recordDevClientCss } from '../utils/renderer/dev-client-css'
+
+import { rendererInstance } from '../utils/renderer/options'
 import { prerenderRenderingURLs } from '../utils/cache'
 import { useStorage } from 'nitro/storage'
 import type { Storage } from 'unstorage'
@@ -79,14 +82,20 @@ export default {
 
       return toResponse(event, await prerenderIsland(event, islandPath))
     } catch (error) {
+      if (import.meta.prerender) {
+        applyIslandPrerenderHints(event)
+      }
       rethrowWithResponseHeaders(event, error)
     }
   },
 }
 
 function toResponse (event: H3Event, result: IslandRenderResult): Response {
+  if (import.meta.prerender) {
+    applyIslandPrerenderHints(event)
+  }
   return 'raw' in result
-    ? returnRenderResponse(event, result.raw)
+    ? returnRenderResponse(rendererInstance.options, event, result.raw)
     : new FastResponse(JSON.stringify(result), event.res)
 }
 
@@ -122,14 +131,14 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   const islandContext = await getIslandContext(event)
 
   const ssrContext = {
-    ...createSSRContext(event),
+    ...createSSRContext(rendererInstance.options, event),
     islandContext,
     noSSR: false,
     url: islandContext.url,
   }
 
   // Render app
-  const renderer = await getSSRRenderer()
+  const renderer = await rendererInstance.getSSRRenderer()
 
   const renderResult = await (tracingChannelNuxt
     ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
@@ -213,11 +222,27 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
 
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 
+async function drainBody (event: H3Event) {
+  if (!event.req.body) { return }
+  const reader = event.req.body.getReader()
+  try {
+    for (;;) {
+      const { done } = await reader.read()
+      if (done) { break }
+    }
+  } finally {
+    reader.releaseLock()
+  }
+}
+
 // Read a non-GET island body, refusing oversized or deeply nested input before the JSON
 // parse and hash run on it.
 async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext> {
   const contentLength = Number(event.req.headers.get('content-length'))
   if (contentLength > MAX_ISLAND_BODY_BYTES) {
+    if (contentLength <= MAX_ISLAND_DRAIN_BYTES) {
+      await drainBody(event)
+    }
     throw new HTTPError({ status: 413, statusText: 'Island request body too large' })
   }
 

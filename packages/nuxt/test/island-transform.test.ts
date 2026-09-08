@@ -166,6 +166,23 @@ defineProps<{ items: any[] }>()
       expect(result).toContain('v-for="(item, index) of __vforBound(items)"')
     })
 
+    it('bounds a v-for on a nuxt-client element when selectiveClient is disabled', async () => {
+      const source = `<template>
+  <HelloWorld v-for="n in count" :key="n" nuxt-client />
+</template>
+<script setup lang="ts">
+defineProps<{ count: number }>()
+</script>
+`
+      const viteResult = await viteTransform(source, 'hello.server.vue')
+      expect(viteResult).toContain('v-for="n in __vforBound(count)"')
+      expect(viteResult).not.toContain('v-for="n in count"')
+
+      const webpackResult = await webpackTransform(source, 'hello.server.vue')
+      expect(webpackResult).toContain('v-for="n in __vforBound(count)"')
+      expect(webpackResult).not.toContain('v-for="n in count"')
+    })
+
     it('injects helpers into a setup block when the SFC uses the Options API (#35876)', async () => {
       const result = await viteTransform(`<template>
   <div v-for="item in items" :key="item">{{ item }}</div>

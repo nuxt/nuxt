@@ -43,7 +43,7 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B4007: {
       why: (p: { fnName: string, file: string }) => `\`${p.fnName}\` is called conditionally or used as an expression in \`${p.file}\`, but it is a compiler macro that is extracted at build time and always applies.`,
-      fix: (p: { fnName: string }) => `Call \`${p.fnName}({ ... })\` once, as a statement at the top level of the \`<script setup>\` block.`,
+      fix: (p: { fnName: string }) => `Call \`${p.fnName}({ ... })\` once, as a statement at the top level of the \`<script setup>\` block (or of \`setup()\` in a page that does not use \`<script setup>\`).`,
       docs: false,
     },
     NUXT_B4008: {

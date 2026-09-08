@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-import { normalize, relative } from 'pathe'
+import { extname, normalize, relative } from 'pathe'
 import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
@@ -14,7 +14,7 @@ import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4, vueRouterToRou3 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 
-import { getLoader } from '../core/utils/index.ts'
+import { getLoader, parseModuleId } from '../core/utils/index.ts'
 import { linkToAlias, logger, offsetToPosition, toArray } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -302,6 +302,43 @@ function unwrapStaticExpression (node: ESTree.Node | undefined): ESTree.Node | u
   return current
 }
 
+function collectStatementCalls (body: Array<ESTree.Node>, into: Set<ESTree.Node>) {
+  for (const statement of body) {
+    if (statement.type !== 'ExpressionStatement') { continue }
+    const expression = unwrapStaticExpression(statement.expression)
+    if (expression?.type === 'CallExpression') {
+      into.add(expression)
+    }
+  }
+}
+
+/**
+ * The body of the `setup()` option of an Options API default export, if the module has one.
+ */
+function findOptionsApiSetupBody (program: ESTree.Program): Array<ESTree.Node> | undefined {
+  for (const statement of program.body) {
+    if (statement.type !== 'ExportDefaultDeclaration') { continue }
+
+    let declaration = unwrapStaticExpression(statement.declaration as ESTree.Node)
+    // `export default defineComponent({ ... })`
+    if (declaration?.type === 'CallExpression') {
+      declaration = unwrapStaticExpression(declaration.arguments[0])
+    }
+    if (declaration?.type !== 'ObjectExpression') { return }
+
+    for (const property of declaration.properties) {
+      if (property.type !== 'Property' || property.computed || property.kind !== 'init') { continue }
+      const key = property.key.type === 'Identifier' ? property.key.name : property.key.type === 'Literal' ? property.key.value : undefined
+      if (key !== 'setup') { continue }
+      const value = property.value
+      if ((value.type === 'FunctionExpression' || value.type === 'ArrowFunctionExpression') && value.body?.type === 'BlockStatement') {
+        return value.body.body
+      }
+    }
+    return
+  }
+}
+
 /**
  * The keys of `definePageMeta` whose values are read at build time, given the user's
  * `experimental.extraPageMetaExtractionKeys`.
@@ -429,6 +466,17 @@ export function getDynamicMetaKeys (absolutePath: string, extraExtractionKeys: S
   return dynamicMetaCache.get(absolutePath)?.get(getExtractVariant(extraExtractionKeys, options)) ?? EMPTY_DYNAMIC_META
 }
 
+/**
+ * Whether build-time scanning can see a page file's `definePageMeta` call. A file in a format the
+ * scanner cannot parse (e.g. `.md` compiled to a component by a build plugin) may still call the
+ * macro once transformed, so all of its metadata has to be left to the runtime macro module.
+ * Extensionless entries have no module to transform and so nothing to fall back to.
+ */
+export function isScannablePageFile (path: string) {
+  const { pathname } = parseModuleId(path)
+  return !!getLoader(pathname) || !extname(pathname)
+}
+
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {
   const variant = getExtractVariant(extraExtractionKeys, options)
 
@@ -444,17 +492,22 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     return klona(cached)
   }
 
+  const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
+
   const loader = getLoader(absolutePath)
-  const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
-  if (!scriptBlocks) {
+  if (!loader) {
+    if (!isScannablePageFile(absolutePath)) {
+      cacheVariant(dynamicMetaCache, absolutePath).set(variant, new Set<string>([...extractionKeys, 'meta']))
+    }
     cacheVariant(extractCache, absolutePath).set(variant, {})
     return {}
   }
 
+  const scriptBlocks = loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
+
   const extractedData: Partial<Record<keyof NuxtPage, any>> = {}
   const fileAt = (offset: number) => linkToAlias(absolutePath, undefined, offsetToPosition(contents, offset))
 
-  const extractionKeys = resolvePageMetaExtractionKeys(extraExtractionKeys)
   // Widened for lookups by a property name that may not be a route field at all.
   const routeFieldKeys: ReadonlySet<string> = extractionKeys
   const dynamicProperties = new Set<keyof NuxtPage>()
@@ -471,12 +524,12 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     })
 
     const topLevelCalls = new Set<ESTree.Node>()
-    for (const statement of program.body) {
-      if (statement.type !== 'ExpressionStatement') { continue }
-      const expression = unwrapStaticExpression(statement.expression)
-      if (expression?.type === 'CallExpression') {
-        topLevelCalls.add(expression)
-      }
+    collectStatementCalls(program.body, topLevelCalls)
+    // A page written without `<script setup>` has no other place to call the macros than the top
+    // level of its `setup()`, so a call there is as unconditional as a top-level one.
+    const setupBody = findOptionsApiSetupBody(program)
+    if (setupBody) {
+      collectStatementCalls(setupBody, topLevelCalls)
     }
 
     const extractedMacros = new Set<string>()
