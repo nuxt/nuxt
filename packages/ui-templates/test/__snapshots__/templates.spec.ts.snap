@@ -546,7 +546,7 @@ svg {
 }
 .nuxt-logo-slot {
   width: var(--nuxt-logo);
-  height: calc(var(--nuxt-logo) * 32 / 48);
+  height: calc(0.66667 * var(--nuxt-logo));
   flex: 0 0 var(--nuxt-logo);
   color: var(--nuxt-mint);
 }
