@@ -257,8 +257,24 @@ describe('addServerHandler', () => {
       // and the author may have registered the pair themselves
       addServerHandler({ route: '/_icons', handler: '/handlers/icons.ts' })
       addServerHandler({ route: '/_icons/**', handler: '/handlers/icons.ts' })
+      // or given the base path to a different handler entirely, which keeps the route
+      addServerHandler({ route: '/_img', handler: '/handlers/img-meta.ts' })
+      addServerHandler({ route: '/_img/**', handler: '/handlers/img.ts' })
     })
-    expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/**', '/_mw/**', '/_icons', '/_icons/**'])
+    expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/**', '/_mw/**', '/_icons', '/_icons/**', '/_img', '/_img/**'])
+  })
+
+  it('adds a base route where an existing handler on it takes another method', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => {
+      addServerHandler({ route: '/_icons', method: 'post', handler: '/handlers/icons-upload.ts' })
+      addServerHandler({ route: '/_icons/**', method: 'get', handler: '/handlers/icons.ts' })
+    })
+    expect(nuxt.options.serverHandlers).toMatchObject([
+      { route: '/_icons', method: 'post' },
+      { route: '/_icons/**', method: 'get' },
+      { route: '/_icons', method: 'get', handler: '/handlers/icons.ts' },
+    ])
   })
 
   it('takes the filename convention from the implementation it registered', () => {

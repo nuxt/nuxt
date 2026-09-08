@@ -105,6 +105,8 @@ const WILDCARD_SUFFIX_RE = /\/\*\*(?::\w+)?$/
  * the base path gives one wildcard route the same reach on either, and rou3 prefers the
  * static route, so the pair is unambiguous where both are registered.
  *
+ * A handler already registered on the base path keeps it.
+ *
  * Not applied to middleware, which nitro v2 mounts with `app.use()` and so already runs on
  * the base path, nor to `/**`, whose base would shadow the renderer on `/`.
  */
@@ -117,8 +119,8 @@ function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: Resolve
   if (base === route || !base || base === '/') {
     return
   }
-  const duplicate = nuxt.options.serverHandlers.some(handler => handler.route === base && handler.handler === entry.handler && handler.method === entry.method)
-  if (!duplicate) {
+  const occupied = nuxt.options.serverHandlers.some(handler => handler.route === base && (!handler.method || !entry.method || handler.method === entry.method))
+  if (!occupied) {
     nuxt.options.serverHandlers.push(withVariantMeta({ ...entry, route: base }, resolved))
   }
 }
