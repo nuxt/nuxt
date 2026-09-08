@@ -179,7 +179,7 @@ catalogs:
     unctx: ^3.0.1
     undici: ^8.10.2
     unenv: ^2.0.0-rc.24
-    unimport: ^6.4.0
+    unimport: ^7.0.1
     unplugin: ^3.3.0
     unrouting: ^0.2.3
     untyped: ^2.0.0
