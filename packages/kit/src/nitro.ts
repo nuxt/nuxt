@@ -97,6 +97,33 @@ function withVariantMeta<T extends object, V> (entry: T, resolved: ResolvedVaria
 }
 
 const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace|query)(\.\w+)*$/
+const WILDCARD_SUFFIX_RE = /\/\*\*(?::\w+)?$/
+
+/**
+ * h3 v1 routes with radix3, where `/fonts/**` matches every path below `/fonts` but not
+ * `/fonts` itself; h3 v2 routes with rou3, where it matches both. A second registration on
+ * the base path gives one wildcard route the same reach on either, and rou3 prefers the
+ * static route, so the pair is unambiguous where both are registered.
+ *
+ * A handler already registered on the base path keeps it.
+ *
+ * Not applied to middleware, which nitro v2 mounts with `app.use()` and so already runs on
+ * the base path, nor to `/**`, whose base would shadow the renderer on `/`.
+ */
+function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: ResolvedVariant<string>): void {
+  const route = entry.route
+  if (!route || entry.middleware || getNitroVersion(nuxt) !== 2) {
+    return
+  }
+  const base = route.replace(WILDCARD_SUFFIX_RE, '')
+  if (base === route || !base || base === '/') {
+    return
+  }
+  const occupied = nuxt.options.serverHandlers.some(handler => handler.route === base && (!handler.method || !entry.method || handler.method === entry.method))
+  if (!occupied) {
+    nuxt.options.serverHandlers.push(withVariantMeta({ ...entry, route: base }, resolved))
+  }
+}
 
 /**
  * Adds a server handler.
@@ -124,11 +151,13 @@ export function addServerHandler (handler: ServerHandlerInput): void {
   }
   // retrieve method from handler file name
   const [, method = undefined] = resolved.value.match(HANDLER_METHOD_RE) || []
-  nuxt.options.serverHandlers.push(withVariantMeta({
+  const entry: ServerHandler = {
     method: method?.toUpperCase() as ServerHandler['method'],
     ...handler,
     handler: resolved.value,
-  }, resolved))
+  }
+  nuxt.options.serverHandlers.push(withVariantMeta(entry, resolved))
+  addLegacyBaseRoute(nuxt, entry, resolved)
 }
 
 /**
