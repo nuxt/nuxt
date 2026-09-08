@@ -495,7 +495,6 @@ exports[`template > produces correct output for loading template 1`] = `
   --nuxt-mint: #00dc82;
   --nuxt-mist: #e8fff4e0;
   --nuxt-dim: #00dc828c;
-  --nuxt-accent: #00dc82;
   --nuxt-logo: min(10vw, 68px);
 }
 *,
@@ -557,35 +556,6 @@ svg {
 .nuxt-logo-slot > svg > path {
   fill: currentColor;
 }
-.nuxt-corners {
-  z-index: 1;
-  pointer-events: none;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.12em;
-  justify-content: space-between;
-  padding: 22px 26px;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1;
-  display: flex;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-.nuxt-home {
-  color: var(--nuxt-accent);
-  pointer-events: auto;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.nuxt-home:hover {
-  color: var(--nuxt-mist);
-}
-.nuxt-version {
-  color: var(--nuxt-accent);
-}
 .nuxt-loader-bar {
   z-index: 1;
   width: var(--nuxt-progress, 4%);
@@ -639,7 +609,6 @@ svg {
   :root {
     --nuxt-mist: #020420c2;
     --nuxt-dim: #0204206b;
-    --nuxt-accent: #00a86a;
   }
   body,
   html {
@@ -654,7 +623,6 @@ exports[`template > produces correct output for loading template 2`] = `
   --nuxt-mint: #00dc82;
   --nuxt-mist: #e8fff4e0;
   --nuxt-dim: #00dc828c;
-  --nuxt-accent: #00dc82;
   --nuxt-logo: min(10vw, 68px);
 }
 *,
@@ -696,7 +664,6 @@ svg {
   :root {
     --nuxt-mist: #020420c2;
     --nuxt-dim: #0204206b;
-    --nuxt-accent: #00a86a;
   }
   body,
   html {
