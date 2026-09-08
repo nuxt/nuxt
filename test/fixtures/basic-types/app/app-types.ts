@@ -174,6 +174,15 @@ describe('API routes', () => {
     expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
+    // https://github.com/nuxt/nuxt/issues/28030
+    function useGenericAsyncData<T extends { id: number }> () {
+      const { data } = useAsyncData<T>('api-generic-param', () => Promise.resolve({ id: 1 } as T))
+      expectTypeOf(data.value?.id).toEqualTypeOf<number | undefined>()
+      const { data: fetched } = useFetch<T>('/api/hello')
+      expectTypeOf(fetched.value?.id).toEqualTypeOf<number | undefined>()
+    }
+    useGenericAsyncData()
+
     expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
     // backwards compatibility
