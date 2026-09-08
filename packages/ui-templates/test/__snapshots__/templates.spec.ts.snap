@@ -564,7 +564,7 @@ svg {
   letter-spacing: 0.12em;
   justify-content: space-between;
   padding: 22px 26px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 11px;
   font-weight: 500;
   line-height: 1;
