@@ -11,8 +11,12 @@
  * The types come from `nuxt/server` whichever module backs it, so every name it exports
  * must be exported here too.
  */
+import { defineEventHandler as defineH3EventHandler } from 'nitro/h3'
+import type { EventHandler, RequestEvent } from 'nuxt/server'
+
+import { bufferRequestBody } from './utils/body'
+
 export {
-  defineEventHandler,
   deleteCookie,
   getCookie,
   getQuery,
@@ -36,3 +40,11 @@ export {
   setResponseStatus,
   toNuxtRequestEvent,
 } from 'nuxt/internal/server-default'
+
+/** A handler h3's router can serve directly, whose body can be read more than once. */
+export function defineEventHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
+  return defineH3EventHandler((event) => {
+    bufferRequestBody(event)
+    return handler(event as RequestEvent) as Result
+  }) as unknown as EventHandler<Result>
+}

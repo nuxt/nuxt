@@ -75,6 +75,19 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     })
   })
 
+  it('should read the body from both `nuxt/server` and nitro in one request', async () => {
+    const response = await fetch('/api/portable-body', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json' },
+    })
+
+    expect(await response.json()).toMatchObject({
+      middleware: { cloned: 'nuxt', parsed: 'nuxt' },
+      handler: 'nuxt',
+    })
+  })
+
   it('should map an error created with `nuxt/server` to its status', async () => {
     const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
 
