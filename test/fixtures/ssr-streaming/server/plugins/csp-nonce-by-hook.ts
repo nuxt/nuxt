@@ -1,6 +1,6 @@
 import { definePlugin as defineNitroPlugin } from 'nitro'
 
-const SCRIPT_RE = /<script\b([^>]*>)/gi
+const SCRIPT_RE = /<script(?![^>]*\snonce=)([^>]*>)/gi
 
 // Simulates a CSP module stamping a per-request nonce onto `head` scripts,
 // via a Nitro `render:html` hook rewriting `<script>` tags directly. Gated

@@ -25,7 +25,7 @@ import { throwIfUnmatchedPagePath } from './early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands'
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
-import { SCRIPT_WITHOUT_NONCE_RE, extractCspNonce } from './csp-nonce'
+import { addNonceToTags, extractCspNonce } from './csp-nonce'
 import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
@@ -650,10 +650,10 @@ async function renderStreamedResponse (ctx: {
   const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
 
   // A `render:html` may rewrite the shellContext entries entirely,
-  // so patch any `<script>` that is missing a `nonce=` rather than assuming
+  // so patch any `<script>` or `<style>` that is missing a `nonce=` rather than assuming
   // these are the exact bootstrap/IIFE strings assigned above.
-  if (nonceAttr) {
-    const patch = (html: string) => html.replace(SCRIPT_WITHOUT_NONCE_RE, `<script${nonceAttr}`)
+  if (cspNonce) {
+    const patch = (html: string) => addNonceToTags(html, cspNonce)
     shellContext.head = shellContext.head.map(patch)
     shellContext.bodyPrepend = shellContext.bodyPrepend.map(patch)
   }

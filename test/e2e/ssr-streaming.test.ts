@@ -403,12 +403,25 @@ test.describe('SSR Streaming', () => {
     expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\.push/)
     // Inline script that injected by renderPayloadJsonScript
     expect(html).toMatch(/<script[^>]*\snonce="test-csp-nonce"[^>]*>window\.__NUXT__=/)
+    // Every script tag must contain exactly one nonce attribute
+    const scriptTags = html.match(/<script\b[^>]*>/g) || []
+    const NONCE_ATTR_RE = /\bnonce=/g
+    for (const scriptTag of scriptTags) {
+      expect((scriptTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
+    }
 
     if (!isDev) {
       // Production IIFE chunk is loaded as an external script — also nonced
-      expect(html).toMatch(/<script nonce="test-csp-nonce" async src=/)
+      const iifeScriptMatch = html.match(/<script[^>]*src="[^"]*streaming-iife[^"]*\.js"[^>]*>/)
+      expect(iifeScriptMatch).toBeTruthy()
+      expect(iifeScriptMatch![0]).toContain('nonce="test-csp-nonce"')
       // Route-level inline `<style>` carries the nonce too (strict `style-src`)
       expect(html).toMatch(/<style nonce="test-csp-nonce">[^<]*\.nonce-probe/)
+      // Every style tag must contain exactly one nonce attribute
+      const styleTags = html.match(/<style\b[^>]*>/g) || []
+      for (const styleTag of styleTags) {
+        expect((styleTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
+      }
     }
   })
 
@@ -416,13 +429,24 @@ test.describe('SSR Streaming', () => {
     const res = await fetch('/nonce-by-hook')
     const html = await res.text()
 
-    expect(html).toMatch(/<script nonce="nonce-by-hook">[^<]*window\.__unhead__=\{_q:\[\]/)
+    expect(html).toMatch(/<script nonce="nonce-by-hook">window\.__unhead__\|\|\(window\.__unhead__=\{_q:\[\]/)
     expect(html).toMatch(/<script nonce="nonce-by-hook">window\.__unhead__\.push/)
     expect(html).toMatch(/<script[^>]*\snonce="nonce-by-hook"[^>]*>window\.__NUXT__=/)
+    const scriptTags = html.match(/<script\b[^>]*>/g) || []
+    const NONCE_ATTR_RE = /\bnonce=/g
+    for (const scriptTag of scriptTags) {
+      expect((scriptTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
+    }
 
     if (!isDev) {
-      expect(html).toMatch(/<script nonce="nonce-by-hook" async src=/)
+      const iifeScriptMatch = html.match(/<script[^>]*src="[^"]*streaming-iife[^"]*\.js"[^>]*>/)
+      expect(iifeScriptMatch).toBeTruthy()
+      expect(iifeScriptMatch![0]).toContain('nonce="nonce-by-hook"')
       expect(html).toMatch(/<style nonce="nonce-by-hook">[^<]*\.nonce-probe/)
+      const styleTags = html.match(/<style\b[^>]*>/g) || []
+      for (const styleTag of styleTags) {
+        expect((styleTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
+      }
     }
   })
 
