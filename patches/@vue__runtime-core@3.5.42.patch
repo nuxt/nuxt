@@ -70,7 +70,7 @@ index 08899205dfe52109b460e9b8fc9847eb5b3241f7..a06558584860de90a54822d8b0062384
            return;
          }
          unsetCurrentInstance();
-+        if (hydratedEl && !parentNode(hydratedEl)) {
++        if (hydratedEl && !instance.scope.active) {
 +          if (isInPendingSuspense && --suspense.deps === 0) {
 +            suspense.resolve();
 +          }
@@ -151,7 +151,7 @@ index 8b2db9c0e26d3d18bf71bbf0922b61c555018708..5f87104a5a841c5584973249689c1947
            return;
          }
          unsetCurrentInstance();
-+        if (hydratedEl && !parentNode(hydratedEl)) {
++        if (hydratedEl && !instance.scope.active) {
 +          if (isInPendingSuspense && --suspense.deps === 0) {
 +            suspense.resolve();
 +          }
@@ -232,7 +232,7 @@ index f0905f8afe50421feed03b208b19afb26e4bbb73..ac316d996263fccacbfaa9ac02d97c38
            return;
          }
          unsetCurrentInstance();
-+        if (hydratedEl && !parentNode(hydratedEl)) {
++        if (hydratedEl && !instance.scope.active) {
 +          if (isInPendingSuspense && --suspense.deps === 0) {
 +            suspense.resolve();
 +          }
