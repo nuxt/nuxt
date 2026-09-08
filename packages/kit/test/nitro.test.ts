@@ -229,6 +229,54 @@ describe('addServerHandler', () => {
     report.mockRestore()
   })
 
+  it('registers the base path of a wildcard route on a nitro v2 host', () => {
+    // h3 v1 routes with radix3, where `/_fonts/**` does not match `/_fonts` itself
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/_fonts/**', handler: { nitro2: '/handlers/fonts.v2.ts', nuxt: '/handlers/fonts.ts' } }))
+    expect(nuxt.options.serverHandlers).toMatchObject([
+      { route: '/_fonts/**', handler: '/handlers/fonts.v2.ts' },
+      { route: '/_fonts', handler: '/handlers/fonts.v2.ts' },
+    ])
+    expect(serverApiOf(nuxt.options.serverHandlers[1]!)).toBe('nitro2')
+    expect(unusedVariantsOf(nuxt.options.serverHandlers[1]!)).toEqual(['/handlers/fonts.ts'])
+  })
+
+  it('leaves a wildcard route alone where the host router matches the base path', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/_fonts/**', handler: '/handlers/fonts.ts' }))
+    expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/_fonts/**'])
+  })
+
+  it('does not add a base route that would shadow another handler', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => {
+      // `/**` would give the renderer's own route to the module
+      addServerHandler({ route: '/**', handler: '/handlers/catch-all.ts' })
+      // middleware is mounted with `app.use()` in nitro v2, so it runs on the base already
+      addServerHandler({ route: '/_mw/**', middleware: true, handler: '/handlers/mw.ts' })
+      // and the author may have registered the pair themselves
+      addServerHandler({ route: '/_icons', handler: '/handlers/icons.ts' })
+      addServerHandler({ route: '/_icons/**', handler: '/handlers/icons.ts' })
+      // or given the base path to a different handler entirely, which keeps the route
+      addServerHandler({ route: '/_img', handler: '/handlers/img-meta.ts' })
+      addServerHandler({ route: '/_img/**', handler: '/handlers/img.ts' })
+    })
+    expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/**', '/_mw/**', '/_icons', '/_icons/**', '/_img', '/_img/**'])
+  })
+
+  it('adds a base route where an existing handler on it takes another method', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => {
+      addServerHandler({ route: '/_icons', method: 'post', handler: '/handlers/icons-upload.ts' })
+      addServerHandler({ route: '/_icons/**', method: 'get', handler: '/handlers/icons.ts' })
+    })
+    expect(nuxt.options.serverHandlers).toMatchObject([
+      { route: '/_icons', method: 'post' },
+      { route: '/_icons/**', method: 'get' },
+      { route: '/_icons', method: 'get', handler: '/handlers/icons.ts' },
+    ])
+  })
+
   it('takes the filename convention from the implementation it registered', () => {
     const nuxt = createMockNuxt('3.0.1')
     runWithNuxtContext(nuxt, () => addServerHandler({ handler: { nitro2: '/handlers/test.post.ts' } }))
