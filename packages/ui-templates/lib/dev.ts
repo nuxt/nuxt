@@ -19,7 +19,7 @@ export const DevRenderingPlugin = () => {
 
       if (page.endsWith('.png')) { return }
 
-      if (page === '/') {
+      if (page === '/' || page === '/index.html') {
         const templateNames = await fsp.readdir(r('templates'))
         const serializedData = JSON.stringify({ templateNames })
         return html.replace('{{ data }}', serializedData)
