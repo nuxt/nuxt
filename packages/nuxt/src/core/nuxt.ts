@@ -25,8 +25,7 @@ import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 import { link } from 'clickable-path'
-import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
-import type { NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
+import type { DevServerHandler, Nuxt, NuxtHooks, NuxtModule, NuxtOptions, ServerHandler } from 'nuxt/schema'
 
 import { installNuxtModule } from '../core/features.ts'
 import pagesModule from '../pages/module.ts'
@@ -1077,12 +1076,14 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nitroOptions = options.nitro
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  // an entry written straight into the builder's own config is typed by the builder, and is a
+  // superset of what Nuxt collects
   if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {
-    options.serverHandlers.unshift(...nitroOptions.handlers as NitroEventHandler[])
+    options.serverHandlers.unshift(...nitroOptions.handlers as ServerHandler[])
   }
   createPortalProperties(options.serverHandlers, options, ['nitro.handlers', 'serverHandlers'])
   if (nitroOptions.devHandlers?.length && nitroOptions.devHandlers !== options.devServerHandlers) {
-    options.devServerHandlers.unshift(...nitroOptions.devHandlers as NitroDevEventHandler[])
+    options.devServerHandlers.unshift(...nitroOptions.devHandlers as DevServerHandler[])
   }
   createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
   createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])

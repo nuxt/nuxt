@@ -39,7 +39,7 @@ import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
-import type { DevServerHandler, NitroConfig, RouteRuleConfig, ServerHandler, TracingChannelOptions } from './nitro.ts'
+import type { DevServerHandler, NitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -1987,6 +1987,14 @@ export interface ConfigSchema {
    * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
    */
   devServerHandlers: DevServerHandler[]
+
+  /**
+   * Plugins registered with the configured `server.builder` through `addNitroPlugin()`,
+   * which run once when the server starts. Configure `nitro.plugins` instead.
+   *
+   * @private
+   */
+  _serverPlugins: ServerPlugin[]
 
   /**
    * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)

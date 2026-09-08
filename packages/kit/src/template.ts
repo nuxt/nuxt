@@ -11,8 +11,6 @@ import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
 import { distDirURL, filterInPlace } from './utils.ts'
-import { recordServerSource } from './nitro.ts'
-import type { NitroVersionOptions } from './nitro.ts'
 import { directoryToURL } from './internal/esm.ts'
 import { resolveDeclarationPath } from './types.ts'
 import { getDirectory } from './module/install.ts'
@@ -54,14 +52,12 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNu
 }
 
 /**
- * Adds a virtual file that can be used within the Nuxt Nitro server build.
+ * Adds a virtual file that can be used within the server build.
  */
-export function addServerTemplate (template: NuxtServerTemplate, options: NitroVersionOptions = {}): NuxtServerTemplate {
+export function addServerTemplate (template: NuxtServerTemplate): NuxtServerTemplate {
   const nuxt = useNuxt()
-
   nuxt.options.nitro.virtual ||= {}
   nuxt.options.nitro.virtual[template.filename] = template.getContents
-  recordServerSource(nuxt, template.filename, options.version)
 
   return template
 }

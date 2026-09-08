@@ -27,6 +27,8 @@ export type { ParsedNodeModulePath } from './node-module.ts'
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
 
+export { kServerApi, kUnusedVariants } from '../nitro.ts'
+
 export { installModules } from '../module/install.ts'
 
 export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../constants.ts'

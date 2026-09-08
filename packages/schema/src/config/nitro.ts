@@ -64,6 +64,7 @@ export default defineResolvers({
   routeRules: {},
   serverHandlers: [],
   devServerHandlers: [],
+  _serverPlugins: [],
   tracingChannel: {
     // Nuxt emits the `nuxt.*` diagnostics channels itself. The Nitro-level
     // channels (`srvx.request`, `h3.request`, `unstorage.*`) are only emitted
