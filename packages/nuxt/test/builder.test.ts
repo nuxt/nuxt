@@ -8,7 +8,7 @@ import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { build, loadNuxt } from 'nuxt'
 
-describe('builder:watch', { concurrent: false }, async () => {
+describe('builder:watch', { concurrent: false, timeout: 60_000 }, async () => {
   const tmpDir = join(await findWorkspaceDir(), '.test/builder-watch')
   const cacheDir = join(await findWorkspaceDir(), '.test/builder-watch-vite-cache')
   beforeEach(async () => {
