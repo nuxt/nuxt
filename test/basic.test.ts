@@ -1581,7 +1581,7 @@ describe('middlewares', () => {
     const html = await $fetch<string>('/middleware-abort')
     expect(html).not.toContain('This is the error page')
     const { page } = await renderPage('/middleware-abort')
-    expect(await page.innerHTML('body')).toContain('This is the error page')
+    await page.waitForFunction(() => document.body.innerHTML.includes('This is the error page'))
     await page.close()
   })
 
