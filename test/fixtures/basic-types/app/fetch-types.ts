@@ -91,3 +91,31 @@ export async function baseURLProbe () {
   // @ts-expect-error no GET route matches '/api/helo'
   useApiFetch('/helo')
 }
+
+/** A route that validates a query and headers describes both at the call site. */
+export async function validatedRequestProbe () {
+  const searched = await $fetch('/api/searched', { query: { q: 'nuxt', page: '1' }, headers: { 'x-api-key': 'secret' } })
+  expectTypeOf(searched).toEqualTypeOf<{ results: string[] }>()
+
+  // the route validates neither as required, so both may be omitted
+  expectTypeOf(await $fetch('/api/searched')).toEqualTypeOf<{ results: string[] }>()
+
+  // @ts-expect-error `q` is validated as a string
+  await $fetch('/api/searched', { query: { q: 1, page: '1' } })
+  // @ts-expect-error `nope` is not part of the validated query
+  await $fetch('/api/searched', { query: { q: 'nuxt', page: '1', nope: 'x' } })
+
+  // @ts-expect-error `x-api-ke` is not part of the validated headers
+  await $fetch('/api/searched', { headers: { 'x-api-ke': 'secret' } })
+
+  // a route that validates nothing keeps ofetch's own query and header types
+  await $fetch('/api/hello', { query: { anything: 1 }, headers: { 'x-anything': 'yes' } })
+
+  // useFetch describes them the same way
+  const { data } = useFetch('/api/searched', { query: { q: 'nuxt', page: '1' }, headers: { 'x-api-key': 'secret' } })
+  expectTypeOf(data.value).toEqualTypeOf<{ results: string[] } | undefined>()
+  // @ts-expect-error `page` is validated as a string
+  useFetch('/api/searched', { query: { q: 'nuxt', page: 1 } })
+  // @ts-expect-error `x-api-ke` is not part of the validated headers
+  useFetch('/api/searched', { headers: { 'x-api-ke': 'secret' } })
+}

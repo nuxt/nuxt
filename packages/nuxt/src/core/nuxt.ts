@@ -8,8 +8,7 @@ import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { compileRoutes } from 'fetchdts/compiler'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext, tryUseNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -26,7 +25,7 @@ import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 import { link } from 'clickable-path'
-import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
+import type { DevServerHandler, Nuxt, NuxtHooks, NuxtModule, NuxtOptions, ServerHandler } from 'nuxt/schema'
 
 import { installNuxtModule } from '../core/features.ts'
 import pagesModule from '../pages/module.ts'
@@ -43,7 +42,7 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
-import { buildServerRoutes, collectPageRoutes, collectServerRoutes, resolveServerRoutes } from './utils/server-routes.ts'
+import { buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRoutesModule, resolveServerRoutes } from './utils/server-routes.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
@@ -87,7 +86,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     apps: {},
     buildOutputs: {
       ssrStyles: () => 'export default {}\nexport const inlinedCSS = {}',
-      serverEntry: () => `export default () => { throw new Error('[nuxt] nuxt/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.') }`,
+      serverEntry: () => `export default () => { throw new Error('[nuxt] nuxt/internal/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.') }`,
       clientManifest: () => 'export default {}',
       clientPrecomputed: () => 'export default undefined',
       entryChunkName: () => 'export const entryFileName = undefined',
@@ -268,7 +267,6 @@ async function initNuxt (nuxt: Nuxt) {
       // directory rather than in `types/`
       const emittedFrom = nuxt.options.buildDir
       const { routes, requestTypes } = await resolveServerRoutes(nuxt)
-      const extractors = [requestTypes?.body, requestTypes?.query, requestTypes?.headers].filter(Boolean)
 
       // under `'isomorphic'` the pages the Vue router serves are part of the route set: nitro does
       // not know about the renderer, so a page's path is otherwise invisible and would be rejected
@@ -277,28 +275,12 @@ async function initNuxt (nuxt: Nuxt) {
             .map(route => ({ ...route, metadata: { GET: { responseType: 'string' } } }))
         : []
 
-      return [
-        compileRoutes([{ routes: [...buildServerRoutes(routes, emittedFrom, requestTypes), ...pages] }], {
-          name: 'GeneratedServerRoutes',
-          // `fetchdts` is not a dependency of user projects, so its vocabulary is named through the
-          // re-exports in `nuxt/app` instead
-          moduleSpecifier: 'nuxt/app',
-          // the accessors resolve against the interface an app can augment, so a route added by
-          // hand is found by the walk behind the exact-match table rather than being invisible
-          resolveAgainst: 'ServerRoutes',
-          imports: [
-            'import type { ServerRoutes } from \'@nuxt/schema\'',
-            'import type { Serialize } from \'nuxt/app\'',
-            ...extractors.length && requestTypes ? [`import type { ${extractors.sort().join(', ')} } from '${requestTypes.module}'`] : [],
-          ],
-        }).code,
-        'declare module \'@nuxt/schema\' {',
-        '  interface ServerRoutes extends GeneratedServerRoutes {}',
-        '}',
-        // whether an unrecognised path is an error is a build-time decision, so the resolved answer
-        // is emitted rather than the app layer branching on a type-level flag
-        `export type StrictFetchPaths = ${nuxt.options.experimental.strictRouteTypes !== false}`,
-      ].join('\n')
+      return emitServerRoutesModule({
+        routes: buildServerRoutes(routes, emittedFrom, requestTypes),
+        pages,
+        requestTypes,
+        strict: nuxt.options.experimental.strictRouteTypes !== false,
+      })
     },
   })
 
@@ -308,17 +290,12 @@ async function initNuxt (nuxt: Nuxt) {
     getContents: ({ app }) => {
       return [
         `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-        'declare module \'nitro/types\' {',
-        '  interface NitroRouteConfig {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '  interface NitroRouteRules {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '}',
         ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
           `declare module '${module}' {`,
           '  interface AppRouteRulesExtensions {',
+          '    appLayout?: LayoutKey | false',
+          '  }',
+          '  interface RouteRuleConfigExtensions {',
           '    appLayout?: LayoutKey | false',
           '  }',
           '}',
@@ -361,25 +338,10 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   nuxt['~runtimeDependencies'] = [...runtimeDependencies]
 
-  // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
+  // Set resolutions for types that might be obscured with shamefully-hoist=false, applied to
+  // each generated tsconfig from the `prepare:types` handler below.
   let paths: Record<string, [string]> | undefined
   let nodePaths: Record<string, [string]> | undefined
-  const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
-    paths ||= await resolveTypescriptPaths(nuxt)
-    nitroConfig.typescript = defu(nitroConfig.typescript, {
-      tsConfig: { compilerOptions: { paths: { ...paths } } },
-    })
-  }
-  if (nuxt.options.dev) {
-    nuxt.hook('prepare:types', async () => {
-      const nitro = tryUseNitro()
-      if (nitro) {
-        await applyNitroTypePaths(nitro.options)
-      }
-    })
-  } else {
-    nuxt.hook('nitro:config', applyNitroTypePaths)
-  }
 
   let serverBuilderReference: { path: string } | { types: string } | undefined
   /**
@@ -389,17 +351,19 @@ async function initNuxt (nuxt: Nuxt) {
    * Builders without that export are referenced by package name.
    */
   const getServerBuilderReference = () => {
-    if (serverBuilderReference || typeof nuxt.options.server.builder !== 'string') {
+    const builder = nuxt.options.server.builder
+    // only a package can have an `augments` subpath or be referenced by name
+    if (serverBuilderReference || typeof builder !== 'string' || isAbsolute(builder) || builder.startsWith('.')) {
       return serverBuilderReference
     }
-    const augments = resolveModulePath(`${nuxt.options.server.builder}/augments`, {
+    const augments = resolveModulePath(`${builder}/augments`, {
       from: [import.meta.url, directoryToURL(nuxt.options.rootDir)],
       try: true,
     })
     const declaration = augments?.replace(JS_EXTENSION_RE, (_, modifier = '') => `.d.${modifier}ts`)
     serverBuilderReference = declaration && existsSync(declaration)
       ? { path: declaration }
-      : { types: nuxt.options.server.builder }
+      : { types: builder }
     return serverBuilderReference
   }
 
@@ -450,6 +414,8 @@ async function initNuxt (nuxt: Nuxt) {
     // required for the server builder's augmentations (referenced above)
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
+    // bundler-resolved, so it takes the same substitutions as the app
+    opts.serverTsConfig.compilerOptions = defu(opts.serverTsConfig.compilerOptions, { paths: { ...paths } })
 
     for (const dirs of layerDirs) {
       const declaration = join(dirs.root, 'index.d.ts')
@@ -1094,12 +1060,14 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nitroOptions = options.nitro
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  // an entry written straight into the builder's own config is typed by the builder, and is a
+  // superset of what Nuxt collects
   if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {
-    options.serverHandlers.unshift(...nitroOptions.handlers)
+    options.serverHandlers.unshift(...nitroOptions.handlers as ServerHandler[])
   }
   createPortalProperties(options.serverHandlers, options, ['nitro.handlers', 'serverHandlers'])
   if (nitroOptions.devHandlers?.length && nitroOptions.devHandlers !== options.devServerHandlers) {
-    options.devServerHandlers.unshift(...nitroOptions.devHandlers)
+    options.devServerHandlers.unshift(...nitroOptions.devHandlers as DevServerHandler[])
   }
   createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
   createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])

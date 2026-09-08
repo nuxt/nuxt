@@ -7,6 +7,7 @@ import { serverFetch } from 'nitro'
 import type { SSRErrorInput } from '../utils/error'
 import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
 import { withBaseURL } from '../utils/base'
+import { applyPrerenderHints } from '../utils/prerender'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -17,6 +18,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const status = error.status || 500
   const headers = new Headers(error.headers)
   appendVary(headers, 'accept, sec-fetch-mode')
+  if (import.meta.prerender && 'context' in event) {
+    applyPrerenderHints(event as H3Event, headers)
+  }
   if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
     const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [
@@ -40,8 +44,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   const errorObject = (defaultRes.body || {}) as SSRErrorInput
-  // we will be rendering this error internally so we pass along the error.data safely
-  errorObject.data ??= error.data
+  if (!error.unhandled) {
+    errorObject.data ??= error.data
+  }
   errorObject.url = event.req.url
   // `fatal` is Nuxt-only, so Nitro's error body does not carry it
   errorObject.fatal = (error as { fatal?: boolean }).fatal ?? false
@@ -52,7 +57,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
 
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
-  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!(event as H3Event).context.nuxt?.['~rendering-error']
+  const isRenderingError = !!(event as H3Event).context.nuxt?.['~rendering-error']
 
   if (!isRenderingError) {
     const eventContext = (event as H3Event).context

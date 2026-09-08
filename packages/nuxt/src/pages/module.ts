@@ -7,7 +7,6 @@ import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, 
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
-import type { Nitro, NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
@@ -21,10 +20,10 @@ import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/plugins/virtual.ts'
-import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
-import type { Nuxt, NuxtPage } from 'nuxt/schema'
+import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
@@ -77,14 +76,34 @@ export default defineNuxtModule({
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
-    let inlineRulesCache: Record<string, NitroRouteConfig> = {}
-    let updateRouteConfig: (inlineRules: Record<string, NitroRouteConfig>) => void | Promise<void>
+    let inlineRulesCache: Record<string, RouteRuleConfig> = {}
+    let updateRouteConfig: (inlineRules: Record<string, RouteRuleConfig>) => void | Promise<void>
     if (nuxt.options.experimental.inlineRouteRules) {
+      // without a server builder to register them with, the rules the build compiles are
+      // the configured ones, so extracted rules are merged into the configuration itself
+      const overwritten = new Map<string, RouteRuleConfig | undefined>()
+      updateRouteConfig = (inlineRules) => {
+        if (isEqual(inlineRulesCache, inlineRules)) { return }
+        const rules = (nuxt.options.routeRules ||= {})
+        for (const [route, previous] of overwritten) {
+          if (previous === undefined) {
+            delete rules[route]
+          } else {
+            rules[route] = previous
+          }
+        }
+        overwritten.clear()
+        for (const [route, inline] of Object.entries(inlineRules)) {
+          overwritten.set(route, rules[route])
+          rules[route] = defu(inline, rules[route])
+        }
+        inlineRulesCache = inlineRules
+      }
       nuxt.hook('nitro:init', (nitro) => {
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
-            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
-            nitro.routing.sync()
+            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config?.routeRules) })
+            nitro.routing?.sync()
             inlineRulesCache = inlineRules
           }
         }
@@ -273,16 +292,13 @@ export default defineNuxtModule({
         filename: 'types/middleware.d.ts',
         dependsOn: [],
         getContents: () => [
-          'declare module \'nitro/types\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: string | string[] | Record<string, boolean>',
-          '  }',
-          '}',
-          'declare module \'nitro\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: string | string[] | Record<string, boolean>',
-          '  }',
-          '}',
+          ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+            `declare module '${module}' {`,
+            '  interface RouteRuleConfigExtensions {',
+            '    appMiddleware?: string | string[] | Record<string, boolean>',
+            '  }',
+            '}',
+          ]),
           'export {}',
         ].join('\n'),
       }, { nuxt: true, nitro: true, node: true })
@@ -499,8 +515,8 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      const nitro = tryUseNitro() as Nitro | undefined
-      if (nitro && (nitro.options.prerender.crawlLinks || ('routing' in nitro && nitro.routing.routeRules.routes.some(r => r.data.prerender)))) {
+      const nitro = tryUseNitro()
+      if (nitro && (nitro.options.prerender.crawlLinks || nitro.routing?.routeRules.routes.some(r => r.data.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -541,7 +557,7 @@ export default defineNuxtModule({
     })
 
     const warnedConflicts = new Set<string>()
-    let publicAssets: Nitro['options']['publicAssets'] = []
+    let publicAssets: NitroInstanceOptions['publicAssets'] = []
     nuxt.hook('nitro:init', (nitro) => {
       const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
       publicAssets = nitro.options.publicAssets.filter((asset) => {
@@ -636,12 +652,12 @@ export default defineNuxtModule({
       nitro.options.prerender.routes ||= []
 
       // Inject page patterns that explicitly match `prerender: true` route rule
-      if (!nitro.options.static) {
+      if (!nitro.options.static && nitro.routing) {
         // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs`
         // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
         // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules, nitro.options.baseURL, !caseSensitiveRouteRules)
+        const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules.routes, nitro.options.baseURL, !caseSensitiveRouteRules)
         for (const route of prerenderRoutes) {
           const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
           if (rules.prerender) {
@@ -688,9 +704,8 @@ export default defineNuxtModule({
 
     // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
     nuxt.hook('pages:extend', (routes) => {
-      const nitro = tryUseNitro()
       let resolvedRoutes: string[]
-      for (const route of nitro?.routing?.routeRules.routes ?? []) {
+      for (const route of resolveRouteRulesRoutes(nuxt).routes) {
         if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path
@@ -753,7 +768,7 @@ export default defineNuxtModule({
     const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
-    let nitroForRouteCoverage: Nitro | undefined
+    let nitroForRouteCoverage: NitroInstance | undefined
     nuxt.hook('nitro:init', (nitro) => {
       nitroForRouteCoverage = nitro
     })
@@ -878,16 +893,13 @@ export default defineNuxtModule({
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          'declare module \'nitro/types\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
-          '  }',
-          '}',
-          'declare module \'nitro\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
-          '  }',
-          '}',
+          ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+            `declare module '${module}' {`,
+            '  interface RouteRuleConfigExtensions {',
+            '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
+            '  }',
+            '}',
+          ]),
         ].join('\n')
       },
     }, { nuxt: true, nitro: true, node: true })

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Nuxt, ServerRouteHandler, ServerRouteSegment } from 'nuxt/schema'
 
-import { ALL_METHODS, buildServerRoutes, collectPageRoutes, collectServerRoutes, resolveServerRoutes } from '../src/core/utils/server-routes'
+import { ALL_METHODS, buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRoutesModule, resolveServerRoutes } from '../src/core/utils/server-routes'
 
 const dynamic = { type: 'dynamic' } as const
 const wildcard = { type: 'wildcard' } as const
@@ -271,5 +271,44 @@ describe('collectPageRoutes', () => {
 
   it('describes the index page as the root', () => {
     expect(collectPageRoutes([{ path: '/', file: '/index.vue' }])[0]!.segments).toEqual([path('/')])
+  })
+})
+
+describe('emitServerRoutesModule', () => {
+  /** A route set exercising every shape the emitted module has to describe. */
+  const routes = buildServerRoutes(collectServerRoutes([
+    { route: '/api/hello', method: 'get', segments: [path('/api'), path('/hello')], handler: '/project/server/api/hello.get.ts' },
+    { route: '/api/hello', method: 'post', segments: [path('/api'), path('/hello')], handler: '/project/server/api/hello.post.ts' },
+    { route: '/api/users/:id', segments: [path('/api'), path('/users'), dynamic], handler: '/project/server/api/users/[id].ts' },
+    { route: '/files/**', method: 'get', segments: [path('/files'), wildcard], handler: '/project/server/routes/files/[...path].get.ts' },
+  ]), '/project/.nuxt', { module: '@nuxt/nitro-server/request-types', body: 'RequestBodyOf' })
+
+  it('emits the module the app layer resolves requests through', () => {
+    expect(emitServerRoutesModule({
+      routes,
+      requestTypes: { module: '@nuxt/nitro-server/request-types', body: 'RequestBodyOf' },
+      strict: true,
+    })).toMatchSnapshot()
+  })
+
+  it('names its vocabulary through `nuxt/app`, which is what a user project can resolve', () => {
+    const module = emitServerRoutesModule({ routes, strict: false })
+
+    for (const specifier of module.match(/from '[^']+'/g) || []) {
+      expect(specifier).not.toMatch(/'fetchdts/)
+    }
+    expect(module).toContain('from \'nuxt/app\'')
+  })
+
+  it('emits the resolved answer for `strictRouteTypes` rather than a flag to branch on', () => {
+    // the enabled answer is in the snapshot, along with the augmentation and the accessors
+    expect(emitServerRoutesModule({ routes, strict: false })).toContain('export type StrictFetchPaths = false')
+  })
+
+  it('describes pages as routes of their own where they are part of the set', () => {
+    const pages = buildServerRoutes(collectServerRoutes(collectPageRoutes([{ path: '/about', file: '/project/app/pages/about.vue' }])), '/project/.nuxt')
+      .map(route => ({ ...route, metadata: { GET: { responseType: 'string' } } }))
+
+    expect(emitServerRoutesModule({ routes, pages, strict: true })).toContain('"/about"')
   })
 })

@@ -1,4 +1,5 @@
 import { relative } from 'pathe'
+import { compileRoutes } from 'fetchdts/compiler'
 import type { Route } from 'fetchdts/compiler'
 import type { Nuxt, NuxtPage, ServerRequestTypes, ServerRouteHandler, ServerRouteSegment } from 'nuxt/schema'
 
@@ -161,6 +162,47 @@ export function collectPageRoutes (pages: NuxtPage[], parent = ''): ServerRouteH
   }
 
   return handlers
+}
+
+/**
+ * The module the app layer resolves requests through: the route tree, the exact-match table for the
+ * fully static paths, the path union and the accessors, as the route compiler emits them, followed
+ * by the augmentation that makes them reachable and the resolved answer for `strictRouteTypes`.
+ */
+export function emitServerRoutesModule (opts: {
+  /** The routes the server builder reports it will serve. */
+  routes: Route[]
+  /** Pages, as `GET` routes, where they are part of the route set. */
+  pages?: Route[]
+  /** How the builder's types read a handler's validated request shapes. */
+  requestTypes?: ServerRequestTypes
+  /** Whether a path the route set does not describe is an error. */
+  strict: boolean
+}): string {
+  const extractors = [opts.requestTypes?.body, opts.requestTypes?.query, opts.requestTypes?.headers].filter(Boolean)
+
+  return [
+    compileRoutes([{ routes: [...opts.routes, ...opts.pages || []] }], {
+      name: 'GeneratedServerRoutes',
+      // `fetchdts` is not a dependency of user projects, so its vocabulary is named through the
+      // re-exports in `nuxt/app` instead
+      moduleSpecifier: 'nuxt/app',
+      // the accessors resolve against the interface an app can augment, so a route added by
+      // hand is found by the walk behind the exact-match table rather than being invisible
+      resolveAgainst: 'ServerRoutes',
+      imports: [
+        'import type { ServerRoutes } from \'@nuxt/schema\'',
+        'import type { Serialize } from \'nuxt/app\'',
+        ...extractors.length && opts.requestTypes ? [`import type { ${extractors.sort().join(', ')} } from '${opts.requestTypes.module}'`] : [],
+      ],
+    }).code,
+    'declare module \'@nuxt/schema\' {',
+    '  interface ServerRoutes extends GeneratedServerRoutes {}',
+    '}',
+    // whether an unrecognised path is an error is a build-time decision, so the resolved answer
+    // is emitted rather than the app layer branching on a type-level flag
+    `export type StrictFetchPaths = ${opts.strict}`,
+  ].join('\n')
 }
 
 /** A route per combination of the optional parameters in `path`, longest first. */

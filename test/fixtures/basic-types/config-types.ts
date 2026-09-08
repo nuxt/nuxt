@@ -139,3 +139,27 @@ describe('kit utilities', () => {
     const _fromage: Fromage = 'cheese'
   })
 })
+
+describe('server builder config', () => {
+  it('types the keys the server builder contributes to', () => {
+    defineNuxtConfig({
+      nitro: { compressPublicAssets: true },
+      routeRules: { '/spa': { ssr: false, noScripts: true } },
+      serverHandlers: [{ route: '/api/handler', handler: '~/server/handler.ts' }],
+      devServerHandlers: [],
+      tracingChannel: { nuxt: true, h3: true },
+    })
+    // @ts-expect-error not a valid nitro option
+    defineNuxtConfig({ nitro: { unknownNitroKey: true } })
+    // @ts-expect-error not a valid route rule
+    defineNuxtConfig({ routeRules: { '/spa': { unknownRule: true } } })
+    // @ts-expect-error not a valid tracing channel
+    defineNuxtConfig({ tracingChannel: { unknownChannel: true } })
+  })
+
+  it('resolves the same keys on `nuxt.options`', () => {
+    expectTypeOf<NuxtOptions['nitro']['scanDirs']>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<NonNullable<NuxtOptions['routeRules']>[string]['ssr']>().toEqualTypeOf<boolean | undefined>()
+    expectTypeOf<NuxtOptions['serverHandlers'][number]['route']>().toEqualTypeOf<string | undefined>()
+  })
+})

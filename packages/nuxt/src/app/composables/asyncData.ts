@@ -23,15 +23,17 @@ export type _Transform<Input = any, Output = any> = (input: Input) => Output | P
 
 export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
 
-export type PickFrom<T, K extends Array<string>> = T extends Array<any>
-  ? T
-  : T extends Record<string, any>
-    ? keyof T extends K[number]
-      ? T // Exact same keys as the target, skip Pick
-      : K[number] extends never
-        ? T
-        : Pick<T, K[number]>
-    : T
+export type PickFrom<T, K extends Array<string>> = KeysOf<T> extends K
+  ? T // Nothing to pick; short-circuit so a generic `T` stays resolvable
+  : T extends Array<any>
+    ? T
+    : T extends Record<string, any>
+      ? keyof T extends K[number]
+        ? T // Exact same keys as the target, skip Pick
+        : K[number] extends never
+          ? T
+          : Pick<T, K[number]>
+      : T
 
 export type KeysOf<T> = Array<
   T extends T // Include all keys of union types, not just common keys
@@ -652,7 +654,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       }
 
       // Allow directly awaiting on asyncData
-      const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
+      const asyncDataPromise = Promise.resolve(import.meta.client && opts.lazy ? undefined : nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
       Object.assign(asyncDataPromise, asyncReturn)
       // Allow destructuring without losing promise methods
       Object.defineProperties(asyncDataPromise, {

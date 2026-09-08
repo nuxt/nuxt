@@ -116,5 +116,10 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'If you are a module author, ensure the `export` you register for a component is a valid identifier. Otherwise, please report this issue.',
       docs: false,
     },
+    NUXT_B1022: {
+      why: (p: { count: number, templates: string }) => `The build stopped with ${p.count} template${p.count === 1 ? '' : 's'} still compiling:\n  - ${p.templates}`,
+      fix: 'A `getContents` function returned a promise that never settles. Resolve it during the build (from `nitro:init` at the latest), rather than waiting on something that happens after it.',
+      docs: false,
+    },
   },
 })

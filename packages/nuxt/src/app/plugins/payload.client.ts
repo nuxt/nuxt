@@ -1,4 +1,5 @@
 import { withoutFragment } from 'ufo'
+import type { ResolvableLink } from 'unhead/types'
 
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
@@ -13,7 +14,50 @@ import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedDa
 
 // track the active head entry per path for forwarded preload hints
 interface ActiveHeadEntryLike { dispose: () => void }
-const forwardedPrefetchEntries = new Map<string, ActiveHeadEntryLike>()
+const forwardedHintEntries = new Map<string, ActiveHeadEntryLike>()
+const forwardedHintHrefs = new Set<string>()
+// bumped on navigation, so payloads that resolve afterwards are discarded
+let hintGeneration = 0
+let forwardedHintCount = 0
+
+const MAX_HINTS_PER_ROUTE = 2
+const MAX_FORWARDED_HINTS = 8
+
+const SLOW_CONNECTION_TYPES = new Set(['slow-2g', '2g'])
+
+// `navigator.connection` is not part of the standard TS DOM lib
+interface NetworkInformationLike { saveData?: boolean, effectiveType?: string }
+type NavigatorWithConnection = Navigator & { connection?: NetworkInformationLike }
+
+function canAffordHints (): boolean {
+  const connection = (navigator as NavigatorWithConnection).connection
+  if (!connection) { return true }
+  return !connection.saveData && !SLOW_CONNECTION_TYPES.has(connection.effectiveType!)
+}
+
+function documentHrefs (): Set<string> {
+  const hrefs = new Set<string>()
+  for (const link of document.head.querySelectorAll('link[href]')) {
+    hrefs.add((link as HTMLLinkElement).href)
+  }
+  return hrefs
+}
+
+function selectHints (prefetchLinks: Array<Record<string, string | boolean>>) {
+  const existingHrefs = documentHrefs()
+  const selected: Array<Record<string, string | boolean>> = []
+
+  for (const link of prefetchLinks) {
+    if (selected.length >= MAX_HINTS_PER_ROUTE || forwardedHintCount + selected.length >= MAX_FORWARDED_HINTS) { break }
+    if (typeof link.href !== 'string') { continue }
+    const href = new URL(link.href, window.location.href).href
+    if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
+    forwardedHintHrefs.add(href)
+    selected.push(link)
+  }
+
+  return selected
+}
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:payload',
@@ -22,12 +66,15 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     const staticKeysToRemove = new Set<string>()
     const router = useRouter()
     if (prefetchPreloadTags) {
-      // drop forwarded `rel="prefetch" hints so they don't linger indefinitely.
+      // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
-        for (const entry of forwardedPrefetchEntries.values()) {
+        hintGeneration++
+        forwardedHintCount = 0
+        for (const entry of forwardedHintEntries.values()) {
           entry.dispose()
         }
-        forwardedPrefetchEntries.clear()
+        forwardedHintEntries.clear()
+        forwardedHintHrefs.clear()
       })
     }
     router.beforeResolve(async (to, from) => {
@@ -52,30 +99,43 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       }
     })
 
-    onNuxtReady(() => {
-      // Load payload into cache
-      const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
-      nuxtApp.hooks.hook('link:prefetch', async (url) => {
+    // Load payload into cache
+    const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
+    nuxtApp.hooks.hook('link:prefetch', (url) => {
+      onNuxtReady(async () => {
+        const generation = hintGeneration
         const { hostname, pathname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
         const payload = await loadPayload(url).catch(() => {
           stateDiagnostics.NUXT_E7003({ url })
         })
-        if (head && payload?.prefetchLinks?.length && !forwardedPrefetchEntries.has(pathname)) {
+        if (head && generation === hintGeneration && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname) && canAffordHints()) {
+          const selected = selectHints(payload.prefetchLinks)
+          if (!selected.length) { return }
+          forwardedHintCount += selected.length
           const entry = head.push({
-            link: payload.prefetchLinks.map((link: Record<string, string | boolean>) => {
-              // downgrade preload (and modulepreload) to prefetch
+            // payload serialisation erases the attribute types the destination resolved
+            link: selected.map((link) => {
+              if (link.as === 'image') {
+                // `rel="prefetch"` has no request destination, so image hints stay as
+                // `rel="preload"`, with any `fetchpriority` dropped so that they
+                // cannot outrank the current page
+                const { fetchpriority: _fetchpriority, ...rest } = link
+                return rest
+              }
+              // Downgrade preload (and modulepreload) to prefetch.
               const { rel: _rel, ...rest } = link
               return { ...rest, rel: 'prefetch' }
-            }),
+            }) as ResolvableLink[],
           })
-          forwardedPrefetchEntries.set(pathname, entry)
+          forwardedHintEntries.set(pathname, entry)
         }
       })
-      // `navigator.connection` (Network Information API) is widely supported in
-      // browsers but not part of the standard TS DOM lib.
-      if (isAppManifestEnabled && (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType !== 'slow-2g') {
+    })
+
+    onNuxtReady(() => {
+      if (isAppManifestEnabled && (navigator as NavigatorWithConnection).connection?.effectiveType !== 'slow-2g') {
         setTimeout(getAppManifest, 1000)
       }
     })

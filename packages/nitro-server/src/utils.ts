@@ -1,19 +1,27 @@
 import { fileURLToPath } from 'node:url'
+import { matchesGlob } from 'node:path'
 import { dirname } from 'pathe'
 import escapeRE from 'escape-string-regexp'
-import type { NuxtBuildOutputs } from '@nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
+
+/**
+ * Compile-time constants the server bundle needs which Nitro does not inject itself.
+ */
+export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
+  return {
+    '__VUE_PROD_DEVTOOLS__': String(false),
+    'import.meta.test': String(!!nuxt.options.test),
+  }
+}
+
+/**
+ * Specifier the app and the server runtime both import the asset URL helpers through,
+ * provided by the `paths.mjs` template Nuxt generates.
+ */
+export const PATHS_SPECIFIER = '#internal/nuxt/paths'
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
-}
-
-export const NUXT_BUILD_OUTPUT_MAP: Record<string, keyof NuxtBuildOutputs> = {
-  'nuxt/entry': 'serverEntry',
-  'nuxt/manifest': 'clientManifest',
-  'nuxt/precomputed': 'clientPrecomputed',
-  'nuxt/styles': 'ssrStyles',
-  'nuxt/entry-chunk': 'entryChunkName',
-  'nuxt/entry-ids': 'entryIds',
 }
 
 const NODE_MODULES_RE = /\/node_modules\//g
@@ -46,6 +54,53 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
   return excludePaths.length
     ? new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)
     : /node_modules/
+}
+
+/**
+ * Convert Nuxt's gitignore-style ignore patterns into globs for the unstorage `fs`
+ * driver, which matches them with `node:path` `matchesGlob` relative to the mount base.
+ *
+ * 1. A gitignore pattern without a slash matches at any depth, so it is prefixed with `**\/`
+ * 2. A trailing slash (directory-only) and a leading slash (anchored) have no meaning.
+ * 3. Re-inclusion cannot be expressed in a flat list of globs at all, we drop whatever
+ *    a negated pattern would 'undo'.
+ *
+ * Rules are order-sensitive (the last one to match a path wins), so a negated pattern
+ * only drops the patterns declared before it.
+ */
+export function toFsDriverIgnorePatterns (patterns: string[]): string[] {
+  const globs: string[] = []
+  for (const pattern of patterns) {
+    const negated = pattern[0] === '!'
+    const glob = toFsDriverGlob(negated ? pattern.slice(1) : pattern)
+    if (!glob) {
+      continue
+    }
+    if (!negated) {
+      if (!globs.includes(glob)) {
+        globs.push(glob)
+      }
+      continue
+    }
+    for (let i = globs.length - 1; i >= 0; i--) {
+      const ignored = globs[i]!
+      if (matchesGlob(glob, ignored) || matchesGlob(ignored, glob)) {
+        globs.splice(i, 1)
+      }
+    }
+  }
+  return globs
+}
+
+function toFsDriverGlob (pattern: string): string | undefined {
+  const trimmed = pattern.replace(/\/+$/, '')
+  const anchored = trimmed.includes('/')
+  const glob = trimmed.replace(/^\//, '')
+  // patterns resolved outside the mount base can never match a key within it
+  if (!glob || glob.startsWith('../')) {
+    return
+  }
+  return anchored ? glob : `**/${glob}`
 }
 
 /**

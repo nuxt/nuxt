@@ -117,8 +117,8 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B7023: {
-      why: (p: { dir: string, baseURL: string }) => `The \`nitro.publicAssets\` directory \`${p.dir}\` does not exist, so requests to \`${p.baseURL}\` will 404.`,
-      fix: 'Relative directories are resolved against your project root. Correct the `dir` or remove the entry.',
+      why: (p: { dir: string, baseURL: string }) => `A configured \`nitro.publicAssets\` directory does not exist: \`${p.dir}\`. Requests to \`${p.baseURL}\` will return a 404.`,
+      fix: (p: { resolvedFrom: string }) => `Relative \`dir\` values are resolved against ${p.resolvedFrom}. Point \`dir\` at an existing directory, using an absolute path or a Nuxt alias (such as \`~~/public/video\`) if it lives elsewhere.`,
       docs: false,
     },
     NUXT_B7024: {
@@ -129,6 +129,11 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B7025: {
       why: (p: { input: string }) => `The client build input is set to \`${p.input}\`, which cannot carry the document the server builder emits, so the override is ignored.`,
       fix: 'Pass an object to `vite.$client.build.rolldownOptions.input` if you need additional inputs, or add an `index.html` at the root of your app directory to take over the document itself.',
+      docs: false,
+    },
+    NUXT_B7026: {
+      why: (p: { route: string }) => `The route rule for \`${p.route}\` sets \`redirect.statusCode\`, which the server builder no longer reads.`,
+      fix: 'Rename it to `redirect.status`. Nuxt has applied it as `status` for now.',
       docs: false,
     },
   },

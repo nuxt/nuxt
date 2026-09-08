@@ -1,5 +1,4 @@
 /// <reference path="../../pages/build.d.ts" />
-/// <reference path="../../../../nitro-server/src/augments.ts" />
 
 declare global {
   interface ImportMeta {

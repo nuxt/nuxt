@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
-import { serveStatic } from 'srvx/static'
+import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
 import type { Plugin, ViteDevServer } from 'vite'
 
 import { resolveDocument } from './document.ts'
@@ -26,13 +26,13 @@ export function DevServerListenerPlugin (nuxt: Nuxt): Plugin {
   }
 }
 
-export function setupDevServer (nuxt: Nuxt): void {
+export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   let viteServer: ViteDevServer | undefined
   nuxt.hook('vite:serverCreated', (server) => {
     viteServer = server as ViteDevServer
   })
 
-  const staticMiddleware = publicDirs(nuxt).map(dir => serveStatic({ dir }))
+  const staticMiddleware = publicDirs(nuxt).map(dir => createStaticMiddleware({ dir }))
 
   // the same document the client build takes as its HTML input, minus the build
   const shell = async (url: string) => {
@@ -40,6 +40,16 @@ export function setupDevServer (nuxt: Nuxt): void {
     return new Response(viteServer ? await viteServer.transformIndexHtml(url, html) : html, {
       headers: { 'content-type': 'text/html;charset=utf-8' },
     })
+  }
+
+  // loaded from the dev module graph, so an edit is picked up by the next render
+  const render = async (request: Request) => {
+    const module = await viteServer!.ssrLoadModule(serverEntry!) as { fetch: (request: Request) => Promise<Response> }
+    return module.fetch(request)
+  }
+
+  const respond = (request: Request, url: string) => {
+    return serverEntry && viteServer ? render(request) : shell(url)
   }
 
   nuxt.server = {
@@ -53,7 +63,7 @@ export function setupDevServer (nuxt: Nuxt): void {
       const request = new NodeRequest({ req, res })
       const next = (index: number): Response | Promise<Response> => {
         const middleware = staticMiddleware[index]
-        return middleware ? middleware(request, () => next(index + 1)) : shell(req.url || '/')
+        return middleware ? middleware(request, () => next(index + 1)) : respond(request, req.url || '/')
       }
       await sendNodeResponse(res, await next(0))
     },
