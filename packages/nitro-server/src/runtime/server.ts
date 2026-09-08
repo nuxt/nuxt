@@ -21,7 +21,7 @@ export {
   setCookie,
 } from 'nitro/h3'
 
-export { getRouteRules } from 'nitro/app'
+export { getRouteRules } from './utils/route-rules'
 export { useRuntimeConfig } from 'nitro/runtime-config'
 
 export {
