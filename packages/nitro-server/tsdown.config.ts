@@ -23,6 +23,8 @@ export default defineConfig([
         '#internal/nuxt.config.mjs',
         '#internal/nuxt/app-config',
         '#internal/nuxt/nitro-config.mjs',
+        '#nuxt-compat/flags',
+        '#nuxt-compat/import-meta',
       ],
     },
   },
