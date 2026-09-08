@@ -1041,6 +1041,16 @@ export interface ConfigSchema {
     loadingTemplate: (data: { loading?: string }) => string
 
     /**
+     * Base path of the live error channel served in development.
+     *
+     * Error pages and overlays subscribe to it to update in place, dismiss
+     * themselves when the problem is fixed, and open a frame in the editor.
+     *
+     * @experimental
+     */
+    errorChannel: string
+
+    /**
      * Set CORS options for the dev server
      */
     cors: 'origin' extends keyof H3CorsOptions

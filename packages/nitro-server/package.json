@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@ampproject/remapping": "catalog:build",
+    "@jridgewell/trace-mapping": "catalog:nitro-runtime",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
     "@vue/shared": "catalog:app-runtime",
@@ -56,6 +57,7 @@
     "lru-cache": "catalog:nitro-runtime",
     "magic-string": "catalog:vite",
     "mocked-exports": "catalog:build",
+    "my-bad": "catalog:nitro-runtime",
     "nitro": "catalog:nitro-runtime",
     "nostics": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",

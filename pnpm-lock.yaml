@@ -575,12 +575,18 @@ catalogs:
       specifier: 3.3.11
       version: 3.3.11
   nitro-runtime:
+    '@jridgewell/trace-mapping':
+      specifier: ^0.3.31
+      version: 0.3.31
     destr:
       specifier: ^2.0.5
       version: 2.0.5
     lru-cache:
       specifier: ^11.5.2
       version: 11.5.2
+    my-bad:
+      specifier: https://pkg.pr.new/my-bad@e166bcd
+      version: https://pkg.pr.new/my-bad@e166bcd
     nitro:
       specifier: ^3.0.260903-beta
       version: 3.0.260903-beta
@@ -831,6 +837,9 @@ importers:
       markdownlint-cli:
         specifier: catalog:dev
         version: 0.49.1(supports-color@10.2.2)
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
       nitro:
         specifier: catalog:nitro-runtime
         version: 3.0.260903-beta
@@ -1017,6 +1026,9 @@ importers:
       '@ampproject/remapping':
         specifier: catalog:build
         version: 2.3.0
+      '@jridgewell/trace-mapping':
+        specifier: catalog:nitro-runtime
+        version: 0.3.31
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -1062,6 +1074,9 @@ importers:
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
       nitro:
         specifier: catalog:nitro-runtime
         version: 3.0.260903-beta
@@ -1717,6 +1732,9 @@ importers:
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -2100,6 +2118,24 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+
+  test/fixtures/dev-error-client:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/dev-error-default-page:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/dev-error-sourcemap:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/dynamic-paths:
     dependencies:
@@ -9346,6 +9382,16 @@ packages:
 
   muggle-string@0.4.1:
     resolution: {integrity: sha512-VNTrAak/KhO2i8dqqnqnAHOa3cYBwXEZe9h+D5h/1ZqFSTEFHdM65lR7RoIqq3tBBYavsOXV84NoHXZ0AkPyqQ==}
+
+  my-bad@https://pkg.pr.new/my-bad@e166bcd:
+    resolution: {integrity: sha512-au0zgRsdlRh4d/DinfjqhdrESH9sZipoHowegy3fl6sZ52ar8IfWJGLhUQYmFNWc9iLfoz2NSGyVsJtEhwCyNw==, tarball: https://pkg.pr.new/my-bad@e166bcd}
+    version: 0.0.1
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      vite: 8.2.2
+    peerDependenciesMeta:
+      vite:
+        optional: true
 
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
@@ -19842,6 +19888,14 @@ snapshots:
   ms@2.1.3: {}
 
   muggle-string@0.4.1: {}
+
+  my-bad@https://pkg.pr.new/my-bad@e166bcd(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)):
+    dependencies:
+      clickable-path: 0.1.1
+      errx: 0.2.0
+      fnv1a-64: 0.1.2
+    optionalDependencies:
+      vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)
 
   mz@2.7.0:
     dependencies:

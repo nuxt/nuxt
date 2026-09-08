@@ -2,6 +2,7 @@
 import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, NormalizedRouteRules, RouteRuleConfig, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
+import type { RawSourceMap } from 'my-bad'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
@@ -13,7 +14,35 @@ import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, Serv
  */
 export type NuxtTracingChannelOptions = TracingChannelOptions
 
+/**
+ * Dev-only access to the sourcemaps of the SSR bundle, registered by the
+ * bundler when it evaluates SSR modules in the Nitro process.
+ *
+ * @experimental
+ */
+export interface SSRSourceMaps {
+  /** Sourcemap for the given absolute module path, if one is known. */
+  getSourceMap?: (file: string) => RawSourceMap | undefined
+  /** Rewrite the positions in a stack string to source positions. */
+  fixStacktrace?: (stack: string) => string
+  /** Transformed code of an SSR module as it was evaluated, if the runner still holds it. */
+  getCode: (file: string) => string | undefined
+  /** Position in generated code a source position was mapped from. */
+  getCompiledPosition?: (file: string, line: number, column?: number) => { file: string, line: number, column: number } | undefined
+  /** Whether `error.stack` already holds source positions when an error is raised. */
+  stacksAreMapped: boolean
+}
+
 declare module 'nitro/types' {
+  interface NitroApp {
+    /**
+     * Only set in development, by bundlers that evaluate the SSR bundle within
+     * the Nitro process.
+     *
+     * @experimental
+     */
+    ssrSourceMaps?: SSRSourceMaps
+  }
   /** The channel `addServerImports()` and `addServerImportsDir()` write to through `nitro:config`. */
   interface NitroConfig {
     imports?: false | ServerImportsOptions

@@ -27,6 +27,10 @@ test.describe.configure({ mode: 'serial' })
 // Load the fixture file
 const indexVue = readFileSync(join(sourceDir, 'app/pages/index.vue'), 'utf8')
 
+test.afterAll(() => {
+  writeFileSync(join(fixtureDir, 'app/pages/index.vue'), indexVue)
+})
+
 test('basic HMR functionality', async ({ page, goto }) => {
   // Navigate to the page
   writeFileSync(join(fixtureDir, 'app/pages/index.vue'), indexVue)
