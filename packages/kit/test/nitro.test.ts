@@ -277,6 +277,19 @@ describe('addServerHandler', () => {
     ])
   })
 
+  it('adds a base route for a methodless wildcard where the handler on it takes one method', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => {
+      addServerHandler({ route: '/_icons', method: 'post', handler: '/handlers/icons-upload.ts' })
+      addServerHandler({ route: '/_icons/**', handler: '/handlers/icons.ts' })
+    })
+    expect(nuxt.options.serverHandlers).toMatchObject([
+      { route: '/_icons', method: 'post' },
+      { route: '/_icons/**', method: undefined },
+      { route: '/_icons', method: undefined, handler: '/handlers/icons.ts' },
+    ])
+  })
+
   it('takes the filename convention from the implementation it registered', () => {
     const nuxt = createMockNuxt('3.0.1')
     runWithNuxtContext(nuxt, () => addServerHandler({ handler: { nitro2: '/handlers/test.post.ts' } }))
