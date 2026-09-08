@@ -66,6 +66,7 @@ minimumReleaseAgeExclude:
   - unstorage
   - unwasm
   - fetchdts@0.2.0
+  - pkg-types@2.3.3
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
