@@ -81,6 +81,12 @@ describe.skipIf(!shouldRun)('nitro v2 module compatibility without `nitroLegacy`
     expect(response.headers.get('x-render-response')).toBe('applied')
   })
 
+  it('replaces the rendered html from the v2 `render:response` hook', async () => {
+    const html = await $fetch<string>('/?replace-body=1')
+    expect(html).toContain('replaced by the v2 hook')
+    expect(html).not.toContain('nitro-module-compat fixture')
+  })
+
   it('matches the route of a v2 module handler exactly, as the v2 router did', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/prefixed')).toEqual({ path: '/api/prefixed' })
 
