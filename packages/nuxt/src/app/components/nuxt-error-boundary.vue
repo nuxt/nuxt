@@ -12,8 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import { onErrorCaptured, shallowRef } from 'vue'
+import { onErrorCaptured, shallowRef, watch } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { useRouter } from '../composables/router'
 import { onNuxtReady } from '../composables/ready'
 
 defineOptions({
@@ -58,6 +59,11 @@ if (import.meta.client) {
 
     return false
   })
+
+  // Recover the boundary on navigation. Uses the router's current route, not
+  // `useRoute()` (Suspense-synced, so stale while a page is erroring) (#15781).
+  const router = useRouter()
+  watch(() => router.currentRoute.value.fullPath, () => { clearError() })
 }
 
 defineExpose({ error, clearError })
