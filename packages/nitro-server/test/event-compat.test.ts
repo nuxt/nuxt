@@ -106,6 +106,18 @@ describe('v2 event bridge', () => {
     expect((event.node!.req as any).headers['x-late']).toBe('yes')
   })
 
+  it('reports the path a mounted handler sees, and the path the request arrived on', async () => {
+    const seen: Array<Record<string, string>> = []
+    const wrapped = wrapLegacyHandler((event: any) => {
+      seen.push({ url: event.node.req.url, originalUrl: event.node.req.originalUrl })
+      return undefined
+    }, '/_mw') as (event: any) => unknown
+
+    await wrapped(mockEvent('http://nuxt/_mw/deep?q=1'))
+
+    expect(seen).toEqual([{ url: '/deep?q=1', originalUrl: '/_mw/deep?q=1' }])
+  })
+
   it('exposes the matched route rules at `event.context._nitro.routeRules`', () => {
     const event = prepareLegacyEvent(mockEvent('http://nuxt/robots.txt'))
     ;(event.context as any).routeRules = { site: { url: 'https://example.com' } }
@@ -142,14 +154,15 @@ describe('v2 event bridge', () => {
     expect(res.getHeaders()).toEqual({ 'set-cookie': ['a=1', 'b=2'], 'x-single': 'one' })
   })
 
-  it('appends to a header on `appendHeader`', () => {
+  it('appends to a header on `appendHeader`, one entry per value', () => {
     const event = prepareLegacyEvent(mockEvent('http://nuxt/api/test'))
     const res = event.node!.res as any
 
     res.setHeader('set-cookie', 'a=1')
-    res.appendHeader('set-cookie', 'b=2')
+    res.appendHeader('set-cookie', ['b=2', 'c=3'])
 
-    expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
+    expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2', 'c=3'])
+    expect(res.getHeader('set-cookie')).toEqual(['a=1', 'b=2', 'c=3'])
   })
 
   it('writes each value of a multi-value header given to `writeHead`', () => {
@@ -216,16 +229,21 @@ describe('wrapLegacyHandler', () => {
 
 describe('v2 globals', () => {
   it('seeds `globalThis.$fetch`, which v2 module code calls without an event', () => {
-    const previous = (globalThis as { $fetch?: unknown }).$fetch
+    const previous = Object.getOwnPropertyDescriptor(globalThis, '$fetch')
     delete (globalThis as { $fetch?: unknown }).$fetch
 
-    plugin({ hooks: { hook: () => {} } } as any)
+    try {
+      plugin({ hooks: { hook: () => {} } } as any)
 
-    const $fetch = (globalThis as { $fetch?: any }).$fetch
-    expect(typeof $fetch).toBe('function')
-    expect(typeof $fetch.raw).toBe('function')
-
-    ;(globalThis as { $fetch?: unknown }).$fetch = previous
+      const $fetch = (globalThis as { $fetch?: any }).$fetch
+      expect(typeof $fetch).toBe('function')
+      expect(typeof $fetch.raw).toBe('function')
+    } finally {
+      delete (globalThis as { $fetch?: unknown }).$fetch
+      if (previous) {
+        Object.defineProperty(globalThis, '$fetch', previous)
+      }
+    }
   })
 })
 

@@ -49,11 +49,12 @@ export function prepareLegacyEvent (event: H3EventType): H3EventType {
   }
 
   if (!event.req.runtime?.node) {
+    const originalUrl = event.url.pathname + event.url.search
     let bridge: { req: unknown, res: unknown } | undefined
     Object.defineProperty(event, 'node', {
       configurable: true,
       get: () => (bridge ||= {
-        req: createNodeRequestBridge(event),
+        req: createNodeRequestBridge(event, originalUrl),
         res: createNodeResponseBridge(event),
       }),
     })
@@ -74,9 +75,12 @@ function createLegacyNitroSlot (event: H3EventType) {
   return slot
 }
 
-function createNodeRequestBridge (event: H3EventType) {
+function createNodeRequestBridge (event: H3EventType, originalUrl: string) {
   return {
-    url: event.url.pathname + event.url.search,
+    // the path as the handler sees it, which a mounted handler sees with its base stripped
+    get url () {
+      return event.url.pathname + event.url.search
+    },
     method: event.req.method,
     // a live view, as it would be on a real node request
     get headers () {
@@ -86,7 +90,7 @@ function createNodeRequestBridge (event: H3EventType) {
       }
       return headers
     },
-    originalUrl: event.url.href,
+    originalUrl,
   }
 }
 
@@ -122,14 +126,23 @@ function createNodeResponseBridge (event: H3EventType) {
       replaceHeader(event, name, value)
       return this
     },
-    appendHeader (name: string, value: string) {
-      event.res.headers.append(name, value)
+    appendHeader (name: string, value: string | string[]) {
+      for (const entry of Array.isArray(value) ? value : [value]) {
+        event.res.headers.append(name, entry)
+      }
       return this
     },
     getHeader (name: string) {
+      // node returns repeated `set-cookie` values as an array, where `Headers.get` joins them
+      if (name.toLowerCase() === 'set-cookie') {
+        const cookies = event.res.headers.getSetCookie()
+        return cookies.length > 0 ? cookies : undefined
+      }
       return event.res.headers.get(name) ?? undefined
     },
     getHeaders () {
+      // node returns repeated `set-cookie` values as an array, where iterating a `Headers`
+      // yields one entry per cookie and so keeps only the last of them
       const headers: Record<string, string | string[]> = Object.fromEntries(event.res.headers.entries())
       const cookies = event.res.headers.getSetCookie()
       if (cookies.length > 0) {
