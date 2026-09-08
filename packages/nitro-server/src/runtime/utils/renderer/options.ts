@@ -1,5 +1,5 @@
 import { HTTPError, writeEarlyHints } from 'nitro/h3'
-import { getRouteRules, useNitroHooks } from 'nitro/app'
+import { useNitroHooks } from 'nitro/app'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { FastResponse } from 'srvx'
 import type { NuxtSSRContext } from '#app/types'
@@ -12,7 +12,7 @@ import '../../context'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
-import { withBaseURL } from '../base'
+import { getRouteRules } from '../route-rules'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
@@ -25,8 +25,7 @@ export const rendererOptions: NuxtRendererOptions = {
   runtimeConfig: () => useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
   buildAssetsURL,
   publicAssetsURL,
-  // nitro registers route rules under the base URL, which `createEvent` has removed
-  getRouteRules: event => (getRouteRules(event.req.method, withBaseURL(event.url.pathname)).routeRules || {}) satisfies RendererRouteRules,
+  getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
   hooks: () => useNitroHooks() as RendererHooks,
   createResponse: (body, init) => new FastResponse(body, init),
   createError: init => new HTTPError(init),

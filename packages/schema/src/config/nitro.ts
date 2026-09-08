@@ -64,6 +64,7 @@ export default defineResolvers({
   routeRules: {},
   serverHandlers: [],
   devServerHandlers: [],
+  _serverPlugins: [],
   tracingChannel: {
     $resolve: (val) => {
       if (val === true) {

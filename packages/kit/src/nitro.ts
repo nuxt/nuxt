@@ -1,181 +1,178 @@
 import { normalize } from 'pathe'
-import { resolveModulePath } from 'exsolve'
-import type { NitroInstance, Nuxt, NuxtImport } from '@nuxt/schema'
-import type { NitroCompatibilityVersion, NitroDevEventHandler, NitroDevEventHandlerV2, NitroDevEventHandlerV3, NitroEventHandler, NitroEventHandlerV2, NitroEventHandlerV3 } from './nitro-types.ts'
+import type { DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
 
 import { tryUseNuxt, useNuxt } from './context.ts'
 import { getNitroVersion } from './compatibility.ts'
-import { resolveAlias } from './resolve.ts'
 import { toArray } from './utils.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
-export type { NitroCompatibilityVersion } from './nitro-types.ts'
-
-export interface NitroVersionOptions {
-  /**
-   * The nitro major version the handler or plugin is written for.
-   *
-   * Untagged registrations are interpreted as nitro v2. Modules written for nitro v3
-   * should pass `version: 3` (or use `createNitroHelpers()` to bind it once);
-   * `meta.compatibility.nitro` is a requirement check only and does not affect this.
-   */
-  version?: NitroCompatibilityVersion
-}
+const SERVER_APIS = new Set<ServerApi>(['nitro2', 'nitro3', 'nuxt'])
+// `nuxt/server` has no plugin surface, so a startup plugin is written against a nitro major
+const NITRO_APIS = new Set<ServerApi>(['nitro2', 'nitro3'])
+// `server.builder` may be a package name or a path to one
+const NITRO_SERVER_BUILDER_RE = /(?:^|[\\/])(?:@nuxt\/)?nitro-server(?:$|[\\/.])/
 
 /**
- * Per-nitro-major variants of a server registration. The host picks the variant
- * matching its nitro major. On a nitro v3 host a v2-only variant is still
- * registered (and wrapped at runtime); on a nitro v2 host a v3-only variant is
- * skipped.
+ * The server APIs the configured `server.builder` runs, most preferred first, or
+ * `undefined` when nothing identifies it. Hardcoded per builder for now.
+ * @internal
  */
-export interface NitroVersionedInput<V2, V3> {
-  2?: V2
-  3?: V3
+export function getHostServerApis (nuxt: Nuxt = useNuxt()): ServerApi[] | undefined {
+  const builder = (nuxt.options as { server?: { builder?: unknown } }).server?.builder
+  if (builder !== undefined && !(typeof builder === 'string' && NITRO_SERVER_BUILDER_RE.test(builder))) {
+    return ['nuxt']
+  }
+  switch (getNitroVersion(nuxt)) {
+    case 3: return ['nitro3', 'nuxt', 'nitro2']
+    case 2: return ['nitro2', 'nuxt']
+    default: return undefined
+  }
 }
 
-interface ResolvedRegistration<T> {
+/** An unidentifiable host is, in practice, an older Nuxt on nitro v2. */
+const UNIDENTIFIED_HOST_APIS: ServerApi[] = ['nitro2', 'nuxt', 'nitro3']
+
+/**
+ * The server API a registration was resolved for, and the variants the host does not run.
+ *
+ * Symbol-keyed and non-enumerable, so that an entry is exactly what a server builder
+ * expects to find in `serverHandlers`, including one that hands it straight to nitro.
+ * @internal
+ */
+export const kServerApi = Symbol.for('nuxt.serverApi')
+/** @internal */
+export const kUnusedVariants = Symbol.for('nuxt.serverApiUnused')
+
+interface ResolvedVariant<T> {
   value: T
-  version?: NitroCompatibilityVersion
+  api?: ServerApi
+  unused: T[]
 }
 
-function recordSkippedRegistration (api: string, version: number, host: number | undefined): void {
-  kitDiagnostics.NUXT_B8024({ api, version, host: host ?? 2 })
-  const nuxt = useNuxt()
-  nuxt._skippedNitroRegistrations ||= []
-  nuxt._skippedNitroRegistrations.push({ api, version, host })
-}
+/**
+ * The variant of a registration this host runs, or `undefined` when it runs none of them.
+ *
+ * Resolved here rather than by the server builder, because kit is installed against hosts
+ * whose builder knows nothing about variants.
+ */
+function resolveVariant<T, Api extends ServerApi> (api: string, variants: ServerApiVariants<T, Api>, normalizeValue: (value: T) => T, accepted: Set<ServerApi>): ResolvedVariant<T> | undefined {
+  const host = (getHostServerApis() ?? UNIDENTIFIED_HOST_APIS).filter(candidate => accepted.has(candidate))
 
-function resolveVersionedRegistration<V2, V3> (
-  input: V2 | V3 | NitroVersionedInput<V2, V3>,
-  isVersionedInput: (input: V2 | V3 | NitroVersionedInput<V2, V3>) => input is NitroVersionedInput<V2, V3>,
-  explicit: NitroCompatibilityVersion | undefined,
-  api: string,
-): ResolvedRegistration<V2 | V3> | undefined {
-  if (isVersionedInput(input)) {
-    const host = getNitroVersion()
-    const hostVersion = host ?? 2
-    const exact = input[hostVersion as NitroCompatibilityVersion]
-    if (exact !== undefined) {
-      return { value: exact, version: hostVersion as NitroCompatibilityVersion }
-    }
-    if (hostVersion > 2 && input[2] !== undefined) {
-      return { value: input[2], version: 2 }
-    }
-    recordSkippedRegistration(api, 3, host)
+  if (host.length === 0) {
+    kitDiagnostics.NUXT_B8024({ api, declared: '', host: (getHostServerApis() ?? []).join('`, `') })
     return
   }
 
-  // an untagged or v2 registration is what every existing module does, so it must
-  // never depend on being able to detect the host nitro version
-  const version = explicit
-  if (version !== undefined && version > 2) {
-    const host = getNitroVersion()
-    if (host !== undefined && version > host) {
-      recordSkippedRegistration(api, version, host)
-      return
+  if (variants === null || typeof variants !== 'object') {
+    return { value: normalizeValue(variants as T), unused: [] }
+  }
+
+  const declared = new Map<ServerApi, T>()
+  for (const key in variants) {
+    if (!accepted.has(key as ServerApi)) {
+      throw kitDiagnostics.NUXT_B8025({ api, value: key, accepted: [...accepted].join('`, `') })
     }
+    declared.set(key as ServerApi, normalizeValue((variants as Record<string, T>)[key]!))
   }
-  return { value: input as V2 | V3, version }
+
+  const picked = host.find(candidate => declared.has(candidate))
+  if (picked === undefined) {
+    kitDiagnostics.NUXT_B8024({ api, declared: [...declared.keys()].join('`, `'), host: host.join('`, `') })
+    return
+  }
+
+  const value = declared.get(picked)!
+  declared.delete(picked)
+  return { value, api: picked, unused: [...declared.values()] }
 }
 
-function isVersionedHandler<V2 extends { handler: unknown }, V3 extends { handler: unknown }> (input: V2 | V3 | NitroVersionedInput<V2, V3>): input is NitroVersionedInput<V2, V3> {
-  return !('handler' in input)
+function withVariantMeta<T extends object, V> (entry: T, resolved: ResolvedVariant<V>): T {
+  if (resolved.api !== undefined) {
+    Object.defineProperty(entry, kServerApi, { value: resolved.api, configurable: true })
+  }
+  if (resolved.unused.length > 0) {
+    Object.defineProperty(entry, kUnusedVariants, { value: resolved.unused, configurable: true })
+  }
+  return entry
 }
+
+const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace|query)(\.\w+)*$/
 
 /**
- * Catch `{ route, handler: { 2: ..., 3: ... } }`, where the variant map was put on
- * the `handler` field instead of the registration; nitro would otherwise fail deep
- * inside its handler normalization.
- */
-function assertHandlerNotVersioned (input: { handler?: unknown }, api: string): void {
-  const handler = input.handler
-  if (handler && typeof handler === 'object' && (2 in handler || 3 in handler)) {
-    throw kitDiagnostics.NUXT_B8025({ api })
-  }
-}
-
-const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
-type HANDLER_METHOD_RE = 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace'
-/**
- * normalize handler object
+ * Adds a server handler.
  *
+ * `handler` is a path, or one path per server API for a module shipping an implementation
+ * for each while it migrates: the host runs the one it prefers, and the registration is
+ * skipped if it can run none of them.
+ *
+ * @example
+ * ```ts
+ * addServerHandler({
+ *   route: '/api/test',
+ *   handler: {
+ *     nuxt: resolver.resolve('./runtime/test'),
+ *     nitro2: resolver.resolve('./runtime/test.v2'),
+ *   },
+ * })
+ * ```
  */
-function normalizeHandlerMethod (handler: NitroEventHandler) {
+export function addServerHandler (handler: ServerHandlerInput): void {
+  const nuxt = useNuxt()
+  const resolved = resolveVariant('addServerHandler', handler.handler, normalize, SERVER_APIS)
+  if (!resolved) {
+    return
+  }
   // retrieve method from handler file name
-  const [, method = undefined] = handler.handler.match(HANDLER_METHOD_RE) || []
-  return {
-    method: method?.toUpperCase() as Uppercase<HANDLER_METHOD_RE> | undefined,
+  const [, method = undefined] = resolved.value.match(HANDLER_METHOD_RE) || []
+  nuxt.options.serverHandlers.push(withVariantMeta({
+    method: method?.toUpperCase() as ServerHandler['method'],
     ...handler,
-    handler: normalize(handler.handler),
-  }
+    handler: resolved.value,
+  }, resolved))
 }
 
 /**
- * Adds a nitro server handler
+ * Adds a server handler for development only.
  *
+ * Variants per server API are resolved as for {@link addServerHandler}.
  */
-export function addServerHandler (handler: NitroVersionedInput<NitroEventHandlerV2, NitroEventHandlerV3>): void
-export function addServerHandler (handler: NitroEventHandlerV3, options: { version: 3 }): void
-export function addServerHandler (handler: NitroEventHandlerV2, options?: { version?: 2 }): void
-export function addServerHandler (handler: NitroEventHandler | NitroVersionedInput<NitroEventHandlerV2, NitroEventHandlerV3>, options: NitroVersionOptions = {}): void {
+export function addDevServerHandler (handler: DevServerHandlerInput): void {
   const nuxt = useNuxt()
-  const resolved = resolveVersionedRegistration(handler, isVersionedHandler, options.version, 'addServerHandler')
+  const resolved = resolveVariant('addDevServerHandler', handler.handler, value => value, SERVER_APIS)
   if (!resolved) {
     return
   }
-  assertHandlerNotVersioned(resolved.value as { handler?: unknown }, 'addServerHandler')
-  const normalized = normalizeHandlerMethod(resolved.value)
-  nuxt.options.serverHandlers.push((resolved.version === undefined ? normalized : { ...normalized, version: resolved.version }) as any)
+  nuxt.options.devServerHandlers.push(withVariantMeta({ ...handler, handler: resolved.value }, resolved))
 }
 
 /**
- * Adds a nitro server handler for development-only
+ * Adds a nitro plugin, which runs once when the server starts.
  *
+ * `plugin` is a path, or one path per nitro major, resolved as for
+ * {@link addServerHandler}. There is no portable variant: `nuxt/server` has no plugin
+ * surface, so a plugin is written against nitro.
  */
-export function addDevServerHandler (handler: NitroVersionedInput<NitroDevEventHandlerV2, NitroDevEventHandlerV3>): void
-export function addDevServerHandler (handler: NitroDevEventHandlerV3, options: { version: 3 }): void
-export function addDevServerHandler (handler: NitroDevEventHandlerV2, options?: { version?: 2 }): void
-export function addDevServerHandler (handler: NitroDevEventHandler | NitroVersionedInput<NitroDevEventHandlerV2, NitroDevEventHandlerV3>, options: NitroVersionOptions = {}): void {
+export function addNitroPlugin (plugin: ServerPluginInput): void {
   const nuxt = useNuxt()
-  const resolved = resolveVersionedRegistration(handler, isVersionedHandler, options.version, 'addDevServerHandler')
+  const resolved = resolveVariant('addNitroPlugin', plugin, normalize, NITRO_APIS)
   if (!resolved) {
     return
   }
-  assertHandlerNotVersioned(resolved.value as { handler?: unknown }, 'addDevServerHandler')
-  nuxt.options.devServerHandlers.push((resolved.version === undefined ? resolved.value : { ...resolved.value, version: resolved.version }) as any)
-}
-
-/**
- * Adds a Nitro plugin
- */
-export function addServerPlugin (plugin: string | NitroVersionedInput<string, string>, options: NitroVersionOptions = {}): void {
-  const nuxt = useNuxt()
-  const resolved = resolveVersionedRegistration<string, string>(plugin, (input): input is NitroVersionedInput<string, string> => typeof input !== 'string', options.version, 'addServerPlugin')
-  if (!resolved) {
+  // a host without `_serverPlugins` is nitro v2, where the metadata has no reader
+  const plugins = nuxt.options._serverPlugins as ServerPlugin[] | undefined
+  if (Array.isArray(plugins)) {
+    plugins.push({ plugin: resolved.value, compatibility: resolved.api, unused: resolved.unused })
     return
   }
-  const path = normalize(resolved.value)
   nuxt.options.nitro.plugins ||= []
-  nuxt.options.nitro.plugins.push(path)
-  if (resolved.version !== undefined) {
-    const versions = (nuxt._serverPluginVersions ||= new Map())
-    versions.set(path, resolved.version)
-    // record the alias-resolved form too: `nuxt.options.nitro.plugins` entries are
-    // alias-mapped before the compat layer looks the tag up
-    const aliased = normalize(resolveAlias(path, nuxt.options.alias))
-    if (aliased !== path) {
-      versions.set(aliased, resolved.version)
-    }
-    // the specifier is usually extensionless, which never matches a bundler module id
-    const file = resolveModulePath(aliased, {
-      try: true,
-      extensions: nuxt.options.extensions,
-      from: [nuxt.options.rootDir, import.meta.url],
-    })
-    if (file) {
-      versions.set(normalize(file), resolved.version)
-    }
+  if (!nuxt.options.nitro.plugins.includes(resolved.value)) {
+    nuxt.options.nitro.plugins.push(resolved.value)
   }
+}
+
+/** @deprecated Use {@link addNitroPlugin}: a startup plugin is nitro's, not a portable server API. */
+export function addServerPlugin (plugin: ServerPluginInput): void {
+  addNitroPlugin(plugin)
 }
 
 /**
@@ -230,33 +227,13 @@ export function tryUseNitro (): NitroInstance | undefined {
 }
 
 /**
- * Record the nitro major a server-side source belongs to.
- *
- * Auto-import sources, scanned directories and server template ids are not
- * versioned registrations in the way a handler is, but `@nuxt/nitro-server`
- * needs to know which of them point at nitro v2 module code so it can scope the
- * v2 compatibility transform to them. Absent entries are nitro v2, matching the
- * rest of the tag contract.
- * @internal
+ * Add server imports to be auto-imported in the server program.
  */
-export function recordServerSource (nuxt: Nuxt, source: string, version: NitroCompatibilityVersion | undefined): void {
-  if (version === undefined) {
-    return
-  }
-  const versions = (nuxt._serverImportVersions ||= new Map())
-  versions.set(normalize(source), version)
-}
-
-/**
- * Add server imports to be auto-imported by Nitro
- */
-export function addServerImports (imports: NuxtImport | NuxtImport[], options: NitroVersionOptions = {}): void {
+export function addServerImports (imports: NuxtImport | NuxtImport[]): void {
   const nuxt = useNuxt()
   const _imports = toArray(imports)
-  for (const item of _imports) {
-    if (typeof item.from === 'string') {
-      recordServerSource(nuxt, item.from, options.version)
-    }
+  if (_imports.length === 0) {
+    return
   }
   nuxt.hook('nitro:config', (config) => {
     config.imports ||= {}
@@ -266,13 +243,13 @@ export function addServerImports (imports: NuxtImport | NuxtImport[], options: N
 }
 
 /**
- * Add directories to be scanned for auto-imports by Nitro
+ * Add directories to be scanned for auto-imports in the server program.
  */
-export function addServerImportsDir (dirs: string | string[], opts: { prepend?: boolean } & NitroVersionOptions = {}): void {
+export function addServerImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}): void {
   const nuxt = useNuxt()
   const _dirs = toArray(dirs)
-  for (const dir of _dirs) {
-    recordServerSource(nuxt, dir, opts.version)
+  if (_dirs.length === 0) {
+    return
   }
   nuxt.hook('nitro:config', (config) => {
     config.imports ||= {}
