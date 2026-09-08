@@ -296,7 +296,7 @@ catalogs:
       version: 4.0.7
     pkg-types:
       specifier: ^2.3.2
-      version: 2.3.2
+      version: 2.3.3
     postcss:
       specifier: ^8.5.28
       version: 8.5.28
@@ -346,8 +346,8 @@ catalogs:
       specifier: ^2.0.0-rc.24
       version: 2.0.0-rc.24
     unimport:
-      specifier: 6.4.0
-      version: 6.4.0
+      specifier: ^7.0.1
+      version: 7.0.1
     unplugin:
       specifier: ^3.3.0
       version: 3.3.0
@@ -699,7 +699,6 @@ overrides:
 
 patchedDependencies:
   nitropack@2.13.4: 14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8
-  unimport@6.4.0: 1cb64a8acdbd84ec49ca3af3b857b1b6e536a2f7b2167d6b0fc41bb55eae3666
 
 importers:
 
@@ -995,7 +994,7 @@ importers:
         version: 0.148.0
       pkg-types:
         specifier: catalog:build
-        version: 2.3.2
+        version: 2.3.3
       rolldown:
         specifier: 1.2.7
         version: 1.2.7
@@ -1091,7 +1090,7 @@ importers:
         version: 3.0.1(magic-string@1.2.3)(oxc-parser@0.148.0)(rolldown@1.2.7)(unplugin@3.3.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0)))
       unimport:
         specifier: catalog:build
-        version: 6.4.0(patch_hash=1cb64a8acdbd84ec49ca3af3b857b1b6e536a2f7b2167d6b0fc41bb55eae3666)(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
+        version: 7.0.1(@rspack/core@2.2.2(@swc/helpers@0.5.23))(acorn@8.18.0)(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       unplugin:
         specifier: catalog:build
         version: 3.3.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
@@ -1263,7 +1262,7 @@ importers:
         version: 4.0.7
       pkg-types:
         specifier: catalog:build
-        version: 2.3.2
+        version: 2.3.3
       rolldown-string:
         specifier: catalog:vite
         version: 0.3.1(rolldown@1.2.7)
@@ -1299,7 +1298,7 @@ importers:
         version: 3.4.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       unimport:
         specifier: catalog:build
-        version: 6.4.0(patch_hash=1cb64a8acdbd84ec49ca3af3b857b1b6e536a2f7b2167d6b0fc41bb55eae3666)(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
+        version: 7.0.1(@rspack/core@2.2.2(@swc/helpers@0.5.23))(acorn@8.18.0)(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       unplugin:
         specifier: catalog:build
         version: 3.3.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
@@ -1526,7 +1525,7 @@ importers:
         version: 2.0.3
       pkg-types:
         specifier: catalog:build
-        version: 2.3.2
+        version: 2.3.3
       std-env:
         specifier: catalog:build
         version: 4.2.0
@@ -1605,7 +1604,7 @@ importers:
         version: 3.0.1(magic-string@1.2.3)(oxc-parser@0.148.0)(rolldown@1.2.7)(unplugin@3.3.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0)))
       unimport:
         specifier: catalog:build
-        version: 6.4.0(patch_hash=1cb64a8acdbd84ec49ca3af3b857b1b6e536a2f7b2167d6b0fc41bb55eae3666)(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
+        version: 7.0.1(@rspack/core@2.2.2(@swc/helpers@0.5.23))(acorn@8.18.0)(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       untyped:
         specifier: catalog:build
         version: 2.0.0
@@ -1725,7 +1724,7 @@ importers:
         version: 2.0.3
       pkg-types:
         specifier: catalog:build
-        version: 2.3.2
+        version: 2.3.3
       rolldown-string:
         specifier: catalog:vite
         version: 0.3.1(rolldown@1.2.7)
@@ -9803,8 +9802,8 @@ packages:
   pkg-types@1.3.1:
     resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
 
-  pkg-types@2.3.2:
-    resolution: {integrity: sha512-v0sVXzj7oPGysr543YYZLYbcJNJsKikSsp/fFzoxQ12ewY3ZZr7oCPC8y7OlmxfYB3QPvriXmuPD8KZggE1vqg==}
+  pkg-types@2.3.3:
+    resolution: {integrity: sha512-j/lCFdcppV0JxWpCEITdbDltBxPP6cHT+yNJ6Go2OgoSA9518X847X9z0p6LtA4Nc16+eQzCZjRrWanTGvHJ5w==}
 
   playwright-core@1.63.0:
     resolution: {integrity: sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==}
@@ -11472,6 +11471,21 @@ packages:
       oxc-parser: 0.148.0
       rolldown: 1.2.7
     peerDependenciesMeta:
+      oxc-parser:
+        optional: true
+      rolldown:
+        optional: true
+
+  unimport@7.0.1:
+    resolution: {integrity: sha512-HcHDoFaz6xiViJNRGWEGYleYl7KVxU8XVHSPJnkuozaQrCUVrA8aRv/vd+e8XP28y26n3L2VRAudCuF5+ek59w==}
+    engines: {node: '>=18.12.0'}
+    peerDependencies:
+      acorn: ^8.0.0
+      oxc-parser: 0.148.0
+      rolldown: 1.2.7
+    peerDependenciesMeta:
+      acorn:
+        optional: true
       oxc-parser:
         optional: true
       rolldown:
@@ -14020,7 +14034,7 @@ snapshots:
       obug: 2.1.4
       pathe: 2.0.3
       perfect-debounce: 2.1.0
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
       rc9: 3.1.0
       scule: 1.3.0
       srvx: 1.0.4
@@ -14077,7 +14091,7 @@ snapshots:
       magicast: 0.5.4
       pathe: 2.0.3
       perfect-debounce: 2.1.0
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
       tinyglobby: 0.2.17
       unstorage: 1.17.5(@netlify/blobs@11.0.3(supports-color@10.2.2))(db0@0.4.1)(ioredis@5.11.1(supports-color@10.2.2))
       verkit: 0.4.0
@@ -14186,7 +14200,7 @@ snapshots:
       oxc-parser: 0.148.0
       oxc-walker: 1.1.1(@oxc-project/types@0.148.0)(oxc-parser@0.148.0)(rolldown@1.2.7)
       pathe: 2.0.3
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
       sirv: 3.0.2
       std-env: 4.2.0
       ufo: 1.6.4
@@ -16588,7 +16602,7 @@ snapshots:
       ohash: 2.0.12
       pathe: 2.0.3
       perfect-debounce: 2.1.0
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
       rc9: 3.1.0
     optionalDependencies:
       magicast: 0.5.4
@@ -16599,7 +16613,7 @@ snapshots:
       defu: 6.1.7
       exsolve: 1.1.1
       pathe: 2.0.3
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
       rc9: 3.1.0
     optionalDependencies:
       chokidar: 5.0.0
@@ -19161,7 +19175,7 @@ snapshots:
   local-pkg@1.2.1:
     dependencies:
       mlly: 1.8.2
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
       quansync: 0.2.11
 
   locate-path@6.0.0:
@@ -19932,7 +19946,7 @@ snapshots:
       ohash: 2.0.12
       pathe: 2.0.3
       perfect-debounce: 2.1.0
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
       pretty-bytes: 7.1.3
       radix3: 1.1.2
       rollup: 4.63.1
@@ -19948,7 +19962,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.5.0
       unenv: 2.0.0-rc.24
-      unimport: 6.4.0(patch_hash=1cb64a8acdbd84ec49ca3af3b857b1b6e536a2f7b2167d6b0fc41bb55eae3666)(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
+      unimport: 6.4.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       unplugin-utils: 0.3.2
       unstorage: 1.17.5(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))
       untyped: 2.0.0
@@ -20451,7 +20465,7 @@ snapshots:
       mlly: 1.8.2
       pathe: 2.0.3
 
-  pkg-types@2.3.2:
+  pkg-types@2.3.3:
     dependencies:
       confbox: 0.3.1
       exsolve: 1.1.1
@@ -22283,7 +22297,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@6.4.0(patch_hash=1cb64a8acdbd84ec49ca3af3b857b1b6e536a2f7b2167d6b0fc41bb55eae3666)(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0)):
+  unimport@6.4.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0)):
     dependencies:
       acorn: 8.18.0
       escape-string-regexp: 5.0.0
@@ -22293,13 +22307,42 @@ snapshots:
       mlly: 1.8.2
       pathe: 2.0.3
       picomatch: 4.0.7
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
       scule: 1.3.0
       strip-literal: 4.0.0
       tinyglobby: 0.2.17
       unplugin: 3.3.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       unplugin-utils: 0.3.2
     optionalDependencies:
+      oxc-parser: 0.148.0
+      rolldown: 1.2.7
+    transitivePeerDependencies:
+      - '@farmfe/core'
+      - '@rspack/core'
+      - bun-types-no-globals
+      - esbuild
+      - rollup
+      - unloader
+      - vite
+      - webpack
+
+  unimport@7.0.1(@rspack/core@2.2.2(@swc/helpers@0.5.23))(acorn@8.18.0)(esbuild@0.28.2)(oxc-parser@0.148.0)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0)):
+    dependencies:
+      escape-string-regexp: 5.0.0
+      estree-walker: 3.0.3
+      local-pkg: 1.2.1
+      magic-string: 1.2.3
+      mlly: 1.8.2
+      pathe: 2.0.3
+      picomatch: 4.0.7
+      pkg-types: 2.3.3
+      scule: 1.3.0
+      strip-literal: 4.0.0
+      tinyglobby: 0.2.17
+      unplugin: 3.3.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
+      unplugin-utils: 0.3.2
+    optionalDependencies:
+      acorn: 8.18.0
       oxc-parser: 0.148.0
       rolldown: 1.2.7
     transitivePeerDependencies:
@@ -22492,7 +22535,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.2
       pathe: 2.0.3
-      pkg-types: 2.3.2
+      pkg-types: 2.3.3
 
   update-browserslist-db@1.3.2(browserslist@4.28.9):
     dependencies:

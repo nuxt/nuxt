@@ -11,7 +11,6 @@ packages:
 patchedDependencies:
   # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
   nitropack@2.13.4: patches/nitropack@2.13.4.patch
-  unimport@6.4.0: patches/unimport@6.4.0.patch
 
 publicHoistPattern:
   - '*-loader'
@@ -66,6 +65,7 @@ minimumReleaseAgeExclude:
   - unstorage
   - unwasm
   - fetchdts@0.2.0
+  - pkg-types@2.3.3
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
@@ -207,7 +207,7 @@ catalogs:
     unctx: ^3.0.1
     undici: ^8.10.2
     unenv: ^2.0.0-rc.24
-    unimport: 7.0.1 # pinned: patched in patches/unimport@6.4.0.patch
+    unimport: ^7.0.1
     unplugin: ^3.3.0
     unrouting: ^0.2.3
     untyped: ^2.0.0
