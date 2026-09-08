@@ -4,17 +4,8 @@ import type { Page } from '@playwright/test'
 import type { Router } from 'vue-router'
 import { expect, test } from './test-utils'
 
-/**
- * Navigating while the initial hydration is still suspended (for example
- * pressing the browser back button before a slow page finishes hydrating)
- * must interrupt hydration and render the target route immediately, instead
- * of updating the URL while the DOM stays stuck on the old SSR content.
- *
- * The underlying fix lives in the `@vue/runtime-core` patch in `patches/`:
- * a nested suspensible `<Suspense>` used to silently drop patches while the
- * root suspense was still unresolved, which is always the case during
- * hydration.
- */
+// Browser back navigation must replace the SSR branch even while root hydration is pending.
+// Updating only the URL would leave the user on the abandoned page until its async work finishes.
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/hydration-navigation', import.meta.url))
 

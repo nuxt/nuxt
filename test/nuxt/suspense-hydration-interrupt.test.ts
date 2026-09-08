@@ -3,20 +3,8 @@ import { Fragment, Suspense, createSSRApp, defineComponent, h, nextTick, ref } f
 import { renderToString } from 'vue/server-renderer'
 import { flushPromises } from '@vue/test-utils'
 
-/**
- * Regression test for the `@vue/runtime-core` patch in `patches/`.
- *
- * Nuxt renders every page inside a suspensible `<Suspense>` nested in the root
- * suspense, so during initial hydration the root suspense always has pending
- * deps. `@vue/runtime-core` used to silently drop patches to a nested suspense
- * while its parent suspense was unresolved (vuejs/core#10055), which meant any
- * navigation before hydration finished (e.g. pressing the browser back button
- * on a slowly-hydrating page) updated the URL but left the old SSR DOM on
- * screen forever. The patch lets such updates through while the nested
- * suspense is still hydrating; `patchSuspense` then runs its dedicated
- * "toggled before hydration is finished" path, unmounting the stale SSR
- * branch and rendering the new content immediately.
- */
+// Navigation can replace a nested page Suspense while the root still awaits hydration.
+// The abandoned async setup must not leave stale SSR DOM or keep either boundary pending.
 
 function createApp (opts: {
   gate: () => Promise<unknown>
