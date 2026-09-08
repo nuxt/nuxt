@@ -14,6 +14,14 @@ const fixtures = [
     sourceDir: fileURLToPath(new URL('../fixtures/hmr-sibling-layer', import.meta.url)),
     fixtureDir: fileURLToPath(new URL('../fixtures-temp/hmr-sibling-layer', import.meta.url)),
   },
+  {
+    sourceDir: fileURLToPath(new URL('../fixtures/dev-error-sourcemap', import.meta.url)),
+    fixtureDir: fileURLToPath(new URL('../fixtures-temp/dev-error-sourcemap', import.meta.url)),
+  },
+  {
+    sourceDir: fileURLToPath(new URL('../fixtures/dev-error-client', import.meta.url)),
+    fixtureDir: fileURLToPath(new URL('../fixtures-temp/dev-error-client', import.meta.url)),
+  },
 ]
 
 setup('create temporary hmr fixture directory', async () => {

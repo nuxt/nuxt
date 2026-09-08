@@ -34,6 +34,9 @@ export default createConfigForNuxt({
         'packages/vite-server/src/templates/spa-loading-icon.ts',
         'packages/schema/src/templates/loading.ts',
         'packages/kit/test/types-fixture/**',
+        // deliberately does not compile
+        'test/fixtures/dev-error-sourcemap/app/components/Broken.vue',
+        'test/fixtures/vite-server-dev-error/app/components/Broken.vue',
       ],
     },
     {

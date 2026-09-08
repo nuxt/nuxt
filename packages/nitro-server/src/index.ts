@@ -98,12 +98,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
+  if (nuxt.options.dev) {
+    nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
+      '#internal/dev-server-logs-options': () => [
+        `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
+        `export const srcDir = ${JSON.stringify(nuxt.options.srcDir)};`,
+      ].join('\n'),
+    })
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
+  }
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
     nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
-    nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
-      '#internal/dev-server-logs-options': () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
-    })
   }
 
   // When the base URL is only known at runtime, the `base-url` middleware strips it from incoming
@@ -253,6 +259,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // read its module graph (see `dev-client-css` middleware).
       '#internal/nuxt/dev-client-css': () => `export const getDevClientCss = () => []`,
       '#internal/nuxt/nitro-config.mjs': () => [
+        `export const NUXT_ERROR_CHANNEL = ${JSON.stringify(nuxt.options.devServer.errorChannel)}`,
         `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
         `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
       ].join('\n'),
@@ -904,6 +911,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   nitro.options.devHandlers.push(...nuxt.options.devServerHandlers as NitroBuilderOptions['devHandlers'])
+  if (nuxt.options.dev) {
+    nitro.options.plugins.push(resolve(distDir, 'runtime/plugins/dev-errors'))
+    // live channel behind the development error page and overlay
+    nitro.options.handlers.unshift({
+      route: joinURL(nuxt.options.devServer.errorChannel, '**'),
+      lazy: true,
+      handler: resolve(distDir, 'runtime/handlers/error-channel'),
+    })
+  }
   if (!nuxt.options.experimental.nitroViteEnvironment) {
     nitro.options.handlers.unshift({
       route: '/__nuxt_error',
