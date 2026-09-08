@@ -1,4 +1,4 @@
-import { getRequestHost, getRequestProtocol, toWebRequest } from 'h3'
+import { getRequestHost, getRequestProtocol, getRequestURL, readRawBody } from 'h3'
 import type { H3Event } from 'h3'
 import type { RendererEvent } from 'nuxt/internal/renderer/runtime'
 import type { NuxtRequestContext, RequestEvent } from 'nuxt/schema'
@@ -88,6 +88,50 @@ class NodeResponseHeaders {
 }
 
 const WEB_PROPERTIES = new Set(['req', 'res', 'url', '~app'])
+
+const PAYLOAD_METHODS = new Set(['PATCH', 'POST', 'PUT', 'DELETE'])
+
+/**
+ * The request in the web-standard shape, with its body read through h3 v1's own reader.
+ *
+ * h3 caches the bytes it reads on the node request, so a body read here and a
+ * `readBody(event)` elsewhere in the same request resolve to the same bytes whichever
+ * happens first, rather than the second read finding a stream the first has drained.
+ *
+ * `clone()` builds a request the same way, so it succeeds even once the body of the request
+ * it was cloned from has been read.
+ */
+function toWebRequest (event: H3Event): Request {
+  const existing = (event as { web?: { request?: Request } }).web?.request
+  if (existing) {
+    return existing
+  }
+
+  const method = event.method
+  const request = new Request(getRequestURL(event), {
+    method,
+    headers: event.headers,
+    body: PAYLOAD_METHODS.has(method) ? toBufferedBodyStream(event) : undefined,
+    // @ts-expect-error undici option, required to send a stream body
+    duplex: 'half',
+  })
+
+  Object.defineProperty(request, 'clone', { value: () => toWebRequest(event), configurable: true, writable: true })
+
+  return request
+}
+
+function toBufferedBodyStream (event: H3Event): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    async pull (controller) {
+      const body = await readRawBody(event, false)
+      if (body) {
+        controller.enqueue(new Uint8Array(body))
+      }
+      controller.close()
+    },
+  })
+}
 
 const portableEvents = new WeakMap<H3Event, RequestEvent>()
 
