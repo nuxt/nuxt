@@ -19,6 +19,8 @@ export { configDiagnostics } from '../diagnostics/config.ts'
 export { headDiagnostics } from '../diagnostics/head.ts'
 export { bundlerDiagnostics } from '../diagnostics/bundler.ts'
 
+export { reportPendingTemplates, trackPendingTemplate } from './pending-templates.ts'
+
 export { loadJiti } from './jiti.ts'
 
 export { parseNodeModulePath } from './node-module.ts'
