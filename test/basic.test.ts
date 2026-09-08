@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import type { Route } from 'playwright-core'
 import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
@@ -2080,6 +2081,36 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
     expect(await page.evaluate(
       () => document.head.querySelectorAll('link[href*="/hint-"]').length,
     )).toBe(2)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should throttle forwarded hints and prioritise recently prefetched routes', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    for (let route = 1; route <= 4; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+      await page.waitForFunction(
+        route => document.head.querySelector(`link[href$="/hint-b.svg?route=${route}"]`),
+        route,
+      )
+    }
+
+    await expect.poll(() => pendingRequests.length).toBe(8)
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/5'))
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect(pendingRequests).toHaveLength(8)
+    expect(await page.locator('link[href*="?route=5"], link[href*="?route=6"]').count()).toBe(0)
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(8)
+    expect(pendingRequests.at(-1)!.request().url()).toMatch(/\/hint-a\.svg\?route=6$/)
 
     await page.close()
   })

@@ -12,16 +12,20 @@ import { stateDiagnostics } from '../diagnostics/state'
 
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
-// track the active head entry per path for forwarded preload hints
 interface ActiveHeadEntryLike { dispose: () => void }
-const forwardedHintEntries = new Map<string, ActiveHeadEntryLike>()
+
+// New hints are added to the beginning so recently prefetched routes take priority.
+const pendingForwardedHints: ResolvableLink[] = []
+const forwardedHintEntries = new Set<ActiveHeadEntryLike>()
 const forwardedHintHrefs = new Set<string>()
+const forwardedHintTimeouts = new Set<ReturnType<typeof setTimeout>>()
 // bumped on navigation, so payloads that resolve afterwards are discarded
 let hintGeneration = 0
-let forwardedHintCount = 0
+let activeForwardedHintCount = 0
 
 const MAX_HINTS_PER_ROUTE = 2
-const MAX_FORWARDED_HINTS = 8
+const MAX_CONCURRENT_FORWARDED_HINTS = 8
+const FORWARDED_HINT_TIMEOUT_MS = 30_000
 
 const SLOW_CONNECTION_TYPES = new Set(['slow-2g', '2g'])
 
@@ -43,17 +47,28 @@ function documentHrefs (): Set<string> {
   return hrefs
 }
 
-function selectHints (prefetchLinks: Array<Record<string, string | boolean>>) {
+function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): ResolvableLink[] {
   const existingHrefs = documentHrefs()
-  const selected: Array<Record<string, string | boolean>> = []
+  const selected: ResolvableLink[] = []
 
   for (const link of prefetchLinks) {
-    if (selected.length >= MAX_HINTS_PER_ROUTE || forwardedHintCount + selected.length >= MAX_FORWARDED_HINTS) { break }
+    if (selected.length >= MAX_HINTS_PER_ROUTE) { break }
     if (typeof link.href !== 'string') { continue }
     const href = new URL(link.href, window.location.href).href
     if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
+    existingHrefs.add(href)
     forwardedHintHrefs.add(href)
-    selected.push(link)
+    if (link.as === 'image') {
+      // `rel="prefetch"` has no request destination, so image hints stay as
+      // `rel="preload"`, with any `fetchpriority` dropped so that they
+      // cannot outrank the current page.
+      const { fetchpriority: _fetchpriority, ...rest } = link
+      selected.push(rest as ResolvableLink)
+    } else {
+      // Downgrade preload (and modulepreload) to prefetch.
+      const { rel: _rel, ...rest } = link
+      selected.push({ ...rest, rel: 'prefetch' } as ResolvableLink)
+    }
   }
 
   return selected
@@ -69,8 +84,13 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
         hintGeneration++
-        forwardedHintCount = 0
-        for (const entry of forwardedHintEntries.values()) {
+        activeForwardedHintCount = 0
+        pendingForwardedHints.length = 0
+        for (const timeout of forwardedHintTimeouts) {
+          clearTimeout(timeout)
+        }
+        forwardedHintTimeouts.clear()
+        for (const entry of forwardedHintEntries) {
           entry.dispose()
         }
         forwardedHintEntries.clear()
@@ -101,35 +121,65 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     // Load payload into cache
     const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
+    const drainForwardedHints = () => {
+      if (!head) { return }
+      while (activeForwardedHintCount < MAX_CONCURRENT_FORWARDED_HINTS && pendingForwardedHints.length) {
+        const link = pendingForwardedHints.shift()!
+        const generation = hintGeneration
+        const activeHint: { entry?: ActiveHeadEntryLike, timeout?: ReturnType<typeof setTimeout> } = {}
+        let completed = false
+        let disposeOnCompletion = false
+
+        activeForwardedHintCount++
+        const complete = (dispose: boolean) => {
+          if (completed || generation !== hintGeneration) { return }
+          completed = true
+          disposeOnCompletion = dispose
+          activeForwardedHintCount--
+          if (activeHint.timeout) {
+            clearTimeout(activeHint.timeout)
+            forwardedHintTimeouts.delete(activeHint.timeout)
+          }
+          if (dispose && activeHint.entry) {
+            activeHint.entry.dispose()
+            forwardedHintEntries.delete(activeHint.entry)
+          }
+          drainForwardedHints()
+        }
+
+        activeHint.entry = head.push({
+          link: [{
+            ...link,
+            onerror: () => complete(true),
+            onload: () => complete(false),
+          }],
+        })
+        if (disposeOnCompletion) {
+          activeHint.entry.dispose()
+        } else {
+          forwardedHintEntries.add(activeHint.entry)
+        }
+        if (!completed) {
+          activeHint.timeout = setTimeout(() => complete(true), FORWARDED_HINT_TIMEOUT_MS)
+          forwardedHintTimeouts.add(activeHint.timeout)
+        }
+      }
+    }
+
     nuxtApp.hooks.hook('link:prefetch', (url) => {
       onNuxtReady(async () => {
         const generation = hintGeneration
-        const { hostname, pathname } = new URL(url, window.location.href)
+        const { hostname } = new URL(url, window.location.href)
         if (hostname !== window.location.hostname) { return }
         // TODO: use preloadPayload instead once we can support preloading islands too
         const payload = await loadPayload(url).catch(() => {
           stateDiagnostics.NUXT_E7003({ url })
         })
-        if (head && generation === hintGeneration && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname) && canAffordHints()) {
+        if (head && generation === hintGeneration && payload?.prefetchLinks?.length && canAffordHints()) {
           const selected = selectHints(payload.prefetchLinks)
           if (!selected.length) { return }
-          forwardedHintCount += selected.length
-          const entry = head.push({
-            // payload serialisation erases the attribute types the destination resolved
-            link: selected.map((link) => {
-              if (link.as === 'image') {
-                // `rel="prefetch"` has no request destination, so image hints stay as
-                // `rel="preload"`, with any `fetchpriority` dropped so that they
-                // cannot outrank the current page
-                const { fetchpriority: _fetchpriority, ...rest } = link
-                return rest
-              }
-              // Downgrade preload (and modulepreload) to prefetch.
-              const { rel: _rel, ...rest } = link
-              return { ...rest, rel: 'prefetch' }
-            }) as ResolvableLink[],
-          })
-          forwardedHintEntries.set(pathname, entry)
+          pendingForwardedHints.unshift(...selected)
+          drainForwardedHints()
         }
       })
     })
