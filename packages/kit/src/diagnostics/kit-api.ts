@@ -125,7 +125,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B8024: {
-      why: (p: { api: string, declared: string, host: string }) => `A \`${p.api}\` registration provided implementations for \`${p.declared}\`, and this project's server runs \`${p.host}\`, so it was skipped.`,
+      why: (p: { api: string, declared: string, host: string }) => `A \`${p.api}\` registration was skipped because this project's server runs \`${p.host}\`.${p.declared ? ` It provided implementations for \`${p.declared}\`.` : ''}`,
       fix: 'Provide an implementation the server can run: `nuxt/server` code runs everywhere. Report it to the module author if the module is not your own.',
       docs: false,
     },

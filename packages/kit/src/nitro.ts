@@ -56,6 +56,13 @@ interface ResolvedVariant<T> {
  * whose builder knows nothing about variants.
  */
 function resolveVariant<T, Api extends ServerApi> (api: string, variants: ServerApiVariants<T, Api>, normalizeValue: (value: T) => T, accepted: Set<ServerApi>): ResolvedVariant<T> | undefined {
+  const host = (getHostServerApis() ?? UNIDENTIFIED_HOST_APIS).filter(candidate => accepted.has(candidate))
+
+  if (host.length === 0) {
+    kitDiagnostics.NUXT_B8024({ api, declared: '', host: (getHostServerApis() ?? []).join('`, `') })
+    return
+  }
+
   if (variants === null || typeof variants !== 'object') {
     return { value: normalizeValue(variants as T), unused: [] }
   }
@@ -68,7 +75,6 @@ function resolveVariant<T, Api extends ServerApi> (api: string, variants: Server
     declared.set(key as ServerApi, normalizeValue((variants as Record<string, T>)[key]!))
   }
 
-  const host = (getHostServerApis() ?? UNIDENTIFIED_HOST_APIS).filter(candidate => accepted.has(candidate))
   const picked = host.find(candidate => declared.has(candidate))
   if (picked === undefined) {
     kitDiagnostics.NUXT_B8024({ api, declared: [...declared.keys()].join('`, `'), host: host.join('`, `') })

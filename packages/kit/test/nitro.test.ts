@@ -303,14 +303,29 @@ describe('addNitroPlugin', () => {
     ])
   })
 
-  it('is skipped when it names a nitro major the host does not run', () => {
+  it.each([
+    ['a single path', '/plugins/test.ts'],
+    ['one path per nitro major', { nitro3: '/plugins/test.v3.ts', nitro2: '/plugins/test.v2.ts' }],
+  ])('is skipped, given %s, under a server that runs no nitro plugin', (_case, plugin) => {
     const report = vi.spyOn(kitDiagnostics, 'NUXT_B8024').mockImplementation(() => ({}) as any)
     const nuxt = createMockNuxt('3.0.1')
     ;(nuxt.options as any).server = { builder: '@nuxt/vite-server' }
-    runWithNuxtContext(nuxt, () => addNitroPlugin({ nitro3: '/plugins/test.v3.ts' }))
+
+    runWithNuxtContext(nuxt, () => addNitroPlugin(plugin))
+
     expect(nuxt.options._serverPlugins).toEqual([])
     expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toMatchObject({ api: 'addNitroPlugin', host: 'nuxt' })
     report.mockRestore()
+  })
+
+  it('still registers a handler the server may yet run', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    ;(nuxt.options as any).server = { builder: '@nuxt/vite-server' }
+
+    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/test', handler: '/handlers/test.ts' }))
+
+    expect(nuxt.options.serverHandlers.map(h => h.handler)).toEqual(['/handlers/test.ts'])
   })
 
   it('has no portable variant, since there is no portable plugin surface', () => {
