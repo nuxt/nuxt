@@ -9,7 +9,7 @@ import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { filterIslandProps, getIslandHash } from '#app/island-hash'
 import { findUnsafeIslandPropKey } from '#app/island-props'
-import { MAX_ISLAND_BODY_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
+import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
@@ -235,11 +235,28 @@ function returnIslandResponse (event: H3Event, response: Partial<RenderResponse>
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 
+async function drainBody (event: H3Event) {
+  const stream = getRequestWebStream(event)
+  if (!stream) { return }
+  const reader = stream.getReader()
+  try {
+    for (;;) {
+      const { done } = await reader.read()
+      if (done) { break }
+    }
+  } finally {
+    reader.releaseLock()
+  }
+}
+
 // Read a non-GET island body, refusing oversized or deeply nested input before the JSON
 // parse and hash run on it.
 async function readGuardedIslandBody (event: H3Event): Promise<NuxtIslandContext> {
   const contentLength = Number(getRequestHeader(event, 'content-length'))
   if (contentLength > MAX_ISLAND_BODY_BYTES) {
+    if (contentLength <= MAX_ISLAND_DRAIN_BYTES) {
+      await drainBody(event)
+    }
     throw createError({ statusCode: 413, statusMessage: 'Island request body too large' })
   }
 
