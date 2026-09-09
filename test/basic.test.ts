@@ -1642,6 +1642,11 @@ describe('plugins', () => {
     expect(html).toContain('dependsOnPlugin: Plugin with environment-specific dependencies works!')
     await expectNoClientErrors('/plugins')
   })
+
+  it('runs a nitro plugin registered by a module', async () => {
+    const html = await $fetch<string>('/plugins')
+    expect(html).toContain('<meta name="module-nitro-plugin" content="registered">')
+  })
 })
 
 describe('layouts', () => {

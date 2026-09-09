@@ -31,6 +31,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
 import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
+import { collectServerRegistrations } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
@@ -735,6 +736,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
+
+  // a `nitro:config` listener can still register a plugin, so collect after the hook
+  collectServerRegistrations(nuxt, nitroConfig)
 
   if (nitroConfig.static && nuxt.options.dev) {
     nitroConfig.routeRules ||= {}

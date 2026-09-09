@@ -1,4 +1,4 @@
-import { addPlugin, createResolver, defineNuxtModule, useNuxt } from 'nuxt/kit'
+import { addNitroPlugin, addPlugin, createResolver, defineNuxtModule, useNuxt } from 'nuxt/kit'
 
 export default defineNuxtModule({
   meta: {
@@ -9,6 +9,7 @@ export default defineNuxtModule({
     const resolver = createResolver(import.meta.url)
 
     addPlugin(resolver.resolve('./runtime/plugin'))
+    addNitroPlugin(resolver.resolve('./runtime/nitro-plugin'))
     useNuxt().hook('app:resolve', (app) => {
       app.middleware.push({
         name: 'unctx-test',
