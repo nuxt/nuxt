@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { createIsIgnored } from '@nuxt/kit'
-import { dirname, isAbsolute, join, relative } from 'pathe'
+import { dirname, isAbsolute, join, normalize, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { Import, InjectImportsOptions, Unimport } from 'unimport'
 import type { Nuxt, ServerImportsOptions } from '@nuxt/schema'
@@ -36,7 +36,19 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   })
 
   const isIgnored = createIsIgnored(nuxt)
-  const scanDirs = options.dirs ?? []
+  const scanDirs = (options.dirs ?? []).map(dir => normalize(dir))
+
+  // `addServerImportsDir` appends after the layer conventions are resolved, so what is left
+  // over was registered by a module
+  const layerDirs = new Set(resolveServerImportDirs(nuxt).map(dir => normalize(dir)))
+  const moduleDirs = scanDirs.filter(dir => !layerDirs.has(dir))
+
+  // a built module keeps its type-only exports in the emitted `.d.ts` and nowhere else; in a
+  // layer's own `server/utils` a `.d.ts` is not a source file, so only module dirs read them
+  const isIgnoredInModuleDir = createIsIgnored(nuxt, { declarations: true })
+  const fileFilter = (file: string) => moduleDirs.some(dir => file.startsWith(dir + '/'))
+    ? !isIgnoredInModuleDir(file)
+    : !isIgnored(file)
 
   // the project comes first in `_layers`, so it gets the highest priority; the floor of 1 is
   // unimport's default, so a scanned util still takes precedence over a preset of the same name
@@ -56,9 +68,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   async function scan () {
     if (scanDirs.length === 0) { return }
     await ctx.modifyDynamicImports(async (imports) => {
-      const scanned = await scanDirExports(scanDirs, {
-        fileFilter: file => !isIgnored(file),
-      })
+      const scanned = await scanDirExports(scanDirs, { fileFilter })
       for (const i of scanned) {
         i.priority ??= layerPriorities.find(([dir]) => i.from === dir || i.from.startsWith(dir + '/'))?.[1]
       }
