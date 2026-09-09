@@ -15,6 +15,9 @@ import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.con
 interface LoadPayloadOptions {
   fresh?: boolean
   hash?: string
+  signal?: AbortSignal
+  /** Request the payload at high priority, because the user has shown intent to navigate. */
+  promoted?: boolean
 }
 
 /** @since 3.0.0 */
@@ -25,7 +28,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
     // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
     // cannot invalidate them - defer to normal HTTP cache semantics instead
     const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
-    return await _importPayload(payloadURL, cache) || null
+    return await _importPayload(payloadURL, cache, opts.signal, opts.promoted) || null
   }
   return null
 }
@@ -100,10 +103,11 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   return payloadURL + u.search
 }
 
-async function _importPayload (payloadURL: string, cache: RequestCache) {
+async function _importPayload (payloadURL: string, cache: RequestCache, signal?: AbortSignal, promoted?: boolean) {
   if (import.meta.server || !payloadExtraction) { return null }
+  const priority = promoted ? 'high' : undefined
   try {
-    const res = await fetch(payloadURL, import.meta.dev ? {} : { cache })
+    const res = await fetch(payloadURL, import.meta.dev ? { signal, priority } : { cache, signal, priority } as RequestInit)
     if (!res.ok) {
       if (import.meta.dev) {
         stateDiagnostics.NUXT_E7002({ url: payloadURL })
@@ -112,7 +116,9 @@ async function _importPayload (payloadURL: string, cache: RequestCache) {
     }
     return await parsePayload(await res.text())
   } catch (err) {
-    stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
+    if (!signal?.aborted) {
+      stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
+    }
   }
   return null
 }
