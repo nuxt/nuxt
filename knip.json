@@ -43,6 +43,28 @@
         "#shared/*": ["./shared/*"]
       }
     },
+    "test/fixtures/nitro-legacy": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreUnresolved": ["#legacy-module-runtime"]
+    },
+    "test/fixtures/nitro-module-compat": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreUnresolved": ["#compat-virtual/nitro-dependent"]
+    },
     "test/fixtures/basic": {
       "entry": [
         "**/*.{js,ts,tsx,mjs,mts,vue}!"

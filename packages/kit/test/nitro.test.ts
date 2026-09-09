@@ -277,6 +277,16 @@ describe('addServerHandler', () => {
     ])
   })
 
+  it('does not add a base route where the handler on it takes the same method in another case', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => {
+      // a filename-derived method is uppercased, where an explicit one is authored as given
+      addServerHandler({ route: '/_icons', handler: '/handlers/icons.get.ts' })
+      addServerHandler({ route: '/_icons/**', method: 'get', handler: '/handlers/icons.ts' })
+    })
+    expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/_icons', '/_icons/**'])
+  })
+
   it('adds a base route for a methodless wildcard where the handler on it takes one method', () => {
     const nuxt = createMockNuxt('2.11.0')
     runWithNuxtContext(nuxt, () => {
