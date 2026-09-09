@@ -91,15 +91,16 @@ const WEB_PROPERTIES = new Set(['req', 'res', 'url', '~app'])
 
 const PAYLOAD_METHODS = new Set(['PATCH', 'POST', 'PUT', 'DELETE'])
 
+const BODY_READ_METHODS = new Set(['arrayBuffer', 'blob', 'bytes', 'formData', 'json', 'text'])
+
 /**
- * The request in the web-standard shape, with its body read through h3 v1's own reader.
+ * The request in the web-standard shape, with every read of its body served from the bytes
+ * h3 v1 caches on the node request.
  *
- * h3 caches the bytes it reads on the node request, so a body read here and a
- * `readBody(event)` elsewhere in the same request resolve to the same bytes whichever
- * happens first, rather than the second read finding a stream the first has drained.
- *
- * `clone()` builds a request the same way, so it succeeds even once the body of the request
- * it was cloned from has been read.
+ * A body read here and a `readBody(event)` elsewhere in the same request therefore resolve
+ * to the same bytes whichever happens first, and reading the request twice - directly, from
+ * a clone, or as a stream - resolves the same bytes each time rather than the second read
+ * finding a stream the first has drained.
  */
 function toWebRequest (event: H3Event): Request {
   const existing = (event as { web?: { request?: Request } }).web?.request
@@ -108,17 +109,41 @@ function toWebRequest (event: H3Event): Request {
   }
 
   const method = event.method
+  if (!PAYLOAD_METHODS.has(method)) {
+    return new Request(getRequestURL(event), { method, headers: event.headers })
+  }
+
   const request = new Request(getRequestURL(event), {
     method,
     headers: event.headers,
-    body: PAYLOAD_METHODS.has(method) ? toBufferedBodyStream(event) : undefined,
+    body: toBufferedBodyStream(event),
     // @ts-expect-error undici option, required to send a stream body
     duplex: 'half',
   })
 
-  Object.defineProperty(request, 'clone', { value: () => toWebRequest(event), configurable: true, writable: true })
+  const read = () => readRawBody(event, false).then(body => body ? new Uint8Array(body) : new Uint8Array())
+  const copy = () => read().then(body => new Response(body, { headers: request.headers }))
 
-  return request
+  const buffered: Request = new Proxy(request, {
+    get (target, property) {
+      if (property === 'bodyUsed') {
+        return false
+      }
+      if (property === 'body') {
+        return toBufferedBodyStream(event)
+      }
+      if (property === 'clone') {
+        return () => buffered
+      }
+      if (typeof property === 'string' && BODY_READ_METHODS.has(property)) {
+        return () => copy().then(response => response[property as 'text']())
+      }
+      const value = Reflect.get(target, property, target)
+      return typeof value === 'function' ? value.bind(target) : value
+    },
+  })
+
+  return buffered
 }
 
 function toBufferedBodyStream (event: H3Event): ReadableStream<Uint8Array> {
