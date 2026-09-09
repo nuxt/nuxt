@@ -123,13 +123,23 @@ function redirectResponse (event: ReturnType<typeof createRequestEvent>, redirec
       ? joinURL(location.slice(0, -3), tail)
       : location.replace('**', tail.replace(/^\//, ''))
   }
-  const response = new Response(null, {
+  const target = appendSearch(location, event.url.search)
+  const response = new Response(redirectBody(target), {
     status: redirect.status ?? 307,
-    headers: { location: appendSearch(location, event.url.search) },
+    headers: { 'location': target, 'content-type': 'text/html' },
   })
   applyHeaders(response, headers)
   return response
 }
+
+/** A meta-refresh document, so a prerendered redirect is followed when served as a static file. */
+function redirectBody (location: string): string {
+  const encoded = location.replace(REDIRECT_UNSAFE_RE, char => REDIRECT_ESCAPES[char]!)
+  return `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encoded}"></head></html>`
+}
+
+const REDIRECT_ESCAPES: Record<string, string> = { '"': '%22', '\'': '%27', '<': '%3C', '>': '%3E', '&': '%26' }
+const REDIRECT_UNSAFE_RE = /["'<>&]/g
 
 /** Carry the request's query onto a redirect target, ahead of any fragment the target names. */
 function appendSearch (target: string, search: string): string {
