@@ -111,7 +111,7 @@ To optimize your app, you may want to delay the hydration of some components unt
 
 :read-more{title="Lazy hydration" to="/docs/4.x/directory-structure/app/components#delayed-or-lazy-hydration"}
 
-For content and marketing sites that need little or no client-side interactivity, you can go further and combine prerendering, the `noScripts` route rule, [server components](/docs/4.x/guide/concepts/server-components) and lazy hydration to ship near-zero JavaScript.
+For content and marketing sites that need little or no client-side interactivity, you can go further and combine prerendering, the `noScripts` route rule, [server components](/docs/4.x/directory-structure/app/components#server-components) and lazy hydration to ship near-zero JavaScript.
 
 :read-more{title="Mostly-static sites" to="/docs/4.x/guide/recipes/mostly-static-sites"}
 

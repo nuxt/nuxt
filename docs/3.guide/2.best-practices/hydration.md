@@ -29,6 +29,57 @@ Vue will log hydration mismatch warnings in the browser console during developme
 
 ![Screenshot of Vue hydration mismatch warning in the browser console](/assets/docs/best-practices/vue-console-hydration.png)
 
+### Debugging Hydration Mismatches
+
+Hydration mismatches are reported as **Vue console warnings** in the browser during development. Nuxt does not currently provide a built-in error overlay for hydration mismatches (unlike the dev `<nuxt-error-overlay>` used for SSR and server runtime errors).
+
+To make mismatches easier to spot while developing, you can:
+
+- Enable detailed mismatch output with [`debug`](/docs/4.x/api/nuxt-config#debug):
+
+```ts twoslash [nuxt.config.ts]
+export default defineNuxtConfig({
+  debug: {
+    hydration: true,
+  },
+})
+```
+
+Setting `debug: true` also enables hydration debugging along with other debug options.
+
+- Install [`@nuxt/hints`](https://github.com/nuxt/hints), which surfaces hydration mismatches more prominently in development through Nuxt DevTools (side-by-side diffs and clearer console warnings).
+
+Production builds may not log the same warnings, but hydration mismatches can still break interactivity, cause layout shifts, and hurt SEO. Treat console warnings in development as signals to fix before shipping.
+
+::read-more{to="/docs/4.x/guide/going-further/debugging"}
+Learn more about debugging Nuxt applications.
+::
+
+### Choosing a Client-Only Strategy
+
+When server and client output cannot match, pick the approach that fits your use case:
+
+| Approach | When to use |
+| --- | --- |
+| [`<ClientOnly>`](/docs/4.x/api/components/client-only) with `#fallback` | Wrap a subtree that must not render on the server; show placeholder HTML until the client mounts |
+| [`.client.vue` components](/docs/4.x/directory-structure/app/components#client-components) | Entire component files that should never run during SSR |
+| [`onMounted`](https://vuejs.org/api/composition-api-lifecycle#onmounted) or [`import.meta.client`](/docs/4.x/api/advanced/import-meta) | Browser-only side effects (analytics, third-party widgets) after the component is active |
+| [`useFetch`](/docs/4.x/api/composables/use-fetch) / [`useAsyncData`](/docs/4.x/api/composables/use-async-data) with `server: false` | Data that should load only on the client |
+
+Prefer SSR-friendly alternatives when you can: [`useState`](/docs/4.x/api/composables/use-state), [`useCookie`](/docs/4.x/api/composables/use-cookie), and [`NuxtTime`](/docs/4.x/api/components/nuxt-time) keep server and client markup aligned without skipping SSR.
+
+::read-more{to="/docs/4.x/guide/concepts/server-and-client"}
+See what runs on the server, during hydration, and after mount.
+::
+
+### Dev-Only Debugging Aids
+
+Use [`<DevOnly>`](/docs/4.x/api/components/dev-only) for debug panels and tooling that should never ship to production. Its content is tree-shaken from production builds.
+
+If you provide a `#fallback` slot, test the production output with [`nuxt preview`](/docs/4.x/api/commands/preview) so you know what users will see.
+
+`<DevOnly>` is not a substitute for `<ClientOnly>`. Dev-only content is removed in production; client-only content still renders for end users once the app mounts in the browser.
+
 ## Common Reasons
 
 ### Browser-only APIs in Server Context
@@ -178,11 +229,12 @@ onMounted(() => {
 
 ## In Summary
 
-1. **Use SSR-friendly composables**: [`useFetch`](/docs/4.x/api/composables/use-fetch), [`useAsyncData`](/docs/4.x/api/composables/use-async-data), [`useState`](/docs/4.x/api/composables/use-state)
-2. **Wrap client-only code**: Use [`ClientOnly`](/docs/4.x/api/components/client-only) component for browser-specific content
-3. **Consistent data sources**: Ensure server and client uses the same data
-4. **Avoid side effects in setup**: Move browser-dependent code to `onMounted`
+1. **Watch the browser console in development** for hydration mismatch warnings and fix them before production
+2. **Use SSR-friendly composables**: [`useFetch`](/docs/4.x/api/composables/use-fetch), [`useAsyncData`](/docs/4.x/api/composables/use-async-data), [`useState`](/docs/4.x/api/composables/use-state)
+3. **Pick the right client-only tool** when SSR and client output cannot match: [`ClientOnly`](/docs/4.x/api/components/client-only), [`.client.vue`](/docs/4.x/directory-structure/app/components#client-components), or `onMounted`
+4. **Keep data consistent** between server and client renders
+5. **Avoid side effects in setup**: Move browser-dependent code to `onMounted`
 
 ::tip
-You can read the [Vue documentation on SSR hydration mismatch](https://vuejs.org/guide/scaling-up/ssr#hydration-mismatch) for a better understanding of hydration.
+Read the [Vue documentation on SSR hydration mismatch](https://vuejs.org/guide/scaling-up/ssr#hydration-mismatch) and the [Server and Client](/docs/4.x/guide/concepts/server-and-client) guide for more context on where your code runs.
 ::
