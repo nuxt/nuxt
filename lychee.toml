@@ -52,6 +52,8 @@ exclude = [
   'https://nuxt\.com/docs/4\.x/api/composables/\$%7BkebabCase\(factory\.name\)%7D.*',
   'https://nuxt\.com/docs/4\.x/api/components/\$%7Bslug%7D',
   'https://nuxt\.com/docs/4\.x/errors/\$%7B.*',
+  # the 5.x docs are not published while Nuxt 5 is unreleased
+  'https://nuxt\.com/docs/5\.x/(.*)',
   # TODO: fix upstream API issues
   "https://nuxt.com/modules",
   # single-quotes are required for regexp
