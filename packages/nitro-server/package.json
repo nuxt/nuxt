@@ -58,6 +58,7 @@
     "mocked-exports": "catalog:build",
     "nitro": "catalog:nitro-runtime",
     "nostics": "catalog:app-runtime",
+    "ofetch": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
     "rou3": "catalog:build",
