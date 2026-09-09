@@ -204,6 +204,7 @@ export default withMatrix({
         '/random/c',
         '/prefetch/server-components',
         '/prefetch/many-hints',
+        '/prefetch/many-islands',
         '/prefetch/hints/1',
         '/prefetch/hints/2',
         '/prefetch/hints/3',

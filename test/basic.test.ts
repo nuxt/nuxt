@@ -2143,6 +2143,25 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
+  it.skipIf(!isTestingAppManifest)('should bound concurrent island requests when prefetching an island-heavy payload', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/__nuxt_island\/AsyncServerComponent/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/many-islands'))
+
+    await expect.poll(() => pendingRequests.length).toBe(4)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect(pendingRequests).toHaveLength(4)
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(4)
+
+    await page.close()
+  })
+
   it.skipIf(!isTestingAppManifest)('should evict forwarded resource hints for routes that are never visited', async () => {
     const { page } = await renderPage()
 
