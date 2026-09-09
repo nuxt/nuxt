@@ -22,7 +22,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, toArray, toFsDriverIgnorePatterns, toModulePackageDir } from './utils.ts'
+import { PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir } from './utils.ts'
 import { setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
@@ -670,7 +670,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Hoist types for nitro implicit dependencies
   nuxt.options.typescript.hoist.push(
     // Nitro auto-imported/augmented dependencies
-    'nitro',
+    ...nitroImplicitDependencies,
     'nitro/app',
     'nitro/builder',
     'nitro/cache',
@@ -687,15 +687,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     'nitropack/types',
     'nitropack/runtime',
     'nitropack',
-    'srvx',
-    'defu',
-    'h3',
     // route rule augmentations are declared on `h3/rules`, so a project has to resolve it to the
     // same copy of h3 for them to apply
     'h3/rules',
-    'consola',
-    'ofetch',
-    'crossws',
   )
 
   // Extend nitro config with hook

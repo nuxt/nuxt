@@ -7,12 +7,13 @@ import { withTrailingSlash } from 'ufo'
 import { createUnimport } from 'unimport'
 import type { Unimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
+import escapeRE from 'escape-string-regexp'
 import { getLayerDirectories, resolveAlias } from '@nuxt/kit'
 import { trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
 import type { NitroConfig, NitroOptions } from 'nitro/types'
 
-import { distDir, toArray } from './utils.ts'
+import { distDir, nitroImplicitDependencies, toArray } from './utils.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 import { getH3ExportNames, getH3ImportsPreset, getNuxtServerImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from './imports.ts'
 import { wrapLegacyHandler } from './runtime/compat/wrapper.ts'
@@ -1054,9 +1055,11 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   const unimport = createUnimport({ presets: modulePresets })
   await unimport.init()
 
+  const nitroResolutions = getNitroPackageResolutions()
+
   const plugin = createLegacyResolvePlugin(
     id => active ? scopeFor(id) : undefined,
-    getNitroPackageResolutions(),
+    nitroResolutions,
     (id, scope) => {
       files.set(id, scope)
       invalidateScopeCache()
@@ -1066,16 +1069,19 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     unimport,
   )
 
+  const withNitro = nuxt as Nuxt & { _nitro?: { options: NitroOptions } }
+  const fallbackPlugin = createNitroFallbackResolvePlugin(nitroResolutions, () => withNitro._nitro?.options.exportConditions)
+
   nitroConfig.rollupConfig ||= {}
   nitroConfig.rollupConfig.plugins = toArray(nitroConfig.rollupConfig.plugins || [])
   nitroConfig.rollupConfig.plugins.unshift(plugin as any)
+  nitroConfig.rollupConfig.plugins.push(fallbackPlugin as any)
 
   if (nuxt.options.experimental.nitroViteEnvironment) {
+    const applyToEnvironment = (environment: { name: string }) => environment.name === 'nitro'
     nuxt.options.vite.plugins ||= []
-    nuxt.options.vite.plugins.push({
-      ...plugin,
-      applyToEnvironment: (environment: { name: string }) => environment.name === 'nitro',
-    } as any)
+    nuxt.options.vite.plugins.push({ ...plugin, applyToEnvironment } as any)
+    nuxt.options.vite.plugins.push({ ...fallbackPlugin, applyToEnvironment } as any)
   }
 
   return registerLateScope
@@ -1119,6 +1125,35 @@ function widenLegacyHandlerRoute (handler: { route?: string, middleware?: boolea
 
 interface ResolvePluginContext {
   resolve: (source: string, importer?: string, options?: { skipSelf?: boolean }) => Promise<{ id: string, external?: boolean | 'absolute' | 'relative' } | null>
+}
+
+const NITRO_IMPLICIT_DEPENDENCY_RE = new RegExp(`^(?:${nitroImplicitDependencies.map(escapeRE).join('|')})(?:/|$)`)
+
+/**
+ * Resolve {@link nitroImplicitDependencies} for importers that cannot reach them.
+ *
+ * Ordered last, so it answers only what nitro's own resolution declined, and answers
+ * unconditionally: rolldown calls `resolveId` more than once per specifier, so a hook that
+ * probes with `this.resolve` before answering sees its own earlier answer and declines.
+ */
+function createNitroFallbackResolvePlugin (nitroResolutions: Record<string, string>, conditions: () => string[] | undefined) {
+  const resolutions = new Map<string, string | undefined>(Object.entries(nitroResolutions))
+  const from = [resolveModulePath('nitro/package.json', { from: import.meta.url, try: true }) ?? import.meta.url, import.meta.url]
+
+  return {
+    name: 'nuxt:nitro-resolve-fallback',
+    enforce: 'post' as const,
+    resolveId: {
+      order: 'post' as const,
+      filter: { id: NITRO_IMPLICIT_DEPENDENCY_RE },
+      handler (source: string) {
+        if (!resolutions.has(source)) {
+          resolutions.set(source, resolveModulePath(source, { from, conditions: conditions(), try: true }))
+        }
+        return resolutions.get(source)
+      },
+    },
+  }
 }
 
 function createLegacyResolvePlugin (
@@ -1173,15 +1208,9 @@ function createLegacyResolvePlugin (
     // needed so that the legacy auto-imports beat nitro's own pass on either build path
     enforce: 'pre' as const,
     resolveId: { order: 'pre' as const, async handler (this: ResolvePluginContext, source: string, importer?: string) {
-      // module code written against nitro cannot always reach it: fill that in, but only
-      // once the bundler has had its own go, so nitro keeps resolving itself
-      if (source === 'nitro' || source.startsWith('nitro/')) {
-        const fallback = nitroResolutions[source]
-        const rootless = !!importer && !isAbsolute(importer)
-        if (fallback && (rootless || !await this.resolve(source, importer, { skipSelf: true }))) {
-          return fallback
-        }
-        return
+      // a virtual importer has no location to resolve from, so nitro's own copy answers
+      if (importer && !isAbsolute(importer) && (source === 'nitro' || source.startsWith('nitro/'))) {
+        return nitroResolutions[source]
       }
 
       const scope = scopeFor(importer)
