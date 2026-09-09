@@ -19,6 +19,7 @@ function declared<T extends object> (entry: T, api: string): any {
 }
 
 function createNuxt (options: Record<string, any> = {}) {
+  const listeners: Record<string, Array<(...args: any[]) => any>> = {}
   return {
     options: {
       alias: {},
@@ -33,6 +34,16 @@ function createNuxt (options: Record<string, any> = {}) {
       nitro: {},
       _layers: [{ config: { rootDir: '/project', srcDir: '/project' }, cwd: '/project' }],
       ...options,
+    },
+    hook: (name: string, listener: (...args: any[]) => any) => {
+      (listeners[name] ||= []).push(listener)
+    },
+    hooks: {
+      callHook: async (name: string, ...args: any[]) => {
+        for (const listener of listeners[name] || []) {
+          await listener(...args)
+        }
+      },
     },
   } as unknown as Nuxt
 }
@@ -412,7 +423,8 @@ describe('setupNitroCompat', () => {
       },
       handlers: [{ route: '/virtual', handler: '#virtual-module/handler' } as any],
     }
-    const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+    const nuxt = createNuxt()
+    const registerLateScope = await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
 
     const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
     const transformed = await plugin.transform.handler.call(null, `import { useStorage } from 'nitropack/runtime'`, '#virtual-module/template')
@@ -422,8 +434,9 @@ describe('setupNitroCompat', () => {
     expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`#virtual-module/template` (imports `nitropack/runtime`)') })
 
-    // a template function is rendered once nitro exists, so its evidence arrives late
+    // a template function is rendered once the app has been generated, so its evidence arrives late
     await registerLateScope({ options: { alias: {}, plugins: nitroConfig.plugins, handlers: nitroConfig.handlers } } as any)
+    await nuxt.hooks.callHook('build:done')
 
     expect(report.mock.calls[1]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`#virtual-module/handler` (imports `h3`)') })
     report.mockRestore()
@@ -443,10 +456,12 @@ describe('setupNitroCompat', () => {
       handlers: [{ route: '/late', handler: '#virtual-module/late' } as any],
     }
 
-    const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+    const nuxt = createNuxt()
+    const registerLateScope = await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
 
     nitroReady!()
     await registerLateScope({ options: { alias: {}, plugins: nitroConfig.plugins, handlers: nitroConfig.handlers } } as any)
+    await nuxt.hooks.callHook('build:done')
 
     const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
     const transformed = await plugin.transform.handler.call(null, `import { useStorage } from 'nitropack/runtime'`, '#virtual-module/late')
