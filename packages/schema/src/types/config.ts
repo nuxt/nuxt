@@ -50,6 +50,15 @@ type RuntimeConfigNamespace = Record<string, unknown>
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
+/**
+ * CORS mode for SSR-rendered tags that load build assets
+ * (`<script>`, `<link rel="stylesheet">`, `<link rel="modulepreload">`).
+ *
+ * Matches the HTML `crossorigin` attribute: `''` and `'anonymous'` are the
+ * anonymous CORS mode; `'use-credentials'` sends cookies with the request.
+ */
+export type BuildAssetsCrossOrigin = '' | 'anonymous' | 'use-credentials'
+
 /** Runtime configuration of the app itself, set at build time from `app` and `buildId`. */
 export interface RuntimeConfigApp extends RuntimeConfigNamespace {
   /** The base path the app is served from. */

@@ -51,6 +51,7 @@ export type RendererConfigName =
   | 'NUXT_SSR_STREAMING'
   | 'NUXT_SSR_STREAMING_BOT_RE'
   | 'appHead'
+  | 'appBuildAssetsCrossOrigin'
   | 'appRootTag'
   | 'appRootAttrs'
   | 'appTeleportTag'
@@ -113,6 +114,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_SSR_STREAMING: String(streamingEnabled),
     NUXT_SSR_STREAMING_BOT_RE: streamingEnabled && streaming.botRegex instanceof RegExp ? String(streaming.botRegex) : '/^$/',
     appHead: JSON.stringify(app.head),
+    appBuildAssetsCrossOrigin: JSON.stringify(app.buildAssetsCrossOrigin ?? ''),
     appRootTag: JSON.stringify(app.rootTag),
     appRootAttrs: JSON.stringify(app.rootAttrs),
     appTeleportTag: JSON.stringify(app.teleportTag),

@@ -34,7 +34,7 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { BuildAssetsCrossOrigin, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
@@ -203,6 +203,20 @@ export interface ConfigSchema {
      * ```
      */
     cdnURL: string
+
+    /**
+     * CORS mode for SSR-rendered tags that load build assets (`<script>`,
+     * `<link rel="stylesheet">`, `<link rel="modulepreload">`, and related resource hints).
+     *
+     * The default (`''`) emits a bare `crossorigin` attribute, which is anonymous CORS
+     * (the previous behaviour). Set `'use-credentials'` when assets are served from another
+     * origin that requires cookies, such as Cloudflare Under Attack Mode.
+     *
+     * This does not change Vite's client-side dynamic `modulepreload` injection.
+     *
+     * @default ''
+     */
+    buildAssetsCrossOrigin: BuildAssetsCrossOrigin
 
     /**
      * Set default configuration for `<head>` on every page.

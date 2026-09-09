@@ -49,6 +49,8 @@ export const NUXT_SSR_STREAMING_BOT_RE: RegExp = /^$/
 
 /** Head entries configured in `app.head`. */
 export const appHead: SerializableHead = {}
+/** CORS mode for SSR-rendered build-asset tags. */
+export const appBuildAssetsCrossOrigin: '' | 'anonymous' | 'use-credentials' = ''
 export const appRootTag: string = 'div'
 export const appRootAttrs: Record<string, string> = { id: '__nuxt' }
 export const appTeleportTag: string = 'div'

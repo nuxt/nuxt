@@ -14,6 +14,7 @@ import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
+import { appBuildAssetsCrossOrigin } from 'nuxt/internal/renderer-config'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
 import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/internal/renderer/islands'
@@ -187,7 +188,7 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
       // The dev CSS set covers the whole module graph, so restrict it to the styles of the
       // components this island rendered.
       if (isStyleOfModule(resource.file, modules)) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: appBuildAssetsCrossOrigin })
       }
     }
     if (link.length) {

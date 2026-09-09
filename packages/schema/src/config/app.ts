@@ -72,6 +72,15 @@ export default defineResolvers({
       },
     },
 
+    buildAssetsCrossOrigin: {
+      $resolve: (val) => {
+        if (val === 'anonymous' || val === 'use-credentials' || val === '') {
+          return val
+        }
+        return ''
+      },
+    },
+
     head: {
       $resolve: (_val) => {
         const val: Partial<NuxtAppConfig['head']> = _val && typeof _val === 'object' ? _val : {}

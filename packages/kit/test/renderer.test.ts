@@ -79,6 +79,25 @@ describe('getRendererConfig', () => {
     expect(code).toContain('export const spaTemplate = "<span/>"')
   })
 
+  it('inlines app.buildAssetsCrossOrigin', () => {
+    const anonymous = getRendererConfig({}, nuxt())
+    expect(anonymous).toContain('export const appBuildAssetsCrossOrigin = ""')
+
+    const credentials = getRendererConfig({}, nuxt({
+      app: {
+        head: { title: 'app' },
+        rootTag: 'div',
+        rootAttrs: { id: '__nuxt' },
+        teleportTag: 'div',
+        teleportAttrs: { id: 'teleports' },
+        spaLoaderTag: 'div',
+        spaLoaderAttrs: { id: '__nuxt-loader' },
+        buildAssetsCrossOrigin: 'use-credentials',
+      },
+    }))
+    expect(credentials).toContain('export const appBuildAssetsCrossOrigin = "use-credentials"')
+  })
+
   it('re-exports the head module templates rather than inlining their values', () => {
     const code = getRendererConfig({}, nuxt())
 

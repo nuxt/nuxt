@@ -58,6 +58,9 @@ describe('renderer without a server builder', () => {
     expect(html).toContain(`<script type="importmap">{"imports":{"#entry":"${BUILD_ASSETS_DIR}`)
     expect(html).toContain(`<script type="module" src="${BUILD_ASSETS_DIR}`)
     expect(html).not.toContain('src="/_nuxt/')
+    expect(html).toMatch(/<script type="module"[^>]* crossorigin>/)
+    expect(html).toMatch(/rel="modulepreload"[^>]* crossorigin/)
+    expect(html).not.toContain('crossorigin="use-credentials"')
   })
 
   it('serves the client-only shell for a route the rules opt out of ssr', async () => {
