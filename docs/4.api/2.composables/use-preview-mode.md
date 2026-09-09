@@ -12,7 +12,7 @@ links:
 
 Preview mode allows you to see how your changes would be displayed on a live site without revealing them to users.
 
-You can use the built-in `usePreviewMode` composable to access and control preview state in Nuxt. If the composable detects preview mode it will automatically force any updates necessary for [`useAsyncData`](/docs/3.x/api/composables/use-async-data) and [`useFetch`](/docs/3.x/api/composables/use-fetch) to rerender preview content.
+You can use the built-in `usePreviewMode` composable to access and control preview state in Nuxt. If the composable detects preview mode it will automatically force any updates necessary for [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) to rerender preview content.
 
 ```ts
 const { enabled, state } = usePreviewMode()
@@ -37,7 +37,7 @@ export function useMyPreviewMode () {
 
 ### Modify default state
 
-`usePreviewMode` will try to store the value of a `token` param from url in state. You can modify this state and it will be available for all [`usePreviewMode`](/docs/3.x/api/composables/use-preview-mode) calls.
+`usePreviewMode` will try to store the value of a `token` param from url in state. You can modify this state and it will be available for all [`usePreviewMode`](/docs/api/composables/use-preview-mode) calls.
 
 ```ts
 const data1 = ref('data1')
@@ -111,5 +111,5 @@ npx nuxt preview
 Then you can see your preview page by adding the query param `preview` to the end of the page you want to see once, for example `http://localhost:3000/?preview=true`.
 
 ::note
-`usePreviewMode` should be tested locally with `nuxt generate` and then `nuxt preview` rather than `nuxt dev`. (The [preview command](/docs/3.x/api/commands/preview) is not related to preview mode.)
+`usePreviewMode` should be tested locally with `nuxt generate` and then `nuxt preview` rather than `nuxt dev`. (The [preview command](/docs/api/commands/preview) is not related to preview mode.)
 ::

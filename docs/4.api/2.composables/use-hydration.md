@@ -15,7 +15,7 @@ This is an advanced composable, primarily designed for use within plugins, mostl
 ::
 
 ::note
-`useHydration` is designed to **ensure state synchronization and restoration during SSR**. If you need to create a globally reactive state that is SSR-friendly in Nuxt, [`useState`](/docs/3.x/api/composables/use-state) is the recommended choice.
+`useHydration` is designed to **ensure state synchronization and restoration during SSR**. If you need to create a globally reactive state that is SSR-friendly in Nuxt, [`useState`](/docs/api/composables/use-state) is the recommended choice.
 ::
 
 ## Usage

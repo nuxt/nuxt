@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-This composable provides a convenient wrapper around [`useAsyncData`](/docs/3.x/api/composables/use-async-data) and [`$fetch`](/docs/3.x/api/utils/dollarfetch).
+This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) and [`$fetch`](/docs/api/utils/dollarfetch).
 It automatically generates a key based on URL and fetch options, provides type hints for request url based on server routes, and infers API response type.
 
 ::note
@@ -25,7 +25,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
 </script>
 ```
 
-::warning{to="/docs/3.x/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata"}
+::warning{to="/docs/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata"}
 If you're using a custom `useFetch` wrapper, do not await it in the composable as that can cause unexpected behavior. See recipe for custom async data fetcher.
 ::
 
@@ -83,7 +83,7 @@ const { data: post } = await useFetch(() => `/api/posts/${id.value}`)
 When using `useFetch` with the same URL and options in multiple components, they will share the same `data`, `error` and `status` refs. This ensures consistency across components.
 
 ::tip
-Keyed state created using `useFetch` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/3.x/api/composables/use-nuxt-data).
+Keyed state created using `useFetch` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/api/composables/use-nuxt-data).
 ::
 
 ::warning
@@ -96,7 +96,7 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 :video-accordion{title="Watch the video from Alexander Lichter to avoid using useFetch the wrong way" videoId="njsGVmcWviY"}
 
-:read-more{to="/docs/3.x/getting-started/data-fetching"}
+:read-more{to="/docs/getting-started/data-fetching"}
 
 ### Reactive Fetch Options
 
@@ -183,7 +183,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 - `URL` (`string | Request | Ref<string | Request> | () => string | Request`): The URL or request to fetch. Can be a string, a Request object, a Vue ref, or a function returning a string/Request. Supports reactivity for dynamic endpoints.
 
-- `options` (object): Configuration for the fetch request. Extends [unjs/ofetch](https://github.com/unjs/ofetch) options and [`AsyncDataOptions`](/docs/3.x/api/composables/use-async-data#params). All options can be a static value, a `ref`, or a computed value.
+- `options` (object): Configuration for the fetch request. Extends [unjs/ofetch](https://github.com/unjs/ofetch) options and [`AsyncDataOptions`](/docs/api/composables/use-async-data#params). All options can be a static value, a `ref`, or a computed value.
 
 | Option          | Type                                                                    | Default    | Description                                                                                                      |
 |-----------------|-------------------------------------------------------------------------|------------|------------------------------------------------------------------------------------------------------------------|
@@ -206,7 +206,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `watch`         | `MultiWatchSources \| false`                                            | -          | Array of reactive sources to watch and auto-refresh. `false` disables watching.                                  |
 | `deep`          | `boolean`                                                               | `false`    | Return data in a deep ref object.                                                                                |
 | `dedupe`        | `'cancel' \| 'defer'`                                                   | `'cancel'` | Avoid fetching same key more than once at a time.                                                                |
-| `$fetch`        | `typeof globalThis.$fetch`                                              | -          | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/3.x/guide/recipes/custom-usefetch)             |
+| `$fetch`        | `typeof globalThis.$fetch`                                              | -          | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/guide/recipes/custom-usefetch)             |
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -246,6 +246,6 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ### Examples
 
-:link-example{to="/docs/3.x/examples/advanced/use-custom-fetch-composable"}
+:link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
 
-:link-example{to="/docs/3.x/examples/features/data-fetching"}
+:link-example{to="/docs/examples/features/data-fetching"}

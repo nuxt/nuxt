@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-::read-more{to="/docs/3.x/guide/going-further/experimental-features#inlinerouterules" icon="i-lucide-star"}
+::read-more{to="/docs/guide/going-further/experimental-features#inlinerouterules" icon="i-lucide-star"}
 This feature is experimental and in order to use it you must enable the `experimental.inlineRouteRules` option in your `nuxt.config`.
 ::
 
@@ -37,7 +37,7 @@ export default defineNuxtConfig({
 ```
 
 ::note
-When running [`nuxt build`](/docs/3.x/api/commands/build), the home page will be pre-rendered in `.output/public/index.html` and statically served.
+When running [`nuxt build`](/docs/api/commands/build), the home page will be pre-rendered in `.output/public/index.html` and statically served.
 ::
 
 ## Notes
@@ -45,8 +45,8 @@ When running [`nuxt build`](/docs/3.x/api/commands/build), the home page will be
 - A rule defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests.
 - A rule in `~/pages/foo/[id].vue` will be applied to `/foo/**` requests.
 
-For more control, such as if you are using a custom `path` or `alias` set in the page's [`definePageMeta`](/docs/3.x/api/utils/define-page-meta), you should set `routeRules` directly within your `nuxt.config`.
+For more control, such as if you are using a custom `path` or `alias` set in the page's [`definePageMeta`](/docs/api/utils/define-page-meta), you should set `routeRules` directly within your `nuxt.config`.
 
-::read-more{to="/docs/3.x/guide/concepts/rendering#hybrid-rendering" icon="i-lucide-medal"}
+::read-more{to="/docs/guide/concepts/rendering#hybrid-rendering" icon="i-lucide-medal"}
 Read more about the `routeRules`.
 ::

@@ -28,7 +28,7 @@ useHead({
 ```
 
 ::warning
-If the data comes from a user or other untrusted source, we recommend you check out [`useHeadSafe`](/docs/3.x/api/composables/use-head-safe).
+If the data comes from a user or other untrusted source, we recommend you check out [`useHeadSafe`](/docs/api/composables/use-head-safe).
 ::
 
 ::note
@@ -181,4 +181,4 @@ useHead({
 </script>
 ```
 
-:read-more{to="/docs/3.x/getting-started/seo-meta"}
+:read-more{to="/docs/getting-started/seo-meta"}

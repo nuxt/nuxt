@@ -39,8 +39,8 @@ The command lets you install [Nuxt modules](/modules) in your application with n
 When running the command, it will:
 
 - install the module as a dependency using your package manager
-- add it to your [package.json](/docs/3.x/directory-structure/package) file
-- update your [`nuxt.config`](/docs/3.x/directory-structure/nuxt-config) file
+- add it to your [package.json](/docs/directory-structure/package) file
+- update your [`nuxt.config`](/docs/directory-structure/nuxt-config) file
 
 **Example:**
 

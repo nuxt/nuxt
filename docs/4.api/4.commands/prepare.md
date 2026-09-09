@@ -14,7 +14,7 @@ npx nuxt prepare [ROOTDIR] [--dotenv] [--cwd=<directory>] [--logLevel=<silent|in
 ```
 <!--/prepare-cmd-->
 
-The `prepare` command creates a [`.nuxt`](/docs/3.x/directory-structure/nuxt) directory in your application and generates types. This can be useful in a CI environment or as a `postinstall` command in your [`package.json`](/docs/3.x/directory-structure/package).
+The `prepare` command creates a [`.nuxt`](/docs/directory-structure/nuxt) directory in your application and generates types. This can be useful in a CI environment or as a `postinstall` command in your [`package.json`](/docs/directory-structure/package).
 
 ## Arguments
 

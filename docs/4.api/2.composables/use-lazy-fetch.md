@@ -8,11 +8,11 @@ links:
     size: xs
 ---
 
-`useLazyFetch` provides a wrapper around [`useFetch`](/docs/3.x/api/composables/use-fetch) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
+`useLazyFetch` provides a wrapper around [`useFetch`](/docs/api/composables/use-fetch) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
 ## Usage
 
-By default, [`useFetch`](/docs/3.x/api/composables/use-fetch) blocks navigation until its async handler is resolved. `useLazyFetch` allows navigation to proceed immediately, with data being fetched in the background.
+By default, [`useFetch`](/docs/api/composables/use-fetch) blocks navigation until its async handler is resolved. `useLazyFetch` allows navigation to proceed immediately, with data being fetched in the background.
 
 ```vue [pages/index.vue]
 <script setup lang="ts">
@@ -32,7 +32,7 @@ const { status, data: posts } = await useLazyFetch('/api/posts')
 ```
 
 ::note
-`useLazyFetch` has the same signature as [`useFetch`](/docs/3.x/api/composables/use-fetch).
+`useLazyFetch` has the same signature as [`useFetch`](/docs/api/composables/use-fetch).
 ::
 
 ::warning
@@ -53,21 +53,21 @@ export function useLazyFetch<DataT, ErrorT> (
 ```
 
 ::note
-`useLazyFetch` is equivalent to `useFetch` with `lazy: true` option set. See [`useFetch`](/docs/3.x/api/composables/use-fetch) for full type definitions.
+`useLazyFetch` is equivalent to `useFetch` with `lazy: true` option set. See [`useFetch`](/docs/api/composables/use-fetch) for full type definitions.
 ::
 
 ## Parameters
 
-`useLazyFetch` accepts the same parameters as [`useFetch`](/docs/3.x/api/composables/use-fetch):
+`useLazyFetch` accepts the same parameters as [`useFetch`](/docs/api/composables/use-fetch):
 
 - `URL` (`string | Request | Ref<string | Request> | () => string | Request`): The URL or request to fetch.
-- `options` (object): Same as [`useFetch` options](/docs/3.x/api/composables/use-fetch#parameters), with `lazy` automatically set to `true`.
+- `options` (object): Same as [`useFetch` options](/docs/api/composables/use-fetch#parameters), with `lazy` automatically set to `true`.
 
-:read-more{to="/docs/3.x/api/composables/use-fetch#parameters"}
+:read-more{to="/docs/api/composables/use-fetch#parameters"}
 
 ## Return Values
 
-Returns the same `AsyncData` object as [`useFetch`](/docs/3.x/api/composables/use-fetch):
+Returns the same `AsyncData` object as [`useFetch`](/docs/api/composables/use-fetch):
 
 | Name      | Type                                                | Description                                                                                                      |
 |-----------|-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
@@ -79,7 +79,7 @@ Returns the same `AsyncData` object as [`useFetch`](/docs/3.x/api/composables/us
 | `pending` | `Ref<boolean>`                                      | Boolean flag indicating whether the current request is in progress.                                              |
 | `clear`   | `() => void`                                        | Resets `data` to `undefined`, `error` to `undefined`, sets `status` to `idle`, and cancels any pending requests. |
 
-:read-more{to="/docs/3.x/api/composables/use-fetch#return-values"}
+:read-more{to="/docs/api/composables/use-fetch#return-values"}
 
 ## Examples
 
@@ -109,4 +109,4 @@ watch(posts, (newPosts) => {
 </template>
 ```
 
-:read-more{to="/docs/3.x/getting-started/data-fetching"}
+:read-more{to="/docs/getting-started/data-fetching"}

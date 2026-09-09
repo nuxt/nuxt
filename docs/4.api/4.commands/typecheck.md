@@ -36,9 +36,9 @@ The `typecheck` command runs [`vue-tsc`](https://github.com/vuejs/language-tools
 <!--/typecheck-opts-->
 
 ::note
-This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a [`.env`](/docs/3.x/directory-structure/env) file or as a command-line argument.
+This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a [`.env`](/docs/directory-structure/env) file or as a command-line argument.
 ::
 
-::read-more{to="/docs/3.x/guide/concepts/typescript#type-checking"}
+::read-more{to="/docs/guide/concepts/typescript#type-checking"}
 Read more on how to enable type-checking at build or development time.
 ::

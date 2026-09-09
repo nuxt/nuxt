@@ -11,7 +11,7 @@ links:
 Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
 
 ::note
-[`useAsyncData`](/docs/3.x/api/composables/use-async-data) is a composable meant to be called directly in the [Nuxt context](/docs/3.x/guide/going-further/nuxt-app#the-nuxt-context). It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client **without re-fetching the data on client side** when the page hydrates.
+[`useAsyncData`](/docs/api/composables/use-async-data) is a composable meant to be called directly in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context). It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client **without re-fetching the data on client side** when the page hydrates.
 ::
 
 ## Usage
@@ -25,7 +25,7 @@ const { data, status, pending, error, refresh, clear } = await useAsyncData(
 </script>
 ```
 
-::warning{to="/docs/3.x/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata"}
+::warning{to="/docs/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata"}
 If you're using a custom `useAsyncData` wrapper, do not await it in the composable as that can cause unexpected behavior. See recipe for custom async data fetcher.
 ::
 
@@ -130,17 +130,17 @@ The handler signal will be aborted when:
 - The `options.timeout` duration is exceeded
 
 ::warning
-[`useAsyncData`](/docs/3.x/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/3.x/api/composables/use-async-data).
+[`useAsyncData`](/docs/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/api/composables/use-async-data).
 ::
 
-:read-more{to="/docs/3.x/getting-started/data-fetching#useasyncdata"}
+:read-more{to="/docs/getting-started/data-fetching#useasyncdata"}
 
 ## Params
 
 - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of `useAsyncData` will be generated for you.
 - `handler`: an asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
 ::warning
-The `handler` function should be **side-effect free** to ensure predictable behavior during SSR and CSR hydration. If you need to trigger side effects, use the [`callOnce`](/docs/3.x/api/utils/call-once) utility to do so.
+The `handler` function should be **side-effect free** to ensure predictable behavior during SSR and CSR hydration. If you need to trigger side effects, use the [`callOnce`](/docs/api/utils/call-once) utility to do so.
 ::
 - `options`:
   - `server`: whether to fetch the data on the server (defaults to `true`)
@@ -167,7 +167,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 ::
 
-::read-more{to="/docs/3.x/api/composables/use-lazy-async-data"}
+::read-more{to="/docs/api/composables/use-lazy-async-data"}
 You can use `useLazyAsyncData` to have the same behavior as `lazy: true` with `useAsyncData`.
 ::
 
@@ -203,7 +203,7 @@ const { data: users2 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch(
 ```
 
 ::tip
-Keyed state created using `useAsyncData` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/3.x/api/composables/use-nuxt-data).
+Keyed state created using `useAsyncData` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/api/composables/use-nuxt-data).
 ::
 
 ## Return Values
@@ -224,7 +224,7 @@ Keyed state created using `useAsyncData` can be retrieved across your Nuxt appli
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
 ::note
-If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/3.x/api/composables/use-async-data) on the client side, `data` will remain `undefined` within `<script setup>`.
+If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/api/composables/use-async-data) on the client side, `data` will remain `undefined` within `<script setup>`.
 ::
 
 ## Type
@@ -280,4 +280,4 @@ interface AsyncDataExecuteOptions {
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ```
 
-:read-more{to="/docs/3.x/getting-started/data-fetching"}
+:read-more{to="/docs/getting-started/data-fetching"}

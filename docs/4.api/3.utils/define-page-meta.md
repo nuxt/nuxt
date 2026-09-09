@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/`](/docs/3.x/directory-structure/pages) directory (unless [set otherwise](/docs/3.x/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/`](/docs/directory-structure/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
@@ -18,7 +18,7 @@ definePageMeta({
 </script>
 ```
 
-:read-more{to="/docs/3.x/directory-structure/pages#page-metadata"}
+:read-more{to="/docs/directory-structure/pages#page-metadata"}
 
 ## Type
 
@@ -57,13 +57,13 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a name for this page's route. By default, name is generated based on path inside the [`pages/` directory](/docs/3.x/directory-structure/pages).
+    You may define a name for this page's route. By default, name is generated based on path inside the [`pages/` directory](/docs/directory-structure/pages).
 
   **`path`**
 
   - **Type**: `string`
 
-    You may define a [custom regular expression](/docs/3.x/api/utils/define-page-meta#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](/docs/api/utils/define-page-meta#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
 
   **`props`**
   
@@ -81,7 +81,7 @@ interface PageMeta {
 
   - **Type**: `string[]`
 
-    Route groups the page belongs to, based on the folder structure. Automatically populated for pages within [route groups](/docs/3.x/guide/directory-structure/app/pages#route-groups).
+    Route groups the page belongs to, based on the folder structure. Automatically populated for pages within [route groups](/docs/guide/directory-structure/app/pages#route-groups).
 
   **`keepalive`**
 
@@ -111,7 +111,7 @@ interface PageMeta {
 
   - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
 
-    Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/3.x/directory-structure/middleware).
+    Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/directory-structure/middleware).
 
   **`pageTransition`**
 
@@ -123,7 +123,7 @@ interface PageMeta {
 
   - **Type**: `boolean | 'always'`
 
-    **Experimental feature, only available when [enabled in your nuxt.config file](/docs/3.x/getting-started/transitions#view-transitions-api-experimental)**</br>
+    **Experimental feature, only available when [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental)**</br>
     Enable/disable View Transitions for the current page.
     If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
 
@@ -143,13 +143,13 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. Navigation is independent from rendering, so scroll behavior is always triggered even when the page doesn't re-render (e.g. when using a fixed [`key`](/docs/3.x/api/utils/define-page-meta#key)). Set `scrollToTop: false` to disable scrolling in such cases. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [custom routing](/docs/3.x/guide/recipes/custom-routing#using-routeroptions)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. Navigation is independent from rendering, so scroll behavior is always triggered even when the page doesn't re-render (e.g. when using a fixed [`key`](/docs/api/utils/define-page-meta#key)). Set `scrollToTop: false` to disable scrolling in such cases. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-routeroptions)) for more info.
 
   **`[key: string]`**
 
   - **Type**: `any`
 
-    Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/3.x/directory-structure/pages/#typing-custom-metadata).
+    Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/directory-structure/pages/#typing-custom-metadata).
 
 ## Examples
 
@@ -226,7 +226,7 @@ For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/gu
 
 ### Defining Layout
 
-You can define the layout that matches the layout's file name located (by default) in the [`layouts/` directory](/docs/3.x/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:
+You can define the layout that matches the layout's file name located (by default) in the [`layouts/` directory](/docs/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:
 
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
