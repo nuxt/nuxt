@@ -405,8 +405,10 @@ test.describe('SSR Streaming', () => {
     expect(html).toMatch(/<script[^>]*\snonce="test-csp-nonce"[^>]*>window\.__NUXT__=/)
     // Every script tag must contain exactly one nonce attribute
     const scriptTags = html.match(/<script\b[^>]*>/g) || []
-    const NONCE_ATTR_RE = /\bnonce=/g
+    const NONCE_ATTR_RE = /\snonce=/g
+    const NONCE_ATTR_VALUE_RE = /\snonce="test-csp-nonce"(?:\s|>)/
     for (const scriptTag of scriptTags) {
+      expect(scriptTag).toMatch(NONCE_ATTR_VALUE_RE)
       expect((scriptTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
     }
 
@@ -420,6 +422,7 @@ test.describe('SSR Streaming', () => {
       // Every style tag must contain exactly one nonce attribute
       const styleTags = html.match(/<style\b[^>]*>/g) || []
       for (const styleTag of styleTags) {
+        expect(styleTag).toMatch(NONCE_ATTR_VALUE_RE)
         expect((styleTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
       }
     }
@@ -433,8 +436,10 @@ test.describe('SSR Streaming', () => {
     expect(html).toMatch(/<script nonce="nonce-by-hook">window\.__unhead__\.push/)
     expect(html).toMatch(/<script[^>]*\snonce="nonce-by-hook"[^>]*>window\.__NUXT__=/)
     const scriptTags = html.match(/<script\b[^>]*>/g) || []
-    const NONCE_ATTR_RE = /\bnonce=/g
+    const NONCE_ATTR_RE = /\snonce=/g
+    const NONCE_ATTR_VALUE_RE = /\snonce="nonce-by-hook"(?:\s|>)/
     for (const scriptTag of scriptTags) {
+      expect(scriptTag).toMatch(NONCE_ATTR_VALUE_RE)
       expect((scriptTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
     }
 
@@ -445,6 +450,7 @@ test.describe('SSR Streaming', () => {
       expect(html).toMatch(/<style nonce="nonce-by-hook">[^<]*\.nonce-probe/)
       const styleTags = html.match(/<style\b[^>]*>/g) || []
       for (const styleTag of styleTags) {
+        expect(styleTag).toMatch(NONCE_ATTR_VALUE_RE)
         expect((styleTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
       }
     }
