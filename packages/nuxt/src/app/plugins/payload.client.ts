@@ -13,15 +13,15 @@ import { stateDiagnostics } from '../diagnostics/state'
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
 interface ActiveHeadEntryLike { dispose: () => void }
+interface ActiveForwardedHint { entry?: ActiveHeadEntryLike, timeout?: ReturnType<typeof setTimeout> }
 
-// New hints are added to the beginning so recently prefetched routes take priority.
+// queued newest-first, so the most recently prefetched route is served next
 const pendingForwardedHints: ResolvableLink[] = []
+const activeForwardedHints = new Set<ActiveForwardedHint>()
 const forwardedHintEntries = new Set<ActiveHeadEntryLike>()
 const forwardedHintHrefs = new Set<string>()
-const forwardedHintTimeouts = new Set<ReturnType<typeof setTimeout>>()
 // bumped on navigation, so payloads that resolve afterwards are discarded
 let hintGeneration = 0
-let activeForwardedHintCount = 0
 
 const MAX_HINTS_PER_ROUTE = 2
 const MAX_CONCURRENT_FORWARDED_HINTS = 8
@@ -56,12 +56,11 @@ function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): R
     if (typeof link.href !== 'string') { continue }
     const href = new URL(link.href, window.location.href).href
     if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
-    existingHrefs.add(href)
     forwardedHintHrefs.add(href)
     if (link.as === 'image') {
       // `rel="prefetch"` has no request destination, so image hints stay as
       // `rel="preload"`, with any `fetchpriority` dropped so that they
-      // cannot outrank the current page.
+      // cannot outrank the current page
       const { fetchpriority: _fetchpriority, ...rest } = link
       selected.push(rest as ResolvableLink)
     } else {
@@ -84,12 +83,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
         hintGeneration++
-        activeForwardedHintCount = 0
         pendingForwardedHints.length = 0
-        for (const timeout of forwardedHintTimeouts) {
-          clearTimeout(timeout)
+        for (const hint of activeForwardedHints) {
+          clearTimeout(hint.timeout)
         }
-        forwardedHintTimeouts.clear()
+        activeForwardedHints.clear()
         for (const entry of forwardedHintEntries) {
           entry.dispose()
         }
@@ -123,46 +121,30 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
     const drainForwardedHints = () => {
       if (!head) { return }
-      while (activeForwardedHintCount < MAX_CONCURRENT_FORWARDED_HINTS && pendingForwardedHints.length) {
+      while (activeForwardedHints.size < MAX_CONCURRENT_FORWARDED_HINTS && pendingForwardedHints.length) {
         const link = pendingForwardedHints.shift()!
-        const generation = hintGeneration
-        const activeHint: { entry?: ActiveHeadEntryLike, timeout?: ReturnType<typeof setTimeout> } = {}
-        let completed = false
-        let disposeOnCompletion = false
-
-        activeForwardedHintCount++
+        const hint: ActiveForwardedHint = {}
         const complete = (dispose: boolean) => {
-          if (completed || generation !== hintGeneration) { return }
-          completed = true
-          disposeOnCompletion = dispose
-          activeForwardedHintCount--
-          if (activeHint.timeout) {
-            clearTimeout(activeHint.timeout)
-            forwardedHintTimeouts.delete(activeHint.timeout)
-          }
-          if (dispose && activeHint.entry) {
-            activeHint.entry.dispose()
-            forwardedHintEntries.delete(activeHint.entry)
+          // a stale hint has already been removed (and disposed) on navigation
+          if (!activeForwardedHints.delete(hint)) { return }
+          clearTimeout(hint.timeout)
+          if (dispose && hint.entry) {
+            hint.entry.dispose()
+            forwardedHintEntries.delete(hint.entry)
           }
           drainForwardedHints()
         }
 
-        activeHint.entry = head.push({
+        activeForwardedHints.add(hint)
+        hint.entry = head.push({
           link: [{
             ...link,
             onerror: () => complete(true),
             onload: () => complete(false),
           }],
         })
-        if (disposeOnCompletion) {
-          activeHint.entry.dispose()
-        } else {
-          forwardedHintEntries.add(activeHint.entry)
-        }
-        if (!completed) {
-          activeHint.timeout = setTimeout(() => complete(true), FORWARDED_HINT_TIMEOUT_MS)
-          forwardedHintTimeouts.add(activeHint.timeout)
-        }
+        forwardedHintEntries.add(hint.entry)
+        hint.timeout = setTimeout(() => complete(true), FORWARDED_HINT_TIMEOUT_MS)
       }
     }
 
