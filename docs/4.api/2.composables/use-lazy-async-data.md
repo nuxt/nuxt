@@ -8,10 +8,10 @@ links:
     size: xs
 ---
 
-`useLazyAsyncData` provides a wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
+`useLazyAsyncData` provides a wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
 ::note
-By default, [`useAsyncData`](/docs/4.x/api/composables/use-async-data) blocks navigation until its async handler is resolved. `useLazyAsyncData` allows navigation to occur immediately while data fetching continues in the background.
+By default, [`useAsyncData`](/docs/api/composables/use-async-data) blocks navigation until its async handler is resolved. `useLazyAsyncData` allows navigation to occur immediately while data fetching continues in the background.
 ::
 
 ## Usage
@@ -57,19 +57,19 @@ export function useLazyAsyncData<ResT, DataE = unknown, DataT = ResT> (
 ): AsyncData<DataT, DataE> & Promise<AsyncData<DataT, DataE>>
 ```
 
-`useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/4.x/api/composables/use-async-data).
+`useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/api/composables/use-async-data).
 
 ## Parameters
 
-`useLazyAsyncData` accepts the same parameters as [`useAsyncData`](/docs/4.x/api/composables/use-async-data), with the `lazy` option automatically set to `true`.
+`useLazyAsyncData` accepts the same parameters as [`useAsyncData`](/docs/api/composables/use-async-data), with the `lazy` option automatically set to `true`.
 
-:read-more{to="/docs/4.x/api/composables/use-async-data#parameters"}
+:read-more{to="/docs/api/composables/use-async-data#parameters"}
 
 ## Return Values
 
-`useLazyAsyncData` returns the same values as [`useAsyncData`](/docs/4.x/api/composables/use-async-data).
+`useLazyAsyncData` returns the same values as [`useAsyncData`](/docs/api/composables/use-async-data).
 
-:read-more{to="/docs/4.x/api/composables/use-async-data#return-values"}
+:read-more{to="/docs/api/composables/use-async-data#return-values"}
 
 ## Example
 
@@ -99,4 +99,4 @@ watch(count, (newCount) => {
 </template>
 ```
 
-:read-more{to="/docs/4.x/getting-started/data-fetching"}
+:read-more{to="/docs/getting-started/data-fetching"}
