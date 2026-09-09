@@ -3,7 +3,8 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { useRouter } from '../composables/router'
 import { onNuxtReady } from '../composables/ready'
 import { preloadRouteComponents } from '../composables/preload'
-import { isSlowConnection, useObserver } from '../components/nuxt-link'
+import { useObserver } from '../components/nuxt-link'
+import { canPrefetch } from '../internal/prefetch-util'
 
 import { componentIslands } from '#build/nuxt.config.mjs'
 
@@ -56,7 +57,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     document.addEventListener('click', onClick)
 
-    if (isSlowConnection()) { return }
+    if (!canPrefetch()) { return }
 
     const unobservers = new Map<Element, () => void>()
 

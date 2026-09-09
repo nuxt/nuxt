@@ -2143,6 +2143,57 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
+  it.skipIf(!isTestingAppManifest)('should free hint slots when navigating to a route whose hints are in flight', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/1'))
+    await expect.poll(() => pendingRequests.length).toBe(2)
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/prefetch/hints/1'))
+    await page.waitForFunction(() => window.useNuxtApp!()._route.path === '/prefetch/hints/1')
+
+    for (let route = 2; route <= 5; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+    }
+
+    await expect.poll(() => pendingRequests.length).toBe(10)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should promote queued prefetch work for a link the user interacts with', async () => {
+    const { page, requests } = await renderPage('/prefetch/ladder')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    for (let route = 1; route <= 4; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+    }
+    await expect.poll(() => pendingRequests.length).toBe(8)
+
+    const payloadRequested = (route: number) => requests.some(req => req.startsWith(`/prefetch/hints/${route}/_payload.json`))
+
+    await page.hover('#ladder-link')
+    await expect.poll(() => payloadRequested(5)).toBe(true)
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
+    await expect.poll(() => payloadRequested(6)).toBe(true)
+
+    await page.dispatchEvent('#ladder-link', 'pointerdown')
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(8)
+    expect(pendingRequests.at(-1)!.request().url()).toMatch(/\/hint-a\.svg\?route=5$/)
+
+    await page.close()
+  })
+
   it.skipIf(!isTestingAppManifest)('should bound concurrent island requests when prefetching an island-heavy payload', async () => {
     const { page } = await renderPage('/prefetch/components')
     const pendingRequests: Route[] = []

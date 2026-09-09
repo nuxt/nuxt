@@ -17,6 +17,7 @@ import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 import { renderDiagnostics } from '../diagnostics/render'
@@ -463,9 +464,34 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
+      function prefetchOn (mode: 'visibility' | 'interaction'): boolean | undefined {
+        return typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])
+      }
+
+      function prefetchAllowed (): boolean {
+        return Boolean((props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && canPrefetch())
+      }
+
       function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
         if (import.meta.server) { return false }
-        return Boolean((!prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()))
+        return Boolean(!prefetched.value && prefetchOn(mode) && prefetchAllowed())
+      }
+
+      function resolvedPath (): string {
+        const path = typeof to.value === 'string'
+          ? to.value
+          : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
+        return isExternal.value ? new URL(path, window.location.href).href : path
+      }
+
+      function escalate () {
+        if (!prefetched.value) {
+          if (prefetchOn('interaction')) { prefetch() }
+          return
+        }
+        if (!isExternal.value) {
+          useNuxtApp()._prefetch?.promote(prefetchGroup(resolvedPath()))
+        }
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
@@ -477,10 +503,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
         prefetched.value = true
 
-        const path = typeof to.value === 'string'
-          ? to.value
-          : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-        const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
+        const normalizedPath = resolvedPath()
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
           !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
@@ -582,9 +605,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           // may render fragment or text root nodes (#14897, #19375)
           if (!props.custom) {
             if (import.meta.client) {
-              if (shouldPrefetch('interaction')) {
-                routerLinkProps.onPointerenter = prefetch.bind(null, undefined)
-                routerLinkProps.onFocus = prefetch.bind(null, undefined)
+              // before prefetching, only interaction mode has anything to escalate
+              if ((prefetchOn('interaction') || prefetched.value) && prefetchAllowed()) {
+                routerLinkProps.onPointerenter = escalate
+                routerLinkProps.onFocus = escalate
+                routerLinkProps.onPointerdown = escalate
               }
               if (prefetched.value) {
                 routerLinkProps.class = props.prefetchedClass || options.prefetchedClass
@@ -783,15 +808,4 @@ export function useObserver (): { observe: ObserveFn } | undefined {
   }
 
   return _observer
-}
-
-const IS_2G_RE = /2g/
-/** @internal */
-export function isSlowConnection () {
-  if (import.meta.server) { return }
-
-  // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
-  const cn = (navigator as any).connection as { saveData: boolean, effectiveType: string } | null
-  if (cn && (cn.saveData || IS_2G_RE.test(cn.effectiveType))) { return true }
-  return false
 }
