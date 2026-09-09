@@ -9,7 +9,7 @@ links:
     size: xs
 ---
 
-`createUseFetch` creates a custom [`useFetch`](/docs/4.x/api/composables/use-fetch) composable with pre-defined options. The resulting composable is fully typed and works exactly like `useFetch`, but with your defaults baked in.
+`createUseFetch` creates a custom [`useFetch`](/docs/api/composables/use-fetch) composable with pre-defined options. The resulting composable is fully typed and works exactly like `useFetch`, but with your defaults baked in.
 
 ::note
 `createUseFetch` is a compiler macro. It must be used as an **exported** declaration in the `composables/` directory (or any directory scanned by the Nuxt compiler). Nuxt automatically injects de-duplication keys at build time.
@@ -29,7 +29,7 @@ const { data: modules } = await useAPI('/modules')
 </script>
 ```
 
-The resulting `useAPI` composable has the same signature and return type as [`useFetch`](/docs/4.x/api/composables/use-fetch), with all options available for the caller to use or override.
+The resulting `useAPI` composable has the same signature and return type as [`useFetch`](/docs/api/composables/use-fetch), with all options available for the caller to use or override.
 
 ## Type
 
@@ -50,9 +50,9 @@ function createUseFetch<Routes> (
 
 ## Options
 
-`createUseFetch` accepts all the same options as [`useFetch`](/docs/4.x/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, and more.
+`createUseFetch` accepts all the same options as [`useFetch`](/docs/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, and more.
 
-See the full list of options in the [`useFetch` documentation](/docs/4.x/api/composables/use-fetch#parameters).
+See the full list of options in the [`useFetch` documentation](/docs/api/composables/use-fetch#parameters).
 
 ## Typing a Third-Party API
 
@@ -161,9 +161,9 @@ export const useAPI = createUseFetch(callerOptions => ({
 ```
 
 ::important
-The **function signature** (override mode) is required here so that [`useNuxtApp()`](/docs/4.x/api/composables/use-nuxt-app) is called in the setup context (at the composable call site) rather than in the module scope, where no Nuxt instance is available.
+The **function signature** (override mode) is required here so that [`useNuxtApp()`](/docs/api/composables/use-nuxt-app) is called in the setup context (at the composable call site) rather than in the module scope, where no Nuxt instance is available.
 ::
 
-:read-more{to="/docs/4.x/guide/recipes/custom-usefetch"}
+:read-more{to="/docs/guide/recipes/custom-usefetch"}
 
-:read-more{to="/docs/4.x/api/composables/use-fetch"}
+:read-more{to="/docs/api/composables/use-fetch"}
