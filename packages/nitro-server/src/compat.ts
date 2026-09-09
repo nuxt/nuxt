@@ -1015,17 +1015,11 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     rescan(nitro.options.plugins as string[], nitro.options.handlers, nitro.options.virtual)
     invalidateScopeCache()
 
-    // a template may just as well wait on an event that first fires later in the build,
-    // such as `pages:resolved`, which modules like `@nuxtjs/sitemap` await from a
-    // `nitro:config`-registered virtual. Rendering the deferred templates here deadlocks:
-    // that event first fires inside `buildNuxt`, which runs only after `nuxt.ready()`
-    // resolves — and resolving `nuxt.ready()` is what invokes this. The dev listener
-    // keeps the event loop alive, so not even `NUXT_B1022` surfaces and the CLI hangs on
-    // "Preparing app" forever. Rendering once the app is generated stays ahead of every
-    // consumer instead: the bundler renders the templates itself, and the transform
-    // consults the scope only at build time. This hook is registered before the one
-    // that runs the nitro build, so the rescan below fills `virtualSources` in before
-    // the build can read the scope.
+    // a template may equally await an event that first fires inside `buildNuxt`, such
+    // as `pages:resolved`: rendering it here deadlocks, because `buildNuxt` runs only
+    // after `nuxt.ready()` — the step that invokes this — resolves. Rendered once the
+    // app is generated instead, still ahead of the nitro build, so the rescan below
+    // fills `virtualSources` in before the scope is read.
     let rendered = false
     nuxt.hook('build:done', async () => {
       if (rendered) {
