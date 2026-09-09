@@ -44,6 +44,36 @@ router.post('/formdata-then-h3', eventHandler(async (event) => {
   return { field: formData.get('field'), h3: await withTimeout(readRawBody(event), 'readRawBody') }
 }))
 
+router.post('/web-twice', eventHandler(async (event) => {
+  const request = toPortableEvent(event).req
+  const first = await request.text()
+  return { first, second: await withTimeout(request.text(), 'second read') }
+}))
+
+router.post('/formdata-then-web', eventHandler(async (event) => {
+  const request = toPortableEvent(event).req
+  const formData = await request.formData()
+  return { field: formData.get('field'), text: await withTimeout(request.text(), 'req.text') }
+}))
+
+router.post('/web-then-stream', eventHandler(async (event) => {
+  const request = toPortableEvent(event).req
+  const web = await request.json()
+  return { web, stream: await withTimeout(new Response(request.body).text(), 'body stream') }
+}))
+
+app.use('/middleware-then-handler', eventHandler(async (event) => {
+  const portable = toPortableEvent(event)
+  event.context.requestFromMiddleware = portable.req
+  event.context.fromMiddleware = await portable.req.json()
+}))
+
+router.post('/middleware-then-handler', eventHandler(async event => ({
+  middleware: event.context.fromMiddleware,
+  handler: await withTimeout(readBody(event), 'readBody'),
+  sameRequest: toPortableEvent(event).req === event.context.requestFromMiddleware,
+})))
+
 let unreadEvent: H3Event | undefined
 router.post('/unread', eventHandler((event) => {
   unreadEvent = event
@@ -107,6 +137,37 @@ describe('portable event body', () => {
     const result = await post('/formdata-then-h3', formData)
     expect(result.field).toBe('value')
     expect(result.h3).toContain('name="field"')
+  })
+
+  it('serves a second read through the same web request', async () => {
+    await expect(postJSON('/web-twice', { hello: 'world' })).resolves.toEqual({
+      first: '{"hello":"world"}',
+      second: '{"hello":"world"}',
+    })
+  })
+
+  it('serves a text read after form data was read through the web request', async () => {
+    const formData = new FormData()
+    formData.set('field', 'value')
+    const result = await post('/formdata-then-web', formData)
+
+    expect(result.field).toBe('value')
+    expect(result.text).toContain('name="field"')
+  })
+
+  it('serves the body as a stream after it was read through the web request', async () => {
+    await expect(postJSON('/web-then-stream', { hello: 'world' })).resolves.toEqual({
+      web: { hello: 'world' },
+      stream: '{"hello":"world"}',
+    })
+  })
+
+  it('serves a handler read after a middleware read the body', async () => {
+    await expect(postJSON('/middleware-then-handler', { hello: 'world' })).resolves.toEqual({
+      middleware: { hello: 'world' },
+      handler: { hello: 'world' },
+      sameRequest: true,
+    })
   })
 
   it('leaves the request stream alone when the request is never read', async () => {
