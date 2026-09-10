@@ -90,6 +90,13 @@ export function toNuxtRequestEvent (event: RequestEvent): NuxtRequestEvent {
 export { createError }
 export type { NuxtError }
 
+type EventWithRequest = Pick<RequestEvent, 'req'>
+
+/** `url` is optional because a runtime need not parse it up front; the request always carries it. */
+type EventWithURL = EventWithRequest & { url?: URL }
+
+type EventWithResponse = Pick<RequestEvent, 'res'>
+
 /**
  * The shape shared by every HTTP error reachable in server code: the ones
  * {@link createError} constructs, and the ones the server runtime throws for
@@ -135,8 +142,8 @@ export function isNuxtError<DataT = unknown> (error: unknown): error is NuxtErro
  *
  * @since 5.0.0
  */
-export function getRequestURL (event: RequestEvent): URL {
-  return event.url
+export function getRequestURL (event: EventWithURL): URL {
+  return event.url ?? new URL(event.req.url)
 }
 
 /**
@@ -146,7 +153,7 @@ export function getRequestURL (event: RequestEvent): URL {
  *
  * @since 5.0.0
  */
-export function getRequestHeader (event: RequestEvent, name: string): string | undefined {
+export function getRequestHeader (event: EventWithRequest, name: string): string | undefined {
   return event.req.headers.get(name) ?? undefined
 }
 
@@ -155,7 +162,7 @@ export function getRequestHeader (event: RequestEvent, name: string): string | u
  *
  * @since 5.0.0
  */
-export function getRequestHeaders (event: RequestEvent): Record<string, string> {
+export function getRequestHeaders (event: EventWithRequest): Record<string, string> {
   return Object.fromEntries(event.req.headers)
 }
 
@@ -164,7 +171,7 @@ export function getRequestHeaders (event: RequestEvent): Record<string, string> 
  *
  * @since 5.0.0
  */
-export function setResponseStatus (event: RequestEvent, status: number, statusText?: string): void {
+export function setResponseStatus (event: EventWithResponse, status: number, statusText?: string): void {
   const res = event.res
   res.status = status
   if (statusText !== undefined) {
@@ -177,7 +184,7 @@ export function setResponseStatus (event: RequestEvent, status: number, statusTe
  *
  * @since 5.0.0
  */
-export function setResponseHeader (event: RequestEvent, name: string, value: string): void {
+export function setResponseHeader (event: EventWithResponse, name: string, value: string): void {
   event.res.headers.set(name, value)
 }
 
@@ -186,7 +193,7 @@ export function setResponseHeader (event: RequestEvent, name: string, value: str
  *
  * @since 5.0.0
  */
-export function setResponseHeaders (event: RequestEvent, headers: Record<string, string>): void {
+export function setResponseHeaders (event: EventWithResponse, headers: Record<string, string>): void {
   const target = event.res.headers
   for (const name in headers) {
     target.set(name, headers[name]!)
@@ -199,8 +206,8 @@ export function setResponseHeaders (event: RequestEvent, headers: Record<string,
  *
  * @since 5.0.0
  */
-export function getQuery<T extends Record<string, unknown> = Record<string, string | string[]>> (event: RequestEvent): T {
-  return parseQuery(event.url.search) as T
+export function getQuery<T extends Record<string, unknown> = Record<string, string | string[]>> (event: EventWithURL): T {
+  return parseQuery(getRequestURL(event).search) as T
 }
 
 /**
@@ -215,7 +222,7 @@ export function getQuery<T extends Record<string, unknown> = Record<string, stri
  *
  * @since 5.0.0
  */
-export async function readBody<T = unknown> (event: RequestEvent): Promise<T> {
+export async function readBody<T = unknown> (event: EventWithRequest): Promise<T> {
   const request = event.req
   const contentType = request.headers.get('content-type') || ''
   const text = await request.text()
@@ -256,7 +263,7 @@ function collectEntries (entries: Iterable<[string, string]>): Record<string, st
  *
  * @since 5.0.0
  */
-export function getCookie (event: Pick<RequestEvent, 'req'>, name: string): string | undefined {
+export function getCookie (event: EventWithRequest, name: string): string | undefined {
   const header = event.req.headers.get('cookie')
   return header ? parse(header)[name] : undefined
 }
@@ -267,7 +274,7 @@ export function getCookie (event: Pick<RequestEvent, 'req'>, name: string): stri
  *
  * @since 5.0.0
  */
-export function setCookie (event: Pick<RequestEvent, 'res'>, name: string, value: string, options?: CookieSerializeOptions): void {
+export function setCookie (event: EventWithResponse, name: string, value: string, options?: CookieSerializeOptions): void {
   event.res.headers.append('set-cookie', serialize(name, value, { path: '/', ...options }))
 }
 
@@ -277,7 +284,7 @@ export function setCookie (event: Pick<RequestEvent, 'res'>, name: string, value
  *
  * @since 5.0.0
  */
-export function deleteCookie (event: Pick<RequestEvent, 'res'>, name: string, options?: CookieSerializeOptions): void {
+export function deleteCookie (event: EventWithResponse, name: string, options?: CookieSerializeOptions): void {
   setCookie(event, name, '', { ...options, maxAge: 0 })
 }
 
@@ -293,7 +300,7 @@ export function deleteCookie (event: Pick<RequestEvent, 'res'>, name: string, op
  *
  * @since 5.0.0
  */
-export function sendRedirect (event: RequestEvent, location: string, status = 302): string {
+export function sendRedirect (event: EventWithResponse, location: string, status = 302): string {
   setResponseStatus(event, status)
   setResponseHeader(event, 'location', location)
   setResponseHeader(event, 'content-type', 'text/html')
@@ -310,7 +317,7 @@ const REDIRECT_UNSAFE_RE = /["'<>&]/g
  *
  * @since 5.0.0
  */
-export function getRouteRules (_event: RequestEvent): AppRouteRules {
+export function getRouteRules (_event: Pick<RequestEvent, 'context'>): AppRouteRules {
   return {}
 }
 

@@ -136,6 +136,8 @@ export interface NuxtRequestContext {
 /** The context of a {@link RequestEvent}, which carries Nuxt's own per-request state. */
 export interface RequestEventContext extends Record<string, unknown> {
   nuxt?: NuxtRequestContext
+  /** The dynamic segments matched for the request, as the server builder resolved them. */
+  params?: Record<string, string | undefined>
 }
 
 /**

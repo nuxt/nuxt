@@ -2,7 +2,7 @@ import { expectTypeOf } from 'vitest'
 import type { H3Event } from 'h3'
 import { handleCors } from 'h3'
 import type { NuxtRequestEvent, RequestEvent, RequestEventContext } from 'nuxt/server'
-import { defineEventHandler, getRequestURL, getRouteRules, toNuxtRequestEvent } from 'nuxt/server'
+import { defineEventHandler, getQuery, getRequestURL, getRouteRules, toNuxtRequestEvent } from 'nuxt/server'
 
 // @ts-expect-error Fromage is 'cheese'
 const _fake: Fromage = 'babybel'
@@ -30,6 +30,8 @@ const portableHandler = defineEventHandler((event) => {
   expectTypeOf(event.res.headers).toEqualTypeOf<Headers>()
   expectTypeOf(event.context).toEqualTypeOf<RequestEventContext>()
 
+  expectTypeOf(event.context.params?.id).toEqualTypeOf<string | undefined>()
+
   // @ts-expect-error `node` is not part of the portable event
   void event.node
   // @ts-expect-error `path` is not part of the portable event
@@ -45,3 +47,9 @@ const portableHandler = defineEventHandler((event) => {
 })
 
 expectTypeOf(portableHandler).returns.toEqualTypeOf<{ greeting: string }>()
+
+// the read helpers only require the part of the event they read, so an event whose
+// runtime has not parsed the URL up front is accepted
+const bareRequest = { req: new Request('https://nuxt.com/api?a=1') }
+expectTypeOf(getRequestURL(bareRequest)).toEqualTypeOf<URL>()
+expectTypeOf(getQuery(bareRequest)).toEqualTypeOf<Record<string, string | string[]>>()
