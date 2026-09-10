@@ -578,9 +578,9 @@ catalogs:
     destr:
       specifier: ^2.0.5
       version: 2.0.5
-    lru-cache:
-      specifier: ^11.5.2
-      version: 11.5.2
+    flru:
+      specifier: ^1.0.2
+      version: 1.0.2
     nitro:
       specifier: ^3.0.260903-beta
       version: 3.0.260903-beta
@@ -1046,15 +1046,15 @@ importers:
       exsolve:
         specifier: catalog:build
         version: 1.1.1
+      flru:
+        specifier: catalog:nitro-runtime
+        version: 1.0.2
       impound:
         specifier: catalog:build
         version: 1.2.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       klona:
         specifier: catalog:app-runtime
         version: 2.0.6
-      lru-cache:
-        specifier: catalog:nitro-runtime
-        version: 11.5.2
       magic-string:
         specifier: catalog:vite
         version: 1.2.3
@@ -7885,6 +7885,10 @@ packages:
     peerDependenciesMeta:
       '@nuxt/kit':
         optional: true
+
+  flru@1.0.2:
+    resolution: {integrity: sha512-kWyh8ADvHBFz6ua5xYOPnUroZTT/bwWfrCeL0Wj1dzG4/YOmOcfJ99W8dOVyyynJN35rZ9aCOtHChqQovV7yog==}
+    engines: {node: '>=6'}
 
   fn.name@1.1.0:
     resolution: {integrity: sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==}
@@ -18058,6 +18062,8 @@ snapshots:
       vue-resize: 2.0.0-alpha.1(vue@3.5.42(typescript@6.0.3))
     optionalDependencies:
       '@nuxt/kit': link:packages/kit
+
+  flru@1.0.2: {}
 
   fn.name@1.1.0: {}
 

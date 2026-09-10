@@ -97,7 +97,7 @@ catalogs:
   # imported in the server runtime (packages/nuxt/src/runtime/server, packages/nitro-server/src/runtime)
   nitro-runtime:
     destr: ^2.0.5
-    lru-cache: ^11.5.2
+    flru: ^1.0.2
     nitro: ^3.0.260903-beta
     srvx: ^1.0.3
     unstorage: ^2.0.0-alpha.10

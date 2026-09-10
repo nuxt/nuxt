@@ -90,8 +90,7 @@
         "ohash",
         "hookable",
         "@babel/plugin-proposal-decorators",
-        "@babel/plugin-syntax-typescript",
-        "lru-cache"
+        "@babel/plugin-syntax-typescript"
       ]
     },
     "packages/vite-server": {
