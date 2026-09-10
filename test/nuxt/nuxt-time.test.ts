@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, nextTick, ref } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { injectHead } from '#unhead/composables'
 
@@ -76,6 +76,40 @@ describe('<NuxtTime>', () => {
     expect(thing.html()).toMatchInlineSnapshot(
       `"<time datetime="${new Date(datetime).toISOString()}">5 min ago</time>"`,
     )
+  })
+
+  it('should tick relative time when `relative` is enabled after mount', async () => {
+    vi.useFakeTimers()
+    try {
+      const datetime = Date.now() - 5 * 1000
+      const relative = ref(false)
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime,
+              relative: relative.value,
+              locale: 'en-GB',
+            }),
+        }),
+      )
+      expect(thing.element.textContent).not.toContain('ago')
+
+      // time passes while the component is not in relative mode
+      await vi.advanceTimersByTimeAsync(10_000)
+      relative.value = true
+      await nextTick()
+      expect(thing.element.textContent).toBe('15 seconds ago')
+
+      await vi.advanceTimersByTimeAsync(1_000)
+      expect(thing.element.textContent).toBe('16 seconds ago')
+
+      relative.value = false
+      await nextTick()
+      expect(thing.element.textContent).not.toContain('ago')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('should display datetime in title', async () => {
