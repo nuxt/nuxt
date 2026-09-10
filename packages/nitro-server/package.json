@@ -50,6 +50,7 @@
     "errx": "catalog:app-runtime",
     "escape-string-regexp": "catalog:build",
     "exsolve": "catalog:build",
+    "flru": "catalog:nitro-runtime",
     "h3": "^1.15.11",
     "impound": "catalog:build",
     "klona": "catalog:app-runtime",
