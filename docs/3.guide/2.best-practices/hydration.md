@@ -149,7 +149,7 @@ const greeting = hour < 12 ? 'Good morning' : 'Good afternoon'
 ```html
 <template>
   <div>
-    <NuxtTime :date="new Date()" format="HH:mm" />
+    <NuxtTime :datetime="new Date()" format="HH:mm" />
   </div>
 </template>
 ```
