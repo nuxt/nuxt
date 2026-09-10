@@ -1,8 +1,9 @@
 import { expectTypeOf } from 'vitest'
 import type { H3Event } from 'nitro/h3'
 import { getRouterParam, handleCors, useSession } from 'nitro/h3'
+import { defineCachedHandler } from 'nitro/cache'
 import type { NuxtRequestEvent, RequestEvent, RequestEventContext } from 'nuxt/server'
-import { defineEventHandler, getRequestURL, getRouteRules, toNuxtRequestEvent } from 'nuxt/server'
+import { defineEventHandler, getQuery, getRequestURL, getRouteRules, toNuxtRequestEvent } from 'nuxt/server'
 
 // @ts-expect-error Fromage is 'cheese'
 const _fake: Fromage = 'babybel'
@@ -30,6 +31,7 @@ const portableHandler = defineEventHandler(async (event) => {
 
   // h3 helpers that only read the request take it directly
   expectTypeOf(getRouterParam(event, 'id')).toEqualTypeOf<string | undefined>()
+  expectTypeOf(event.context.params?.id).toEqualTypeOf<string | undefined>()
   await useSession(event, { password: '0'.repeat(32) })
 
   // @ts-expect-error `node` is not part of the portable event
@@ -52,3 +54,7 @@ const portableHandler = defineEventHandler(async (event) => {
 })
 
 expectTypeOf(portableHandler).returns.toEqualTypeOf<Promise<{ greeting: string }>>()
+
+defineCachedHandler(event => getQuery(event), {
+  getKey: event => getRequestURL(event).search,
+})
