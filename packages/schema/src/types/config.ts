@@ -63,6 +63,7 @@ export interface RuntimeConfigApp extends RuntimeConfigNamespace {
 }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
+  secretKey: string
   public: PublicRuntimeConfig
   app: RuntimeConfigApp
 }
