@@ -168,8 +168,8 @@ catalogs:
       specifier: ^3.4.0
       version: 3.4.0
     vue-bundle-renderer:
-      specifier: ^2.3.2
-      version: 2.3.2
+      specifier: ^2.4.0
+      version: 2.4.0
     vue-router:
       specifier: ^5.3.1
       version: 5.3.1
@@ -361,8 +361,8 @@ catalogs:
       specifier: ^0.4.0
       version: 0.4.0
     vue-bundle-renderer:
-      specifier: ^2.3.2
-      version: 2.3.2
+      specifier: ^2.4.0
+      version: 2.4.0
   dev:
     '@arethetypeswrong/cli':
       specifier: 0.18.5
@@ -1108,7 +1108,7 @@ importers:
         version: 3.5.42(typescript@6.0.3)
       vue-bundle-renderer:
         specifier: catalog:app-runtime
-        version: 2.3.2
+        version: 2.4.0
       vue-devtools-stub:
         specifier: catalog:vue
         version: 0.1.0
@@ -1319,7 +1319,7 @@ importers:
         version: 3.5.42(typescript@6.0.3)
       vue-bundle-renderer:
         specifier: catalog:app-runtime
-        version: 2.3.2
+        version: 2.4.0
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.11
@@ -1482,7 +1482,7 @@ importers:
         version: 4.1.1(file-loader@6.2.0(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0)))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       vue-bundle-renderer:
         specifier: catalog:build
-        version: 2.3.2
+        version: 2.4.0
       webpack-bundle-analyzer:
         specifier: catalog:webpack
         version: 5.3.3
@@ -1622,7 +1622,7 @@ importers:
         version: 3.5.42(typescript@6.0.3)
       vue-bundle-renderer:
         specifier: catalog:build
-        version: 2.3.2
+        version: 2.4.0
       vue-loader:
         specifier: catalog:vue
         version: 17.4.2(@vue/compiler-sfc@3.5.42)(vue@3.5.42(typescript@6.0.3))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
@@ -1754,7 +1754,7 @@ importers:
         version: 0.14.5(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(optionator@0.9.4)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(vue-tsc@3.3.11(typescript@6.0.3))
       vue-bundle-renderer:
         specifier: catalog:build
-        version: 2.3.2
+        version: 2.4.0
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -1960,7 +1960,7 @@ importers:
         version: 4.1.1(file-loader@6.2.0(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0)))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
       vue-bundle-renderer:
         specifier: catalog:build
-        version: 2.3.2
+        version: 2.4.0
       vue-loader:
         specifier: catalog:vue
         version: 17.4.2(@vue/compiler-sfc@3.5.42)(vue@3.5.42(typescript@6.0.3))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
@@ -11890,8 +11890,8 @@ packages:
   vscode-uri@3.2.0:
     resolution: {integrity: sha512-m2gXo3bn0G1kT9InzMf07fTbqMbGtyckj3bH5ktLO+1Ssv+yiATZ4dhwaQv9UZWxJh6E9IFGnQyjgWVDWVBDrg==}
 
-  vue-bundle-renderer@2.3.2:
-    resolution: {integrity: sha512-BtazFw0lm3N/ZE4+tre2g8G+c5wolfizu+e5jxZAcao0gcy5KJei9Yopl1svDato2poeFldVLfmLMk57Sg8rLg==}
+  vue-bundle-renderer@2.4.0:
+    resolution: {integrity: sha512-IxHopQZgzTGBiuGERrQrAS7Lr3dCv+qxvgirEgCUFGAD4gYNfiaGYzC1DDojeZmJAmehp9gG8+17PGuVP6Ab2Q==}
 
   vue-component-type-helpers@3.3.11:
     resolution: {integrity: sha512-LwcxzeliO9fkQcpJG0PoX8X5kmAhKmH9wkpDLxNabwzkQ9Zeib2YVHwFV4pcWmMLfXVfjr/dSV+DaJ3cIPgSNA==}
@@ -22719,7 +22719,7 @@ snapshots:
 
   vscode-uri@3.2.0: {}
 
-  vue-bundle-renderer@2.3.2:
+  vue-bundle-renderer@2.4.0:
     dependencies:
       ufo: 1.6.4
 
