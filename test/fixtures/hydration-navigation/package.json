@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-hydration-navigation",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:dev"
+  },
+  "engines": {
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  }
+}
