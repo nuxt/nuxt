@@ -8,7 +8,7 @@ import type { RouterViewSlotProps } from './utils'
 import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-import { _mergeTransitionProps, _wrapInTransition } from '#app/components/utils'
+import { _mergeTransitionProps, _wrapInTransition, vueSupportsHydrationNavigation } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
@@ -83,7 +83,7 @@ export default defineComponent({
       })
 
       // If hydration is deferred, use the payload route if navigation has moved past it to match the SSR DOM before switching to the current route.
-      if (nuxtApp.payload.serverRendered && nuxtApp.payload.path) {
+      if (vueSupportsHydrationNavigation && nuxtApp.payload.serverRendered && nuxtApp.payload.path) {
         const payloadRoute = router.resolve(nuxtApp.payload.path) as RouteLocationNormalizedLoaded
         if (payloadRoute.fullPath !== router.currentRoute.value.fullPath) {
           frozenHydrationRoute.value = payloadRoute

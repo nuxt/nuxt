@@ -8,7 +8,7 @@ import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
-import { _mergeTransitionProps, _wrapInTransition, isVaporSlot } from './utils'
+import { _mergeTransitionProps, _wrapInTransition, isVaporSlot, vueSupportsHydrationNavigation } from './utils'
 import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
 import { useRoute as useVueRouterRoute } from '#build/pages'
@@ -56,7 +56,7 @@ export default defineComponent({
 
     // use the payload layout during deferred hydration to match the SSR DOM.
     const frozenHydrationLayout = shallowRef<ReturnType<typeof resolveLayoutName>>()
-    if (import.meta.client && nuxtApp.isHydrating && shouldUseEagerRoute && nuxtApp.payload.serverRendered && nuxtApp.payload.path) {
+    if (import.meta.client && vueSupportsHydrationNavigation && nuxtApp.isHydrating && shouldUseEagerRoute && nuxtApp.payload.serverRendered && nuxtApp.payload.path) {
       const router = useRouter()
       const { fullPath, path, meta } = router.resolve(nuxtApp.payload.path)
       // only freeze if navigation has moved past the payload route.
