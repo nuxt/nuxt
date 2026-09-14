@@ -136,7 +136,8 @@
         "@nuxt/nitro-server",
         "@nuxt/telemetry",
         "@nuxt/vite-builder",
-        "@nuxt/vite-server"
+        "@nuxt/vite-server",
+        "@unhead/bundler"
       ]
     },
     "packages/ui-templates": {
