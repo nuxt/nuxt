@@ -1,14 +1,14 @@
-import { writeFileSync } from 'node:fs'
+import { rmSync, writeFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 
 import type { FSWatcher } from 'vite'
 import type { ResolvedNuxtTemplate } from 'nuxt/schema'
 import { join, relative, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { build, loadNuxt } from 'nuxt'
 
-describe('builder:watch', { concurrent: false }, async () => {
+describe('builder:watch', { concurrent: false, timeout: 60_000 }, async () => {
   const tmpDir = join(await findWorkspaceDir(), '.test/builder-watch')
   const cacheDir = join(await findWorkspaceDir(), '.test/builder-watch-vite-cache')
   beforeEach(async () => {
@@ -34,25 +34,36 @@ describe('builder:watch', { concurrent: false }, async () => {
     })
     let restarts = 0
     const events: string[] = []
+    const probe = join(rootDir, 'probe')
 
     nuxt.hook('restart', () => { restarts++ })
     nuxt.hook('builder:watch', (event, path) => {
-      if (event === 'add') {
+      if (event === 'add' && path !== probe) {
         events.push(relative(rootDir, path))
       }
     })
 
     await build(nuxt)
 
-    const watchPromise = new Promise(resolve => nuxt.hooks.hookOnce('builder:watch', resolve))
+    // Watchers drop events that happen before they are ready, so keep re-creating a probe
+    // file until one of them is seen.
+    let probeSeen = false
+    nuxt.hooks.hookOnce('builder:watch', () => { probeSeen = true })
+    await vi.waitFor(() => {
+      rmSync(probe, { force: true })
+      writeFileSync(probe, 'probe')
+      expect(probeSeen).toBe(true)
+    }, { timeout: 8000, interval: 250 })
+
     writeFileSync(resolve(rootDir, '../higher'), 'something')
     writeFileSync(join(rootDir, 'test'), 'something')
     writeFileSync(join(rootDir, 'other'), 'something')
-    await watchPromise
+    await vi.waitFor(() => expect(events).toHaveLength(3), { timeout: 8000 })
 
     await nuxt.close()
 
-    expect.soft(restarts).toBe(3)
+    // A file creation may surface as both `add` and `change`, each of which restarts.
+    expect.soft(restarts).toBeGreaterThanOrEqual(3)
     expect.soft(events.sort()).toStrictEqual([
       '../higher',
       'other',

@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname } from 'pathe'
+import { dirname, normalize } from 'pathe'
+import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
 
@@ -23,6 +24,8 @@ export const PATHS_SPECIFIER = '#internal/nuxt/paths'
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
+
+const NODE_MODULES_SEGMENT = '/node_modules/'
 
 const NODE_MODULES_RE = /\/node_modules\//g
 
@@ -116,6 +119,35 @@ export function getSsrResolveConditions (exportConditions?: string[]): string[] 
     conditions.push('import')
   }
   return conditions
+}
+
+/**
+ * Recover the package directory of an installed module.
+ *
+ * `resolveNuxtModule` answers with the `node_modules` directory a module resolved from
+ * rather than the package root, so the package name has to be taken from the entry path
+ * for the module's runtime directories to be findable.
+ */
+export function toModulePackageDir (dir: string, entryPath: string): string {
+  const resolved = normalize(dir)
+  if (!withTrailingSlash(resolved).endsWith(NODE_MODULES_SEGMENT)) {
+    return resolved
+  }
+  const entry = normalize(entryPath)
+  const index = entry.lastIndexOf(NODE_MODULES_SEGMENT)
+  // a module installed under another module (or reached through a pnpm symlink) is named
+  // by its own path; a module named by a bare specifier is named by that specifier
+  const base = index === -1 ? withTrailingSlash(resolved) : entry.slice(0, index + NODE_MODULES_SEGMENT.length)
+  const rest = index === -1 ? entry : entry.slice(base.length)
+  // an entry that names no package under `dir` leaves only the entry itself to go by:
+  // `dir` is a bare `node_modules`, and scoping or attributing by that prefix would take
+  // in every other package installed beside the module
+  if (!rest || rest[0] === '.' || rest[0] === '/') {
+    return entry
+  }
+  const segments = rest.split('/')
+  const name = segments[0]![0] === '@' ? segments.slice(0, 2).join('/') : segments[0]!
+  return base + name
 }
 
 let _distDir = dirname(fileURLToPath(import.meta.url))

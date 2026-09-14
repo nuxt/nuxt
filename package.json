@@ -16,7 +16,7 @@
     "debug:dev": "rm -rf **/node_modules/.cache/jiti && pnpm nuxt dev",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",
-    "lint:docs": "markdownlint --ignore-path=.gitignore ./docs && case-police 'docs/**/*.md' *.md && eslint docs --cache",
+    "lint:docs": "markdownlint --ignore-path=.gitignore ./docs && case-police 'docs/**/*.md' *.md && node scripts/check-docs-links.mjs && eslint docs --cache",
     "lint:docs:fix": "markdownlint --ignore-path=.gitignore ./docs --fix && case-police 'docs/**/*.md' *.md --fix && eslint docs --cache --fix",
     "lint:knip": "knip",
     "lint:knip:production": "knip --production",

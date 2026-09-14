@@ -234,8 +234,8 @@ export type NitroConfig = ResolveNitroConfig<NitroTypes>
  * Members must be registry-independent, as on {@link NitroConfigFallback}.
  */
 export interface NitroInstanceOptionsFallback {
-  handlers: Array<Record<string, any>>
-  devHandlers: Array<Record<string, any>>
+  handlers: ServerHandlerFallback[]
+  devHandlers: DevServerHandlerFallback[]
   runtimeConfig: Record<string, any>
   plugins: string[]
   alias: Record<string, string>

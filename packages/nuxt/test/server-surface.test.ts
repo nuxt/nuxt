@@ -52,6 +52,12 @@ describe('request', () => {
     expect(getRequestURL(event(new Request('https://nuxt.com/api/hello?a=1'))).pathname).toBe('/api/hello')
   })
 
+  it('falls back to the request when the runtime has not parsed the URL', () => {
+    const e = { req: new Request('https://nuxt.com/api/hello?a=1') }
+    expect(getRequestURL(e).pathname).toBe('/api/hello')
+    expect(getQuery(e)).toEqual({ a: '1' })
+  })
+
   it('reads a request header case-insensitively, or `undefined`', () => {
     const e = event(new Request('https://nuxt.com/', { headers: { 'X-Custom': 'value' } }))
     expect(getRequestHeader(e, 'x-custom')).toBe('value')
@@ -226,10 +232,11 @@ describe('errors', () => {
 })
 
 describe('the event the surface is typed against', () => {
-  it('is the web-standard event, never a runtime\'s own', () => {
-    expectTypeOf<Parameters<typeof getRequestURL>[0]>().toEqualTypeOf<RequestEvent>()
-    expectTypeOf<Parameters<typeof getCookie>[0]>().toEqualTypeOf<RequestEvent>()
-    expectTypeOf<Parameters<typeof readBody>[0]>().toEqualTypeOf<RequestEvent>()
+  it('is the web-standard event, never a runtime\'s own, and only the part each helper reads', () => {
+    expectTypeOf<Parameters<typeof getRequestURL>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'> & { url?: URL }>()
+    expectTypeOf<Parameters<typeof getCookie>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'>>()
+    expectTypeOf<Parameters<typeof readBody>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'>>()
+    expectTypeOf<Parameters<typeof setResponseHeader>[0]>().toEqualTypeOf<Pick<RequestEvent, 'res'>>()
   })
 
   it('describes the request, its URL and the response, and nothing a runtime adds', () => {
