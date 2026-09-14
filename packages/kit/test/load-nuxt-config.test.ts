@@ -94,6 +94,39 @@ describe('loadNuxtConfig layer identity canonicalisation', () => {
   })
 })
 
+describe('loadNuxtConfig layer deduplication through package names', () => {
+  const tempDir = join(repoRoot, 'temp', 'layer-dedup-packages')
+  const packagesDir = join(tempDir, 'node_modules', '@repro')
+
+  // a diamond: the project extends `a` and `b`, both of which extend `c`. Spelled as paths the
+  // shared layer is deduped; spelled as package names it used to be merged once per path, so
+  // every array `c` declares came out doubled (#36339)
+  beforeAll(async () => {
+    for (const [name, config] of [
+      ['layer-a', 'export default defineNuxtConfig({ extends: [\'@repro/layer-c\'] })'],
+      ['layer-b', 'export default defineNuxtConfig({ extends: [\'@repro/layer-c\'] })'],
+      ['layer-c', 'export default defineNuxtConfig({ css: [\'diamond-marker.css\'] })'],
+    ] as const) {
+      await mkdir(join(packagesDir, name), { recursive: true })
+      await writeFile(join(packagesDir, name, 'package.json'), JSON.stringify({ name: `@repro/${name}`, type: 'module', main: './nuxt.config.ts' }))
+      await writeFile(join(packagesDir, name, 'nuxt.config.ts'), config)
+    }
+  })
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  it('dedupes a layer reached twice through package names (#36339)', async () => {
+    await writeFile(
+      join(tempDir, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ extends: [\'@repro/layer-a\', \'@repro/layer-b\'] })',
+    )
+    const config = await loadNuxtConfig({ cwd: tempDir })
+    expect(config.css?.filter(entry => entry === 'diamond-marker.css')).toHaveLength(1)
+  })
+})
+
 describe('loadNuxtConfig onConfigResolved', () => {
   const tempDir = join(repoRoot, 'temp', 'config-resolved')
 
