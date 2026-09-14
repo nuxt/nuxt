@@ -79,4 +79,10 @@ describe('imports: declaration files of a built module', () => {
     // `app/composables/layer-types.d.ts` is not a source file, only a module ships a build
     expect(named(appImports, 'LayerOnly')).toEqual([])
   })
+
+  it('does not read them in a directory the project configured itself either', () => {
+    // `server/extra` comes from `nitro.imports.dirs`, so it is scanned, but as a layer directory
+    expect(named(serverImports, 'projectHelper')).toHaveLength(1)
+    expect(named(serverImports, 'ProjectServerOnly')).toEqual([])
+  })
 })
