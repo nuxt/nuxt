@@ -79,6 +79,7 @@
     "@nuxt/telemetry": "catalog:build",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/vite-server": "workspace:*",
+    "@unhead/bundler": "catalog:app-runtime",
     "@unhead/vue": "catalog:app-runtime",
     "@vue/shared": "catalog:app-runtime",
     "chokidar": "catalog:build",
