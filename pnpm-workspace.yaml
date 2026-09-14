@@ -107,7 +107,7 @@ catalogs:
     '@vitejs/plugin-vue': ^6.0.8
     # kept in lockstep with the vue override above
     '@vue/compiler-sfc': 3.5.42
-    rspack-vue-loader: ^17.6.2
+    rspack-vue-loader: ^17.7.0
     vue-component-type-helpers: ^3.3.11
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
@@ -142,7 +142,7 @@ catalogs:
     ts-checker-rspack-plugin: ^1.6.1
     url-loader: ^4.1.1
     webpack: ^5.110.3
-    webpack-bundle-analyzer: ^5.3.2
+    webpack-bundle-analyzer: ^5.3.3
     webpack-dev-middleware: ^8.3.0
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
