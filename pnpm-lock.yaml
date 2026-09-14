@@ -614,8 +614,8 @@ catalogs:
       specifier: 3.5.42
       version: 3.5.42
     rspack-vue-loader:
-      specifier: ^17.6.2
-      version: 17.6.2
+      specifier: ^17.7.0
+      version: 17.7.0
     vue-component-type-helpers:
       specifier: ^3.3.11
       version: 3.3.11
@@ -675,8 +675,8 @@ catalogs:
       specifier: ^5.110.3
       version: 5.110.3
     webpack-bundle-analyzer:
-      specifier: ^5.3.2
-      version: 5.3.2
+      specifier: ^5.3.3
+      version: 5.3.3
     webpack-dev-middleware:
       specifier: ^8.3.0
       version: 8.3.0
@@ -1456,7 +1456,7 @@ importers:
         version: 0.3.1(rolldown@1.2.7)
       rspack-vue-loader:
         specifier: catalog:vue
-        version: 17.6.2(@rspack/core@2.2.2(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.42)(vue@3.5.42(typescript@6.0.3))
+        version: 17.7.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.42)(vue@3.5.42(typescript@6.0.3))
       seroval:
         specifier: catalog:build
         version: 1.6.4
@@ -1486,7 +1486,7 @@ importers:
         version: 2.3.2
       webpack-bundle-analyzer:
         specifier: catalog:webpack
-        version: 5.3.2
+        version: 5.3.3
       webpackbar:
         specifier: catalog:webpack
         version: 7.0.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
@@ -1970,7 +1970,7 @@ importers:
         version: 5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0)
       webpack-bundle-analyzer:
         specifier: catalog:webpack
-        version: 5.3.2
+        version: 5.3.3
       webpack-dev-middleware:
         specifier: catalog:webpack
         version: 8.3.0(webpack@5.110.3(cssnano@9.0.3(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
@@ -10695,8 +10695,8 @@ packages:
   rou3@0.9.2:
     resolution: {integrity: sha512-3SOzvaAg8rkHrXtRjpCvCvbyO5to9oOO27Z/XqHEYXfMRVSw/qMIVdmaOk9W2lcRLtR6dlqTjo9hDeJk70QBYQ==}
 
-  rspack-vue-loader@17.6.2:
-    resolution: {integrity: sha512-ojnONLyFz0SCLYSDrC8NwHqUBgj/lHFNVmv1hCWk4vaPYjfdBRCLJEGla+P7PtkBkc4eKFgfRSMbSNVyM8EwaQ==}
+  rspack-vue-loader@17.7.0:
+    resolution: {integrity: sha512-lNBfU5rUrCOYEGdVwdqkF218Pm+plwIGN6Daf5+sjVQLkfB9jlvY1qXsTw36aaoDkViFVnLySMpPTWuO7aScYw==}
     peerDependencies:
       '@rspack/core': ^1.0.0 || ^2.0.0
       '@vue/compiler-sfc': '*'
@@ -12009,8 +12009,8 @@ packages:
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
-  webpack-bundle-analyzer@5.3.2:
-    resolution: {integrity: sha512-IagCa/GrdxSz+ba9OMgK7UCfQp97HtXbgjXu7ObcqmRo9PTp0d+24rgY+mIFOx7JPQ9bo6FGsqZhA55rYRZrrQ==}
+  webpack-bundle-analyzer@5.3.3:
+    resolution: {integrity: sha512-kr/bzg3sORg1xAnxpg1uaIPGDDNwaRIsClOv22HzCIMX9X64FbvIBNjP2ulPdfCgZw7ekrv7JGAPc30W+0b7rA==}
     engines: {node: '>= 20.9.0'}
     hasBin: true
 
@@ -21474,7 +21474,7 @@ snapshots:
 
   rou3@0.9.2: {}
 
-  rspack-vue-loader@17.6.2(@rspack/core@2.2.2(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.42)(vue@3.5.42(typescript@6.0.3)):
+  rspack-vue-loader@17.7.0(@rspack/core@2.2.2(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.42)(vue@3.5.42(typescript@6.0.3)):
     dependencies:
       '@rspack/lite-tapable': 1.1.5
       chalk: 4.1.2
@@ -22848,7 +22848,7 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
-  webpack-bundle-analyzer@5.3.2:
+  webpack-bundle-analyzer@5.3.3:
     dependencies:
       '@discoveryjs/json-ext': 0.6.3
       acorn: 8.18.0
