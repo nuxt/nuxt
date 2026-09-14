@@ -1,7 +1,6 @@
-<p align="center">
-<a href="https://nuxt.com"><img width="830" src="./.github/assets/nuxt_banner.png" alt="Nuxt banner"></a>
-
-</p>
+<h1 align="center">
+  <a href="https://nuxt.com"><img width="830" src="./.github/assets/nuxt_banner.png" alt="Nuxt"></a>
+</h1>
 
 <p align="center">
   <em>The Intuitive Vue Framework</em>
@@ -41,44 +40,46 @@ bunx nuxi@latest init my-app      # bun
 
 <table>
 <tr>
-<td width="33%" valign="top">
+<td width="50%" valign="top">
 
 ### Hybrid Rendering
 
 SSR, SSG, ISR, SWR, Edge-Side and client-side — mix per route.
 
 </td>
-<td width="33%" valign="top">
+<td width="50%" valign="top">
 
 ### Auto-Imports
 
 Components, composables and utils — available everywhere, no imports needed.
 
 </td>
-<td width="33%" valign="top">
+</tr>
+<tr>
+<td width="50%" valign="top">
 
 ### File-Based Routing
 
 Drop a `.vue` file in `pages/` and it becomes a route with code-splitting.
 
 </td>
-</tr>
-<tr>
-<td width="33%" valign="top">
+<td width="50%" valign="top">
 
 ### TypeScript
 
 Zero-config with auto-generated types across your entire app.
 
 </td>
-<td width="33%" valign="top">
+</tr>
+<tr>
+<td width="50%" valign="top">
 
 ### Full-Stack
 
 API routes in `server/` powered by [Nitro](https://nitro.build). Type-safe from client to server.
 
 </td>
-<td width="33%" valign="top">
+<td width="50%" valign="top">
 
 ### SEO & Meta
 
@@ -87,25 +88,27 @@ Head management, sitemap generation, and SEO utilities — built in.
 </td>
 </tr>
 <tr>
-<td width="33%" valign="top">
+<td width="50%" valign="top">
 
 ### Data Fetching
 
 `useFetch` and `useAsyncData` with SSR support, caching, and deduplication.
 
 </td>
-<td width="33%" valign="top">
-
-### 300+ Modules
-
-Auth, CMS, database, analytics — one config line. [Explore them all.](https://nuxt.com/modules)
-
-</td>
-<td width="33%" valign="top">
+<td width="50%" valign="top">
 
 ### State Management
 
 `useState` for SSR-friendly shared state. Or use [Pinia](https://nuxt.com/modules/pinia) for complex state.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top">
+
+### 300+ Modules
+
+Auth, CMS, database, analytics — one config line. [Explore them all.](https://nuxt.com/modules)
 
 </td>
 </tr>
@@ -255,21 +258,21 @@ Nuxt is built by people, for people. Every bug report, idea and pull request mak
 
 We invite you to contribute and help improve Nuxt 💚
 
-<table width="100%">
+<table align="center">
 <tr>
-<td align="center" width="33%">
+<td align="center" valign="top" width="160">
   <a href="https://nuxt.com/docs/4.x/community/reporting-bugs">
     <img width="64" src="./.github/assets/reporting-bugs.png" alt="Reporting Bugs"><br>
     <b>Reporting Bugs</b>
   </a>
 </td>
-<td align="center" width="33%">
+<td align="center" valign="top" width="160">
   <a href="https://nuxt.com/docs/4.x/community/contribution">
     <img width="64" src="./.github/assets/suggestions.png" alt="Suggestions"><br>
     <b>Suggestions</b>
   </a>
 </td>
-<td align="center" width="33%">
+<td align="center" valign="top" width="160">
   <a href="https://nuxt.com/docs/4.x/community/getting-help">
     <img width="64" src="./.github/assets/questions.png" alt="Questions"><br>
     <b>Questions</b>
