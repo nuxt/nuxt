@@ -38,9 +38,10 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   const isIgnored = createIsIgnored(nuxt)
   const scanDirs = (options.dirs ?? []).map(dir => normalize(dir))
 
-  // `addServerImportsDir` appends after the layer conventions are resolved, so what is left
-  // over was registered by a module
-  const layerDirs = new Set(resolveServerImportDirs(nuxt).map(dir => normalize(dir)))
+  // `addServerImportsDir` appends after the layer conventions and the project's own
+  // `nitro.imports.dirs` are resolved, so what is left over was registered by a module
+  const configuredDirs = nuxt.options.nitro.imports ? nuxt.options.nitro.imports.dirs ?? [] : []
+  const layerDirs = new Set([...resolveServerImportDirs(nuxt), ...configuredDirs].map(dir => normalize(dir)))
   const moduleDirs = scanDirs.filter(dir => !layerDirs.has(dir))
 
   // a built module keeps its type-only exports in the emitted `.d.ts` and nowhere else; in a

@@ -36,11 +36,24 @@ function resolveMatcher (nuxt: Nuxt, options: IsIgnoredOptions) {
 
   let matcher = declarationMatcherCache.get(nuxt)
   if (!matcher) {
+    // only the built-in pattern goes; a project that ignores declaration files itself keeps that
+    const configured = new Set([
+      ...nuxt.options._layers.flatMap(layer => layer.config.ignore ?? []),
+      ...readNuxtIgnore(nuxt),
+    ].flatMap(pattern => pattern ? resolveGroupSyntax(pattern) : []))
     matcher = ignore(nuxt.options.ignoreOptions)
-      .add(resolveIgnorePatterns().filter(pattern => !DECLARATION_PATTERN_RE.test(pattern)))
+      .add(resolveIgnorePatterns().filter(pattern => !DECLARATION_PATTERN_RE.test(pattern) || configured.has(pattern)))
     declarationMatcherCache.set(nuxt, matcher)
   }
   return matcher
+}
+
+function readNuxtIgnore (nuxt: Nuxt): string[] {
+  const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
+  if (!existsSync(nuxtignoreFile)) {
+    return []
+  }
+  return readFileSync(nuxtignoreFile, 'utf-8').trim().split(/\r?\n/)
 }
 
 /**
@@ -88,12 +101,7 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
   }
 
   const ignorePatterns = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
-
-  const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
-  if (existsSync(nuxtignoreFile)) {
-    const contents = readFileSync(nuxtignoreFile, 'utf-8')
-    ignorePatterns.push(...contents.trim().split(/\r?\n/))
-  }
+  ignorePatterns.push(...readNuxtIgnore(nuxt))
 
   if (relativePath) {
     // Map ignore patterns based on if they start with * or !*
