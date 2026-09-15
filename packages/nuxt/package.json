@@ -96,6 +96,7 @@
     "hookable": "catalog:app-runtime",
     "ignore": "catalog:build",
     "impound": "catalog:build",
+    "iron-webcrypto": "catalog:app-runtime",
     "klona": "catalog:app-runtime",
     "knitwork": "catalog:build",
     "magic-string": "catalog:vite",

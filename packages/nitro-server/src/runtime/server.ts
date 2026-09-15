@@ -29,9 +29,12 @@ export { getRouteRules } from './utils/route-rules'
 export { useRuntimeConfig } from 'nitro/runtime-config'
 
 export {
+  clearSession,
   createError,
+  deriveSecret,
   getRequestHeader,
   getRequestHeaders,
+  getSession,
   isNuxtError,
   NuxtError,
   sendRedirect,
@@ -39,6 +42,8 @@ export {
   setResponseHeaders,
   setResponseStatus,
   toNuxtRequestEvent,
+  updateSession,
+  useSession,
 } from 'nuxt/internal/server-default'
 
 /** A handler h3's router can serve directly, whose body can be read more than once. */

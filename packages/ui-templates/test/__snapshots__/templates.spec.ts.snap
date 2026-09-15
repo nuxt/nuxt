@@ -493,11 +493,11 @@ p {
 exports[`template > produces correct output for loading template 1`] = `
 ".nuxt-loader-bar {
   background: #00dc82;
+  height: 3px;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 3px;
 }
 .triangle-loading {
   position: absolute;
@@ -508,7 +508,7 @@ exports[`template > produces correct output for loading template 1`] = `
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 128;
-  stroke-dashoffset: 128;
+  stroke-dashoffset: 128px;
   animation: nuxt-loading-move 3s linear infinite;
 }
 .nuxt-logo:hover .triangle-loading > path {
@@ -656,13 +656,15 @@ exports[`template > produces correct output for loading template 1`] = `
 exports[`template > produces correct output for loading template 2`] = `
 "@keyframes nuxt-loading-move {
   to {
-    stroke-dashoffset: -128;
+    stroke-dashoffset: -128px;
   }
 }
 @media (prefers-color-scheme: dark) {
   body,
   html {
     color: #fff;
+    --lightningcss-light:;
+    --lightningcss-dark: initial;
     color-scheme: dark;
   }
 }

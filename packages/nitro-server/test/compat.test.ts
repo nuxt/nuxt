@@ -171,6 +171,19 @@ describe('setupNitroCompat', () => {
     await expect(plugin.resolveId.handler.call(unresolvable, 'nitro/builder', '/modules/handler.ts')).resolves.toBeUndefined()
   })
 
+  it('resolves nitro for a virtual importer', async () => {
+    const nitroConfig: NitroConfig = { handlers: [] }
+    await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+
+    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
+    const resolvable = { resolve: () => Promise.resolve({ id: '/project/node_modules/hoisted-nitro.mjs' }) }
+
+    for (const importer of ['#internal/nuxt/paths', '\0virtual:#internal/nuxt/paths']) {
+      await expect(plugin.resolveId.handler.call(resolvable, 'nitro/runtime-config', importer)).resolves.toBe(getNitroPackageResolutions()['nitro/runtime-config'])
+    }
+    await expect(plugin.resolveId.handler.call(resolvable, 'nitro/builder', '#internal/nuxt/paths')).resolves.toBeUndefined()
+  })
+
   it('rewrites specifiers in scoped source', async () => {
     const nitroConfig: NitroConfig = {
       imports: {},
