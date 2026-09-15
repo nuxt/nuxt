@@ -270,5 +270,37 @@ describe('<NuxtTime>', () => {
       expect(renderedDate.getTime()).toBeGreaterThanOrEqual(beforeMount)
       expect(renderedDate.getTime()).toBeLessThanOrEqual(afterMount)
     })
+
+    it('should treat datetime={0} as the epoch, not as a missing value', async () => {
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime: 0,
+              locale: 'en-GB',
+              dateStyle: 'short',
+              timeZone: 'UTC',
+            }),
+        }),
+      )
+      expect(thing.html()).toMatchInlineSnapshot(
+        `"<time datetime="1970-01-01T00:00:00.000Z">01/01/1970</time>"`,
+      )
+    })
+
+    it('should display "Invalid Date" for datetime={NaN}, like other invalid input', async () => {
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime: Number.NaN,
+              locale: 'en-GB',
+            }),
+        }),
+      )
+      expect(thing.html()).toMatchInlineSnapshot(
+        `"<time>Invalid Date</time>"`,
+      )
+    })
   })
 })
