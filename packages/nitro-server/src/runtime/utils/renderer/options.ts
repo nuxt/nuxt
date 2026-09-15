@@ -13,6 +13,8 @@ import '../../context'
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import { getRouteRules } from '../route-rules'
+import { markStreamedResponse, rememberRenderBody } from '../../compat/render-response'
+import { legacyCompat } from '#nuxt-compat/flags'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
@@ -27,7 +29,16 @@ export const rendererOptions: NuxtRendererOptions = {
   publicAssetsURL,
   getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
   hooks: () => useNitroHooks() as RendererHooks,
-  createResponse: (body, init) => new FastResponse(body, init),
+  createResponse: (body, init) => {
+    const response = new FastResponse(body, init)
+    if (legacyCompat) {
+      rememberRenderBody(init, body)
+      if (body instanceof ReadableStream) {
+        markStreamedResponse(response)
+      }
+    }
+    return response
+  },
   createError: init => new HTTPError(init),
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),

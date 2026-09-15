@@ -85,10 +85,27 @@ test.use({
     use(async (path, options) => {
       const result = await page.goto(path, options as any)
       await waitForHydration(page, path, 'hydration')
+      const overlay = await getViteErrorOverlay(page)
+      if (overlay) {
+        throw new Error(`Vite error overlay shown after navigating to ${path}:\n${overlay}`)
+      }
       return result
     })
   },
 })
+
+// The overlay renders into a shadow root, so its text is invisible to normal locators and
+// would otherwise only show up as "intercepts pointer events" in a click timeout.
+function getViteErrorOverlay (page: Page) {
+  return page.evaluate(() => {
+    const root = document.querySelector('vite-error-overlay')?.shadowRoot
+    if (!root) { return null }
+    return ['.message-body', '.file', '.frame', '.stack']
+      .map(selector => root.querySelector(selector)?.textContent?.trim())
+      .filter(Boolean)
+      .join('\n')
+  })
+}
 
 const expect = baseExpect.extend({
   // Utility function to wait for a condition to be true
