@@ -52,6 +52,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
+    // the subset of those a module registered through `addImportsDir`
+    let moduleDirs: string[] = []
     if (options.scan) {
       for (const layer of nuxt.options._layers) {
         // Layer disabled scanning for itself
@@ -75,8 +77,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       }
 
       nuxt.hook('modules:done', async () => {
+        const layerDirs = new Set(composablesDirs.map(dir => normalize(dir)))
         await nuxt.callHook('imports:dirs', composablesDirs)
         composablesDirs = composablesDirs.map(dir => normalize(dir))
+        moduleDirs = composablesDirs.filter(dir => !layerDirs.has(dir))
       })
 
       // Restart nuxt when composable directories are added/removed
@@ -146,7 +150,13 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       return IMPORTS_TEMPLATE_RE.test(template.filename)
     }
 
+    // a built module keeps its type-only exports in the emitted `.d.ts` and nowhere else; in a
+    // layer's own `composables/` a `.d.ts` is not a source file, so only module dirs read them
     const isIgnored = createIsIgnored(nuxt)
+    const isIgnoredInModuleDir = createIsIgnored(nuxt, { declarations: true })
+    const fileFilter = (file: string) => moduleDirs.some(dir => file.startsWith(dir + '/'))
+      ? !isIgnoredInModuleDir(file)
+      : !isIgnored(file)
     const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
     const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
     const regenerateImports = async () => {
@@ -156,9 +166,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         // Scan for `composables/` and `utils/` directories
         if (options.scan) {
-          const scannedImports = await scanDirExports(composablesDirs, {
-            fileFilter: file => !isIgnored(file),
-          })
+          const scannedImports = await scanDirExports(composablesDirs, { fileFilter })
           for (const i of scannedImports) {
             i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
           }

@@ -11,6 +11,37 @@ describe('isIgnored', () => {
     expect(isIgnored('my-dir/my-file.ts')).toBe(true)
     expect(resolveIgnorePatterns()?.includes('my-dir')).toBe(true)
   })
+
+  // `nuxt.options.ignore` as the schema resolves it: the built-in declaration pattern, followed
+  // by whatever the project configured
+  function mockNuxt (configured: string[] = []) {
+    const nuxt = {
+      options: {
+        rootDir: '/project',
+        srcDir: '/project',
+        alias: {},
+        ignore: ['**/*.d.{cts,mts,ts}', ...configured],
+        _layers: [{ cwd: '/project', config: { rootDir: '/project', ignore: configured } }],
+      },
+    } as unknown as Nuxt
+    vi.spyOn(context, 'tryUseNuxt').mockReturnValue(nuxt)
+    return nuxt
+  }
+
+  it('should let declaration files through when asked to', () => {
+    const nuxt = mockNuxt()
+
+    expect(isIgnored('/project/types.d.ts', undefined, nuxt)).toBe(true)
+    expect(isIgnored('/project/types.d.ts', undefined, nuxt, { declarations: true })).toBe(false)
+  })
+
+  it('should keep ignoring declaration files the project ignores itself', () => {
+    const nuxt = mockNuxt(['**/*.d.ts', 'internal/**'])
+
+    expect(isIgnored('/project/types.d.ts', undefined, nuxt, { declarations: true })).toBe(true)
+    expect(isIgnored('/project/types.d.mts', undefined, nuxt, { declarations: true })).toBe(false)
+    expect(isIgnored('/project/internal/types.d.mts', undefined, nuxt, { declarations: true })).toBe(true)
+  })
 })
 
 describe('resolveGroupSyntax', () => {

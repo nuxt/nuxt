@@ -15,6 +15,7 @@ function mockNuxt (): Nuxt {
       srcDir: '/app',
       ignore: [],
       imports: { scan: false },
+      nitro: {},
       _layers: [],
     },
   } as unknown as Nuxt
