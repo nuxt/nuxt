@@ -400,7 +400,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
   return true
 }
 
-async function writeCache (cwd: string, sources: string | string[], cacheFile: string, patterns = ['**/*', '!analyze/**']) {
+async function writeCache (cwd: string, sources: string | string[], cacheFile: string, patterns = ['**/*', '!analyze/**', '!app-secret']) {
   const fileEntries = await readFilesRecursive(sources, {
     patterns,
     cwd,
