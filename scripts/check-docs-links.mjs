@@ -1,7 +1,7 @@
 // Internal docs links must not carry a version segment: nuxt.com inserts the
 // segment of the branch a page was built from, so version-less links survive
 // cherry-picks between branches. Deliberate cross-version links use a full URL.
-import { readdir, readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
 const VERSIONED_INTERNAL_LINK = /(["'(=])\/docs\/\d+\.x\//g
