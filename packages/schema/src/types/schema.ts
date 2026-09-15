@@ -1903,6 +1903,13 @@ export interface ConfigSchema {
   _modules: Array<any>
 
   /**
+   * Sources of the pages that are served without scripts, as registered in `ssrContext.modules`.
+   *
+   * @private
+   */
+  _noScriptsPageSources: Array<string>
+
+  /**
    * Configuration for Nuxt's server builder.
    *
    * `'nitro'` and `'vite'` are shorthands for `'@nuxt/nitro-server'` (a full server
