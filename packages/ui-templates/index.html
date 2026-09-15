@@ -3,15 +3,37 @@
   <head>
     <script src="https://cdn.jsdelivr.net/npm/petite-vue" defer init></script>
     <script type="module" src="/styles.ts"></script>
+    <style>
+      .preview { position: relative; display: block; aspect-ratio: 16 / 10; overflow: hidden; }
+      .preview iframe { position: absolute; width: 1280px; height: 800px; border: 0; transform-origin: top left; pointer-events: none; }
+    </style>
   </head>
-  <body v-scope='{{ data }}'>
+  <body v-scope='{{ data }}' class="bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white">
     <div class="container mx-auto pt-10">
       <h1 class="text-4xl mb-8">Nuxt Templates</h1>
-      <ul>
+      <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <li v-for="name in templateNames.filter(name => !name.includes('.json'))">
-          <a :href="`/templates/${name}`" class="block border p-4 mb-2 hover:border-black">{{ name }}</a>
+          <div class="flex items-baseline justify-between gap-3 mb-2 text-sm">
+            <span>{{ name }}</span>
+            <a :href="`/templates/${name}`">Open</a>
+          </div>
+          <a :href="`/templates/${name}`" class="preview border dark:border-white/10">
+            <iframe :src="`/templates/${name}`" :title="name" tabindex="-1"></iframe>
+          </a>
         </li>
       </ul>
     </div>
+    <script>
+      const fit = (el) => {
+        const iframe = el.querySelector('iframe')
+        if (iframe && el.clientWidth) { iframe.style.transform = `scale(${el.clientWidth / 1280})` }
+      }
+      window.addEventListener('load', () => {
+        for (const el of document.querySelectorAll('.preview')) {
+          new ResizeObserver(() => fit(el)).observe(el)
+          fit(el)
+        }
+      })
+    </script>
   </body>
 </html>
