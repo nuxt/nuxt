@@ -1,7 +1,7 @@
 import { FastURL } from 'srvx/node'
 import { describe, expect, it } from 'vitest'
 
-import { urlHash } from 'nuxt/renderer/url'
+import { urlHash } from 'nuxt/internal/renderer/url'
 
 import { withoutBaseURL } from '../src/runtime/utils/base.ts'
 

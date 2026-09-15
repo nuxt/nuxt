@@ -11,8 +11,6 @@ import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
 import { distDirURL, filterInPlace } from './utils.ts'
-import { recordServerSource } from './nitro.ts'
-import type { NitroVersionOptions } from './nitro.ts'
 import { directoryToURL } from './internal/esm.ts'
 import { resolveDeclarationPath } from './types.ts'
 import { getDirectory } from './module/install.ts'
@@ -54,14 +52,12 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNu
 }
 
 /**
- * Adds a virtual file that can be used within the Nuxt Nitro server build.
+ * Adds a virtual file that can be used within the server build.
  */
-export function addServerTemplate (template: NuxtServerTemplate, options: NitroVersionOptions = {}): NuxtServerTemplate {
+export function addServerTemplate (template: NuxtServerTemplate): NuxtServerTemplate {
   const nuxt = useNuxt()
-
   nuxt.options.nitro.virtual ||= {}
   nuxt.options.nitro.virtual[template.filename] = template.getContents
-  recordServerSource(nuxt, template.filename, options.version)
 
   return template
 }
@@ -471,7 +467,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const userExclude = [...(nuxt.options.typescript?.tsConfig?.exclude ?? []), ...(nuxt.options.typescript?.appTsConfig?.exclude ?? [])]
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
-  const baseTsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
+  const baseTsConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: true,
@@ -527,7 +523,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     },
     include: [...include],
     exclude: [...exclude],
-  } satisfies TSConfig)
+  } satisfies TSConfig) as TSConfig
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, baseTsConfig)
 
@@ -569,7 +565,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   // The environment the configured `server.builder` bundles for, in the parts holding for any
   // server runtime. The builder contributes what its own needs through `prepare:types`.
-  const serverTsConfig: TSConfig = defu(nuxt.options.typescript?.serverTsConfig, {
+  const serverTsConfig = defu(nuxt.options.typescript?.serverTsConfig, {
     compilerOptions: {
       ...nonAppCompilerOptions(),
       // bundled and web-standard rather than DOM-bound
@@ -578,7 +574,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     },
     include: [...serverInclude],
     exclude: [...serverExclude],
-  } satisfies TSConfig)
+  } satisfies TSConfig) as TSConfig
 
   const aliases: Record<string, string> = nuxt.options.alias
 
@@ -698,8 +694,9 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       Reflect.deleteProperty(tsConfig.compilerOptions!, 'baseUrl')
     }
 
+    tsConfig.compilerOptions!.paths ||= {}
     for (const alias in tsConfig.compilerOptions!.paths) {
-      const paths = tsConfig.compilerOptions!.paths[alias]
+      const paths = tsConfig.compilerOptions!.paths[alias]!
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
         if (!isAbsolute(path)) { return path }
         const stats = await fsp.stat(path).catch(() => null /* file does not exist */)

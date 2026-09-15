@@ -2,18 +2,17 @@ import { describe, expect, it, vi } from 'vitest'
 import type { H3Event } from 'nitro/h3'
 
 import { throwIfUnmatchedPagePath } from '../../src/runtime/server/renderer/early-404.ts'
-import { setServerRuntime } from '../../src/runtime/server/renderer/runtime.ts'
 import type { NuxtRendererOptions } from '../../src/runtime/server/renderer/runtime.ts'
 
-setServerRuntime({
+const options = {
   createError: (init: { status: number, statusText?: string, data?: unknown, headers?: Record<string, string> }) => Object.assign(new Error(init.statusText), {
     status: init.status,
     data: init.data,
     headers: init.headers ? new Headers(init.headers) : undefined,
   }),
-} as unknown as NuxtRendererOptions)
+} as unknown as NuxtRendererOptions
 
-vi.mock('nuxt/renderer-config', () => ({
+vi.mock('nuxt/internal/renderer-config', () => ({
   NUXT_PAGE_MATCHER: (_method: string, path: string) => path === '/known' ? 1 : undefined,
 }))
 
@@ -31,7 +30,7 @@ function cacheControlFor (path: string, method?: string, maxAge?: number) {
 function errorFor (path: string, method?: string, maxAge?: number) {
   const routeOptions = maxAge === undefined ? {} : { cache: { maxAge } }
   try {
-    throwIfUnmatchedPagePath(event(path, method), routeOptions)
+    throwIfUnmatchedPagePath(options, event(path, method), routeOptions)
   } catch (error) {
     return error as { status: number, data: { path: string }, headers: Headers | undefined }
   }

@@ -71,6 +71,10 @@ interface _NuxtApp {
 
   /** @internal */
   '_cookies'?: Record<string, unknown>
+  /** @internal */
+  '_cookieJar'?: Record<string, string | undefined>
+  /** @internal */
+  '_appliedSetCookies'?: number
   '_cookiesChanged'?: Record<string, boolean>
   /**
    * The id of the Nuxt application.

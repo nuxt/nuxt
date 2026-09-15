@@ -1,16 +1,20 @@
 import { HTTPError, writeEarlyHints } from 'nitro/h3'
-import { getRouteRules, useNitroHooks } from 'nitro/app'
+import { useNitroHooks } from 'nitro/app'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { FastResponse } from 'srvx'
-import { setServerRuntime } from 'nuxt/renderer/runtime'
 import type { NuxtSSRContext } from '#app/types'
-import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/renderer/runtime'
+import { createRendererInstance } from 'nuxt/internal/renderer/instance'
+import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
+import { appEvent } from 'nuxt/internal/renderer/runtime'
+import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
 
 import '../../context'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
-import { withBaseURL } from '../base'
+import { getRouteRules } from '../route-rules'
+import { markStreamedResponse, rememberRenderBody } from '../../compat/render-response'
+import { legacyCompat } from '#nuxt-compat/flags'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
@@ -23,12 +27,21 @@ export const rendererOptions: NuxtRendererOptions = {
   runtimeConfig: () => useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
   buildAssetsURL,
   publicAssetsURL,
-  // nitro registers route rules under the base URL, which `createEvent` has removed
-  getRouteRules: event => (getRouteRules(event.req.method, withBaseURL(event.url.pathname)).routeRules || {}) satisfies RendererRouteRules,
+  getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
   hooks: () => useNitroHooks() as RendererHooks,
-  createResponse: (body, init) => new FastResponse(body, init),
+  createResponse: (body, init) => {
+    const response = new FastResponse(body, init)
+    if (legacyCompat) {
+      rememberRenderBody(init, body)
+      if (body instanceof ReadableStream) {
+        markStreamedResponse(response)
+      }
+    }
+    return response
+  },
   createError: init => new HTTPError(init),
-  writeEarlyHints: (event, hints) => writeEarlyHints(event, hints),
+  writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
+  renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   prerender: import.meta.prerender
     ? {
         payloadCache: payloadCache!,
@@ -51,4 +64,8 @@ export const rendererOptions: NuxtRendererOptions = {
     : undefined,
 }
 
-setServerRuntime(rendererOptions)
+/**
+ * The renderer the page and island handlers share, so that both render against a single
+ * load of the server bundle and its manifest.
+ */
+export const rendererInstance: NuxtRendererInstance = createRendererInstance(rendererOptions)

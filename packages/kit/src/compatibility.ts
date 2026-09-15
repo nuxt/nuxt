@@ -4,7 +4,6 @@ import { readPackageJSON, resolvePackageJSON } from './internal/package-json.ts'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { directoryToURL } from './internal/esm.ts'
 import { useNuxt } from './context.ts'
-import type { NitroCompatibilityVersion } from './nitro-types.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
 const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
@@ -206,18 +205,6 @@ export function getNitroVersion (nuxt: Nuxt = useNuxt()): number | undefined {
       return major
     }
   }
-}
-
-/**
- * Check whether the nitro major version used by the current Nuxt instance is exactly `version`.
- *
- * Modules should use this to gate registration of handlers or plugins written for a specific
- * nitro major, for example `hasNitroVersion(3)` before `addServerHandler(handler, { version: 3 })`.
- *
- * Returns `false` when no nitro version can be determined.
- */
-export function hasNitroVersion (version: NitroCompatibilityVersion, nuxt: Nuxt = useNuxt()): boolean {
-  return getNitroVersion(nuxt) === version
 }
 
 const NUXT_VERSION_RE = /^v/g

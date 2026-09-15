@@ -1,23 +1,23 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { H3Event } from 'h3'
 
-import type { AppRouteRulesBase, RequestEventFallback, ResolveAppRouteRules, ResolveRequestEvent } from '../src/types/server.ts'
+import type { AppRouteRulesBase, NuxtRequestEvent, RequestEvent, ResolveAppRouteRules, ResolveRequestEvent } from '../src/types/server.ts'
 
-describe('fallback request event shape', () => {
+describe('web-standard request event shape', () => {
   it('is satisfied by an event of a real server runtime', () => {
-    expectTypeOf<H3Event>().toExtend<RequestEventFallback>()
+    expectTypeOf<H3Event>().toExtend<RequestEvent>()
   })
 
   it('describes the request, its URL and the response to be sent', () => {
-    expectTypeOf<RequestEventFallback['req']>().toEqualTypeOf<Request>()
-    expectTypeOf<RequestEventFallback['url']>().toEqualTypeOf<URL>()
-    expectTypeOf<RequestEventFallback['res']['status']>().toEqualTypeOf<number | undefined>()
-    expectTypeOf<RequestEventFallback['res']['headers']>().toEqualTypeOf<Headers>()
+    expectTypeOf<RequestEvent['req']>().toEqualTypeOf<Request>()
+    expectTypeOf<RequestEvent['url']>().toEqualTypeOf<URL>()
+    expectTypeOf<RequestEvent['res']['status']>().toEqualTypeOf<number | undefined>()
+    expectTypeOf<RequestEvent['res']['headers']>().toEqualTypeOf<Headers>()
   })
 })
 
 describe('`ServerTypes` registry', () => {
-  // `RequestEvent` resolves against whatever the surrounding program augmented into
+  // `NuxtRequestEvent` resolves against whatever the surrounding program augmented into
   // `ServerTypes`, so the resolution is exercised through stand-in registries here
   it('resolves the event from a contributed event type', () => {
     interface Contributed { event: H3Event }
@@ -29,7 +29,12 @@ describe('`ServerTypes` registry', () => {
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface Empty {}
 
-    expectTypeOf<ResolveRequestEvent<Empty>>().toEqualTypeOf<RequestEventFallback>()
+    expectTypeOf<ResolveRequestEvent<Empty>>().toEqualTypeOf<RequestEvent>()
+  })
+
+  it('resolves `NuxtRequestEvent` through the registry', () => {
+    // a superset of the web-standard event where the surrounding program contributes one
+    expectTypeOf<NuxtRequestEvent>().toExtend<RequestEvent>()
   })
 })
 

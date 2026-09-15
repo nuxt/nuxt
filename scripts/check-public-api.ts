@@ -113,6 +113,15 @@ const selfReferentialBase = /\binterface\s+(\w+)\s+extends\s+\1\s*[<{]/g
 
 const root = new URL('../', import.meta.url)
 
+/**
+ * Comments are stripped before matching: specifiers named in prose or `@example` blocks are not
+ * part of the type surface, and the multi-line import pattern would otherwise span a comment
+ * into the declaration that follows it.
+ */
+function withoutComments (contents: string) {
+  return contents.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/(?!\/).*$/gm, '')
+}
+
 function specifiersMatching (contents: string, patterns: RegExp[]) {
   const specifiers = new Set<string>()
   for (const re of patterns) {
@@ -135,7 +144,7 @@ for (const [file, entrypoint] of Object.entries(entrypoints)) {
     process.exit(1)
   }
 
-  const contents = readFileSync(path, 'utf8')
+  const contents = withoutComments(readFileSync(path, 'utf8'))
   const found = {
     types: specifiersMatching(contents, typeImportPatterns),
     augmentations: specifiersMatching(contents, augmentationPatterns),

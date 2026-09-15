@@ -14,7 +14,7 @@ What Nuxt does change is navigation. Once your app has hydrated, it routes on th
 
 ## Route Announcements
 
-Screen readers announce a full page load by themselves, but they have no way of knowing that a client-side navigation happened. [`<NuxtRouteAnnouncer>`](/docs/4.x/api/components/nuxt-route-announcer) solves this by rendering a hidden live region and writing the new page title into it after every navigation:
+Screen readers announce a full page load by themselves, but they have no way of knowing that a client-side navigation happened. [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) solves this by rendering a hidden live region and writing the new page title into it after every navigation:
 
 ```vue [app.vue]
 <template>
@@ -25,7 +25,7 @@ Screen readers announce a full page load by themselves, but they have no way of 
 
 The announcer reads the title that Unhead rendered, so it is only as useful as your titles are. If two routes share the same `<title>`, users hear nothing on the way between them.
 
-When you need to announce something else, or to change how urgently it is announced, use [`useRouteAnnouncer`](/docs/4.x/api/composables/use-route-announcer):
+When you need to announce something else, or to change how urgently it is announced, use [`useRouteAnnouncer`](/docs/api/composables/use-route-announcer):
 
 ```vue [app/pages/search.vue]
 <script setup lang="ts">
@@ -38,9 +38,9 @@ watch(results, (results) => {
 </script>
 ```
 
-:read-more{title="NuxtRouteAnnouncer" to="/docs/4.x/api/components/nuxt-route-announcer"}
+:read-more{title="NuxtRouteAnnouncer" to="/docs/api/components/nuxt-route-announcer"}
 
-For in-page updates that are not navigations, such as form validation or toasts, use [`<NuxtAnnouncer>`](/docs/4.x/api/components/nuxt-announcer) with [`useAnnouncer`](/docs/4.x/api/composables/use-announcer) instead.
+For in-page updates that are not navigations, such as form validation or toasts, use [`<NuxtAnnouncer>`](/docs/api/components/nuxt-announcer) with [`useAnnouncer`](/docs/api/composables/use-announcer) instead.
 
 ## Page Titles
 
@@ -62,13 +62,13 @@ useHead({
 </script>
 ```
 
-If your titles come from route metadata rather than from the page itself, you can read [`definePageMeta`](/docs/4.x/directory-structure/app/pages#page-metadata) values from [`useRoute`](/docs/4.x/api/composables/use-route) in a layout.
+If your titles come from route metadata rather than from the page itself, you can read [`definePageMeta`](/docs/directory-structure/app/pages#page-metadata) values from [`useRoute`](/docs/api/composables/use-route) in a layout.
 
-:read-more{title="SEO and Meta" to="/docs/4.x/getting-started/seo-meta#dynamic-title"}
+:read-more{title="SEO and Meta" to="/docs/getting-started/seo-meta#dynamic-title"}
 
 ## Links
 
-Use [`<NuxtLink>`](/docs/4.x/api/components/nuxt-link) for in-app navigation. It renders a real `<a href="...">`, which means it is focusable, appears in the tab order, and works with middle-click and "open in new tab", all of which you would have to reimplement on a `<div>` with a `@click` handler calling `navigateTo`.
+Use [`<NuxtLink>`](/docs/api/components/nuxt-link) for in-app navigation. It renders a real `<a href="...">`, which means it is focusable, appears in the tab order, and works with middle-click and "open in new tab", all of which you would have to reimplement on a `<div>` with a `@click` handler calling `navigateTo`.
 
 ```vue
 <template>
@@ -76,7 +76,7 @@ Use [`<NuxtLink>`](/docs/4.x/api/components/nuxt-link) for in-app navigation. It
 </template>
 ```
 
-In a menu or a set of breadcrumbs, the link matching the current route already exposes `aria-current="page"`, so assistive technology can tell which item you are on. Where a different token describes the relationship better, such as a step in a multi-page form, set [`ariaCurrentValue`](/docs/4.x/api/components/nuxt-link#routerlink):
+In a menu or a set of breadcrumbs, the link matching the current route already exposes `aria-current="page"`, so assistive technology can tell which item you are on. Where a different token describes the relationship better, such as a step in a multi-page form, set [`ariaCurrentValue`](/docs/api/components/nuxt-link#routerlink):
 
 ```vue
 <template>
@@ -87,9 +87,9 @@ In a menu or a set of breadcrumbs, the link matching the current route already e
 </template>
 ```
 
-Links to files in your `public/` directory, or to another app on the same origin, are not routes that Vue Router knows about. Mark them as [`external`](/docs/4.x/api/components/nuxt-link#handling-static-file-and-cross-app-links) so the browser performs a real navigation instead of failing to match a route.
+Links to files in your `public/` directory, or to another app on the same origin, are not routes that Vue Router knows about. Mark them as [`external`](/docs/api/components/nuxt-link#handling-static-file-and-cross-app-links) so the browser performs a real navigation instead of failing to match a route.
 
-:read-more{title="NuxtLink" to="/docs/4.x/api/components/nuxt-link"}
+:read-more{title="NuxtLink" to="/docs/api/components/nuxt-link"}
 
 ## Focus Management
 
@@ -144,9 +144,9 @@ Navigate around your app with the keyboard alone. Tabbing from the skip link int
 
 ## Scroll Behavior
 
-Nuxt scrolls to the top on a new route, restores the previous position when the user goes back, and scrolls to hash targets. If you need something different, such as smooth scrolling or a different offset, configure [`scrollBehaviorType`](/docs/4.x/guide/recipes/custom-routing#scroll-behavior-for-hash-links) or write your own `scrollBehavior` in [`router.options.ts`](/docs/4.x/guide/recipes/custom-routing#router-options). Bear in mind that smooth scrolling should respect the user's `prefers-reduced-motion` setting.
+Nuxt scrolls to the top on a new route, restores the previous position when the user goes back, and scrolls to hash targets. If you need something different, such as smooth scrolling or a different offset, configure [`scrollBehaviorType`](/docs/guide/recipes/custom-routing#scroll-behavior-for-hash-links) or write your own `scrollBehavior` in [`router.options.ts`](/docs/guide/recipes/custom-routing#router-options). Bear in mind that smooth scrolling should respect the user's `prefers-reduced-motion` setting.
 
-:read-more{title="Custom routing" to="/docs/4.x/guide/recipes/custom-routing"}
+:read-more{title="Custom routing" to="/docs/guide/recipes/custom-routing"}
 
 ## Useful Resources
 

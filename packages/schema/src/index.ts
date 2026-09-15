@@ -2,7 +2,7 @@
 export type { NuxtCompatibility, NuxtCompatibilityIssue, NuxtCompatibilityIssues } from './types/compatibility.ts'
 export type { Component, ComponentMeta, ComponentsDir, ComponentsOptions, ScanDir } from './types/components.ts'
 export type { NuxtCompilerOptions, KeyedFunction, KeyedFunctionFactory, CompilerScanDir } from './types/compiler.ts'
-export type { AppConfig, AppConfigInput, CustomAppConfig, DefineNuxtConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigInput, NuxtOptions, PublicRuntimeConfig, RuntimeConfig, RuntimeValue, SchemaDefinition, SharedAppConfig, UpperSnakeCase, ViteConfig, VitePlugin, ViteOptions, WebpackConfig, WebpackPluginInstance, ViewTransitionOptions, ViewTransitionPageOptions } from './types/config.ts'
+export type { AppConfig, AppConfigInput, CustomAppConfig, DefineNuxtConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigInput, NuxtOptions, PublicRuntimeConfig, RuntimeConfig, RuntimeConfigApp, RuntimeValue, SchemaDefinition, SharedAppConfig, UpperSnakeCase, ViteConfig, VitePlugin, ViteOptions, WebpackConfig, WebpackPluginInstance, ViewTransitionOptions, ViewTransitionPageOptions } from './types/config.ts'
 export type { NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtLayerSourceOptions } from './types/layers.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export type { ImportPresetWithDeprecation } from './types/hooks.ts'
@@ -14,9 +14,9 @@ export type { ImportsOptions, NuxtImport, NuxtImportAddonsOptions, NuxtImportCom
 export type { AppHeadMetaObject, MetaObject, MetaObjectRaw } from './types/head.ts'
 export type { ModuleDefinition, ModuleDependencies, ModuleDependencyMeta, ModuleMeta, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, NuxtModule, ResolvedModuleOptions } from './types/module.ts'
 export type { Nuxt, NuxtApp, NuxtBuildOutputs, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTemplateChange, NuxtTemplateDependency, NuxtTypeTemplate, NuxtServerTemplate, ResolvedNuxtTemplate } from './types/nuxt.ts'
-export type { RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router.ts'
-export type { NitroInstance, NitroInstanceFallback, NitroInstanceOptions, NitroInstanceOptionsFallback, NitroTypes } from './types/nitro.ts'
-export type { AppRouteRules, AppRouteRulesBase, AppRouteRulesExtensions, RequestEvent, RequestEventFallback, ServerRequestTypes, ServerRouteHandler, ServerRoutes, ServerRouteSegment, ServerTypes } from './types/server.ts'
+export type { NuxtLinkOptions, RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router.ts'
+export type { DevServerHandler, DevServerHandlerFallback, DevServerHandlerFunction, DevServerHandlerInput, NitroConfig, NitroConfigFallback, NitroInstance, NitroInstanceFallback, NitroInstanceOptions, NitroInstanceOptionsFallback, NitroTypes, RouteRuleConfig, RouteRuleConfigExtensions, RouteRuleConfigFallback, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerEnv, ServerHandlerFallback, ServerHandlerInput, ServerHandlerMethod, ServerImportsOptions, ServerPlugin, ServerPluginInput, ServerRouteMeta, TracingChannelOptions, TracingChannelOptionsBase } from './types/nitro.ts'
+export type { AppRouteRules, AppRouteRulesBase, AppRouteRulesExtensions, NuxtRequestContext, RequestEventContext, RequestEvent, NuxtRequestEvent, ServerEventHandler, ServerRequestTypes, ServerRouteHandler, ServerRoutes, ServerRouteSegment, ServerTypes } from './types/server.ts'
 export type { ConfigSchema } from './types/schema.ts'
 export type { NuxtDebugContext, NuxtDebugOptions, NuxtDebugModuleMutationRecord } from './types/debug.ts'
 

@@ -62,8 +62,17 @@ export default defineResolvers({
     },
   },
   routeRules: {},
+  nitroLegacy: {
+    $resolve: (val: unknown) => {
+      if (val === true) {
+        return true
+      }
+      return val && typeof val === 'object' ? val : false
+    },
+  },
   serverHandlers: [],
   devServerHandlers: [],
+  _serverPlugins: [],
   tracingChannel: {
     $resolve: (val) => {
       if (val === true) {

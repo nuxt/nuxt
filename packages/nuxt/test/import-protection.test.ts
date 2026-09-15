@@ -34,6 +34,8 @@ const testsToTriggerOn = [
   ['nitro/types', 'components/Component.vue', false],
   ['nitro', 'components/Component.vue', false],
   ['node_modules/some-pkg/server/api/helper.ts', 'components/Component.vue', false],
+  ['nuxt/server', 'components/Component.vue', true],
+  ['nuxt/app', 'components/Component.vue', false],
 ] as const
 
 describe('import protection', () => {
@@ -46,9 +48,19 @@ describe('import protection', () => {
       expect(result).toContain('impound:proxy')
     }
   })
+
+  it('should deny `nuxt/server` in app and shared code, and allow it on the server', async () => {
+    for (const context of ['nuxt-app', 'shared'] as const) {
+      const errors: string[] = []
+      await transformWithImportProtection('nuxt/server', 'components/Component.vue', context, errors)
+      expect(errors.join('\n'), context).toContain('`nuxt/server` cannot be imported in')
+    }
+
+    expect(await transformWithImportProtection('nuxt/server', 'server/api/hello.ts', 'nitro-app')).toBeFalsy()
+  })
 })
 
-const transformWithImportProtection = (id: string, importer: string, context: 'nitro-app' | 'nuxt-app' | 'shared') => {
+const transformWithImportProtection = (id: string, importer: string, context: 'nitro-app' | 'nuxt-app' | 'shared', errors: string[] = []) => {
   const plugin = ImpoundPlugin.rollup({
     cwd: '/root',
     patterns: createImportProtectionPatterns({
@@ -64,5 +76,5 @@ const transformWithImportProtection = (id: string, importer: string, context: 'n
     }, { context }),
   })
 
-  return (plugin as any).resolveId.call({ error: () => {} }, id, importer)
+  return (plugin as any).resolveId.call({ error: (error: unknown) => { errors.push(String((error as { message?: string })?.message ?? error)) } }, id, importer)
 }

@@ -1,5 +1,4 @@
-import type { Nitro, RouteRuleConfig } from 'nitro/types'
-import type { NuxtPage } from 'nuxt/schema'
+import type { NitroInstance, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
@@ -100,8 +99,8 @@ export interface RouteRuleCoverageOptions {
  * canonical path, each alias, and the whole subtree below it. Anything that
  * cannot be proven statically counts as uncovered.
  */
-export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: Nitro, options: RouteRuleCoverageOptions): boolean {
-  if (!('routing' in nitro)) { return false }
+export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInstance, options: RouteRuleCoverageOptions): boolean {
+  if (!nitro.routing) { return false }
 
   const routeRules = nitro.routing.routeRules
   const PROBE_SEGMENT = createProbeSegment(routeRules.routes)

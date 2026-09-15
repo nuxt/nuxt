@@ -32,8 +32,6 @@ function createEvent (path: string): RendererEvent {
   } as unknown as RendererEvent
 }
 
-// `createNuxtRenderer` installs its options for the whole bundle, so each render creates
-// the renderer it is about to use
 function render (path: string, overrides?: Partial<NuxtRendererOptions>) {
   const renderer = createNuxtRenderer({ ...options, ...overrides })
   return renderer.fetch(createEvent(path)).then(async response => ({ response, html: await response.text() }))
@@ -93,6 +91,19 @@ describe('renderer without a server builder', () => {
     expect(calls).toContain('render:route')
     expect(calls).toContain('render:html')
     expect(html).toContain('<!-- appended by a module --></body>')
+  })
+
+  it('keeps the options of each renderer to itself', async () => {
+    const ssr = createNuxtRenderer(options)
+    const spa = createNuxtRenderer({ ...options, getRouteRules: () => ({ ssr: false }) })
+
+    const [spaHtml, ssrHtml] = await Promise.all([
+      spa.fetch(createEvent('/')).then(r => r.text()),
+      ssr.fetch(createEvent('/')).then(r => r.text()),
+    ])
+
+    expect(ssrHtml).toContain('rendered without nitro')
+    expect(spaHtml).not.toContain('rendered without nitro')
   })
 
   it('refuses an internal error route with the error the runtime constructs', async () => {

@@ -217,7 +217,7 @@ export default createConfigForNuxt({
     },
     {
       files: ['packages/*/src/**'],
-      ignores: ['packages/nuxt/src/app/**', '**/runtime/**/*'],
+      ignores: ['packages/nuxt/src/app/**', 'packages/nuxt/src/server/**', '**/runtime/**/*'],
       name: 'local/import-extensions',
       plugins: {
         'import-x': importX,

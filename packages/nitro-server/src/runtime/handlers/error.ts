@@ -7,9 +7,17 @@ import { serverFetch } from 'nitro'
 import type { SSRErrorInput } from '../utils/error'
 import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
 import { withBaseURL } from '../utils/base'
+import { applyPrerenderHints } from '../utils/prerender'
 import { generateErrorOverlayHTML } from '../utils/dev'
+import { toLegacyError } from '../compat/error-shape'
+import { legacyCompat } from '#nuxt-compat/flags'
 
-export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
+export default <NitroErrorHandler> async function errorhandler (_error, event, { defaultHandler }) {
+  // recovering an h3 v1 error by shape is only correct where v2 code exists: h3's scrubbing
+  // of a foreign error is what stops a rethrown upstream payload from choosing this app's
+  // status. The flag is baked in at build time, so this branch is not emitted otherwise.
+  const error = legacyCompat ? toLegacyError(_error) as typeof _error : _error
+
   // invoke default Nitro error handler (which will log appropriately if required)
   const defaultRes = await defaultHandler(error, event, { json: true })
 
@@ -17,6 +25,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const status = error.status || 500
   const headers = new Headers(error.headers)
   appendVary(headers, 'accept, sec-fetch-mode')
+  if (import.meta.prerender && 'context' in event) {
+    applyPrerenderHints(event as H3Event, headers)
+  }
   if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
     const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [
@@ -53,7 +64,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
 
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
-  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!(event as H3Event).context.nuxt?.['~rendering-error']
+  const isRenderingError = !!(event as H3Event).context.nuxt?.['~rendering-error']
 
   if (!isRenderingError) {
     const eventContext = (event as H3Event).context

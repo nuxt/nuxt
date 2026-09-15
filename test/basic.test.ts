@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import type { Route } from 'playwright-core'
 import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
@@ -85,6 +86,47 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     expect(await $fetch('/api/counter')).toEqual({ count: 1 })
     expect(await $fetch('/api/counter')).toEqual({ count: 2 })
     expect(await $fetch('/api/counter')).toEqual({ count: 3 })
+  })
+
+  it('should serve a handler written against `nuxt/server`', async () => {
+    const response = await fetch('/api/portable', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json', 'cookie': 'incoming=here' },
+    })
+
+    expect(response.status).toBe(201)
+    expect(response.headers.get('x-portable')).toBe('yes')
+    expect(response.headers.getSetCookie()).toEqual([
+      'portable=set; Path=/',
+      'stale=; Max-Age=0; Path=/',
+    ])
+    expect(await response.json()).toMatchObject({
+      name: 'nuxt',
+      path: '/api/portable',
+      incoming: 'here',
+      publicKey: 123,
+    })
+  })
+
+  it('should read the body from both `nuxt/server` and nitro in one request', async () => {
+    const response = await fetch('/api/portable-body', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json' },
+    })
+
+    expect(await response.json()).toMatchObject({
+      middleware: { cloned: 'nuxt', parsed: 'nuxt' },
+      handler: 'nuxt',
+    })
+  })
+
+  it('should map an error created with `nuxt/server` to its status', async () => {
+    const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
+
+    expect(response.status).toBe(418)
+    expect(await response.json()).toMatchObject({ status: 418, statusText: 'Teapot', data: { fail: 'yes' } })
   })
 
   it('should auto-import', async () => {
@@ -702,6 +744,11 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  it.skipIf(isDev)('substitutes the server compile-time constants in the prerenderer', async () => {
+    const html = await $fetch<string>('/prerender/import-meta-test')
+    expect(html).toContain('server test flag: true')
+  })
+
   it('renders pages with special characters in route', async () => {
     const html = await $fetch('/non-ascii/ç')
     // Verify page renders successfully with layout
@@ -869,6 +916,23 @@ describe('nuxt composables', () => {
     const cookies = res.headers.get('set-cookie')
     expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
+  it('reads cookies written earlier in the same request on the server', async () => {
+    const res = await fetch('/cookies-read-after-write')
+    const html = await res.text()
+    expect(html).toContain('<div id="from-plugin">true</div>')
+    expect(html).toContain('<div id="written">written</div>')
+    expect(html).toContain('<div id="from-default">from-default</div>')
+    expect(html).toContain('<div id="deleted">empty</div>')
+    expect(html).toContain('<div id="after-readonly">empty</div>')
+    expect(html).toContain('<div id="from-h3">h3-value</div>')
+    expect(html).toContain('<div id="h3-then-deleted">empty</div>')
+
+    const setCookies = res.headers.getSetCookie()
+    expect(setCookies.filter(c => c.startsWith('set-via-h3-then-deleted='))).toEqual([
+      expect.stringContaining('set-via-h3-then-deleted=; Max-Age=0'),
+    ])
+  })
+
   it('does not write a readonly cookie with a default value, on server or client', async () => {
     const res = await fetch('/cookies')
     expect(res.headers.get('set-cookie')).not.toContain('readonly-with-default')
@@ -1414,6 +1478,18 @@ describe('errors', () => {
     expect(error).not.toHaveProperty('url')
   })
 
+  it('should render the app error page when accessing error route directly', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(404)
+    const html = await res.text()
+    expect(html).toContain('This is the error page 😱')
+    expect(html).toContain('Page Not Found: /__nuxt_error')
+  })
+
   it('should not recursively throw an error when there is an error rendering the error page', async () => {
     const res = await $fetch<string>('/', {
       headers: {
@@ -1541,7 +1617,7 @@ describe('middlewares', () => {
     const html = await $fetch<string>('/middleware-abort')
     expect(html).not.toContain('This is the error page')
     const { page } = await renderPage('/middleware-abort')
-    expect(await page.innerHTML('body')).toContain('This is the error page')
+    await page.waitForFunction(() => document.body.innerHTML.includes('This is the error page'))
     await page.close()
   })
 
@@ -1699,6 +1775,14 @@ describe('server tree shaking', () => {
     expect(await page.locator('#client-side').textContent()).toContain('This should be rendered client-side')
 
     await page.close()
+  })
+})
+
+describe('dependencies of code in node_modules', () => {
+  // https://github.com/nuxt/nuxt/issues/22077
+  it('resolves them from the importing package rather than the project', async () => {
+    const html = await $fetch<string>('/foo')
+    expect(html).toContain('Plugin | nested dependency: nested dependency of foo')
   })
 })
 
@@ -1961,7 +2045,7 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should forward destination preload tags as prefetch hints on link prefetch', async () => {
+  it.skipIf(!isTestingAppManifest)('should preserve image preloads and downgrade other preload hints on link prefetch', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -1969,32 +2053,108 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     // prefetching should trigger loading its payload, which includes the
     // forwarded preload links registered via `useHead` on that page.
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => document.head.querySelector('link[rel="preload"][as="image"][href$="/public.svg"]')
+        && document.head.querySelector('link[rel="prefetch"][as="fetch"][href$="/prefetch-resource.txt"]'),
     )
 
-    // Confirm the rel was downgraded from preload to prefetch.
-    const preloadCount = await page.evaluate(
-      () => document.head.querySelectorAll('link[rel="preload"][href$="/public.svg"]').length,
-    )
-    expect(preloadCount).toBe(0)
+    const hints = await page.evaluate(() => Array.from(document.head.querySelectorAll('link'))
+      .filter(link => link.href.endsWith('/public.svg') || link.href.endsWith('/prefetch-resource.txt'))
+      .map(link => ({
+        as: link.as,
+        fetchpriority: link.getAttribute('fetchpriority'),
+        href: new URL(link.href).pathname,
+        rel: link.rel,
+      })))
+    expect(hints).toContainEqual({
+      as: 'image',
+      fetchpriority: null,
+      href: '/public.svg',
+      rel: 'preload',
+    })
+    expect(hints).toContainEqual({
+      as: 'fetch',
+      fetchpriority: null,
+      href: '/prefetch-resource.txt',
+      rel: 'prefetch',
+    })
 
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should evict forwarded prefetch hints for routes that are never visited', async () => {
+  it.skipIf(!isTestingAppManifest)('should not forward hints for resources that could be arbitrarily large', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href$="/never-forwarded.mp4"]').length,
+    )).toBe(0)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should forward a limited number of hints per prefetched route', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href*="/hint-"]').length,
+    )).toBe(2)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should throttle forwarded hints and prioritise recently prefetched routes', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    for (let route = 1; route <= 4; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+      await page.waitForFunction(
+        route => document.head.querySelector(`link[href$="/hint-b.svg?route=${route}"]`),
+        route,
+      )
+    }
+
+    await expect.poll(() => pendingRequests.length).toBe(8)
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/5'))
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect(pendingRequests).toHaveLength(8)
+    expect(await page.locator('link[href*="?route=5"], link[href*="?route=6"]').count()).toBe(0)
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(8)
+    expect(pendingRequests.at(-1)!.request().url()).toMatch(/\/hint-a\.svg\?route=6$/)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should evict forwarded resource hints for routes that are never visited', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link'))
         .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
     )
 
     await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
     await page.waitForFunction(
-      () => !Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => !Array.from(document.head.querySelectorAll('link'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg') || (l as HTMLLinkElement).href.endsWith('/prefetch-resource.txt')),
     )
 
     await page.close()
@@ -2360,7 +2520,7 @@ describe('experimental', () => {
 describe('import components', () => {
   let html = ''
 
-  it('fetch import-components page', { sequential: true }, async () => {
+  it('fetch import-components page', { concurrent: false }, async () => {
     html = await $fetch<string>('/import-components')
   })
 
@@ -2384,7 +2544,7 @@ describe('import components', () => {
 describe('lazy import components', () => {
   let html = ''
 
-  it('fetch lazy-import-components page', { sequential: true }, async () => {
+  it('fetch lazy-import-components page', { concurrent: false }, async () => {
     html = await $fetch<string>('/lazy-import-components')
   })
 

@@ -66,7 +66,7 @@ function output (stdout: string, stderr: string) {
 const BLOCK_JITI = `import { register } from 'node:module'
 register('data:text/javascript,export async function resolve (specifier, context, next) { if (specifier === \\'jiti\\') { throw new Error(\\'jiti is unavailable\\') } return next(specifier, context) }')`
 
-describe('jiti fallback', { sequential: true }, () => {
+describe('jiti fallback', { concurrent: false }, () => {
   let dir: string
   let blockJiti: string
 

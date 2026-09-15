@@ -59,6 +59,20 @@ describe('getFragmentHTML', () => {
     ])
   })
 
+  // https://github.com/nuxt/nuxt/issues/33809
+  it('clears hydrated client component contents', () => {
+    const fragment = document.createDocumentFragment()
+    const start = document.createComment('[')
+    const element = document.createElement('div')
+
+    element.innerHTML = '<div data-island-uid="1" data-island-component="v-0-0-0"><!--teleport start anchor--><button>hydrated</button><!--teleport anchor--></div>'
+    fragment.append(start, element, document.createComment(']'))
+
+    expect(getFragmentHTML(start, true)).toEqual([
+      '<div><div data-island-uid="1" data-island-component="v-0-0-0"></div></div>',
+    ])
+  })
+
   // cloning a live `<img>` starts a second load of its `src`
   it('does not clone live nodes', () => {
     const cloneNode = vi.spyOn(Node.prototype, 'cloneNode')
