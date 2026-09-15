@@ -79,6 +79,7 @@ catalogs:
     errx: ^0.2.0
     fnv1a-64: ^0.1.2
     hookable: ^6.1.1
+    iron-webcrypto: ^2.0.0
     klona: ^2.0.6
     nostics: ^1.2.0
     object-identity: ^0.2.3

@@ -18,6 +18,10 @@ import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runt
 import { NUXT_ERROR_SIGNATURE, NuxtError, createError } from '../app/error'
 import type { NuxtError as NuxtErrorContract } from '../app/types'
 
+export { clearSession, getSession, updateSession, useSession } from './session'
+export { deriveSecret } from './secret'
+export type { Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate } from './session'
+
 export type { AppRouteRules, RequestEvent, RequestEventContext, ServerRoutes } from 'nuxt/schema'
 export type { NuxtErrorDetails } from '../app/error'
 export type { NuxtErrorJSON } from '../app/types'
