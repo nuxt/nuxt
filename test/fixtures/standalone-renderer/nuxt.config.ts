@@ -16,7 +16,27 @@ export default defineNuxtConfig({
   // the renderer test resolves the build artifacts through fixed paths
   buildDir: '.nuxt',
   sourcemap: false,
+  experimental: {
+    writeEarlyHints: true,
+  },
   compatibilityDate: 'latest',
+  hooks: {
+    // stands in for a module (like `@nuxt/fonts`) registering a non-script preload
+    'build:manifest' (manifest) {
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.isEntry) {
+          chunk.assets ||= []
+          chunk.assets.push('fonts/standalone.woff2')
+        }
+      }
+      manifest['fonts/standalone.woff2'] = {
+        file: 'fonts/standalone.woff2',
+        resourceType: 'font',
+        mimeType: 'font/woff2',
+        preload: true,
+      }
+    },
+  },
   server: {
     builder: fileURLToPath(new URL('./server-builder.ts', import.meta.url)),
   },

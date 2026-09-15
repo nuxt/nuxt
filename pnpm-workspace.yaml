@@ -188,6 +188,8 @@ catalogs:
     untyped: ^2.0.0
     verkit: ^0.5.0
     vue-bundle-renderer: ^2.4.0
+
+  # dev/test/workspace tooling (pinned)
   dev:
     '@arethetypeswrong/cli': 0.18.5
     '@babel/core': 8.0.6
