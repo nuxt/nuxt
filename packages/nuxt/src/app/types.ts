@@ -118,7 +118,7 @@ export interface NuxtPayload {
   data: Record<string, any>
   state: Record<string, any>
   once: Set<string>
-  config?: Pick<RuntimeConfig, 'public' | 'app'>
+  config?: { public: RuntimeConfig['public'], app: Omit<RuntimeConfig['app'], 'secret'> }
   error?: NuxtError | undefined
   _errors: Record<string, NuxtError | undefined>
   /**
@@ -140,7 +140,7 @@ export interface NuxtSSRContext extends SSRContext {
   payload: Partial<NuxtPayload>
   head: VueHeadClient<UseHeadInput, SSRHeadPayload>
   /** This is used solely to render runtime config with SPA renderer. */
-  config?: Pick<RuntimeConfig, 'public' | 'app'>
+  config?: { public: RuntimeConfig['public'], app: Omit<RuntimeConfig['app'], 'secret'> }
   teleports?: Record<string, string>
   islandContext?: NuxtIslandContext
   /** @internal */

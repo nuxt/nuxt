@@ -12,7 +12,7 @@ import { createRegExp, exactly } from 'magic-regexp'
 import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
-const secretKey = 'nuxt-runtime-secret-key-test-value'
+const appSecret = 'nuxt-runtime-app-secret-test-value'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -20,7 +20,7 @@ await setup({
   server: true,
   browser: true,
   env: {
-    NUXT_SECRET_KEY: secretKey,
+    NUXT_APP_SECRET: appSecret,
   },
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
@@ -38,16 +38,15 @@ await setup({
 })
 
 describe('application secret', () => {
-  it('provides the application secret only in private runtime config', async () => {
-    expect(await $fetch('/api/runtime-config/secret-key')).toEqual({ secretKey })
-    expect(await $fetch<string>('/')).not.toContain(secretKey)
+  it('provides the application secret only on the server', async () => {
+    expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ secret: appSecret })
+    expect(await $fetch<string>('/')).not.toContain(appSecret)
 
     const page = await createPage('/')
     try {
       const config = await page.evaluate(() => window.useNuxtApp!().$config)
-      expect(config).toHaveProperty('public')
-      expect(config).not.toHaveProperty('secretKey')
-      expect(JSON.stringify(config)).not.toContain(secretKey)
+      expect(config.app).not.toHaveProperty('secret')
+      expect(JSON.stringify(config)).not.toContain(appSecret)
     } finally {
       await page.close()
     }
@@ -57,8 +56,8 @@ describe('application secret', () => {
     undefined, '', '123', 'true', 'null', '4848e0', '"quoted-secret"', '{"key":"secret"}',
   ])('preserves the runtime environment secret %j', async (value) => {
     try {
-      await startServer({ env: { NUXT_SECRET_KEY: value, NITRO_SECRET_KEY: undefined } })
-      expect(await $fetch('/api/runtime-config/secret-key')).toEqual({ secretKey: value ?? '' })
+      await startServer({ env: { NUXT_APP_SECRET: value, NITRO_APP_SECRET: undefined } })
+      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ secret: value ?? '' })
     } finally {
       await startServer()
     }

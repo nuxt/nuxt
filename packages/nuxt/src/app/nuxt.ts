@@ -306,9 +306,10 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     nuxtApp.ssrContext.payload = nuxtApp.payload
 
     // Expose client runtime-config to the payload
+    const { secret: _secret, ...app } = nuxtApp.ssrContext.runtimeConfig.app
     nuxtApp.ssrContext.config = {
       public: nuxtApp.ssrContext.runtimeConfig.public,
-      app: nuxtApp.ssrContext.runtimeConfig.app,
+      app,
     }
   }
 

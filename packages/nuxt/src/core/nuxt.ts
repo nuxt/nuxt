@@ -1048,7 +1048,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   // warn if user is using reserved namespaces
-  const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId'])
+  const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId', 'secret'])
   for (const key in options.runtimeConfig.app) {
     if (!allowedKeys.has(key)) {
       configDiagnostics.NUXT_B5003({ key })

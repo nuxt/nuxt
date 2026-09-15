@@ -60,10 +60,11 @@ export interface RuntimeConfigApp extends RuntimeConfigNamespace {
   cdnURL: string
   /** Identifier of the current build, regenerated on every build. */
   buildId: string
+  /** The application's root secret. Server-only: it is never sent to the client. */
+  secret: string
 }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
-  secretKey: string
   public: PublicRuntimeConfig
   app: RuntimeConfigApp
 }
