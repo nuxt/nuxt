@@ -91,7 +91,7 @@ catalogs:
     unctx: ^3.0.1
     unhead: ^3.4.0
     vue: ^3.5.42
-    vue-bundle-renderer: ^2.3.2
+    vue-bundle-renderer: ^2.4.0
     vue-router: ^5.3.1
 
   # imported in the server runtime (packages/nuxt/src/runtime/server, packages/nitro-server/src/runtime)
@@ -212,7 +212,7 @@ catalogs:
     unrouting: ^0.2.3
     untyped: ^2.0.0
     verkit: ^0.4.0
-    vue-bundle-renderer: ^2.3.2
+    vue-bundle-renderer: ^2.4.0
 
   # dev/test/workspace tooling (pinned)
   dev:
