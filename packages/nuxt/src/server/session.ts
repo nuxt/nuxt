@@ -66,7 +66,12 @@ const DEFAULT_NAME = 'nuxt-session'
 /** Browsers reject a cookie whose serialised form exceeds this. */
 const MAX_COOKIE_BYTES = 4096
 
-const sessionCache = new WeakMap<object, Map<string, Promise<Session<any>>>>()
+interface SessionEntry {
+  loading: Promise<Session<any>>
+  session?: Session<any>
+}
+
+const sessionCache = new WeakMap<object, Map<string, SessionEntry>>()
 
 /**
  * The session for the request, with the operations that write it back.
@@ -86,22 +91,23 @@ const sessionCache = new WeakMap<object, Map<string, Promise<Session<any>>>>()
  * @since 5.0.0
  */
 export async function useSession<T extends SessionData = SessionData> (event: SessionEvent, config: SessionConfig = {}): Promise<SessionManager<T>> {
-  let session = await getSession<T>(event, config)
+  await getSession<T>(event, config)
+  const name = config.name ?? DEFAULT_NAME
+  const current = () => sessionsOf(event).get(name)!.session as Session<T>
 
   const manager: SessionManager<T> = {
     get id () {
-      return session.id
+      return current().id
     },
     get data () {
-      return session.data
+      return current().data
     },
     async update (update) {
-      session = await updateSession<T>(event, config, update)
+      await updateSession<T>(event, config, update)
       return manager
     },
     async clear () {
       await clearSession(event, config)
-      session = await getSession<T>(event, config)
       return manager
     },
   }
@@ -119,13 +125,14 @@ export async function useSession<T extends SessionData = SessionData> (event: Se
 export function getSession<T extends SessionData = SessionData> (event: SessionEvent, config: SessionConfig = {}): Promise<Session<T>> {
   const name = config.name ?? DEFAULT_NAME
   const sessions = sessionsOf(event)
-  let session = sessions.get(name)
-  if (!session) {
-    session = loadSession(event, config)
-    sessions.set(name, session)
-    session.catch(() => sessions.delete(name))
+  let entry = sessions.get(name)
+  if (!entry) {
+    const loading = loadSession(event, config)
+    entry = { loading }
+    sessions.set(name, entry)
+    loading.then((session) => { entry!.session = session }, () => sessions.delete(name))
   }
-  return session as Promise<Session<T>>
+  return entry.loading as Promise<Session<T>>
 }
 
 async function loadSession<T extends SessionData> (event: SessionEvent, config: SessionConfig): Promise<Session<T>> {
@@ -161,12 +168,13 @@ export async function updateSession<T extends SessionData = SessionData> (event:
  */
 export function clearSession (event: SessionEvent, config: SessionConfig = {}): Promise<void> {
   const name = config.name ?? DEFAULT_NAME
-  sessionsOf(event).set(name, Promise.resolve({ id: globalThis.crypto.randomUUID(), data: Object.create(null) }))
+  const session: Session = { id: globalThis.crypto.randomUUID(), data: Object.create(null) }
+  sessionsOf(event).set(name, { loading: Promise.resolve(session), session })
   setSessionCookie(event, name, '', { ...cookieOptions(config), maxAge: 0 })
   return Promise.resolve()
 }
 
-function sessionsOf (event: SessionEvent): Map<string, Promise<Session<any>>> {
+function sessionsOf (event: SessionEvent): Map<string, SessionEntry> {
   let sessions = sessionCache.get(event)
   if (!sessions) {
     sessions = new Map()

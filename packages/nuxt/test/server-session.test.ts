@@ -125,6 +125,18 @@ describe('`useSession`', () => {
     expect(session.data).toEqual({})
     expect(session.id).not.toBe(id)
   })
+
+  it('keeps every manager for the same session in step', async () => {
+    const e = event()
+    const [a, b] = await Promise.all([useSession<{ user: string }>(e, config), useSession<{ user: string }>(e, config)])
+
+    await a.update({ user: 'daniel' })
+    expect(b.data.user).toBe('daniel')
+
+    await b.clear()
+    expect(a.data).toEqual({})
+    expect(a.id).toBe(b.id)
+  })
 })
 
 describe('an untrustworthy cookie', () => {
