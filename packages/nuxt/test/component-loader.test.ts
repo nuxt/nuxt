@@ -334,6 +334,7 @@ const plugin = LoaderPlugin({
   getComponents: () => components,
   srcDir: '/',
   mode: 'server',
+  isComponentFile: () => false,
 })
 
 /** Normalize rolldown output to be stable across different working directories */

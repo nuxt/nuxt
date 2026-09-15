@@ -303,7 +303,7 @@ test.describe('vite-only HMR tests', () => {
     expect(filteredLogs).toStrictEqual([])
   })
 
-  test.fail('should support renaming files to same import name', async ({ page, goto }) => {
+  test('should support renaming files to same import name', async ({ page, goto }) => {
     await goto('/rename-component')
 
     await expect(page.getByTestId('example')).toHaveText('test.vue')
